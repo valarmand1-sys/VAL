@@ -1,0 +1,74 @@
+# The component graph of 01-architecture.md §3, in machine-readable form.
+#
+# `allowed_dependencies` is an allowlist, not a denylist. §3 states four rules:
+#
+#   - policy depends on domain only; never on desktop, api, worker, or providers
+#   - worker never depends on desktop
+#   - providers never depends on policy — routing asks policy, policy never asks a provider
+#   - no circular package dependencies
+#
+# An allowlist satisfies all four and is strictly narrower than the four rules,
+# which is permitted: an implementation may narrow an authority boundary, never
+# broaden one (/CLAUDE.md, invariant 5). Any edge not listed here is a violation,
+# so a new dependency direction must be added deliberately rather than by import.
+#
+# The graph is acyclic by construction; check_boundaries.py verifies that rather
+# than assuming it.
+
+[[component]]
+name = "domain"
+path = "packages/domain"
+languages = ["python"]
+python_module = "val_domain"
+distribution = "val-domain"
+allowed_dependencies = []
+
+[[component]]
+name = "policy"
+path = "packages/policy"
+languages = ["python"]
+python_module = "val_policy"
+distribution = "val-policy"
+allowed_dependencies = ["domain"]
+
+[[component]]
+name = "providers"
+path = "packages/providers"
+languages = ["python"]
+python_module = "val_providers"
+distribution = "val-providers"
+allowed_dependencies = ["domain"]
+
+[[component]]
+name = "mcp"
+path = "packages/mcp"
+languages = ["python"]
+python_module = "val_mcp"
+distribution = "val-mcp"
+allowed_dependencies = ["domain"]
+
+[[component]]
+name = "api"
+path = "apps/api"
+languages = ["python"]
+python_module = "val_api"
+distribution = "val-api"
+allowed_dependencies = ["domain", "policy", "providers", "mcp"]
+
+[[component]]
+name = "worker"
+path = "apps/worker"
+languages = ["python"]
+python_module = "val_worker"
+distribution = "val-worker"
+allowed_dependencies = ["domain", "policy", "providers", "mcp"]
+
+# The desktop shell reaches the service over HTTP. It imports no other component
+# and no other component imports it.
+[[component]]
+name = "desktop"
+path = "apps/desktop"
+languages = ["typescript", "rust"]
+npm_package = "val-desktop"
+cargo_crate = "val_desktop"
+allowed_dependencies = []

@@ -1,0 +1,147 @@
+# Val — Python workspace root.
+#
+# This file pins the Python toolchain. It declares no runtime code of its own;
+# the workspace members under /apps and /packages do that.
+#
+# Every version here is exact (`==`). Ranges, moving tags, and unpinned
+# specifiers are rejected by `infrastructure/ci/check_pins.py`, which runs in CI.
+# Resolved toolchain versions and their sources: docs/TOOLCHAIN.md
+
+[tool.uv.workspace]
+members = [
+    "apps/api",
+    "apps/worker",
+    "packages/domain",
+    "packages/mcp",
+    "packages/policy",
+    "packages/providers",
+]
+
+[tool.uv]
+required-version = "==0.12.3"
+
+[tool.uv.sources]
+val-domain = { workspace = true }
+val-mcp = { workspace = true }
+val-policy = { workspace = true }
+val-providers = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "import-linter==2.13",
+    "mypy==2.3.0",
+    "pytest==9.1.1",
+    "ruff==0.16.2",
+]
+
+# ---------------------------------------------------------------------------
+# Lint and format
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = [
+    "apps/api/src",
+    "apps/worker/src",
+    "packages/domain/src",
+    "packages/mcp/src",
+    "packages/policy/src",
+    "packages/providers/src",
+    "infrastructure/ci",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # import sorting
+    "N",    # naming
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "S",    # bandit
+    "ANN",  # missing annotations
+    "RUF",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101"]  # assert is the point of a test
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "check_boundaries",
+    "check_pins",
+    "val_api",
+    "val_domain",
+    "val_mcp",
+    "val_policy",
+    "val_providers",
+    "val_worker",
+]
+
+# ---------------------------------------------------------------------------
+# Types
+# ---------------------------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_unused_configs = true
+warn_unreachable = true
+files = [
+    "apps/api/src",
+    "apps/worker/src",
+    "packages/domain/src",
+    "packages/mcp/src",
+    "packages/policy/src",
+    "packages/providers/src",
+    "infrastructure/ci",
+]
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["infrastructure/ci/tests"]
+pythonpath = ["infrastructure/ci"]
+
+# ---------------------------------------------------------------------------
+# Dependency direction — Python (01-architecture.md §3)
+#
+# This is the deep, transitive check over real Python imports. It cannot see
+# `apps/desktop`, which is TypeScript and Rust; `infrastructure/ci/check_boundaries.py`
+# covers every language and the manifests. The two are complementary, not
+# redundant, and CI runs both.
+# ---------------------------------------------------------------------------
+
+[tool.importlinter]
+root_packages = [
+    "val_api",
+    "val_domain",
+    "val_mcp",
+    "val_policy",
+    "val_providers",
+    "val_worker",
+]
+
+[[tool.importlinter.contracts]]
+name = "Dependency direction is layered and acyclic"
+type = "layers"
+layers = [
+    "val_api : val_worker",
+    "val_mcp : val_policy : val_providers",
+    "val_domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "policy depends on domain only (01-architecture.md §3)"
+type = "forbidden"
+source_modules = ["val_policy"]
+forbidden_modules = ["val_api", "val_mcp", "val_providers", "val_worker"]
+
+[[tool.importlinter.contracts]]
+name = "providers never depends on policy (01-architecture.md §3)"
+type = "forbidden"
+source_modules = ["val_providers"]
+forbidden_modules = ["val_policy"]

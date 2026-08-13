@@ -2,7 +2,7 @@
 
 A general-purpose personal AI and permanent working partner for House Armand.
 
-**This repository contains no implementation yet.** It holds the governing specification and the directory structure the build will fill.
+**No application behaviour exists yet.** The repository holds the governing specification, the directory structure the build will fill, and — as of WP-0.1 — the pinned toolchain and the checks that enforce it.
 
 ---
 
@@ -57,7 +57,7 @@ Val is built in capability layers, each independently usable. Governance arrives
 /packages/providers  Model provider adapters
 /packages/policy     Deterministic classification and permission evaluation
 /packages/mcp        MCP client and Tool Registry
-/infrastructure
+/infrastructure/ci   Dependency-direction and version-pinning checks
 /docs
 ```
 
@@ -68,15 +68,19 @@ Dependency direction is enforced in CI:
 - `providers` never depends on `policy` — routing asks policy; policy never asks a provider
 - No circular package dependencies
 
+The allowed edges are declared in [`infrastructure/ci/components.toml`](infrastructure/ci/components.toml) as an allowlist, which is narrower than the four rules above. Two checks enforce it, and neither subsumes the other: `infrastructure/ci/check_boundaries.py` covers every language and the manifests, and `import-linter` follows transitive Python imports.
+
 `policy` is the boundary that matters most. It decides whether a consequential action may occur, and must remain callable, testable, and correct with no application running.
 
 ---
 
 ## Getting started
 
-There is nothing to run yet. The first work order is **WP-0.1** in [`04-layer-0.md`](docs/baselines/04-layer-0.md) §3 — repository and toolchain.
+**[`docs/BUILD.md`](docs/BUILD.md)** is the complete sequence for a machine that has never seen this project — Python, Node, and Rust, plus the checks CI runs.
 
-Toolchain versions are deliberately unpinned in this commit. WP-0.1 requires them resolved against current official documentation rather than guessed in advance.
+Every toolchain version is pinned to an exact value, resolved against the publisher's own index rather than recalled. What each one is and where it came from: **[`docs/TOOLCHAIN.md`](docs/TOOLCHAIN.md)**.
+
+There is no application behaviour yet. WP-0.1 delivers the repository, the pinned toolchain, and the enforcement that keeps both honest. WP-0.2 (database and migrations) is next.
 
 ---
 

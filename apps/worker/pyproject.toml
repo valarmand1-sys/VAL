@@ -1,0 +1,22 @@
+[project]
+name = "val-worker"
+version = "0.0.0"
+description = "Background workers. Temporal arrives at Layer 3, not here."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "val-domain",
+    "val-policy",
+    "val-providers",
+]
+
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/val_worker"]
+
+[tool.uv.sources]
+val-domain = { workspace = true }
+val-policy = { workspace = true }
+val-providers = { workspace = true }

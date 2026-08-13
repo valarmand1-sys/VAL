@@ -1,0 +1,18 @@
+[project]
+name = "val-providers"
+version = "0.0.0"
+description = "Model provider adapters. The only place a provider SDK may be imported."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "val-domain",
+]
+
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/val_providers"]
+
+[tool.uv.sources]
+val-domain = { workspace = true }
