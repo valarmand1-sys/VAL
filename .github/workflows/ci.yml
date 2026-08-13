@@ -16,6 +16,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  secrets:
+    name: No credentials in the tree
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The scanner asks git which files are committable, so it needs the
+          # repository, not a shallow export.
+          fetch-depth: 1
+      - uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
+        with:
+          version: 0.12.3
+          enable-cache: true
+      - run: uv python install
+      - run: uv run --no-project python infrastructure/ci/check_secrets.py
+
   pins:
     name: Versions are pinned
     runs-on: ubuntu-24.04
@@ -69,9 +85,12 @@ jobs:
         # asserts it rather than trusting this comment.
         image: pgvector/pgvector@sha256:691673308c99d2161ba298736f3147f1f22d79de2fb7ec93ae9b4afcab870b62
         env:
+          # No password exists to leak. The container is reachable only from this
+          # job, and a throwaway credential in a committed file is still a
+          # credential-shaped literal (00-charter.md §6).
           POSTGRES_USER: val
-          POSTGRES_PASSWORD: val
           POSTGRES_DB: val_test
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5433:5432
         options: >-
@@ -80,8 +99,8 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      VAL_DATABASE_URL: postgresql+psycopg://val:val@localhost:5433/val_test
-      VAL_TEST_DATABASE_URL: postgresql+psycopg://val:val@localhost:5433/val_test
+      VAL_DATABASE_URL: postgresql+psycopg://val@localhost:5433/val_test
+      VAL_TEST_DATABASE_URL: postgresql+psycopg://val@localhost:5433/val_test
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
