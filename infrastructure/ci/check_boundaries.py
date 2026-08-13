@@ -14,6 +14,7 @@ An edge that is not in a component's allowlist is a violation.
 Exit code 0 means no violation was found. Exit code 1 means at least one was.
 """
 
+import ast
 import json
 import re
 import sys
@@ -204,6 +205,55 @@ def _resolve_relative(
     return owning_component(relative, components)
 
 
+def _blank_docstrings(source: str) -> str:
+    """Blank out module, class, and function docstrings, leaving all else in place.
+
+    A docstring is prose and cannot create a dependency, so it is exempt from the
+    scan exactly as a `#` or `//` comment is. **Only** docstrings are exempt. A
+    string that is assigned, passed, or otherwise used is code and is still
+    scanned.
+
+    Blanking is done character by character rather than line by line, so a
+    statement sharing a physical line with a docstring is still scanned. Skipping
+    whole lines would let a real reference hide behind a docstring's closing
+    quotes.
+
+    Line numbering is preserved so violations still report their true location. A
+    file that does not parse is returned unchanged, so a syntax error fails strict
+    rather than opening a hole.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return source
+
+    lines = source.splitlines()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef):
+            continue
+        if not node.body:
+            continue
+        first = node.body[0]
+        if not (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        ):
+            continue
+        end_lineno = first.end_lineno or first.lineno
+        for number in range(first.lineno, end_lineno + 1):
+            # `col_offset` is a UTF-8 byte offset, and these sources carry `§`.
+            raw = lines[number - 1].encode("utf-8")
+            start = first.col_offset if number == first.lineno else 0
+            end = first.end_col_offset if number == end_lineno else len(raw)
+            if end is None:
+                end = len(raw)
+            lines[number - 1] = (raw[:start] + b" " * (end - start) + raw[end:]).decode(
+                "utf-8", errors="replace"
+            )
+    return "\n".join(lines)
+
+
 def scan_source_file(
     file_path: Path,
     component: Component,
@@ -214,10 +264,10 @@ def scan_source_file(
     relative = file_path.relative_to(REPO_ROOT).as_posix()
     suffix = file_path.suffix
     others = [c for c in components if c.name != component.name]
+    text = file_path.read_text(encoding="utf-8", errors="replace")
+    scannable = _blank_docstrings(text) if suffix == ".py" else text
 
-    for number, line in enumerate(
-        file_path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1
-    ):
+    for number, line in enumerate(scannable.splitlines(), start=1):
         location = f"{relative}:{number}"
         if COMMENT_LINE.match(line):
             continue

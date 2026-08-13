@@ -119,7 +119,8 @@ Each states what exists when it is done and how that is verified.
 **Done when:** the repository structure of `01-architecture.md` §3 exists, every tool version is pinned to an explicit version resolved against current official documentation, and a clean checkout builds on a machine that has never seen the project.
 
 **Verified by:**
-- CI enforces dependency direction and fails on violation. Prove it: open a PR that imports `desktop` from `policy`; CI must reject it.
+- CI enforces dependency direction and fails on violation. Prove it: open a PR that references `desktop` from `policy`; CI must reject it.
+  - *Amended from "imports" after PR #1: the rule governs dependency direction, not import syntax, and `policy` is Python while `desktop` is TypeScript and Rust, so no import statement in any language can express this edge.*
 - No version placeholder remains anywhere. Grep for `TODO`, `TBD`, `latest`, and unpinned specifiers; result is empty.
 - Clean-clone build succeeds from a documented command sequence with no undocumented step.
 

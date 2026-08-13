@@ -133,6 +133,97 @@ def test_comment_lines_are_not_edges(components: list[Component]) -> None:
     assert scan(source, "_probe.py", component(components, "policy"), components) == []
 
 
+# --- docstrings are prose; everything else is code ---------------------------
+#
+# The exemption is narrow by ruling. These tests lock it in both directions, and
+# the second direction is the one that matters: a filter that swallows a real
+# reference is worse than no filter, because the check then passes while the
+# dependency exists.
+
+
+def test_module_docstring_reference_is_not_an_edge(components: list[Component]) -> None:
+    """A docstring naming another component is prose and cannot create a dependency."""
+    source = '"""This module explains why apps/desktop is out of bounds."""\n'
+    assert scan(source, "_probe.py", component(components, "policy"), components) == []
+
+
+def test_class_and_function_docstrings_are_exempt(components: list[Component]) -> None:
+    """The exemption covers all three docstring positions, not only the module one."""
+    source = (
+        "class Thing:\n"
+        '    """Notes on apps/desktop."""\n'
+        "\n"
+        "    def method(self) -> None:\n"
+        '        """More notes on apps/desktop."""\n'
+        "\n"
+        "\n"
+        "def free_function() -> None:\n"
+        '    """Further notes on apps/desktop."""\n'
+    )
+    assert scan(source, "_probe.py", component(components, "policy"), components) == []
+
+
+def test_executable_line_after_a_docstring_still_fails(components: list[Component]) -> None:
+    """A docstring above real code does not shelter the code beneath it."""
+    source = '"""Notes on apps/desktop."""\n\nCONFIG = "apps/desktop/src"\n'
+    assert scan(source, "_probe.py", component(components, "policy"), components) == [
+        "policy->desktop"
+    ]
+
+
+def test_code_sharing_a_line_with_a_docstring_still_fails(components: list[Component]) -> None:
+    """The precise case a line-based filter would swallow.
+
+    Blanking is done character by character, so a statement sitting after a
+    docstring's closing quotes on the same physical line is still scanned.
+    """
+    source = '"""Notes on apps/desktop."""; CONFIG = "apps/desktop/src"\n'
+    assert scan(source, "_probe.py", component(components, "policy"), components) == [
+        "policy->desktop"
+    ]
+
+
+def test_a_string_that_is_used_is_still_scanned(components: list[Component]) -> None:
+    """A string literal is only exempt when it is a docstring, never when it is a value."""
+    source = 'def build() -> str:\n    return "apps/desktop/src"\n'
+    assert scan(source, "_probe.py", component(components, "policy"), components) == [
+        "policy->desktop"
+    ]
+
+
+def test_a_docstring_does_not_hide_an_import(components: list[Component]) -> None:
+    """The exemption never reaches an import statement."""
+    source = '"""Notes on the providers package."""\n\nimport val_providers\n'
+    assert scan(source, "_probe.py", component(components, "policy"), components) == [
+        "policy->providers"
+    ]
+
+
+def test_unparseable_python_exempts_nothing(components: list[Component]) -> None:
+    """A syntax error fails strict rather than opening a hole."""
+    source = 'def broken(\nCONFIG = "apps/desktop/src"\n'
+    assert scan(source, "_probe.py", component(components, "policy"), components) == [
+        "policy->desktop"
+    ]
+
+
+def test_docstring_exemption_does_not_shift_line_numbers(components: list[Component]) -> None:
+    """A violation still reports its true location after blanking."""
+    owner = component(components, "policy")
+    path = REPO_ROOT / owner.path / "_probe.py"
+    path.write_text(
+        '"""A docstring\nspanning several lines\nand naming apps/desktop."""\n\n'
+        'CONFIG = "apps/desktop/src"\n',
+        encoding="utf-8",
+    )
+    try:
+        violations: list[check_boundaries.Violation] = []
+        scan_source_file(path, owner, components, violations)
+    finally:
+        path.unlink()
+    assert [v.location.rsplit(":", 1)[1] for v in violations] == ["5"]
+
+
 # --- the repository as it stands ---------------------------------------------
 
 
