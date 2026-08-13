@@ -113,6 +113,21 @@ def test_actions_are_pinned_to_a_commit_sha() -> None:
     assert check_pins.check_workflows() == []
 
 
+@pytest.mark.parametrize(
+    "reference",
+    ["pgvector/pgvector:pg18", "postgres:18", "pgvector/pgvector"],
+)
+def test_container_image_tags_are_rejected(reference: str) -> None:
+    """A container tag can be moved under you exactly as a git tag can."""
+    assert check_pins.IMAGE_PINNED_TO_DIGEST.match(reference) is None
+
+
+def test_container_image_digests_are_accepted() -> None:
+    """A digest names one image and cannot be repointed."""
+    digest = "a" * 64
+    assert check_pins.IMAGE_PINNED_TO_DIGEST.match(f"pgvector/pgvector@sha256:{digest}") is not None
+
+
 def test_lock_files_are_present() -> None:
     """All three language lock files are committed."""
     assert check_pins.check_lock_files() == []

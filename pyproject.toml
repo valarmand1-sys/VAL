@@ -103,7 +103,7 @@ files = [
 # ---------------------------------------------------------------------------
 
 [tool.pytest.ini_options]
-testpaths = ["infrastructure/ci/tests"]
+testpaths = ["infrastructure/ci/tests", "packages/domain/tests"]
 pythonpath = ["infrastructure/ci"]
 
 # ---------------------------------------------------------------------------

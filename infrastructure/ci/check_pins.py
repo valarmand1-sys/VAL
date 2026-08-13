@@ -114,6 +114,9 @@ EXACT_CARGO_VERSION = re.compile(r"^=\d+\.\d+\.\d+$")
 BOUNDED_REQUIRES_PYTHON = re.compile(r"^>=\d+\.\d+(\.\d+)?,<\d+\.\d+$")
 ACTION_PINNED_TO_SHA = re.compile(r"^[A-Za-z0-9._/-]+@[0-9a-f]{40}$")
 USES_LINE = re.compile(r"^\s*-?\s*uses:\s*(\S+)")
+# A container image tag can be moved under you exactly as a git tag can.
+IMAGE_LINE = re.compile(r"^\s*image:\s*(\S+)")
+IMAGE_PINNED_TO_DIGEST = re.compile(r"^[A-Za-z0-9._/-]+@sha256:[0-9a-f]{64}$")
 
 
 def _relative(path: Path) -> str:
@@ -275,7 +278,7 @@ def check_runtime_pins() -> list[str]:
 
 
 def check_workflows() -> list[str]:
-    """Every GitHub Action is pinned to a full commit SHA."""
+    """Every GitHub Action is pinned to a commit SHA, and every image to a digest."""
     problems: list[str] = []
     workflows = REPO_ROOT / ".github" / "workflows"
     if not workflows.is_dir():
@@ -287,6 +290,11 @@ def check_workflows() -> list[str]:
             if match is not None and ACTION_PINNED_TO_SHA.match(match.group(1)) is None:
                 problems.append(
                     f"{relative}:{number}: action {match.group(1)!r} is not pinned to a commit SHA"
+                )
+            match = IMAGE_LINE.match(line)
+            if match is not None and IMAGE_PINNED_TO_DIGEST.match(match.group(1)) is None:
+                problems.append(
+                    f"{relative}:{number}: image {match.group(1)!r} is not pinned to a digest"
                 )
     return problems
 

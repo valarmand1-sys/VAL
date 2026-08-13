@@ -75,6 +75,45 @@ toolchain is named on the command line:
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain none --profile minimal
 ```
 
+## 5. PostgreSQL
+
+Val's store runs on **port 5433**, not 5432. If another PostgreSQL is already on
+this machine, the two never meet.
+
+```bash
+brew install postgresql@18 pgvector
+```
+
+Set the port before first start, in
+`/opt/homebrew/var/postgresql@18/postgresql.conf`:
+
+```bash
+port = 5433
+```
+
+```bash
+brew services start postgresql@18
+```
+
+```bash
+/opt/homebrew/opt/postgresql@18/bin/createdb -p 5433 val && /opt/homebrew/opt/postgresql@18/bin/createdb -p 5433 val_test
+```
+
+Then apply the migration set:
+
+```bash
+uv run alembic upgrade head
+```
+
+The URL is read from `VAL_DATABASE_URL`, defaulting to
+`postgresql+psycopg://localhost:5433/val`. The schema tests use
+`VAL_TEST_DATABASE_URL`, defaulting to the `val_test` database, and refuse to run
+against any database whose name does not end in `_test`.
+
+**The PostgreSQL patch version is not pinned.** See
+[`TOOLCHAIN.md`](TOOLCHAIN.md) — the major version is enforced in the test suite,
+the patch version is recorded but not reproducible through Homebrew.
+
 ---
 
 ## Verify
@@ -109,6 +148,12 @@ uv run mypy
 uv run pytest
 ```
 
+The schema tests need the database of step 5. To run everything else without one:
+
+```bash
+uv run pytest infrastructure/ci/tests
+```
+
 ```bash
 npm run build --prefix apps/desktop
 ```
@@ -134,7 +179,8 @@ At Layer 0 this opens a window and nothing more. The text interface is WP-0.10.
 | `check_pins.py` | No placeholder token, no version range, no moving action tag, all three lock files present |
 | `check_boundaries.py` | Dependency direction across Python, TypeScript, and Rust, plus manifests |
 | `lint-imports` | Dependency direction through transitive Python imports |
-| `ruff`, `mypy`, `pytest` | Lint, format, types, and the checkers' own tests |
+| `ruff`, `mypy`, `pytest` | Lint, format, types, the checkers' own tests, and the schema against 04-layer-0.md §2 |
+| `alembic upgrade head` / `downgrade base` | That the migration set applies from empty and is reversible |
 
 `check_boundaries.py` and `lint-imports` overlap deliberately. `lint-imports`
 follows real Python imports transitively but cannot see `apps/desktop`, which is

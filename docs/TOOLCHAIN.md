@@ -27,6 +27,36 @@ rather than assumed.
 **Rust 1.97.1 against Tauri's floor.** `tauri` 2.11.5 and `tauri-build` 2.6.3
 declare `rust-version = 1.77.2`. The pinned toolchain clears it.
 
+## The authoritative store
+
+| Component | Version | Where |
+|---|---|---|
+| PostgreSQL | **18.4** — see the warning below | local instance, port 5433 |
+| pgvector | 0.8.6 | pinned exactly, Homebrew formula and CI image alike |
+| pgvector container image (CI) | `pgvector/pgvector@sha256:691673308c99d2161ba298736f3147f1f22d79de2fb7ec93ae9b4afcab870b62` | tag `pg18`, pinned by digest |
+
+> ### PostgreSQL is a known non-pinnable dependency
+>
+> **The local PostgreSQL patch version is not pinned, and must not be read as if
+> it were.** Every other version in this document is fixed to an exact value that
+> a clean machine will reproduce. This one is not.
+>
+> Homebrew's `postgresql@18` formula ships whatever patch release it currently
+> carries — 18.4 at the time of writing, while upstream stable is 18.6. Homebrew
+> offers no way to request a specific patch, so `brew install postgresql@18` on a
+> later date will produce a later patch version. The installed version is
+> recorded here and re-recorded when it changes; it is not enforced.
+>
+> **The major version is enforced, and does not drift.** It must match across the
+> local instance, CI, and the always-on box at Layer 3, because the schema must be
+> exercised against the same database that holds the records. That is asserted in
+> code by `test_postgres_major_version_is_18`, which runs in both places, rather
+> than trusted to this note. CI runs the `pgvector/pgvector:pg18` image pinned by
+> digest, so CI's version is exact even though the local one is not.
+>
+> Patch drift between local and CI is expected and accepted. Major drift fails
+> the test suite.
+
 ## Package managers
 
 | Tool | Pinned | Pinned in | Resolved from |
@@ -50,6 +80,9 @@ All resolved from PyPI. Every one declares support for Python 3.14.
 | mypy | 2.3.0 | workspace dev group |
 | pytest | 9.1.1 | workspace dev group |
 | import-linter | 2.13 | workspace dev group |
+| SQLAlchemy | 2.0.52 | `packages/domain` — the schema |
+| alembic | 1.19.1 | `packages/domain` — the migration set |
+| psycopg[binary] | 3.3.4 | `packages/domain` — the driver |
 
 Resolution is locked in `uv.lock`, which covers the transitive set as well.
 
@@ -112,14 +145,9 @@ Neither is a preview image.
 
 ## Deliberately not pinned yet
 
-`01-architecture.md` §3 names SQLAlchemy and Alembic in the stack. They are not
-pinned here, because a version pinned and never built is an assertion rather than
-a verified fact — the same objection the charter makes to an unrestored backup
-(invariant 35). WP-0.2 introduces the schema and the migration set, and pins both
-against the registry at that point, by the process above.
-
-Provider SDKs are pinned at WP-0.4 for the same reason. Temporal is Layer 3 and
-is not pinned at all yet.
+Provider SDKs are pinned at WP-0.4, for the reason WP-0.1 gave: a version pinned
+and never built is an assertion rather than a verified fact. Temporal is Layer 3
+and is not pinned at all yet.
 
 ## Dependencies pinned ahead of first use
 

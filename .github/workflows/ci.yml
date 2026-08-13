@@ -56,7 +56,48 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
-      - run: uv run pytest
+      # The schema tests need a database and run in the `database` job.
+      - run: uv run pytest infrastructure/ci/tests
+
+  database:
+    name: Database and migrations
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        # pgvector/pgvector:pg18, pinned by digest. The major version must match
+        # the local instance and the Layer 3 box; `test_postgres_major_version_is_18`
+        # asserts it rather than trusting this comment.
+        image: pgvector/pgvector@sha256:691673308c99d2161ba298736f3147f1f22d79de2fb7ec93ae9b4afcab870b62
+        env:
+          POSTGRES_USER: val
+          POSTGRES_PASSWORD: val
+          POSTGRES_DB: val_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      VAL_DATABASE_URL: postgresql+psycopg://val:val@localhost:5433/val_test
+      VAL_TEST_DATABASE_URL: postgresql+psycopg://val:val@localhost:5433/val_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@ae62891fec2bb8e7d6c99fc78c9fec3a63790f8d # v10.0.0
+        with:
+          version: 0.12.3
+          enable-cache: true
+      - run: uv sync --all-packages --locked
+      # WP-0.2's acceptance criteria, run as steps rather than asserted.
+      - name: upgrade head against an empty database
+        run: uv run alembic upgrade head
+      - name: downgrade base
+        run: uv run alembic downgrade base
+      - name: upgrade head again — migrations are reversible
+        run: uv run alembic upgrade head
+      - name: schema matches 04-layer-0.md §2
+        run: uv run pytest packages/domain/tests
 
   desktop:
     name: Desktop shell
