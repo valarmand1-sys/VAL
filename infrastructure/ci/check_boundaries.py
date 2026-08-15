@@ -102,6 +102,18 @@ def load_components(path: Path) -> list[Component]:
     return components
 
 
+def load_provider_sdk_rule(path: Path) -> tuple[str, frozenset[str]]:
+    """The one component allowed to import a provider SDK, and which modules those are.
+
+    `01-architecture.md` §5.1: no component calls a provider SDK directly. The
+    gateway is the only entrance to inference, and `providers` is the only place
+    that knows how a provider spells a request. WP-0.4 requires CI to enforce it.
+    """
+    raw = tomllib.loads(path.read_text(encoding="utf-8"))
+    rule = raw.get("provider_sdks", {})
+    return rule.get("owner", "providers"), frozenset(rule.get("modules", []))
+
+
 def check_declared_graph(components: list[Component]) -> list[str]:
     """Reject unknown names and cycles in the allowlist itself."""
     errors: list[str] = []
@@ -259,6 +271,8 @@ def scan_source_file(
     component: Component,
     components: list[Component],
     violations: list[Violation],
+    sdk_owner: str = "providers",
+    sdk_modules: frozenset[str] = frozenset(),
 ) -> None:
     """Scan one source file for edges leaving its component."""
     relative = file_path.relative_to(REPO_ROOT).as_posix()
@@ -289,6 +303,17 @@ def scan_source_file(
                     location,
                     f"python import {module!r}",
                 )
+                root = module.split(".", 1)[0]
+                if root in sdk_modules and component.name != sdk_owner:
+                    violations.append(
+                        Violation(
+                            component.name,
+                            f"{root} (provider SDK)",
+                            location,
+                            f"provider SDK {root!r} may only be imported in {sdk_owner!r} "
+                            "(01-architecture.md §5.1)",
+                        )
+                    )
 
         elif suffix in {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}:
             for specifier in JS_SPECIFIER.findall(line):
@@ -394,6 +419,7 @@ def scan_manifest(
 
 def walk(components: list[Component]) -> list[Violation]:
     """Scan every component's tree."""
+    sdk_owner, sdk_modules = load_provider_sdk_rule(COMPONENTS_FILE)
     violations: list[Violation] = []
     for component in components:
         root = REPO_ROOT / component.path
@@ -405,7 +431,9 @@ def walk(components: list[Component]) -> list[Violation]:
             if any(part in SKIP_DIRECTORIES for part in file_path.parts):
                 continue
             if file_path.suffix in SOURCE_SUFFIXES:
-                scan_source_file(file_path, component, components, violations)
+                scan_source_file(
+                    file_path, component, components, violations, sdk_owner, sdk_modules
+                )
             elif file_path.name in MANIFEST_NAMES:
                 scan_manifest(file_path, component, components, violations)
     return violations

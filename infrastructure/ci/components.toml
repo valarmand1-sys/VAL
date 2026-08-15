@@ -72,3 +72,11 @@ languages = ["typescript", "rust"]
 npm_package = "val-desktop"
 cargo_crate = "val_desktop"
 allowed_dependencies = []
+
+# Provider SDKs may be imported in exactly one place (01-architecture.md §5.1:
+# "No component calls a provider SDK directly"; 04-layer-0.md WP-0.4 requires CI
+# to enforce it). An import of any of these outside `providers` is a violation,
+# reported like any other forbidden edge.
+[provider_sdks]
+owner = "providers"
+modules = ["anthropic", "openai", "google", "google_genai", "cohere", "mistralai", "groq", "ollama"]
