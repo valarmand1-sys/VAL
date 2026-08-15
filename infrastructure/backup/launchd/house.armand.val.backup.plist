@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key><string>house.armand.val.backup</string>
+    <!-- Daily at 03:00. launchd fires a run missed while asleep on the next
+         wake, coalescing multiple missed firings into one (launchd.plist(5)). -->
+    <key>StartCalendarInterval</key>
+    <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>0</integer></dict>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/josepharmand/.local/bin/uv</string>
+        <string>run</string>
+        <string>--no-project</string>
+        <string>--directory</string>
+        <string>/Users/josepharmand/Projects/val</string>
+        <string>python</string>
+        <string>infrastructure/backup/run_backup.py</string>
+    </array>
+    <key>WorkingDirectory</key><string>/Users/josepharmand/Projects/val</string>
+    <key>StandardOutPath</key><string>/opt/homebrew/var/log/pgbackrest/launchd-backup.log</string>
+    <key>StandardErrorPath</key><string>/opt/homebrew/var/log/pgbackrest/launchd-backup.log</string>
+    <key>EnvironmentVariables</key>
+    <dict><key>PYTHONPATH</key><string>/Users/josepharmand/Projects/val/infrastructure/backup</string></dict>
+</dict>
+</plist>

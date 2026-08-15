@@ -1,0 +1,127 @@
+# Backup
+
+How the authoritative store is backed up, encrypted, watched, and restored.
+Mechanism required by `00-charter.md` invariant 35 and `01-architecture.md` §9;
+acceptance criteria in `04-layer-0.md` WP-0.3.
+
+**A backup that has never been restored is not a backup.** Everything below
+exists to keep that sentence enforceable.
+
+---
+
+## Shape
+
+| | |
+|---|---|
+| Tool | pgBackRest 2.59.0 |
+| Destination | Backblaze B2, bucket `valbackups`, prefix `/val`, via the S3-compatible API |
+| Encryption | aes-256-cbc, client-side, over every file including WAL |
+| WAL archiving | `archive_mode = on`, `archive_timeout = 300` — worst-case loss window five minutes |
+| Schedule | Daily 03:00: full on Sunday, incremental otherwise |
+| Retention | 30 daily / 12 weekly / 12 monthly, applied by the GFS selector in `run_backup.py` |
+
+Config: `/opt/homebrew/etc/pgbackrest/pgbackrest.conf`, mode `0600`, **outside
+the repository and outside the backup it protects.**
+
+## The key
+
+The encryption passphrase exists in exactly two places:
+
+1. `pgbackrest.conf` — the operative copy, which `archive_command` and the
+   scheduled backup read. Local keychains cannot serve this role: the job runs
+   unattended, possibly before login.
+2. **Paper, held by Lord Armand**, in two physical locations. This is the only
+   copy that survives the loss of the machine.
+
+It is deliberately **not** in iCloud, not in the macOS Keychain, not in `.env`,
+and not in B2. Losing both copies makes the repository permanently unreadable —
+that is the property, not a defect. Demonstrated on 13 August 2026: with the
+complete repository and no key (and again with a wrong key), pgBackRest cannot
+read `backup.info` and restores zero files.
+
+**The paper is verified by use.** The quarterly drill below types the passphrase
+from the paper — never pasted from the config — so the copy that matters is
+exercised on the same cadence as the restore.
+
+## Scheduling on a laptop
+
+Two launchd user agents, installed from `infrastructure/backup/launchd/`:
+
+| Agent | Fires | Runs |
+|---|---|---|
+| `house.armand.val.backup` | daily 03:00 | `run_backup.py` — pre-flight, backup, retention, status |
+| `house.armand.val.backup-watch` | hourly at :15 | `watch_backup.py` — staleness check and alerts |
+
+Both use `StartCalendarInterval`, which per `launchd.plist(5)` **fires a missed
+run on the next wake** rather than skipping it, coalescing multiple missed
+firings into one. A laptop asleep at 03:00 is backed up when it opens.
+
+**How failure surfaces**, computed from what the B2 repository actually holds
+(`pgbackrest info`), not from the job's own exit status:
+
+| Newest successful backup | Behaviour |
+|---|---|
+| under 26 h | silence |
+| 26 h — one missed run | Notification Center banner, hourly |
+| 50 h — two missed runs | modal alert that must be dismissed, hourly |
+
+Offline is not itself an alarm: when B2 is unreachable the watcher falls back to
+the status file (`/opt/homebrew/var/log/pgbackrest/val-backup-status.json`), so
+working on a train does not cry wolf — but a genuinely stale backup alarms even
+offline. The honest limit: a watcher on a closed laptop alerts nobody, and a
+closed laptop is also writing nothing new.
+
+## Pre-flight
+
+`infrastructure/backup/check_b2_credential.py` runs before every scheduled
+backup and can be run by hand. It asks B2's native API what the configured key
+is scoped to and may do, because pgBackRest's own errors are misleading here: a
+master key surfaces as 403 (reads as wrong secret; the S3 API rejects master
+keys outright) and a capability-less key surfaces as 404 NoSuchBucket (reads as
+wrong bucket). It requires the key to be bucket-scoped — an account-wide key in
+a config file could delete the backups it exists to protect.
+
+## Restore
+
+Full restore to a scratch instance, then verification:
+
+```bash
+pgbackrest --config=/opt/homebrew/etc/pgbackrest/pgbackrest.conf --stanza=val --pg1-path=/path/to/scratch restore
+```
+
+Point-in-time, to any moment within retention:
+
+```bash
+pgbackrest --config=/opt/homebrew/etc/pgbackrest/pgbackrest.conf --stanza=val --pg1-path=/path/to/scratch --type=time "--target=2026-08-14 12:00:00" --target-action=promote restore
+```
+
+Start the scratch instance on port 5434 with `archive_mode = off`, then verify —
+row counts per table, every foreign key, and capture-table continuity:
+
+```bash
+uv run python infrastructure/backup/verify_restore.py --source "postgresql+psycopg://localhost:5433/val" --restored "postgresql+psycopg://localhost:5434/val"
+```
+
+A restore is not complete until `verify_restore.py` exits 0. A mismatch means
+the backup it came from is not trusted until the difference is explained.
+
+## The quarterly drill
+
+Every quarter, at minimum (`01-architecture.md` §9.3):
+
+1. Write a scratch pgBackRest config; **type the passphrase from the paper.**
+2. Restore to a scratch instance from B2 using only that config.
+3. Run `verify_restore.py` against the live store. It must exit 0.
+4. PITR to an arbitrary timestamp inside retention; confirm recovery stops there.
+5. Destroy the scratch instance and config.
+
+Steps 1–2 prove the paper. Step 3 proves the data. Step 4 proves the WAL chain.
+
+## History
+
+- **13 Aug 2026** — mechanics proven against a local encrypted repository:
+  full backup, verified restore (7/7 tables, 11/11 foreign keys, capture tables
+  continuous), PITR to a pre-seed timestamp, and the no-key/wrong-key failure
+  cases.
+- **14 Aug 2026** — first real backup to B2: 42.2 MB database, 4.7 MB encrypted
+  in the bucket. WAL archiving enabled. Both agents installed and loaded.

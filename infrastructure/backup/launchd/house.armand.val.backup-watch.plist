@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key><string>house.armand.val.backup-watch</string>
+    <!-- Hourly at :15, calendar-based so a firing missed during sleep runs on
+         wake rather than being skipped. -->
+    <key>StartCalendarInterval</key>
+    <dict><key>Minute</key><integer>15</integer></dict>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/josepharmand/.local/bin/uv</string>
+        <string>run</string>
+        <string>--no-project</string>
+        <string>--directory</string>
+        <string>/Users/josepharmand/Projects/val</string>
+        <string>python</string>
+        <string>infrastructure/backup/watch_backup.py</string>
+    </array>
+    <key>WorkingDirectory</key><string>/Users/josepharmand/Projects/val</string>
+    <key>StandardOutPath</key><string>/opt/homebrew/var/log/pgbackrest/launchd-watch.log</string>
+    <key>StandardErrorPath</key><string>/opt/homebrew/var/log/pgbackrest/launchd-watch.log</string>
+</dict>
+</plist>
