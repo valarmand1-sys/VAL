@@ -65,7 +65,9 @@ Concrete work packages, schema, and acceptance criteria: `04-layer-0.md`.
 - Push-to-talk first. Wake word only once the loop is stable.
 - **Local inference stands up here**, on the MacBook.
 
-**Local inference is a Layer 1 deliverable, not a Layer 3 one.** A ~30B-class model at 4-bit runs on the existing 48GB MacBook and serves Layers 1–2 from there; it moves to the always-on box at Layer 3 (§4) as a relocation, not a first installation.
+**Local inference is a Layer 1 deliverable, not a Layer 3 one.** It stands up on the existing 48GB MacBook and serves Layers 1–2 from there; it moves to the always-on box at Layer 3 (§4) as a relocation, not a first installation.
+
+> **Amendment — 15 August 2026, Lord Armand.** The ~30B-class sizing in §3 belongs to the always-on box, which serves inference and nothing interactive. At Layer 1 the same 48GB also runs Premiere and After Effects. **The Layer 1 model is sized by measurement on the real machine, not by the spec's number**, and the local inference server must be stoppable on demand so it never competes with an active edit session.
 
 The reason for standing it up this early is that the cost gradient (§5.3) is fiction until local exists. Every routing decision before that point is cloud-to-cloud, the ceiling does no real work, and the assumptions behind the budget go untested. Layer 1 is also when speech-to-text arrives, so on-device inference is being set up regardless. Exercising the gradient under Layer 1–2 volume — where the consequences of getting it wrong are a slow reply — is materially safer than first exercising it at Layer 3, when agents multiply call volume.
 
@@ -133,7 +135,7 @@ Mechanism: `02-partner-systems.md` §2. Success models and standing evaluation a
 | Migrations | SQLAlchemy + Alembic | Every schema change is a migration; no manual DDL |
 | Desktop shell | Tauri 2 + React/TypeScript | Real native-bridge security boundary, small footprint |
 | Durable workflow | Temporal | Layer 3 onward only |
-| Local inference | ~30B-class quantized | A 32B model at 4-bit sits comfortably in 48GB |
+| Local inference | ~30B-class quantized **on the always-on box** | Layer 1's MacBook model is sized by measurement, not by this figure — amendment at §2.1 |
 | Speech-to-text | Whisper via MLX or whisper.cpp | On-device |
 | Text-to-speech | ElevenLabs | Established voice profile |
 | External tools | MCP | §6 |
@@ -255,6 +257,17 @@ Rules:
 
 Eligibility is set by Lord Armand per provider, recorded in the registry, and reviewed when a provider changes its terms. Val does not set her own eligibility (invariant 2).
 
+**Amendment — 15 August 2026, decided by Lord Armand.** The mechanism above governs **every external egress path, not only model configurations.** Any component that sends content off the machine — model providers, TTS, avatar generation, backup transport, any future external API — declares which classifications it may receive and is checked identically. Same rule, wider scope. Invariant 17 already said content is classified before it leaves the house; this closes the gap where only model routes were mechanically covered.
+
+#### Eligibility decisions — 15 August 2026, Lord Armand
+
+| Provider | Ruling | Grounds |
+|---|---|---|
+| Anthropic API | **Protected-eligible** | Commercial Terms: no training on API content; 7-day default retention |
+| OpenAI API | **Protected-eligible** | No training on API content by default; 30-day abuse-monitoring window |
+| Google Gemini API, **paid billing only** | **Protected-eligible only with verified paid billing** | Google uses free-tier content to improve its products, with possible human review. A billed and an unbilled key are indistinguishable in code, so the distinction is enforced **structurally**: a Gemini configuration must verify at startup that its key is attached to a paid billing account, and startup fails if that cannot be confirmed. Configuration claiming it is not acceptance. |
+| GLM via Zhipu/Z.ai direct | **Excluded — pending verification**, not permanently | Not for stated policy but for unverifiability: two legal entities, mainland terms unreviewable as of July 2026, and an individual-user carve-out differing from the API/DPA posture. GLM's weights are open, so a US-hosted route with SOC 2 and zero-data-retention terms, or self-hosting, can qualify later on its own merits. |
+
 ### 5.5 The budget envelope
 
 **Total monthly envelope: $250.** The routing ceiling is a subset of it.
@@ -369,6 +382,8 @@ Standing exclusions, permanent rather than gated:
 ElevenLabs, using the established profile. Speech is **generated, never replayed** — source clips supply her voice, not her words.
 
 Speech-to-text runs locally. Push-to-talk first; wake word only after the loop is stable.
+
+> **Accepted deviation — 15 August 2026, Lord Armand.** ElevenLabs trains on submitted audio by default below Enterprise tier; Zero Retention Mode is Enterprise-only and per-request, and Enterprise is out of budget. Training has been turned off on the account. This is a known gap against the egress-eligibility rule of §5.4, accepted with its reasoning written down rather than assumed away. **Revisit at Layer 1**, when local TTS can be compared against the established voice by ear. A deviation that is not written down becomes an assumption; this one is written down.
 
 ### 8.2 Avatar
 
