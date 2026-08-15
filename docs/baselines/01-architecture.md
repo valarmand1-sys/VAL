@@ -227,10 +227,10 @@ The right shape is a gradient, not a local/cloud binary:
 | Work | Route |
 |---|---|
 | Classification, routing decisions, summarization, self-evaluation iteration, preference-stripping, first drafts, standing loops | **Local** (from Layer 1; §2.1) |
-| Bulk work where quality tolerance is moderate | **Inexpensive cloud** (GLM, Gemini Flash class) |
+| Bulk work where quality tolerance is moderate | **Inexpensive cloud** (Gemini Flash class, on a paid-billing key) |
 | Genuinely hard reasoning, adversarial review, final judgment | **Frontier** (Anthropic, OpenAI, Gemini Pro class) |
 
-Multi-provider from day one: Anthropic, OpenAI, Gemini, GLM, plus local — all behind §5.1.
+Multi-provider from day one: Anthropic, OpenAI, and Gemini on a paid-billing key, plus local — all behind §5.1. **GLM is excluded pending verification** and is not a configurable route; the ruling and the conditions under which it could qualify are in §5.4.
 
 **Prompt caching and batch pricing are first-class, not optimizations.** Val's workload is unusually repetitive-context-heavy: persona, project canon, and Role knowledge are re-injected constantly. Caching is therefore a structural saving rather than a tuning exercise, and context assembly shall be ordered stable-prefix-first so cached segments actually hit. Non-urgent overnight work routes through batch APIs.
 

@@ -144,7 +144,9 @@ These are architectural controls, not implementation preferences. Each is stated
 14. Corrections preserve lineage. History is not erased to make current state convenient.
 15. Project isolation applies across retrieval, context, files, actions, assets, and audit.
 16. Ambiguous or unresolved project context blocks protected or consequential action.
-17. Content is classified before it may leave the house. Every model configuration declares which data classifications it is eligible to receive, and content is never routed to a provider not declared eligible for it. Protected project assets and unreleased creative IP are never sent to an ineligible route, and cost, latency, or availability never override eligibility. Mechanism: `01-architecture.md` §5.4.
+17. Content is classified before it may leave the house. **Every external egress path** — model configuration, TTS, avatar generation, backup transport, any future external API — declares which data classifications it is eligible to receive, and content is never routed to a path not declared eligible for it. Protected project assets and unreleased creative IP are never sent to an ineligible route, and cost, latency, or availability never override eligibility. Mechanism: `01-architecture.md` §5.4.
+
+> **Amendment — 15 August 2026, Lord Armand.** This invariant previously read "every model configuration", which left TTS, avatar generation, and any other outbound path mechanically uncovered while the sentence before it already said *content* is classified before it leaves the house. The scope is now every egress path. Same rule, wider scope; no route that was eligible has become ineligible.
 
 **Honesty**
 
