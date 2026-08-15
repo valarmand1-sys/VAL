@@ -85,11 +85,13 @@ known-first-party = [
 
 [tool.mypy]
 python_version = "3.14"
+mypy_path = ["infrastructure/ci", "infrastructure/backup"]
 strict = true
 warn_unused_configs = true
 warn_unreachable = true
 files = [
     "apps/api/src",
+    "infrastructure/backup",
     "apps/worker/src",
     "packages/domain/src",
     "packages/mcp/src",
@@ -104,7 +106,7 @@ files = [
 
 [tool.pytest.ini_options]
 testpaths = ["infrastructure/ci/tests", "packages/domain/tests"]
-pythonpath = ["infrastructure/ci"]
+pythonpath = ["infrastructure/ci", "infrastructure/backup"]
 
 # ---------------------------------------------------------------------------
 # Dependency direction — Python (01-architecture.md §3)

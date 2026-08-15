@@ -35,6 +35,33 @@ REQUIRED_CAPABILITIES = frozenset({"listFiles", "readFiles", "writeFiles", "dele
 MASTER_KEY_ID_LENGTH = 12
 
 
+def parse_authorization(payload: dict[str, object]) -> tuple[str | None, set[str], str]:
+    """Extract (bucket_scope, capabilities, s3_url) from a v3 authorize response.
+
+    The v3 endpoint nests the key's grant at `apiInfo.storageApi` — v2 kept it in
+    a top-level `allowed` object. The first version of this checker parsed the v2
+    shape while calling the v3 URL, so every key on earth reported "all buckets,
+    no capabilities". A response without the expected nesting now raises rather
+    than defaulting: an answer that cannot be read is not an answer.
+    """
+    api_info = payload.get("apiInfo")
+    storage = api_info.get("storageApi") if isinstance(api_info, dict) else None
+    if not isinstance(storage, dict) or "capabilities" not in storage:
+        raise ValueError(
+            "authorize response lacks apiInfo.storageApi.capabilities — the response "
+            "shape has changed and this checker cannot read it. Refusing to guess."
+        )
+    bucket = storage.get("bucketName")
+    capabilities = storage.get("capabilities")
+    s3_url = storage.get("s3ApiUrl", "?")
+    assert isinstance(capabilities, list)  # noqa: S101 - shape checked above
+    return (
+        bucket if isinstance(bucket, str) else None,
+        {c for c in capabilities if isinstance(c, str)},
+        s3_url if isinstance(s3_url, str) else "?",
+    )
+
+
 def read_config() -> dict[str, str]:
     """Read pgbackrest.conf into a mapping."""
     values: dict[str, str] = {}
@@ -65,22 +92,30 @@ def main() -> int:
         )
         return 1
 
+    print(f"credential read from {CONFIG}")
+
     token = base64.b64encode(f"{key_id}:{secret}".encode()).decode()
     request = urllib.request.Request(AUTHORIZE_URL, headers={"Authorization": f"Basic {token}"})
     try:
         with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310
             payload = json.load(response)
     except urllib.error.HTTPError as error:
-        print(f"B2 rejected the credential: HTTP {error.code}", file=sys.stderr)
+        print(
+            f"AUTHENTICATION FAILED: B2 rejected the credential with HTTP {error.code}. "
+            "Scope and capabilities were not read.",
+            file=sys.stderr,
+        )
         return 1
 
-    allowed = payload.get("allowed", {})
-    scope = allowed.get("bucketName")
-    capabilities = set(allowed.get("capabilities", []))
+    try:
+        scope, capabilities, s3_url = parse_authorization(payload)
+    except ValueError as error:
+        print(f"AUTHENTICATED, BUT UNREADABLE: {error}", file=sys.stderr)
+        return 1
 
     print(f"bucket scope : {scope or 'all buckets'}")
     print(f"capabilities : {', '.join(sorted(capabilities)) or '(none)'}")
-    print(f"endpoint     : {payload.get('apiInfo', {}).get('storageApi', {}).get('s3ApiUrl', '?')}")
+    print(f"endpoint     : {s3_url}")
 
     problems: list[str] = []
     missing = REQUIRED_CAPABILITIES - capabilities
