@@ -1,0 +1,22 @@
+[project]
+name = "val-gateway"
+version = "0.0.0"
+description = "The Model Gateway. Depends on policy and providers; imported by apps only."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "val-domain",
+    "val-policy",
+    "val-providers",
+]
+
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/val_gateway"]
+
+[tool.uv.sources]
+val-domain = { workspace = true }
+val-policy = { workspace = true }
+val-providers = { workspace = true }

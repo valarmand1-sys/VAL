@@ -5,6 +5,10 @@ description = "Model provider adapters. The only place a provider SDK may be imp
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "val-domain",
+    # The only place in the repository these may be imported
+    # (01-architecture.md §5.1, enforced by check_boundaries.py).
+    "anthropic==0.122.0",
+    "openai==3.1.0",
 ]
 
 [build-system]

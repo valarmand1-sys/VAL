@@ -47,13 +47,29 @@ python_module = "val_mcp"
 distribution = "val-mcp"
 allowed_dependencies = ["domain"]
 
+# The Model Gateway. All inference enters here (01-architecture.md §5.1).
+#
+# DIRECTION RULE, decided by Lord Armand on 15 August 2026: gateway may depend on
+# policy, providers, and domain. **Nothing may depend on gateway except the apps.**
+# It is a shared package rather than a service so that api and worker share one
+# implementation and one model_calls write path without either process depending
+# on the other being alive — one write path is a property of one implementation,
+# not one process.
+[[component]]
+name = "gateway"
+path = "packages/gateway"
+languages = ["python"]
+python_module = "val_gateway"
+distribution = "val-gateway"
+allowed_dependencies = ["domain", "policy", "providers"]
+
 [[component]]
 name = "api"
 path = "apps/api"
 languages = ["python"]
 python_module = "val_api"
 distribution = "val-api"
-allowed_dependencies = ["domain", "policy", "providers", "mcp"]
+allowed_dependencies = ["domain", "policy", "providers", "mcp", "gateway"]
 
 [[component]]
 name = "worker"
@@ -61,7 +77,7 @@ path = "apps/worker"
 languages = ["python"]
 python_module = "val_worker"
 distribution = "val-worker"
-allowed_dependencies = ["domain", "policy", "providers", "mcp"]
+allowed_dependencies = ["domain", "policy", "providers", "mcp", "gateway"]
 
 # The desktop shell reaches the service over HTTP. It imports no other component
 # and no other component imports it.

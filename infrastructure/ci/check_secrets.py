@@ -70,9 +70,24 @@ NOT_A_VALUE = re.compile(
 )
 
 SECRET_ASSIGNMENT = re.compile(
-    SENSITIVE_NAME + r"[\"']?\s*[:=]\s*[\"']?([^\s\"',;)]{6,})",
+    r"(" + SENSITIVE_NAME + r")[\"']?\s*[:=]\s*([\"']?)([^\s\"',;)]{6,})",
     re.IGNORECASE,
 )
+
+
+def _is_forwarded(name: str, quote: str, value: str) -> bool:
+    """Whether this is a variable being passed rather than a secret written down.
+
+    The narrow, safe case only: an **unquoted** value whose text equals the name
+    it is assigned to — forwarding a key argument into an SDK client constructor,
+    the commonest shape in this repository. Anything else unquoted is still
+    flagged, so a real secret sitting unquoted in a `.env`-style file is caught.
+    """
+    if quote:
+        return False
+    normalise = re.compile(r"[^a-z0-9]")
+    return normalise.sub("", name.lower()) == normalise.sub("", value.lower())
+
 
 URL_INLINE_AUTH = re.compile(r"://[^/\s:@]+:([^/\s:@]{3,})@")
 
@@ -132,8 +147,10 @@ def scan_line(line: str, declared: list[str]) -> str | None:
             return f"a value assigned to {name}"
 
     match = SECRET_ASSIGNMENT.search(line)
-    if match is not None and NOT_A_VALUE.match(match.group(1)) is None:
-        return "a value assigned to a secret-shaped name"
+    if match is not None:
+        name, quote, value = match.group(1), match.group(2), match.group(3)
+        if NOT_A_VALUE.match(value) is None and not _is_forwarded(name, quote, value):
+            return "a value assigned to a secret-shaped name"
 
     match = URL_INLINE_AUTH.search(line)
     if match is not None and NOT_A_VALUE.match(match.group(1)) is None:

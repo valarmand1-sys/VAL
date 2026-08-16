@@ -5,6 +5,7 @@ Nothing here knows how any provider spells its request; that knowledge lives in
 `val_providers`, and only there.
 """
 
+from datetime import date
 from enum import StrEnum
 from uuid import UUID
 
@@ -89,6 +90,11 @@ class ModelConfig(BaseModel):
     cost_per_mtok_in_usd: float = Field(gt=0)
     cost_per_mtok_out_usd: float = Field(gt=0)
     eligible_classifications: frozenset[Classification]
+    #: The day the rates above were read from the provider's own documentation.
+    #: Rates go stale silently, and a stale rate makes cost attribution quietly
+    #: wrong rather than visibly wrong — so the date is carried per entry and
+    #: surfaced as a startup warning once it ages (`registry.stale_rates`).
+    rates_verified_on: date
     #: Google-only structural requirement (`01-architecture.md` §5.4 amendment):
     #: True only when startup has verified the key is attached to paid billing.
     #: Configuration cannot claim it; the verifier sets it.

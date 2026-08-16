@@ -12,6 +12,7 @@ members = [
     "apps/api",
     "apps/worker",
     "packages/domain",
+    "packages/gateway",
     "packages/mcp",
     "packages/policy",
     "packages/providers",
@@ -22,6 +23,7 @@ required-version = "==0.12.3"
 
 [tool.uv.sources]
 val-domain = { workspace = true }
+val-gateway = { workspace = true }
 val-mcp = { workspace = true }
 val-policy = { workspace = true }
 val-providers = { workspace = true }
@@ -45,6 +47,7 @@ src = [
     "apps/api/src",
     "apps/worker/src",
     "packages/domain/src",
+    "packages/gateway/src",
     "packages/mcp/src",
     "packages/policy/src",
     "packages/providers/src",
@@ -73,6 +76,7 @@ known-first-party = [
     "check_pins",
     "val_api",
     "val_domain",
+    "val_gateway",
     "val_mcp",
     "val_policy",
     "val_providers",
@@ -94,6 +98,7 @@ files = [
     "infrastructure/backup",
     "apps/worker/src",
     "packages/domain/src",
+    "packages/gateway/src",
     "packages/mcp/src",
     "packages/policy/src",
     "packages/providers/src",
@@ -105,7 +110,7 @@ files = [
 # ---------------------------------------------------------------------------
 
 [tool.pytest.ini_options]
-testpaths = ["infrastructure/ci/tests", "packages/domain/tests"]
+testpaths = ["infrastructure/ci/tests", "packages/domain/tests", "packages/gateway/tests"]
 pythonpath = ["infrastructure/ci", "infrastructure/backup"]
 
 # ---------------------------------------------------------------------------
@@ -121,6 +126,7 @@ pythonpath = ["infrastructure/ci", "infrastructure/backup"]
 root_packages = [
     "val_api",
     "val_domain",
+    "val_gateway",
     "val_mcp",
     "val_policy",
     "val_providers",
@@ -132,6 +138,8 @@ name = "Dependency direction is layered and acyclic"
 type = "layers"
 layers = [
     "val_api : val_worker",
+    # Nothing below this line may import the gateway; the apps above it may.
+    "val_gateway",
     "val_mcp : val_policy : val_providers",
     "val_domain",
 ]

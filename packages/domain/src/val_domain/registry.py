@@ -27,6 +27,7 @@ it the same way and adding a new entry — never editing one in place, because
 calls already costed against the old rate must keep resolving to it.
 """
 
+from datetime import date, timedelta
 from uuid import UUID
 
 from val_domain.gateway import Classification, ModelConfig
@@ -36,6 +37,17 @@ from val_domain.gateway import Classification, ModelConfig
 #: (`04-layer-0.md` §1.1). Restricted is absent deliberately — it routes to local
 #: inference only, which does not exist until Layer 1.
 _PROTECTED = frozenset({Classification.PUBLIC, Classification.INTERNAL, Classification.PROTECTED})
+
+#: The day every rate below was read from the provider's own documentation.
+#: A new rate means a new entry stamped with a new date, never an edit in place —
+#: calls already costed against the old rate must keep resolving to it.
+_VERIFIED_ON = date(2026, 8, 15)
+
+#: Past this, a rate is old enough that cost attribution may be quietly wrong.
+#: A warning, deliberately, not a failure: stale rates degrade a record, they do
+#: not make the system unsafe to run, and a startup that refuses to boot over a
+#: 91-day-old price is a worse outcome than one that says so plainly.
+RATE_STALENESS_WARNING = timedelta(days=90)
 
 REGISTRY: tuple[ModelConfig, ...] = (
     ModelConfig(
@@ -49,6 +61,7 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=25.00,
         eligible_classifications=_PROTECTED,
+        rates_verified_on=_VERIFIED_ON,
     ),
     ModelConfig(
         id=UUID("b123b7f1-fc59-4de3-95c1-0a884cd43953"),
@@ -61,6 +74,7 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cost_per_mtok_in_usd=1.00,
         cost_per_mtok_out_usd=5.00,
         eligible_classifications=_PROTECTED,
+        rates_verified_on=_VERIFIED_ON,
     ),
     ModelConfig(
         id=UUID("3b9d25f4-e00c-448a-a4cd-ecdd79380008"),
@@ -73,6 +87,7 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=30.00,
         eligible_classifications=_PROTECTED,
+        rates_verified_on=_VERIFIED_ON,
     ),
 )
 
@@ -105,3 +120,21 @@ def cheapest() -> ModelConfig:
     ineligible option to be tempted by (§1.1).
     """
     return min(active(), key=lambda config: config.cost_per_mtok_in_usd)
+
+
+def stale_rates(today: date) -> list[str]:
+    """Entries whose rates are older than the staleness window, as warnings.
+
+    Returned rather than logged so the caller decides where they surface, and so
+    this stays a pure function testable without a clock.
+    """
+    warnings: list[str] = []
+    for config in active():
+        age = today - config.rates_verified_on
+        if age > RATE_STALENESS_WARNING:
+            warnings.append(
+                f"{config.slug}: rates last verified {config.rates_verified_on.isoformat()}, "
+                f"{age.days} days ago. Re-read {config.provider}'s published pricing and add "
+                "a new entry; cost attribution is only as good as this date."
+            )
+    return warnings
