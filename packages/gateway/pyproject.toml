@@ -7,6 +7,10 @@ dependencies = [
     "val-domain",
     "val-policy",
     "val-providers",
+    # The gateway writes model_calls and reads month-to-date spend back out of
+    # it. SQLAlchemy comes via val-domain, which owns the schema, but the
+    # dependency is declared here because this package uses it directly.
+    "SQLAlchemy==2.0.52",
 ]
 
 [build-system]

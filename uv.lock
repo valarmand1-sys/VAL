@@ -928,6 +928,7 @@ name = "val-gateway"
 version = "0.0.0"
 source = { editable = "packages/gateway" }
 dependencies = [
+    { name = "sqlalchemy" },
     { name = "val-domain" },
     { name = "val-policy" },
     { name = "val-providers" },
@@ -935,6 +936,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "sqlalchemy", specifier = "==2.0.52" },
     { name = "val-domain", editable = "packages/domain" },
     { name = "val-policy", editable = "packages/policy" },
     { name = "val-providers", editable = "packages/providers" },
