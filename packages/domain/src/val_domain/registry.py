@@ -88,6 +88,8 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cost_per_mtok_out_usd=30.00,
         eligible_classifications=_PROTECTED,
         rates_verified_on=_VERIFIED_ON,
+        # Answered a real call on 15 August 2026: 37 tokens in, 24 out, $0.000905.
+        last_live_call_on=date(2026, 8, 15),
     ),
 )
 
@@ -120,6 +122,21 @@ def cheapest() -> ModelConfig:
     ineligible option to be tempted by (§1.1).
     """
     return min(active(), key=lambda config: config.cost_per_mtok_in_usd)
+
+
+def live_routes() -> tuple[ModelConfig, ...]:
+    """Active routes that have actually answered a call.
+
+    An adapter existing is not evidence (`01-architecture.md` §5.2.1). The two
+    Anthropic routes are enabled, eligible, and adapted, and are **not** live:
+    the account reports insufficient credit, so neither has ever answered.
+    """
+    return tuple(config for config in active() if config.last_live_call_on is not None)
+
+
+def unproven_routes() -> tuple[ModelConfig, ...]:
+    """Active routes that have never answered a call. Enabled is not proven."""
+    return tuple(config for config in active() if config.last_live_call_on is None)
 
 
 def stale_rates(today: date) -> list[str]:

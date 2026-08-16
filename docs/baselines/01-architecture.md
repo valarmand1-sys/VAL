@@ -220,6 +220,24 @@ A model configuration is a versioned record, not a model name in a settings file
 
 Routing selects among configurations. It never selects a raw model.
 
+#### 5.2.1 Six distinct provider states
+
+A provider is not one flag. These six are independent, and conflating any two of them is how a system ends up sending Protected work to a route nobody qualified. **The registry is authoritative on every column; this table defines the vocabulary, not the roster.**
+
+| State | Means | Where the answer lives |
+|---|---|---|
+| **Supported by the architecture** | The gateway's contract could carry it | This document (§5.1) |
+| **Adapter implemented** | Code exists that speaks its dialect | `packages/providers` |
+| **Qualified** | It passed the exam suite below | Exam records — none exist before Layers 2–3 |
+| **Eligible for Protected** | Ruled eligible by Lord Armand | §5.4 rulings, carried in the registry entry |
+| **Currently enabled** | Present and not retired in the registry | `val_domain.registry.active()` |
+| **Live** | It has actually answered a real call | `model_calls`, and the entry's own record |
+
+Two rules follow, and both have already caught something:
+
+- **An implemented adapter is not a live provider.** An adapter proves the code compiles against a dialect. Only a `model_calls` row with `status = ok` proves the route works.
+- **Nothing here weakens Protected eligibility.** A provider may be enabled, adapted, and live and still be ineligible for Protected content; eligibility is a separate ruling and cost never overrides it (§5.4).
+
 > **Amendment — 15 August 2026, Lord Armand, from external architecture review.** Qualification for any new model configuration is a **system-specific exam suite run against this system's actual workload**, built at Layers 2–3: identity adherence under the persona, structured-output reliability, uncertainty handling — including the trap questions of `04-layer-0.md` WP-0.7 — cost per task class, and long-conversation behaviour. The standing rule: **a working model is never replaced because a benchmark sounds impressive.** Candidates run as experiments against the incumbent, and the prediction ledger (`02-partner-systems.md` §4.6) arbitrates.
 
 ### 5.3 The cost gradient
@@ -232,7 +250,7 @@ The right shape is a gradient, not a local/cloud binary:
 | Bulk work where quality tolerance is moderate | **Inexpensive cloud** (Gemini Flash class, on a paid-billing key) |
 | Genuinely hard reasoning, adversarial review, final judgment | **Frontier** (Anthropic, OpenAI, Gemini Pro class) |
 
-Multi-provider from day one: Anthropic, OpenAI, and Gemini on a paid-billing key, plus local — all behind §5.1. **GLM is excluded pending verification** and is not a configurable route; the ruling and the conditions under which it could qualify are in §5.4.
+**The architecture requires a provider-neutral gateway and multi-provider routing. It does not name the roster.** Which providers are live at any moment is controlled configuration, not architectural law — it is the Model Configuration Registry's answer, and it changes without amending this document. See §5.2.1.
 
 **Prompt caching and batch pricing are first-class, not optimizations.** Val's workload is unusually repetitive-context-heavy: persona, project canon, and Role knowledge are re-injected constantly. Caching is therefore a structural saving rather than a tuning exercise, and context assembly shall be ordered stable-prefix-first so cached segments actually hit. Non-urgent overnight work routes through batch APIs.
 

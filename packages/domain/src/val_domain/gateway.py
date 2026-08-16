@@ -95,6 +95,11 @@ class ModelConfig(BaseModel):
     #: wrong rather than visibly wrong — so the date is carried per entry and
     #: surfaced as a startup warning once it ages (`registry.stale_rates`).
     rates_verified_on: date
+    #: The day this exact route last answered a real call successfully, or None
+    #: if it never has. An implemented adapter is not a live provider
+    #: (`01-architecture.md` §5.2.1): only a real answer proves the route works.
+    #: Set from an observed `model_calls` row, never from the fact code exists.
+    last_live_call_on: date | None = None
     #: Google-only structural requirement (`01-architecture.md` §5.4 amendment):
     #: True only when startup has verified the key is attached to paid billing.
     #: Configuration cannot claim it; the verifier sets it.

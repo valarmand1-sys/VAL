@@ -110,7 +110,12 @@ files = [
 # ---------------------------------------------------------------------------
 
 [tool.pytest.ini_options]
-testpaths = ["infrastructure/ci/tests", "packages/domain/tests", "packages/gateway/tests"]
+testpaths = [
+    "infrastructure/ci/tests",
+    "packages/domain/tests",
+    "packages/gateway/tests",
+    "packages/policy/tests",
+]
 pythonpath = ["infrastructure/ci", "infrastructure/backup"]
 
 # ---------------------------------------------------------------------------

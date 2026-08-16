@@ -71,3 +71,31 @@ def test_unknown_lookups_return_none_rather_than_raising() -> None:
 def test_slug_is_stable_and_readable(config: object) -> None:
     """Slugs are lower-case and hyphenated — the ModelConfig pattern enforces it."""
     assert isinstance(getattr(config, "slug", None), str)
+
+
+# --- an adapter is not a live provider (01-architecture.md §5.2.1) ------------
+
+
+def test_live_and_enabled_are_different_states() -> None:
+    """Enabled routes and proven routes are tracked separately, on purpose."""
+    from val_domain.registry import live_routes, unproven_routes
+
+    assert set(live_routes()) | set(unproven_routes()) == set(active())
+    assert not (set(live_routes()) & set(unproven_routes()))
+
+
+def test_only_a_real_answer_marks_a_route_live() -> None:
+    """gpt-5-5 answered on 15 August; the Anthropic routes never have."""
+    from val_domain.registry import live_routes, unproven_routes
+
+    assert {c.slug for c in live_routes()} == {"gpt-5-5"}
+    assert {c.slug for c in unproven_routes()} == {"opus-5", "haiku-4-5"}
+
+
+def test_an_unproven_route_is_still_enabled_and_eligible() -> None:
+    """Not-live never silently disables a route or weakens its eligibility."""
+    from val_domain.registry import unproven_routes
+
+    for config in unproven_routes():
+        assert config in active()
+        assert Classification.PROTECTED in config.eligible_classifications

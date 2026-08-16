@@ -43,6 +43,35 @@ read `backup.info` and restores zero files.
 from the paper — never pasted from the config — so the copy that matters is
 exercised on the same cadence as the restore.
 
+### Accepted risk: the operative key is readable by this account
+
+The operative passphrase sits in `pgbackrest.conf` at mode `0600`, owned by the
+account PostgreSQL runs as. It has to: `archive_command` runs unattended, before
+login, and cannot wait on an interactively unlocked Keychain. That decision
+stands — but it carries a cost that is recorded here rather than left implied.
+
+**Anything that can read as this operating account can read the backup
+encryption key, and therefore decrypt every backup in B2.** Compromise of the
+account is compromise of backup confidentiality. The separately-held paper copy
+does **not** mitigate this: paper protects against *losing* the key, not against
+someone *obtaining* it. The two risks are unrelated and only one is addressed.
+
+What does limit the blast radius today:
+
+- The B2 application key is scoped to the `valbackups` bucket, so a compromise
+  reaches the backups and nothing else in the account.
+- The file is `0600` and outside the git repository, so it is not exposed by a
+  clone, a push, or the credential scanner's blind spots.
+- Backups are encrypted at rest in B2, so B2 itself never holds plaintext.
+
+What would actually reduce it, and is deliberately not done at Layer 0: a
+separate low-privilege account for the archiver, or an HSM-backed key service
+that never yields the passphrase to the filesystem. Both are Layer 3 topology
+questions — they belong with the always-on box, not on a laptop.
+
+**Status: accepted, current, and revisited at the Layer 3 migration** when the
+store moves and the account model changes anyway.
+
 ## Scheduling on a laptop
 
 Two launchd user agents, installed from `infrastructure/backup/launchd/`:

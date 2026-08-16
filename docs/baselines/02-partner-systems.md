@@ -109,6 +109,14 @@ A distilled summary of each book travels in context always. **Full volumes are o
 
 This is retrieval-on-demand rather than permanent injection, and it is how context cost stays bounded as the library grows. It is also what makes "let me look at what we learned last season" a real action with a real latency rather than a figure of speech.
 
+**One interpretation, stated once.** `03-persona.md` §2 and this section describe the same mechanism from opposite ends — character and machinery — and must not be read as two policies:
+
+1. **The index is always resident in full.** Val always knows what she has written; a book she cannot see in the index is one she will never consult.
+2. **Bounded summaries are resident** to the configured token budget, relevance-ranked when the library exceeds it.
+3. **Full volumes are opened deliberately**, when the work calls for that depth. Routine work does not inject every relevant volume.
+4. **An opened volume is read as an authored document**, in order, whole. Assembling fragments and calling it "having read the book" is the thing this design exists to prevent.
+5. **Every citation resolves** to a real lesson record with real evidence links. A citation that cannot resolve is a defect, not a flourish (§2.5).
+
 #### The always-resident budget
 
 "A summary of each book" is correct at three books and a problem at twenty. Without a bound it grows silently until it is the largest line in every prompt — and because it grows by success, nothing signals that it has become a problem.

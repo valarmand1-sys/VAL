@@ -187,3 +187,79 @@ def test_slug_appears_in_every_recorded_row() -> None:
     gateway.complete(request(), config())
     assert rows[0].slug == "opus-5"
     assert isinstance(rows[0].model_config_id, UUID)
+
+
+# --- the Restricted preflight, at the gateway boundary ------------------------
+#
+# The caller's stated classification is only as good as the caller's knowledge.
+# These prove the content itself is checked before anything leaves the machine.
+
+
+def fake(*fragments: str) -> str:
+    """Build a credential-shaped string without writing one down."""
+    return "".join(fragments)
+
+
+def test_a_credential_in_protected_content_is_blocked_before_transmission() -> None:
+    """The gap this closes: the caller says PROTECTED, the message holds a key."""
+    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    blocks: list[str] = []
+    gateway = Gateway({"anthropic": adapter}, lambda r: None, lambda: 0.0, blocks.append)
+
+    leaking = GatewayRequest(
+        task_type=TaskType.CONVERSATION,
+        classification=Classification.PROTECTED,
+        messages=(
+            Message(
+                role="user", content="deploy with " + fake("sk-", "ant-", "a1b2c3d4e5f6g7h8i9j0k1")
+            ),
+        ),
+    )
+    with pytest.raises(GatewayError) as caught:
+        gateway.complete(leaking, config())
+
+    assert caught.value.kind is GatewayErrorKind.RESTRICTED_CONTENT
+    assert adapter.calls == 0, "the provider was contacted"
+    assert blocks, "the block was not recorded anywhere"
+
+
+def test_a_blocked_request_writes_no_model_calls_row() -> None:
+    """No provider was contacted, so a row would assert a call that never happened."""
+    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    rows: list[CallRecord] = []
+    gateway = Gateway({"anthropic": adapter}, rows.append, lambda: 0.0, lambda _: None)
+
+    leaking = GatewayRequest(
+        task_type=TaskType.CONVERSATION,
+        classification=Classification.PROTECTED,
+        messages=(Message(role="user", content="ssn 123-45-6789"),),
+    )
+    with pytest.raises(GatewayError):
+        gateway.complete(leaking, config())
+    assert rows == []
+
+
+def test_the_preflight_runs_before_the_budget_check() -> None:
+    """Restricted material is refused even when the ceiling would have stopped it.
+
+    Order matters: the reason Lord Armand is given must be the real one.
+    """
+    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    gateway = Gateway({"anthropic": adapter}, lambda r: None, lambda: 999.0, lambda _: None)
+    leaking = GatewayRequest(
+        task_type=TaskType.CONVERSATION,
+        classification=Classification.PROTECTED,
+        messages=(Message(role="user", content="password = " + fake("hunter", "2hunter2")),),
+    )
+    with pytest.raises(GatewayError) as caught:
+        gateway.complete(leaking, config())
+    assert caught.value.kind is GatewayErrorKind.RESTRICTED_CONTENT
+
+
+def test_ordinary_work_still_passes_the_preflight() -> None:
+    """The guard must not block the work it exists to protect."""
+    adapter = StubAdapter(ProviderResult("Noted, my lord.", 20, 10, "req", False))
+    gateway, rows = build(adapter)
+    gateway.complete(request(), config())
+    assert adapter.calls == 1
+    assert len(rows) == 1

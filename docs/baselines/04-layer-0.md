@@ -33,6 +33,8 @@ Two consequences follow, and both are binding:
 - **Cost never selects a route at Layer 0.** With every configured route Protected-eligible, choosing among them on cost is permissible; choosing a route *because* it is cheap, from a set that includes ineligible options, is not. The set contains no ineligible options.
 - **Restricted content cannot be processed at Layer 0 at all.** Credentials, financial detail, and third-party personal data route to local inference only (`01-architecture.md` §5.4), and local inference does not exist until Layer 1. Val states plainly that she cannot handle it yet. She does not route it anywhere, and she does not reclassify it downward to make it routable.
 
+**The structural guarantee covers routing, not content.** Every configured route being Protected-eligible means Protected content cannot be *misdirected*; it says nothing about a user message that happens to contain an API key. That gap is closed by a small deterministic local preflight in `packages/policy` — see WP-0.4's criteria. The preflight reads content and blocks; it never reclassifies downward, and it never asks the receiving model whether it should receive it.
+
 Per-content classification arrives at Layer 2, when tools begin pulling in content of mixed classification and the structural guarantee no longer holds.
 
 ---
@@ -175,6 +177,7 @@ Each states what exists when it is done and how that is verified.
 - **Hard stop:** with month-to-date cloud spend seeded above the ceiling, cloud routing stops and Val says plainly that it has. Test with a seeded value; do not wait for it to occur naturally.
 - **Eligibility is enforced at startup, not at call time.** Configuring a provider not declared eligible for Protected content causes startup to fail with a clear error. Test by adding an ineligible configuration; the service must refuse to start. A check that only fires when the call is made is not the guarantee §1.1 claims.
 - Restricted content is refused rather than routed. Test with content classified Restricted; Val declines and explains, and no `model_calls` row is written.
+- **Restricted preflight — amendment, 15 August 2026, Lord Armand.** A deterministic local check reads the *content* before any cloud transmission, because the stated classification is only as good as the caller's knowledge. It runs before the provider is contacted, never uses the receiving model to classify, **blocks rather than downgrades**, fails closed if the check itself errors, writes no `model_calls` row (no call occurred), records the block, and explains plainly. Deliberately small: obvious credentials, keys, connection strings, government identification, and Luhn-valid payment cards. It is **not** the Layer 2 per-content classification system arriving early.
 
 ### WP-0.5 — Persona loading
 
