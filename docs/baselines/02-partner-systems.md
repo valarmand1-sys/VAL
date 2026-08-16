@@ -63,6 +63,8 @@ The books are the Role knowledge bases, surfaced to Lord Armand as readable docu
 
 Every rejection, revision, and correction captured since Layer 0 is evidence. Distillation turns evidence into lessons.
 
+> **Amendment — 15 August 2026, Lord Armand.** **Enthusiasm is never evidence of approval.** `execution_events` records reaction separately from event type (`04-layer-0.md` §2.2), and distillation reads them separately: a `strongly_enthusiastic` reaction with no acceptance event is an idea he liked, not work he approved, and a lesson that treats it otherwise is a false approval poisoning everything built on it.
+
 | Field | Content |
 |---|---|
 | Statement | The durable, specific guidance. Not "be careful with pacing" — "the cold open runs long every time the establishing shot is precious." |
@@ -347,7 +349,16 @@ Revising the success model is a decision for Lord Armand, not a thing Val does q
 
 She raises things unprompted: an indicator moving badly, a deadline at risk, a broken assumption, an opportunity that will not wait.
 
-**The interruption threshold is a setting Lord Armand controls.** Too low and she is noise; too high and she is passive; and the correct level is not knowable in advance. Conduct when interrupting: `03-persona.md` §7.
+> **Amendment — 15 August 2026, Lord Armand, from external architecture review.** The single interruption threshold is replaced by four levels:
+>
+> | Level | Behaviour | Reserved for |
+> |---|---|---|
+> | **0 — silent** | Log only. Surfaces when he next looks. | Everything not worth his attention now |
+> | **1 — next natural pause** | Raised when the current exchange reaches a pause. | Findings that can wait minutes |
+> | **2 — polite interruption** | Val interjects, with apology, mid-exchange. | Deadlines at risk, broken assumptions with a cost |
+> | **3 — immediate** | Val interrupts at once. | **Integrity, data loss, and security only** |
+>
+> **Background work never speaks directly.** It raises a signal; Val decides the level. Level assignment is tunable by Lord Armand. The machinery arrives with the layers that need it — this amendment governs its shape, not its schedule. Conduct when interrupting: `03-persona.md` §7.
 
 ---
 

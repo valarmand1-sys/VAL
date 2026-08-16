@@ -220,6 +220,8 @@ A model configuration is a versioned record, not a model name in a settings file
 
 Routing selects among configurations. It never selects a raw model.
 
+> **Amendment — 15 August 2026, Lord Armand, from external architecture review.** Qualification for any new model configuration is a **system-specific exam suite run against this system's actual workload**, built at Layers 2–3: identity adherence under the persona, structured-output reliability, uncertainty handling — including the trap questions of `04-layer-0.md` WP-0.7 — cost per task class, and long-conversation behaviour. The standing rule: **a working model is never replaced because a benchmark sounds impressive.** Candidates run as experiments against the incumbent, and the prediction ledger (`02-partner-systems.md` §4.6) arbitrates.
+
 ### 5.3 The cost gradient
 
 The right shape is a gradient, not a local/cloud binary:

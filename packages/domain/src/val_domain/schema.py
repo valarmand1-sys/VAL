@@ -1,7 +1,9 @@
 """The authoritative store's schema, exactly as `04-layer-0.md` §2 specifies it.
 
-Seven tables, in §2's order. No table exists here that §2 does not name, and no
-column exists that §2 does not list. Where §2 is silent, the silence is recorded
+Nine tables, in §2's order — seven from the original §2 plus the two the
+15 August 2026 amendments added (`execution_events.reaction` and the idea tables
+of §2.4). No table exists here that §2 does not name, and no column exists that
+§2 does not list. Where §2 is silent, the silence is recorded
 in a comment rather than filled in.
 
 Two conventions applied throughout, both following from §2 rather than added to it:
@@ -78,6 +80,26 @@ ModelCallTaskType = Enum(
 ModelCallStatus = Enum("ok", "error", "refused", name="model_call_status")
 ExecutionEventType = Enum(
     "accepted", "rejected", "revision_requested", "corrected", name="execution_event_type"
+)
+ExecutionEventReaction = Enum(
+    "negative",
+    "neutral",
+    "interested",
+    "enthusiastic",
+    "strongly_enthusiastic",
+    name="execution_event_reaction",
+)
+IdeaLifecycleState = Enum(
+    "mentioned",
+    "discussed",
+    "researching",
+    "prototyped",
+    "approved",
+    "implemented",
+    "superseded",
+    "rejected",
+    "abandoned",
+    name="idea_lifecycle_state",
 )
 ReasonSource = Enum("stated", "inferred", "absent", name="reason_source")
 DeliberationConfidence = Enum("high", "medium", "low", name="deliberation_confidence")
@@ -286,7 +308,11 @@ class ExecutionEvent(Base):
     message_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
     )
-    event_type: Mapped[str] = mapped_column(ExecutionEventType, nullable=False)
+    # Nullable since the 15 August 2026 amendment: a reaction with no event is a
+    # real record. "He loved the idea" and "he approved the work" are different
+    # facts, and conflating them poisons Layer 5 distillation with false
+    # approvals.
+    event_type: Mapped[str | None] = mapped_column(ExecutionEventType, nullable=True)
     subject: Mapped[str] = mapped_column(Text, nullable=False)
     # The reason, in Lord Armand's words where he gave one. Nullable, but a null
     # reason is a defect to be surfaced, not a normal state.
@@ -294,6 +320,9 @@ class ExecutionEvent(Base):
     # No default. A reason Val inferred and a reason Lord Armand stated are
     # different evidence, and Layer 5 must be able to weight them differently.
     reason_source: Mapped[str] = mapped_column(ReasonSource, nullable=False)
+    # Never inferred from wording alone, and enthusiasm is never evidence of
+    # approval (§2.2 amendment, 15 August 2026).
+    reaction: Mapped[str | None] = mapped_column(ExecutionEventReaction, nullable=True)
 
     __table_args__ = (
         # The two fields cannot disagree. A stated reason that is absent, or an
@@ -302,6 +331,12 @@ class ExecutionEvent(Base):
         CheckConstraint(
             "(reason IS NULL) = (reason_source = 'absent')",
             name="reason_matches_source",
+        ),
+        # A row that says nothing is not a record. Reaction-only rows are the
+        # point of the amendment; empty rows are noise wearing its shape.
+        CheckConstraint(
+            "event_type IS NOT NULL OR reaction IS NOT NULL",
+            name="event_or_reaction_present",
         ),
     )
 
@@ -358,6 +393,66 @@ class Deliberation(Base):
     )
 
 
+# --- §2.4 Ideas — amendment, 15 August 2026 ----------------------------------
+#
+# An idea's history cannot be reconstructed later: the same capture argument as
+# §2.2. Layer 0 records it with manual marking only — no automatic idea
+# detection, no classification calls.
+
+
+class Idea(Base):
+    """§2.4 — `ideas`. `lifecycle_state` mirrors the newest lineage row.
+
+    Two rules bind every writer and Layer 5 distillation: `implemented` is never
+    inferred from discussion of how something might be built, and `approved` is
+    never inferred from enthusiasm.
+    """
+
+    __tablename__ = "ideas"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    project_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
+    )
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    lifecycle_state: Mapped[str] = mapped_column(IdeaLifecycleState, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+
+class IdeaStateChange(Base):
+    """§2.4 — `idea_state_changes`. Append-only lineage; history is the record."""
+
+    __tablename__ = "idea_state_changes"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    idea_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("ideas.id", ondelete="NO ACTION"), nullable=False
+    )
+    # Null marks creation: the idea's first state has no predecessor.
+    from_state: Mapped[str | None] = mapped_column(IdeaLifecycleState, nullable=True)
+    to_state: Mapped[str] = mapped_column(IdeaLifecycleState, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        # A change that changes nothing is not lineage, it is noise.
+        CheckConstraint(
+            "from_state IS DISTINCT FROM to_state",
+            name="state_change_changes_state",
+        ),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
@@ -368,5 +463,7 @@ SPECIFIED_TABLES = frozenset(
         "model_calls",
         "execution_events",
         "deliberations",
+        "ideas",
+        "idea_state_changes",
     }
 )

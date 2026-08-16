@@ -78,10 +78,13 @@ These three tables are the point of the layer.
 |---|---|
 | `id`, `created_at` | |
 | `project_id`, `conversation_id`, `message_id` | |
-| `event_type` | `accepted` \| `rejected` \| `revision_requested` \| `corrected` |
+| `event_type` | `accepted` \| `rejected` \| `revision_requested` \| `corrected`. **Nullable since the 15 August 2026 amendment** — a reaction with no event is a real record. At least one of `event_type` and `reaction` must be present. |
 | `subject` | What was accepted or rejected — free text at Layer 0 |
 | `reason` | **The reason, in Lord Armand's words where he gave one.** Nullable, but a null reason is a defect to be surfaced, not a normal state. |
 | `reason_source` | `stated` \| `inferred` \| `absent` |
+| `reaction` | `negative` \| `neutral` \| `interested` \| `enthusiastic` \| `strongly_enthusiastic`. Nullable. |
+
+> **Amendment — 15 August 2026, Lord Armand, from external architecture review.** Reaction is not intent. "He loved the idea" and "he approved the work" are different facts, and a schema that conflates them poisons Layer 5 distillation with false approvals. `reaction` is therefore recorded independently of `event_type`: a record like *reaction: strongly_enthusiastic, no acceptance event* is representable (`event_type` null) and queryable. A reaction is **never inferred from wording alone**, and **enthusiasm is never evidence of approval** — the same rule appears where distillation reads this table (`02-partner-systems.md` §2.1).
 
 `reason_source` matters more than it looks. A reason Val inferred and a reason Lord Armand stated are different evidence, and Layer 5 distillation must be able to weight them differently. Collapsing them now makes every later lesson slightly untrustworthy.
 
@@ -105,8 +108,23 @@ These three tables are the point of the layer.
 ### 2.3 Constraints
 
 - Every `message` resolves to a `conversation`. Every `conversation` resolves to a `project` or explicitly to none.
-- `execution_events` and `deliberations` cascade on nothing. They outlive the conversation that produced them.
+- `execution_events` and `deliberations` cascade on nothing. They outlive the conversation that produced them. So do `ideas` and `idea_state_changes` (§2.4).
 - No table permits hard delete at Layer 0. Corrections preserve lineage (`00-charter.md` invariant 14).
+
+### 2.4 Ideas — amendment, 15 August 2026, Lord Armand
+
+An idea's history cannot be reconstructed later, which is the same capture argument as §2.2. Layer 0 records it with **manual marking only** — no automatic idea detection, no classification calls. Machinery arrives with later layers.
+
+**`ideas`** — `id`, `project_id` (nullable — same rule as everywhere), `title`, `lifecycle_state`, `created_at`, `updated_at`
+
+**`idea_state_changes`** — `id`, `idea_id`, `from_state` (nullable — null marks creation), `to_state`, `changed_at`. Lineage is append-only: state history is preserved, never overwritten. `ideas.lifecycle_state` duplicates the latest `to_state` for query convenience; the application keeps them consistent, and the lineage rows are the record.
+
+`lifecycle_state` values: `mentioned` | `discussed` | `researching` | `prototyped` | `approved` | `implemented` | `superseded` | `rejected` | `abandoned`.
+
+Two rules, binding on every writer and on Layer 5 distillation:
+
+- **`implemented` is never inferred from discussion of how something might be built.**
+- **`approved` is never inferred from enthusiasm.**
 
 ---
 
@@ -186,6 +204,7 @@ Each states what exists when it is done and how that is verified.
 - Full restart of application and database mid-conversation; conversation resumes with history intact.
 - Retrieval is project-scoped. A query in project A returns nothing from project B. Test with deliberately similar content in both.
 - Message ordering is stable and gapless under concurrent writes.
+- **Trap questions — amendment, 15 August 2026, Lord Armand.** With the database seeded with discussion and enthusiasm around a fictional decision that was never approved, "when did I approve X?" is answered with a correct negative — *"I find discussion and enthusiasm, but no approval record"* — never a confabulated date. At least three cases, each run against the real retrieval path and never against mocks: **never-approved**, **approved-then-superseded**, and **mentioned-once-then-abandoned**.
 
 ### WP-0.8 — Execution history capture
 
@@ -206,6 +225,7 @@ Each states what exists when it is done and how that is verified.
 - Where preference cannot be separated, `ordering = contaminated` and the record is not treated as independent.
 - `outcome` populates correctly across all four values in real use.
 - **The disagreement signal:** time since Val last disagreed is queryable and correct.
+- **Trap questions — amendment, 15 August 2026.** The WP-0.7 trap-question suite runs against deliberation records too: enthusiasm recorded in a deliberation — or an `agreed_from_start` outcome — is never reported as an approval.
 
 ### WP-0.10 — Text interface
 

@@ -52,6 +52,7 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "subject",
         "reason",
         "reason_source",
+        "reaction",
     ),
     "deliberations": (
         "id",
@@ -72,6 +73,9 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "classification",
         "classified_by",
     ),
+    # §2.4 Ideas — amendment, 15 August 2026
+    "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
+    "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
 }
 
 #: Columns §2 explicitly marks nullable. Everything else is required.
@@ -89,6 +93,13 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # would make a no-project exchange unrecordable. Flagged for ruling.
         ("execution_events", "project_id"),
         ("deliberations", "project_id"),
+        # Amendment, 15 August 2026: a reaction with no event is a real record,
+        # and a reaction is nullable because most events carry none.
+        ("execution_events", "event_type"),
+        ("execution_events", "reaction"),
+        # §2.4: "no project" is explicit; a null from_state marks creation.
+        ("ideas", "project_id"),
+        ("idea_state_changes", "from_state"),
     }
 )
 
@@ -110,6 +121,25 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
     "deliberation_outcome": ("updated", "held", "overridden", "agreed_from_start"),
     "deliberation_classification": ("consequential", "uncertain"),
     "deliberation_classified_by": ("automatic", "user", "val"),
+    # Amendments, 15 August 2026
+    "execution_event_reaction": (
+        "negative",
+        "neutral",
+        "interested",
+        "enthusiastic",
+        "strongly_enthusiastic",
+    ),
+    "idea_lifecycle_state": (
+        "mentioned",
+        "discussed",
+        "researching",
+        "prototyped",
+        "approved",
+        "implemented",
+        "superseded",
+        "rejected",
+        "abandoned",
+    ),
 }
 
 # Alembic's own bookkeeping. Not part of §2 and not a table Val writes.
@@ -346,6 +376,148 @@ def test_incoherent_reasons_are_refused(
     """`reason` and `reason_source` cannot disagree, or the distinction is worthless."""
     with pytest.raises(Exception, match="ck_execution_events_reason_matches_source"):
         _insert_event(connection, anchored, reason, source)
+
+
+# --- reaction is not intent (amendment, 15 August 2026) -----------------------
+#
+# "He loved the idea" and "he approved the work" are different facts. The schema
+# must hold them apart, and a reaction-only record must be exactly as easy to
+# write and to find as an event.
+
+
+def test_a_reaction_without_an_acceptance_event_is_representable_and_queryable(
+    connection: Connection, anchored: dict[str, Any]
+) -> None:
+    """The record the amendment names: strongly_enthusiastic, no acceptance event."""
+    connection.execute(
+        text(
+            "insert into execution_events "
+            "(project_id, conversation_id, message_id, event_type, subject, reason, "
+            "reason_source, reaction) "
+            "values (:p, :c, :m, null, 'The puppet-theatre episode idea', null, 'absent', "
+            "'strongly_enthusiastic')"
+        ),
+        {"p": anchored["project"], "c": anchored["conversation"], "m": anchored["message"]},
+    )
+    found = connection.execute(
+        text(
+            "select count(*) from execution_events "
+            "where reaction = 'strongly_enthusiastic' and event_type is null"
+        )
+    ).scalar_one()
+    assert found == 1
+    approvals = connection.execute(
+        text("select count(*) from execution_events where event_type = 'accepted'")
+    ).scalar_one()
+    assert approvals == 0, "enthusiasm must never read back as approval"
+
+
+def test_a_reaction_may_accompany_an_event(
+    connection: Connection, anchored: dict[str, Any]
+) -> None:
+    """Approving warmly is one record carrying both facts, held separately."""
+    connection.execute(
+        text(
+            "insert into execution_events "
+            "(project_id, conversation_id, message_id, event_type, subject, reason, "
+            "reason_source, reaction) "
+            "values (:p, :c, :m, 'accepted', 'The cold open', 'It lands.', 'stated', "
+            "'enthusiastic')"
+        ),
+        {"p": anchored["project"], "c": anchored["conversation"], "m": anchored["message"]},
+    )
+
+
+def test_a_record_saying_nothing_is_refused(
+    connection: Connection, anchored: dict[str, Any]
+) -> None:
+    """Null event and null reaction together is noise wearing a record's shape."""
+    with pytest.raises(Exception, match="ck_execution_events_event_or_reaction_present"):
+        connection.execute(
+            text(
+                "insert into execution_events "
+                "(project_id, conversation_id, message_id, event_type, subject, reason, "
+                "reason_source, reaction) "
+                "values (:p, :c, :m, null, 'Nothing', null, 'absent', null)"
+            ),
+            {"p": anchored["project"], "c": anchored["conversation"], "m": anchored["message"]},
+        )
+
+
+# --- §2.4 the idea lifecycle (amendment, 15 August 2026) ----------------------
+
+
+def _create_idea(connection: Connection, project: object) -> object:
+    idea = connection.execute(
+        text(
+            "insert into ideas (project_id, title, lifecycle_state) "
+            "values (:p, 'A puppet-theatre episode', 'mentioned') returning id"
+        ),
+        {"p": project},
+    ).scalar_one()
+    connection.execute(
+        text(
+            "insert into idea_state_changes (idea_id, from_state, to_state) "
+            "values (:i, null, 'mentioned')"
+        ),
+        {"i": idea},
+    )
+    return idea
+
+
+def test_idea_state_history_is_preserved_not_overwritten(
+    connection: Connection, anchored: dict[str, Any]
+) -> None:
+    """Lineage accumulates: every transition remains after the state moves on."""
+    idea = _create_idea(connection, anchored["project"])
+    connection.execute(
+        text(
+            "insert into idea_state_changes (idea_id, from_state, to_state) "
+            "values (:i, 'mentioned', 'discussed')"
+        ),
+        {"i": idea},
+    )
+    connection.execute(
+        text("update ideas set lifecycle_state = 'discussed', updated_at = now() where id = :i"),
+        {"i": idea},
+    )
+    history = connection.execute(
+        text(
+            "select from_state, to_state from idea_state_changes "
+            "where idea_id = :i order by changed_at, id"
+        ),
+        {"i": idea},
+    ).all()
+    assert [(row[0], row[1]) for row in history] == [
+        (None, "mentioned"),
+        ("mentioned", "discussed"),
+    ]
+
+
+def test_a_state_change_that_changes_nothing_is_refused(
+    connection: Connection, anchored: dict[str, Any]
+) -> None:
+    """A no-op transition is not lineage."""
+    idea = _create_idea(connection, anchored["project"])
+    with pytest.raises(Exception, match="ck_idea_state_changes_state_change_changes_state"):
+        connection.execute(
+            text(
+                "insert into idea_state_changes (idea_id, from_state, to_state) "
+                "values (:i, 'mentioned', 'mentioned')"
+            ),
+            {"i": idea},
+        )
+
+
+def test_an_idea_may_belong_to_no_project(connection: Connection) -> None:
+    """The same rule as everywhere: "no project" is explicit, not an accident."""
+    idea = connection.execute(
+        text(
+            "insert into ideas (project_id, title, lifecycle_state) "
+            "values (null, 'A notion with no home yet', 'mentioned') returning id"
+        )
+    ).scalar_one()
+    assert idea is not None
 
 
 def _insert_deliberation(
