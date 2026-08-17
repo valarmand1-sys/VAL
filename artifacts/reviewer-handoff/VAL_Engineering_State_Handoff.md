@@ -22,7 +22,8 @@ answers.
 | Short SHA | `ccc94e3` |
 | Working tree | Clean at generation |
 | Note on the commit | `ccc94e3` is the state **described** here: all implementation and all governing-document cleanup. This handoff bundle is documentation added on top of it, so the bundle's own commit is one later. Nothing in the code or the baselines differs between the two. |
-| Generated | 16 August 2026 |
+| Generated | 16 August 2026; **revised 17 August 2026** for the WP-0.4 corrective work |
+| Revision note | The corrective work of 17 August changed real facts in §C, §E, §F, §I, and §K. Those sections are updated. **Nothing dated earlier has been rewritten to look as though a later correction existed then** — where a claim made at `ccc94e3` no longer holds, the replacement says so and names both dates. Full account: `VAL_WP04_Corrective_Audit.md`. |
 | Tags | None. History is linear on `master`; commits are the only markers. |
 
 There is one closed pull request, [#1](https://github.com/valarmand1-sys/VAL/pull/1),
@@ -39,10 +40,10 @@ These six are authoritative. Nothing else in the repository governs anything.
 |---|---|---|---|
 | `/CLAUDE.md` | Standing instructions | `114e31da…7c2f7e3c` | How the implementing engineer works: authority, invariant summary, when to stop and ask |
 | `/docs/baselines/00-charter.md` | Governing | `5c49880f…9c7646e5` | Identity, mission, the four states, risk tiers, **35 invariants**, honest limits, what was rejected |
-| `/docs/baselines/01-architecture.md` | Governing | `3db2aef7…65bbac5` | Layers, stack, topology, model routing, budget, data classification, MCP, avatar, backup |
+| `/docs/baselines/01-architecture.md` | Governing | `166f8df5…6ba18c58` | Layers, stack, topology, model routing, budget, data classification, MCP, avatar, backup |
 | `/docs/baselines/02-partner-systems.md` | Governing | `0f629d7a…f90e5f56` | Roles, the books, self-evaluation, deliberation, prediction ledger, success models |
-| `/docs/baselines/03-persona.md` | Governing, **v1.1** | `ee3a46e9…4551e149` | Voice, manner, bearing, conduct. Loaded whole, never summarised |
-| `/docs/baselines/04-layer-0.md` | Governing | `b9d8fa99…4844a201` | Layer 0 scope, schema, work packages, acceptance criteria, the gate |
+| `/docs/baselines/03-persona.md` | Governing, **v1.2** | `1d502685…7b8dddd04` | Voice, manner, bearing, conduct. Loaded whole, never summarised |
+| `/docs/baselines/04-layer-0.md` | Governing | `a1ee5b77…1f9b2111f` | Layer 0 scope, schema, work packages, acceptance criteria, the gate |
 
 Full hashes are in `governing/README.md`. Byte-identical review copies are in
 `governing/`; **the repository originals remain authoritative.**
@@ -125,7 +126,7 @@ either process depending on the other being alive.
 
 ### Authoritative data store — IMPLEMENTED NOW
 
-PostgreSQL is the sole authoritative store (invariant 12). Nine tables, all
+PostgreSQL is the sole authoritative store (invariant 12). **Ten** tables, all
 created through Alembic; no manual DDL at any point. Details in §E.
 
 ### Model Gateway — IMPLEMENTED, PARTIALLY VERIFIED
@@ -140,11 +141,22 @@ satisfied **structurally**: every configured route is Protected-eligible, so
 there is no ineligible route to misdirect to. Restricted is refused two ways —
 by stated classification, and by a deterministic local content preflight (§H).
 
-### Budget — IMPLEMENTED NOW
+### Budget — IMPLEMENTED NOW, CORRECTED 17 AUGUST
 
-One crude hard stop: $200/month cloud ceiling, enforced **before** each call by
-summing `model_calls`, never reported after (invariant 24). Graduated thresholds,
-the reserve, and the cost dashboard are **DEFERRED to Layer 3**.
+One hard stop: **$200/month cloud ceiling, enforced before each call against the
+cost of that call.** The figure is unchanged; what changed is that it is now
+actually enforced.
+
+The 15 August implementation compared *historical* spend against the ceiling,
+which at $199.99 admitted a call of any size — before the call, certainly, but
+enforcing nothing about it. The rule is now `committed + maximum_cost(call) ≤
+CEILING`, where `committed` is held in PostgreSQL as a reservation ledger with an
+explicit lifecycle, and admission is atomic under an advisory lock so two
+processes cannot each spend the same headroom. §F and
+`VAL_WP04_Corrective_Audit.md` §E–F.
+
+Graduated thresholds, the reserve, and the cost dashboard remain **DEFERRED to
+Layer 3**.
 
 ### Backup — IMPLEMENTED, PARTIALLY VERIFIED
 
@@ -240,27 +252,44 @@ instance verified 7/7 tables, 11/11 foreign keys, capture tables continuous;
 PITR to a timestamp stopping before the seeding transaction; **wrong-key and
 no-key restores both refused with zero files restored.**
 
-**Unresolved — two, and both are why this is BLOCKED:**
+**Resolved since `ccc94e3` — the scheduled-run criterion is now met.** The
+17 August firing succeeded: **16 Aug 03:15 (Sunday, correctly full) and 17 Aug
+03:08 (Monday, correctly incremental)** are two unattended scheduled runs on
+consecutive days, with the full/incremental selection correct on both. Read from
+`pgbackrest info` against B2 rather than from the agent's own log. B2 now holds
+four backups, the fourth taken on demand before migration `0003` per §9.2.
 
-1. **Only one unattended scheduled run has been observed** — 16 Aug 2026 03:15,
-   a Sunday, correctly a full backup. B2 holds exactly two backups: the 14 Aug
-   manual one and this scheduled one. The criterion requires **two consecutive**
-   scheduled runs. A run on 15 Aug either did not fire or was coalesced by
-   launchd with the 16 Aug firing (documented behaviour when the machine sleeps).
-   The next firing, 17 Aug 03:00, would satisfy it if it succeeds.
-2. **The verified restore was performed from a local repository, not from B2.**
-   The mechanics are proven; a restore pulled back out of B2 has not been done.
+**Unresolved — one, and it is why this remains BLOCKED:**
+
+1. **The verified restore was performed from a local repository, not from B2.**
+   Every restore proved so far — the full restore, the PITR test, and both
+   key-failure cases — used a local copy. That proves the encryption, the
+   catalogue, and the data. **It does not prove that the bytes in Backblaze are
+   retrievable and sound**, which is the one thing an off-machine backup exists
+   to establish (invariant 35).
+
+**Scope beyond PostgreSQL, clarified 17 August.** `01-architecture.md` §9.1 lists
+five things that must survive; only the first is covered by pgBackRest. **GitHub
+is now stated explicitly as the off-machine protection for everything the
+repository controls** — baselines, persona source, migration history,
+configuration, application source — and stated equally explicitly *not* to be a
+substitute for point-in-time recovery. The two protect disjoint things: git holds
+the text Val was built from, PostgreSQL holds what she has learned, decided,
+spent, and been told. New `01-architecture.md` §9.1.1 and `docs/BACKUP.md`.
 
 ### WP-0.4 — Model Gateway · IN PROGRESS / BLOCKED
 
-**Exists:** the gateway; the Model Configuration Registry with three routes; the
-eligibility policy encoding the 15 Aug rulings; the budget hard stop; adapters for
-Anthropic and OpenAI; the Google billing verifier (fails closed); the
-`model_calls` write path; startup assembly; the Restricted preflight.
+**Exists:** the gateway with a routing entrance and a deliberate explicit
+entrance; the Model Configuration Registry with three routes carrying the full
+§5.2 contract; the eligibility policy encoding the 15 Aug rulings; **the
+pre-call budget reservation ledger**; **the Layer 0 router with independently
+checked fallback**; adapters for Anthropic and OpenAI; the Google billing
+verifier (fails closed); the `model_calls` write path with explicit cost
+certainty; startup assembly; the Restricted preflight.
 
-**Paths:** `packages/gateway/src/val_gateway/{gateway,persistence,startup}.py`,
+**Paths:** `packages/gateway/src/val_gateway/{gateway,ledger,persistence,startup}.py`,
 `packages/domain/src/val_domain/{gateway,registry}.py`,
-`packages/policy/src/val_policy/{eligibility,budget,restricted}.py`,
+`packages/policy/src/val_policy/{eligibility,budget,routing,restricted}.py`,
 `packages/providers/src/val_providers/`.
 
 **Verified live (15 Aug):** OpenAI answered through the gateway — 37 tokens in,
@@ -271,14 +300,32 @@ normalisation across three real failure classes; startup refusing a Zhipu
 configuration and refusing a configured route with no key; six `model_calls` rows
 for six attempts including all four failures.
 
-**Unresolved / blocked:**
+**Corrected 17 August**, after an external review found three real defects. Each
+is proved in the negative — see `VAL_WP04_Corrective_Audit.md` §Q:
+
+- **The budget guard did not enforce the ceiling.** It compared historical spend
+  against $200, which at $199.99 admitted a call of any size. Now enforced
+  against the proposed call, atomically, with a reservation ledger.
+- **Cost accounting recorded a figure it could not know.** Every failure wrote
+  `$0.00`, including failures after transmission. Now `unknown` with NULL
+  figures, and the database refuses the zero.
+- **The gateway did not route.** Every caller had to name its own configuration.
+  Now it selects on admission, eligibility, readiness, and affordability, with
+  cost ranking only what has already survived.
+
+Two further gaps closed in passing: **CI was running neither the policy nor the
+gateway test suite**, and the Restricted preflight's stated coverage was wider
+than its detectors.
+
+**Unresolved / blocked — one, and it is not a code defect:**
 
 - **Anthropic returns 400 "credit balance is too low".** The key authenticates
   and lists models — only inference is refused. Request id
   `req_011Ce5aYFevxhMfvsywK1gem`. This blocks the two-provider criterion, the
   provider-substitution demonstration, and the day-of-real-use dashboard
-  reconciliation.
-- No fallback route logic is implemented (§F).
+  reconciliation. **No mock has been or will be used as proof of the live
+  criterion**; `last_live_call_on` is null on both Anthropic routes and a test
+  fails the build if that is quietly changed.
 
 ### WP-0.5 to WP-0.10 · NOT STARTED
 
@@ -296,7 +343,7 @@ write path. `personas` is empty; no seed exists.
 |---|---|
 | PostgreSQL | 18.4 (Homebrew), port **5433** |
 | pgvector | 0.8.6 (installed; no vector column exists yet — retrieval is WP-0.7) |
-| Alembic revision | `0002_reaction_and_ideas` (head) |
+| Alembic revision | `0003_budget_reservations` (head) |
 | Databases | `val` (authoritative), `val_test` (schema tests; refuses any name not ending `_test`) |
 
 ### Tables
@@ -312,10 +359,11 @@ write path. `personas` is empty; no seed exists.
 | `deliberations` | Blind position, confidence, ordering, outcome | 0 |
 | `ideas` | Idea lifecycle, manual marking only | 0 |
 | `idea_state_changes` | Append-only lineage | 0 |
+| `budget_reservations` | Pre-call budget claims, cradle to grave (§2.5, 17 Aug) | 0 |
 
 ### Constraints that carry meaning
 
-- **No hard delete anywhere.** A trigger on all nine tables refuses `DELETE` and
+- **No hard delete anywhere.** A trigger on all ten tables refuses `DELETE` and
   `TRUNCATE` (invariant 14, §2.3). Nothing cascades — every FK is `NO ACTION`, so
   capture records outlive the conversation that produced them.
 - `ck_execution_events_reason_matches_source` — `reason` and `reason_source`
@@ -325,6 +373,13 @@ write path. `personas` is empty; no seed exists.
   enthusiasm is never evidence of approval.
 - `ck_deliberations_updated_requires_what_changed_her_mind`.
 - `ck_idea_state_changes_state_change_changes_state` — a no-op transition is not lineage.
+- `ck_model_calls_known_cost_is_recorded` and
+  `ck_model_calls_unknown_cost_is_not_a_zero` (17 Aug) — a cost recorded as
+  *known* must carry figures, and one recorded as *unknown* must carry none.
+  Together they make **a false factual zero unwritable**, not merely discouraged.
+- `ck_budget_reservations_settled_has_a_cost`, `…_settled_has_a_certainty`,
+  `…_resolved_states_say_why` — a settled reservation carries both a figure and a
+  certainty, and any state but `reserved` states in words why it left.
 - `reason_source` and `ordering` carry **no default**: the writer must state them.
 - Primary keys are `uuidv7()` — time-ordered, so the Layer 3 relocation is a merge
   of globally unique keys rather than a renumbering.
@@ -335,6 +390,7 @@ write path. `personas` is empty; no seed exists.
 |---|---|
 | `0001_layer_0_schema` | Seven tables, ten enums, pgvector, delete guards |
 | `0002_reaction_and_ideas` | `reaction` added, `event_type` made nullable, idea tables |
+| `0003_budget_reservations` | `model_calls.cost_certainty` with nullable figures and two check constraints; the `budget_reservations` table (17 Aug) |
 
 `0002` modifies **no existing row**: `event_type` keeps its value and `reaction`
 backfills as NULL meaning *not recorded*, never `neutral`. Its downgrade
@@ -342,36 +398,73 @@ backfills as NULL meaning *not recorded*, never `neutral`. Its downgrade
 fabricating capture records to satisfy a rollback — demonstrated on a scratch
 database where the record and revision both survived the refused downgrade.
 
+`0003` follows the same precedent exactly. It modifies **no existing row**: all
+six `model_calls` rows in `val` are unchanged, with `cost_certainty` NULL meaning
+*written before this distinction existed*. That includes five error rows carrying
+`cost = 0.000000` — the very false zeros this migration stops being written. They
+were **left as they are**: backfilling them would be a judgement about what an
+earlier implementation could see, and correcting history to make the present tidy
+is what invariant 14 forbids. Its downgrade likewise fails once any honestly
+unknown-cost row exists, demonstrated the same way (`NotNullViolation`, row and
+revision both intact).
+
+Reversibility from empty is unaffected and verified: `upgrade head` (3) →
+`downgrade base` (3) → `upgrade head` (3), ten tables at head.
+
 ### Backup/restore state
 
-Two backups in B2 (14 Aug manual, 16 Aug scheduled). WAL archived continuously
-from `00000001…0F` to `…24`. Restore, PITR, and both negative key cases proven
-against a local repository; a restore **from B2** has not yet been performed.
+**Four** backups in B2: 14 Aug manual, 16 Aug scheduled (Sunday, full), **17 Aug
+03:08 scheduled (Monday, incremental)**, and 17 Aug 09:58 on demand before
+migration `0003`. WAL archived continuously from `00000001…0F` to `…32`.
+
+The 16–17 August pair is **two consecutive unattended scheduled runs**, which
+satisfies the WP-0.3 criterion that was outstanding at `ccc94e3`. Restore, PITR,
+and both negative key cases remain proven against a **local** repository only; a
+restore **from B2** has still not been performed, and that is now the single
+criterion keeping WP-0.3 blocked.
 
 ---
 
 ## F. Model Gateway
 
-### Routes, by the six independent states of §5.2.1
+### Routes, by the seven independent states of §5.2.1
 
-| Provider | Config / slug | Adapter? | Qualified? | Protected-eligible? | Enabled? | Successfully called? | Last verified | Blocker |
-|---|---|---|---|---|---|---|---|---|
-| Anthropic | `claude-opus-5` / `opus-5` | **Yes** | No — exam suite is Layer 2–3 | **Yes** | Yes | **No** | — | Account credit |
-| Anthropic | `claude-haiku-4-5` / `haiku-4-5` | **Yes** | No | **Yes** | Yes | **No** | — | Account credit |
-| OpenAI | `gpt-5.5` / `gpt-5-5` | **Yes** | No | **Yes** | Yes | **Yes** | 15 Aug 2026 | — |
-| Google Gemini | none configured | No | No | Paid billing only | No | No | — | No API reports billing status; verifier fails closed |
-| GLM (Zhipu/Z.ai) | none configured | No | No | **Excluded pending verification** | No | No | — | Terms unreviewable as of July 2026 |
+| Provider | Config / slug | Adapter? | Admitted? | Qualified? | Protected-eligible? | Enabled? | Successfully called? | Last verified | Blocker |
+|---|---|---|---|---|---|---|---|---|---|
+| Anthropic | `claude-opus-5` / `opus-5` | **Yes** | Provisionally | No — exam suite is Layer 2–3 | **Yes** | Yes | **No** | — | Account credit |
+| Anthropic | `claude-haiku-4-5` / `haiku-4-5` | **Yes** | Provisionally | No | **Yes** | Yes | **No** | — | Account credit |
+| OpenAI | `gpt-5.5` / `gpt-5-5` | **Yes** | Provisionally | No | **Yes** | Yes | **Yes** | 15 Aug 2026 | — |
+| Google Gemini | none configured | No | No | No | Paid billing only | No | No | — | No API reports billing status; verifier fails closed |
+| GLM (Zhipu/Z.ai) | none configured | No | No | No | **Excluded pending verification** | No | No | — | Terms unreviewable as of July 2026 |
+
+**A seventh state, *provisionally admitted*, was added on 17 August** to resolve a
+contradiction rather than to add a capability: §5.1 said routing selects a
+*qualified* configuration while §5.2.1 said qualification cannot exist before the
+Layers 2–3 exam suite. `PROVISIONALLY_ADMITTED` is the strongest standing any
+route holds today; **nothing carries `QUALIFIED`, and no code path sets it.** A
+test fails the build if any entry ever claims it.
+
+**Enabled is not admitted.** Adding an entry to the registry is never, by itself,
+the act that opens a route.
 
 `last_live_call_on` is carried in the registry, so *live* is controlled
 configuration rather than prose. **An implemented adapter is not a live provider.**
 
 ### Pricing used by the registry (per million tokens, read 15 Aug 2026)
 
-| Slug | In | Out | Context | Max output |
-|---|---|---|---|---|
-| `opus-5` | $5.00 | $25.00 | 1,000,000 | 128,000 |
-| `haiku-4-5` | $1.00 | $5.00 | 200,000 | 64,000 |
-| `gpt-5-5` | $5.00 | $30.00 | 272,000 | 128,000 |
+| Slug | In | Out | Context | Max output | Fallback |
+|---|---|---|---|---|---|
+| `opus-5` | $5.00 | $25.00 | 1,000,000 | 128,000 | `haiku-4-5` |
+| `haiku-4-5` | $1.00 | $5.00 | 200,000 | 64,000 | **NONE**, explicitly |
+| `gpt-5-5` | $5.00 | $30.00 | 272,000 | 128,000 | `haiku-4-5` |
+
+Each entry now also carries reasoning settings, caching and batch applicability,
+known weaknesses, admission and adapter state, and activation and retirement
+dates — the full `01-architecture.md` §5.2 contract. Two fields are honestly
+empty rather than filled: `caching` and `batch_pricing` read `NOT_VERIFIED`
+because they are pricing facts and this repository reads pricing from the
+provider's own page and dates it, never from recollection. `known_weaknesses` is
+empty because nothing has been observed in this house's own use.
 
 Each entry carries `rates_verified_on`. Startup **warns** (never fails) on rates
 older than 90 days: a stale rate makes cost attribution quietly wrong, and quiet
@@ -389,32 +482,68 @@ wrongness is the failure mode a code-held registry creates.
   budget exceeded, not eligible, restricted content. Mapped by exception **class
   name**, so it is one function rather than one per provider.
 
+### Two entrances, deliberately not equivalent
+
+- **`complete(request)`** — normal routing. The caller states what the content is
+  and what the work is, and never names a provider. A component that must name
+  its own provider is a component that can name the wrong one.
+- **`complete_with_configuration(request, config)`** — the deliberate explicit
+  path, for the strip step of `04-layer-0.md` §4 and for tests that pin one
+  provider. **Not a bypass:** the configuration must be the registry's own entry
+  for its id, identical field for field, so a fabricated `ModelConfig` — or a
+  real one with its model identifier or eligibility set edited — is refused
+  before any of the checks it was trying to walk around.
+
 ### Order of operations per call
 
-1. **Restricted preflight** on the content itself → block, no row.
-2. **Eligibility** for the stated classification → refuse.
-3. **Budget** before contacting the provider → refuse, no row.
+1. **Restricted preflight** on the content itself, before a route is even
+   selected → block, no row, **no budget reserved**.
+2. **Route selection** — enabled, admitted, eligible, adapter present,
+   affordable, in that order. Cost ranks only what has already survived.
+3. **Budget reservation** taken atomically against the proposed call → refused
+   means the provider is never contacted, and no row is written.
 4. **The call** through the adapter.
-5. **Cost and attribution** written to `model_calls` — on success, refusal, **and
-   error**.
+5. **Settlement** — the reservation closes against what was actually consumed,
+   and `model_calls` records the cost as known or as explicitly unknown.
 
-### Cost recording
+### Cost recording — CORRECTED 17 AUGUST
 
 Computed at call time from the configuration's rates and stored. Never
 recomputed: a historical record that silently re-prices itself is not a record.
 
-### Hard stop
+**A provider attempt has three accounting outcomes and only two are rows.**
+NOT_SENT writes nothing, because it was not a call. SENT_COST_KNOWN records real
+figures. SENT_COST_UNKNOWN records `cost_certainty = 'unknown'` with NULL
+figures — **never a zero.** The previous implementation wrote `0/0/$0.00` for
+every failure including those after transmission, which is a figure known to be
+false recorded as a fact, and it flowed into the total the ceiling was enforced
+against. Two check constraints now make that zero unwritable.
 
-`month_to_date_spend()` sums `model_calls` for the calendar month and compares
-against $200 **before** the call. Refused and errored calls count toward spend —
-a refusal still consumed input tokens, and excluding them would let a failing
-loop overspend while the guard reported room.
+### Hard stop — CORRECTED 17 AUGUST
 
-### Fallback
+`committed + maximum_cost(this call) ≤ $200`, decided atomically in PostgreSQL
+under an advisory lock before the provider is contacted. `committed` sums settled
+reservations, outstanding reservations, expired holds, and any `model_calls` row
+predating the ledger. `maximum_cost` is an arithmetic upper bound from UTF-8 byte
+length, not an estimate, so it cannot under-reserve; the unspent difference is
+released the moment the call settles.
 
-**NOT IMPLEMENTED.** The architecture requires fallback only to a prequalified,
-independently eligible route. No fallback logic exists today; a failed call
-raises. This is a known gap against §5.1, not a deviation — it was never claimed.
+An **expired** reservation — one whose process died — stays charged rather than
+being freed, because nothing on this machine can establish whether the provider
+was reached, and an unknown consequential outcome is unverified rather than
+successful. It is reported at startup and clears when the month resets.
+
+### Fallback — IMPLEMENTED 17 AUGUST
+
+A configuration declares a preferred successor or an explicit NONE. **A fallback
+is never inherited**: when it is reached it must have passed every admission,
+eligibility, readiness, and affordability check on its own account, and the
+implementation is a membership test against the already-filtered candidate set —
+so an ineligible successor never appears in the attempt order at all.
+
+A content refusal is deliberately **not** retried elsewhere. A provider declining
+to answer is an answer, and re-asking until one complies is shopping for
+permission.
 
 ### Data-eligibility behaviour
 
@@ -493,20 +622,32 @@ requirement at WP-0.10.
 
 ## I. Tests and verification
 
-Run everything with `uv run pytest -q` from the repository root. **213 tests, all
-passing at this commit.**
+Run everything with `uv run pytest -q` from the repository root. **310 tests, all
+passing** — 213 at `ccc94e3`, plus 97 added by the 17 August corrective work.
 
 | Suite | Count | Command | Result |
 |---|---|---|---|
-| Schema and migrations | 89 | `uv run pytest packages/domain/tests/test_schema.py` | **PASS** |
+| Schema and migrations | 96 | `uv run pytest packages/domain/tests/test_schema.py` | **PASS** |
+| Restricted preflight | 34 | `uv run pytest packages/policy/tests/test_restricted.py` | **PASS** |
 | Version pinning | 26 | `uv run pytest infrastructure/ci/tests/test_check_pins.py` | **PASS** |
+| Gateway | 25 | `uv run pytest packages/gateway/tests/test_gateway.py` | **PASS** |
+| Registry | 24 | `uv run pytest packages/domain/tests/test_registry.py` | **PASS** |
+| **Router and fallback** | 22 | `uv run pytest packages/gateway/tests/test_router.py` | **PASS** |
 | Dependency boundaries | 20 | `uv run pytest infrastructure/ci/tests/test_check_boundaries.py` | **PASS** |
-| Restricted preflight | 19 | `uv run pytest packages/policy/tests` | **PASS** |
 | Credential scanner | 19 | `uv run pytest infrastructure/ci/tests/test_check_secrets.py` | **PASS** |
-| Gateway | 16 | `uv run pytest packages/gateway/tests/test_gateway.py` | **PASS** |
-| Registry | 15 | `uv run pytest packages/domain/tests/test_registry.py` | **PASS** |
-| `model_calls` persistence | 5 | `uv run pytest packages/gateway/tests/test_persistence.py` | **PASS** |
+| **Budget arithmetic** | 15 | `uv run pytest packages/policy/tests/test_budget.py` | **PASS** |
+| **Budget ledger (real PostgreSQL)** | 15 | `uv run pytest packages/gateway/tests/test_budget_ledger.py` | **PASS** |
+| `model_calls` persistence | 10 | `uv run pytest packages/gateway/tests/test_persistence.py` | **PASS** |
 | B2 credential parser | 4 | `uv run pytest infrastructure/ci/tests/test_check_b2_credential.py` | **PASS** |
+
+**One assertion inverted in this work, named here rather than buried.**
+`test_just_under_the_ceiling_still_calls` asserted that $199.99 against a $200
+ceiling admits a call. **That assertion encoded the defect.** It was replaced by
+two tests that state the real rule: one seeding spend so the specific call fits
+exactly and asserting it proceeds, and one using the same $199.99 seed with a
+larger call and asserting the provider is never contacted. Nothing else was
+deleted, skipped, or relaxed; two tests were renamed to describe what they
+actually assert. Full account in `VAL_WP04_Corrective_Audit.md` §P.
 
 ### Static and architectural checks
 
@@ -525,6 +666,15 @@ passing at this commit.**
 `Python service` · `Database and migrations` (ubuntu-24.04) · `Desktop shell`
 (macos-15). Every action pinned to a commit SHA.
 
+> **Corrected 17 August.** The `Python service` job ran
+> `pytest infrastructure/ci/tests` and nothing else, so **`packages/policy/tests`
+> and `packages/gateway/tests` were green locally and were never executed by CI
+> at all.** Found by audit rather than by a failure, which is the uncomfortable
+> part: six green jobs were reported on every commit while two whole suites went
+> unrun. The Python job now runs all three non-database suites, and the database
+> job additionally runs `packages/gateway/tests` so the write path and the
+> ledger's concurrency tests execute against a real PostgreSQL on every push.
+
 ### Live and manual verification
 
 | Claim | Evidence | Date | Result |
@@ -532,13 +682,19 @@ passing at this commit.**
 | CI rejects a boundary violation | PR #1, run `31732534362` | 14 Aug | **PASS** — 2 jobs failed as predicted |
 | Clean-checkout build | 72-file materialised checkout, full sequence | 13 Aug | **PASS** |
 | Migration reversibility | CI `Database and migrations`, every push | ongoing | **PASS** |
-| Encrypted backup to B2 | `pgbackrest info` — 2 backups | 14, 16 Aug | **PASS** |
+| Encrypted backup to B2 | `pgbackrest info` — **4 backups** | 14–17 Aug | **PASS** |
+| **Two consecutive unattended scheduled runs** | 16 Aug 03:15 full (Sun) + 17 Aug 03:08 incr (Mon) | 17 Aug | **PASS** |
 | Verified restore (local repo) | `verify_restore.py` — 7/7 tables, 11/11 FKs | 13 Aug | **PASS** |
 | PITR to a timestamp | recovery stopped before seeding txn | 13 Aug | **PASS** |
 | Restore refused without key | 0 files restored, `backup.info` unreadable | 13 Aug | **PASS** |
 | Restore refused with wrong key | same | 13 Aug | **PASS** |
 | Live provider call | OpenAI, $0.000905, cost arithmetic confirmed | 15 Aug | **PASS** |
 | Budget hard stop | seeded $250 vs $200 — no call, no row | 15 Aug | **PASS** |
+| **Ceiling enforced against the proposed call** | $199.99 committed, $0.01 left, larger call — provider never contacted | 17 Aug | **PASS** |
+| **Concurrent admission cannot exceed authority** | 2 threads / room for 1 → 1 admitted; 8 threads / room for 3 → 3 admitted, real PostgreSQL | 17 Aug | **PASS** |
+| **`0003` downgrade refuses to destroy an unknown-cost row** | `NotNullViolation`; row and revision both intact | 17 Aug | **PASS** |
+| **Expired reservation recovered without freeing budget** | state moved to `expired`, reported by id, committed spend unchanged | 17 Aug | **PASS** |
+| **Fabricated configuration cannot create a route** | rogue provider with a matching adapter wired in — refused | 17 Aug | **PASS** |
 | Restricted refused, no row | rows unchanged | 15 Aug | **PASS** |
 | Error normalisation | 3 real failure classes | 15 Aug | **PASS** |
 | Downgrade refuses to destroy records | scratch DB, `NotNullViolation`, record survived | 15 Aug | **PASS** |
@@ -582,10 +738,15 @@ Every one is recorded in the governing documents at the point it applies.
 | # | Blocker | Blocks | Owner |
 |---|---|---|---|
 | 1 | **Anthropic account credit.** Key authenticates and lists models; inference returns 400 "credit balance is too low". Likely credit on a different org, or a workspace key without spend allocation. | WP-0.4 completion — two providers, substitution, dashboard reconciliation | **Lord Armand** |
-| 2 | **Second consecutive scheduled backup not yet observed.** One occurred 16 Aug 03:15. Next firing 17 Aug 03:00. | WP-0.3 | Time |
-| 3 | **Restore from B2 not performed.** Mechanics proven locally only. | WP-0.3 | Claude, once #2 clears |
-| 4 | No fallback routing | Nothing at Layer 0 | Deferred |
+| 2 | ~~Second consecutive scheduled backup~~ | — | **CLEARED 17 Aug** — 16 Aug 03:15 and 17 Aug 03:08, both unattended, type selection correct on both |
+| 3 | **Restore from B2 not performed.** Mechanics proven against a local repository only, which does not establish that the bytes in Backblaze are retrievable. | WP-0.3 — **now the only outstanding criterion** | Claude |
+| 4 | ~~No fallback routing~~ | — | **CLEARED 17 Aug** — implemented, with the fallback independently re-checked rather than inherited |
 | 5 | Capture write paths absent for `execution_events` / `deliberations` | WP-0.8, WP-0.9 | Sequenced |
+
+**Three decisions await Lord Armand**, none of them blocking: confirming the two
+governing-document amendments of 17 August, whether the persona's semantic
+version should be stored, and whether caching and batch pricing should be
+verified now. All three carry a recommendation in `VAL_Open_Decisions.md`.
 
 ---
 
@@ -593,11 +754,17 @@ Every one is recorded in the governing documents at the point it applies.
 
 **WP-0.5 — Persona loading.**
 
-WP-0.3 and WP-0.4 are both blocked on things Claude cannot resolve — an account
-balance and the passage of a night. Neither blocker is in the code, and both will
-clear without further engineering. WP-0.5 is the next package with no dependency
-on either: it needs the `personas` table (exists, migrated, empty) and
-`03-persona.md` (v1.1, stable), both of which are ready.
+WP-0.4 is blocked on an account balance, which is not in the code. WP-0.3 is
+blocked on a restore from B2 — a single verification run, not engineering. WP-0.5
+is the next package with no dependency on either: it needs the `personas` table
+(exists, migrated, empty) and `03-persona.md` (**v1.2**, stable), both ready.
+
+Its persistence semantics were recorded on 17 August and should be read before it
+starts: `personas.version` is a **persistence revision, not the semantic label**,
+so the seeded row will read `version = 1` while holding v1.2 content; authored
+content is immutable and editing creates a new row; `is_active` is lifecycle
+state that may change, and activating a revision transactionally deactivates the
+former one without touching any authored content. `04-layer-0.md` §2.1.
 
 Its acceptance criteria require two separate checks — the assembled context
 byte-matching the **active `personas` row**, and that row byte-matching

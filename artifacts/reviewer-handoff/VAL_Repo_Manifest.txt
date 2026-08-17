@@ -1,13 +1,15 @@
 VAL repository manifest
-Commit: ccc94e301ca90737bb2e28425c0d906195f82361
-Generated: 2026-08-16T23:52:25Z
-Scope: every git-tracked project file. Excludes .git internals, node_modules,
+Commit: 3e96e6ed56ad50087961107692cc866bf430b9ad
+Generated: 2026-08-17T15:41:59Z
+Scope: every git-tracked project file, each with its size and SHA-256 — text and
+       binary alike, in one table. Excludes .git internals, node_modules,
        virtualenvs, build output, caches, database data, backup repositories,
        and .env (which is git-ignored and never packaged).
+Files: 134
 
 SIZE          SHA-256                                                           PATH
-2053          673356ac85cca16004add4bd304f1fdb73ad88344424b49ae96bd40256bca959  .env.example
-4986          f41d0dc121d101cd1e2cee558bac5f049279166c1d3bc5290490273dd6d5c828  .github/workflows/ci.yml
+2995          39bd780de21eea8e5aae74dad6aaf097813bc344169a6fff7377eff695dd830c  .env.example
+5672          3450b6590196d8d91faeca9e624c93d5b5af778c50f91e08546a094a0a19d3f3  .github/workflows/ci.yml
 1239          9a132e0015ae22070a5aa0798472c2f665fde9f426ff4cfcb03fb3dc605c0ad3  .gitignore
 8             7e8a2fa94951112b894a3dbe3d05efef5e9263741fa49125f0a70f40fedab4cc  .nvmrc
 7             922fe0c3de073b01988e23348ea184456161678c5e329e6f34be89be24383f93  .python-version
@@ -25,6 +27,24 @@ SIZE          SHA-256                                                           
 262           a93601f2ab8be96d85a1f99db03d1bc3cc62619fec251dc4aab9868009902f09  apps/desktop/src-tauri/Cargo.toml
 39            487059eaf8a947b80f20a9aacac038a5047b2ad69d2401b827376c67d6fe847f  apps/desktop/src-tauri/build.rs
 272           af5b411a08012f6d671674b5f3129eace245f5c525cafa7e49631d05a6a35c2a  apps/desktop/src-tauri/capabilities/default.json
+1023          da1382fac1bb1441df73fca6a802f5602a4bb51d2b616029b41dcc3418352585  apps/desktop/src-tauri/icons/128x128.png
+1276          b0fd23951e8e8070181d4113e7cdf8c83368e4321df86334d2e204771a172d64  apps/desktop/src-tauri/icons/128x128@2x.png
+441           c8e46bcc6df7e576a9439447b766ffe4be597f8ce717cbb562354403f98b88e2  apps/desktop/src-tauri/icons/32x32.png
+731           30f44ea93b880a6f097784e1be0e2723477c97e47b6724b3eca5a4808f403033  apps/desktop/src-tauri/icons/64x64.png
+950           908f1eea0a71206ffdc736ad122a7b0f68255d459969cdd504f91454e6eedeaf  apps/desktop/src-tauri/icons/Square107x107Logo.png
+1155          f4637088edc2983fb74a829fac6a359d0bed4534c309412b26c28405a6eee186  apps/desktop/src-tauri/icons/Square142x142Logo.png
+1138          f6cf090a88de304fd4f801e8b655d5e138af7c443dc2b9649505901e1c3a6ed1  apps/desktop/src-tauri/icons/Square150x150Logo.png
+1501          7b8840e4982a21aa327d1f701347d6f9a8d9dfdcef4627a18b67c242d45abee9  apps/desktop/src-tauri/icons/Square284x284Logo.png
+450           39eab6d726818cdd4228a1b49f0088929ccdc5425841d90e4128e8914b3915df  apps/desktop/src-tauri/icons/Square30x30Logo.png
+1747          c97e2867d7b0919619630e3e2dfe6d7bd647f9f958436a2eab89ca1bcf39f8e9  apps/desktop/src-tauri/icons/Square310x310Logo.png
+633           bbc1305f475bf918d41366349ec378332b70a5e2f27a3bfda64523682c4b6307  apps/desktop/src-tauri/icons/Square44x44Logo.png
+821           a2f3b1bf4dd0ca62cd53e5217d718fea1dc4fd26ab870683fd77ae567bbb9e06  apps/desktop/src-tauri/icons/Square71x71Logo.png
+931           5893ed6092481a30af67923f2a9d14f7ebf040ae5e2e03c1b6e1e1237ec95764  apps/desktop/src-tauri/icons/Square89x89Logo.png
+682           f6a5838d5bb3ee024beb82add3ec8bfc292663cfb8a661ba444502ff0af113ec  apps/desktop/src-tauri/icons/StoreLogo.png
+18087         3239867b03321bde9f06cf971bcea5dcba4561b4ca6596555d63c07e7a87b920  apps/desktop/src-tauri/icons/icon.icns
+4495          f18a787d9dfd37503ae07ce41867350f3cf2ef4dadb430253b420eb7428db171  apps/desktop/src-tauri/icons/icon.ico
+2452          857853d7b546f62669a5a516f9f7d8917fd816e9bb3182e222276ac70a2b9342  apps/desktop/src-tauri/icons/icon.png
+6316          b5dd35941888ab1525f678545415745b0b4bce36dfcf3328cf14f243a7bf7beb  apps/desktop/src-tauri/icons/source-1024.png
 510           bedb283cc39cae97894a83ca932a8a1a46503f99c47a233880ccb5da63dd6bc0  apps/desktop/src-tauri/src/main.rs
 757           e39d2a32da7424d09e24cd988c912695f90d9f41d27c73db55687daeaa093d03  apps/desktop/src-tauri/tauri.conf.json
 348           e67ccc6353ff9dd5b51917ab2adcf6ba24bd80c40f5f380685a4743ab2d187a6  apps/desktop/src/App.tsx
@@ -34,15 +54,29 @@ SIZE          SHA-256                                                           
 503           f102e0cdcaece646b623382f646fd675f90abb3ace7c5f670fd9231efded048f  apps/worker/pyproject.toml
 117           38b148b1cc1b2a66c5f46cb009393e34badc01666bff7c41b97d1ed5d91acee8  apps/worker/src/val_worker/__init__.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  apps/worker/src/val_worker/py.typed
+7613          2314b4d742ee1efb07c8eea3971b7c291ecdaab534ad8403171c0b0127f096e0  artifacts/reviewer-handoff/VAL_Crossreference_Audit.md
+43140         75a6ca09f94d333da243096c466a65166a733a0122a82a2034b5c93a705de38e  artifacts/reviewer-handoff/VAL_Engineering_State_Handoff.md
+6642          4964075b4e03b2c0dd3ce1e3294bbd5fe4a27f205a0bf578b473aa709a85f62d  artifacts/reviewer-handoff/VAL_Open_Decisions.md
+16440         c7993fc37e203ad9b7900e17a3b18d423b831b1973d664bd3a988893b6452fd7  artifacts/reviewer-handoff/VAL_Repo_Manifest.txt
+418919        9759187f4ee8397c5367623ddbc1ec36facb30aab5d44897309476a4770a598c  artifacts/reviewer-handoff/VAL_Source_Snapshot_3e96e6e.zip
+17771         d5a20f66bd78aaaa1af70bf8afebf94411e0f178064006e264c75d25c56a389e  artifacts/reviewer-handoff/VAL_Test_and_Evidence_Index.md
+50628         99c07b7babf8e6ee0de9397ef3a558b72c679fae07697ca6d5d0aa16699ed571  artifacts/reviewer-handoff/VAL_WP04_Corrective_Audit.md
+15802         5c49880ffd089a13a6a1e3ecfada3fa8f2315df4d8e03c3af406aedf9c7646e5  artifacts/reviewer-handoff/governing/00-charter.md
+43726         166f8df53d6b3b279a605818404f9a5b0088166bbd0ce1bd77533cf76ba18c58  artifacts/reviewer-handoff/governing/01-architecture.md
+27805         0f629d7a8938545250fc891e723e340ed93d7da3647f87249a98f950f90e5f56  artifacts/reviewer-handoff/governing/02-partner-systems.md
+18106         1d502685773b9b42f33081b013ae51ca06585236600d5aaede0b9df7b8dddd04  artifacts/reviewer-handoff/governing/03-persona.md
+31741         a1ee5b772b4839fd1847ad6f1c53ce5bec0c408a3d68a6255db4a701f9b2111f  artifacts/reviewer-handoff/governing/04-layer-0.md
+7423          114e31dafc534e5d8a788800805a92cebfff1d564bd87030d085f8e57c2f7e3c  artifacts/reviewer-handoff/governing/CLAUDE.md
+1533          68589cadae1642f4d72df3044b2b89bbb0ea328decded78095890154acc01733  artifacts/reviewer-handoff/governing/README.md
 5205          e19a143694317cc3bdcd6628cac49a0be99b3d2c1c90cae0234b9c9ffe3353fa  docs/ARCHIVE-NOTE.md
-7187          d070821b66f042eafa36e2280bb5babbc73bb01a2e2740ef8acda9c497609b96  docs/BACKUP.md
+10934         bd9fec86a57cfc308abbeb18269ec2fb56c931f25b1e76aa3b23a580ae55cd73  docs/BACKUP.md
 4967          47cfef696170cb9da18654e6dd1bdc494cbaf1bfe0983c93aa52556c3297a8ec  docs/BUILD.md
 6532          93abaac8d34622279af3ba0353187398ed26dfd61c6ed39a5975d74d2ab68f67  docs/TOOLCHAIN.md
 15802         5c49880ffd089a13a6a1e3ecfada3fa8f2315df4d8e03c3af406aedf9c7646e5  docs/baselines/00-charter.md
-36519         3db2aef7d1030ef9a1130437b3fc59e0d2d0de1e007412b1bc01c3f8b65bbac5  docs/baselines/01-architecture.md
+43726         166f8df53d6b3b279a605818404f9a5b0088166bbd0ce1bd77533cf76ba18c58  docs/baselines/01-architecture.md
 27805         0f629d7a8938545250fc891e723e340ed93d7da3647f87249a98f950f90e5f56  docs/baselines/02-partner-systems.md
-16026         ee3a46e9b3a3757e3c9cd9585cff8c8ac787b9ec0a2cc92cd0185b874551e149  docs/baselines/03-persona.md
-21821         b9d8fa99d9660ddd33ea569aca6a4e596ed7d56e6a8a5111f5a8c23a4844a201  docs/baselines/04-layer-0.md
+18106         1d502685773b9b42f33081b013ae51ca06585236600d5aaede0b9df7b8dddd04  docs/baselines/03-persona.md
+31741         a1ee5b772b4839fd1847ad6f1c53ce5bec0c408a3d68a6255db4a701f9b2111f  docs/baselines/04-layer-0.md
 5876          b252f93817fa3f0912587167aa7dbc748048d65ed3650fddab820f8a29eb85c9  infrastructure/backup/check_b2_credential.py
 1124          178e750ba31d97f37122a34212c0ba7b9ba08dea5ace9f99ba822331424dde3d  infrastructure/backup/launchd/house.armand.val.backup-watch.plist
 1334          fc9789ae60e5d4aadf1213cce928e3c59a02001b90c2da038ba82416af43fb69  infrastructure/backup/launchd/house.armand.val.backup.plist
@@ -50,9 +84,10 @@ SIZE          SHA-256                                                           
 6603          89d0809f64a995cb3f198cf2dcddf6b129921609bf394d6cddf9782d56132372  infrastructure/backup/verify_restore.py
 4293          4bd948d5de8d61b66098f043d2210f7c564d753fb62ca3182722263e25dfbb22  infrastructure/backup/watch_backup.py
 17412         99525831228fa64131f78c87a51f041feda380dfe014e0a41a5f1a28311b8d41  infrastructure/ci/check_boundaries.py
-12858         6313ec869e56b0262531498c0ac2c33964ff7779dfb5c9cd1d6829e717b4e25f  infrastructure/ci/check_pins.py
+13281         0e0ecd173de6317c972ec082aaa904fae7a4d0863976fe9a956f32a583521fa9  infrastructure/ci/check_pins.py
 7604          168cc5b4f30306d81447e33296df27c88b9522efa31a4daa512beaa735ac13d6  infrastructure/ci/check_secrets.py
 3328          140096beb79b218daef4c489dda5e1ebf8ddd6d8d27d9cd8ff8863062afe5582  infrastructure/ci/components.toml
+3251          d143c2ba3f8d421e8e8c7bda33a66e2a2c02002998d5a292f398118db1b3c8a1  infrastructure/ci/generate_manifest.py
 2038          1e6005fad6615a05496e01f0369c953e521d554881ffadf900bbccdc7dfb8c1a  infrastructure/ci/tests/test_check_b2_credential.py
 9316          deb301d459b936917de03a9edce22a4ca54c48a85ade0977785da1bd08f821cc  infrastructure/ci/tests/test_check_boundaries.py
 5309          1748851f73ea9e943d870ddc958a428dc043907514d1b87741d36d030f24e9a8  infrastructure/ci/tests/test_check_pins.py
@@ -61,34 +96,42 @@ SIZE          SHA-256                                                           
 579           9a91f57e96b0947bff4890ea96e63c54f640a4a8f6b82e1127950f8bc815e08c  packages/domain/migrations/script.py.mako
 13727         480183274d42797602aff7c3d31428d007b2e528ac12e413848fa0f740848c56  packages/domain/migrations/versions/0001_layer_0_schema.py
 6545          630cae3162c720be2e7afebbf3c281e63e3a71bca17d242bbf85250cb6699cca  packages/domain/migrations/versions/0002_reaction_and_ideas.py
+9101          ab2fd995a6d902adb5ce108671ee25977fddde9aeefd918e5da2da46d2b4d53f  packages/domain/migrations/versions/0003_budget_reservations.py
 637           5eb7b99ab8fd48c02f7ba005a01a55449a005a238bb1e8f48411e8403193a309  packages/domain/pyproject.toml
 129           6d5d4b14323d119f93a02a15848a573e8df5e574bfe785daf6514cc5c3379647  packages/domain/src/val_domain/__init__.py
 1207          49bc97a75497e1e929f8ea80917328965579fed0611197be86dee5a9db5fc7c9  packages/domain/src/val_domain/database.py
-5060          7ebccd0517a6d791ad6a4c2e9b4816ff15c50aa6aefe431e7398853e410ff87f  packages/domain/src/val_domain/gateway.py
+10654         d1dce359f9c8231633fad5a29aac417c0a44c8c2408257427e308984f837d406  packages/domain/src/val_domain/gateway.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  packages/domain/src/val_domain/py.typed
-6862          b2b1f4c8de51aee9fc474399f7641ff2b5c6b18c2c9599b181a20d451a880216  packages/domain/src/val_domain/registry.py
-19358         28b205253225a1b17200e016cecc4ad5ac4bec66e8c1ef8a5ae5bfcb566c9aa1  packages/domain/src/val_domain/schema.py
+9795          c1313b029b92bf46c4963b9da8ef3b7b691f010f0d348f2d8ccf2186cb905826  packages/domain/src/val_domain/registry.py
+27305         d2f2f4b43139c41185184e05bd4a0ff31a3570c511cc22894e1e9f25baea652d  packages/domain/src/val_domain/schema.py
 2814          3e51ac3ef8bb52bf4ee81639a2fa66087adf81fcc47798e16998fbecedfc847a  packages/domain/tests/conftest.py
-3795          14b98070584e9f6694c142d5dea0cb6e55c4edce6b71e9a6017933e29d0c3fa6  packages/domain/tests/test_registry.py
-27850         8ffae1e70b0d0214d048511eb65de3ecb522ab9684deab27ae3faa7049751ada  packages/domain/tests/test_schema.py
+8231          b8fb36fe2bae4aaf122be50e175517f68867d1b517733e39bab846ba029370a0  packages/domain/tests/test_registry.py
+29512         1f04272730029f59723fe5bbab2b1ede73826f0b8cf00b4eaeb1a6752beff8f5  packages/domain/tests/test_schema.py
 773           7007724b74a3fd7985150a7a897aa7d4777b2e7032abae8b6d80b019d1213dec  packages/gateway/pyproject.toml
 831           9710518153085ce052d6f22aa94e2cf41cf2a0d07c8c0520f7fa29c2b4e685bd  packages/gateway/src/val_gateway/__init__.py
-9902          a6ab79e1c142a157b2dfab1c565afe9046fa9147046781ed6540038d47965385  packages/gateway/src/val_gateway/gateway.py
-3488          698520cdcfa4813ce34ca0e444cd62292d7af684ee1b9a63d878de012a2a554c  packages/gateway/src/val_gateway/persistence.py
+21021         bb4edd0011926f6385719151d88107d295a2ba540a729f2e97cc781b22df971c  packages/gateway/src/val_gateway/gateway.py
+15150         7fcadad984e2865ff8f2a7cdf0e544b74af96ad0a9deb3ab3f309a2480aaf55e  packages/gateway/src/val_gateway/ledger.py
+5988          998e1c5d95584bc081c7245466f3e530a174dc966e5fd89b336e616d564c567f  packages/gateway/src/val_gateway/persistence.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  packages/gateway/src/val_gateway/py.typed
-4104          6b749649f75384bb15a00d39ff6686af93fb906153b197912faa18e602501c80  packages/gateway/src/val_gateway/startup.py
-9729          f2234e5c2e53bf26903c0ac90e97de0773288ba1904afad93963eb36e8f2b74a  packages/gateway/tests/test_gateway.py
-2945          0904dcf2f79839cb186b5f287f876408a9bdf04d8d5c24060b295cb76d8a8ec0  packages/gateway/tests/test_persistence.py
+4704          a20eec83d3627d5415d367e56fc763bc7b3c1f6a26ff6097b9603e49f1dc11fa  packages/gateway/src/val_gateway/startup.py
+1829          f71082eda963e24b546c5d5ef0cf462ebe0dd068673ff87f6a87f357feed2d45  packages/gateway/tests/conftest.py
+6088          91556670d3159ebe29364fc4bbf5e8c85d2ec044b18f232ce3263f8d28cdb991  packages/gateway/tests/gateway_fakes.py
+12562         508fdd756f65484f73e7d839996175530e1a9bec5b5ee145f2711fca5e872d18  packages/gateway/tests/test_budget_ledger.py
+14974         017e6bc123b0775193185b32e06009c7a4e58cb930f8d049cbccd1d90cc0bde1  packages/gateway/tests/test_gateway.py
+6584          bc3ef1f31a91d8913259ab5c79655d95130d282809cb7aa3db133d18ede672b5  packages/gateway/tests/test_persistence.py
+16086         23acfaefd51116aac76079dbbbf54525443fb5c7cf829e61a867bd51d812304e  packages/gateway/tests/test_router.py
 409           4bc6c99b8ab0534cd8712b677770e3e803d955fe5e41033cec9a8f96ef5dfce6  packages/mcp/pyproject.toml
 150           22afe1debf1afa94e971bfe3b04b93d9c4e7a189e9c0a4225e9c539316fef3d5  packages/mcp/src/val_mcp/__init__.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  packages/mcp/src/val_mcp/py.typed
 414           700c1c1588eaa52a0d116458ffff5ffc04f5dbfc0a9c9f63ce1e77b696cf0add  packages/policy/pyproject.toml
 217           e1fa2c89345c493244a8d5b65b3e9ff8df01750d2daf3627d05e08e53866b327  packages/policy/src/val_policy/__init__.py
-1336          8cf1aec4b4317f6dca077a54253fba06446818ba503a1e8ba9555699d935ec25  packages/policy/src/val_policy/budget.py
+5576          697b4b9108c2a94e5863826922311b706eefed4d68f6e9f987354ec1c9dbac62  packages/policy/src/val_policy/budget.py
 4735          61bd68f7a9d4e03deae12b015bac515695fda52591556f4bd11306c989e8e420  packages/policy/src/val_policy/eligibility.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  packages/policy/src/val_policy/py.typed
-7161          470ab9c45b0a8b01166376f00c17ef65be184e7c3226ed526c4b9fb234474612  packages/policy/src/val_policy/restricted.py
-4162          b739a6f93bbcec42cdb364bd8ffbed7edc4f6a241a7f3b07c54854f2f72ac56a  packages/policy/tests/test_restricted.py
+12544         a5074935379d8188b45b3c2765aa080905ff87ccef6486451e202ec13272f739  packages/policy/src/val_policy/restricted.py
+6055          be59c5ef8d50070168684977728a9eb44e46bd51ad227c117fabf100c0884e7e  packages/policy/src/val_policy/routing.py
+5106          d9f9b726b93f9117137f3842cb6fd7a795eee5ad94ca25ce222148d0129f980a  packages/policy/tests/test_budget.py
+8013          f8a86009d15a627a7dd3b8a28bd26f5055f69b42702f1d4f0261ba6fdb92d2aa  packages/policy/tests/test_restricted.py
 587           2a77fe1cc03f8438947c4a68c99e7ee76bce9721e7c3fdd1b34285991ad3f143  packages/providers/pyproject.toml
 165           68f43ff96336ad4f00710bedbe478422a12e7b854bba7828c4faf2f51baf791e  packages/providers/src/val_providers/__init__.py
 2141          814b97162d24691d83626661c845d4f14c3a6a727ce498d01aafa3e376d6b0a1  packages/providers/src/val_providers/anthropic_adapter.py
@@ -99,23 +142,3 @@ SIZE          SHA-256                                                           
 4256          f28398fd8f4f36824f2dee99a07e0829a2ddb2c103b0a9caceeda2f87d865edc  pyproject.toml
 271           45a6dc91c74f2207ced34757094ebfdcc753db0c49ca3faa93c30b7bcbf59c31  rust-toolchain.toml
 124312        7a835fe6cffd7728a2e45a61ad6150162abd92fc892b30b017e8e607c68209ce  uv.lock
-
-Binary assets omitted from hashing above (desktop icons), listed for completeness:
-  1023       apps/desktop/src-tauri/icons/128x128.png
-  1276       apps/desktop/src-tauri/icons/128x128@2x.png
-  441        apps/desktop/src-tauri/icons/32x32.png
-  731        apps/desktop/src-tauri/icons/64x64.png
-  950        apps/desktop/src-tauri/icons/Square107x107Logo.png
-  1155       apps/desktop/src-tauri/icons/Square142x142Logo.png
-  1138       apps/desktop/src-tauri/icons/Square150x150Logo.png
-  1501       apps/desktop/src-tauri/icons/Square284x284Logo.png
-  450        apps/desktop/src-tauri/icons/Square30x30Logo.png
-  1747       apps/desktop/src-tauri/icons/Square310x310Logo.png
-  633        apps/desktop/src-tauri/icons/Square44x44Logo.png
-  821        apps/desktop/src-tauri/icons/Square71x71Logo.png
-  931        apps/desktop/src-tauri/icons/Square89x89Logo.png
-  682        apps/desktop/src-tauri/icons/StoreLogo.png
-  18087      apps/desktop/src-tauri/icons/icon.icns
-  4495       apps/desktop/src-tauri/icons/icon.ico
-  2452       apps/desktop/src-tauri/icons/icon.png
-  6316       apps/desktop/src-tauri/icons/source-1024.png

@@ -53,6 +53,29 @@ One migration set, Alembic, from the first commit. No manual DDL at any point.
 
 **`personas`** — `id`, `version`, `content`, `is_active`, `activated_at`, `authored_by`. Versioned from the first load. Editing the persona creates a version; it never mutates a row.
 
+> **Clarification — 17 August 2026, Lord Armand. Recorded before WP-0.5 begins, not implemented by it.**
+>
+> **`personas.version` is a persistence revision, not the persona's semantic version.** It is a monotonically increasing, immutable record number — `1`, `2`, `3`, … — and it counts rows, not authorship. The authored document keeps its own label: **v1.1, v1.2, v2.0**. The two are different scales measuring different things, and the row seeded from the current persona document therefore carries persistence revision **`1`** whatever semantic label that document bears.
+>
+> **The persistence revision must never be presented as the persona's semantic version.** An interface showing "Persona v1" over a row seeded from v1.2 is displaying a state the record does not support (invariant 29), and the mistake is invisible until someone asks which persona was live during a conversation.
+>
+> **The semantic label is not currently storable.** §2.1's column list has no field for it, and this clarification does not add one — that is a schema change and it belongs to whoever implements WP-0.5, with the reasoning already written down here. **The smallest sufficient change is one nullable `semantic_version` text column on `personas`**, carrying `v1.2` beside revision `1`. It is proposed, not made. Without it, "which authored version was active on 3 September" is answerable only by matching stored content against git history, which works and is not a record.
+>
+> **Immutability and activation, stated exactly**, because the current wording admits two readings and only one is intended:
+>
+> | Property | Rule |
+> |---|---|
+> | Authored content | **Immutable once stored.** `content` is never updated on an existing row. |
+> | Record identity | **Immutable.** `id` and `version` never change. |
+> | Editing the persona | **Creates a new row** at the next revision. It never rewrites the prior one. |
+> | Prior content | **Never overwritten**, and never deleted (§2.3). |
+> | `is_active` | **Lifecycle state, and it may change.** It is selection, not authorship. |
+> | Activating a revision | **One transaction** that deactivates the former active row and activates the new one. |
+> | How many may be active | **Exactly one**, enforced by a unique partial index rather than by convention. |
+> | Activation and history | Changing `is_active` **never touches authored content.** Which persona is live is a different fact from what any persona says. |
+>
+> The distinction is the whole point: the persona's *content* is an authored artifact and is append-only; the persona's *activation* is operational state and moves. Collapsing them gives either a persona that cannot be switched or a history that gets edited to make the current state convenient — and the second is what invariant 14 exists to prevent.
+
 ### 2.2 Capture
 
 These three tables are the point of the layer.
@@ -64,8 +87,9 @@ These three tables are the point of the layer.
 | `id`, `created_at` | |
 | `model_config_id` | The configuration, not a bare model string |
 | `provider`, `model_identifier` | Denormalised deliberately — a retired config must still resolve historically |
-| `tokens_in`, `tokens_out` | |
-| `cost` | Computed at call time from the config's rates. Never recomputed later. |
+| `tokens_in`, `tokens_out` | **Nullable since the 17 August 2026 amendment** — NULL exactly when `cost_certainty = 'unknown'` |
+| `cost` | Computed at call time from the config's rates. Never recomputed later. **Nullable on the same terms.** |
+| `cost_certainty` | `known` \| `unknown`. **Nullable** only on rows written before this amendment. |
 | `project_id` | Nullable, matching `conversations` |
 | `task_type` | Enumerated. Layer 0 values: `conversation`, `classification`, `strip`, `blind_position`, `title` |
 | `conversation_id`, `message_id` | Nullable |
@@ -73,6 +97,20 @@ These three tables are the point of the layer.
 | `status` | `ok` \| `error` \| `refused` |
 
 `cost` is stored, not derived. Provider pricing changes, and a historical record that silently re-prices itself is not a record.
+
+> **Amendment — 17 August 2026, Lord Armand, after external review.** A provider attempt has three accounting outcomes and only two of them are rows:
+>
+> | Outcome | Provider reached | Recorded |
+> |---|---|---|
+> | **NOT_SENT** | No | **No row at all.** Cost is definitively zero, and it was not a model call. |
+> | **SENT_COST_KNOWN** | Yes | Real figures, `cost_certainty = 'known'` |
+> | **SENT_COST_UNKNOWN** | Yes, or possibly | `cost_certainty = 'unknown'`, figures **NULL** |
+>
+> The implementation had been writing `tokens_in = 0, tokens_out = 0, cost = 0` for every failure, including failures that occurred after the request reached the provider. That is not an unknown recorded as unknown; it is a figure known to be false recorded as a fact, and it flowed into the month-to-date total the ceiling was enforced against. **A call that reached the provider consumed its input tokens whatever happened to the response.**
+>
+> Two check constraints make the false zero unwritable rather than merely discouraged: `known` must carry figures, and `unknown` must carry none. Rows written before this amendment keep every figure they hold and carry a NULL certainty, meaning *written before the distinction existed* — the 0002 precedent, NULL rather than a neutral value, because guessing which state an old row deserves would be inventing evidence.
+>
+> **The rule about errored calls and spend, stated truthfully.** A refusal and an error that reports usage count at their real cost. An error that reports no usage cannot count at its real cost because nobody knows it — so it counts against the ceiling at its **reserved maximum** (§2.5) while its `model_calls` row records the cost as unknown. The ledger is conservative about what may be gone; the call record is honest about what is known. They differ on purpose.
 
 **`execution_events`** — every acceptance, rejection, revision, and correction
 
@@ -128,6 +166,32 @@ Two rules, binding on every writer and on Layer 5 distillation:
 - **`implemented` is never inferred from discussion of how something might be built.**
 - **`approved` is never inferred from enthusiasm.**
 
+### 2.5 Budget reservations — amendment, 17 August 2026, Lord Armand
+
+Enforcing the ceiling against the call being proposed rather than against history (`01-architecture.md` §5.7 as amended) requires knowing what is already claimed but not yet settled. That is a fact about the house rather than about a process: `api` and `worker` share one gateway implementation and not one address space, and two counters would each observe the same headroom and together spend it. **PostgreSQL is the only place that can answer for both**, so this is a table.
+
+**`budget_reservations`** — `id`, `created_at`, `updated_at`, `state`, `model_config_id`, `slug`, `provider`, `model_identifier`, `task_type`, `project_id` (nullable — same rule as everywhere), `max_cost`, `settled_cost` (nullable), `cost_certainty` (nullable), `model_call_id` (nullable), `resolution` (nullable)
+
+`state` values: `reserved` | `settled` | `released` | `expired`.
+
+| State | Means | Counts against the ceiling |
+|---|---|---|
+| `reserved` | Admitted; the provider is being contacted | Yes, at `max_cost` |
+| `settled` | The attempt finished | Yes, at `settled_cost` |
+| `released` | No provider request occurred | No |
+| `expired` | The process died holding it | **Yes, at `max_cost`** |
+
+Four rules, binding:
+
+- **Admission is atomic.** The sum, the decision, and the insert happen in one transaction under a lock, so no second caller can slip between the sum and the insert. A check-then-act guard leaves exactly that window open, and two calls through it breach the ceiling by the size of one call.
+- **`expired` still counts.** A reservation whose process vanished may or may not have reached the provider, and nothing on this machine can establish which. Freeing it would treat an unknown consequential outcome as a successful non-event, which `00-charter.md` §4 forbids in as many words. It stays committed, it is reported in words at startup, and it falls out of the sum when the month resets — so a crash costs at most the remainder of one month and never silently widens what may be spent.
+- **An unknown cost settles at the full reserved maximum.** The provider was reached and would not say what it charged; releasing the difference would treat "we cannot tell" as "nothing was spent."
+- **`settled_cost` may exceed `max_cost`, and if it does the record says so.** It should never happen — the reserved figure is an arithmetic upper bound, not an estimate — but the row is written truthfully rather than clamped. A tidy number concealing a breached ceiling is worse than the breach.
+
+No hard delete, like every other table (§2.3). A spending record that can be deleted is a spending record that will be.
+
+**Why this is a table when the Model Configuration Registry is not.** The registry is a versioned artifact whose history belongs in git — dated, diffable, attributable, and unable to drift once deployed. A reservation is the opposite: it is mutable state that two processes must agree on *right now*, and the whole mechanism is that agreement. Neither shape fits both.
+
 ---
 
 ## 3. Work packages
@@ -153,6 +217,8 @@ Each states what exists when it is done and how that is verified.
 - `alembic downgrade base` then `upgrade head` succeeds — migrations are reversible.
 - Schema matches §2 exactly. No table exists that §2 does not name.
 
+> **Note on reversibility, 17 August 2026.** "Reversible" means the migration set has a defined and tested downgrade from an empty-database run, which CI exercises on every push. It has never meant that a downgrade may destroy capture records to succeed. Two migrations deliberately fail against real data — `0002` on reaction-only rows, `0003` on rows honestly recording an unknown cost — and that refusal is the correct behaviour, not a gap in reversibility. A rollback that erases what was captured is not a rollback.
+
 ### WP-0.3 — Backup and verified restore
 
 **Done when:** automated encrypted off-machine backup runs daily, WAL archiving is enabled, and a restore has actually been performed and verified.
@@ -175,6 +241,9 @@ Each states what exists when it is done and how that is verified.
 - Every call writes a `model_calls` row with cost, project, and task type populated. Zero calls without a row — verified by comparing provider dashboards against the table for a day of real use.
 - Provider errors, timeouts, and refusals normalize to one error contract. Test by pointing a configuration at an invalid endpoint and at a request that will be refused.
 - **Hard stop:** with month-to-date cloud spend seeded above the ceiling, cloud routing stops and Val says plainly that it has. Test with a seeded value; do not wait for it to occur naturally.
+- **The ceiling is enforced against the proposed call — amendment, 17 August 2026.** With spend seeded at $199.99 and a call authorised to consume more than the remaining $0.01, the provider is **not contacted**. Two simultaneous calls competing for insufficient headroom admit at most the authorised amount between them, proved against a real PostgreSQL rather than a fake. A reservation released, expired, or settled below its maximum returns exactly what it should, and an expired one returns nothing. Mechanism: `01-architecture.md` §5.7 and §2.5 above.
+- **Cost accounting is truthful — amendment, 17 August 2026.** A rejection before the provider is contacted writes **no** `model_calls` row. A provider failure carrying no usage is recorded as `cost_certainty = 'unknown'` with NULL figures, never as a zero, and its reservation stays charged. §2.2 above.
+- **The gateway routes — amendment, 17 August 2026.** A caller states what the content is and what the work is; the gateway selects the configuration. It selects only among configurations admitted for Layer 0 and eligible for the classification; a cheaper ineligible configuration is never selected; a fallback is used only if it independently satisfies every rule; and where no route qualifies the result is a normalized, truthful unavailability, never a downgrade. Passing an arbitrary provider and model identifier through an application path does not create a route.
 - **Eligibility is enforced at startup, not at call time.** Configuring a provider not declared eligible for Protected content causes startup to fail with a clear error. Test by adding an ineligible configuration; the service must refuse to start. A check that only fires when the call is made is not the guarantee §1.1 claims.
 - Restricted content is refused rather than routed. Test with content classified Restricted; Val declines and explains, and no `model_calls` row is written.
 - **Restricted preflight — amendment, 15 August 2026, Lord Armand.** A deterministic local check reads the *content* before any cloud transmission, because the stated classification is only as good as the caller's knowledge. It runs before the provider is contacted, never uses the receiving model to classify, **blocks rather than downgrades**, fails closed if the check itself errors, writes no `model_calls` row (no call occurred), records the block, and explains plainly. Deliberately small: obvious credentials, keys, connection strings, government identification, and Luhn-valid payment cards. It is **not** the Layer 2 per-content classification system arriving early.
