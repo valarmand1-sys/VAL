@@ -115,6 +115,7 @@ should, rather than proving it passes what it should.
 | 5.5g | The reservation covers the whole authorised output, and the surplus is freed | `test_the_reservation_covers_the_whole_authorised_output` — 64,000 authorised, 10 used, settled at under 1% of the hold | 17 Aug | **PASS** |
 | 5.5d | An overrun is recorded truthfully rather than clamped | `test_an_overrun_is_reported_rather_than_clamped` — settled $5.00 against a $0.01 reservation: both figures kept, reported as `INVARIANT 24 VIOLATION` | 17 Aug | **PASS** |
 | 5.6 | Errors normalise to one contract | Unroutable endpoint → `provider_error`; bad credential → `authentication`; unknown model → `invalid_request` | 15 Aug | **PASS** |
+| 5.6d | **A billing failure is a route problem, not a request problem** | **Found by running the system, 17 Aug.** Anthropic returns "credit balance is too low" as an HTTP 400 → normalised to `INVALID_REQUEST`, which is deliberately non-retryable, so the router refused to fall back and a real exchange failed while a working route sat unused. Corrected to `PROVIDER_ERROR`; a genuinely malformed request is still not retried. `req_011Ce8xDp7bfjRu5BgXqNuXx`. | 17 Aug | **PASS** |
 | 5.6a | **A provider failure with no usage is recorded as unknown, never as zero** | **Correcting 5.3, 17 Aug.** The 15 Aug write path recorded `0/0/$0.00` for every error, including errors after transmission — a figure known to be false. Now `cost_certainty = 'unknown'` with NULL figures, and two check constraints make the zero **unwritable**. `test_the_database_refuses_an_unknown_cost_carrying_a_zero`. | 17 Aug | **PASS** |
 | 5.6b | An unknown-cost failure does not restore its reserved budget | `test_an_unknown_cost_does_not_hand_the_reservation_back` — settles at the full maximum; committed spend unchanged by the failure | 17 Aug | **PASS** |
 | 5.6c | A rejection before the provider creates no `model_calls` row | `test_a_pre_provider_rejection_creates_no_model_call` — no row, and no reservation taken | 17 Aug | **PASS** |
@@ -130,6 +131,42 @@ should, rather than proving it passes what it should.
 | 5.11 | **Zero uncosted calls over a day of real use** | Requires 5.9 and a day of use | — | **NOT RUN** |
 
 ---
+
+## 5b. Persona loading — WP-0.5, 17 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5b.1 | The governing persona is seeded into PostgreSQL | revision 1, authored v1.2, id `01a01169-…d8b1`, 17,999 chars | **PASS** |
+| 5b.2 | The stored content is the document byte-for-byte | `content.encode("utf-8")` equals the file's bytes; sections a summariser drops first are present | **PASS** |
+| 5b.3 | The stored digest is the document's digest | `1d502685…7b8dddd04`, identical to the file read before any work began | **PASS** |
+| 5b.4 | Reseeding is idempotent | Three runs: `created`, `unchanged`, `unchanged`; one row. Keyed on the source digest, so it holds across machines and a restored database. | **PASS** |
+| 5b.5 | A changed document is not silently imported | `PersonaSourceChangedError`; nothing written. Git moving is not authorisation. | **PASS** |
+| 5b.6 | **Check one** — assembled context matches the active row | `system` byte-equal to the active row's content, live and in tests | **PASS** |
+| 5b.7 | **Check two** — the active row matches the governing source | `verify_against_source` reports no findings | **PASS** |
+| 5b.8 | **The two checks are genuinely independent** | A record constructed to pass check one and fail check two: check two catches it. This is the failure comparing the context straight to the file would miss. | **PASS** |
+| 5b.9 | Authored content cannot be updated | A `BEFORE UPDATE` trigger; 6 parametrised cases, each refused and each leaving the row unchanged | **PASS** |
+| 5b.10 | Exactly one revision is active | Partial unique index, verified to exist by its own test | **PASS** |
+| 5b.11 | Zero active personas fails loudly | `NONE_ACTIVE`; no generic Val, no embedded fallback | **PASS** |
+| 5b.12 | Multiple active personas fail closed | The loader refuses rather than picking newest or first | **PASS** |
+| 5b.13 | A failed activation leaves the previous revision active | Activating a missing id rolls the deactivation back with it | **PASS** |
+| 5b.14 | A new revision leaves the old content untouched | Revision 1 byte-identical after revision 2 is created and activated | **PASS** |
+| 5b.15 | Persona appears exactly once | Structural — `system` is a single field | **PASS** |
+| 5b.16 | Provider substitution leaves the persona identical | Proved in tests and **live**, across a real fallback within one exchange | **PASS** |
+| 5b.17 | Project switching leaves the persona identical | Same content, same `persona_id`; no project identifier in the persona | **PASS** |
+| 5b.18 | **Persona cannot widen authority** | A hostile persona granting spend, tools, and Restricted eligibility activated: ceiling, eligibility sets, violations, `admits`, and the Restricted refusal all identical. Policy imports neither the gateway nor the persona. | **PASS** |
+| 5b.19 | The active persona survives an application restart | New process, new engine: same id | **PASS** |
+| 5b.20 | The active persona survives a database restart | `brew services restart postgresql@18`: same id, content intact | **PASS** |
+| 5b.21 | Runtime works when the source document is unavailable | Full persona assembled from PostgreSQL against a root where the file does not exist | **PASS** |
+| 5b.22 | An invalidated active persona refuses rather than falling back | `converse` raises; the provider is never contacted | **PASS** |
+| 5b.23 | Model calls record the persona revision used | Live: all three rows name revision 1, authored v1.2 | **PASS** |
+| 5b.24 | A transmitted call that errors keeps its attribution | Both Anthropic failures carry the persona | **PASS** |
+| 5b.25 | Historical attribution survives a later activation | `persona_id` unchanged after a new revision is activated | **PASS** |
+| 5b.26 | A request never sent records no persona | No row at all, so nothing to attribute | **PASS** |
+| 5b.27 | **Real exchange through the normal path** | `converse` → gpt-5-5, 4056/161, $0.025110, `resp_02a5e187…`. Response recorded verbatim. | **PASS** |
+| 5b.28 | **Persona register recognisable by human assessment** | Response recorded; the criterion is Lord Armand's reading, not a model's assertion | **AWAITING ASSESSMENT** |
+
+> 5b.28 is the single WP-0.5 criterion outstanding, and it is deliberately not an
+> engineering task. Full account: `VAL_WP05_Persona_Loading_Audit.md`.
 
 ## 6. Data-eligibility and Restricted handling
 
@@ -182,11 +219,12 @@ should, rather than proving it passes what it should.
 | Deliberate-failure | 12 | — |
 | Migration / schema | 18 | — |
 | Backup / restore | 8 | **1** (4.8) |
-| Gateway / providers | 23 | 3 (5.9, 5.10, 5.11) |
+| Gateway / providers | 24 | 3 (5.9, 5.10, 5.11) |
+| Persona loading | 27 | 1 (5b.28 — a reading, not a test) |
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
-| **Automated tests** | **331 passing** | — |
+| **Automated tests** | **373 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.

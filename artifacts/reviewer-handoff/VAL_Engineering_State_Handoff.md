@@ -43,7 +43,7 @@ These six are authoritative. Nothing else in the repository governs anything.
 | `/docs/baselines/01-architecture.md` | Governing | `166f8df5…6ba18c58` | Layers, stack, topology, model routing, budget, data classification, MCP, avatar, backup |
 | `/docs/baselines/02-partner-systems.md` | Governing | `0f629d7a…f90e5f56` | Roles, the books, self-evaluation, deliberation, prediction ledger, success models |
 | `/docs/baselines/03-persona.md` | Governing, **v1.2** | `1d502685…7b8dddd04` | Voice, manner, bearing, conduct. Loaded whole, never summarised |
-| `/docs/baselines/04-layer-0.md` | Governing | `2f0223ff…7b703ae9` | Layer 0 scope, schema, work packages, acceptance criteria, the gate |
+| `/docs/baselines/04-layer-0.md` | Governing | `0879eecc…8aa4b560` | Layer 0 scope, schema, work packages, acceptance criteria, the gate |
 
 Full hashes are in `governing/README.md`. Byte-identical review copies are in
 `governing/`; **the repository originals remain authoritative.**
@@ -72,7 +72,7 @@ is something to govern.
 
 | Layer | Delivers | State |
 |---|---|---|
-| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — 2 of 10 work packages complete |
+| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — 2 of 10 work packages complete; WP-0.5 implemented, one acceptance criterion outstanding |
 | 1 | Presence — voice, face, local inference | SPECIFIED FOR LATER |
 | 2 | Hands — MCP tools, read-only | SPECIFIED FOR LATER |
 | 3 | Agents — Roles, supervision, Temporal | SPECIFIED FOR LATER |
@@ -327,13 +327,40 @@ than its detectors.
   criterion**; `last_live_call_on` is null on both Anthropic routes and a test
   fails the build if that is quietly changed.
 
-### WP-0.5 to WP-0.10 · NOT STARTED
+### WP-0.5 — Persona loading · IMPLEMENTED / ACCEPTANCE PENDING
 
-No implementation exists for persona loading, project resolution, the
-conversation loop, execution-history capture, deliberation capture, or the text
-interface. **The schema for `execution_events` and `deliberations` exists and is
-migrated, but nothing writes to them** — those tables are empty and there is no
-write path. `personas` is empty; no seed exists.
+**Exists:** the canonical source-reading rule; a deterministic semantic-version
+parser; an idempotent seeder keyed on the source digest; transactional
+activation; a runtime loader that fails closed three ways; context assembly
+placing the persona whole in `system`; `converse`, the persona-bearing gateway
+entrance; per-call persona attribution on `model_calls`.
+
+**Paths:** `packages/domain/src/val_domain/persona.py`,
+`packages/gateway/src/val_gateway/{persona,context}.py`, migration
+`0005_persona_provenance`.
+
+**Seeded live (17 Aug):** persona `01a01169-c5c4-7576-9e87-6a82f26cd8b1`,
+persistence revision **1**, authored version **1.2**, source SHA-256
+`1d502685…7b8dddd04` — identical to the file's digest read before any work began.
+
+**Verified:** both WP-0.5 acceptance checks, proved genuinely independent of each
+other; immutability enforced by a database trigger; exactly one active revision;
+a hostile persona moving no institutional state; five restart and
+provider-independence proofs; every model call naming its persona revision,
+including two transmitted failures. A real exchange ran through the normal path
+and is recorded verbatim in `VAL_WP05_Persona_Loading_Audit.md` §Q.
+
+**Outstanding — one criterion, and it is not an engineering task:** the governing
+requirement is that Val's register in a real exchange is *"recognisably that of
+`03-persona.md` §9, **assessed by reading, not asserted**"*. That assessment is
+Lord Armand's. One reading of the recorded response decides it.
+
+### WP-0.6 to WP-0.10 · NOT STARTED
+
+No implementation exists for project resolution, the conversation loop,
+execution-history capture, deliberation capture, or the text interface. **The
+schema for `execution_events` and `deliberations` exists and is migrated, but
+nothing writes to them** — those tables are empty and there is no write path.
 
 ---
 
@@ -343,7 +370,7 @@ write path. `personas` is empty; no seed exists.
 |---|---|
 | PostgreSQL | 18.4 (Homebrew), port **5433** |
 | pgvector | 0.8.6 (installed; no vector column exists yet — retrieval is WP-0.7) |
-| Alembic revision | `0004_supersede_zero_costs` (head) |
+| Alembic revision | `0005_persona_provenance` (head) |
 | Databases | `val` (authoritative), `val_test` (schema tests; refuses any name not ending `_test`) |
 
 ### Tables
@@ -353,7 +380,7 @@ write path. `personas` is empty; no seed exists.
 | `projects` | Projects Val works across | 0 |
 | `conversations` | `project_id` nullable — "no project" is explicit | 0 |
 | `messages` | `role` ∈ user/val/system; `sequence` unique per conversation | 0 |
-| `personas` | Versioned; at most one active (partial unique index) | 0 |
+| `personas` | Versioned; at most one active (partial unique index) | **1** — revision 1, authored v1.2 |
 | `model_calls` | Per-call cost attribution | **6** |
 | `execution_events` | Acceptances, rejections, revisions, corrections, **reactions** | 0 |
 | `deliberations` | Blind position, confidence, ordering, outcome | 0 |
@@ -399,6 +426,7 @@ one. **Every query that touches money reads the view, never the base table.**
 | `0002_reaction_and_ideas` | `reaction` added, `event_type` made nullable, idea tables |
 | `0003_budget_reservations` | `model_calls.cost_certainty` with nullable figures and two check constraints; the `budget_reservations` table (17 Aug) |
 | `0004_supersede_zero_costs` | A check constraint bounding the legacy set permanently, and the `model_calls_accounted` view (17 Aug) |
+| `0005_persona_provenance` | WP-0.5: `semantic_version`, `source_sha256`, `source_path`, `created_at` on `personas`; `activated_at` nullable; an immutability trigger; `model_calls.persona_id` (17 Aug) |
 
 `0002` modifies **no existing row**: `event_type` keeps its value and `reaction`
 backfills as NULL meaning *not recorded*, never `neutral`. Its downgrade
@@ -656,18 +684,19 @@ requirement at WP-0.10.
 
 ## I. Tests and verification
 
-Run everything with `uv run pytest -q` from the repository root. **331 tests, all
-passing** — 213 at `ccc94e3`, plus 97 from the 17 August corrective work and 21
-more from the three reviewer-evidence issues that followed it.
+Run everything with `uv run pytest -q` from the repository root. **373 tests, all
+passing** — 213 at `ccc94e3`, plus 97 from the corrective work, 21 from the
+reviewer-evidence issues, and 42 from WP-0.5.
 
 | Suite | Count | Command | Result |
 |---|---|---|---|
 | Schema and migrations | 101 | `uv run pytest packages/domain/tests/test_schema.py` | **PASS** |
+| **Persona loading (WP-0.5)** | 39 | `uv run pytest packages/gateway/tests/test_persona.py` | **PASS** |
 | Restricted preflight | 34 | `uv run pytest packages/policy/tests/test_restricted.py` | **PASS** |
 | Version pinning | 26 | `uv run pytest infrastructure/ci/tests/test_check_pins.py` | **PASS** |
 | Gateway | 28 | `uv run pytest packages/gateway/tests/test_gateway.py` | **PASS** |
 | Registry | 24 | `uv run pytest packages/domain/tests/test_registry.py` | **PASS** |
-| **Router and fallback** | 22 | `uv run pytest packages/gateway/tests/test_router.py` | **PASS** |
+| **Router and fallback** | 25 | `uv run pytest packages/gateway/tests/test_router.py` | **PASS** |
 | Dependency boundaries | 20 | `uv run pytest infrastructure/ci/tests/test_check_boundaries.py` | **PASS** |
 | Credential scanner | 19 | `uv run pytest infrastructure/ci/tests/test_check_secrets.py` | **PASS** |
 | **Budget arithmetic** | 21 | `uv run pytest packages/policy/tests/test_budget.py` | **PASS** |
@@ -732,6 +761,11 @@ actually assert. Full account in `VAL_WP04_Corrective_Audit.md` §P.
 | **Fabricated configuration cannot create a route** | rogue provider with a matching adapter wired in — refused | 17 Aug | **PASS** |
 | **A tiny prompt with a large output cap is refused before transmission** | 3 words, 128,000 authorised output tokens = $3.20 against $2.00 remaining — provider never contacted | 17 Aug | **PASS** |
 | **The five fabricated zeroes are never read as confirmed free calls** | `accounted_cost` NULL, `effective_cost_certainty` `unknown`, counted as uncosted; originals byte-identical | 17 Aug | **PASS** |
+| **Persona seeded from the governing document** | revision 1, authored v1.2, digest `1d502685…` identical to the file read before any work began | 17 Aug | **PASS** |
+| **Real exchange with the persona loaded** | `converse` → gpt-5-5, 4056/161 tokens, $0.025110; `system` byte-equal to the active row, persona present exactly once | 17 Aug | **PASS** |
+| **A live provider fallback, persona intact across it** | Anthropic unpayable → OpenAI; both attempts carried identical persona content and the same `persona_id` | 17 Aug | **PASS** |
+| **Database restart leaves the persona authoritative** | `brew services restart postgresql@18`; same persona id, content intact, source check clean | 17 Aug | **PASS** |
+| **A hostile persona moves no institutional state** | ceiling, eligibility, violations, admits, Restricted refusal — identical before and after activation | 17 Aug | **PASS** |
 | Restricted refused, no row | rows unchanged | 15 Aug | **PASS** |
 | Error normalisation | 3 real failure classes | 15 Aug | **PASS** |
 | Downgrade refuses to destroy records | scratch DB, `NotNullViolation`, record survived | 15 Aug | **PASS** |
