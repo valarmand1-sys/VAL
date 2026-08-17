@@ -23,7 +23,21 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
     "projects": ("id", "name", "slug", "description", "status", "created_at", "updated_at"),
     "conversations": ("id", "project_id", "title", "started_at", "last_message_at"),
     "messages": ("id", "conversation_id", "role", "content", "created_at", "sequence"),
-    "personas": ("id", "version", "content", "is_active", "activated_at", "authored_by"),
+    "personas": (
+        "id",
+        "version",
+        "content",
+        "is_active",
+        "activated_at",
+        "authored_by",
+        # WP-0.5 amendment, 17 August 2026. The authored label, the document it
+        # came from, and when the row was written — none of which the integer
+        # persistence revision can express.
+        "semantic_version",
+        "source_sha256",
+        "source_path",
+        "created_at",
+    ),
     # §2.2 Capture
     "model_calls": (
         "id",
@@ -41,6 +55,9 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "latency_ms",
         "provider_request_id",
         "status",
+        # WP-0.5 amendment, 17 August 2026: which persona revision was assembled
+        # into this call's context. A stable reference, never a copy.
+        "persona_id",
         # §2.2 amendment, 17 August 2026: `known` | `unknown`. A provider attempt
         # that reached the provider and returned no usage is recorded as unknown,
         # with NULL figures — never as a zero, which is a claim and a false one.
@@ -136,6 +153,14 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("budget_reservations", "cost_certainty"),
         ("budget_reservations", "model_call_id"),
         ("budget_reservations", "resolution"),
+        # WP-0.5. NULL activated_at means *never activated* — a revision created
+        # and not yet made live carries no activation instant, because inventing
+        # one would put a time in the record for an event that did not happen.
+        ("personas", "activated_at"),
+        # NULL persona_id means either *written before a persona existed* or *a
+        # path that legitimately assembles none*. Neither is a Val utterance to
+        # attribute.
+        ("model_calls", "persona_id"),
     }
 )
 
@@ -737,15 +762,19 @@ def test_at_most_one_persona_is_active(connection: Connection) -> None:
     """WP-0.5 loads "the active personas row", singular."""
     connection.execute(
         text(
-            "insert into personas (version, content, is_active, activated_at, authored_by) "
-            "values (1, 'First.', true, now(), 'Lord Armand')"
+            "insert into personas (version, semantic_version, content, source_sha256, "
+            "source_path, is_active, activated_at, authored_by) "
+            "values (1, '1.0', 'First.', repeat('a', 64), 'fixture.md', true, now(), "
+            "'Lord Armand')"
         )
     )
     with pytest.raises(Exception, match="uq_personas_single_active"):
         connection.execute(
             text(
-                "insert into personas (version, content, is_active, activated_at, authored_by) "
-                "values (2, 'Second.', true, now(), 'Lord Armand')"
+                "insert into personas (version, semantic_version, content, source_sha256, "
+                "source_path, is_active, activated_at, authored_by) "
+                "values (2, '1.1', 'Second.', repeat('b', 64), 'fixture.md', true, now(), "
+                "'Lord Armand')"
             )
         )
 
@@ -754,9 +783,10 @@ def test_a_superseded_persona_version_remains(connection: Connection) -> None:
     """Editing creates a version; it never mutates a row, and prior rows survive."""
     connection.execute(
         text(
-            "insert into personas (version, content, is_active, activated_at, authored_by) "
-            "values (1, 'First.', false, now(), 'Lord Armand'), "
-            "(2, 'Second.', true, now(), 'Lord Armand')"
+            "insert into personas (version, semantic_version, content, source_sha256, "
+            "source_path, is_active, activated_at, authored_by) values "
+            "(1, '1.0', 'First.', repeat('a', 64), 'fixture.md', false, now(), 'Lord Armand'), "
+            "(2, '1.1', 'Second.', repeat('b', 64), 'fixture.md', true, now(), 'Lord Armand')"
         )
     )
     count = connection.execute(text("select count(*) from personas")).scalar_one()

@@ -57,6 +57,8 @@ from collections.abc import Sequence
 
 from alembic import op
 
+from val_domain.migrations_support import ACCOUNTED_VIEW
+
 revision: str = "0004_supersede_zero_costs"
 down_revision: str | None = "0003_budget_reservations"
 branch_labels: str | Sequence[str] | None = None
@@ -66,37 +68,6 @@ depends_on: str | Sequence[str] | None = None
 #: written before it predates the distinction; every row after it must state it.
 #: Existing rows were written 15 August 2026 and satisfy this as they stand.
 CERTAINTY_REQUIRED_FROM = "2026-08-17T00:00:00+00:00"
-
-ACCOUNTED_VIEW = """
-CREATE VIEW model_calls_accounted AS
-SELECT
-    mc.*,
-    CASE
-        WHEN mc.cost_certainty IS NOT NULL THEN mc.cost_certainty
-        -- Written before 17 August 2026. The implementation of the day wrote
-        -- 0/0/$0 on every error and real usage on everything else, so this
-        -- reads the record rather than guessing at it.
-        WHEN mc.status = 'error' THEN 'unknown'::model_call_cost_certainty
-        ELSE 'known'::model_call_cost_certainty
-    END AS effective_cost_certainty,
-    CASE
-        WHEN mc.cost_certainty = 'unknown' THEN NULL
-        WHEN mc.cost_certainty IS NULL AND mc.status = 'error' THEN NULL
-        ELSE mc.cost
-    END AS accounted_cost,
-    CASE
-        WHEN mc.cost_certainty IS NULL AND mc.status = 'error' THEN
-            'Superseded accounting semantics. This row was written before '
-            '17 August 2026, when a failed call recorded zero tokens and zero '
-            'cost regardless of whether the provider had been reached. The '
-            'stored 0.000000 is not a confirmed cost: the true cost is unknown '
-            'and is at least the input tokens the provider consumed. The '
-            'original row is preserved unmodified; see migration '
-            '0004_supersede_zero_costs.'
-        ELSE NULL
-    END AS accounting_note
-FROM model_calls mc
-"""
 
 
 def upgrade() -> None:

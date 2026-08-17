@@ -7,6 +7,11 @@ entrances and they are deliberately not equivalent:
   configuration. This is what application code uses, and it is the reason this
   is a gateway rather than a shared HTTP client: a component that has to name
   its own provider is a component that can name the wrong one.
+- **`converse(messages, ...)`** — the normal Val conversational path. It loads
+  the active persona from PostgreSQL, assembles it whole into the request, and
+  routes. **This is what an application uses to talk to Val**, and it is the only
+  entrance that guarantees her persona is present: `complete` will faithfully
+  send whatever it is given, including a request with no persona in it.
 - **`complete_with_configuration(request, config)`** — the deliberate explicit
   path, for the strip step of `04-layer-0.md` §4 (which must run on a named
   cheapest route) and for tests that pin one provider. It is **not** a bypass:
@@ -55,10 +60,14 @@ from val_domain.gateway import (
     GatewayErrorKind,
     GatewayRequest,
     GatewayResponse,
+    Message,
     ModelConfig,
+    TaskType,
 )
 from val_domain.registry import active, by_id, fallback_for, stale_rates
+from val_gateway.context import assemble
 from val_gateway.ledger import BudgetLedger, Refusal, Reservation
+from val_gateway.persona import PersonaLoader, PersonaProblem, PersonaUnavailableError
 from val_policy.budget import (
     admits,
     ceiling_message,
@@ -126,6 +135,7 @@ class CallRecord:
         task_type: str,
         conversation_id: UUID | None,
         message_id: UUID | None,
+        persona_id: UUID | None,
         latency_ms: int,
         provider_request_id: str | None,
         status: CallStatus,
@@ -142,6 +152,7 @@ class CallRecord:
         self.task_type = task_type
         self.conversation_id = conversation_id
         self.message_id = message_id
+        self.persona_id = persona_id
         self.latency_ms = latency_ms
         self.provider_request_id = provider_request_id
         self.status = status
@@ -186,13 +197,58 @@ class Gateway:
         recorder: CallRecorder,
         ledger: BudgetLedger,
         observe_block: Callable[[str], None] | None = None,
+        persona_loader: PersonaLoader | None = None,
     ) -> None:
         self._adapters = adapters
         self._record = recorder
         self._ledger = ledger
         self._observe_block = observe_block or _log_block
+        self._persona_loader = persona_loader
 
-    # --- the two entrances ---------------------------------------------------
+    # --- the entrances ---------------------------------------------------------
+
+    def converse(
+        self,
+        messages: tuple[Message, ...],
+        *,
+        classification: Classification = Classification.PROTECTED,
+        task_type: TaskType = TaskType.CONVERSATION,
+        project_id: UUID | None = None,
+        conversation_id: UUID | None = None,
+        message_id: UUID | None = None,
+        max_output_tokens: int = 4096,
+    ) -> GatewayResponse:
+        """Talk to Val. The persona is loaded, assembled whole, and attributed.
+
+        The one path an application uses for ordinary conversation, and the only
+        one that guarantees the persona is present. **The persona is loaded per
+        call from PostgreSQL**, not cached in this object: activating a new
+        revision must take effect on the next exchange rather than at the next
+        restart, and at Layer 0 volumes one indexed read is not worth the class of
+        bug that a stale in-memory copy of Val's identity would introduce.
+
+        If no persona can be established the call does not happen. There is no
+        degraded mode — see `val_gateway.persona`.
+        """
+        if self._persona_loader is None:
+            raise PersonaUnavailableError(
+                PersonaProblem.NONE_ACTIVE,
+                "this gateway was built without a persona loader, so it cannot assemble "
+                "Val. `converse` is the persona-bearing path; a gateway wired without one "
+                "can only serve `complete`, which sends what it is given.",
+            )
+        persona = self._persona_loader.active()
+        request = assemble(
+            persona,
+            messages,
+            classification=classification,
+            task_type=task_type,
+            project_id=project_id,
+            conversation_id=conversation_id,
+            message_id=message_id,
+            max_output_tokens=max_output_tokens,
+        )
+        return self.complete(request)
 
     def complete(self, request: GatewayRequest) -> GatewayResponse:
         """Route this request and answer it, or fail truthfully.
@@ -338,6 +394,7 @@ class Gateway:
                 task_type=request.task_type.value,
                 conversation_id=request.conversation_id,
                 message_id=request.message_id,
+                persona_id=request.persona_id,
                 latency_ms=latency,
                 provider_request_id=result.provider_request_id,
                 status=status,
@@ -396,6 +453,7 @@ class Gateway:
                 task_type=request.task_type.value,
                 conversation_id=request.conversation_id,
                 message_id=request.message_id,
+                persona_id=request.persona_id,
                 latency_ms=latency_ms,
                 provider_request_id=None,
                 status=CallStatus.ERROR,

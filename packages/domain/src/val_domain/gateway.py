@@ -257,6 +257,11 @@ class GatewayRequest(BaseModel):
     project_id: UUID | None = None
     conversation_id: UUID | None = None
     message_id: UUID | None = None
+    #: Which persona revision was assembled into this request's context (WP-0.5).
+    #: Attribution, exactly like the three fields above it — set by context
+    #: assembly, recorded by the gateway, never chosen by a provider. None on the
+    #: paths that legitimately assemble no persona, which are not Val utterances.
+    persona_id: UUID | None = None
 
 
 class GatewayResponse(BaseModel):

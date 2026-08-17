@@ -213,17 +213,55 @@ class Message(Base):
 
 
 class Persona(Base):
-    """§2.1 — `personas`. Editing creates a version; it never mutates a row."""
+    """§2.1 — `personas`. Editing creates a version; it never mutates a row.
+
+    **Two version scales, deliberately separate** (§2.1 clarification, 17 August
+    2026, and the executive decision of 17 August authorising WP-0.5):
+
+    - `version` is the **persistence revision** — `1`, `2`, `3`, … It counts rows.
+    - `semantic_version` is the **authored label** — `1.2`. It counts authorship.
+
+    They are not the same measurement and neither may stand in for the other. The
+    row seeded from the v1.2 document is persistence revision `1`, and an
+    interface showing "Persona v1" over it would display a state the record does
+    not support (invariant 29).
+
+    **What is immutable, and what may move.** Content, identity, the authored
+    label, and the provenance of the document it came from are fixed at
+    insertion; a `BEFORE UPDATE` trigger refuses to change any of them (see the
+    migration). `is_active` and `activated_at` are lifecycle state and may
+    change, because which persona is live is a different fact from what any
+    persona says.
+    """
 
     __tablename__ = "personas"
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
     )
+    #: The persistence revision. Monotonic, immutable, and never renumbered.
     version: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: The authored label the document carries, canonicalised without its "v" —
+    #: `1.2`, not `v1.2`. NOT NULL: a row that cannot say which authored version
+    #: it holds is the ambiguity this column exists to remove.
+    semantic_version: Mapped[str] = mapped_column(Text, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
+    #: SHA-256 of the exact bytes of the governing document this row was seeded
+    #: from, and the repository-relative path it was read from. The path is
+    #: relative deliberately — an absolute path is a fact about one machine, and
+    #: making it authoritative would make the record unverifiable anywhere else.
+    source_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    source_path: Mapped[str] = mapped_column(Text, nullable=False)
+    #: When the row was written. Distinct from `activated_at`, which moves.
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    activated_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    #: Nullable since WP-0.5: NULL means *this revision has never been active*.
+    #: A revision created but not yet activated carries no activation instant,
+    #: and inventing one would put a time in the record for an event that never
+    #: happened.
+    activated_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
     authored_by: Mapped[str] = mapped_column(Text, nullable=False)
 
     __table_args__ = (
@@ -234,6 +272,21 @@ class Persona(Base):
             "is_active",
             unique=True,
             postgresql_where=text("is_active"),
+        ),
+        CheckConstraint("version > 0", name="version_positive"),
+        # The authored label, canonical: digits and dots, no leading "v". Parsing
+        # it out of the document is deterministic; storing it loosely would undo
+        # that at the last step.
+        CheckConstraint(
+            r"semantic_version ~ '^[0-9]+(\.[0-9]+)*$'",
+            name="semantic_version_is_canonical",
+        ),
+        CheckConstraint("source_sha256 ~ '^[0-9a-f]{64}$'", name="source_sha256_is_a_digest"),
+        # An active revision has been activated. The converse does not hold: a
+        # revision that was active and is not still carries the instant it was.
+        CheckConstraint(
+            "NOT is_active OR activated_at IS NOT NULL",
+            name="active_requires_activated_at",
         ),
     )
 
@@ -284,6 +337,17 @@ class ModelCall(Base):
     )
     message_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=True
+    )
+    # WP-0.5. Which persona revision was assembled into this call's context.
+    # A stable reference rather than a copy of the content: the persona is
+    # immutable once stored, so the reference resolves to exactly the text that
+    # was sent, and later activating a different revision cannot rewrite it.
+    #
+    # Nullable for two honest reasons, not one lazy one: rows written before
+    # WP-0.5 carry no persona, and a call on a path that legitimately assembles
+    # none — a strip step, a title — is not a Val utterance to attribute.
+    persona_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("personas.id", ondelete="NO ACTION"), nullable=True
     )
     latency_ms: Mapped[int] = mapped_column(Integer, nullable=False)
     provider_request_id: Mapped[str] = mapped_column(Text, nullable=False)

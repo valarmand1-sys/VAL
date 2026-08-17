@@ -81,11 +81,11 @@ _SUPERSEDED_ZERO_CALLS = text(
 _INSERT_CALL = text(
     "insert into model_calls "
     "(model_config_id, provider, model_identifier, tokens_in, tokens_out, cost, "
-    " cost_certainty, project_id, task_type, conversation_id, message_id, latency_ms, "
-    " provider_request_id, status) "
+    " cost_certainty, project_id, task_type, conversation_id, message_id, persona_id, "
+    " latency_ms, provider_request_id, status) "
     "values (:model_config_id, :provider, :model_identifier, :tokens_in, :tokens_out, "
     " :cost, :cost_certainty, :project_id, :task_type, :conversation_id, :message_id, "
-    " :latency_ms, :provider_request_id, :status) "
+    " :persona_id, :latency_ms, :provider_request_id, :status) "
     "returning id"
 )
 
@@ -115,6 +115,10 @@ def record_call(engine: Engine, record: CallRecord) -> UUID:
                 "task_type": record.task_type,
                 "conversation_id": record.conversation_id,
                 "message_id": record.message_id,
+                # WP-0.5: which persona produced this call. A reference, never a
+                # copy — the persona is immutable, so it resolves to exactly the
+                # text that was sent.
+                "persona_id": record.persona_id,
                 "latency_ms": record.latency_ms,
                 # §2 marks this NOT NULL. A provider that returned no reference
                 # is recorded as such rather than as a null.

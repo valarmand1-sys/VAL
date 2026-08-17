@@ -51,6 +51,7 @@ def a_record(
         task_type="conversation",
         conversation_id=None,
         message_id=None,
+        persona_id=None,
         latency_ms=850,
         provider_request_id=None,
         status=status,

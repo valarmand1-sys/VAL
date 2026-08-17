@@ -28,6 +28,7 @@ from val_domain.registry import active
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
 from val_gateway.persistence import record_call
+from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
 from val_providers.openai_adapter import OpenAIAdapter
@@ -121,9 +122,34 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             "as complete while this is non-zero (00-charter.md invariant 29)."
         )
 
+    # WP-0.5. The persona is checked at startup and loaded per call. Checking it
+    # here turns "Val has no identity" into a boot-time message rather than a
+    # surprise on the first exchange; loading per call means activating a new
+    # revision takes effect on the next exchange rather than at the next restart.
+    #
+    # A **warning, not a refusal**: a store with no seeded persona is a store
+    # that has not been seeded yet, and refusing to boot would leave Lord Armand
+    # without the service he would use to seed it. `converse` still refuses, so
+    # nothing runs on a substitute — the failure is moved, not softened.
+    persona_loader = DatabasePersonaLoader(engine)
+    try:
+        persona = persona_loader.active()
+        if not persona.content_is_intact():
+            warnings.append(
+                f"the active persona ({persona.provenance}) does not hash to its own "
+                "recorded digest. Its stored content has been altered since it was "
+                "written, around the immutability trigger. Do not treat it as authored."
+            )
+    except PersonaUnavailableError as problem:
+        warnings.append(
+            f"no usable persona: {problem.detail} Conversation will refuse until this is "
+            "resolved; nothing will run on a substitute."
+        )
+
     gateway = Gateway(
         adapters=adapters,
         recorder=lambda record: record_call(engine, record),
         ledger=ledger,
+        persona_loader=persona_loader,
     )
     return Startup(gateway=gateway, warnings=warnings)

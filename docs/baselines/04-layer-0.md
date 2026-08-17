@@ -51,7 +51,7 @@ One migration set, Alembic, from the first commit. No manual DDL at any point.
 
 **`messages`** — `id`, `conversation_id`, `role` (`user` | `val` | `system`), `content`, `created_at`, `sequence`
 
-**`personas`** — `id`, `version`, `content`, `is_active`, `activated_at`, `authored_by`. Versioned from the first load. Editing the persona creates a version; it never mutates a row.
+**`personas`** — `id`, `version`, `semantic_version`, `content`, `source_sha256`, `source_path`, `created_at`, `is_active`, `activated_at`, `authored_by`. Versioned from the first load. Editing the persona creates a version; it never mutates a row.
 
 > **Clarification — 17 August 2026, Lord Armand. Recorded before WP-0.5 begins, not implemented by it.**
 >
@@ -59,7 +59,7 @@ One migration set, Alembic, from the first commit. No manual DDL at any point.
 >
 > **The persistence revision must never be presented as the persona's semantic version.** An interface showing "Persona v1" over a row seeded from v1.2 is displaying a state the record does not support (invariant 29), and the mistake is invisible until someone asks which persona was live during a conversation.
 >
-> **The semantic label is not currently storable.** §2.1's column list has no field for it, and this clarification does not add one — that is a schema change and it belongs to whoever implements WP-0.5, with the reasoning already written down here. **The smallest sufficient change is one nullable `semantic_version` text column on `personas`**, carrying `v1.2` beside revision `1`. It is proposed, not made. Without it, "which authored version was active on 3 September" is answerable only by matching stored content against git history, which works and is not a record.
+> **The semantic label was not storable when this was written.** §2.1's column list had no field for it, and the clarification proposed one without adding it. **Implemented by WP-0.5 on 17 August 2026** — see the amendment below.
 >
 > **Immutability and activation, stated exactly**, because the current wording admits two readings and only one is intended:
 >
@@ -75,6 +75,22 @@ One migration set, Alembic, from the first commit. No manual DDL at any point.
 > | Activation and history | Changing `is_active` **never touches authored content.** Which persona is live is a different fact from what any persona says. |
 >
 > The distinction is the whole point: the persona's *content* is an authored artifact and is append-only; the persona's *activation* is operational state and moves. Collapsing them gives either a persona that cannot be switched or a history that gets edited to make the current state convenient — and the second is what invariant 14 exists to prevent.
+
+> **Amendment — 17 August 2026, Lord Armand, authorising WP-0.5.** Four columns added to `personas`, and one nullability corrected. Executive decision 2 of that date: *WP-0.5 shall store the authored Persona semantic version explicitly and separately from the integer persistence revision.*
+>
+> | Column | Why |
+> |---|---|
+> | `semantic_version` | The authored label — `1.2`, canonical and without its `v`. **NOT NULL**, where the clarification above proposed nullable: a row that cannot say which authored version it holds is exactly the ambiguity the column exists to remove, and every row is written by a seeder that knows the answer. Narrowing a proposal is permitted; widening one is not. |
+> | `source_sha256` | SHA-256 of the exact bytes of the document this row was seeded from. |
+> | `source_path` | Which document, **repository-relative**. An absolute path is a fact about one machine, and a record that made one authoritative would be unverifiable anywhere else. |
+> | `created_at` | When the row was written — a fact `activated_at` cannot carry once activation starts moving. |
+> | `activated_at` → **nullable** | NULL means *this revision has never been active*. A revision created and not yet activated previously had to carry an activation instant for an event that had not happened. |
+>
+> **Immutability is enforced by the database.** A `BEFORE UPDATE` trigger refuses any change to `version`, `semantic_version`, `content`, `source_sha256`, `source_path`, `created_at`, or `authored_by`. `is_active` and `activated_at` sit deliberately outside it. Service code can be bypassed by the next caller; a trigger cannot, and `personas` is the one table whose historical content the whole of Layer 5 will later read back.
+>
+> **The canonical reading rule, stated once because WP-0.5's two checks are only independent if it is single.** The governing document is read as raw bytes; its digest is the digest of those bytes; its content is those bytes decoded as strict UTF-8 and stored verbatim. **No normalisation is applied** — none to newlines, trailing whitespace, or Unicode form. No normalisation *is* the normalisation, and it is the strongest available choice: every alternative requires trusting that the same transformation happened in both places, and this one has nothing to get wrong.
+>
+> **The authored label is parsed deterministically from the document's H1 and from nowhere else.** It is never inferred and never asked of a model, which would make the record depend on the thing it exists to govern. Migration: `0005_persona_provenance`.
 
 ### 2.2 Capture
 
@@ -93,6 +109,7 @@ These three tables are the point of the layer.
 | `project_id` | Nullable, matching `conversations` |
 | `task_type` | Enumerated. Layer 0 values: `conversation`, `classification`, `strip`, `blind_position`, `title` |
 | `conversation_id`, `message_id` | Nullable |
+| `persona_id` | **WP-0.5, 17 August 2026.** Which persona revision was assembled into this call's context. Nullable: rows written before a persona existed, and paths that legitimately assemble none, are not Val utterances to attribute. |
 | `latency_ms`, `provider_request_id` | |
 | `status` | `ok` \| `error` \| `refused` |
 

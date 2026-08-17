@@ -29,6 +29,7 @@ from val_domain.gateway import (
     ReasoningEffort,
 )
 from val_domain.registry import active, by_slug, fallback_for
+from val_gateway.gateway import RETRYABLE
 from val_policy.routing import attempt_order, candidates
 from val_providers.base import ProviderResult
 
@@ -404,3 +405,69 @@ def test_by_slug_and_by_id_agree() -> None:
     for entry in active():
         assert by_slug(entry.slug) == entry
         assert isinstance(entry.id, UUID)
+
+
+# --- an account that cannot pay is not a malformed request -------------------
+#
+# Found by running a real exchange on 17 August 2026, not by inspection.
+
+
+def test_a_billing_failure_is_a_route_problem_not_a_request_problem() -> None:
+    """Anthropic returns "credit balance is too low" as an HTTP 400.
+
+    Mapping that to `INVALID_REQUEST` made it non-retryable, on the sound
+    reasoning that a malformed request is malformed everywhere. But this request
+    is not malformed — the identical request succeeds on another provider — so
+    the router refused to fall back and the conversation failed while a working
+    route sat unused. Observed live: `req_011Ce8xDp7bfjRu5BgXqNuXx`.
+    """
+    from val_providers.base import normalize
+
+    class BadRequestError(Exception):
+        pass
+
+    billing = normalize(
+        BadRequestError(
+            "Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', "
+            "'message': 'Your credit balance is too low to access the Anthropic API.'}}"
+        ),
+        "anthropic",
+    )
+    assert billing.kind is GatewayErrorKind.PROVIDER_ERROR
+    assert billing.kind in RETRYABLE, "the router cannot fall back off an unpayable route"
+    assert "account cannot currently be billed" in billing.detail
+
+
+def test_a_genuinely_malformed_request_is_still_not_retried() -> None:
+    """The correction must not turn every 400 into a reason to shop providers."""
+    from val_providers.base import normalize
+
+    class BadRequestError(Exception):
+        pass
+
+    malformed = normalize(BadRequestError("max_tokens: must be greater than 0"), "anthropic")
+    assert malformed.kind is GatewayErrorKind.INVALID_REQUEST
+    assert malformed.kind not in RETRYABLE
+
+
+def test_an_unpayable_primary_falls_back_to_a_working_route() -> None:
+    """The behaviour the correction restores, end to end."""
+    unpayable = StubAdapter(
+        error=GatewayError(
+            GatewayErrorKind.PROVIDER_ERROR,
+            "anthropic: the account cannot currently be billed for this call",
+        ),
+        name="anthropic",
+    )
+    working = StubAdapter(
+        ProviderResult("Good evening, my lord.", 20, 10, "req", False), name="openai"
+    )
+
+    gateway, rows, _, _ = build(adapters={"anthropic": unpayable, "openai": working})
+    response = gateway.complete(request())
+
+    assert response.provider == "openai"
+    assert working.calls == 1
+    assert unpayable.calls >= 1
+    # Every transmitted attempt is still recorded — zero calls without a row.
+    assert len(rows) == unpayable.calls + 1
