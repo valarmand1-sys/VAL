@@ -23,6 +23,48 @@ exists to keep that sentence enforceable.
 Config: `/opt/homebrew/etc/pgbackrest/pgbackrest.conf`, mode `0600`, **outside
 the repository and outside the backup it protects.**
 
+## What this covers, and what it does not
+
+**This document is about PostgreSQL.** `01-architecture.md` §9.1 lists five
+things that must survive, and only the first is protected by anything on this
+page. The other four are protected by git, and the distinction matters enough
+to state before anything else here.
+
+| What | Protected by | Recovers to |
+|---|---|---|
+| PostgreSQL, in full | pgBackRest -> B2, everything below | Any moment inside retention |
+| Governing baselines | **git -> GitHub**, private remote | Any commit |
+| Persona source | **git -> GitHub** | Any commit |
+| Migration history | **git -> GitHub** | Any commit |
+| Repository configuration and application source | **git -> GitHub** | Any commit |
+| Credentials, and the repository passphrase | **Neither, deliberately** | See below |
+
+**GitHub is the stated off-machine protection for repository-controlled
+material.** Private remote, off this machine, full history, every commit a
+restore point. That is a decision, recorded rather than assumed.
+
+**It does not replace point-in-time recovery, and nothing here should be read as
+saying it does.** The two protect disjoint things. Git holds the text Val was
+built from; PostgreSQL holds what she has learned, decided, spent, and been
+told. Restore the repository onto a fresh machine with no database and you have
+Val's character and none of her memory — every execution event, deliberation
+record, and cost attribution the whole layer exists to capture is in the other
+column, and none of it is reconstructible from source.
+
+**How repository recovery is verified.** By performing it, on the same principle
+as everything else here: clone the remote onto a machine that has never held the
+project, build from the sequence in `docs/BUILD.md` with no undocumented step,
+and confirm `docs/baselines/` and `03-persona.md` are byte-identical to the
+working copy. This is the clean-clone check of WP-0.1; it is named here as the
+repository's restore verification so it is not left as a build test that happens
+to double as one. Last performed 14 August 2026 against a 72-file materialised
+checkout.
+
+**No secret is ever committed.** `.env` is git-ignored and `git add .env` is
+refused; the B2 credentials and the repository passphrase live only in the 0600
+config below and on paper. A repository backup carrying them would put every
+credential wherever the repository goes.
+
 ## The key
 
 The encryption passphrase exists in exactly two places:
@@ -154,3 +196,23 @@ Steps 1–2 prove the paper. Step 3 proves the data. Step 4 proves the WAL chain
   cases.
 - **14 Aug 2026** — first real backup to B2: 42.2 MB database, 4.7 MB encrypted
   in the bucket. WAL archiving enabled. Both agents installed and loaded.
+- **16 Aug 2026** — first unattended scheduled run: 03:15, a Sunday, correctly a
+  full backup.
+- **17 Aug 2026, 03:08** — **second consecutive unattended scheduled run**, a
+  Monday, correctly an incremental. With this, WP-0.3's "confirmed by observing
+  two consecutive days" is **satisfied**: two scheduled runs on consecutive
+  days, both with no human step, and the full/incremental selection correct on
+  both. Verified from `pgbackrest info` against B2, not from the agent's own
+  log.
+- **17 Aug 2026, 09:58** — an on-demand **incremental** backup taken before
+  applying migration `0003`, per §9.2's "on demand before any schema migration".
+  Chained onto 16 August's full, so it is a complete restore point for the
+  pre-migration schema. Backup scope beyond PostgreSQL clarified above.
+
+**WP-0.3 nonetheless remains BLOCKED**, on one criterion only: **a restore
+pulled back from B2 has still not been performed.** Every restore proved so far
+— 13 August's full restore, PITR, and both key-failure cases — used a *local*
+repository. Restoring from the local copy proves the encryption, the catalogue,
+and the data; it does not prove that the bytes in Backblaze are retrievable and
+sound. That is the one thing an off-machine backup exists to establish, and
+until it is done the package does not pass (`00-charter.md` invariant 35).
