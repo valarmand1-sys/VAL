@@ -72,14 +72,25 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
-      # Everything that does not need PostgreSQL. The schema tests, the
-      # model_calls write path, and the budget ledger's concurrency tests all
-      # do, and run in the `database` job below.
+      # Everything that does not need PostgreSQL.
       #
       # Corrected 17 August 2026: this job previously ran `infrastructure/ci/tests`
-      # alone, so the policy and gateway suites were green locally and never
+      # alone, so the policy and gateway suites were green locally and were never
       # executed by CI at all.
-      - run: uv run pytest infrastructure/ci/tests packages/policy/tests packages/gateway/tests
+      #
+      # `test_persistence.py` is ignored here rather than named-and-skipped: it
+      # tests the model_calls write path against a real database, so failing
+      # loudly when there is none is the behaviour it should have. The `database`
+      # job runs it. The ledger's concurrency tests skip themselves for the same
+      # reason and are also re-run there.
+      #
+      # Ignoring one file rather than listing two keeps a new gateway test file
+      # picked up automatically instead of silently unrun — which is precisely
+      # the failure this whole correction was made to fix.
+      - run: >-
+          uv run pytest
+          infrastructure/ci/tests packages/policy/tests packages/gateway/tests
+          --ignore=packages/gateway/tests/test_persistence.py
 
   database:
     name: Database and migrations

@@ -41,7 +41,8 @@ Three, kept separate because the decisions in them are materially distinct.
 |---|---|
 | `65853a1` | The corrections: budget ledger, cost certainty, router, migration `0003`, tests, CI, and the `01-architecture.md` and `04-layer-0.md` amendments they required |
 | `3e96e6e` | Document decisions independent of the code: persona v1.1 → **v1.2**, persona persistence and activation semantics, backup scope, `.env.example` |
-| see §V | This bundle |
+| `6472911` | This bundle |
+| *(this commit)* | A CI regression of my own, caught by the first push — see §P. It cannot name its own hash; `git log` places it at the tip. |
 
 ---
 
@@ -461,6 +462,28 @@ Was 213 at `f893fa0`. **+97 tests.**
 ### CI was not running two of these suites at all
 
 `.github/workflows/ci.yml`'s Python job ran `pytest infrastructure/ci/tests` and nothing else. **`packages/policy/tests` and `packages/gateway/tests` were green locally and were never executed by CI.** Corrected: the Python job now runs all three non-database suites, and the database job runs `packages/gateway/tests` as well, so the write path and the ledger's concurrency tests execute against a real PostgreSQL on every push.
+
+### A regression I introduced, and CI caught
+
+Worth recording because it is the second half of the same lesson.
+
+Having found that CI ran neither the policy nor the gateway suite, I added both
+to the **Python service** job — which has no PostgreSQL service container.
+`test_persistence.py` tests the `model_calls` write path against a real database
+and has always needed one, so **seven tests failed on the first push**
+(`6472911`, run `32043123796`): `7 failed, 168 passed, 15 skipped`. The
+`Database and migrations` job passed all 72 gateway tests, including every
+concurrency test, so the failure was the job wiring and not the work.
+
+Fixed by the commit that carries this paragraph — the fourth in §B — by ignoring that one file in the database-less job. It is
+**ignored rather than made to skip itself**: a test about the database should
+fail loudly when there is none, and the `database` job runs it for real. One
+ignored file rather than two named files, so a new gateway test file is picked
+up automatically instead of going silently unrun — which is exactly the failure
+this correction was made to fix.
+
+The ledger's 15 concurrency tests skip themselves in that job, visibly, and are
+re-run against real PostgreSQL in the `database` job.
 
 ### Tests changed, and exactly why — nothing hidden
 

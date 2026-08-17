@@ -50,7 +50,8 @@ should, rather than proving it passes what it should.
 | 2.9 | The credential scanner catches its own false-negative regression | A first fix exempted any bare identifier, silently ceasing to catch an unquoted secret in a `.env`-style file. Its **own test** caught it before commit. | 15 Aug | `c5833de` | **PASS** |
 | 2.10 | Migration `0003`'s downgrade refuses to destroy an unknown-cost record | Scratch database seeded with one `cost_certainty = 'unknown'` row; `alembic downgrade 0002` returned `NotNullViolation: column "cost" of relation "model_calls" contains null values`; **the row survived and the revision stayed at head** | 17 Aug | working tree | **PASS** |
 | 2.11 | An expired reservation is recovered without freeing budget | `expire_stale(0)` moved a `reserved` row to `expired` and reported it by id; **committed spend was unchanged** | 17 Aug | working tree | **PASS** |
-| 2.12 | CI was not running two whole test suites | The Python job ran `infrastructure/ci/tests` alone; `packages/policy/tests` and `packages/gateway/tests` were green locally and **never executed by CI**. Found by audit, not by a failure. | 17 Aug | working tree | **CORRECTED** |
+| 2.12 | CI was not running two whole test suites | The Python job ran `infrastructure/ci/tests` alone; `packages/policy/tests` and `packages/gateway/tests` were green locally and **never executed by CI**. Found by audit, not by a failure. | 17 Aug | `65853a1` | **CORRECTED** |
+| 2.13 | CI caught a regression in the fix for 2.12 | Adding the gateway suite to the database-less Python job broke `test_persistence.py`, which needs PostgreSQL: run `32043123796` on `6472911` — **7 failed, 168 passed, 15 skipped**. The `Database and migrations` job passed all 72. Fixed by the commit recording this row. | 17 Aug | `6472911` | **PASS** (the failure was correct) |
 
 ---
 

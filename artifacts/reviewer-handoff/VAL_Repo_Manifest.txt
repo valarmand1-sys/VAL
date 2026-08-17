@@ -1,6 +1,6 @@
 VAL repository manifest
-Commit: 3e96e6ed56ad50087961107692cc866bf430b9ad
-Generated: 2026-08-17T15:41:59Z
+Commit: a1e17e8cbf139840aef6b003b311935d8384d4eb
+Generated: 2026-08-17T15:47:11Z
 Scope: every git-tracked project file, each with its size and SHA-256 — text and
        binary alike, in one table. Excludes .git internals, node_modules,
        virtualenvs, build output, caches, database data, backup repositories,
@@ -9,7 +9,7 @@ Files: 134
 
 SIZE          SHA-256                                                           PATH
 2995          39bd780de21eea8e5aae74dad6aaf097813bc344169a6fff7377eff695dd830c  .env.example
-5672          3450b6590196d8d91faeca9e624c93d5b5af778c50f91e08546a094a0a19d3f3  .github/workflows/ci.yml
+6211          a327662a1b8eae1f9080bba03a9195704088c823173d7fe54a3093c6525bce17  .github/workflows/ci.yml
 1239          9a132e0015ae22070a5aa0798472c2f665fde9f426ff4cfcb03fb3dc605c0ad3  .gitignore
 8             7e8a2fa94951112b894a3dbe3d05efef5e9263741fa49125f0a70f40fedab4cc  .nvmrc
 7             922fe0c3de073b01988e23348ea184456161678c5e329e6f34be89be24383f93  .python-version
@@ -57,10 +57,10 @@ SIZE          SHA-256                                                           
 7613          2314b4d742ee1efb07c8eea3971b7c291ecdaab534ad8403171c0b0127f096e0  artifacts/reviewer-handoff/VAL_Crossreference_Audit.md
 43140         75a6ca09f94d333da243096c466a65166a733a0122a82a2034b5c93a705de38e  artifacts/reviewer-handoff/VAL_Engineering_State_Handoff.md
 6642          4964075b4e03b2c0dd3ce1e3294bbd5fe4a27f205a0bf578b473aa709a85f62d  artifacts/reviewer-handoff/VAL_Open_Decisions.md
-16440         c7993fc37e203ad9b7900e17a3b18d423b831b1973d664bd3a988893b6452fd7  artifacts/reviewer-handoff/VAL_Repo_Manifest.txt
+16440         b949f5b0aa7aff0c8450c3c518a7d6e43cd087240ffcddc2aae121c75c236e0c  artifacts/reviewer-handoff/VAL_Repo_Manifest.txt
 418919        9759187f4ee8397c5367623ddbc1ec36facb30aab5d44897309476a4770a598c  artifacts/reviewer-handoff/VAL_Source_Snapshot_3e96e6e.zip
-17771         d5a20f66bd78aaaa1af70bf8afebf94411e0f178064006e264c75d25c56a389e  artifacts/reviewer-handoff/VAL_Test_and_Evidence_Index.md
-50628         99c07b7babf8e6ee0de9397ef3a558b72c679fae07697ca6d5d0aa16699ed571  artifacts/reviewer-handoff/VAL_WP04_Corrective_Audit.md
+18154         f043a800ca021608b218fae521e6b70c4a938f135521a3457ee49c507eac50f5  artifacts/reviewer-handoff/VAL_Test_and_Evidence_Index.md
+52035         317b450d7ccd2a65fbad0975930a1edc26b0c4a2794cb96085e2275f692957fe  artifacts/reviewer-handoff/VAL_WP04_Corrective_Audit.md
 15802         5c49880ffd089a13a6a1e3ecfada3fa8f2315df4d8e03c3af406aedf9c7646e5  artifacts/reviewer-handoff/governing/00-charter.md
 43726         166f8df53d6b3b279a605818404f9a5b0088166bbd0ce1bd77533cf76ba18c58  artifacts/reviewer-handoff/governing/01-architecture.md
 27805         0f629d7a8938545250fc891e723e340ed93d7da3647f87249a98f950f90e5f56  artifacts/reviewer-handoff/governing/02-partner-systems.md
