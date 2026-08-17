@@ -5,7 +5,12 @@ Claude can solve are not listed here; they are in §K of the handoff.
 
 Generated at commit `ccc94e3`, 16 August 2026.
 **Updated 17 August 2026** after the WP-0.4 corrective work: items 4, 5, and 6
-added. Items 1–3 are unchanged and still stand.
+added. **Updated again the same day**: items 4, 5, and 6 are **decided and
+recorded below**, and item 7 — the WP-0.5 persona-adherence acceptance — is
+recorded with them.
+
+**Nothing on this page currently awaits a decision.** Item 1 remains an action
+only Lord Armand can take; items 2 and 3 stand as previously recommended.
 
 ---
 
@@ -143,6 +148,63 @@ makes caching structurally load-bearing and the values will be read from the
 providers' own pages and dated, in the same discipline as `rates_verified_on`.
 Filling them in now from recollection is exactly the failure that dating exists
 to prevent.
+
+---
+
+## Decided — 17 August 2026
+
+Recorded here so the decisions outlive the conversation that produced them.
+
+### 4. The two governing-document amendments — **CONFIRMED**
+
+`04-layer-0.md` §2.5 (`budget_reservations`, the tenth table) and
+`01-architecture.md` §5.7 (the ceiling enforced against the proposed call, and
+Layer 0 routing) stand as written. The $200 figure is unchanged; a control that
+was not enforcing it now does.
+
+### 5. The persona's semantic version — **DECIDED: store it, explicitly and separately**
+
+*"WP-0.5 shall store the authored Persona semantic version explicitly and
+separately from the integer persistence revision."*
+
+Implemented in WP-0.5, migration `0005_persona_provenance`. `personas.version`
+counts rows; `personas.semantic_version` counts authorship. The seeded record is
+persistence revision **1** holding authored version **1.2**, and neither number
+may stand in for the other. Stored **NOT NULL** rather than the nullable column
+the earlier clarification proposed — a row that cannot say which authored
+version it holds is the ambiguity the column exists to remove.
+
+### 6. Caching and batch pricing — **DECIDED: deferred to Layer 3**
+
+*"Full caching/batch-pricing qualification remains deferred to Layer 3. No
+billing feature that invalidates the current maximum-cost bound may be enabled
+before its cost semantics are qualified."*
+
+The registry's `caching` and `batch_pricing` remain `NOT_VERIFIED` on every
+entry, and `maximum_cost` records in its own docstring that a prompt-cache write
+is billed **above** the base input rate and would therefore break the bound.
+Whoever enables caching must widen the formula in the same change. WP-0.5's
+context assembly puts the persona in `system` — the stable-prefix-first ordering
+`01-architecture.md` §5.3 wants — **without requesting caching**, which is the
+ordering benefit at none of the billing risk.
+
+### 7. WP-0.5 persona adherence — **ACCEPTED**
+
+The one WP-0.5 criterion that could not be discharged by engineering: *"Val's
+register in a real exchange is recognisably that of `03-persona.md` §9. Assessed
+by reading, not asserted."*
+
+Lord Armand read the recorded exchange
+(`VAL_WP05_Persona_Loading_Audit.md` §Q) against the governing persona and
+recorded that it **passes**, conditional on the previously reported technical
+evidence remaining valid. **The condition was re-verified rather than assumed**
+— active persona, revision, semantic version, stored digest, intactness, source
+check, row counts, the on-disk persona digest, 373 tests, and CI on `73e9947`
+were all unchanged. **WP-0.5 is COMPLETE.**
+
+This is the first acceptance in the project that a model was structurally
+forbidden from signing, and the structure held: the criterion sat unsigned until
+a human read the text.
 
 ---
 

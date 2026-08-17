@@ -72,7 +72,7 @@ is something to govern.
 
 | Layer | Delivers | State |
 |---|---|---|
-| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — 2 of 10 work packages complete; WP-0.5 implemented, one acceptance criterion outstanding |
+| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — **3 of 10 work packages complete** (WP-0.1, WP-0.2, WP-0.5) |
 | 1 | Presence — voice, face, local inference | SPECIFIED FOR LATER |
 | 2 | Hands — MCP tools, read-only | SPECIFIED FOR LATER |
 | 3 | Agents — Roles, supervision, Temporal | SPECIFIED FOR LATER |
@@ -327,7 +327,7 @@ than its detectors.
   criterion**; `last_live_call_on` is null on both Anthropic routes and a test
   fails the build if that is quietly changed.
 
-### WP-0.5 — Persona loading · IMPLEMENTED / ACCEPTANCE PENDING
+### WP-0.5 — Persona loading · COMPLETE
 
 **Exists:** the canonical source-reading rule; a deterministic semantic-version
 parser; an idempotent seeder keyed on the source digest; transactional
@@ -350,10 +350,18 @@ provider-independence proofs; every model call naming its persona revision,
 including two transmitted failures. A real exchange ran through the normal path
 and is recorded verbatim in `VAL_WP05_Persona_Loading_Audit.md` §Q.
 
-**Outstanding — one criterion, and it is not an engineering task:** the governing
-requirement is that Val's register in a real exchange is *"recognisably that of
-`03-persona.md` §9, **assessed by reading, not asserted**"*. That assessment is
-Lord Armand's. One reading of the recorded response decides it.
+**Accepted 17 August 2026.** The one criterion that could not be discharged by
+engineering — *"Val's register in a real exchange is recognisably that of
+`03-persona.md` §9, **assessed by reading, not asserted**"* — was left unsigned
+until Lord Armand read the recorded exchange. He read it against the governing
+persona and recorded that it **passes**, conditional on the technical evidence
+remaining valid.
+
+**That condition was re-verified rather than assumed**: the active persona,
+revision, semantic version, stored digest, intactness, source check, and row
+counts were all unchanged, `03-persona.md` on disk still hashed to the digest it
+was seeded from, 373 tests passed, and CI was green on `73e9947`. **WP-0.5 is
+COMPLETE.**
 
 ### WP-0.6 to WP-0.10 · NOT STARTED
 
@@ -815,10 +823,9 @@ Every one is recorded in the governing documents at the point it applies.
 | 4 | ~~No fallback routing~~ | — | **CLEARED 17 Aug** — implemented, with the fallback independently re-checked rather than inherited |
 | 5 | Capture write paths absent for `execution_events` / `deliberations` | WP-0.8, WP-0.9 | Sequenced |
 
-**Three decisions await Lord Armand**, none of them blocking: confirming the two
-governing-document amendments of 17 August, whether the persona's semantic
-version should be stored, and whether caching and batch pricing should be
-verified now. All three carry a recommendation in `VAL_Open_Decisions.md`.
+**All four decisions of 17 August are recorded and discharged**, and a fifth —
+the WP-0.5 persona-adherence acceptance — with them. `VAL_Open_Decisions.md`
+carries each with what it settled. **No decision is currently outstanding.**
 
 ---
 

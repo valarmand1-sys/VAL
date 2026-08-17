@@ -2,7 +2,13 @@
 
 **Authorised by Lord Armand on 17 August 2026**, with four executive decisions recorded: the WP-0.4 corrective amendments confirmed; the authored persona semantic version to be stored explicitly and separately from the integer persistence revision; caching and batch-pricing qualification deferred to Layer 3, with no billing feature that invalidates the maximum-cost bound to be enabled before its cost semantics are qualified; and WP-0.5 authorised.
 
-**One reading rule, carried from the previous handoffs.** *Implemented*, *verified*, and *complete* are different states and are never used interchangeably. **This document does not mark WP-0.5 COMPLETE** — see §W for the single criterion outstanding and why it is not mine to sign off.
+**One reading rule, carried from the previous handoffs.** *Implemented*, *verified*, and *complete* are different states and are never used interchangeably.
+
+> **WP-0.5 is COMPLETE.** This document was first written with fifteen of sixteen acceptance conditions met and the sixteenth — recognisable persona register in a real exchange — deliberately left unsigned, because the governing criterion is *assessed by reading* and a model asserting it sounds correct is not that assessment.
+>
+> **Lord Armand reviewed the recorded exchange (§Q) against the governing persona on 17 August 2026 and recorded that it PASSES the recognisable-register criterion**, conditional on the previously reported technical evidence remaining valid.
+>
+> **That condition was re-verified before this was written, not assumed** — see §W. The sixteenth condition is met, and with it all sixteen.
 
 ---
 
@@ -272,11 +278,11 @@ Run through the normal path: `start(engine)` → `gateway.converse(...)`.
 >
 > Give me the list as it stands, however untidy. I'll sort it, mark the dangers, and tell you where I think your attention should go first.
 
-**Persona-adherence assessment — status: AWAITING LORD ARMAND'S READING.**
+**Persona-adherence assessment — status: PASSED. Assessed by Lord Armand, 17 August 2026.**
 
-The governing criterion is *"Val's register in a real exchange is recognisably that of `03-persona.md` §9. **Assessed by reading, not asserted**"*, and the assignment is explicit that the acceptance is **not** a model asserting it sounds correct. **I am therefore not the assessor here**, and I have not marked this criterion passed.
+The governing criterion is *"Val's register in a real exchange is recognisably that of `03-persona.md` §9. **Assessed by reading, not asserted**"*, and the assignment was explicit that the acceptance is **not** a model asserting it sounds correct. I was therefore not the assessor, and did not mark it passed.
 
-What I can report is what the text does against the specification, for him to weigh:
+**Lord Armand read the response above against the governing persona and recorded that it passes.** That is the acceptance; what follows is only the correspondence I had noted at the time, kept because it is the reasoning a future reader will want when asking why this exchange was accepted:
 
 | Persona requirement | In the response |
 |---|---|
@@ -288,7 +294,7 @@ What I can report is what the text does against the specification, for him to we
 | §7 Initiative without chatter | Asks for the list, offers to sort and mark dangers |
 | §3 Never flatters | No praise anywhere |
 
-Nothing in it reads as off-register to me. **That is an observation, not the acceptance.**
+That reading was an observation offered for his judgement, not the acceptance. **The acceptance is his, and it is recorded above.**
 
 ---
 
@@ -369,11 +375,11 @@ Corrected: a recognised billing signal on a status-carrying exception normalises
 
 ---
 
-## W. WP-0.5 recommendation
+## W. WP-0.5 status
 
-**IMPLEMENTED / ACCEPTANCE PENDING HUMAN ASSESSMENT.** Not COMPLETE.
+# **COMPLETE.**
 
-Fifteen of the sixteen acceptance conditions in §16 of the assignment are met and evidenced above:
+All sixteen acceptance conditions in §16 of the assignment are met and evidenced above:
 
 | Condition | Status |
 |---|---|
@@ -392,6 +398,29 @@ Fifteen of the sixteen acceptance conditions in §16 of the assignment are met a
 | Model calls identify the persona revision | ✅ including transmitted failures |
 | Restart and provider-independence | ✅ five proofs |
 | Real exchange through the normal path | ✅ recorded verbatim |
-| **Response recognisably within register by human assessment** | ⏳ **Lord Armand's reading** |
+| **Response recognisably within register by human assessment** | ✅ **Assessed and passed by Lord Armand, 17 August 2026** |
 
-The last is deliberately not mine to sign, and the assignment says so in as many words. **One reading of §Q's response decides it.** If it passes, WP-0.5 is COMPLETE with no further work; if it does not, the assignment's own instruction applies — report it as an acceptance failure rather than prompt-engineering around the governing persona, and the persona wording is **not** to be edited because one response was imperfect.
+### The condition attached to the acceptance, discharged
+
+The acceptance was recorded *"provided all previously reported technical acceptance evidence remains valid."* That is a condition, so it was **checked rather than assumed**, at commit `73e9947` with a clean tree:
+
+| Re-verified | Result |
+|---|---|
+| Alembic revision | `0005_persona_provenance` (head) |
+| Active persona | `01a01169-c5c4-7576-9e87-6a82f26cd8b1` — **unchanged** |
+| Persistence revision / semantic version | **1** / **1.2** — unchanged |
+| Stored `source_sha256` | `1d502685…7b8dddd04` — unchanged |
+| `content_is_intact()` | **True** |
+| Check two against the source | **No findings** |
+| `personas` rows / active | **1 / 1** |
+| Model calls carrying a persona | **3** |
+| **`03-persona.md` on disk** | Digest **still identical** to the one seeded — the governing persona was not edited at any point |
+| Full suite | **373 passed** |
+| ruff, ruff format, mypy, boundaries, import-linter, pins, secrets | **All pass** |
+| CI on `73e9947` | **All six jobs green, first attempt** |
+
+Nothing changed between the evidence being reported and the acceptance being recorded. **The condition is discharged and WP-0.5 is COMPLETE.**
+
+### What remains true, and is not a WP-0.5 defect
+
+The Anthropic route still cannot be billed, so a real exchange reaches OpenAI by fallback. That is WP-0.4's outstanding blocker, unchanged by this acceptance, and it did not weaken the WP-0.5 evidence — if anything it strengthened it, since the persona survived a live provider substitution mid-exchange (§N).

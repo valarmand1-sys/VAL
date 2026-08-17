@@ -163,10 +163,13 @@ should, rather than proving it passes what it should.
 | 5b.25 | Historical attribution survives a later activation | `persona_id` unchanged after a new revision is activated | **PASS** |
 | 5b.26 | A request never sent records no persona | No row at all, so nothing to attribute | **PASS** |
 | 5b.27 | **Real exchange through the normal path** | `converse` → gpt-5-5, 4056/161, $0.025110, `resp_02a5e187…`. Response recorded verbatim. | **PASS** |
-| 5b.28 | **Persona register recognisable by human assessment** | Response recorded; the criterion is Lord Armand's reading, not a model's assertion | **AWAITING ASSESSMENT** |
+| 5b.28 | **Persona register recognisable by human assessment** | Response recorded verbatim; **read against the governing persona and passed by Lord Armand, 17 August 2026.** The criterion is his reading, not a model's assertion, and it was not signed by one. | **PASS** |
+| 5b.29 | The technical evidence still held when the acceptance was recorded | The acceptance was conditional, so it was checked: active persona, revision, semantic version, stored digest, intactness, check two, row counts, and the on-disk persona digest all unchanged; 373 tests passing; CI green on `73e9947` | **PASS** |
 
-> 5b.28 is the single WP-0.5 criterion outstanding, and it is deliberately not an
-> engineering task. Full account: `VAL_WP05_Persona_Loading_Audit.md`.
+> **WP-0.5 is COMPLETE.** All 29 rows above pass. 5b.28 was the one criterion
+> that could not be discharged by engineering, and it was left unsigned until
+> Lord Armand read the exchange. Full account:
+> `VAL_WP05_Persona_Loading_Audit.md`.
 
 ## 6. Data-eligibility and Restricted handling
 
@@ -220,7 +223,7 @@ should, rather than proving it passes what it should.
 | Migration / schema | 18 | — |
 | Backup / restore | 8 | **1** (4.8) |
 | Gateway / providers | 24 | 3 (5.9, 5.10, 5.11) |
-| Persona loading | 27 | 1 (5b.28 — a reading, not a test) |
+| Persona loading | 29 | — |
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
