@@ -15,6 +15,7 @@ from val_policy.budget import (
     maximum_cost,
     remaining_usd,
     upper_bound_input_tokens,
+    upper_bound_output_tokens,
 )
 
 
@@ -133,3 +134,70 @@ def test_the_refusal_does_not_offer_a_downgrade() -> None:
     """Budget never buys a way around eligibility."""
     message = ceiling_message(199.99, 4.00)
     assert "reclassif" not in message.lower()
+
+
+# --- the output term is bounded separately from the input term ---------------
+#
+# Added 17 August 2026. Output exposure is not a function of the prompt, and a
+# reservation sized from the prompt alone would wave through a call authorised
+# to spend several dollars on a three-word question.
+
+
+def test_output_is_bounded_by_the_configuration_limit() -> None:
+    """A request may ask for more than the model permits; the model still binds."""
+    entry = config("opus-5")
+    asked = entry.max_output_tokens * 10  # type: ignore[attr-defined]
+    assert upper_bound_output_tokens(asked, entry) == entry.max_output_tokens  # type: ignore[attr-defined]
+
+
+def test_output_is_bounded_by_the_request_when_it_is_lower() -> None:
+    """The provider stops at the request's cap, so that is the binding limit."""
+    assert upper_bound_output_tokens(100, config("opus-5")) == 100
+
+
+def test_the_output_term_does_not_depend_on_the_prompt() -> None:
+    """The two exposures are independent, and the formula treats them so."""
+    entry = config("opus-5")
+    tiny = maximum_cost(entry, ["hi"], 128_000)
+    large = maximum_cost(entry, ["x" * 50_000], 128_000)
+    output_only = 128_000 * entry.cost_per_mtok_out_usd / 1_000_000  # type: ignore[attr-defined]
+    # Both carry the whole output exposure; they differ only by their input term.
+    assert tiny > output_only * 0.999
+    assert large > tiny
+
+
+def test_a_tiny_prompt_with_a_large_output_cap_is_expensive() -> None:
+    """Three words, $3.20 of authorised output on Opus 5.
+
+    The number that makes the case for bounding output separately: the input
+    side of this call cannot cost more than a fraction of a cent.
+    """
+    entry = config("opus-5")
+    cost = maximum_cost(entry, ["Good evening."], 128_000)
+    assert cost == pytest.approx(128_000 * 25.00 / 1_000_000, rel=1e-3)
+    assert cost > 3.19
+
+    input_side = maximum_cost(entry, ["Good evening."], 1) - (1 * 25.00 / 1_000_000)
+    assert input_side < 0.001, "the input side is negligible; output is the exposure"
+    assert cost > input_side * 1000
+
+
+def test_the_maximum_is_the_sum_of_the_two_bounds() -> None:
+    """The formula, asserted as arithmetic rather than described in a comment."""
+    entry = config("gpt-5-5")
+    parts = ["Good evening, my lord.", "You are the Maester of House Armand."]
+    expected = (
+        upper_bound_input_tokens(parts, entry) * entry.cost_per_mtok_in_usd  # type: ignore[attr-defined]
+        + upper_bound_output_tokens(4096, entry) * entry.cost_per_mtok_out_usd  # type: ignore[attr-defined]
+    ) / 1_000_000
+    assert maximum_cost(entry, parts, 4096) == pytest.approx(expected)
+
+
+def test_a_tiny_prompt_with_a_large_output_cap_is_refused_near_the_ceiling() -> None:
+    """The admission decision uses the whole bound, not just the prompt's share."""
+    entry = config("opus-5")
+    cost = maximum_cost(entry, ["Good evening."], 128_000)
+    # $2.00 of headroom against a call authorised for $3.20.
+    assert not admits(CLOUD_CEILING_USD - 2.00, cost)
+    # And the same tiny prompt with a modest output cap still fits.
+    assert admits(CLOUD_CEILING_USD - 2.00, maximum_cost(entry, ["Good evening."], 1000))

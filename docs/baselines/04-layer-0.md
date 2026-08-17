@@ -112,6 +112,27 @@ These three tables are the point of the layer.
 >
 > **The rule about errored calls and spend, stated truthfully.** A refusal and an error that reports usage count at their real cost. An error that reports no usage cannot count at its real cost because nobody knows it — so it counts against the ceiling at its **reserved maximum** (§2.5) while its `model_calls` row records the cost as unknown. The ledger is conservative about what may be gone; the call record is honest about what is known. They differ on purpose.
 
+> **Second amendment — 17 August 2026, Lord Armand. The five superseded rows, and `model_calls_accounted`.**
+>
+> The amendment above stopped the false zero being *written*. It did nothing about the five already in the store: rows from 15 August 2026 carrying `tokens_in = 0, tokens_out = 0, cost = 0.000000, status = 'error'` and a NULL certainty. **They are preserved exactly as written** — invariant 14 forbids editing history to make the present tidy — but preserving them is not the same as leaving them readable. As they stand, `sum(cost)` counts them as five confirmed free calls and nothing marks them as anything else.
+>
+> **The rule that identifies them is exact, not heuristic.** The superseded implementation wrote `0, 0, 0` on *every* `GatewayError`, unconditionally, and real usage on every success and refusal:
+>
+> | Row | Means |
+> |---|---|
+> | `cost_certainty IS NULL` and `status = 'error'` | Cost **unknown**. The zero was fabricated. |
+> | `cost_certainty IS NULL` and `status <> 'error'` | Cost **known**. Real usage was recorded. |
+> | `cost_certainty IS NOT NULL` | Says what it is. |
+>
+> Two mechanisms apply it, and **neither adds a table or a row**:
+>
+> - **A check constraint bounds the legacy set permanently.** No row created from 17 August 2026 onward may leave `cost_certainty` unstated. A NULL therefore means *written before the distinction existed* and can never come to mean anything else, so the rule cannot silently widen to rows it was not written for.
+> - **The view `model_calls_accounted`** projects every column of `model_calls` plus `effective_cost_certainty` (never null), `accounted_cost` (NULL when the cost is not known), and `accounting_note` (the explanation, in words, on superseded rows only). **Every query that touches money reads the view.** SQL, Python, and Layer 5 distillation therefore share one interpretation, because there is only one.
+>
+> **This is the one view §2 names**, and it is named for the same reason §2 names tables: so that nothing arrives unnamed. It holds no state of its own and cannot drift from the base table, because it *is* the base table read through a rule.
+>
+> **Both halves stay reconstructable, which is the requirement this satisfies.** `SELECT * FROM model_calls` returns the original evidence, `0.000000` still there. `SELECT * FROM model_calls_accounted` returns what it means. The correction itself is the migration — dated, attributable, in git, append-only in the way migrations are. Neither half is derived from the other's absence, and no row was mutated or deleted to produce either.
+
 **`execution_events`** — every acceptance, rejection, revision, and correction
 
 | Column | Note |

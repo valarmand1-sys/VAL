@@ -35,9 +35,15 @@ already be gone:
 2. Reservations `settled` — at what they actually cost, or at the conservative
    figure where the cost is unknown.
 3. Reservations `expired` — see below.
-4. `model_calls` rows with no reservation behind them, at their recorded cost.
-   These are the six rows written on 15 August 2026, before this ledger existed.
-   Excluding them would quietly forgive real spending.
+4. Reservation-less `model_calls` rows, at their **accounted** cost — read
+   through `model_calls_accounted`, never through the base table. These are the
+   six rows written on 15 August 2026, before this ledger existed. Excluding
+   them would quietly forgive real spending; reading them raw would do something
+   subtler and worse, because five of the six carry a fabricated `$0.00` that
+   the base table cannot distinguish from a genuine one. The view reports those
+   five as unknown, so they add nothing to a figure that claims to be known —
+   and `unaccounted_calls` says how many are missing, so the figure is never
+   presented as complete. Migration `0004` explains the rule.
 
 **Why `expired` still counts.** A reservation whose process died may or may not
 have reached the provider. Nothing on this machine can tell which, and
@@ -144,10 +150,10 @@ _COMMITTED = text(
       ), 0)
       +
       coalesce((
-        select sum(mc.cost)
-        from model_calls mc
+        select sum(mc.accounted_cost)
+        from model_calls_accounted mc
         where mc.created_at >= date_trunc('month', now() at time zone 'utc')
-          and mc.cost is not null
+          and mc.accounted_cost is not null
           and not exists (
             select 1 from budget_reservations br where br.model_call_id = mc.id
           )
@@ -195,6 +201,21 @@ _EXPIRE = text(
      where state = 'reserved'
        and created_at < now() - make_interval(secs => :seconds)
     returning id, slug, max_cost, created_at
+    """
+)
+
+#: Calls this ledger cannot account for: they reached a provider, no reservation
+#: covers them, and their cost was never established. The five superseded rows of
+#: 15 August 2026 are exactly this. Reported rather than silently absorbed.
+_UNACCOUNTED = text(
+    """
+    select count(*)
+      from model_calls_accounted mc
+     where mc.effective_cost_certainty = 'unknown'
+       and mc.created_at >= date_trunc('month', now() at time zone 'utc')
+       and not exists (
+         select 1 from budget_reservations br where br.model_call_id = mc.id
+       )
     """
 )
 
@@ -347,6 +368,18 @@ class DatabaseLedger:
             "for whether the call was made."
             for row in rows
         ]
+
+    def unaccounted_calls(self) -> int:
+        """This month's calls whose cost is unknown and which no reservation covers.
+
+        `committed_usd` cannot include what nobody knows, so it under-reports by
+        exactly these. Returning the count separately is what stops that
+        under-reporting from being invisible: a headroom figure paired with "and
+        n calls are unaccounted for" is honest, while the same figure alone is a
+        claim the records do not support (`00-charter.md` invariant 29).
+        """
+        with self._engine.connect() as connection:
+            return int(connection.execute(_UNACCOUNTED).scalar_one())
 
     def overruns(self) -> list[str]:
         """Settlements that cost more than they were authorised to.

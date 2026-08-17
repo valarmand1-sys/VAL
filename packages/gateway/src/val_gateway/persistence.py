@@ -30,6 +30,14 @@ merely unknown. The truthful rule, by failure class:
 `sum(cost)` therefore under-reports by exactly the unknown-cost calls, which is
 why the ceiling is not enforced against it. The ledger charges those at their
 reserved maximum instead.
+
+**Everything here reads `model_calls_accounted`, never `model_calls` directly.**
+The base table still holds five rows from 15 August 2026 whose `cost` is a
+fabricated `0.000000` — preserved deliberately, because history is not rewritten
+to make the present tidy. The view applies the exact rule that identifies them
+and reports their cost as unknown. Querying the base table for money is how
+those five come back as confirmed free calls; migration
+`0004_supersede_zero_costs` explains the rule in full.
 """
 
 from datetime import UTC, datetime
@@ -40,19 +48,34 @@ from sqlalchemy import Engine, text
 
 from val_gateway.gateway import CallRecord
 
-#: One month-to-date sum over recorded call costs. Unknown-cost rows contribute
-#: nothing here because nothing is known — see the module docstring. This is a
-#: reporting view; `ledger.committed_usd` is the figure the ceiling uses.
+#: One month-to-date sum over costs that are actually known.
+#:
+#: Reads `model_calls_accounted`, not `model_calls`. The difference is the whole
+#: point of the 17 August §2.2 amendment: the base table still holds five rows
+#: from 15 August whose `cost` is a fabricated `0.000000`, and summing the base
+#: table counts them as confirmed free calls. `accounted_cost` is NULL for those
+#: rows, so they contribute nothing to a total of what is *known* — and
+#: `uncosted_calls` counts them, so no reader can mistake this sum for complete.
+#:
+#: This is a reporting figure; `ledger.committed_usd` is what the ceiling uses.
 _MONTH_TO_DATE_SPEND = text(
-    "select coalesce(sum(cost), 0) from model_calls "
-    "where cost is not null "
+    "select coalesce(sum(accounted_cost), 0) from model_calls_accounted "
+    "where accounted_cost is not null "
     "and created_at >= date_trunc('month', now() at time zone 'utc')"
 )
 
+#: Calls that reached a provider whose cost was never established — including
+#: the superseded rows, via `effective_cost_certainty` rather than the stored
+#: column, which is NULL on them.
 _UNCOSTED_THIS_MONTH = text(
-    "select count(*) from model_calls "
-    "where cost_certainty = 'unknown' "
+    "select count(*) from model_calls_accounted "
+    "where effective_cost_certainty = 'unknown' "
     "and created_at >= date_trunc('month', now() at time zone 'utc')"
+)
+
+#: Every superseded row, whenever written, for review rather than for arithmetic.
+_SUPERSEDED_ZERO_CALLS = text(
+    "select count(*) from model_calls_accounted where accounting_note is not null"
 )
 
 _INSERT_CALL = text(
@@ -118,10 +141,24 @@ def uncosted_calls_this_month(engine: Engine) -> int:
     """How many of this month's calls reached a provider that never reported usage.
 
     Kept alongside the sum so no view can display month-to-date spend as though
-    it were complete when it is not (`00-charter.md` invariant 29).
+    it were complete when it is not (`00-charter.md` invariant 29). Counts the
+    superseded 15 August rows too: their stored certainty is NULL, but their
+    *effective* certainty is `unknown`, and that is what this reads.
     """
     with engine.connect() as connection:
         return int(connection.execute(_UNCOSTED_THIS_MONTH).scalar_one())
+
+
+def superseded_zero_calls(engine: Engine) -> int:
+    """Rows whose recorded zero cost is known to be fabricated.
+
+    Five as of 17 August 2026, all written on 15 August. Exposed as its own
+    figure so the correction is visible rather than merely applied — a reader
+    who wants to know whether any of this history is superseded can ask, instead
+    of having to already know.
+    """
+    with engine.connect() as connection:
+        return int(connection.execute(_SUPERSEDED_ZERO_CALLS).scalar_one())
 
 
 def month_boundary_utc(now: datetime | None = None) -> datetime:

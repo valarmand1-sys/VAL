@@ -308,6 +308,16 @@ class ModelCall(Base):
             "(cost IS NULL AND tokens_in IS NULL AND tokens_out IS NULL)",
             name="unknown_cost_is_not_a_zero",
         ),
+        # §2.2 amendment, 17 August 2026. No row written from that date may leave
+        # its cost certainty unstated. This is what makes a NULL `cost_certainty`
+        # mean exactly one thing — *written before the distinction existed* — and
+        # keeps it meaning that permanently. Without it the rule that supersedes
+        # the five fabricated zeroes of 15 August could silently widen to cover
+        # rows it was never written for. See migration `0004_supersede_zero_costs`.
+        CheckConstraint(
+            "cost_certainty IS NOT NULL OR created_at < TIMESTAMPTZ '2026-08-17T00:00:00+00:00'",
+            name="certainty_required_after_the_amendment",
+        ),
     )
 
 

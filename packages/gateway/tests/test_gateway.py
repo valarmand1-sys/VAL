@@ -178,6 +178,73 @@ def test_the_hard_stop_fires_above_the_ceiling() -> None:
     assert rows == []
 
 
+def test_a_tiny_prompt_with_a_large_output_cap_is_refused_before_transmission() -> None:
+    """The output exposure alone breaches the ceiling, and the prompt is three words.
+
+    The case a prompt-sized reservation would wave through: two hundred bytes of
+    input against 128,000 authorised output tokens — $3.20 on Opus 5, against
+    $2.00 of remaining ceiling. **The provider must never be contacted.**
+    """
+    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    gateway, rows, ledger, _ = build(adapter, committed=CLOUD_CEILING_USD - 2.00)
+
+    spacious = GatewayRequest(
+        task_type=TaskType.CONVERSATION,
+        classification=Classification.PROTECTED,
+        messages=(Message(role="user", content="Good evening."),),
+        max_output_tokens=128_000,
+    )
+    authorised = maximum_cost(config(), ("Good evening.",), 128_000)
+    assert authorised > 2.00, "the premise: output alone must exceed the remainder"
+    assert maximum_cost(config(), ("Good evening.",), 1) < 0.01, (
+        "the premise: the prompt's own share is negligible"
+    )
+
+    with pytest.raises(GatewayError) as caught:
+        gateway.complete_with_configuration(spacious, config())
+
+    assert caught.value.kind is GatewayErrorKind.BUDGET_EXCEEDED
+    assert adapter.calls == 0, "the provider was contacted"
+    assert rows == []
+    assert ledger.entries == {}, "budget was reserved for a call that was refused"
+
+
+def test_the_same_tiny_prompt_with_a_modest_output_cap_proceeds() -> None:
+    """The refusal above is the output cap, not the prompt and not the ceiling."""
+    adapter = StubAdapter(ProviderResult("Good evening, my lord.", 10, 10, "req", False))
+    gateway, rows, _, _ = build(adapter, committed=CLOUD_CEILING_USD - 2.00)
+
+    modest = GatewayRequest(
+        task_type=TaskType.CONVERSATION,
+        classification=Classification.PROTECTED,
+        messages=(Message(role="user", content="Good evening."),),
+        max_output_tokens=1000,
+    )
+    gateway.complete_with_configuration(modest, config())
+    assert adapter.calls == 1
+    assert len(rows) == 1
+
+
+def test_the_reservation_covers_the_whole_authorised_output() -> None:
+    """What is held is the bound, not what the call turned out to use."""
+    adapter = StubAdapter(ProviderResult("brief", 10, 10, "req", False))
+    gateway, _, ledger, _ = build(adapter)
+
+    spacious = GatewayRequest(
+        task_type=TaskType.CONVERSATION,
+        classification=Classification.PROTECTED,
+        messages=(Message(role="user", content="Good evening."),),
+        max_output_tokens=64_000,
+    )
+    gateway.complete_with_configuration(spacious, config())
+
+    entry = ledger.settled()[0]
+    assert entry.max_cost_usd == pytest.approx(maximum_cost(config(), ("Good evening.",), 64_000))
+    # The call used 10 output tokens of 64,000 authorised; the difference is freed.
+    assert entry.settled_cost_usd is not None
+    assert entry.settled_cost_usd < entry.max_cost_usd / 100
+
+
 def test_the_refusal_states_the_arithmetic() -> None:
     """What Val says has to be actionable, not just a policy announcement."""
     adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))

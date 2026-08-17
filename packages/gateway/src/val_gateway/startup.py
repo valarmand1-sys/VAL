@@ -112,6 +112,15 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     warnings.extend(ledger.expire_stale())
     warnings.extend(ledger.overruns())
 
+    unaccounted = ledger.unaccounted_calls()
+    if unaccounted:
+        warnings.append(
+            f"{unaccounted} call(s) this month reached a provider whose cost was never "
+            "established and which no reservation covers. Month-to-date spend is a "
+            "figure for what is known, not a complete one, and must not be presented "
+            "as complete while this is non-zero (00-charter.md invariant 29)."
+        )
+
     gateway = Gateway(
         adapters=adapters,
         recorder=lambda record: record_call(engine, record),

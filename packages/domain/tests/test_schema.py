@@ -185,6 +185,25 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
 BOOKKEEPING = {"alembic_version"}
 
 
+#: Views §2 names. The table checks filter on `BASE TABLE`, so a view would
+#: otherwise be invisible to them — which is exactly how an unnamed one would
+#: slip in. Named here so it cannot.
+SPECIFIED_VIEWS: frozenset[str] = frozenset({"model_calls_accounted"})
+
+
+def _views(connection: Connection) -> set[str]:
+    """Every view in the public schema."""
+    return {
+        row[0]
+        for row in connection.execute(
+            text(
+                "select table_name from information_schema.tables "
+                "where table_schema = 'public' and table_type = 'VIEW'"
+            )
+        )
+    }
+
+
 def _tables(connection: Connection) -> set[str]:
     return {
         row[0]
@@ -772,3 +791,88 @@ def test_postgres_major_version_is_18(engine: Engine) -> None:
         setting = connection.execute(text("show server_version_num")).scalar_one()
     major = int(setting) // 10000
     assert major == 18, f"expected PostgreSQL 18, found major version {major}"
+
+
+# --- the accounting view — §2.2 amendment, 17 August 2026 --------------------
+
+
+def test_no_view_exists_that_the_specification_does_not_name(engine: Engine) -> None:
+    """The table checks filter on BASE TABLE; without this a view would be unseen."""
+    with engine.connect() as connection:
+        assert _views(connection) == SPECIFIED_VIEWS
+
+
+def test_the_accounting_view_exposes_every_base_column(engine: Engine) -> None:
+    """It is the base table read through a rule, not a curated subset.
+
+    A view that dropped columns would quietly become a second, lesser record,
+    and readers would have to know which one to ask.
+    """
+    with engine.connect() as connection:
+        base = set(_columns(connection, "model_calls"))
+        view = set(_columns(connection, "model_calls_accounted"))
+    assert base <= view
+    assert view - base == {"effective_cost_certainty", "accounted_cost", "accounting_note"}
+
+
+def test_the_view_never_leaves_effective_certainty_null(
+    engine: Engine, connection: Connection
+) -> None:
+    """Every row resolves to known or unknown. There is no third state."""
+    connection.execute(
+        text(
+            "insert into model_calls (created_at, model_config_id, provider, "
+            "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
+            "task_type, latency_ms, provider_request_id, status) values "
+            "(timestamptz '2026-08-15 12:00:00+00', gen_random_uuid(), 'anthropic', 'x', "
+            "0, 0, 0, null, 'conversation', 1, '', 'error')"
+        )
+    )
+    missing = connection.execute(
+        text("select count(*) from model_calls_accounted where effective_cost_certainty is null")
+    ).scalar_one()
+    assert missing == 0
+
+
+def test_the_superseding_rule_is_exact_not_a_blanket(
+    engine: Engine, connection: Connection
+) -> None:
+    """Only the superseded *error* rows are reinterpreted.
+
+    The implementation being superseded wrote real usage on success and refusal
+    and fabricated figures only on error. A rule that distrusted every legacy row
+    would be discarding good evidence to be safe, which is its own kind of wrong.
+    """
+    legacy_insert = text(
+        "insert into model_calls (created_at, model_config_id, provider, "
+        "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
+        "task_type, latency_ms, provider_request_id, status) values "
+        "(timestamptz '2026-08-15 12:00:00+00', gen_random_uuid(), 'anthropic', "
+        "'x', 1, 1, :cost, null, 'conversation', 1, '', :status)"
+    )
+    for status, cost in (("error", 0.0), ("ok", 0.000905), ("refused", 0.0004)):
+        connection.execute(legacy_insert, {"cost": cost, "status": status})
+    rows = connection.execute(
+        text(
+            "select status, effective_cost_certainty, accounted_cost "
+            "from model_calls_accounted where cost_certainty is null"
+        )
+    ).all()
+    by_status = {row.status: row for row in rows}
+    assert by_status["error"].effective_cost_certainty == "unknown"
+    assert by_status["error"].accounted_cost is None
+    assert by_status["ok"].effective_cost_certainty == "known"
+    assert by_status["ok"].accounted_cost is not None
+    assert by_status["refused"].effective_cost_certainty == "known"
+
+
+def test_the_view_holds_no_state_of_its_own(engine: Engine) -> None:
+    """It is a rule over the base table, so it cannot drift from it."""
+    with engine.connect() as connection:
+        kind = connection.execute(
+            text(
+                "select table_type from information_schema.tables "
+                "where table_schema = 'public' and table_name = 'model_calls_accounted'"
+            )
+        ).scalar_one()
+    assert kind == "VIEW"
