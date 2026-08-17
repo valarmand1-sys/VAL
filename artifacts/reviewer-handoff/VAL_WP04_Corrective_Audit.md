@@ -41,8 +41,10 @@ Three, kept separate because the decisions in them are materially distinct.
 |---|---|
 | `65853a1` | The corrections: budget ledger, cost certainty, router, migration `0003`, tests, CI, and the `01-architecture.md` and `04-layer-0.md` amendments they required |
 | `3e96e6e` | Document decisions independent of the code: persona v1.1 → **v1.2**, persona persistence and activation semantics, backup scope, `.env.example` |
-| `6472911` | This bundle |
-| *(this commit)* | A CI regression of my own, caught by the first push — see §P. It cannot name its own hash; `git log` places it at the tip. |
+| `6472911` | The bundle's first version |
+| `14ea104` | A CI regression of my own, caught by the first push — see §P |
+| `aa5e4bb` | **The final source commit.** Three reviewer-evidence issues — see §X |
+| *(this commit)* | This bundle. Artifacts only; it changes no source. |
 
 ---
 
@@ -425,25 +427,27 @@ Run at the post-correction working tree, on the real toolchain, against PostgreS
 | Suite | Result |
 |---|---|
 | `infrastructure/ci/tests` | **69 passed** |
-| `packages/domain/tests` | **120 passed** |
-| `packages/policy/tests` | **49 passed** |
-| `packages/gateway/tests` | **72 passed** |
-| **Total** | **310 passed**, 0 failed, 1 pre-existing warning |
+| `packages/domain/tests` | **125 passed** |
+| `packages/policy/tests` | **55 passed** |
+| `packages/gateway/tests` | **82 passed** |
+| **Total** | **331 passed**, 0 failed, 1 pre-existing warning |
 
-Was 213 at `f893fa0`. **+97 tests.**
+Was 213 at `f893fa0`. **+118 tests** — 97 from the corrective work, 21 more from
+the three reviewer-evidence issues of §X.
 
 | Check | Result |
 |---|---|
 | `ruff check .` | **All checks passed** |
 | `ruff format --check .` | **72 files already formatted** |
 | `mypy` (strict) | **Success — 35 source files** |
+| `alembic` revision count | **4** — `0004_supersede_zero_costs` is head |
 | `check_boundaries.py` | **Dependency direction holds across 8 components** |
 | `lint-imports` | **3 kept, 0 broken** |
 | `check_pins.py` | **No placeholder or unpinned specifier across 111 files** |
 | `check_secrets.py` | **No credential-shaped literal across 113 committable files** |
-| `alembic upgrade head` from empty | **3 migrations applied** |
-| `alembic downgrade base` | **3 reversed, clean** |
-| `alembic upgrade head` again | **3 applied; 10 tables at head** |
+| `alembic upgrade head` from empty | **4 migrations applied** |
+| `alembic downgrade base` | **4 reversed, clean** |
+| `alembic upgrade head` again | **4 applied; 10 tables and 1 view at head** |
 | `npm run build` (TypeScript) | **built in 51 ms** |
 | `cargo build --locked` (Rust) | **Finished `dev` profile** |
 
@@ -458,6 +462,15 @@ Was 213 at `f893fa0`. **+97 tests.**
 | Configuration registry contract | 9 | `packages/domain/tests/test_registry.py` |
 | Cost certainty through persistence | 6 | `packages/gateway/tests/test_persistence.py` |
 | Gateway accounting and the explicit path | 18 | `packages/gateway/tests/test_gateway.py` |
+
+### Added by the reviewer-evidence issues (§X), 17 August
+
+| Area | Count | Proves |
+|---|---|---|
+| Output bounded separately from input | 6 | `packages/policy/tests/test_budget.py` |
+| Tiny prompt, large output cap, refused before transmission | 3 | `packages/gateway/tests/test_gateway.py` |
+| The superseded zeroes are never read as confirmed free calls | 7 | `packages/gateway/tests/test_persistence.py` |
+| The accounting view is named, complete, and exact | 5 | `packages/domain/tests/test_schema.py` |
 
 ### CI was not running two of these suites at all
 
@@ -651,21 +664,63 @@ Both were made under the explicit terms of the 17 August order, and both amend d
 
 ## V. Source snapshot, and confirmation it holds no secret
 
-**`VAL_Source_Snapshot_3e96e6e.zip`** — 131 entries, 418,919 bytes,
-SHA-256 `9759187f4ee8397c5367623ddbc1ec36facb30aab5d44897309476a4770a598c`.
+**`VAL_Source_Snapshot_aa5e4bb.zip`** — 121 entries, 333,545 bytes,
+SHA-256 `6266d8bde7ef763be052c17c60370da8b6f0322a1aec0f0414854768b5fc9ad1`.
 
-The `ccc94e3` snapshot was **replaced rather than kept alongside it**: a bundle
-containing a snapshot that no longer matches the documents describing it is a
-bundle that invites the reader to check the wrong thing. Its content is
-recoverable from git at that commit if it is ever wanted.
+### What was wrong with the previous one, and it was not intentional
 
-**Confirmed: no known secret.** Built from `git ls-files` — a whitelist, so
-`.env` cannot appear by construction, and its absence was verified rather than
-assumed. No `node_modules`, `.venv`, `target`, `dist`, `__pycache__`, database
-data, or backup material.
+The bundle shipped `VAL_Source_Snapshot_3e96e6e.zip` while HEAD was `14ea104`.
+There was **no reason for the exclusion** — it was a sequencing accident. The
+snapshot was built before the two commits that followed it existed, and
+`git diff --stat 3e96e6e 14ea104` shows exactly what it therefore omitted:
 
-Scanned with a deliberately blunter matcher than the project's own. **Three
-hits, each inspected by hand:**
+- **`.github/workflows/ci.yml`** — the fix that stopped the database-backed
+  tests running in the database-less job. The snapshot omitted precisely the
+  change that made CI green.
+- **`infrastructure/ci/generate_manifest.py`** — the script that produces the
+  manifest shipped beside it.
+
+A reviewer building from that snapshot would have reproduced the CI failure and
+been unable to regenerate the manifest.
+
+### Two changes so this cannot recur
+
+1. **The snapshot excludes `artifacts/reviewer-handoff/` entirely.** A *source*
+   snapshot that contained the documents describing it goes stale the moment
+   those documents are edited — which is exactly how the last one came to name
+   an older commit. It now captures source and nothing else, so editing this
+   bundle cannot invalidate it. Entry count falls from 131 to 121 for that
+   reason alone; no source file was dropped.
+2. **It is built from the final source commit**, after all code changes, rather
+   than mid-sequence.
+
+### On the one-commit offset, which is unavoidable and is not the same problem
+
+**No commit can contain a snapshot of itself** — adding the file changes the
+tree, and therefore the hash. The snapshot is named `aa5e4bb`, the last commit
+that changed source; the commit adding it is HEAD.
+
+**The source in the snapshot is byte-identical to the source at HEAD**, because
+this commit touches `artifacts/reviewer-handoff/` and nothing else. That is
+verifiable in one command rather than taken on trust:
+
+    git diff --name-only aa5e4bb HEAD
+
+Every path it prints is under `artifacts/reviewer-handoff/`. So the reviewed
+source, the CI result, and the final repository state do refer to the same
+source — which was the requirement — even though the filename necessarily names
+the parent commit.
+
+### Confirmed: no known secret
+
+Built from `git ls-files` — a whitelist, so `.env` cannot appear by
+construction, and its absence was verified rather than assumed. No
+`node_modules`, `.venv`, `target`, `dist`, `__pycache__`, database data, or
+backup material. Positively verified present: `ci.yml`, `generate_manifest.py`,
+and migration `0004_supersede_zero_costs.py`.
+
+Scanned with the same deliberately blunt matcher as before. **The same three
+hits, each already inspected by hand and re-confirmed:**
 
 | Hit | What it actually is |
 |---|---|
@@ -677,6 +732,118 @@ None is a literal secret.
 
 ---
 
+## X. Reviewer-evidence issues, 17 August 2026
+
+Three issues raised on review of the bundle above. **All three were real.**
+
+### X.1 The snapshot named an older commit than HEAD
+
+Real, and not intentional. Cause, consequence, and the two structural changes
+that stop it recurring are in §V.
+
+### X.2 The five fabricated zeroes were preserved but not marked
+
+**Real, and the more serious of the three.** Migration `0003` was right to leave
+the rows alone — invariant 14 forbids editing history to make the present tidy —
+but *preserved* and *readable* are not the same thing. As they stood, five rows
+carrying `cost = 0.000000` were indistinguishable from five genuinely free
+calls, and `sum(cost)` counted them as such.
+
+**The rule that identifies them is exact, not heuristic.** The superseded
+implementation wrote `0, 0, 0` on *every* `GatewayError`, unconditionally, and
+real usage on every success and refusal:
+
+| Row | Cost |
+|---|---|
+| `cost_certainty IS NULL` and `status = 'error'` | **Unknown.** The zero was fabricated. |
+| `cost_certainty IS NULL` and `status <> 'error'` | **Known.** Real usage was recorded. |
+| `cost_certainty IS NOT NULL` | Says what it is. |
+
+**The mechanism: migration `0004_supersede_zero_costs`. No table, no row, no
+mutation, no deletion.**
+
+- **A check constraint bounds the legacy set permanently.** No row created from
+  17 August 2026 onward may leave `cost_certainty` unstated. NULL therefore means
+  *written before the distinction existed* and can never come to mean anything
+  else — so the rule cannot silently widen to rows it was not written for. This
+  is what turns "the five rows" from a description into a guarantee.
+- **The view `model_calls_accounted`** projects every base column plus
+  `effective_cost_certainty` (never null), `accounted_cost` (NULL when the cost
+  is not known), and `accounting_note` — the explanation in words, on superseded
+  rows only. **Every query that touches money now reads the view**:
+  `month_to_date_spend`, `uncosted_calls_this_month`, and the ledger's
+  `committed_usd`.
+
+**Why a view rather than an eleventh table.** A correction table would record
+what this rule computes, while adding state that must itself be kept correct and
+that can drift from what it describes. The view holds no state and *cannot*
+drift, because it is the base table read through a rule. `04-layer-0.md` §2.2
+names it — and the schema test, which filtered on `BASE TABLE` and so would not
+have seen a view at all, now asserts the view set too.
+
+**Both halves reconstruct independently, which was the requirement.**
+
+| Want | Ask |
+|---|---|
+| The original evidence, unmodified | `SELECT * FROM model_calls` — `0.000000` still there |
+| What it means | `SELECT * FROM model_calls_accounted` |
+| The correction itself | Migration `0004` — dated, attributable, in git |
+
+Neither is derived from the other's absence, and the migration's own downgrade
+is clean precisely because it created no state to destroy.
+
+**Applied to the authoritative store on 17 August**, after an on-demand backup
+per §9.2. Verified afterwards: all six rows byte-identical to before, five
+reporting `accounted_cost` NULL and `effective_cost_certainty = 'unknown'`, the
+one real call still `known` at `$0.000905`.
+
+**One operational consequence, written down rather than discovered.** The check
+constraint refuses to apply to a database holding NULL-certainty rows created on
+or after 17 August. That is correct — such a row is a defect — but it did fail
+once against a scratch database carrying residue from test runs predating the
+column. The authoritative store was verified clean before the migration was
+applied to it.
+
+### X.3 The reservation bound did not visibly account for output
+
+**Real as a proof gap, and the code was already correct.** `maximum_cost` did
+bound output — `min(request, config.max_output_tokens)` — but the reasoning was
+one clause in a docstring largely about the input side, and nothing tested the
+case where output alone breaches the ceiling.
+
+**The formula, now stated and proved:**
+
+    maximum_cost = (upper_bound_input_tokens  x cost_per_mtok_in
+                  + upper_bound_output_tokens x cost_per_mtok_out) / 1e6
+
+The two terms are bounded by **separate functions with separate proofs**,
+because they are independent exposures and neither constrains the other:
+
+- **Input** — UTF-8 byte length plus per-message framing, capped at the context
+  window. Sound on two claims: a byte-level tokenizer cannot emit more tokens
+  than there are bytes, and nothing is billed above the window.
+- **Output** — the lower of the request's cap and the configuration's
+  `max_output_tokens`. Reasoning and thinking tokens need no separate term:
+  every provider in this registry bills them as output *inside* the same cap.
+
+**Every provider-billable component is enumerated** in the `maximum_cost`
+docstring, with the one way the bound could be broken written down before it can
+happen: **a prompt-cache write is billed above the base input rate.** Every other
+uncounted component is free or cheaper than what is already counted, so enabling
+it can only loosen the bound. Caching is the exception, and whoever enables it
+must widen the formula in the same change — which is why every registry entry
+carries `caching = NOT_VERIFIED`.
+
+**The test the issue asked for**, end to end through the gateway: three words of
+prompt, `max_output_tokens = 128_000`, $2.00 of remaining ceiling against $3.20
+of authorised output. The test asserts its own premises first — that output
+alone exceeds the remainder, and that the prompt's share is under a cent — then
+asserts `adapter.calls == 0`, no `model_calls` row, and **no budget reserved**. A
+companion test proves the same prompt with a modest output cap still proceeds, so
+the refusal is demonstrably the output cap and not the prompt or the ceiling.
+
+---
+
 ## W. Status after this work
 
 | WP | Status | Change |
@@ -685,7 +852,7 @@ None is a literal secret.
 | **0.2** Database and migrations | **COMPLETE** | Unchanged. Migration `0003` applies, reverses from empty, and refuses to destroy records; the schema test's hand-transcribed copy of §2 was extended to match the amended specification |
 | **0.3** Backup and verified restore | **BLOCKED** | One criterion **newly met** (two consecutive scheduled runs); one outstanding (restore from B2) |
 | **0.4** Model Gateway | **IN PROGRESS / BLOCKED** | Code corrections complete and proved. **Not COMPLETE** — the live two-provider criterion is unmet |
-| **0.5** Persona loading | **NOT STARTED** | Semantics recorded (§L, §M). Nothing implemented. |
+| **0.5** Persona loading | **NOT STARTED** | Semantics recorded (§L, §M). Nothing implemented. Technically ready. |
 | **0.6–0.10** | **NOT STARTED** | Unchanged |
 
 **No Layer Gate is tagged.** `04-layer-0.md` §5 requires all seven gate conditions demonstrated in one session; four of them depend on packages not started.

@@ -43,7 +43,7 @@ These six are authoritative. Nothing else in the repository governs anything.
 | `/docs/baselines/01-architecture.md` | Governing | `166f8df5…6ba18c58` | Layers, stack, topology, model routing, budget, data classification, MCP, avatar, backup |
 | `/docs/baselines/02-partner-systems.md` | Governing | `0f629d7a…f90e5f56` | Roles, the books, self-evaluation, deliberation, prediction ledger, success models |
 | `/docs/baselines/03-persona.md` | Governing, **v1.2** | `1d502685…7b8dddd04` | Voice, manner, bearing, conduct. Loaded whole, never summarised |
-| `/docs/baselines/04-layer-0.md` | Governing | `a1ee5b77…1f9b2111f` | Layer 0 scope, schema, work packages, acceptance criteria, the gate |
+| `/docs/baselines/04-layer-0.md` | Governing | `2f0223ff…7b703ae9` | Layer 0 scope, schema, work packages, acceptance criteria, the gate |
 
 Full hashes are in `governing/README.md`. Byte-identical review copies are in
 `governing/`; **the repository originals remain authoritative.**
@@ -343,7 +343,7 @@ write path. `personas` is empty; no seed exists.
 |---|---|
 | PostgreSQL | 18.4 (Homebrew), port **5433** |
 | pgvector | 0.8.6 (installed; no vector column exists yet — retrieval is WP-0.7) |
-| Alembic revision | `0003_budget_reservations` (head) |
+| Alembic revision | `0004_supersede_zero_costs` (head) |
 | Databases | `val` (authoritative), `val_test` (schema tests; refuses any name not ending `_test`) |
 
 ### Tables
@@ -360,6 +360,13 @@ write path. `personas` is empty; no seed exists.
 | `ideas` | Idea lifecycle, manual marking only | 0 |
 | `idea_state_changes` | Append-only lineage | 0 |
 | `budget_reservations` | Pre-call budget claims, cradle to grave (§2.5, 17 Aug) | 0 |
+
+**One view, and it is the only one §2 names.** `model_calls_accounted` projects
+every `model_calls` column plus `effective_cost_certainty`, `accounted_cost`, and
+`accounting_note`. It exists because five rows written on 15 August carry a
+fabricated `cost = 0.000000` that the base table cannot distinguish from a real
+one. **Every query that touches money reads the view, never the base table.**
+§2.2 as amended, and migration `0004`.
 
 ### Constraints that carry meaning
 
@@ -391,6 +398,7 @@ write path. `personas` is empty; no seed exists.
 | `0001_layer_0_schema` | Seven tables, ten enums, pgvector, delete guards |
 | `0002_reaction_and_ideas` | `reaction` added, `event_type` made nullable, idea tables |
 | `0003_budget_reservations` | `model_calls.cost_certainty` with nullable figures and two check constraints; the `budget_reservations` table (17 Aug) |
+| `0004_supersede_zero_costs` | A check constraint bounding the legacy set permanently, and the `model_calls_accounted` view (17 Aug) |
 
 `0002` modifies **no existing row**: `event_type` keeps its value and `reaction`
 backfills as NULL meaning *not recorded*, never `neutral`. Its downgrade
@@ -408,8 +416,16 @@ is what invariant 14 forbids. Its downgrade likewise fails once any honestly
 unknown-cost row exists, demonstrated the same way (`NotNullViolation`, row and
 revision both intact).
 
-Reversibility from empty is unaffected and verified: `upgrade head` (3) →
-`downgrade base` (3) → `upgrade head` (3), ten tables at head.
+`0004` supersedes the five fabricated zeroes **without touching them**. It
+performs no `UPDATE` and no `DELETE`. The rule it publishes is exact rather than
+heuristic — the superseded implementation wrote `0/0/$0` on every error and real
+usage on everything else — and a check constraint bounds the legacy set
+permanently, so a NULL `cost_certainty` can never come to mean anything but
+*written before the distinction existed*. Its own downgrade is clean, unlike
+`0002` and `0003`: it created no state, so removing it destroys none.
+
+Reversibility from empty is verified: `upgrade head` (4) → `downgrade base` (4)
+→ `upgrade head` (4), ten tables and one view at head.
 
 ### Backup/restore state
 
@@ -506,6 +522,21 @@ wrongness is the failure mode a code-held registry creates.
 5. **Settlement** — the reservation closes against what was actually consumed,
    and `model_calls` records the cost as known or as explicitly unknown.
 
+### The five superseded rows — CORRECTED 17 AUGUST
+
+Five `model_calls` rows written on 15 August carry `tokens_in = 0`,
+`tokens_out = 0`, `cost = 0.000000`, `status = 'error'` and a NULL certainty.
+They are **preserved unmodified** — history is not rewritten to make the present
+tidy — and they are now **readable as what they are**. `accounted_cost` is NULL
+on all five, `effective_cost_certainty` is `unknown`, and `accounting_note`
+explains it in words to anyone querying by hand.
+
+`month_to_date_spend` therefore reports what is *known*, `uncosted_calls_this_month`
+counts these five so the total is never presented as complete, and startup warns
+when any call is unaccounted for. The original evidence and the correction are
+each reconstructable on their own: the base table holds the first, migration
+`0004` is the second.
+
 ### Cost recording — CORRECTED 17 AUGUST
 
 Computed at call time from the configuration's rates and stored. Never
@@ -524,7 +555,10 @@ against. Two check constraints now make that zero unwritable.
 `committed + maximum_cost(this call) ≤ $200`, decided atomically in PostgreSQL
 under an advisory lock before the provider is contacted. `committed` sums settled
 reservations, outstanding reservations, expired holds, and any `model_calls` row
-predating the ledger. `maximum_cost` is an arithmetic upper bound from UTF-8 byte
+predating the ledger **at its accounted cost** — read through
+`model_calls_accounted`, so the five fabricated zeroes contribute nothing to a
+figure that claims to be known, and `unaccounted_calls()` reports how many are
+missing rather than letting the gap be silent. `maximum_cost` is an arithmetic upper bound from UTF-8 byte
 length, not an estimate, so it cannot under-reserve; the unspent difference is
 released the moment the call settles.
 
@@ -622,22 +656,23 @@ requirement at WP-0.10.
 
 ## I. Tests and verification
 
-Run everything with `uv run pytest -q` from the repository root. **310 tests, all
-passing** — 213 at `ccc94e3`, plus 97 added by the 17 August corrective work.
+Run everything with `uv run pytest -q` from the repository root. **331 tests, all
+passing** — 213 at `ccc94e3`, plus 97 from the 17 August corrective work and 21
+more from the three reviewer-evidence issues that followed it.
 
 | Suite | Count | Command | Result |
 |---|---|---|---|
-| Schema and migrations | 96 | `uv run pytest packages/domain/tests/test_schema.py` | **PASS** |
+| Schema and migrations | 101 | `uv run pytest packages/domain/tests/test_schema.py` | **PASS** |
 | Restricted preflight | 34 | `uv run pytest packages/policy/tests/test_restricted.py` | **PASS** |
 | Version pinning | 26 | `uv run pytest infrastructure/ci/tests/test_check_pins.py` | **PASS** |
-| Gateway | 25 | `uv run pytest packages/gateway/tests/test_gateway.py` | **PASS** |
+| Gateway | 28 | `uv run pytest packages/gateway/tests/test_gateway.py` | **PASS** |
 | Registry | 24 | `uv run pytest packages/domain/tests/test_registry.py` | **PASS** |
 | **Router and fallback** | 22 | `uv run pytest packages/gateway/tests/test_router.py` | **PASS** |
 | Dependency boundaries | 20 | `uv run pytest infrastructure/ci/tests/test_check_boundaries.py` | **PASS** |
 | Credential scanner | 19 | `uv run pytest infrastructure/ci/tests/test_check_secrets.py` | **PASS** |
-| **Budget arithmetic** | 15 | `uv run pytest packages/policy/tests/test_budget.py` | **PASS** |
+| **Budget arithmetic** | 21 | `uv run pytest packages/policy/tests/test_budget.py` | **PASS** |
 | **Budget ledger (real PostgreSQL)** | 15 | `uv run pytest packages/gateway/tests/test_budget_ledger.py` | **PASS** |
-| `model_calls` persistence | 10 | `uv run pytest packages/gateway/tests/test_persistence.py` | **PASS** |
+| `model_calls` persistence | 17 | `uv run pytest packages/gateway/tests/test_persistence.py` | **PASS** |
 | B2 credential parser | 4 | `uv run pytest infrastructure/ci/tests/test_check_b2_credential.py` | **PASS** |
 
 **One assertion inverted in this work, named here rather than buried.**
@@ -695,6 +730,8 @@ actually assert. Full account in `VAL_WP04_Corrective_Audit.md` §P.
 | **`0003` downgrade refuses to destroy an unknown-cost row** | `NotNullViolation`; row and revision both intact | 17 Aug | **PASS** |
 | **Expired reservation recovered without freeing budget** | state moved to `expired`, reported by id, committed spend unchanged | 17 Aug | **PASS** |
 | **Fabricated configuration cannot create a route** | rogue provider with a matching adapter wired in — refused | 17 Aug | **PASS** |
+| **A tiny prompt with a large output cap is refused before transmission** | 3 words, 128,000 authorised output tokens = $3.20 against $2.00 remaining — provider never contacted | 17 Aug | **PASS** |
+| **The five fabricated zeroes are never read as confirmed free calls** | `accounted_cost` NULL, `effective_cost_certainty` `unknown`, counted as uncosted; originals byte-identical | 17 Aug | **PASS** |
 | Restricted refused, no row | rows unchanged | 15 Aug | **PASS** |
 | Error normalisation | 3 real failure classes | 15 Aug | **PASS** |
 | Downgrade refuses to destroy records | scratch DB, `NotNullViolation`, record survived | 15 Aug | **PASS** |
@@ -740,6 +777,7 @@ Every one is recorded in the governing documents at the point it applies.
 | 1 | **Anthropic account credit.** Key authenticates and lists models; inference returns 400 "credit balance is too low". Likely credit on a different org, or a workspace key without spend allocation. | WP-0.4 completion — two providers, substitution, dashboard reconciliation | **Lord Armand** |
 | 2 | ~~Second consecutive scheduled backup~~ | — | **CLEARED 17 Aug** — 16 Aug 03:15 and 17 Aug 03:08, both unattended, type selection correct on both |
 | 3 | **Restore from B2 not performed.** Mechanics proven against a local repository only, which does not establish that the bytes in Backblaze are retrievable. | WP-0.3 — **now the only outstanding criterion** | Claude |
+| 3a | ~~Reviewer-evidence issues: stale source snapshot, unmarked fabricated zeroes, unproven output bound~~ | — | **CLEARED 17 Aug** — all three were real; see `VAL_WP04_Corrective_Audit.md` §X |
 | 4 | ~~No fallback routing~~ | — | **CLEARED 17 Aug** — implemented, with the fallback independently re-checked rather than inherited |
 | 5 | Capture write paths absent for `execution_events` / `deliberations` | WP-0.8, WP-0.9 | Sequenced |
 

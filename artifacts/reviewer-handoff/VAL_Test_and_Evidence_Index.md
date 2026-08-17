@@ -71,6 +71,12 @@ should, rather than proving it passes what it should.
 | 3.10 | `0002` modifies no existing row | `event_type` retained; `reaction` NULL = *not recorded*, never `neutral` | **PASS** |
 | 3.11 | `0003` modifies no existing row (17 Aug) | All six `model_calls` rows in the authoritative store unchanged after migration; `cost_certainty` NULL = *written before the distinction existed*. The five error rows carrying `$0.000000` — the false zeros this correction stops — were **left as they were**, because correcting history to match a better present is what invariant 14 forbids. | **PASS** |
 | 3.12 | Reversibility holds from empty with `0003` in place (17 Aug) | `upgrade head` (3) → `downgrade base` (3) → `upgrade head` (3); 10 tables at head | **PASS** |
+| 3.13 | `0004` modifies no existing row (17 Aug) | The migration performs no `UPDATE` and no `DELETE`. All six `model_calls` rows in `val` verified byte-identical after it: `cost` still `0.000000` on the five, `0.000905` on the one real call. | **PASS** |
+| 3.14 | The five fabricated zeroes report as unknown, not as free (17 Aug) | `model_calls_accounted`: `accounted_cost` NULL and `effective_cost_certainty = 'unknown'` on all five; the one genuine call still `known` at `$0.000905` | **PASS** |
+| 3.15 | The superseding rule is exact rather than a blanket (17 Aug) | `test_the_superseding_rule_is_exact_not_a_blanket` — legacy `ok` and `refused` rows stay `known`; only legacy `error` rows are reinterpreted, because only the error path fabricated figures | **PASS** |
+| 3.16 | The legacy set is bounded permanently (17 Aug) | `test_a_new_row_may_not_omit_its_cost_certainty` — a check constraint refuses any post-17-August row with an unstated certainty, so NULL can never come to mean anything else | **PASS** |
+| 3.17 | No view exists that §2 does not name (17 Aug) | `test_no_view_exists_that_the_specification_does_not_name` — the table checks filter on `BASE TABLE`, so without this a view would be invisible to them | **PASS** |
+| 3.18 | Reversibility holds from empty with `0004` in place (17 Aug) | `upgrade head` (4) → `downgrade base` (4) → `upgrade head` (4); 10 tables and 1 view at head. `0004`'s downgrade is clean against real data — it created no state to destroy. | **PASS** |
 
 ---
 
@@ -104,6 +110,9 @@ should, rather than proving it passes what it should.
 | 5.5a | **The ceiling is enforced against the proposed call, not against history** | **Superseding 5.5, 17 Aug.** The 15 Aug guard was `spend < ceiling`, which at $199.99 admitted a call of any size. `test_the_ceiling_is_enforced_against_the_proposed_call_not_history`: $199.99 committed, $0.01 left, a call authorised for more — provider never contacted, no row. The test asserts its own premise first. | 17 Aug | **PASS** |
 | 5.5b | **Two concurrent calls cannot together exceed the ceiling** | `test_two_simultaneous_calls_cannot_both_take_insufficient_budget` — two threads, separate connections, barrier-released, headroom for one: exactly one admitted. Then eight threads, room for three: exactly three. **Against real PostgreSQL**, not a fake. | 17 Aug | **PASS** |
 | 5.5c | A reservation released, settled below its maximum, or expired resolves correctly | `test_budget_ledger.py` — release returns all of it; settling at $0.25 of a $4.00 reservation returns $3.75; **expiry returns nothing** and is reported in words | 17 Aug | **PASS** |
+| 5.5e | **A tiny prompt with a large output cap is refused before transmission** | `test_a_tiny_prompt_with_a_large_output_cap_is_refused_before_transmission` — 3 words of prompt, 128,000 authorised output tokens ($3.20 on Opus 5) against $2.00 remaining. Provider never contacted, no row, **no budget reserved**. The test asserts both premises first: that output alone exceeds the remainder, and that the prompt's own share is under a cent. | 17 Aug | **PASS** |
+| 5.5f | The same prompt with a modest output cap still proceeds | `test_the_same_tiny_prompt_with_a_modest_output_cap_proceeds` — proves 5.5e is the output cap, not the prompt and not the ceiling | 17 Aug | **PASS** |
+| 5.5g | The reservation covers the whole authorised output, and the surplus is freed | `test_the_reservation_covers_the_whole_authorised_output` — 64,000 authorised, 10 used, settled at under 1% of the hold | 17 Aug | **PASS** |
 | 5.5d | An overrun is recorded truthfully rather than clamped | `test_an_overrun_is_reported_rather_than_clamped` — settled $5.00 against a $0.01 reservation: both figures kept, reported as `INVARIANT 24 VIOLATION` | 17 Aug | **PASS** |
 | 5.6 | Errors normalise to one contract | Unroutable endpoint → `provider_error`; bad credential → `authentication`; unknown model → `invalid_request` | 15 Aug | **PASS** |
 | 5.6a | **A provider failure with no usage is recorded as unknown, never as zero** | **Correcting 5.3, 17 Aug.** The 15 Aug write path recorded `0/0/$0.00` for every error, including errors after transmission — a figure known to be false. Now `cost_certainty = 'unknown'` with NULL figures, and two check constraints make the zero **unwritable**. `test_the_database_refuses_an_unknown_cost_carrying_a_zero`. | 17 Aug | **PASS** |
@@ -171,13 +180,13 @@ should, rather than proving it passes what it should.
 |---|---|---|
 | CI | 6 jobs | — |
 | Deliberate-failure | 12 | — |
-| Migration / schema | 12 | — |
+| Migration / schema | 18 | — |
 | Backup / restore | 8 | **1** (4.8) |
-| Gateway / providers | 20 | 3 (5.9, 5.10, 5.11) |
+| Gateway / providers | 23 | 3 (5.9, 5.10, 5.11) |
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
-| **Automated tests** | **310 passing** | — |
+| **Automated tests** | **331 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.
