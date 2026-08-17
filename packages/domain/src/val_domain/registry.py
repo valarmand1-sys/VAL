@@ -30,7 +30,14 @@ calls already costed against the old rate must keep resolving to it.
 from datetime import date, timedelta
 from uuid import UUID
 
-from val_domain.gateway import Classification, ModelConfig
+from val_domain.gateway import (
+    AdapterStatus,
+    Admission,
+    Classification,
+    ModelConfig,
+    PricingFeature,
+    ReasoningEffort,
+)
 
 #: Every route is Protected-eligible, which is what makes Layer 0's structural
 #: guarantee hold: there is no ineligible route to misdirect content to
@@ -49,6 +56,12 @@ _VERIFIED_ON = date(2026, 8, 15)
 #: 91-day-old price is a worse outcome than one that says so plainly.
 RATE_STALENESS_WARNING = timedelta(days=90)
 
+#: The day these three routes were admitted for Layer 0 use. Admission is
+#: `PROVISIONALLY_ADMITTED`, never `QUALIFIED`: formal qualification is the exam
+#: suite of `01-architecture.md` §5.2.1, which is built at Layers 2-3 and does
+#: not exist. Claiming the stronger word here would assert a record nobody holds.
+_ADMITTED_ON = date(2026, 8, 15)
+
 REGISTRY: tuple[ModelConfig, ...] = (
     ModelConfig(
         id=UUID("4e38c060-3b9a-495d-bc54-73acd1530cd5"),
@@ -58,9 +71,22 @@ REGISTRY: tuple[ModelConfig, ...] = (
         display_name="Claude Opus 5",
         context_window_tokens=1_000_000,
         max_output_tokens=128_000,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=25.00,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        # Nothing observed in this house's own use. Left empty rather than filled
+        # from a benchmark or a provider's own copy.
+        known_weaknesses=(),
+        # The cheaper Anthropic route. Both are on the same account, so this
+        # fallback does not survive an account-level failure — which is exactly
+        # what the credit blocker of WP-0.4 is, and why it is written down here.
+        fallback_slug="haiku-4-5",
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=_ADMITTED_ON,
         rates_verified_on=_VERIFIED_ON,
     ),
     ModelConfig(
@@ -71,9 +97,20 @@ REGISTRY: tuple[ModelConfig, ...] = (
         display_name="Claude Haiku 4.5",
         context_window_tokens=200_000,
         max_output_tokens=64_000,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
         cost_per_mtok_in_usd=1.00,
         cost_per_mtok_out_usd=5.00,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        known_weaknesses=(),
+        # Explicit NONE. The cheapest route has nothing cheaper to fall back to,
+        # and falling *up* to a frontier model on failure would spend more money
+        # in response to an outage, which is the wrong reflex.
+        fallback_slug=None,
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=_ADMITTED_ON,
         rates_verified_on=_VERIFIED_ON,
     ),
     ModelConfig(
@@ -84,9 +121,19 @@ REGISTRY: tuple[ModelConfig, ...] = (
         display_name="GPT-5.5",
         context_window_tokens=272_000,
         max_output_tokens=128_000,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=30.00,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        known_weaknesses=(),
+        # A different provider, so this fallback survives an Anthropic-account
+        # failure in a way `opus-5 → haiku-4-5` does not.
+        fallback_slug="haiku-4-5",
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=_ADMITTED_ON,
         rates_verified_on=_VERIFIED_ON,
         # Answered a real call on 15 August 2026: 37 tokens in, 24 out, $0.000905.
         last_live_call_on=date(2026, 8, 15),
@@ -122,6 +169,21 @@ def cheapest() -> ModelConfig:
     ineligible option to be tempted by (§1.1).
     """
     return min(active(), key=lambda config: config.cost_per_mtok_in_usd)
+
+
+def fallback_for(config: ModelConfig) -> ModelConfig | None:
+    """The successor this configuration declares, resolved, or None.
+
+    Resolution only. **This says nothing about whether the fallback may be
+    used** — admission, eligibility, readiness, and budget are all re-checked
+    against it independently by the router, because a fallback is never
+    inherited (`01-architecture.md` §5.4). A declared slug that resolves to
+    nothing returns None rather than raising: the registry is a typed artifact
+    and `test_registry.py` fails on a dangling reference long before startup.
+    """
+    if config.fallback_slug is None:
+        return None
+    return by_slug(config.fallback_slug)
 
 
 def live_routes() -> tuple[ModelConfig, ...]:

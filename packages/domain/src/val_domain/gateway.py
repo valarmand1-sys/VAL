@@ -39,6 +39,33 @@ class CallStatus(StrEnum):
     REFUSED = "refused"
 
 
+class CostCertainty(StrEnum):
+    """Whether this row's cost is a fact or an absence (`04-layer-0.md` §2.2).
+
+    A provider attempt has exactly three accounting outcomes, and only two of
+    them are rows:
+
+    - **NOT_SENT** — no provider request occurred. Cost is definitively zero and
+      this was not a model call, so **no row is written at all**. That is why
+      there is no enum member for it: a row asserting a call that never happened
+      is the error this distinction exists to prevent.
+    - **SENT_COST_KNOWN** — `KNOWN`. The request occurred and the response or
+      error carried reliable usage, so `tokens_in`, `tokens_out`, and `cost`
+      hold real figures.
+    - **SENT_COST_UNKNOWN** — `UNKNOWN`. The request occurred — or may have —
+      and usage cannot be established from what came back. `tokens_in`,
+      `tokens_out`, and `cost` are **NULL**, never zero. Zero is a claim, and it
+      is the wrong one: a call that reached the provider consumed input tokens
+      whatever the transport did afterwards.
+
+    A NULL `cost_certainty` on a row means only that the row predates this
+    distinction (17 August 2026). It is not a third state.
+    """
+
+    KNOWN = "known"
+    UNKNOWN = "unknown"
+
+
 class GatewayErrorKind(StrEnum):
     """The one normalized error contract (`01-architecture.md` §5.1).
 
@@ -57,6 +84,75 @@ class GatewayErrorKind(StrEnum):
     BUDGET_EXCEEDED = "budget_exceeded"
     NOT_ELIGIBLE = "not_eligible"
     RESTRICTED_CONTENT = "restricted_content"
+    #: The router found no configuration that is admitted, eligible, ready, and
+    #: affordable. Truthful unavailability — never a reason to downgrade the
+    #: content's classification or to reach for an unadmitted route.
+    NO_ELIGIBLE_ROUTE = "no_eligible_route"
+
+
+class Admission(StrEnum):
+    """How far a configuration has got through `01-architecture.md` §5.2.1.
+
+    The vocabulary exists because the architecture's routing rule said *qualified*
+    while §5.2.1 said qualification cannot exist before the Layers 2-3 exam suite.
+    Both are now true of different states, and Layer 0 asserts only the weaker one.
+
+    `QUALIFIED` is reserved. Nothing may carry it until an exam record exists,
+    and no code path sets it — a configuration is promoted to it by a recorded
+    decision, never by an implementation that finds the word convenient.
+    """
+
+    #: Present in the registry but not permitted to carry traffic.
+    NOT_ADMITTED = "not_admitted"
+    #: Admitted for Layer 0 use on the strength of the eligibility ruling and a
+    #: working adapter. This is the strongest state any Layer 0 route may hold.
+    PROVISIONALLY_ADMITTED = "provisionally_admitted"
+    #: Passed the system-specific exam suite. No such record exists yet.
+    QUALIFIED = "qualified"
+
+
+class AdapterStatus(StrEnum):
+    """Whether code exists that speaks this provider's dialect (§5.2.1).
+
+    Separate from admission on purpose: an implemented adapter is not a live
+    provider, and neither is evidence of eligibility.
+    """
+
+    IMPLEMENTED = "implemented"
+    NOT_IMPLEMENTED = "not_implemented"
+
+
+class PricingFeature(StrEnum):
+    """Whether caching or batch pricing applies to a configuration (§5.2).
+
+    `NOT_VERIFIED` is the honest default and is not a synonym for absent: it
+    records that the provider's own pricing page has not been read for this, in
+    the same spirit as `rates_verified_on`. Layer 0 uses neither caching nor
+    batch pricing (`01-architecture.md` §5.3 makes them first-class from the
+    layer that has repetitive context to cache), so nothing here is load-bearing
+    yet — but a guessed value would become load-bearing the moment it is.
+    """
+
+    NOT_VERIFIED = "not_verified"
+    AVAILABLE = "available"
+    NOT_AVAILABLE = "not_available"
+    NOT_APPLICABLE = "not_applicable"
+
+
+class ReasoningEffort(StrEnum):
+    """The configuration's reasoning setting, or a typed absence (§5.2).
+
+    `NOT_APPLICABLE` means the provider has no such concept for this model. It
+    is a recorded fact, not a missing value, and it is why this is an enum rather
+    than an optional string that would leave "unset" and "unsupported"
+    indistinguishable.
+    """
+
+    NOT_APPLICABLE = "not_applicable"
+    MINIMAL = "minimal"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 
 class GatewayError(Exception):
@@ -87,9 +183,35 @@ class ModelConfig(BaseModel):
     display_name: str
     context_window_tokens: int = Field(gt=0)
     max_output_tokens: int = Field(gt=0)
+    #: Reasoning or sampling settings (§5.2). `temperature = None` means the
+    #: configuration sets none and the provider's own default stands — recorded
+    #: rather than filled in with an invented number.
+    reasoning_effort: ReasoningEffort
+    temperature: float | None = None
     cost_per_mtok_in_usd: float = Field(gt=0)
     cost_per_mtok_out_usd: float = Field(gt=0)
+    #: Whether caching or batch pricing applies (§5.2). See `PricingFeature`:
+    #: `NOT_VERIFIED` records that this has not been read from the provider.
+    caching: PricingFeature = PricingFeature.NOT_VERIFIED
+    batch_pricing: PricingFeature = PricingFeature.NOT_VERIFIED
     eligible_classifications: frozenset[Classification]
+    #: Weaknesses observed in this house's own use (§5.2). Written from
+    #: observation, never from a provider's or a benchmark's claims, so an empty
+    #: tuple means "none observed here yet" rather than "none exist".
+    known_weaknesses: tuple[str, ...] = ()
+    #: The preferred successor when this route cannot answer, or None for an
+    #: explicit NONE. A fallback is re-checked against every admission and
+    #: eligibility rule when it is reached; it never inherits the failed route's
+    #: standing (`01-architecture.md` §5.4).
+    fallback_slug: str | None
+    #: How far this configuration has got through §5.2.1, and whether code exists
+    #: that speaks its dialect. Independent: neither implies the other, and
+    #: neither implies eligibility.
+    admission: Admission
+    adapter_status: AdapterStatus
+    #: When this configuration became routable, and when it stopped being so.
+    activated_on: date
+    retired_on: date | None = None
     #: The day the rates above were read from the provider's own documentation.
     #: Rates go stale silently, and a stale rate makes cost attribution quietly
     #: wrong rather than visibly wrong — so the date is carried per entry and

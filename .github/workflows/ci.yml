@@ -72,8 +72,14 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
-      # The schema tests need a database and run in the `database` job.
-      - run: uv run pytest infrastructure/ci/tests
+      # Everything that does not need PostgreSQL. The schema tests, the
+      # model_calls write path, and the budget ledger's concurrency tests all
+      # do, and run in the `database` job below.
+      #
+      # Corrected 17 August 2026: this job previously ran `infrastructure/ci/tests`
+      # alone, so the policy and gateway suites were green locally and never
+      # executed by CI at all.
+      - run: uv run pytest infrastructure/ci/tests packages/policy/tests packages/gateway/tests
 
   database:
     name: Database and migrations
@@ -117,6 +123,11 @@ jobs:
         run: uv run alembic upgrade head
       - name: schema matches 04-layer-0.md §2
         run: uv run pytest packages/domain/tests
+      # The write path, and the budget ledger under real concurrency. These
+      # cannot be proved against a fake — an in-process fake is the exact thing
+      # the reservation design forbids relying on.
+      - name: model_calls write path and budget ledger
+        run: uv run pytest packages/gateway/tests
 
   desktop:
     name: Desktop shell

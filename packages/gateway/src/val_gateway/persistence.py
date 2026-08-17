@@ -1,62 +1,93 @@
 """Writing `model_calls`, and reading month-to-date spend back out of it.
 
-The gateway takes a recorder callable and a spend callable so it stays testable
-without a database. This is the pair that talks to the real store.
+The gateway takes a recorder callable and a ledger so it stays testable without
+a database. This is the pair that talks to the real store.
 
-**Month-to-date spend is read from `model_calls`, not from a counter.** The
-table is the record; a separate tally could drift from it, and the drift would
-be invisible until the ceiling failed to fire. Summing is cheap at Layer 0
-volumes and cannot disagree with itself.
+**Month-to-date spend is read from the record, not from a counter.** A separate
+tally could drift, and the drift would be invisible until the ceiling failed to
+fire. Summing is cheap at Layer 0 volumes and cannot disagree with itself. The
+authoritative figure the ceiling is enforced against now lives in
+`val_gateway.ledger`, which sums settled reservations, outstanding reservations,
+expired holds, and any `model_calls` row written before the ledger existed;
+`month_to_date_spend` here remains the plain "what did the calls cost" view.
 
-Refused and errored calls count toward spend. A refusal still consumed input
-tokens at the provider, and an error may have. Excluding them would let a
-failing loop spend past the ceiling while the guard reported room
-(`00-charter.md` invariant 24).
+**What errored calls contribute — corrected, 17 August 2026.** This module used
+to state flatly that refused and errored calls count toward spend. That was true
+of refusals and false of errors as implemented: the error path wrote
+`tokens_in = 0, tokens_out = 0, cost = 0` for every failure, including failures
+that happened after the request reached the provider. The claim and the code
+disagreed, and the code was recording a figure known to be wrong rather than one
+merely unknown. The truthful rule, by failure class:
+
+| Failure | Provider reached | Recorded |
+|---|---|---|
+| Restricted preflight, ineligible route, no route, budget refusal | No | **No row.** Not a call. |
+| No adapter configured | No | **No row.** Not a call. |
+| Provider refused the content | Yes | Real usage, `cost_certainty = 'known'` |
+| Provider returned an error carrying usage | Yes | Real usage, `known` |
+| Timeout, connection failure, error without usage | Yes, or possibly | `unknown`, figures NULL |
+
+`sum(cost)` therefore under-reports by exactly the unknown-cost calls, which is
+why the ceiling is not enforced against it. The ledger charges those at their
+reserved maximum instead.
 """
 
 from datetime import UTC, datetime
 from decimal import Decimal
+from uuid import UUID
 
 from sqlalchemy import Engine, text
 
 from val_gateway.gateway import CallRecord
 
-#: One month-to-date sum, over cloud calls only. Local inference never counts
-#: against the ceiling (`01-architecture.md` §5.5) — there is none until Layer 1,
-#: so today this is every row.
+#: One month-to-date sum over recorded call costs. Unknown-cost rows contribute
+#: nothing here because nothing is known — see the module docstring. This is a
+#: reporting view; `ledger.committed_usd` is the figure the ceiling uses.
 _MONTH_TO_DATE_SPEND = text(
     "select coalesce(sum(cost), 0) from model_calls "
-    "where created_at >= date_trunc('month', now() at time zone 'utc')"
+    "where cost is not null "
+    "and created_at >= date_trunc('month', now() at time zone 'utc')"
+)
+
+_UNCOSTED_THIS_MONTH = text(
+    "select count(*) from model_calls "
+    "where cost_certainty = 'unknown' "
+    "and created_at >= date_trunc('month', now() at time zone 'utc')"
 )
 
 _INSERT_CALL = text(
     "insert into model_calls "
     "(model_config_id, provider, model_identifier, tokens_in, tokens_out, cost, "
-    " project_id, task_type, conversation_id, message_id, latency_ms, "
+    " cost_certainty, project_id, task_type, conversation_id, message_id, latency_ms, "
     " provider_request_id, status) "
     "values (:model_config_id, :provider, :model_identifier, :tokens_in, :tokens_out, "
-    " :cost, :project_id, :task_type, :conversation_id, :message_id, :latency_ms, "
-    " :provider_request_id, :status)"
+    " :cost, :cost_certainty, :project_id, :task_type, :conversation_id, :message_id, "
+    " :latency_ms, :provider_request_id, :status) "
+    "returning id"
 )
 
 
-def record_call(engine: Engine, record: CallRecord) -> None:
-    """Write one `model_calls` row.
+def record_call(engine: Engine, record: CallRecord) -> UUID:
+    """Write one `model_calls` row and return its id.
 
     Committed on its own connection rather than joined to a caller's
     transaction: the record of a call that was made must survive whatever
-    happens to the work that prompted it.
+    happens to the work that prompted it. The id comes back so the reservation
+    that paid for the call can point at it.
     """
     with engine.begin() as connection:
-        connection.execute(
+        new_id: UUID = connection.execute(
             _INSERT_CALL,
             {
                 "model_config_id": record.model_config_id,
                 "provider": record.provider,
                 "model_identifier": record.model_identifier,
+                # NULL, not zero, when the provider did not report usage. The
+                # database refuses the zero outright (`unknown_cost_is_not_a_zero`).
                 "tokens_in": record.tokens_in,
                 "tokens_out": record.tokens_out,
-                "cost": Decimal(str(record.cost_usd)),
+                "cost": None if record.cost_usd is None else Decimal(str(record.cost_usd)),
+                "cost_certainty": record.cost_certainty.value,
                 "project_id": record.project_id,
                 "task_type": record.task_type,
                 "conversation_id": record.conversation_id,
@@ -67,14 +98,30 @@ def record_call(engine: Engine, record: CallRecord) -> None:
                 "provider_request_id": record.provider_request_id or "",
                 "status": record.status.value,
             },
-        )
+        ).scalar_one()
+    return new_id
 
 
 def month_to_date_spend(engine: Engine) -> float:
-    """Cloud spend so far this calendar month, in USD, summed from the record."""
+    """Cloud spend so far this calendar month, in USD, as recorded.
+
+    Known costs only. Not the ceiling's figure — see the module docstring — and
+    never present it as a complete one while `uncosted_calls_this_month` is
+    non-zero.
+    """
     with engine.connect() as connection:
         total = connection.execute(_MONTH_TO_DATE_SPEND).scalar_one()
     return float(total)
+
+
+def uncosted_calls_this_month(engine: Engine) -> int:
+    """How many of this month's calls reached a provider that never reported usage.
+
+    Kept alongside the sum so no view can display month-to-date spend as though
+    it were complete when it is not (`00-charter.md` invariant 29).
+    """
+    with engine.connect() as connection:
+        return int(connection.execute(_UNCOSTED_THIS_MONTH).scalar_one())
 
 
 def month_boundary_utc(now: datetime | None = None) -> datetime:

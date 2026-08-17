@@ -197,8 +197,8 @@ Gateway responsibilities:
 | Responsibility | Requirement |
 |---|---|
 | Provider neutrality | Normalized request and response contract, independent of any one provider |
-| Routing | Select a qualified model configuration on capability, **data classification eligibility**, cost, latency, availability |
-| Budget enforcement | Check the ceiling **before** the call is made (invariant 24) |
+| Routing | Select an **admitted** model configuration (§5.2.1) on capability, **data classification eligibility**, cost, latency, availability |
+| Budget enforcement | Check the ceiling **before** the call is made, **against the cost of that call** (invariant 24; §5.7) |
 | Usage recording | Tokens in and out, computed cost, latency, provider request reference, project, task type |
 | Error normalization | Timeout, refusal, rate limit, invalid output, outage, and data-policy rejection normalized to one error contract |
 | Fallback | Only to a prequalified route that is itself eligible for the content |
@@ -216,27 +216,45 @@ A model configuration is a versioned record, not a model name in a settings file
 - **Data classifications it is eligible to receive** (§5.4)
 - Cost per input and output unit, and whether caching or batch pricing applies
 - Known weaknesses
-- Fallback route, activation date, retirement state
+- Fallback route **or an explicit NONE**, activation date, retirement state
+- **Admission state and adapter state** (§5.2.1)
+- **The date its rates were last read from the provider's own pricing**, and **the date it last answered a real call**, or none
 
 Routing selects among configurations. It never selects a raw model.
 
-#### 5.2.1 Six distinct provider states
+> **Amendment — 17 August 2026, Lord Armand.** The last three lines were added after an audit found the implementation carrying only part of this list. Two rules govern how the fields are filled, and both exist because a confidently wrong value is worse than a visibly absent one:
+>
+> - **Where a provider has no such concept, the record carries a typed NOT_APPLICABLE rather than an invented value.** "No fallback" is `NONE` and is a decision; a blank field is not.
+> - **Where the fact has not been established from the provider's own documentation, the record says so** — `NOT_VERIFIED` — rather than carrying a plausible guess. This is the same discipline as `rates_verified_on`, applied to the rest of the record.
 
-A provider is not one flag. These six are independent, and conflating any two of them is how a system ends up sending Protected work to a route nobody qualified. **The registry is authoritative on every column; this table defines the vocabulary, not the roster.**
+#### 5.2.1 Seven distinct provider states
+
+A provider is not one flag. These seven are independent, and conflating any two of them is how a system ends up sending Protected work to a route nobody qualified. **The registry is authoritative on every column; this table defines the vocabulary, not the roster.**
 
 | State | Means | Where the answer lives |
 |---|---|---|
 | **Supported by the architecture** | The gateway's contract could carry it | This document (§5.1) |
 | **Adapter implemented** | Code exists that speaks its dialect | `packages/providers` |
-| **Qualified** | It passed the exam suite below | Exam records — none exist before Layers 2–3 |
 | **Eligible for Protected** | Ruled eligible by Lord Armand | §5.4 rulings, carried in the registry entry |
 | **Currently enabled** | Present and not retired in the registry | `val_domain.registry.active()` |
+| **Provisionally admitted** | Permitted to carry Layer 0 traffic | The registry entry's `admission` |
+| **Qualified** | It passed the exam suite below | Exam records — none exist before Layers 2–3 |
 | **Live** | It has actually answered a real call | `model_calls`, and the entry's own record |
 
-Two rules follow, and both have already caught something:
+Three rules follow, and each has already caught something:
 
 - **An implemented adapter is not a live provider.** An adapter proves the code compiles against a dialect. Only a `model_calls` row with `status = ok` proves the route works.
 - **Nothing here weakens Protected eligibility.** A provider may be enabled, adapted, and live and still be ineligible for Protected content; eligibility is a separate ruling and cost never overrides it (§5.4).
+- **Enabled is not admitted.** A configuration may be present, un-retired, and eligible and still not be permitted to carry traffic. Admission is a separate field so that adding an entry to the registry is never, by itself, the act that opens a route.
+
+> **Amendment — 17 August 2026, Lord Armand.** *Provisionally admitted* was added to resolve a contradiction, not to add a capability. §5.1 said routing selects a **qualified** configuration; this section said qualification cannot exist before the Layers 2–3 exam suite. Both were true, which left Layer 0 routing to configurations it was in no position to call qualified.
+>
+> The two states are now distinct and the weaker one is what Layer 0 asserts:
+>
+> - **`PROVISIONALLY_ADMITTED`** — permitted to carry Layer 0 traffic on the strength of an eligibility ruling by Lord Armand and a working adapter. It is the strongest standing any route may hold today, and every current route holds exactly it.
+> - **`QUALIFIED`** — passed the system-specific exam suite. **No route may carry this until an exam record exists**, and no code path sets it: promotion is a recorded decision, never an implementation finding the word convenient.
+>
+> **Qualification supersedes provisional admission without changing configuration identity.** The `id` and `slug` are permanent, so a route promoted later is the same route, and every `model_calls` row already pointing at it keeps resolving. No admission state permits Val to add a provider, widen an eligibility class, or grant herself a capability — admission is set in the registry, which is committed, reviewed, and hers to read rather than to write (invariant 2).
 
 > **Amendment — 15 August 2026, Lord Armand, from external architecture review.** Qualification for any new model configuration is a **system-specific exam suite run against this system's actual workload**, built at Layers 2–3: identity adherence under the persona, structured-output reliability, uncertainty handling — including the trap questions of `04-layer-0.md` WP-0.7 — cost per task class, and long-conversation behaviour. The standing rule: **a working model is never replaced because a benchmark sounds impressive.** Candidates run as experiments against the incumbent, and the prediction ledger (`02-partner-systems.md` §4.6) arbitrates.
 
@@ -337,12 +355,24 @@ Layer 0 takes the capture obligation and the crudest possible guard, and nothing
 
 **In scope at Layer 0:**
 
-- Per-call record: model configuration, provider, tokens in and out, computed cost, project, task type
-- One hard stop: if month-to-date cloud spend exceeds the ceiling, cloud routing stops
+- Per-call record: model configuration, provider, tokens in and out, computed cost **or an explicit unknown**, project, task type
+- One hard stop: **a call is admitted only if what it is authorised to consume fits inside what is left of the ceiling**
 
 The hard stop is not sophisticated and is not meant to be. It exists because a runaway loop is a real risk at this budget, and a crude backstop that exists beats a graduated one that does not.
 
-**Not in scope at Layer 0:** the 70/85/100% thresholds, the reserve, the cost dashboard, per-route preference logic, or the rolling view.
+**Not in scope at Layer 0:** the 70/85/100% thresholds, the reserve, the cost dashboard, the graduated cost gradient, or the rolling view.
+
+> **Amendment — 17 August 2026, Lord Armand, after external review.** The hard stop as first written was `month_to_date_spend < CEILING`. That is enforced before the call and enforces nothing *about* the call: at $199.99 of $200 it admitted a call of any size, and the breach was discovered by reading the record afterwards. Invariant 24 says the ceiling is enforced before a call and never reported after; the old rule satisfied the letter and inverted the point.
+>
+> **The rule is now `committed + maximum_cost(this call) ≤ CEILING`**, where `maximum_cost` is an arithmetic upper bound on what the call may consume — not an estimate — and `committed` is the authoritative figure held in PostgreSQL: settled spend, plus every reservation still outstanding, plus reservations abandoned by a process that died.
+>
+> Three consequences, each deliberate:
+>
+> - **The ceiling figure is $200, unchanged.** Nothing here raises it. A control that was not enforcing it now does.
+> - **Admission is a database reservation with a lifecycle** — reserved, settled, released, expired — taken under a lock, so two processes cannot each observe the same headroom and together spend it. Schema: `04-layer-0.md` §2.5.
+> - **An unknown cost is never recorded as zero.** A call that reached the provider consumed input tokens whether or not the response survived; its reservation stays charged and its record says the cost is unknown. `04-layer-0.md` §2.2.
+>
+> **Route selection at Layer 0 is admitted-and-eligible first, cost second.** The gateway selects the configuration rather than requiring every caller to name one — a caller that must name its own provider is a caller that can name the wrong one. Cost ranks only what eligibility has already admitted, which is what `04-layer-0.md` §1.1 permits. This is not the graduated gradient of §5.5; that remains Layer 3.
 
 **The graduated behavior of §5.5 arrives at Layer 3.** Layer 3 is when Roles spawn working agents and call volume genuinely multiplies — one request becoming a dozen calls across producer and reviewer Roles. That is the point at which the crude hard stop stops being adequate, because the gap between "fine" and "ceiling breached" can now be crossed inside a single task. Layers 1–2 add local inference and read-only tools; neither materially changes spend shape, so the hard stop carries them.
 
@@ -453,6 +483,28 @@ Backup begins at Layer 0, alongside the three capture obligations, and for the s
 - **Encryption keys, stored separately from the backups themselves.** A backup that cannot be decrypted is not a backup.
 
 Model provider caches, embeddings, and derived indexes are excluded. They are reconstructible from the store, which is what makes them derived.
+
+#### 9.1.1 Two recovery domains, not one — clarification, 17 August 2026
+
+§9.1 lists five things to protect and one mechanism was implemented for them all. It is worth being exact about which mechanism covers what, because "it's backed up" covering two different things by two different means is how one of them turns out not to be.
+
+| What | Protected by | Recovers to |
+|---|---|---|
+| PostgreSQL, in full | **pgBackRest → Backblaze B2**, encrypted, WAL-archived | Any moment inside retention |
+| Governing baselines (`docs/baselines/`) | **Git → GitHub**, private remote | Any commit |
+| Persona source (`03-persona.md`) | **Git → GitHub** | Any commit |
+| Migration history (`packages/domain/migrations/`) | **Git → GitHub** | Any commit |
+| Repository configuration needed to rebuild Val | **Git → GitHub** | Any commit |
+| Application source and non-secret configuration | **Git → GitHub** | Any commit |
+| Credentials and the backup passphrase | **Neither.** Held outside both, deliberately | §9.2, and paper |
+
+**GitHub is the stated off-machine protection for everything the repository controls.** That is a decision, recorded here rather than left implicit: the remote is private, it is off this machine, it holds full history, and every commit is a restore point.
+
+**It does not replace PostgreSQL point-in-time recovery, and nothing may imply that it does.** The two protect disjoint things. Git holds the text Val was built from; PostgreSQL holds what she has learned, decided, spent, and been told. A repository restored perfectly onto a machine with no database gives a Val with her character and none of her memory. The three capture obligations of §1 live entirely in the second column.
+
+**Repository recovery is verified the same way any backup is** — by doing it, not by assuming it: clone the remote to a machine that has never held the project, build from the documented sequence with no undocumented step, and confirm the baselines and the persona are byte-identical to the working copy. This is the clean-clone check WP-0.1 already requires; it is named here as the repository's restore verification so that it is not left as a build test that happens to double as one.
+
+**No secret is ever committed.** `.env` is ignored and cannot be added; the backup passphrase and B2 credentials live in a 0600 file outside the repository and on paper. A repository backup that carried them would put every credential wherever the repository goes, which is the opposite of protection.
 
 ### 9.2 How
 

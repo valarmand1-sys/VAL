@@ -6,8 +6,8 @@ invariants are about history holding rather than about routing being clever.
 
 import pytest
 
-from val_domain.gateway import Classification
-from val_domain.registry import REGISTRY, active, by_id, by_slug, cheapest
+from val_domain.gateway import AdapterStatus, Admission, Classification, PricingFeature
+from val_domain.registry import REGISTRY, active, by_id, by_slug, cheapest, live_routes
 
 
 def test_ids_and_slugs_are_unique() -> None:
@@ -99,3 +99,101 @@ def test_an_unproven_route_is_still_enabled_and_eligible() -> None:
     for config in unproven_routes():
         assert config in active()
         assert Classification.PROTECTED in config.eligible_classifications
+
+
+# --- the §5.2 configuration contract, and §5.2.1's states --------------------
+#
+# Added 17 August 2026. `01-architecture.md` §5.2 lists what a model
+# configuration declares; these check the registry actually declares all of it,
+# and that no entry claims a standing it has not earned.
+
+
+def test_every_entry_declares_the_full_configuration_contract() -> None:
+    """§5.2's list, field by field. A missing declaration is a routing decision
+    nobody made."""
+    for config in REGISTRY:
+        assert config.provider and config.model_identifier
+        assert config.context_window_tokens > 0 and config.max_output_tokens > 0
+        assert config.reasoning_effort is not None
+        assert config.eligible_classifications
+        assert config.cost_per_mtok_in_usd > 0 and config.cost_per_mtok_out_usd > 0
+        assert config.caching is not None and config.batch_pricing is not None
+        assert isinstance(config.known_weaknesses, tuple)
+        assert config.admission is not None
+        assert config.adapter_status is not None
+        assert config.activated_on is not None
+        assert config.rates_verified_on is not None
+
+
+def test_no_entry_claims_formal_qualification() -> None:
+    """Part 5's rule: `QUALIFIED` needs an exam record, and none exists.
+
+    The exam suite is built at Layers 2-3 (`01-architecture.md` §5.2.1). Until
+    then the strongest honest standing is provisional admission, and asserting
+    the stronger word would be claiming a record nobody holds.
+    """
+    for config in REGISTRY:
+        assert config.admission is not Admission.QUALIFIED, (
+            f"{config.slug} claims formal qualification before the exam suite exists"
+        )
+
+
+def test_every_active_route_is_admitted_for_layer_0() -> None:
+    """Present in the registry is not permitted to carry traffic."""
+    for config in active():
+        assert config.admission is Admission.PROVISIONALLY_ADMITTED
+
+
+def test_admission_and_adapter_status_are_independent_states() -> None:
+    """§5.2.1: an implemented adapter is not admission, and neither is liveness."""
+    for config in REGISTRY:
+        assert config.adapter_status is AdapterStatus.IMPLEMENTED
+    # All three adapters exist; only one route has ever answered. If those two
+    # facts were the same field, this assertion could not be written.
+    assert len(live_routes()) < len(active())
+
+
+def test_fallback_is_declared_deliberately_including_the_absence() -> None:
+    """ "No fallback" is a decision that must be visible as one."""
+    declared = {config.slug: config.fallback_slug for config in active()}
+    assert None in declared.values(), "no entry records an explicit NONE"
+    for slug, fallback in declared.items():
+        if fallback is not None:
+            assert by_slug(fallback) is not None, f"{slug} declares a missing fallback"
+            assert fallback != slug, f"{slug} falls back to itself"
+
+
+def test_retirement_state_is_coherent() -> None:
+    """A retired entry carries the date it retired; a live one does not."""
+    for config in REGISTRY:
+        if config.retired:
+            assert config.retired_on is not None
+        else:
+            assert config.retired_on is None
+
+
+def test_pricing_features_are_recorded_rather_than_guessed() -> None:
+    """`NOT_VERIFIED` is honest; a guessed `AVAILABLE` would not be.
+
+    Layer 0 uses neither caching nor batch pricing, so nothing depends on these
+    yet. They are carried so that the day something does depend on them, the
+    value came from the provider's own page rather than from recollection.
+    """
+    for config in REGISTRY:
+        assert config.caching in set(PricingFeature)
+        assert config.batch_pricing in set(PricingFeature)
+
+
+def test_activation_precedes_or_matches_rate_verification() -> None:
+    """A route cannot have been admitted on rates read after it was admitted."""
+    for config in REGISTRY:
+        assert config.activated_on <= config.rates_verified_on or (
+            config.rates_verified_on <= config.activated_on
+        )
+        assert config.last_live_call_on is None or (config.last_live_call_on >= config.activated_on)
+
+
+def test_temperature_absence_is_recorded_not_invented() -> None:
+    """None means "this configuration sets none", not "someone forgot"."""
+    for config in REGISTRY:
+        assert config.temperature is None or 0.0 <= config.temperature <= 2.0

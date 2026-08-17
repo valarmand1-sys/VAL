@@ -26,7 +26,8 @@ from sqlalchemy import Engine
 
 from val_domain.registry import active
 from val_gateway.gateway import Gateway, check_startup
-from val_gateway.persistence import month_to_date_spend, record_call
+from val_gateway.ledger import DatabaseLedger
+from val_gateway.persistence import record_call
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
 from val_providers.openai_adapter import OpenAIAdapter
@@ -88,7 +89,16 @@ def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], lis
 
 
 def start(engine: Engine, today: datetime | None = None) -> Startup:
-    """Build the gateway, or refuse to start and say why."""
+    """Build the gateway, or refuse to start and say why.
+
+    Startup also sweeps abandoned budget reservations and checks for settlements
+    that exceeded their authorisation. Both are warnings rather than refusals:
+    an expired reservation is money that may already be gone and is reported as
+    such, and an overrun is a defect in the cost bound that needs finding — but
+    neither makes the system unsafe to run, and refusing to boot over a stale
+    row would leave Lord Armand with no way to look at the ledger that is
+    stopping him.
+    """
     moment = today or datetime.now(UTC)
     violations, warnings = check_startup(moment.date())
 
@@ -98,9 +108,13 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     if violations:
         raise StartupRefusedError(violations)
 
+    ledger = DatabaseLedger(engine)
+    warnings.extend(ledger.expire_stale())
+    warnings.extend(ledger.overruns())
+
     gateway = Gateway(
         adapters=adapters,
         recorder=lambda record: record_call(engine, record),
-        month_to_date_spend=lambda: month_to_date_spend(engine),
+        ledger=ledger,
     )
     return Startup(gateway=gateway, warnings=warnings)

@@ -1,10 +1,11 @@
 """The authoritative store's schema, exactly as `04-layer-0.md` §2 specifies it.
 
-Nine tables, in §2's order — seven from the original §2 plus the two the
-15 August 2026 amendments added (`execution_events.reaction` and the idea tables
-of §2.4). No table exists here that §2 does not name, and no column exists that
-§2 does not list. Where §2 is silent, the silence is recorded
-in a comment rather than filled in.
+Ten tables, in §2's order — seven from the original §2, two added by the
+15 August 2026 amendments (`execution_events.reaction` and the idea tables of
+§2.4), and `budget_reservations` added by the 17 August 2026 amendment (§2.5).
+No table exists here that §2 does not name, and no column exists that §2 does
+not list. Where §2 is silent, the silence is recorded in a comment rather than
+filled in.
 
 Two conventions applied throughout, both following from §2 rather than added to it:
 
@@ -78,6 +79,17 @@ ModelCallTaskType = Enum(
     name="model_call_task_type",
 )
 ModelCallStatus = Enum("ok", "error", "refused", name="model_call_status")
+# §2.2 amendment, 17 August 2026. A provider attempt has three accounting
+# outcomes and only two of them are rows: NOT_SENT writes nothing at all, because
+# no call occurred. `known` and `unknown` distinguish the other two, and `unknown`
+# is the reason `cost` may be NULL — a call that reached the provider consumed
+# input tokens, so recording zero would be recording a figure that is known to be
+# false rather than one that is merely unknown.
+ModelCallCostCertainty = Enum("known", "unknown", name="model_call_cost_certainty")
+# §2.5 amendment, 17 August 2026. The lifecycle of one budget reservation.
+BudgetReservationState = Enum(
+    "reserved", "settled", "released", "expired", name="budget_reservation_state"
+)
 ExecutionEventType = Enum(
     "accepted", "rejected", "revision_requested", "corrected", name="execution_event_type"
 )
@@ -251,11 +263,18 @@ class ModelCall(Base):
     # Denormalised deliberately — a retired config must still resolve historically.
     provider: Mapped[str] = mapped_column(Text, nullable=False)
     model_identifier: Mapped[str] = mapped_column(Text, nullable=False)
-    tokens_in: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    tokens_out: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    # Nullable since the 17 August 2026 amendment, and NULL means exactly one
+    # thing: the provider was contacted and did not tell us. See `cost_certainty`.
+    tokens_in: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    tokens_out: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     # Stored, not derived. Provider pricing changes, and a historical record that
     # silently re-prices itself is not a record.
-    cost: Mapped[Decimal] = mapped_column(Numeric(14, 6), nullable=False)
+    cost: Mapped[Decimal | None] = mapped_column(Numeric(14, 6), nullable=True)
+    # `known` | `unknown`, or NULL on a row written before 17 August 2026, when
+    # the distinction did not exist. NULL is not a third state; it is an absence
+    # of one, and it is left rather than backfilled because guessing which of the
+    # two an old row deserves would be inventing evidence (the 0002 precedent).
+    cost_certainty: Mapped[str | None] = mapped_column(ModelCallCostCertainty, nullable=True)
     project_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
     )
@@ -275,6 +294,20 @@ class ModelCall(Base):
         CheckConstraint("tokens_out >= 0", name="tokens_out_non_negative"),
         CheckConstraint("cost >= 0", name="cost_non_negative"),
         CheckConstraint("latency_ms >= 0", name="latency_ms_non_negative"),
+        # `known` must carry figures, `unknown` must not. Without both halves the
+        # column would be a label rather than a guarantee: an `unknown` row
+        # carrying a zero cost is exactly the false factual zero this amendment
+        # exists to make unwritable.
+        CheckConstraint(
+            "cost_certainty <> 'known' OR "
+            "(cost IS NOT NULL AND tokens_in IS NOT NULL AND tokens_out IS NOT NULL)",
+            name="known_cost_is_recorded",
+        ),
+        CheckConstraint(
+            "cost_certainty <> 'unknown' OR "
+            "(cost IS NULL AND tokens_in IS NULL AND tokens_out IS NULL)",
+            name="unknown_cost_is_not_a_zero",
+        ),
     )
 
 
@@ -453,6 +486,113 @@ class IdeaStateChange(Base):
     )
 
 
+# --- §2.5 Budget reservations — amendment, 17 August 2026 --------------------
+#
+# The ceiling is enforced against the cost of the call being proposed, not
+# against history (`01-architecture.md` §5.7 as amended). That requires an
+# authoritative record of what is committed but not yet settled, and it requires
+# it in PostgreSQL rather than in a process: two processes each holding their own
+# counter both observe the same room and together breach the ceiling, and an
+# in-memory lock protects nothing across `api` and `worker`.
+
+
+class BudgetReservation(Base):
+    """§2.5 — `budget_reservations`. One row per admitted call, cradle to grave.
+
+    **Lifecycle**, and every transition is an UPDATE of `state` on an existing
+    row rather than a new row, because the reservation is one fact changing
+    state and not four facts:
+
+    | State | Means | Counts against the ceiling |
+    |---|---|---|
+    | `reserved` | Admitted; the provider is being contacted | Yes, at `max_cost` |
+    | `settled` | The attempt finished | Yes, at `settled_cost` |
+    | `released` | No provider request occurred | No |
+    | `expired` | The process died holding it | **Yes, at `max_cost`** |
+
+    **Why `expired` still counts.** A reservation whose process vanished may or
+    may not have reached the provider, and nothing on this machine can tell which.
+    Freeing it would hand back money that may well have been spent — an unknown
+    consequential outcome treated as a successful non-event, which
+    `00-charter.md` §4 forbids in as many words. It stays committed, it is
+    reported, and it clears when the month's ceiling resets. That bounds the
+    damage of a crash to one month without ever silently increasing available
+    spend, which is the pair of properties this state has to hold at once.
+
+    **Why `settled_cost` may exceed `max_cost`.** It should never happen: the
+    reserved figure is an upper bound computed from byte lengths, not an
+    estimate. If it does, the row is written truthfully anyway — recording the
+    real figure and leaving `max_cost < settled_cost` visible is the evidence.
+    Clamping the record to the reservation would hide a breached ceiling behind a
+    tidy number, which is the one outcome worse than the breach.
+    """
+
+    __tablename__ = "budget_reservations"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    #: When the row last changed state. Distinct from `created_at`, which is what
+    #: the monthly window is measured against — a reservation belongs to the month
+    #: it was admitted in, whatever month it happened to settle in.
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    state: Mapped[str] = mapped_column(BudgetReservationState, nullable=False)
+    #: Which configuration the reservation was taken against, denormalised for
+    #: the same reason `model_calls` denormalises: a retired configuration must
+    #: still resolve historically.
+    model_config_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    slug: Mapped[str] = mapped_column(Text, nullable=False)
+    provider: Mapped[str] = mapped_column(Text, nullable=False)
+    model_identifier: Mapped[str] = mapped_column(Text, nullable=False)
+    task_type: Mapped[str] = mapped_column(ModelCallTaskType, nullable=False)
+    project_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
+    )
+    #: The most this call was authorised to consume. The figure the ceiling was
+    #: enforced against, kept so the decision can be re-examined afterwards.
+    max_cost: Mapped[Decimal] = mapped_column(Numeric(14, 6), nullable=False)
+    #: What it actually consumed. NULL until settlement, and on an `unknown`-cost
+    #: settlement this holds `max_cost` — the conservative charge — while
+    #: `model_calls.cost` stays NULL. The two disagree deliberately: the ledger
+    #: records what must be assumed spent, the call record records what is known.
+    settled_cost: Mapped[Decimal | None] = mapped_column(Numeric(14, 6), nullable=True)
+    cost_certainty: Mapped[str | None] = mapped_column(ModelCallCostCertainty, nullable=True)
+    #: The call this reservation paid for, once one exists. NULL on a released
+    #: reservation, because no call was made.
+    model_call_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=True
+    )
+    #: Why a reservation was released or expired, in words. Not nullable-by-
+    #: laziness: a release with no stated reason is the shape a silent budget
+    #: leak takes.
+    resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("max_cost >= 0", name="max_cost_non_negative"),
+        CheckConstraint("settled_cost IS NULL OR settled_cost >= 0", name="settled_non_negative"),
+        # Settled means settled: a figure and a certainty, both present, and
+        # neither present in any other state.
+        CheckConstraint(
+            "(state = 'settled') = (settled_cost IS NOT NULL)",
+            name="settled_has_a_cost",
+        ),
+        CheckConstraint(
+            "(state = 'settled') = (cost_certainty IS NOT NULL)",
+            name="settled_has_a_certainty",
+        ),
+        CheckConstraint(
+            "state = 'reserved' OR resolution IS NOT NULL",
+            name="resolved_states_say_why",
+        ),
+        Index("ix_budget_reservations_state_created_at", "state", "created_at"),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
@@ -465,5 +605,6 @@ SPECIFIED_TABLES = frozenset(
         "deliberations",
         "ideas",
         "idea_state_changes",
+        "budget_reservations",
     }
 )

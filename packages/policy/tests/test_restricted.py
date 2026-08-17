@@ -106,3 +106,96 @@ def test_the_refusal_explains_and_does_not_offer_to_downgrade() -> None:
     assert "have not sent" in message
     assert "Restricted" in message
     assert "will not reclassify" in message
+
+
+# --- labelled financial credentials — amendment, 17 August 2026 ---------------
+#
+# `01-architecture.md` §5.4 puts financial detail in Restricted, and until this
+# amendment the only financial thing matched was a payment card. Each of these
+# requires a label, a checksum, or both.
+
+
+@pytest.mark.parametrize(
+    ("content", "expected"),
+    [
+        # 021000021 is a published, Luhn-independent ABA test/reference value
+        # and satisfies the 3-7-1 check digit.
+        ("my routing number is 021000021, please wire it", "a bank routing number"),
+        ("ABA: 021000021", "a bank routing number"),
+        ("account number: 12345678", "a bank account number"),
+        ("bank acct no. 4455 6677 88", "a bank account number"),
+        ("sort code 40-47-84 at the branch", "a bank sort code"),
+        ("SWIFT code CHASGB2L for the transfer", "a bank identifier code"),
+        # A published IBAN example that satisfies mod-97.
+        ("send it to GB82WEST12345698765432", "a bank account number"),
+    ],
+)
+def test_labelled_financial_credentials_are_found(content: str, expected: str) -> None:
+    """The classes the coverage table claims, each demonstrated."""
+    finding = find_restricted(content)
+    assert finding is not None, f"missed: {content!r}"
+    assert finding.kind == expected
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        # A nine-digit number near the word "routing" that fails the ABA check.
+        "the routing number is 123456789 for that lane",
+        # A shape that looks like an IBAN but fails mod-97.
+        "the ticket reference is GB82WEST12345698765433",
+        # An unlabelled run of digits: an invoice, not an account.
+        "invoice 4455667788 is outstanding",
+        # Ordinary production talk that happens to use the words.
+        "we should route the render through the account team on Tuesday",
+        "the sort order in the shot list is wrong",
+    ],
+)
+def test_financial_false_positives_are_not_raised(content: str) -> None:
+    """A checksum or a label is required. Neither alone is a bank detail.
+
+    This is the half that keeps the guard usable. A detector that fires on every
+    nine-digit number gets turned off, and a guard that is off protects nothing.
+    """
+    assert find_restricted(content) is None, f"false positive on: {content!r}"
+
+
+def test_a_label_cannot_reach_across_a_sentence() -> None:
+    """The gap between a label and its value is bounded, deliberately."""
+    content = "the account number was never recorded anywhere. Shot 021000021 is the plate id."
+    assert find_restricted(content) is None
+
+
+def test_the_coverage_claim_matches_what_is_implemented() -> None:
+    """Guard on the documentation: every class the docstring names is detected.
+
+    The module's docstring states exactly what it covers. If a class is listed
+    there and nothing detects it, the claim is the defect.
+    """
+    import val_policy.restricted as module
+
+    claimed = module.__doc__ or ""
+    for phrase in (
+        "Private key blocks",
+        "Bank routing numbers",
+        "IBANs",
+        "Payment cards",
+        "Social Security",
+    ):
+        assert phrase in claimed
+
+    # And each is genuinely caught.
+    assert find_restricted(fake("-----BE", "GIN EC PRIVATE KE", "Y-----")) is not None
+    assert find_restricted("routing number 021000021") is not None
+    assert find_restricted("GB82WEST12345698765432") is not None
+    assert find_restricted("4111 1111 1111 1111") is not None
+    assert find_restricted("123-45-6789") is not None
+
+
+def test_the_docstring_does_not_claim_comprehensive_detection() -> None:
+    """Part 8's requirement: state the mesh, do not claim the net catches all."""
+    import val_policy.restricted as module
+
+    claimed = module.__doc__ or ""
+    assert "What it does not cover" in claimed
+    assert "Layer 2" in claimed

@@ -41,6 +41,28 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "latency_ms",
         "provider_request_id",
         "status",
+        # §2.2 amendment, 17 August 2026: `known` | `unknown`. A provider attempt
+        # that reached the provider and returned no usage is recorded as unknown,
+        # with NULL figures — never as a zero, which is a claim and a false one.
+        "cost_certainty",
+    ),
+    # §2.5 Budget reservations — amendment, 17 August 2026
+    "budget_reservations": (
+        "id",
+        "created_at",
+        "updated_at",
+        "state",
+        "model_config_id",
+        "slug",
+        "provider",
+        "model_identifier",
+        "task_type",
+        "project_id",
+        "max_cost",
+        "settled_cost",
+        "cost_certainty",
+        "model_call_id",
+        "resolution",
     ),
     "execution_events": (
         "id",
@@ -100,6 +122,20 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # §2.4: "no project" is explicit; a null from_state marks creation.
         ("ideas", "project_id"),
         ("idea_state_changes", "from_state"),
+        # Amendment, 17 August 2026. NULL on these four means one thing each:
+        # `cost_certainty` NULL is a row written before the distinction existed;
+        # the three figures are NULL exactly when the certainty is `unknown`.
+        # Recording zero there would be recording a figure known to be wrong.
+        ("model_calls", "cost_certainty"),
+        ("model_calls", "tokens_in"),
+        ("model_calls", "tokens_out"),
+        ("model_calls", "cost"),
+        # §2.5: nothing is settled until it settles, and "no project" is explicit.
+        ("budget_reservations", "project_id"),
+        ("budget_reservations", "settled_cost"),
+        ("budget_reservations", "cost_certainty"),
+        ("budget_reservations", "model_call_id"),
+        ("budget_reservations", "resolution"),
     }
 )
 
@@ -114,6 +150,9 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
         "title",
     ),
     "model_call_status": ("ok", "error", "refused"),
+    # Amendments, 17 August 2026
+    "model_call_cost_certainty": ("known", "unknown"),
+    "budget_reservation_state": ("reserved", "settled", "released", "expired"),
     "execution_event_type": ("accepted", "rejected", "revision_requested", "corrected"),
     "reason_source": ("stated", "inferred", "absent"),
     "deliberation_confidence": ("high", "medium", "low"),
