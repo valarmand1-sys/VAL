@@ -10,6 +10,8 @@ Two exclusions, both deliberate and both narrow:
   - `docs/baselines/` is governing specification text, not configuration. It is
     excluded from the token scan because the acceptance criterion itself quotes
     the forbidden tokens while stating the rule. Nothing in it pins a version.
+    The byte-identical review copies under `artifacts/reviewer-handoff/governing/`
+    are excluded on the same grounds — same text, same reason.
   - Lock files are excluded from the token scan only. They exist to hold resolved
     exact versions, and a package whose name happens to contain a forbidden word
     is not a placeholder. Their presence is checked, and the manifests they lock
@@ -65,7 +67,13 @@ TEXT_SUFFIXES = frozenset(
 )
 TEXT_FILENAMES = frozenset({".nvmrc", ".python-version"})
 
-TOKEN_SCAN_EXCLUDED = ("docs/baselines/",)
+TOKEN_SCAN_EXCLUDED = (
+    "docs/baselines/",
+    # Byte-identical review copies of the same governing text, excluded for the
+    # same reason: they quote the forbidden tokens while stating the rule about
+    # them. The originals they copy are already excluded above.
+    "artifacts/reviewer-handoff/governing/",
+)
 LOCK_FILES = (
     "uv.lock",
     "apps/desktop/package-lock.json",
