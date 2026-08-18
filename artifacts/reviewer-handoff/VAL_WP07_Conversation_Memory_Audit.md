@@ -58,9 +58,17 @@ From `docs/baselines/04-layer-0.md`:
 
 ---
 
-## C. Final source SHA
+## C. Final source SHA and bundle
 
-`d137925` — source. Artifact-only commits follow, per the established convention.
+| | |
+|---|---|
+| Source commit | `d137925` |
+| Snapshot | `VAL_Source_Snapshot_d137925.zip`, 185 files |
+| SHA-256 | `605b6f24859ad96bbe97fc094e3c148e3b1ebeeb444028fec157b4a377d315ac` |
+
+Source only — `artifacts/` excluded, as in every previous bundle, so the review
+reads the code rather than my account of it. Verified file-by-file against the
+commit: identical.
 
 ---
 
