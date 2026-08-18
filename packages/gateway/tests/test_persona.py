@@ -88,6 +88,17 @@ def clean_personas(ledger_engine: Engine) -> Engine:
     alembic_config.set_main_option("script_location", str(REPO_ROOT / "packages/domain/migrations"))
     alembic_config.set_main_option("sqlalchemy.url", str(ledger_engine.url))
     command.upgrade(alembic_config, "head")
+
+    # Dropping and recreating the schema gives every enum a **new OID**, and a
+    # pooled connection still holds the old ones in psycopg's type cache — along
+    # with any statement it had auto-prepared against them. Reusing such a
+    # connection fails with `cache lookup failed for type <oid>` the next time a
+    # parameter is inferred as an enum, which is how `messages.role` began
+    # failing in the full-suite run while passing on its own.
+    #
+    # Disposing the pool is the honest response: after that DDL, nothing a
+    # connection believes about this database is still reliable.
+    ledger_engine.dispose()
     return ledger_engine
 
 

@@ -1158,3 +1158,81 @@ def test_the_legacy_guard_downgrade_restores_the_earlier_constraint(
                 text("select tgname from pg_trigger where not tgisinternal")
             ).scalars()
             assert "model_calls_legacy_attribution_is_closed" in set(triggers)
+
+
+# =========================================================================
+# WP-0.7 — conversation scope and recall, migration 0008
+# =========================================================================
+
+
+def test_the_conversation_scope_downgrade_is_clean_when_none_were_held(
+    engine: Engine, alembic_config: Config
+) -> None:
+    """`0008` reverses freely while there is no conversation to unprotect."""
+    with _restored_to_head(engine, alembic_config):
+        command.downgrade(alembic_config, "0007_legacy_attribution_closed")
+
+        with engine.connect() as connection:
+            triggers = set(
+                connection.execute(
+                    text("select tgname from pg_trigger where not tgisinternal")
+                ).scalars()
+            )
+            assert "conversations_scope_is_immutable" not in triggers
+            indexes = set(connection.execute(text("select indexname from pg_indexes")).scalars())
+            assert "ix_messages_content_fts" not in indexes
+
+        command.upgrade(alembic_config, "head")
+        with engine.connect() as connection:
+            indexes = set(connection.execute(text("select indexname from pg_indexes")).scalars())
+            assert {"ix_messages_content_fts", "ix_conversations_project_id"} <= indexes
+
+
+def test_the_conversation_scope_downgrade_refuses_once_conversations_exist(
+    engine: Engine, alembic_config: Config
+) -> None:
+    """One held conversation is enough to make the rollback destructive.
+
+    Not of the conversation itself — the rows would survive — but of the
+    guarantee its scope carries. Every message inside it and every `model_calls`
+    row attributed to it depends on that `project_id` being the one it was
+    recorded under; leaving the column writable again removes the only thing
+    keeping that true.
+    """
+    with _restored_to_head(engine, alembic_config):
+        with engine.begin() as connection:
+            connection.execute(
+                text("insert into conversations (project_id, title) values (null, 'held')")
+            )
+
+        with pytest.raises(RuntimeError) as raised:
+            command.downgrade(alembic_config, "0007_legacy_attribution_closed")
+        assert "Refusing to downgrade" in str(raised.value)
+        assert "conversation" in str(raised.value)
+
+        # Refused, not half-applied: the guard is still in place afterwards.
+        with engine.connect() as connection:
+            triggers = set(
+                connection.execute(
+                    text("select tgname from pg_trigger where not tgisinternal")
+                ).scalars()
+            )
+            assert "conversations_scope_is_immutable" in triggers
+
+
+def test_the_message_sequence_guarantees_predate_wp_0_7(engine: Engine) -> None:
+    """Audited before `0008` was written, and asserted so it stays true.
+
+    WP-0.7 needs unique, positive, per-conversation sequences. `0001` already
+    provided all three, so `0008` added no constraint for them. This records that
+    the audit happened and would fail if a later migration dropped what it found.
+    """
+    with engine.connect() as connection:
+        constraints = set(
+            connection.execute(
+                text("select conname from pg_constraint where conrelid = 'messages'::regclass")
+            ).scalars()
+        )
+
+    assert "uq_messages_conversation_id_sequence" in constraints
+    assert "ck_messages_sequence_positive" in constraints

@@ -66,6 +66,22 @@ def project_exists(engine: Engine, project_id: UUID) -> bool:
         return connection.execute(_SELECT_ONE, {"id": project_id}).one_or_none() is not None
 
 
+def load_project(engine: Engine, project_id: UUID) -> ProjectRecord | None:
+    """One project by id, or `None` if it names nothing.
+
+    Added for WP-0.7: resuming a conversation recovers its scope from the stored
+    `project_id`, which needs the record itself rather than the yes/no
+    `project_exists` gives. Returns `None` rather than raising because the caller
+    — `conversations.resume` — is the one that knows a missing project means a
+    broken conversation, and it says so in those terms.
+    """
+    with engine.connect() as connection:
+        row = connection.execute(_SELECT_ONE, {"id": project_id}).one_or_none()
+    if row is None:
+        return None
+    return ProjectRecord(id=row.id, name=row.name, slug=row.slug, status=row.status)
+
+
 @dataclass
 class ProjectSession:
     """The project currently selected, for this process.

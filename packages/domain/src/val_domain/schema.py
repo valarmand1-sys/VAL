@@ -169,22 +169,24 @@ class Conversation(Base):
     `project_id` is nullable because "no project" is a real, explicit state and
     not a null accident (§2.1).
 
-    **A NULL here means an explicit no-project decision, and that holds because
-    the table is empty.** `model_calls` needed a `project_attribution` column
-    precisely because its NULLs were not all decisions — nine rows predated the
-    distinction. `conversations` has no such history: it has zero rows, so there
-    is no ambiguous set to disambiguate, and `val_policy.project_resolution`
-    reads an established conversation with a NULL project as `ExplicitNoProject`
-    on that basis.
+    **A NULL here means an explicit no-project decision, and WP-0.7 is what
+    makes that true rather than merely convenient.** `model_calls` needed a
+    `project_attribution` column because its NULLs were not all decisions — nine
+    rows predated the distinction and no rule could separate them afterwards.
+    `conversations` had **zero rows** when WP-0.7 began, so the clean set starts
+    at the first row, and the only writer — `val_gateway.conversations.create` —
+    takes a `ProjectScope`. `AmbiguousProject` is not of that type, so a
+    conversation cannot be created without scope having been settled first.
 
-    **This is a fact about today, not a property of the schema**, and WP-0.7 is
-    the first thing that will write rows here. Whatever creates a conversation
-    must resolve scope first, exactly as `converse` does — a conversation
-    created with a NULL because nobody asked would recreate the defect that
-    `0006` had to correct, and there would be no date to separate the sets by.
-    No column is added now: adding attribution to a table with no rows and no
-    writer would be building WP-0.7's machinery early. Recorded in
-    `VAL_Open_Decisions.md` instead.
+    **No attribution column, and that is now a demonstrated choice rather than a
+    deferral.** One was not added because the ambiguity `0006` had to repair
+    never arose here: there is no historical set to disambiguate, and every NULL
+    from the first row onward is a decision by construction. Adding a column to
+    record a distinction that cannot occur would be machinery for its own sake.
+
+    `last_message_at` is metadata, never the ordering authority. `sequence` on
+    `messages` is the order (WP-0.7 §6); this is kept transactionally consistent
+    with append so it never points earlier than the newest committed message.
     """
 
     __tablename__ = "conversations"
@@ -202,6 +204,16 @@ class Conversation(Base):
     last_message_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
+
+    __table_args__ = (
+        # WP-0.7 retrieval filters by project *inside* the query, before ranking.
+        # This index is what makes the correct order the cheap one — without it,
+        # scoping to a project meant scanning every conversation in the house.
+        Index("ix_conversations_project_id", "project_id"),
+    )
+    # Scope immutability is a trigger, not a constraint: the rule is about the
+    # transition (`project_id` may not change), and a check constraint cannot see
+    # what the row held before. See migration `0008`.
 
 
 class Message(Base):
@@ -231,6 +243,14 @@ class Message(Base):
             "conversation_id", "sequence", name="uq_messages_conversation_id_sequence"
         ),
         CheckConstraint("sequence > 0", name="sequence_positive"),
+        # WP-0.7 recall. A GIN index over the same expression the retrieval query
+        # uses; `english` is named rather than inherited because an index
+        # expression must be immutable (migration `0008`).
+        Index(
+            "ix_messages_content_fts",
+            text("to_tsvector('english', content)"),
+            postgresql_using="gin",
+        ),
     )
 
 

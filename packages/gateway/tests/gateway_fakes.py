@@ -47,6 +47,14 @@ class StubAdapter:
         self._result = result
         self._error = error
         self.calls = 0
+        #: What the adapter was actually handed, most recent call. WP-0.7 §16
+        #: requires isolation to be checked against the payload that would leave
+        #: the machine, not against what a repository function returned — those
+        #: are different claims, and only the second one is cheap to fake.
+        #: Recorded even when the call then raises, so a failure path can be
+        #: inspected too.
+        self.sent_messages: tuple[Message, ...] = ()
+        self.sent_system: str | None = None
 
     def complete(
         self,
@@ -56,10 +64,26 @@ class StubAdapter:
         max_output_tokens: int,
     ) -> ProviderResult:
         self.calls += 1
+        self.sent_messages = messages
+        self.sent_system = system
         if self._error is not None:
             raise self._error
         assert self._result is not None
         return self._result
+
+    @property
+    def sent_text(self) -> str:
+        """Everything this adapter was given, as one string.
+
+        The blunt instrument the isolation tests want: if a sentinel fact from
+        another project appears anywhere in the outbound payload — a message, the
+        system prompt, a quoted excerpt — this finds it, without the test having
+        to know which component it would have arrived through.
+        """
+        parts = [message.content for message in self.sent_messages]
+        if self.sent_system is not None:
+            parts.append(self.sent_system)
+        return "\n".join(parts)
 
 
 @dataclass
