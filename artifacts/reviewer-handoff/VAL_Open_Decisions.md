@@ -9,10 +9,14 @@ added. **Updated again the same day**: items 4, 5, and 6 are **decided and
 recorded below**, and item 7 — the WP-0.5 persona-adherence acceptance — is
 recorded with them.
 
-**Updated again 17 August 2026** after WP-0.6: **item 8 is new and is the only
-thing on this page awaiting a decision.** Item 1 remains an action only Lord
-Armand can take; items 2 and 3 stand as previously recommended; items 4–7 are
+**Updated again 17 August 2026** after WP-0.6, and once more when its acceptance
+was recorded: **item 8 is now decided.** Item 1 remains an action only Lord
+Armand can take; items 2 and 3 stand as previously recommended; items 4–8 are
 decided and recorded below.
+
+**Nothing on this page currently awaits a decision.** Item 8 carries a *revisit
+trigger* rather than an open question — see it for the two conditions that
+require the decision to be made again.
 
 ---
 
@@ -210,9 +214,38 @@ a human read the text.
 
 ---
 
-## 8. `projects.status` has no defined vocabulary — **AWAITING A DECISION**
+## 8. `projects.status` shall not disqualify a project — **DECIDED 17 August 2026**
 
-**Narrow, and not blocking.** Raised by WP-0.6 rather than guessed at.
+> For the current Layer 0 implementation, `projects.status` shall not disqualify
+> a Project from resolution because no governing vocabulary or lifecycle policy
+> currently defines such behavior. **This is not a permanent policy.** When an
+> actual archived/inactive Project case exists or a lifecycle feature requires
+> it, Project status vocabulary and resolution restrictions require an explicit
+> decision. **Do not infer them now.**
+>
+> — Lord Armand, 17 August 2026
+
+**Why, recorded because it is the reason and not merely the outcome.** Inventing
+`active` / `archived` / `disabled` now would be speculative architecture, and —
+the sharper objection — it could accidentally turn a metadata field into an
+authority boundary without any settled semantics. A column nobody has defined
+would start deciding what may be conversed about, and nothing would mark the
+moment it began.
+
+### The revisit trigger
+
+Status semantics require an explicit decision when **either** becomes true:
+
+1. **A real archived or inactive project exists** — an actual project someone
+   has retired, not a fixture.
+2. **A lifecycle feature requires it** — archival, retention, or any view that
+   hides retired work.
+
+Two things are then decided **together**: the vocabulary, and whether any value
+restricts resolution. Deciding the vocabulary alone is precisely what would let
+the field become an authority boundary by default.
+
+### The original raising, kept for context
 
 The column exists and is `NOT NULL`. **No baseline enumerates its values or
 attaches meaning to any of them.** So WP-0.6 treats no status as disqualifying:
@@ -229,12 +262,15 @@ Two things would need deciding together:
 2. **Whether any of them restricts conversation.** Read-only? Referenceable but
    not selectable? No restriction at all?
 
-**Recommendation: leave it until there is a real archived project.** Today there
-are four fixture projects and nothing archived in real use, so deciding now
-means deciding without the case that would inform it. The behaviour in the
-meantime is the permissive one, which is visible, tested, and easy to narrow —
-and narrowing later costs nothing, while having wrongly forbidden something
-would have cost a conversation somebody wanted to have.
+The behaviour in the meantime is the permissive one, which is visible, tested,
+and easy to narrow — and narrowing later costs nothing, while having wrongly
+forbidden something would have cost a conversation somebody wanted to have.
+
+**One recommendation, not implemented.** When this is next touched, a guard test
+asserting that the resolver branches on `status` nowhere would turn *"do not
+infer them now"* from an instruction into something that fails the build if
+someone later infers it silently. Deliberately not added after acceptance, so
+the accepted source stays the source under review.
 
 ---
 

@@ -4,6 +4,10 @@
 
 **One reading rule, carried throughout.** *Implemented*, *verified*, and *complete* are different states and are never used interchangeably.
 
+> **WP-0.6 is COMPLETE.** Accepted by Lord Armand on 17 August 2026: the implementation satisfies the governing requirement that project scope be determined by application logic, that ambiguity cause clarification rather than guessing, and that unresolved state never be persisted as explicit no-project.
+>
+> The `projects.status` question raised in §T was **decided at the same time** — see §T for the decision and, importantly, for the condition that triggers revisiting it.
+
 ---
 
 ## A. Pre-work state
@@ -323,9 +327,9 @@ The clarification for two projects sharing a display name named them both identi
 
 ---
 
-## S. WP-0.6 recommendation
+## S. WP-0.6 status
 
-**COMPLETE.**
+# **COMPLETE.** Accepted 17 August 2026.
 
 Every condition in §22 of the assignment is met and evidenced:
 
@@ -348,18 +352,53 @@ Every condition in §22 of the assignment is met and evidenced:
 | All tests and CI pass | ✅ 437, six jobs |
 | Evidence package complete | ✅ this document |
 
-Unlike WP-0.5, **no acceptance condition here requires a human reading**: every criterion is a mechanical property of code and records, and all of them are discharged. The recommendation is therefore mine to make, and I make it — subject, as always, to your review.
+Unlike WP-0.5, **no acceptance condition here required a human reading**: every criterion is a mechanical property of code and records, and all of them are discharged.
+
+**Re-verified before this acceptance was recorded**, at `ef3e613` with a clean tree: 437 tests passing, `mypy` clean across 43 source files, boundaries holding across 8 components, `lint-imports` 3 kept / 0 broken, Alembic unchanged at `0005`, and the source snapshot still hashing to `cc580c1c…700221ec`. Nothing moved between the evidence being reported and the acceptance being recorded.
+
+### One thing a WP-0.7 reader must not misread
+
+The authoritative store currently holds **eleven** `model_calls` rows:
+
+| When | Scope | What they are |
+|---|---|---|
+| 15 Aug, 6 rows | NULL | WP-0.4 live verification, **before `projects` had any rows** |
+| 17 Aug 15:29–15:31, 3 rows | NULL | WP-0.5 persona work, **before WP-0.6 existed** |
+| 17 Aug 19:05, 2 rows | `project-alpha` | WP-0.6 acceptance case G |
+
+**Every row written since WP-0.6 landed carries a resolved project.** But those nine NULLs are **not** explicit no-project decisions — they predate the guarantee, and were written by a `converse` that had no concept of scope at all.
+
+This matters for WP-0.7 specifically. The rule *"`project_id IS NULL` is exactly the explicit-none set"* holds **from WP-0.6 onward**, and the tests prove it for everything the current code writes. It does not hold retrospectively for those nine. Retrieval that treats a NULL as a deliberate no-project decision would be reading nine rows as decisions nobody made — the same shape of error as the fabricated zeroes of §2.2, and worth knowing about before scope-aware retrieval is built on top of it.
+
+They are left exactly as written. History is not rewritten to make a later guarantee look retrospective.
 
 ---
 
-## T. Executive decisions required
+## T. Executive decisions — DECIDED 17 August 2026
 
-**One, narrow, and not blocking.**
+### `projects.status` shall not disqualify a project from resolution
 
-### `projects.status` has no defined vocabulary
+**Decided by Lord Armand, 17 August 2026:**
 
-The column exists and is `NOT NULL`, and no baseline enumerates its values or attaches meaning to any of them. WP-0.6 therefore **treats no status as disqualifying**: an archived project resolves by slug like any other, and a test asserts it.
+> For the current Layer 0 implementation, `projects.status` shall not disqualify a Project from resolution because no governing vocabulary or lifecycle policy currently defines such behavior. **This is not a permanent policy.** When an actual archived/inactive Project case exists or a lifecycle feature requires it, Project status vocabulary and resolution restrictions require an explicit decision. **Do not infer them now.**
 
-Inventing a rule — that archived projects may be referenced but not made current, say — would be writing policy this implementation is not entitled to write, so it is surfaced rather than guessed at, per §10 of the assignment.
+The grounds, recorded because they are the reason and not merely the outcome: inventing `active` / `archived` / `disabled` now would be speculative architecture, and — the sharper objection — **it could accidentally turn a metadata field into an authority boundary without any settled semantics.** A column nobody has defined would start deciding what may be conversed about, and nothing would mark the moment it began.
 
-**Nothing is blocked.** Today there are four fixture projects and no archived one in real use. **Recommendation: leave it until there is a real archived project**, then decide two things together — the status vocabulary, and whether any value restricts conversation. Deciding it now would be deciding it without the case that would inform it.
+**What this means in the code today.** `val_policy.project_resolution` reads `status` into `ProjectRecord` and branches on it nowhere. An archived project resolves by slug exactly like any other, and `test_an_archived_project_still_resolves` asserts it against a fixture whose status is `archived`.
+
+### The revisit trigger, stated so it is not missed
+
+This decision has a **condition attached**, and it is the part most likely to be lost. Status semantics require an explicit decision from Lord Armand when **either** of these becomes true:
+
+1. **A real archived or inactive project exists** — not a fixture, an actual project in the authoritative store that someone has retired.
+2. **A lifecycle feature requires it** — anything that needs to know whether a project is live: archival, retention, a project list that hides retired work.
+
+Two things are then decided **together**, and neither alone: the status vocabulary, and whether any value restricts resolution or conversation. Deciding the vocabulary without the restriction is what would let a metadata field become an authority boundary by default.
+
+**Until then, the permissive behaviour stands and is visible.** It is easy to narrow later; having wrongly forbidden a conversation somebody wanted to have would not have been.
+
+### A recommendation, not a change
+
+**Not implemented, and offered rather than slipped in.** When this is next touched, a guard test asserting that the resolver branches on `status` nowhere would turn *"do not infer them now"* from an instruction into something that fails the build if someone later infers them silently. WP-0.7 will be working near this code, which is exactly when such a thing gets added by accident.
+
+It was **deliberately not added now**: the source at `8cc0413` is what was accepted and what this bundle is for independently checking, and changing it after acceptance would hand you a different artefact to verify than the one you approved. Authorise it and it takes one test.

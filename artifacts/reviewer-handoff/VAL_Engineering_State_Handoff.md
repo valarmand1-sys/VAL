@@ -372,7 +372,7 @@ counts were all unchanged, `03-persona.md` on disk still hashed to the digest it
 was seeded from, 373 tests passed, and CI was green on `73e9947`. **WP-0.5 is
 COMPLETE.**
 
-### WP-0.6 — Project resolution and attribution · COMPLETE
+### WP-0.6 — Project resolution and attribution · COMPLETE (accepted 17 Aug)
 
 **Exists:** three typed resolution states with `ProjectScope` — the union that
 structurally excludes ambiguity; a pure deterministic resolver with a recorded
@@ -390,6 +390,18 @@ rather than stored. `converse` now takes a required `ProjectScope`, replacing
 `project_id: UUID | None = None` — which let a caller who said nothing about
 scope silently write NULL, and made `None` mean both a decision and the absence
 of one.
+
+**Accepted 17 August 2026.** Re-verified before the acceptance was recorded: 437
+tests, `mypy` clean over 43 files, boundaries holding, Alembic unchanged at
+`0005`, and the accepted snapshot still hashing to `cc580c1c…700221ec`.
+
+**One caveat for WP-0.7**, which will build retrieval on this: the nine NULL
+`project_id` rows in the store **predate WP-0.6** — six from WP-0.4's live
+verification before any project existed, three from WP-0.5's persona work. They
+are *not* explicit no-project decisions. The rule "NULL is exactly the
+explicit-none set" holds from WP-0.6 onward and is tested for everything the
+current code writes; it is not retrospective, and retrieval must not read those
+nine as decisions nobody made.
 
 **Verified:** all eight real acceptance cases, including a live model call whose
 `model_calls.project_id` equals the resolved project; ambiguity producing a
@@ -863,11 +875,12 @@ Every one is recorded in the governing documents at the point it applies.
 | 4 | ~~No fallback routing~~ | — | **CLEARED 17 Aug** — implemented, with the fallback independently re-checked rather than inherited |
 | 5 | Capture write paths absent for `execution_events` / `deliberations` | WP-0.8, WP-0.9 | Sequenced |
 
-**All five decisions of 17 August are recorded and discharged.** WP-0.6 raised
-**one new one**, narrow and not blocking: `projects.status` has no defined
-vocabulary, so no status currently restricts conversation. Recorded as item 8 in
-`VAL_Open_Decisions.md` with a recommendation to leave it until there is a real
-archived project to decide it against.
+**All six decisions of 17 August are recorded and discharged**, including the
+WP-0.6 acceptance and the `projects.status` ruling: status shall not disqualify a
+project from resolution, because no governing vocabulary defines such behaviour
+and a metadata field must not become an authority boundary by default. **Not a
+permanent policy** — it carries a revisit trigger, recorded as item 8 in
+`VAL_Open_Decisions.md`. **No decision is currently outstanding.**
 
 ---
 

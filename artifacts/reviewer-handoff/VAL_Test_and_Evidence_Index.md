@@ -209,9 +209,13 @@ should, rather than proving it passes what it should.
 | 5c.32 | Restricted is refused before scope is considered | §16's ordering, with an unresolved scope too | **PASS** |
 | 5c.33 | **All eight real acceptance cases** | A–H against the authoritative store, incl. a live `gpt-5-5` call at $0.022740 whose `project_id` equals the resolved project | **PASS** |
 
-> **WP-0.6 is COMPLETE.** No criterion here required a human reading — every one
-> is a mechanical property of code and records. Full account:
-> `VAL_WP06_Project_Resolution_Audit.md`.
+| 5c.34 | The evidence still held when the acceptance was recorded | Re-verified at `ef3e613`: 437 tests, `mypy` over 43 files, boundaries across 8 components, `lint-imports` 3/0, Alembic unchanged at `0005`, snapshot still `cc580c1c…700221ec` | **PASS** |
+| 5c.35 | **Every row written since WP-0.6 carries a resolved project** | The 2 rows from acceptance case G are `project-alpha`. The 9 NULLs all predate WP-0.6 — 6 from WP-0.4, 3 from WP-0.5 — and are **not** explicit no-project decisions. Recorded so WP-0.7 retrieval does not read them as decisions nobody made. | **PASS, with the caveat stated** |
+
+> **WP-0.6 is COMPLETE**, accepted by Lord Armand on 17 August 2026. No criterion
+> here required a human reading — every one is a mechanical property of code and
+> records — and all were re-verified before the acceptance was recorded. Full
+> account: `VAL_WP06_Project_Resolution_Audit.md`.
 
 ## 6. Data-eligibility and Restricted handling
 
@@ -266,7 +270,7 @@ should, rather than proving it passes what it should.
 | Backup / restore | 8 | **1** (4.8) |
 | Gateway / providers | 24 | 3 (5.9, 5.10, 5.11) |
 | Persona loading | 29 | — |
-| Project resolution | 33 | — |
+| Project resolution | 35 | — |
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
