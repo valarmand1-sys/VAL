@@ -72,7 +72,7 @@ is something to govern.
 
 | Layer | Delivers | State |
 |---|---|---|
-| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — **4 of 10 work packages complete** (WP-0.1, WP-0.2, WP-0.5, WP-0.6) |
+| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — 3 of 10 complete (WP-0.1, WP-0.2, WP-0.5); **WP-0.6 reopened after independent review** |
 | 1 | Presence — voice, face, local inference | SPECIFIED FOR LATER |
 | 2 | Hands — MCP tools, read-only | SPECIFIED FOR LATER |
 | 3 | Agents — Roles, supervision, Temporal | SPECIFIED FOR LATER |
@@ -372,7 +372,7 @@ counts were all unchanged, `03-persona.md` on disk still hashed to the digest it
 was seeded from, 373 tests passed, and CI was green on `73e9947`. **WP-0.5 is
 COMPLETE.**
 
-### WP-0.6 — Project resolution and attribution · COMPLETE (accepted 17 Aug)
+### WP-0.6 — Project resolution and attribution · IMPLEMENTED / ACCEPTANCE BLOCKED
 
 **Exists:** three typed resolution states with `ProjectScope` — the union that
 structurally excludes ambiguity; a pure deterministic resolver with a recorded
@@ -391,17 +391,28 @@ rather than stored. `converse` now takes a required `ProjectScope`, replacing
 scope silently write NULL, and made `None` mean both a decision and the absence
 of one.
 
-**Accepted 17 August 2026.** Re-verified before the acceptance was recorded: 437
+> **Accepted 17 August 2026, then reopened 18 August.** Independent source
+> review of the accepted snapshot `8cc0413` found **four acceptance defects**,
+> all confirmed. The acceptance is preserved as historical evidence and is not
+> rewritten — it records what was believed and demonstrated on the day. Three of
+> the four defects were *documented in the source*: the resolver's own docstring
+> described the model-authority rule as *"resolves only when nothing of higher
+> authority disagrees"*, which is the defect written down and walked past.
+>
+> **Corrected at source commit `4ff6838`.** Full account:
+> `VAL_WP06_Corrective_Audit.md`. WP-0.6 returns to COMPLETE only on
+> re-acceptance.
+
+**Originally accepted 17 August 2026.** Re-verified before that acceptance: 437
 tests, `mypy` clean over 43 files, boundaries holding, Alembic unchanged at
 `0005`, and the accepted snapshot still hashing to `cc580c1c…700221ec`.
 
-**One caveat for WP-0.7**, which will build retrieval on this: the nine NULL
-`project_id` rows in the store **predate WP-0.6** — six from WP-0.4's live
-verification before any project existed, three from WP-0.5's persona work. They
-are *not* explicit no-project decisions. The rule "NULL is exactly the
-explicit-none set" holds from WP-0.6 onward and is tested for everything the
-current code writes; it is not retrospective, and retrieval must not read those
-nine as decisions nobody made.
+**The WP-0.7 caveat is now closed by the schema rather than by a note.** The
+nine legacy NULLs were flagged in the original audit as something retrieval must
+not misread; the corrective round made that structural. `model_calls` carries
+`project_attribution` — `resolved` | `explicit_none` | `legacy_unknown` — so a
+reader gets the distinction from the row instead of from a warning. The nine
+stay NULL and are labelled `legacy_unknown`; not one `project_id` was rewritten.
 
 **Verified:** all eight real acceptance cases, including a live model call whose
 `model_calls.project_id` equals the resolved project; ambiguity producing a

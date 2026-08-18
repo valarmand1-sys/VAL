@@ -212,7 +212,31 @@ should, rather than proving it passes what it should.
 | 5c.34 | The evidence still held when the acceptance was recorded | Re-verified at `ef3e613`: 437 tests, `mypy` over 43 files, boundaries across 8 components, `lint-imports` 3/0, Alembic unchanged at `0005`, snapshot still `cc580c1c…700221ec` | **PASS** |
 | 5c.35 | **Every row written since WP-0.6 carries a resolved project** | The 2 rows from acceptance case G are `project-alpha`. The 9 NULLs all predate WP-0.6 — 6 from WP-0.4, 3 from WP-0.5 — and are **not** explicit no-project decisions. Recorded so WP-0.7 retrieval does not read them as decisions nobody made. | **PASS, with the caveat stated** |
 
-> **WP-0.6 is COMPLETE**, accepted by Lord Armand on 17 August 2026. No criterion
+### 5c-corrective — independent review findings, 18 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5d.1 | **An untrusted candidate cannot resolve, even with nothing to disagree** | The adversarial test the original suite lacked: no conversation, no session, no selection, an exact match to a real project → asks. Four normalisations, a model-produced UUID, and a hallucinated name all likewise. | **PASS** |
+| 5d.2 | **The same bytes resolve from the trusted field and not the untrusted one** | The correction in one assertion: nothing about the string decides, only which field it arrived in | **PASS** |
+| 5d.3 | An established conversation with a NULL project is explicitly none | Case A. Was `AmbiguousProject`. | **PASS** |
+| 5d.4 | **A session cannot hijack an explicit-no-project conversation** | Case B, and the most dangerous of the four: it previously returned `ResolvedProject(Alpha)` **via session**, and WP-0.7 would have made it durable | **PASS** |
+| 5d.5 | Explicit-none persists; explicit selection still switches; a mention asks | Cases C, D, E, plus a guard that established *project* conversations still resolve | **PASS** |
+| 5d.6 | Duplicate-name candidates are structurally distinguishable | Two distinct ids, two distinct slugs, one shared name; question and payload describe the same projects | **PASS** |
+| 5d.7 | **A legacy NULL is never read as explicit-none** | `project_attribution = 'legacy_unknown'` on the nine; `explicit_none` on new decisions | **PASS** |
+| 5d.8 | The generic gateway path cannot omit attribution | `GatewayRequest` requires both fields with no defaults; contradictory pairs refused both ways | **PASS** |
+| 5d.9 | **`LEGACY_UNKNOWN` is unreachable by new code** | Refused by the request validator *and* by a check constraint on any row created from 18 August | **PASS** |
+| 5d.10 | Analytics separates a decision from a legacy NULL | Two NULL rows, one `explicit_none`, one `legacy_unknown` — indistinguishable before the correction | **PASS** |
+| 5d.11 | No `project_id` was rewritten | 9 stay NULL, 2 stay `project-alpha`; backfill adds a statement about them and changes none of them | **PASS** |
+| 5d.12 | `projects.status` has no resolution authority | Seven arbitrary status strings, three lookup paths, identical outcomes. Behavioural, not source-text. | **PASS** |
+| 5d.13 | The accounting view still exposes every base column | `0006` recreated it; the new column is the one a future reader most needs | **PASS** |
+| 5d.14 | All eight acceptance cases re-pass on corrected code | Including a live `gpt-5-5` call at $0.021615 recording `resolved` + Project Alpha | **PASS** |
+
+> **WP-0.6 was accepted on 17 August and reopened on 18 August** after
+> independent source review found four defects, all confirmed. The rows above
+> record the corrections. WP-0.6 returns to COMPLETE only on re-acceptance.
+> Full account: `VAL_WP06_Corrective_Audit.md`.
+
+> **The original WP-0.6 acceptance**, accepted by Lord Armand on 17 August 2026. No criterion
 > here required a human reading — every one is a mechanical property of code and
 > records — and all were re-verified before the acceptance was recorded. Full
 > account: `VAL_WP06_Project_Resolution_Audit.md`.
@@ -271,10 +295,11 @@ should, rather than proving it passes what it should.
 | Gateway / providers | 24 | 3 (5.9, 5.10, 5.11) |
 | Persona loading | 29 | — |
 | Project resolution | 35 | — |
+| Project resolution — corrective | 14 | — |
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
-| **Automated tests** | **437 passing** | — |
+| **Automated tests** | **473 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.

@@ -1,11 +1,11 @@
 VAL repository manifest
-Commit: ef3e613fcd201be2a5e193c6b016a36c2c7d5a48
-Generated: 2026-08-18T00:48:34Z
+Commit: 4ff6838237f3d6168714ada88d9f7d7f877fadda
+Generated: 2026-08-18T03:37:51Z
 Scope: every git-tracked project file, each with its size and SHA-256 — text and
        binary alike, in one table. Excludes .git internals, node_modules,
        virtualenvs, build output, caches, database data, backup repositories,
        and .env (which is git-ignored and never packaged).
-Files: 149
+Files: 151
 
 SIZE          SHA-256                                                           PATH
 2995          39bd780de21eea8e5aae74dad6aaf097813bc344169a6fff7377eff695dd830c  .env.example
@@ -55,13 +55,14 @@ SIZE          SHA-256                                                           
 117           38b148b1cc1b2a66c5f46cb009393e34badc01666bff7c41b97d1ed5d91acee8  apps/worker/src/val_worker/__init__.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  apps/worker/src/val_worker/py.typed
 7613          2314b4d742ee1efb07c8eea3971b7c291ecdaab534ad8403171c0b0127f096e0  artifacts/reviewer-handoff/VAL_Crossreference_Audit.md
-52745         a43e43f77bb83c3d4de61c8f890a7d1ad1dba68b597d067ca4451d4b99c2e54b  artifacts/reviewer-handoff/VAL_Engineering_State_Handoff.md
+53452         4ccec71169b71448179907a63623b55cbe5107b405a82e9cbaad779c342bf61b  artifacts/reviewer-handoff/VAL_Engineering_State_Handoff.md
 12923         c8453f5758079b7230b5ee997e59eff1dd016893e96138e972a0e9113ec33590  artifacts/reviewer-handoff/VAL_Open_Decisions.md
-18400         f5ee860ffeec274c416c235ec8eced8a536c4749d5b457e6fb76aac72363f2cd  artifacts/reviewer-handoff/VAL_Repo_Manifest.txt
-387318        cc580c1c05ec4c49f3f52d77ac74626fe89ecf4817ae7c21bfbfea32700221ec  artifacts/reviewer-handoff/VAL_Source_Snapshot_8cc0413.zip
-31541         d79b7f46a1092556238b856149ace3a9c735c923914822ef5638497aa7eb068e  artifacts/reviewer-handoff/VAL_Test_and_Evidence_Index.md
+18400         dc74b92361cdaaef4a4c313f67161bb37279e9d2b3acebe887321658bf6826b3  artifacts/reviewer-handoff/VAL_Repo_Manifest.txt
+400102        0972f207886aafacb6cc263291f747b07dcb8171cc83d4299191f17db135df42  artifacts/reviewer-handoff/VAL_Source_Snapshot_4ff6838.zip
+34540         a7400056ea5d939d19ab51750a320cd6287ef98398c09da7072b1aae683aa805  artifacts/reviewer-handoff/VAL_Test_and_Evidence_Index.md
 60758         0c4abd58c3bf1f2c3dfa0ce340c24db4bb1c4a39b43c9ebc900ca1da9b449a74  artifacts/reviewer-handoff/VAL_WP04_Corrective_Audit.md
 25885         62904cae73e45d3f43ca6ff4dea7b0258dd725467ce4e08934834bb5e00c80b6  artifacts/reviewer-handoff/VAL_WP05_Persona_Loading_Audit.md
+16096         8c882dddee33338b4869ec05f4c6131265cb961f517791804feab5b28dfaeda4  artifacts/reviewer-handoff/VAL_WP06_Corrective_Audit.md
 26461         e27418ebbe9c6f4fc7544b60eff41855809286a71d507581d9306c2406a33ba6  artifacts/reviewer-handoff/VAL_WP06_Project_Resolution_Audit.md
 15802         5c49880ffd089a13a6a1e3ecfada3fa8f2315df4d8e03c3af406aedf9c7646e5  artifacts/reviewer-handoff/governing/00-charter.md
 43726         166f8df53d6b3b279a605818404f9a5b0088166bbd0ce1bd77533cf76ba18c58  artifacts/reviewer-handoff/governing/01-architecture.md
@@ -101,37 +102,38 @@ SIZE          SHA-256                                                           
 9101          ab2fd995a6d902adb5ce108671ee25977fddde9aeefd918e5da2da46d2b4d53f  packages/domain/migrations/versions/0003_budget_reservations.py
 4790          2e3e917614731e947a52a86fb8d9aef4a10ff71486a915f33a870a53a6d041cf  packages/domain/migrations/versions/0004_supersede_zero_costs.py
 9655          e7fa6cd583d7bb498237b4530946b3a7e5ea46d7c779d7a888c68a191839f64c  packages/domain/migrations/versions/0005_persona_provenance.py
+6963          616164836d36c9dfdeb7f1cf2a966c44ff2a10129ece958eff70fd9534f9b1e3  packages/domain/migrations/versions/0006_project_attribution.py
 637           5eb7b99ab8fd48c02f7ba005a01a55449a005a238bb1e8f48411e8403193a309  packages/domain/pyproject.toml
 129           6d5d4b14323d119f93a02a15848a573e8df5e574bfe785daf6514cc5c3379647  packages/domain/src/val_domain/__init__.py
 1207          49bc97a75497e1e929f8ea80917328965579fed0611197be86dee5a9db5fc7c9  packages/domain/src/val_domain/database.py
-11013         3fcfce0fbc65497487bc4d9515670222401579c15e2ad49073bc550c13ebeb90  packages/domain/src/val_domain/gateway.py
+12681         0aa303331820d5022848f007cafc0698aab7ed650f36b767273dd4fa91f83e7e  packages/domain/src/val_domain/gateway.py
 2460          02c48778bbbd365c9bec7707dc4445e1863c071b83317f19798a7bcfec931f10  packages/domain/src/val_domain/migrations_support.py
 5781          e16aaecd6598ee0a40ae60c6a73271b785b8359dd184bea5f672c5041d81d839  packages/domain/src/val_domain/persona.py
-6736          2c27aebee6e55f1f97f157d8eab5a9fce50f55190b12b74e694dd6857bca9369  packages/domain/src/val_domain/project.py
+11835         85150b135efb72a813f21b2be98dfff74571bbb6c4b177bdc238c18ba0eb2157  packages/domain/src/val_domain/project.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  packages/domain/src/val_domain/py.typed
 9795          c1313b029b92bf46c4963b9da8ef3b7b691f010f0d348f2d8ccf2186cb905826  packages/domain/src/val_domain/registry.py
-31802         e249ec61f10d6db9029e5be59aa0a75da91124d21c154e344fb47fc1e1354d73  packages/domain/src/val_domain/schema.py
+33419         f0633844a94b042367b30b46b7793adde64e82af739e7a26f91667e05eb2886c  packages/domain/src/val_domain/schema.py
 2814          3e51ac3ef8bb52bf4ee81639a2fa66087adf81fcc47798e16998fbecedfc847a  packages/domain/tests/conftest.py
 8231          b8fb36fe2bae4aaf122be50e175517f68867d1b517733e39bab846ba029370a0  packages/domain/tests/test_registry.py
-35255         cd973a8becd62ca6b72729c55ef32cd5652d9dfad474b4765c835d0b99f890c7  packages/domain/tests/test_schema.py
+35760         9dc7b37979b46c4fce7eb5099030803c94ad09d93b431b2e0250773da307937e  packages/domain/tests/test_schema.py
 773           7007724b74a3fd7985150a7a897aa7d4777b2e7032abae8b6d80b019d1213dec  packages/gateway/pyproject.toml
 831           9710518153085ce052d6f22aa94e2cf41cf2a0d07c8c0520f7fa29c2b4e685bd  packages/gateway/src/val_gateway/__init__.py
-3900          2551e8c39d90e46dcac6db402d50525803b0b44efc5dbf60e0b034af86465b0b  packages/gateway/src/val_gateway/context.py
-7815          34ac6205ebcf4e2eda1f562364eb1ea1d2d380c891cbf1eb86cf2289bf8f82b8  packages/gateway/src/val_gateway/exchange.py
-24416         bd3f0fbb420aef54a9714ec0861ae2d6f46c39ae8583044389018b183c450957  packages/gateway/src/val_gateway/gateway.py
+4423          d3e92329ab6873418e51bd31d092b064b34d4b40f5fd33d1794cfcd56cf4d5ee  packages/gateway/src/val_gateway/context.py
+8309          4118649ff29699e951d272adc55f1a4dc91f2bdb82232c5558f7011da1f973d0  packages/gateway/src/val_gateway/exchange.py
+24646         5f929b28ad1544851633858387867fe2cfd4f767b007708bb48e50e77f9fb3db  packages/gateway/src/val_gateway/gateway.py
 16876         daa3fb9edcb885ba657a129c19f1236701c0ecb1a9b7b08c7337bcf04e515a34  packages/gateway/src/val_gateway/ledger.py
-8267          914ddacfc53f31f0602c085a2efd7be53ab45d354ce0e6c21593b09cf63c61e1  packages/gateway/src/val_gateway/persistence.py
+8591          9fc551255c4e6515a2b6832d92c49e5b1216a1ca92177aa72b92fb2cb8f9b32d  packages/gateway/src/val_gateway/persistence.py
 15686         14fdf8af160bd1e5c7dc55323c6cd2889fcfda355c186cfbebf0c8b69f97b4e5  packages/gateway/src/val_gateway/persona.py
 5931          7d29fbbe8bb47796801591d59b4fcf5dba4c48e82f4295a2d9f41d4b7ae7f08f  packages/gateway/src/val_gateway/projects.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  packages/gateway/src/val_gateway/py.typed
 6584          6b6f698552b3dff23ea2d567f3be8dc0f4798a5b9c0bc2a2705405b607082b08  packages/gateway/src/val_gateway/startup.py
 1829          f71082eda963e24b546c5d5ef0cf462ebe0dd068673ff87f6a87f357feed2d45  packages/gateway/tests/conftest.py
-6088          91556670d3159ebe29364fc4bbf5e8c85d2ec044b18f232ce3263f8d28cdb991  packages/gateway/tests/gateway_fakes.py
+6488          8e6b10d32d21afb0e2e9a8375eb1e9f071661964c3ac9613382a4c3fb673d018  packages/gateway/tests/gateway_fakes.py
 12562         508fdd756f65484f73e7d839996175530e1a9bec5b5ee145f2711fca5e872d18  packages/gateway/tests/test_budget_ledger.py
-17959         6dba41d02a68cd74bffb08661aad51aaf1fdb0e9bdcef500d620223946649ff7  packages/gateway/tests/test_gateway.py
-12451         d3a06a5b3eca82ab0b36b714aacf4f3f94adba0564ffb53995757e1a512528f8  packages/gateway/tests/test_persistence.py
-33393         5ecdd0d85d0031ae6b19b3402fe1ef50b2d5e3e8b5a3ebf31fb251561abd5454  packages/gateway/tests/test_persona.py
-20352         85b2ce48b60871d86948ebcc9f3e207f9935ddb9090862633e9bd19d420a4f88  packages/gateway/tests/test_project_attribution.py
+18531         c75cc85a8197a36c4536356f3793e3babf5c5aa54b87eec2ec5b813cb4705970  packages/gateway/tests/test_gateway.py
+12771         8091d1ae4b647d7645c385d849125dbc009a1518c051d6ccd905fb76060d7ecf  packages/gateway/tests/test_persistence.py
+34097         e5bcc349c1fb3b1dc6620d37ce8a8b202914886ac58748ab40113444c2de30dd  packages/gateway/tests/test_persona.py
+29058         ddafe288ebe8fe141c73d790d06060bdfb7508182bc6453c3b945c6fbabca658  packages/gateway/tests/test_project_attribution.py
 18703         50350a7e1c2bad37691de921941cae856dd42ff02cf4f79a8e3423fe36e1f3c6  packages/gateway/tests/test_router.py
 409           4bc6c99b8ab0534cd8712b677770e3e803d955fe5e41033cec9a8f96ef5dfce6  packages/mcp/pyproject.toml
 150           22afe1debf1afa94e971bfe3b04b93d9c4e7a189e9c0a4225e9c539316fef3d5  packages/mcp/src/val_mcp/__init__.py
@@ -140,12 +142,12 @@ SIZE          SHA-256                                                           
 217           e1fa2c89345c493244a8d5b65b3e9ff8df01750d2daf3627d05e08e53866b327  packages/policy/src/val_policy/__init__.py
 9832          b7c83ed150e15665b324bd114a700e6ee49491b83b5e8a3a8a3c887e79cc5e07  packages/policy/src/val_policy/budget.py
 4735          61bd68f7a9d4e03deae12b015bac515695fda52591556f4bd11306c989e8e420  packages/policy/src/val_policy/eligibility.py
-15661         3380de8ad8176f2623943614c4c000ef5151f01cf9fa95e476c4f0223ba2f411  packages/policy/src/val_policy/project_resolution.py
+21079         97d4a902bccd05b877fec505416272b3cccb0e94041162dadfdb1100bd6e6fdd  packages/policy/src/val_policy/project_resolution.py
 0             e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  packages/policy/src/val_policy/py.typed
 12544         a5074935379d8188b45b3c2765aa080905ff87ccef6486451e202ec13272f739  packages/policy/src/val_policy/restricted.py
 6055          be59c5ef8d50070168684977728a9eb44e46bd51ad227c117fabf100c0884e7e  packages/policy/src/val_policy/routing.py
 8314          3de11e50dc04dd2fda2ef0dd95c011db08186e7928bbec1f25ba6d7e5f954903  packages/policy/tests/test_budget.py
-18238         2a44e5d220519d759cbc3ffba4b0e46c1f8abeef5122952cae0a55eb44efb06f  packages/policy/tests/test_project_resolution.py
+27681         d54510b95763db4063145b6dd8b1b4dd7be3e2dcd054a1bdfbd4f09d2dd2cfc2  packages/policy/tests/test_project_resolution.py
 8013          f8a86009d15a627a7dd3b8a28bd26f5055f69b42702f1d4f0261ba6fdb92d2aa  packages/policy/tests/test_restricted.py
 587           2a77fe1cc03f8438947c4a68c99e7ee76bce9721e7c3fdd1b34285991ad3f143  packages/providers/pyproject.toml
 165           68f43ff96336ad4f00710bedbe478422a12e7b854bba7828c4faf2f51baf791e  packages/providers/src/val_providers/__init__.py
