@@ -26,6 +26,7 @@ from val_domain.gateway import (
     ModelConfig,
     TaskType,
 )
+from val_domain.project import ProjectAttribution
 from val_domain.registry import by_slug
 from val_gateway.gateway import CallRecord, Gateway
 from val_gateway.ledger import Refusal, Reservation
@@ -156,7 +157,12 @@ def request(
         classification=classification,
         messages=(Message(role="user", content=content),),
         max_output_tokens=max_output_tokens,
+        # A resolved scope: these tests are about routing, budget, and recording,
+        # and they assert the project reaches the row. The pair must agree — the
+        # request validator refuses `EXPLICIT_NONE` carrying an id, which is how
+        # this was caught rather than shipped.
         project_id=uuid4(),
+        project_attribution=ProjectAttribution.RESOLVED,
     )
 
 

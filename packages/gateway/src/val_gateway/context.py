@@ -34,6 +34,7 @@ conversation in another receive the same Val.
 from uuid import UUID
 
 from val_domain.gateway import Classification, GatewayRequest, Message, TaskType
+from val_domain.project import ProjectScope, attribution_of, attribution_state_of
 from val_gateway.persona import ActivePersona
 
 
@@ -43,7 +44,7 @@ def assemble(
     *,
     classification: Classification = Classification.PROTECTED,
     task_type: TaskType = TaskType.CONVERSATION,
-    project_id: UUID | None = None,
+    scope: ProjectScope,
     conversation_id: UUID | None = None,
     message_id: UUID | None = None,
     max_output_tokens: int = 4096,
@@ -65,7 +66,13 @@ def assemble(
         messages=messages,
         system=persona.content,
         max_output_tokens=max_output_tokens,
-        project_id=project_id,
+        # One argument, not two that must agree. Corrective round, 18 August
+        # 2026: this took `project_id` and `project_attribution` separately, with
+        # a default on the second, so a caller could pass a real id alongside
+        # `EXPLICIT_NONE` and produce a request that contradicted itself. A
+        # `ProjectScope` carries both and cannot disagree with itself.
+        project_id=attribution_of(scope),
+        project_attribution=attribution_state_of(scope),
         conversation_id=conversation_id,
         message_id=message_id,
         persona_id=persona.id,

@@ -58,6 +58,11 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         # WP-0.5 amendment, 17 August 2026: which persona revision was assembled
         # into this call's context. A stable reference, never a copy.
         "persona_id",
+        # §2.2 amendment, 18 August 2026, WP-0.6 corrective round: what the
+        # stored `project_id` *means*. A NULL alone cannot distinguish a
+        # deliberate no-project decision from a row that predates the decision
+        # existing, and both are in this table.
+        "project_attribution",
         # §2.2 amendment, 17 August 2026: `known` | `unknown`. A provider attempt
         # that reached the provider and returned no usage is recorded as unknown,
         # with NULL figures — never as a zero, which is a claim and a false one.
@@ -177,6 +182,8 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
     "model_call_status": ("ok", "error", "refused"),
     # Amendments, 17 August 2026
     "model_call_cost_certainty": ("known", "unknown"),
+    # Amendment, 18 August 2026
+    "model_call_project_attribution": ("resolved", "explicit_none", "legacy_unknown"),
     "budget_reservation_state": ("reserved", "settled", "released", "expired"),
     "execution_event_type": ("accepted", "rejected", "revision_requested", "corrected"),
     "reason_source": ("stated", "inferred", "absent"),
@@ -853,9 +860,9 @@ def test_the_view_never_leaves_effective_certainty_null(
         text(
             "insert into model_calls (created_at, model_config_id, provider, "
             "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
-            "task_type, latency_ms, provider_request_id, status) values "
+            "task_type, project_attribution, latency_ms, provider_request_id, status) values "
             "(timestamptz '2026-08-15 12:00:00+00', gen_random_uuid(), 'anthropic', 'x', "
-            "0, 0, 0, null, 'conversation', 1, '', 'error')"
+            "0, 0, 0, null, 'conversation', 'legacy_unknown', 1, '', 'error')"
         )
     )
     missing = connection.execute(
@@ -876,9 +883,9 @@ def test_the_superseding_rule_is_exact_not_a_blanket(
     legacy_insert = text(
         "insert into model_calls (created_at, model_config_id, provider, "
         "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
-        "task_type, latency_ms, provider_request_id, status) values "
+        "task_type, project_attribution, latency_ms, provider_request_id, status) values "
         "(timestamptz '2026-08-15 12:00:00+00', gen_random_uuid(), 'anthropic', "
-        "'x', 1, 1, :cost, null, 'conversation', 1, '', :status)"
+        "'x', 1, 1, :cost, null, 'conversation', 'legacy_unknown', 1, '', :status)"
     )
     for status, cost in (("error", 0.0), ("ok", 0.000905), ("refused", 0.0004)):
         connection.execute(legacy_insert, {"cost": cost, "status": status})

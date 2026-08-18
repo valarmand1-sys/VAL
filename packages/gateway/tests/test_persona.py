@@ -40,7 +40,13 @@ from val_domain.persona import (
     read_source,
     semantic_version_of,
 )
-from val_domain.project import ExplicitNoProject
+from val_domain.project import (
+    ExplicitNoProject,
+    ProjectAttribution,
+    ProjectRecord,
+    ResolutionSource,
+    ResolvedProject,
+)
 from val_gateway.context import assemble, persona_occurrences
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.persistence import record_call
@@ -371,7 +377,9 @@ def test_check_one_assembled_context_matches_the_active_database_row(
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
 
-    request = assemble(active, (Message(role="user", content="Good evening."),))
+    request = assemble(
+        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+    )
 
     assert request.system == active.content
     assert request.system is not None
@@ -413,7 +421,9 @@ def test_the_two_checks_are_genuinely_independent(clean_personas: Engine) -> Non
     )
 
     # Check one still passes: the context matches the (drifted) record.
-    request = assemble(drifted, (Message(role="user", content="Good evening."),))
+    request = assemble(
+        drifted, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+    )
     assert request.system == drifted.content
 
     # Check two catches it.
@@ -451,6 +461,7 @@ def test_the_persona_appears_exactly_once(clean_personas: Engine) -> None:
             Message(role="assistant", content="Good evening, my lord."),
             Message(role="user", content="Where would you begin?"),
         ),
+        scope=ExplicitNoProject(),
     )
     assert persona_occurrences(request, active) == 1
     assert all(message.content != active.content for message in request.messages)
@@ -465,7 +476,9 @@ def test_the_persona_precedes_the_conversation(clean_personas: Engine) -> None:
     """
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
-    request = assemble(active, (Message(role="user", content="Good evening."),))
+    request = assemble(
+        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+    )
 
     assert request.system == active.content
     assert request.messages[0].content == "Good evening."
@@ -488,7 +501,7 @@ def test_provider_substitution_leaves_the_persona_identical(
             ledger=FakeLedger(),
             persona_loader=FixedPersonaLoader(active),
         )
-        request = assemble(active, messages)
+        request = assemble(active, messages, scope=ExplicitNoProject())
         gateway.complete_with_configuration(request, config(slug))
         assert request.system is not None
         sent.append(request.system)
@@ -501,9 +514,16 @@ def test_switching_project_leaves_the_persona_identical(clean_personas: Engine) 
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
 
-    project_a, project_b = uuid4(), uuid4()
-    in_a = assemble(active, (Message(role="user", content="A"),), project_id=project_a)
-    in_b = assemble(active, (Message(role="user", content="B"),), project_id=project_b)
+    def scoped(name: str) -> ResolvedProject:
+        return ResolvedProject(
+            ProjectRecord(id=uuid4(), name=name, slug=name.lower(), status="active"),
+            via=ResolutionSource.EXPLICIT_SELECTION,
+        )
+
+    a, b = scoped("alpha"), scoped("beta")
+    project_a, project_b = a.project_id, b.project_id
+    in_a = assemble(active, (Message(role="user", content="A"),), scope=a)
+    in_b = assemble(active, (Message(role="user", content="B"),), scope=b)
 
     assert in_a.system == in_b.system == active.content
     assert in_a.persona_id == in_b.persona_id == active.id
@@ -661,7 +681,9 @@ def test_runtime_works_when_the_source_document_is_unavailable(
     assert not (tmp_path / GOVERNING_PERSONA_PATH).exists()
 
     active = DatabasePersonaLoader(clean_personas).active()
-    request = assemble(active, (Message(role="user", content="Good evening."),))
+    request = assemble(
+        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+    )
     assert request.system == active.content
     assert len(request.system or "") > 10_000
 
@@ -744,7 +766,9 @@ def test_a_transmitted_call_that_errors_still_records_its_persona(
         observe_block=lambda message: None,
         persona_loader=FixedPersonaLoader(active),
     )
-    request = assemble(active, (Message(role="user", content="Good evening."),))
+    request = assemble(
+        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+    )
     with pytest.raises(GatewayError):
         gateway.complete_with_configuration(request, config("opus-5"))
 
@@ -811,6 +835,8 @@ def test_a_call_that_was_never_sent_records_no_persona(clean_personas: Engine) -
         messages=(Message(role="user", content="ssn 123-45-6789"),),
         system=active.content,
         persona_id=active.id,
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
     )
     with pytest.raises(Exception):  # noqa: B017 - the Restricted refusal
         gateway.complete_with_configuration(leaking, config("opus-5"))

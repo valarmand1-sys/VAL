@@ -22,6 +22,7 @@ from val_domain.gateway import (
     Message,
     TaskType,
 )
+from val_domain.project import ProjectAttribution
 from val_gateway.gateway import Gateway, check_startup, compute_cost
 from val_policy.budget import CLOUD_CEILING_USD, maximum_cost
 from val_providers.base import ProviderResult
@@ -193,6 +194,8 @@ def test_a_tiny_prompt_with_a_large_output_cap_is_refused_before_transmission() 
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="Good evening."),),
         max_output_tokens=128_000,
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
     )
     authorised = maximum_cost(config(), ("Good evening.",), 128_000)
     assert authorised > 2.00, "the premise: output alone must exceed the remainder"
@@ -219,6 +222,8 @@ def test_the_same_tiny_prompt_with_a_modest_output_cap_proceeds() -> None:
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="Good evening."),),
         max_output_tokens=1000,
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
     )
     gateway.complete_with_configuration(modest, config())
     assert adapter.calls == 1
@@ -235,6 +240,8 @@ def test_the_reservation_covers_the_whole_authorised_output() -> None:
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="Good evening."),),
         max_output_tokens=64_000,
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
     )
     gateway.complete_with_configuration(spacious, config())
 
@@ -289,6 +296,8 @@ def test_a_credential_in_protected_content_is_blocked_before_transmission() -> N
                 role="user", content="deploy with " + fake("sk-", "ant-", "a1b2c3d4e5f6g7h8i9j0k1")
             ),
         ),
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
     )
     with pytest.raises(GatewayError) as caught:
         gateway.complete_with_configuration(leaking, config())
@@ -307,6 +316,8 @@ def test_a_blocked_request_writes_no_model_calls_row() -> None:
         task_type=TaskType.CONVERSATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="ssn 123-45-6789"),),
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
     )
     with pytest.raises(GatewayError):
         gateway.complete_with_configuration(leaking, config())
@@ -325,6 +336,8 @@ def test_the_preflight_runs_before_the_budget_check() -> None:
         task_type=TaskType.CONVERSATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="password = " + fake("hunter", "2hunter2")),),
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
     )
     with pytest.raises(GatewayError) as caught:
         gateway.complete_with_configuration(leaking, config())

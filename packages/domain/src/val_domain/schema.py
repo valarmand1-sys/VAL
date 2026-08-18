@@ -86,6 +86,13 @@ ModelCallStatus = Enum("ok", "error", "refused", name="model_call_status")
 # input tokens, so recording zero would be recording a figure that is known to be
 # false rather than one that is merely unknown.
 ModelCallCostCertainty = Enum("known", "unknown", name="model_call_cost_certainty")
+# §2.2 amendment, 18 August 2026, WP-0.6 corrective round. What a stored
+# `project_id` *means*. A NULL alone cannot say whether somebody decided this
+# exchange was outside every project or whether the row simply predates the
+# distinction — and both exist in this table.
+ModelCallProjectAttribution = Enum(
+    "resolved", "explicit_none", "legacy_unknown", name="model_call_project_attribution"
+)
 # §2.5 amendment, 17 August 2026. The lifecycle of one budget reservation.
 BudgetReservationState = Enum(
     "reserved", "settled", "released", "expired", name="budget_reservation_state"
@@ -331,6 +338,11 @@ class ModelCall(Base):
     project_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
     )
+    # WP-0.6 corrective round. `resolved` | `explicit_none` | `legacy_unknown`,
+    # and the third is reserved to rows written before 18 August 2026 — a check
+    # constraint refuses it on anything newer, so it cannot become the way new
+    # code avoids deciding scope.
+    project_attribution: Mapped[str] = mapped_column(ModelCallProjectAttribution, nullable=False)
     task_type: Mapped[str] = mapped_column(ModelCallTaskType, nullable=False)
     conversation_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="NO ACTION"), nullable=True
@@ -381,6 +393,21 @@ class ModelCall(Base):
         CheckConstraint(
             "cost_certainty IS NOT NULL OR created_at < TIMESTAMPTZ '2026-08-17T00:00:00+00:00'",
             name="certainty_required_after_the_amendment",
+        ),
+        # WP-0.6 corrective round. The attribution and the id must agree, or the
+        # row asserts something it cannot support.
+        CheckConstraint(
+            "(project_attribution = 'resolved') = (project_id IS NOT NULL)",
+            name="resolved_attribution_has_a_project",
+        ),
+        # `legacy_unknown` is a *read* state describing rows written before the
+        # distinction existed. Reserving it in the database is what stops it
+        # becoming a convenient way for new code to avoid deciding scope — the
+        # same shape of guarantee as `certainty_required_after_the_amendment`.
+        CheckConstraint(
+            "project_attribution <> 'legacy_unknown' "
+            "OR created_at < TIMESTAMPTZ '2026-08-18T00:00:00+00:00'",
+            name="legacy_attribution_is_reserved_to_history",
         ),
     )
 

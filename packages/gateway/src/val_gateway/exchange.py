@@ -38,6 +38,7 @@ from val_domain.gateway import Classification, GatewayResponse, Message, TaskTyp
 from val_domain.project import (
     AmbiguityReason,
     AmbiguousProject,
+    ProjectCandidate,
     ProjectResolution,
     ProjectScope,
 )
@@ -63,9 +64,16 @@ class ClarificationNeeded:
 
     question: str
     reason: AmbiguityReason
-    #: What the user's answer will be matched against, so the caller does not
-    #: have to re-derive the candidate set to interpret the reply.
-    candidates: tuple[str, ...] = ()
+    #: The projects the user is being asked to choose between, **with stable
+    #: identity**. Corrective round, 18 August 2026: this carried display names
+    #: only, so two projects both called `Winter Light` arrived as
+    #: `("Winter Light", "Winter Light")` — a question the caller could put and
+    #: could not interpret the answer to.
+    #:
+    #: Only the candidates. The unrelated catalogue is never exposed; a payload
+    #: that recites every project makes the caller do the narrowing this module
+    #: was supposed to have done.
+    candidates: tuple[ProjectCandidate, ...] = ()
 
     @property
     def project_id(self) -> None:
@@ -101,7 +109,8 @@ def resolve_scope(
             conversation_is_established=signals.conversation_is_established,
             session_project_id=session.project_id,
             session_is_set=session.is_set and not session.is_explicit_none,
-            mentioned_reference=signals.mentioned_reference,
+            trusted_reference=signals.trusted_reference,
+            untrusted_candidate=signals.untrusted_candidate,
         )
         # A session set to explicit none is a decision, and it stands until the
         # user changes it — otherwise every unspecified exchange after choosing
@@ -130,7 +139,7 @@ def _nothing_else_said(signals: ProjectSignals) -> bool:
     return (
         signals.supplied_project_id is None
         and signals.explicit_selection is None
-        and signals.mentioned_reference is None
+        and signals.any_reference is None
         and not signals.conversation_is_established
         and not signals.explicit_no_project
     )
@@ -171,7 +180,7 @@ def exchange(
         return ClarificationNeeded(
             question=resolution.question,
             reason=resolution.reason,
-            candidates=tuple(project.name for project in resolution.candidates),
+            candidates=tuple(ProjectCandidate.of(p) for p in resolution.candidates),
         )
 
     # 4. Settled. `resolution` is now a `ProjectScope` by elimination, and the

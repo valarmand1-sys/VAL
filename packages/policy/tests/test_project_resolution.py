@@ -192,17 +192,16 @@ def test_a_half_reference_does_not_resolve() -> None:
 def test_a_model_suggestion_cannot_establish_scope() -> None:
     """Test 7. A confidently wrong model naming a real project loses to the session.
 
-    The model's output can only enter as `mentioned_reference` — a candidate. It
-    is looked up like any other reference and weighed against everything of
-    higher authority. Here the session says Alpha and the "model" insists on
-    Beta, and the result is a question, not Beta.
+    The model's output enters only as `untrusted_candidate`, which never
+    resolves. Here the session says Alpha and the "model" insists on Beta, and
+    the result is a question, not Beta.
     """
     model_says = "Project Beta"  # confident, well-formed, and wrong
     outcome = resolve(
         signals(
             session_project_id=ALPHA.id,
             session_is_set=True,
-            mentioned_reference=model_says,
+            untrusted_candidate=model_says,
         ),
         CATALOGUE,
     )
@@ -213,7 +212,7 @@ def test_a_model_suggestion_cannot_establish_scope() -> None:
 
 def test_a_model_naming_a_project_that_does_not_exist_resolves_to_nothing() -> None:
     """A hallucinated project name creates no scope at all."""
-    outcome = resolve(signals(mentioned_reference="The Secret Ninth Project"), CATALOGUE)
+    outcome = resolve(signals(untrusted_candidate="The Secret Ninth Project"), CATALOGUE)
     assert isinstance(outcome, AmbiguousProject)
     assert outcome.candidates == ()
 
@@ -275,9 +274,7 @@ def test_silence_is_unresolved_and_never_no_project() -> None:
         signals(supplied_project_id=uuid4()),
         signals(explicit_selection="Winter Light"),
         signals(explicit_selection="No Such Project"),
-        signals(
-            session_project_id=ALPHA.id, session_is_set=True, mentioned_reference="Project Beta"
-        ),
+        signals(session_project_id=ALPHA.id, session_is_set=True, trusted_reference="Project Beta"),
     ],
 )
 def test_no_ambiguous_outcome_can_be_read_as_no_project(ambiguous: ProjectSignals) -> None:
@@ -310,7 +307,7 @@ def test_a_session_project_resolves_a_later_exchange() -> None:
 
 def test_an_exact_reference_resolves_when_nothing_is_established() -> None:
     """Test 12. Precedence 5 — a reference with nothing to weigh it against."""
-    outcome = resolve(signals(mentioned_reference="Project Alpha"), CATALOGUE)
+    outcome = resolve(signals(trusted_reference="Project Alpha"), CATALOGUE)
     assert isinstance(outcome, ResolvedProject)
     assert outcome.project_id == ALPHA.id
     assert outcome.via is ResolutionSource.EXACT_REFERENCE
@@ -371,9 +368,7 @@ def test_conflicting_signals_ask_rather_than_choose() -> None:
     is how an exchange about one project is filed under another and stays there.
     """
     outcome = resolve(
-        signals(
-            session_project_id=ALPHA.id, session_is_set=True, mentioned_reference="Project Beta"
-        ),
+        signals(session_project_id=ALPHA.id, session_is_set=True, trusted_reference="Project Beta"),
         CATALOGUE,
     )
     assert isinstance(outcome, AmbiguousProject)
@@ -386,7 +381,7 @@ def test_mentioning_the_project_you_are_already_in_is_not_a_conflict() -> None:
     """Restating the current project is agreement, not disagreement."""
     outcome = resolve(
         signals(
-            session_project_id=ALPHA.id, session_is_set=True, mentioned_reference="Project Alpha"
+            session_project_id=ALPHA.id, session_is_set=True, trusted_reference="Project Alpha"
         ),
         CATALOGUE,
     )
@@ -469,3 +464,220 @@ def test_distinct_names_are_not_cluttered_with_slugs() -> None:
     assert isinstance(collided, AmbiguousProject)
     assert "tony-joni-pilot" in collided.question
     assert "tony-joni-pilot-v2" in collided.question
+
+
+# =========================================================================
+# WP-0.6 corrective round, 18 August 2026 — independent source review
+# =========================================================================
+
+
+# --- Finding 1. A model may suggest. It may never decide. --------------------
+
+
+def test_an_untrusted_candidate_naming_an_exact_project_does_not_resolve_it() -> None:
+    """**The missing adversarial test.** The one the original suite lacked.
+
+    No conversation, no session, no explicit selection — nothing of higher
+    authority to disagree — and an untrusted candidate naming Project Beta
+    exactly. The original resolver returned `ResolvedProject(Beta)`, because its
+    rule was *"resolves when nothing of higher authority disagrees"* and here
+    nothing did. The rule is *no model output determines scope*, full stop.
+    """
+    outcome = resolve(signals(untrusted_candidate="Project Beta"), CATALOGUE)
+
+    assert not isinstance(outcome, ResolvedProject), "a model established scope"
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.reason is AmbiguityReason.UNTRUSTED_SUGGESTION_ONLY
+    # The suggestion is carried so confirming it is one answer, not a fresh start.
+    assert {p.id for p in outcome.candidates} == {BETA.id}
+    assert "suggestion is not a decision" in outcome.question
+
+
+@pytest.mark.parametrize(
+    "reference", ["Project Beta", "project-beta", "PROJECT BETA", " Project  Beta "]
+)
+def test_no_spelling_of_an_untrusted_candidate_resolves(reference: str) -> None:
+    """Exactness is not authority. Every normalisation of a real name still asks."""
+    outcome = resolve(signals(untrusted_candidate=reference), CATALOGUE)
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.reason is AmbiguityReason.UNTRUSTED_SUGGESTION_ONLY
+
+
+def test_an_untrusted_candidate_by_exact_id_string_does_not_resolve() -> None:
+    """A model that produces the right UUID is still a model producing it.
+
+    `supplied_project_id` is trusted *application state*. A model's opinion never
+    arrives there, so a UUID it emits is just another untrusted string, and it
+    matches no name or slug.
+    """
+    outcome = resolve(signals(untrusted_candidate=str(BETA.id)), CATALOGUE)
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.reason is AmbiguityReason.UNKNOWN_IDENTIFIER
+
+
+def test_a_hallucinated_untrusted_candidate_establishes_nothing() -> None:
+    """A project that does not exist creates no scope and no false candidate."""
+    outcome = resolve(signals(untrusted_candidate="The Secret Ninth Project"), CATALOGUE)
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.candidates == ()
+    assert not isinstance(outcome, ExplicitNoProject)
+
+
+def test_the_same_string_resolves_from_a_trusted_field_and_not_an_untrusted_one() -> None:
+    """The difference is origin, and origin alone. Byte-identical input, both ways.
+
+    This is the whole correction in one assertion: nothing about the *string*
+    decides, because nothing about the string can. Only which field it arrived in.
+    """
+    trusted = resolve(signals(trusted_reference="Project Beta"), CATALOGUE)
+    untrusted = resolve(signals(untrusted_candidate="Project Beta"), CATALOGUE)
+
+    assert isinstance(trusted, ResolvedProject)
+    assert trusted.project_id == BETA.id
+    assert isinstance(untrusted, AmbiguousProject)
+
+
+def test_an_untrusted_candidate_cannot_override_a_trusted_one() -> None:
+    """Both present, disagreeing: the trusted one decides and the model is ignored."""
+    outcome = resolve(
+        signals(trusted_reference="Project Alpha", untrusted_candidate="Project Beta"),
+        CATALOGUE,
+    )
+    assert isinstance(outcome, ResolvedProject)
+    assert outcome.project_id == ALPHA.id
+
+
+# --- Finding 2. An established explicit-no-project conversation --------------
+
+
+def test_an_established_conversation_with_no_project_is_explicitly_none() -> None:
+    """Case A. `04-layer-0.md` §2.1: a NULL conversation project means exactly this.
+
+    The original resolver required `conversation_project_id is not None` to treat
+    a conversation as established, so an explicit-none conversation fell through
+    to the session and then to unresolved — re-asking a question already answered.
+    """
+    outcome = resolve(signals(conversation_is_established=True), CATALOGUE)
+    assert isinstance(outcome, ExplicitNoProject)
+    assert outcome.via is ResolutionSource.CONVERSATION
+    assert outcome.project_id is None
+
+
+def test_a_session_cannot_hijack_an_explicit_no_project_conversation() -> None:
+    """Case B, and the dangerous one.
+
+    Before the correction this returned `ResolvedProject(Alpha)` **via session**:
+    a conversation the user had deliberately placed outside every project was
+    silently pulled into whatever the session happened to hold. WP-0.7 will
+    persist and resume conversation scope, so this would have become durable.
+    """
+    outcome = resolve(
+        signals(
+            conversation_is_established=True,
+            session_project_id=ALPHA.id,
+            session_is_set=True,
+        ),
+        CATALOGUE,
+    )
+    assert isinstance(outcome, ExplicitNoProject), "the session took over"
+    assert outcome.via is ResolutionSource.CONVERSATION
+
+
+def test_an_explicit_no_project_conversation_stays_none_for_ordinary_exchanges() -> None:
+    """Case C. It is a decision, and it holds without being restated."""
+    for _ in range(3):
+        outcome = resolve(signals(conversation_is_established=True), CATALOGUE)
+        assert isinstance(outcome, ExplicitNoProject)
+
+
+def test_an_explicit_selection_can_still_switch_out_of_a_no_project_conversation() -> None:
+    """Case D. Precedence 2 outranks 3, and that is how switching works."""
+    outcome = resolve(
+        signals(conversation_is_established=True, explicit_selection="Project Beta"), CATALOGUE
+    )
+    assert isinstance(outcome, ResolvedProject)
+    assert outcome.project_id == BETA.id
+    assert outcome.via is ResolutionSource.EXPLICIT_SELECTION
+
+
+@pytest.mark.parametrize("field", ["trusted_reference", "untrusted_candidate"])
+def test_a_lower_authority_reference_does_not_reattribute_a_no_project_conversation(
+    field: str,
+) -> None:
+    """Case E. A mention is not a switch — it asks, whatever its origin."""
+    outcome = resolve(
+        signals(conversation_is_established=True, **{field: "Project Beta"}), CATALOGUE
+    )
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.reason is AmbiguityReason.CONFLICTING_SIGNALS
+    assert BETA.id in {p.id for p in outcome.candidates}
+    assert "no project" in outcome.question
+
+
+def test_an_established_project_conversation_still_resolves_normally() -> None:
+    """The correction must not have broken the case that already worked."""
+    outcome = resolve(
+        signals(conversation_is_established=True, conversation_project_id=ALPHA.id), CATALOGUE
+    )
+    assert isinstance(outcome, ResolvedProject)
+    assert outcome.project_id == ALPHA.id
+    assert outcome.via is ResolutionSource.CONVERSATION
+
+
+# --- Finding 3. Candidates must be distinguishable ---------------------------
+
+
+def test_duplicate_display_names_produce_structurally_distinct_candidates() -> None:
+    """Two projects, one name. The candidates must still be told apart."""
+    outcome = resolve(signals(explicit_selection="Winter Light"), CATALOGUE)
+    assert isinstance(outcome, AmbiguousProject)
+
+    ids = [p.id for p in outcome.candidates]
+    slugs = [p.slug for p in outcome.candidates]
+    names = [p.name for p in outcome.candidates]
+
+    assert len(set(ids)) == 2, "candidates share an id"
+    assert len(set(slugs)) == 2, "candidates share a slug"
+    assert len(set(names)) == 1, "the premise: they genuinely share a display name"
+
+
+def test_the_question_and_the_candidate_set_describe_the_same_projects() -> None:
+    """A question naming projects the payload does not carry is unanswerable."""
+    outcome = resolve(signals(explicit_selection="Winter Light"), CATALOGUE)
+    assert isinstance(outcome, AmbiguousProject)
+    for candidate in outcome.candidates:
+        assert candidate.slug in outcome.question
+
+
+# --- Finding 5. `projects.status` has no resolution authority ----------------
+
+
+@pytest.mark.parametrize(
+    "status", ["active", "archived", "disabled", "", "on hold", "DELETED", "whatever"]
+)
+def test_project_status_has_no_resolution_authority(status: str) -> None:
+    """Behavioural regression on the executive decision of 17 August 2026.
+
+    The *same project identity* resolves identically under any status string.
+    Deliberately not a source-text assertion: what matters is that no status
+    changes the outcome, not that a particular word is absent from a file.
+
+    **A future governing decision may intentionally change this test**, together
+    with the status vocabulary and the restrictions it defines. Until then, a
+    metadata column with no settled semantics decides nothing.
+    """
+    project = ProjectRecord(
+        id=UUID("77777777-7777-4777-8777-777777777777"),
+        name="Status Probe",
+        slug="status-probe",
+        status=status,
+    )
+    catalogue = ProjectCatalogue([project])
+
+    by_slug = resolve(signals(explicit_selection="status-probe"), catalogue)
+    by_name = resolve(signals(explicit_selection="Status Probe"), catalogue)
+    by_id = resolve(signals(supplied_project_id=project.id), catalogue)
+
+    for outcome in (by_slug, by_name, by_id):
+        assert isinstance(outcome, ResolvedProject)
+        assert outcome.project_id == project.id

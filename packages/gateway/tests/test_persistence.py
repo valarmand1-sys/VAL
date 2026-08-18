@@ -13,6 +13,7 @@ from sqlalchemy import Engine, create_engine, text
 
 from val_domain.database import test_database_url
 from val_domain.gateway import CallStatus, CostCertainty
+from val_domain.project import ProjectAttribution
 from val_gateway.gateway import CallRecord
 from val_gateway.persistence import (
     month_to_date_spend,
@@ -48,6 +49,7 @@ def a_record(
         cost_usd=cost if known else None,
         cost_certainty=certainty,
         project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
         task_type="conversation",
         conversation_id=None,
         message_id=None,
@@ -146,7 +148,7 @@ def test_the_database_refuses_an_unknown_cost_carrying_a_zero(engine: Engine) ->
                     "tokens_in, tokens_out, cost, cost_certainty, task_type, latency_ms, "
                     "provider_request_id, status) values "
                     "(gen_random_uuid(), 'anthropic', 'x', 0, 0, 0, 'unknown', "
-                    "'conversation', 1, '', 'error')"
+                    "'conversation', 'legacy_unknown', 1, '', 'error')"
                 )
             )
 
@@ -161,7 +163,7 @@ def test_the_database_refuses_a_known_cost_with_no_figure(engine: Engine) -> Non
                     "tokens_in, tokens_out, cost, cost_certainty, task_type, latency_ms, "
                     "provider_request_id, status) values "
                     "(gen_random_uuid(), 'anthropic', 'x', null, null, null, 'known', "
-                    "'conversation', 1, '', 'ok')"
+                    "'conversation', 'legacy_unknown', 1, '', 'ok')"
                 )
             )
 
@@ -180,9 +182,11 @@ def a_superseded_row(engine: Engine) -> None:
             text(
                 "insert into model_calls (created_at, model_config_id, provider, "
                 "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
-                "task_type, latency_ms, provider_request_id, status) values "
+                "task_type, project_attribution, latency_ms, provider_request_id, "
+                "status) values "
                 "(timestamptz '2026-08-15 20:43:09+00', gen_random_uuid(), 'anthropic', "
-                "'claude-opus-5', 0, 0, 0, null, 'conversation', 900, '', 'error')"
+                "'claude-opus-5', 0, 0, 0, null, 'conversation', 'legacy_unknown', "
+                "900, '', 'error')"
             )
         )
 
@@ -260,9 +264,11 @@ def test_a_legacy_success_row_is_still_treated_as_known(engine: Engine) -> None:
             text(
                 "insert into model_calls (created_at, model_config_id, provider, "
                 "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
-                "task_type, latency_ms, provider_request_id, status) values "
+                "task_type, project_attribution, latency_ms, provider_request_id, "
+                "status) values "
                 "(timestamptz '2026-08-15 20:43:36+00', gen_random_uuid(), 'openai', "
-                "'gpt-5.5', 37, 24, 0.000905, null, 'conversation', 3378, 'req', 'ok')"
+                "'gpt-5.5', 37, 24, 0.000905, null, 'conversation', 'legacy_unknown', "
+                "3378, 'req', 'ok')"
             )
         )
     with engine.connect() as connection:
@@ -292,6 +298,6 @@ def test_a_new_row_may_not_omit_its_cost_certainty(engine: Engine) -> None:
                     "tokens_in, tokens_out, cost, cost_certainty, task_type, latency_ms, "
                     "provider_request_id, status) values "
                     "(gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, null, "
-                    "'conversation', 1, '', 'ok')"
+                    "'conversation', 'legacy_unknown', 1, '', 'ok')"
                 )
             )

@@ -64,7 +64,10 @@ from val_domain.gateway import (
     ModelConfig,
     TaskType,
 )
-from val_domain.project import ProjectScope, attribution_of
+from val_domain.project import (
+    ProjectAttribution,
+    ProjectScope,
+)
 from val_domain.registry import active, by_id, fallback_for, stale_rates
 from val_gateway.context import assemble
 from val_gateway.ledger import BudgetLedger, Refusal, Reservation
@@ -133,6 +136,7 @@ class CallRecord:
         cost_usd: float | None,
         cost_certainty: CostCertainty,
         project_id: UUID | None,
+        project_attribution: ProjectAttribution,
         task_type: str,
         conversation_id: UUID | None,
         message_id: UUID | None,
@@ -150,6 +154,7 @@ class CallRecord:
         self.cost_usd = cost_usd
         self.cost_certainty = cost_certainty
         self.project_id = project_id
+        self.project_attribution = project_attribution
         self.task_type = task_type
         self.conversation_id = conversation_id
         self.message_id = message_id
@@ -253,7 +258,7 @@ class Gateway:
             messages,
             classification=classification,
             task_type=task_type,
-            project_id=attribution_of(scope),
+            scope=scope,
             conversation_id=conversation_id,
             message_id=message_id,
             max_output_tokens=max_output_tokens,
@@ -401,6 +406,7 @@ class Gateway:
                 cost_usd=cost,
                 cost_certainty=CostCertainty.KNOWN,
                 project_id=request.project_id,
+                project_attribution=request.project_attribution,
                 task_type=request.task_type.value,
                 conversation_id=request.conversation_id,
                 message_id=request.message_id,
@@ -460,6 +466,7 @@ class Gateway:
                 cost_usd=None,
                 cost_certainty=CostCertainty.UNKNOWN,
                 project_id=request.project_id,
+                project_attribution=request.project_attribution,
                 task_type=request.task_type.value,
                 conversation_id=request.conversation_id,
                 message_id=request.message_id,

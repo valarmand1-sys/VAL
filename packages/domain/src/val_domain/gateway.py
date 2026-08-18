@@ -9,7 +9,9 @@ from datetime import date
 from enum import StrEnum
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from val_domain.project import ProjectAttribution
 
 
 class Classification(StrEnum):
@@ -254,7 +256,17 @@ class GatewayRequest(BaseModel):
     messages: tuple[Message, ...]
     system: str | None = None
     max_output_tokens: int = Field(default=4096, gt=0)
-    project_id: UUID | None = None
+    #: WP-0.6 corrective round, 18 August 2026. **Both are required and neither
+    #: has a default.** `project_id` alone cannot say whether a NULL is a
+    #: decision, and the default it used to carry let any caller write a
+    #: semantically empty NULL without deciding anything — which is precisely how
+    #: the claim "NULL means exactly explicit no-project" stopped being true.
+    #:
+    #: `LEGACY_UNKNOWN` is rejected here (see the validator). It describes rows
+    #: written before this distinction existed and is never a way to avoid
+    #: deciding now.
+    project_id: UUID | None
+    project_attribution: ProjectAttribution
     conversation_id: UUID | None = None
     message_id: UUID | None = None
     #: Which persona revision was assembled into this request's context (WP-0.5).
@@ -262,6 +274,23 @@ class GatewayRequest(BaseModel):
     #: assembly, recorded by the gateway, never chosen by a provider. None on the
     #: paths that legitimately assemble no persona, which are not Val utterances.
     persona_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def _attribution_agrees_with_the_id(self) -> GatewayRequest:
+        """The two fields must say the same thing, or the record would lie."""
+        if self.project_attribution is ProjectAttribution.LEGACY_UNKNOWN:
+            raise ValueError(
+                "LEGACY_UNKNOWN describes rows written before project attribution "
+                "existed. It is not a way for new code to avoid deciding scope: "
+                "resolve the exchange, or state that it is explicitly outside every "
+                "project (04-layer-0.md WP-0.6, corrective round)."
+            )
+        resolved = self.project_attribution is ProjectAttribution.RESOLVED
+        if resolved and self.project_id is None:
+            raise ValueError("attribution says RESOLVED but carries no project id")
+        if not resolved and self.project_id is not None:
+            raise ValueError("attribution says EXPLICIT_NONE but carries a project id")
+        return self
 
 
 class GatewayResponse(BaseModel):

@@ -17,11 +17,12 @@ from gateway_fakes import FakeLedger, StubAdapter
 from sqlalchemy import Engine, text
 from test_persona import REPO_ROOT, clean_personas  # noqa: F401 - fixture reused
 
-from val_domain.gateway import Message
+from val_domain.gateway import Classification, GatewayRequest, Message, TaskType
 from val_domain.project import (
     AmbiguityReason,
     AmbiguousProject,
     ExplicitNoProject,
+    ProjectAttribution,
     ProjectScope,
     ResolvedProject,
     attribution_of,
@@ -536,3 +537,216 @@ def test_every_persisted_null_project_id_is_a_decision(store: Engine) -> None:
         ).scalar_one()
     assert total == 2, "an unresolved exchange wrote a row"
     assert nulls == 1, "explicit-none is exactly one row, and it is a decision"
+
+
+# =========================================================================
+# WP-0.6 corrective round, 18 August 2026 — attribution provenance
+# =========================================================================
+#
+# Independent review found the claim "project_id IS NULL means exactly explicit
+# no-project" untrue of the table as a whole. These prove the corrected form:
+# what a NULL means is stored beside it, and the legacy value cannot be reached
+# by new code.
+
+
+def legacy_row(engine: Engine) -> None:
+    """A row shaped like the nine that predate WP-0.6: NULL, and never a decision."""
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "insert into model_calls (created_at, model_config_id, provider, "
+                "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
+                "project_id, project_attribution, task_type, latency_ms, "
+                "provider_request_id, status) values "
+                "(timestamptz '2026-08-15 20:43:09+00', gen_random_uuid(), 'anthropic', "
+                "'claude-opus-5', 10, 5, 0.001, 'known', null, 'legacy_unknown', "
+                "'conversation', 900, '', 'ok')"
+            )
+        )
+
+
+def attribution_counts(engine: Engine) -> dict[str, int]:
+    with engine.connect() as connection:
+        return dict(
+            connection.execute(
+                text("select project_attribution, count(*) from model_calls group by 1")
+            ).all()
+        )
+
+
+def test_a_legacy_null_row_is_never_read_as_explicit_none(store: Engine) -> None:
+    """Case A. The distinction the original design could not express."""
+    legacy_row(store)
+    with store.connect() as connection:
+        row = connection.execute(
+            text(
+                "select project_id, project_attribution from model_calls "
+                "order by created_at limit 1"
+            )
+        ).one()
+    assert row.project_id is None
+    assert row.project_attribution == "legacy_unknown"
+    assert row.project_attribution != "explicit_none"
+
+
+def test_a_new_explicit_no_project_exchange_is_recorded_as_a_decision(store: Engine) -> None:
+    """Case B. NULL, and the row says a person chose it."""
+    exchange(
+        build_gateway(store, answering()),
+        (Message(role="user", content="A general question."),),
+        ProjectSignals(explicit_no_project=True),
+        load_catalogue(store),
+    )
+    with store.connect() as connection:
+        row = connection.execute(
+            text(
+                "select project_id, project_attribution from model_calls "
+                "order by created_at desc limit 1"
+            )
+        ).one()
+    assert row.project_id is None
+    assert row.project_attribution == "explicit_none"
+
+
+def test_a_new_resolved_exchange_is_recorded_as_resolved(store: Engine) -> None:
+    """Case C."""
+    alpha = project_id(store, ALPHA_SLUG)
+    exchange(
+        build_gateway(store, answering()),
+        (Message(role="user", content="Work."),),
+        ProjectSignals(supplied_project_id=alpha),
+        load_catalogue(store),
+    )
+    with store.connect() as connection:
+        row = connection.execute(
+            text(
+                "select project_id, project_attribution from model_calls "
+                "order by created_at desc limit 1"
+            )
+        ).one()
+    assert row.project_id == alpha
+    assert row.project_attribution == "resolved"
+
+
+def test_the_generic_gateway_path_cannot_omit_attribution(store: Engine) -> None:
+    """Case D. `GatewayRequest` has no default that writes a meaningless NULL.
+
+    This was the second half of the defect: `converse` had been corrected, but
+    `complete` took a request whose `project_id` defaulted to `None`, so the
+    generic path could still write a NULL that meant nothing.
+    """
+    with pytest.raises(Exception) as caught:
+        GatewayRequest(
+            task_type=TaskType.CONVERSATION,
+            classification=Classification.PROTECTED,
+            messages=(Message(role="user", content="hi"),),
+        )
+    assert "project_id" in str(caught.value) or "project_attribution" in str(caught.value)
+
+
+def test_a_request_cannot_claim_legacy_attribution(store: Engine) -> None:
+    """`LEGACY_UNKNOWN` is a read state. New code may not reach for it."""
+    with pytest.raises(Exception) as caught:
+        GatewayRequest(
+            task_type=TaskType.CONVERSATION,
+            classification=Classification.PROTECTED,
+            messages=(Message(role="user", content="hi"),),
+            project_id=None,
+            project_attribution=ProjectAttribution.LEGACY_UNKNOWN,
+        )
+    assert "not a way for new code to avoid deciding" in str(caught.value)
+
+
+@pytest.mark.parametrize(
+    ("attribution", "with_id"),
+    [(ProjectAttribution.RESOLVED, False), (ProjectAttribution.EXPLICIT_NONE, True)],
+)
+def test_a_request_whose_attribution_disagrees_with_its_id_is_refused(
+    store: Engine, attribution: ProjectAttribution, with_id: bool
+) -> None:
+    """The two fields cannot contradict each other, in either direction."""
+    with pytest.raises(Exception):  # noqa: B017 - pydantic's own ValidationError
+        GatewayRequest(
+            task_type=TaskType.CONVERSATION,
+            classification=Classification.PROTECTED,
+            messages=(Message(role="user", content="hi"),),
+            project_id=project_id(store, ALPHA_SLUG) if with_id else None,
+            project_attribution=attribution,
+        )
+
+
+def test_the_database_refuses_a_new_legacy_row(store: Engine) -> None:
+    """Reserved by constraint, not by convention.
+
+    Application code could be bypassed by the next writer; the check constraint
+    cannot, and `legacy_unknown` becoming the easy way out is the one failure
+    that would quietly undo this whole correction.
+    """
+    with pytest.raises(Exception) as caught:
+        with store.begin() as connection:
+            connection.execute(
+                text(
+                    "insert into model_calls (model_config_id, provider, model_identifier, "
+                    "tokens_in, tokens_out, cost, cost_certainty, project_id, "
+                    "project_attribution, task_type, latency_ms, provider_request_id, status) "
+                    "values (gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
+                    "'legacy_unknown', 'conversation', 1, '', 'ok')"
+                )
+            )
+    assert "legacy_attribution_is_reserved_to_history" in str(caught.value)
+
+
+def test_analytics_can_separate_a_decision_from_a_legacy_null(store: Engine) -> None:
+    """Case E. The query WP-0.7 retrieval will need, and it now returns the truth.
+
+    Before the correction both rows below were `project_id IS NULL` and
+    indistinguishable, so any reader treating NULL as a deliberate no-project
+    decision would have swept the legacy row in with it.
+    """
+    legacy_row(store)
+    exchange(
+        build_gateway(store, answering()),
+        (Message(role="user", content="A general question."),),
+        ProjectSignals(explicit_no_project=True),
+        load_catalogue(store),
+    )
+
+    with store.connect() as connection:
+        nulls = connection.execute(
+            text("select count(*) from model_calls where project_id is null")
+        ).scalar_one()
+        decided = connection.execute(
+            text("select count(*) from model_calls where project_attribution = 'explicit_none'")
+        ).scalar_one()
+        legacy = connection.execute(
+            text("select count(*) from model_calls where project_attribution = 'legacy_unknown'")
+        ).scalar_one()
+
+    assert nulls == 2, "the premise: both rows are NULL and would once have been the same"
+    assert decided == 1
+    assert legacy == 1
+
+
+def test_the_accounting_view_still_exposes_every_base_column(store: Engine) -> None:
+    """`0006` recreated the view; a reader must not lose the new column."""
+    with store.connect() as connection:
+        base = {
+            row.column_name
+            for row in connection.execute(
+                text(
+                    "select column_name from information_schema.columns "
+                    "where table_name = 'model_calls'"
+                )
+            )
+        }
+        view = {
+            row.column_name
+            for row in connection.execute(
+                text(
+                    "select column_name from information_schema.columns "
+                    "where table_name = 'model_calls_accounted'"
+                )
+            )
+        }
+    assert "project_attribution" in base
+    assert base <= view, "the view stopped exposing a base column"

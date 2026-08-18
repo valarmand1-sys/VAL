@@ -81,11 +81,12 @@ _SUPERSEDED_ZERO_CALLS = text(
 _INSERT_CALL = text(
     "insert into model_calls "
     "(model_config_id, provider, model_identifier, tokens_in, tokens_out, cost, "
-    " cost_certainty, project_id, task_type, conversation_id, message_id, persona_id, "
-    " latency_ms, provider_request_id, status) "
+    " cost_certainty, project_id, project_attribution, task_type, conversation_id, "
+    " message_id, persona_id, latency_ms, provider_request_id, status) "
     "values (:model_config_id, :provider, :model_identifier, :tokens_in, :tokens_out, "
-    " :cost, :cost_certainty, :project_id, :task_type, :conversation_id, :message_id, "
-    " :persona_id, :latency_ms, :provider_request_id, :status) "
+    " :cost, :cost_certainty, :project_id, :project_attribution, :task_type, "
+    " :conversation_id, :message_id, :persona_id, :latency_ms, :provider_request_id, "
+    " :status) "
     "returning id"
 )
 
@@ -112,6 +113,10 @@ def record_call(engine: Engine, record: CallRecord) -> UUID:
                 "cost": None if record.cost_usd is None else Decimal(str(record.cost_usd)),
                 "cost_certainty": record.cost_certainty.value,
                 "project_id": record.project_id,
+                # WP-0.6 corrective round: what that project_id *means*. A NULL
+                # alone cannot distinguish a decision from a row that predates
+                # the decision existing.
+                "project_attribution": record.project_attribution.value,
                 "task_type": record.task_type,
                 "conversation_id": record.conversation_id,
                 "message_id": record.message_id,

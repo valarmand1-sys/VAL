@@ -26,10 +26,17 @@ so an `AmbiguousProject` cannot reach persistence at all — not because a check
 rejects it, but because it is not the right type to pass. A check can be
 forgotten by the next caller; a signature cannot.
 
-That is also what makes the distinction queryable without a schema change:
-`project_id IS NULL` returns exactly the explicit-none set, because the only
-value that produces NULL is `ExplicitNoProject`, and ambiguity has no path to
-the database to muddy it.
+**Corrected 18 August 2026, after independent source review.** This module
+previously claimed that `project_id IS NULL` was *exactly* the explicit-none set.
+That was true of everything the resolver writes and false of the database as a
+whole, which is a different and much weaker claim than the one being made. Nine
+rows predate WP-0.6 entirely, and the generic `GatewayRequest` still let a caller
+default `project_id` to `None` without deciding anything.
+
+A NULL therefore no longer stands alone. Every `model_calls` row carries a
+`ProjectAttribution` beside it saying which of the three states it is in, so a
+reader gets the distinction from the row rather than from a rule about dates that
+nobody looking at one row could apply.
 
 Nothing here touches a database or a model. Resolution rules live in
 `val_policy.project_resolution`; the catalogue and session live in
@@ -39,6 +46,61 @@ Nothing here touches a database or a model. Resolution rules live in
 from dataclasses import dataclass
 from enum import StrEnum
 from uuid import UUID
+
+
+class ProjectAttribution(StrEnum):
+    """What a stored `project_id` *means*. Corrective round, 18 August 2026.
+
+    The original WP-0.6 claimed *"`project_id IS NULL` is exactly the
+    explicit-none set"*. Independent review found that untrue globally, and it
+    was right twice over: nine rows written before WP-0.6 existed carry NULL and
+    were never a decision, and `GatewayRequest.project_id` still defaulted to
+    `None`, so any caller could write a fresh semantically-empty NULL.
+
+    A NULL alone cannot carry two meanings, so the meaning is stored beside it
+    rather than inferred from it later. Inference would have had to key on a
+    date, and a rule that says *"NULLs before this timestamp mean one thing"* is
+    a rule nobody reading a single row can apply.
+
+    | State | `project_id` | Means |
+    |---|---|---|
+    | `RESOLVED` | a real id | Deterministically identified |
+    | `EXPLICIT_NONE` | NULL | Somebody decided this is outside every project |
+    | `LEGACY_UNKNOWN` | NULL | **Predates the distinction.** Nobody decided. |
+
+    **`LEGACY_UNKNOWN` is a read state, never a write state.** `GatewayRequest`
+    refuses it and the database refuses it on any row created after the
+    corrective migration, so it cannot become the way new code avoids deciding
+    scope. That reservation is the whole reason it is safe to have a third value
+    at all.
+    """
+
+    RESOLVED = "resolved"
+    EXPLICIT_NONE = "explicit_none"
+    LEGACY_UNKNOWN = "legacy_unknown"
+
+
+class ReferenceTrust(StrEnum):
+    """Whether a project reference may decide scope, or only suggest it.
+
+    Corrective round, 18 August 2026. `04-layer-0.md` WP-0.6 requires that
+    *"application code sets final scope; no model output determines it"*, and
+    independent review found the original implementation satisfied that only
+    when something else disagreed: with no session and no conversation, an exact
+    reference from **any** origin resolved outright — including one a model
+    produced.
+
+    Origin is now part of the type rather than a matter of which field a caller
+    happened to use, because "this string came from a model" is not recoverable
+    by looking at the string.
+    """
+
+    #: Deterministic and application-owned: a UI selection, an exact user command
+    #: parsed by application code, a trusted identifier. **May resolve.**
+    TRUSTED = "trusted"
+    #: A model's suggestion, a heuristic, anything inferred from prose.
+    #: **Never resolves.** At most it becomes a candidate to confirm.
+    UNTRUSTED = "untrusted"
 
 
 class ResolutionSource(StrEnum):
@@ -59,8 +121,10 @@ class ResolutionSource(StrEnum):
     CONVERSATION = "conversation"
     #: The project currently selected for the session.
     SESSION = "session"
-    #: An exact canonical name or slug, with nothing higher-authority to weigh
-    #: it against.
+    #: An exact canonical name or slug **from a trusted origin**, with nothing
+    #: higher-authority to weigh it against. An untrusted candidate never
+    #: appears here — it has no `ResolutionSource` at all, because it never
+    #: resolves anything.
     EXACT_REFERENCE = "exact_reference"
     #: The user said this exchange has no project.
     EXPLICIT_NONE_INSTRUCTION = "explicit_none_instruction"
@@ -76,6 +140,11 @@ class AmbiguityReason(StrEnum):
     #: Two signals of comparable authority disagreed — a session in one project
     #: and an exact reference to another, for instance.
     CONFLICTING_SIGNALS = "conflicting_signals"
+    #: Nothing authoritative settled scope, and the only thing pointing at a
+    #: project was an untrusted suggestion. It is offered for confirmation and
+    #: never acted on: a model naming a real project correctly is still a model
+    #: naming it (corrective round, 18 August 2026).
+    UNTRUSTED_SUGGESTION_ONLY = "untrusted_suggestion_only"
     #: The conversation's own recorded scope contradicts itself or names a
     #: project that no longer exists.
     INCONSISTENT_CONVERSATION_STATE = "inconsistent_conversation_state"
@@ -128,6 +197,32 @@ class ExplicitNoProject:
 
 
 @dataclass(frozen=True)
+class ProjectCandidate:
+    """One project offered for the user to choose between.
+
+    Carries **stable identity**, not a display string. Corrective round,
+    18 August 2026: the clarification payload previously carried names only, so
+    two projects both called `Winter Light` arrived as
+    `("Winter Light", "Winter Light")` — a question the caller could put but
+    could not interpret the answer to.
+
+    `slug` distinguishes them for a human; `project_id` resolves the answer
+    without a second lookup that could pick the wrong one. `status` is
+    deliberately absent: it has no settled semantics (executive decision,
+    17 August), and a field with no meaning does not belong in a payload whose
+    whole job is to identify.
+    """
+
+    project_id: UUID
+    name: str
+    slug: str
+
+    @classmethod
+    def of(cls, project: ProjectRecord) -> ProjectCandidate:
+        return cls(project_id=project.id, name=project.name, slug=project.slug)
+
+
+@dataclass(frozen=True)
 class AmbiguousProject:
     """Scope cannot be settled. The user must be asked.
 
@@ -165,3 +260,18 @@ def attribution_of(scope: ProjectScope) -> UUID | None:
     does a resolution become a stored value" rather than one per table.
     """
     return scope.project_id
+
+
+def attribution_state_of(scope: ProjectScope) -> ProjectAttribution:
+    """What that `project_id` *means*, written beside it.
+
+    Never `LEGACY_UNKNOWN`: this function takes a `ProjectScope`, and a scope is
+    by definition a decision somebody made. The legacy state is reachable only by
+    reading a historical row, which is exactly the reservation that keeps it from
+    becoming the way new code avoids deciding.
+    """
+    return (
+        ProjectAttribution.RESOLVED
+        if isinstance(scope, ResolvedProject)
+        else ProjectAttribution.EXPLICIT_NONE
+    )

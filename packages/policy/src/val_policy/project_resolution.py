@@ -11,12 +11,28 @@ is no code path by which a model's opinion could become scope, because there is
 no code path by which a model could be consulted at all. `val_policy` may depend
 only on `val_domain` (`01-architecture.md` §3), which CI enforces two ways.
 
-A model output can enter here only as `mentioned_reference`, and only as a
-*candidate*: it is looked up in the catalogue by exact name or slug like any
-other reference, and it resolves only when the catalogue agrees and nothing of
-higher authority disagrees. A confidently wrong model naming a real project it
-was not asked about therefore loses to the session, and a model naming a project
-that does not exist resolves to nothing at all.
+**Corrected 18 August 2026, after independent source review.** The paragraph
+that stood here said a model's output entered as a candidate and *"resolves only
+when the catalogue agrees and nothing of higher authority disagrees"* — which is
+the defect, stated plainly and then not noticed. With no session and no
+conversation there **is** nothing of higher authority, so a model naming a real
+project exactly resolved it outright. The rule is *no model output determines
+scope*, not *no model output determines scope when something else objects*.
+
+The two are now different fields, so origin is part of every call site:
+
+- **`trusted_reference`** — deterministic and application-owned: a UI control, an
+  exact command parsed by application code, a trusted identifier. May resolve at
+  precedence 5.
+- **`untrusted_candidate`** — a model or a heuristic. **Never resolves**, however
+  exactly it matches. At most it becomes a candidate attached to a question, so
+  confirming it is one answer rather than a fresh interrogation.
+
+Separate fields rather than one field carrying a flag, because a flag can be set
+wrongly by the same code that would have used the wrong field, while a field name
+is read by everyone who touches the call site. And origin cannot be recovered
+from the string: `"Project Beta"` looks identical whether a person typed it or a
+model produced it.
 
 ## Precedence
 
@@ -28,11 +44,14 @@ decision that becomes invisible once it works:
 1. **Trusted application project id** — supplied by application state, never by
    a user typing into a message.
 2. **Explicit selection or switch** in this interaction.
-3. **The conversation's established project.**
+3. **The conversation's established scope** — a project, *or* a deliberate
+   explicit-none. Both are decisions and both outrank the session.
 4. **The session's current project.**
 5. **An unambiguous exact canonical name or slug** in the text.
 6. **An explicit "this has no project" instruction.**
-7. Otherwise: **unresolved**.
+7. Otherwise: **unresolved** — including the case where the only thing pointing
+   at a project was an untrusted suggestion, which is offered for confirmation
+   and never acted on.
 
 **Higher authority wins outright; comparable authority in conflict asks.** A
 session in Alpha and an exact reference to Beta is not a case for preferring one
@@ -108,8 +127,29 @@ class ProjectSignals:
     #: The session's current project, and whether the session has been set.
     session_project_id: UUID | None = None
     session_is_set: bool = False
-    #: An exact name or slug appearing in the text. A candidate, never authority.
-    mentioned_reference: str | None = None
+    #: An exact name or slug from a **deterministic, application-owned** source:
+    #: a UI control, an exact command parsed by application code, a trusted
+    #: identifier. May resolve at precedence 5.
+    trusted_reference: str | None = None
+    #: A project a **model or heuristic** suggested. **Never resolves**, however
+    #: exactly it matches. Corrective round, 18 August 2026: this was previously
+    #: one field with `trusted_reference`, and with no session and no
+    #: conversation to disagree, a model's exact match resolved outright.
+    #:
+    #: The two are separate fields rather than one field with a flag because the
+    #: field name is then part of every call site, and "this came from a model"
+    #: is not something a later reader can recover from the string itself.
+    untrusted_candidate: str | None = None
+
+    @property
+    def any_reference(self) -> str | None:
+        """Whatever names a project, trusted or not — for conflict detection.
+
+        Conflict is about *disagreement*, not about authority: a model naming
+        Beta while the session says Alpha is still a reason to ask, even though
+        the model could never have resolved Beta on its own.
+        """
+        return self.trusted_reference or self.untrusted_candidate
 
 
 class ProjectCatalogue:
@@ -195,35 +235,49 @@ def resolve(signals: ProjectSignals, catalogue: ProjectCatalogue) -> ProjectReso
 
     # 3-4. Established scope, and the conflict rule that governs both.
     #
-    #      A mention of another project while scope is already established is
+    #      A reference to another project while scope is already established is
     #      genuinely unclear — *switch to Beta*, or *in Alpha, note what Beta
     #      did*? Choosing either is how an exchange about one project ends up
     #      filed under another and stays there. So it asks, and level 2 is how
     #      the user actually switches.
+    #
+    #      Conflict detection uses `any_reference`: a model naming Beta while the
+    #      session says Alpha is still a disagreement worth asking about, even
+    #      though it could never have resolved Beta by itself.
     established = _established_scope(signals, catalogue)
     if established is not None:
         settled, source = established
-        if signals.mentioned_reference is not None:
-            mentioned = catalogue.matching(signals.mentioned_reference)
-            names_other = any(project.id != settled.id for project in mentioned)
+        named = signals.any_reference
+        if named is not None:
+            mentioned = catalogue.matching(named)
+            names_other = any(settled is None or project.id != settled.id for project in mentioned)
             if mentioned and names_other:
+                here = settled.name if settled is not None else "no project"
+                others = [p for p in mentioned if settled is None or p.id != settled.id]
                 return AmbiguousProject(
                     reason=AmbiguityReason.CONFLICTING_SIGNALS,
                     question=(
-                        f"We are in {settled.name}, but you have named "
+                        f"This conversation is scoped to {here}, but you have named "
                         f"{_list_names(mentioned)}. Do you want to switch, or is this "
-                        f"still {settled.name}?"
+                        f"still {here}?"
                     ),
-                    candidates=(settled, *[p for p in mentioned if p.id != settled.id]),
+                    candidates=tuple(([settled] if settled is not None else []) + others),
                 )
+        if settled is None:
+            # An established conversation deliberately outside every project. A
+            # decision, and it stands until an explicit selection changes it.
+            return ExplicitNoProject(via=source)
         return ResolvedProject(settled, via=source)
 
-    # 5. An exact reference, with nothing established to weigh it against.
-    if signals.mentioned_reference is not None:
+    # 5. A **trusted** exact reference, with nothing established to weigh it
+    #    against. Untrusted candidates are deliberately absent from this step: an
+    #    exact match does not make a model authoritative, and the whole point of
+    #    the corrective round is that this branch used to accept either.
+    if signals.trusted_reference is not None:
         resolved = _from_reference(
-            signals.mentioned_reference, catalogue, ResolutionSource.EXACT_REFERENCE
+            signals.trusted_reference, catalogue, ResolutionSource.EXACT_REFERENCE
         )
-        # A mention that matches nothing is not a failure — the user may simply
+        # A reference matching nothing is not a failure — the user may simply
         # have been talking. Fall through to the explicit-none check and then to
         # unresolved, rather than demanding they account for the words they used.
         if not isinstance(resolved, AmbiguousProject):
@@ -234,6 +288,24 @@ def resolve(signals: ProjectSignals, catalogue: ProjectCatalogue) -> ProjectReso
     # 6. An explicit instruction that this has no project.
     if signals.explicit_no_project:
         return ExplicitNoProject(via=ResolutionSource.EXPLICIT_NONE_INSTRUCTION)
+
+    # 6b. An untrusted suggestion, and nothing else. It is **offered**, never
+    #     acted on. A model naming a real project correctly is still a model
+    #     naming it, and WP-0.6 says application code sets final scope. So this
+    #     asks — with the suggestion attached, so confirming it is one answer
+    #     rather than a fresh question.
+    if signals.untrusted_candidate is not None:
+        suggested = catalogue.matching(signals.untrusted_candidate)
+        if suggested:
+            return AmbiguousProject(
+                reason=AmbiguityReason.UNTRUSTED_SUGGESTION_ONLY,
+                question=(
+                    "Nothing has established which project this is for. "
+                    f"{_list_names(suggested)} was suggested, but a suggestion is not a "
+                    "decision and I will not scope your work on one. Is that right?"
+                ),
+                candidates=tuple(suggested),
+            )
 
     # 7. Nothing said, nothing established. Unresolved — and *not* no-project.
     return AmbiguousProject(
@@ -248,14 +320,36 @@ def resolve(signals: ProjectSignals, catalogue: ProjectCatalogue) -> ProjectReso
 
 def _established_scope(
     signals: ProjectSignals, catalogue: ProjectCatalogue
-) -> tuple[ProjectRecord, ResolutionSource] | None:
-    """The conversation's project, else the session's. Existence-checked.
+) -> tuple[ProjectRecord | None, ResolutionSource] | None:
+    """The conversation's scope, else the session's. Existence-checked.
+
+    Returns `(project, source)` for an established project, `(None, source)` for
+    an established **explicit no-project**, and `None` when nothing is
+    established at all. Those three are distinct and the middle one is what this
+    function got wrong before.
+
+    **Corrected 18 August 2026.** An established conversation whose
+    `project_id` is NULL is a conversation deliberately outside every project —
+    `04-layer-0.md` §2.1 says NULL means exactly that. The original code required
+    `conversation_project_id is not None` to treat the conversation as
+    established at all, so an explicit-none conversation fell through to the
+    session and, failing that, to unresolved. Two consequences, and the first is
+    the dangerous one:
+
+    - a session in Alpha **silently took over** a conversation the user had
+      deliberately placed outside every project;
+    - a conversation that was explicitly no-project came back as *unresolved*,
+      which would have made WP-0.7 re-ask a question already answered.
 
     A conversation or session pointing at a project that no longer exists is an
     inconsistency rather than a scope, and is reported as one — resolving it to
     "no project" would turn a broken pointer into a decision nobody made.
     """
-    if signals.conversation_is_established and signals.conversation_project_id is not None:
+    if signals.conversation_is_established:
+        if signals.conversation_project_id is None:
+            # An established conversation with no project. A decision, and it
+            # outranks the session below it like any other conversation scope.
+            return None, ResolutionSource.CONVERSATION
         found = catalogue.by_id(signals.conversation_project_id)
         if found is not None:
             return found, ResolutionSource.CONVERSATION
