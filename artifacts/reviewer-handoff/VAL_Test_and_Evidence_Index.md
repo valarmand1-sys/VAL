@@ -188,7 +188,7 @@ should, rather than proving it passes what it should.
 | 5c.11 | Explicit no-project resolves to NULL | `ExplicitNoProject.project_id is None` | **PASS** |
 | 5c.12 | **Silence is unresolved and never no-project** | The heart of the package: an unanswered question must not become an answer | **PASS** |
 | 5c.13 | No ambiguous outcome can be read as no-project | Five ambiguous paths, none an `ExplicitNoProject` or `ResolvedProject` | **PASS** |
-| 5c.14 | Precedence is as documented | `PRECEDENCE == tuple(ResolutionSource)`; each rank tested against the one below | **PASS** |
+| 5c.14 | Precedence is as documented | *Superseded 18 Aug — see 5e.7.* The original guard was `PRECEDENCE == tuple(ResolutionSource)`, a flat order that could not express two sources of equal authority. | **PASS, superseded** |
 | 5c.15 | **Conflicting signals ask rather than choose** | Session in Alpha, mention of Beta → `CONFLICTING_SIGNALS` with both candidates | **PASS** |
 | 5c.16 | Restating the current project is not a conflict | Agreement resolves; it does not ask | **PASS** |
 | 5c.17 | An inconsistent established scope asks | Conversation or session pointing at a deleted project | **PASS** |
@@ -224,12 +224,39 @@ should, rather than proving it passes what it should.
 | 5d.6 | Duplicate-name candidates are structurally distinguishable | Two distinct ids, two distinct slugs, one shared name; question and payload describe the same projects | **PASS** |
 | 5d.7 | **A legacy NULL is never read as explicit-none** | `project_attribution = 'legacy_unknown'` on the nine; `explicit_none` on new decisions | **PASS** |
 | 5d.8 | The generic gateway path cannot omit attribution | `GatewayRequest` requires both fields with no defaults; contradictory pairs refused both ways | **PASS** |
-| 5d.9 | **`LEGACY_UNKNOWN` is unreachable by new code** | Refused by the request validator *and* by a check constraint on any row created from 18 August | **PASS** |
+| 5d.9 | **`LEGACY_UNKNOWN` is unreachable by new code** | *Partly superseded 18 Aug — see 5e.9.* The request validator holds. The check constraint keyed on `created_at` did **not**: backdating the row walked past it. | **PASS at the validator, FAILED at the database** |
 | 5d.10 | Analytics separates a decision from a legacy NULL | Two NULL rows, one `explicit_none`, one `legacy_unknown` — indistinguishable before the correction | **PASS** |
 | 5d.11 | No `project_id` was rewritten | 9 stay NULL, 2 stay `project-alpha`; backfill adds a statement about them and changes none of them | **PASS** |
 | 5d.12 | `projects.status` has no resolution authority | Seven arbitrary status strings, three lookup paths, identical outcomes. Behavioural, not source-text. | **PASS** |
 | 5d.13 | The accounting view still exposes every base column | `0006` recreated it; the new column is the one a future reader most needs | **PASS** |
 | 5d.14 | All eight acceptance cases re-pass on corrected code | Including a live `gpt-5-5` call at $0.021615 recording `resolved` + Project Alpha | **PASS** |
+
+### 5c-corrective, round two — second independent review, 18 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5e.1 | **An explicit "no project" beats a session project** | Case A. Was `ResolvedProject(Alpha)` via session — a session set an hour ago outranked a decision being made in that breath. | **PASS** |
+| 5e.2 | An explicit "no project" beats an established conversation | Case B. Decides this exchange; nothing historical is touched. | **PASS** |
+| 5e.3 | An explicit "no project" beats a trusted reference | Level 2 over level 5, as an explicit selection would | **PASS** |
+| 5e.4 | **A trusted application id still outranks it** | Level 1 unchanged. The correction raised level 6 to 2, not to 0. | **PASS** |
+| 5e.5 | **Two contradictory explicit choices fail closed** | Case F. Same authority class, disagreeing, so there is no principled pick. Was `ResolvedProject(Beta)`. | **PASS** |
+| 5e.6 | An explicit-none session survives a competing reference | Cases D and E. Previously the session's decision vanished and Beta resolved outright — including from an **untrusted** candidate, which is finding 1 recurring through another door. | **PASS** |
+| 5e.7 | **Precedence levels match the enum exactly** | The drift guard, rewritten over `tuple[frozenset[...], ...]`. Asserts level 2 holds exactly the two explicit-choice sources. | **PASS** |
+| 5e.8 | An unset session is still distinct from an explicit-none session | The two must not collapse: one asks, the other is a decision | **PASS** |
+| 5e.9 | **Backdating cannot reopen the legacy set** | Three dates — today, before `0006`'s cutoff, and 2001 — all refused by the `0007` trigger. Run against the **authoritative** store as well as the scratch one. | **PASS** |
+| 5e.10 | An existing row cannot be turned into a legacy one | The half a check constraint cannot state: the guard is on the transition, so the obvious workaround is closed too | **PASS** |
+| 5e.11 | A historical row stays an ordinary row | Closed to new members, not frozen — the nine remain correctable | **PASS** |
+| 5e.12 | **The `0006` downgrade refuses once a decision is recorded** | One `explicit_none` row makes the rollback destructive; it refuses **and does not half-apply** | **PASS** |
+| 5e.13 | The `0006` downgrade is still clean when nothing was decided | CI and any fresh checkout, and re-appliable afterwards | **PASS** |
+| 5e.14 | The `0007` downgrade is clean both ways | It captured nothing, so it restores `0006`'s constraint rather than losing a record | **PASS** |
+| 5e.15 | The nine historical rows are unchanged | Count and earliest date verified across the migration, after an on-demand encrypted backup | **PASS** |
+| 5e.16 | **All eight original acceptance cases still pass** | Re-run unchanged against the corrected resolver | **PASS** |
+| 5e.17 | **Two tests had been passing for the wrong reason** | Found while proving the above, not by the review. Both asserted only `pytest.raises(Exception)` and had been failing on argument count since `0006`, never reaching the constraint under test — and one named a constraint that does not exist. Now read from psycopg diagnostics. | **FOUND AND FIXED** |
+
+> **WP-0.6 was reopened a second time on 18 August**, after independent review
+> of `VAL_Source_Snapshot_4ff6838.zip` confirmed the four round-one fixes and
+> found two further defects. Both are corrected above. WP-0.6 returns to
+> COMPLETE only on re-acceptance.
 
 > **WP-0.6 was accepted on 17 August and reopened on 18 August** after
 > independent source review found four defects, all confirmed. The rows above
@@ -295,11 +322,12 @@ should, rather than proving it passes what it should.
 | Gateway / providers | 24 | 3 (5.9, 5.10, 5.11) |
 | Persona loading | 29 | — |
 | Project resolution | 35 | — |
-| Project resolution — corrective | 14 | — |
+| Project resolution — corrective, round one | 14 | — |
+| Project resolution — corrective, round two | 17 | — |
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
-| **Automated tests** | **473 passing** | — |
+| **Automated tests** | **489 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.

@@ -274,6 +274,36 @@ the accepted source stays the source under review.
 
 ---
 
+## 9. `conversations.project_id` before WP-0.7 — **NOT A DECISION, A CONSTRAINT ON WP-0.7**
+
+Recorded 18 August 2026 during the second corrective round. **No decision is
+required from you now.** It is here because it is the kind of thing that is
+invisible until it has already happened.
+
+`conversations.project_id` is nullable, and `val_policy.project_resolution`
+reads an established conversation with a NULL there as an explicit no-project
+decision. **That reading is correct today only because the table has zero rows.**
+
+That is exactly the situation `model_calls` was in and did not survive.
+`model_calls` had nine rows written before project scope existed, all carrying
+NULL, none of them decisions — which is why `0006` had to add a
+`project_attribution` column to say which NULLs meant what. `conversations` has
+no such history yet, so there is no ambiguous set to disambiguate.
+
+**WP-0.7 is the first thing that will write rows here.** Whatever creates a
+conversation must resolve scope first, exactly as `converse` does. A conversation
+created with a NULL because nobody asked would recreate the defect `0006` had to
+correct — and this time there would be no date to separate the sets by, because
+the clean and unclean rows would be interleaved from the start.
+
+**No column was added.** Adding attribution to a table with no rows and no writer
+would be building WP-0.7's machinery early, which is the first standing exclusion
+in `CLAUDE.md`. The constraint is recorded here and in the `Conversation`
+docstring in `val_domain/schema.py` instead, so it is in front of whoever opens
+that file to add the writer.
+
+---
+
 ## Nothing else
 
 No other open question requires your decision. Everything else in §K of the

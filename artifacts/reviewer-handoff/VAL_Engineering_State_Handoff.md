@@ -384,9 +384,10 @@ Restricted preflight → resolution → clarify-or-converse.
 `packages/policy/src/val_policy/project_resolution.py`,
 `packages/gateway/src/val_gateway/{projects,exchange}.py`.
 
-**NO SCHEMA CHANGE.** The nullable `project_id` already spends its one meaning
-on *explicitly no project*, so unresolved is eliminated before persistence
-rather than stored. `converse` now takes a required `ProjectScope`, replacing
+**Two schema changes, both from review, neither in the original.** WP-0.6 was
+delivered with none: the nullable `project_id` already spends its one meaning on
+*explicitly no project*, so unresolved is eliminated before persistence rather
+than stored. `converse` now takes a required `ProjectScope`, replacing
 `project_id: UUID | None = None` — which let a caller who said nothing about
 scope silently write NULL, and made `None` mean both a decision and the absence
 of one.
@@ -399,7 +400,23 @@ of one.
 > described the model-authority rule as *"resolves only when nothing of higher
 > authority disagrees"*, which is the defect written down and walked past.
 >
-> **Corrected at source commit `4ff6838`.** Full account:
+> **Corrected at source commit `4ff6838`.**
+>
+> **Reopened a second time, 18 August.** Review of `4ff6838` confirmed all four
+> round-one fixes and found **two further defects**, both confirmed before
+> anything changed:
+>
+> 1. **An explicit "no project" was ranked below stale session state.** With
+>    Alpha selected, *"this isn't for a project"* returned `ResolvedProject(Alpha)`
+>    **via session**. Naming a project and declining one are the same act;
+>    filing the second as a weak fallback let the storage shape — one produces a
+>    NULL, the other an id — leak into the authority model.
+> 2. **The `legacy_unknown` reservation was bypassable.** `0006` keyed it on
+>    `created_at`, which whoever writes the row supplies. Backdate the timestamp
+>    and the insert succeeded. Round one's audit had called it *"reserved by
+>    constraint, not by convention"*, which is why nobody re-checked it.
+>
+> **Corrected at source commit `699ed24`.** Full account:
 > `VAL_WP06_Corrective_Audit.md`. WP-0.6 returns to COMPLETE only on
 > re-acceptance.
 
@@ -414,11 +431,38 @@ not misread; the corrective round made that structural. `model_calls` carries
 reader gets the distinction from the row instead of from a warning. The nine
 stay NULL and are labelled `legacy_unknown`; not one `project_id` was rewritten.
 
+**Precedence is now levels, not an order.** `PRECEDENCE` is
+`tuple[frozenset[ResolutionSource], ...]`, because a flat list forces every
+source to outrank every other and so cannot say *"these two are equal"* — the
+only way to write it down was to pick one, which is what had happened. Level 2
+holds both explicit scope choices; supplying both asks rather than picking.
+
+**`legacy_unknown` is now closed by a trigger, not a timestamp.** Migration
+`0007` refuses any INSERT carrying it and any UPDATE that acquires it, whatever
+date the row claims. A row already `legacy_unknown` stays correctable — the set
+is closed to new members, not frozen. A check constraint could not express this:
+it sees one row's values and cannot tell an INSERT from an UPDATE, and the rule
+is about the transition. Same reasoning as `0005`'s persona immutability guard.
+
+**`0006`'s downgrade now refuses once a decision exists.** It had claimed to be
+unconditionally clean. True until the first `explicit_none` row, and false
+after: dropping the column makes a deliberate no-project decision and a legacy
+gap the same row, permanently.
+
 **Verified:** all eight real acceptance cases, including a live model call whose
-`model_calls.project_id` equals the resolved project; ambiguity producing a
-question with **zero** provider calls and **zero** rows; cross-project
-attribution with deliberately confusable fixtures; and one persona revision
-across Alpha, Beta, and explicit none.
+`model_calls.project_id` equals the resolved project; the six round-two
+precedence cases; ambiguity producing a question with **zero** provider calls and
+**zero** rows; cross-project attribution with deliberately confusable fixtures;
+one persona revision across Alpha, Beta, and explicit none; the backdated insert
+refused against the **authoritative** store; and the nine historical rows
+unchanged across the migration.
+
+**Two test defects were found in the course of proving this**, neither in the
+review. Two persistence tests asserted only `pytest.raises(Exception)` and, since
+`0006` appended a value without its column name, had been failing on argument
+count without ever reaching the constraint under test — one of them naming a
+constraint that does not exist. They now read the constraint from psycopg's
+diagnostics. A test that cannot fail for the right reason is not evidence.
 
 ### WP-0.7 to WP-0.10 · NOT STARTED
 
