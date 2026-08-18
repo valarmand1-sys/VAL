@@ -274,33 +274,66 @@ the accepted source stays the source under review.
 
 ---
 
-## 9. `conversations.project_id` before WP-0.7 — **NOT A DECISION, A CONSTRAINT ON WP-0.7**
+## 9. `conversations.project_id` — **HONOURED BY WP-0.7, 18 August 2026**
 
-Recorded 18 August 2026 during the second corrective round. **No decision is
-required from you now.** It is here because it is the kind of thing that is
-invisible until it has already happened.
+Recorded on 18 August during the second WP-0.6 corrective round, as a constraint
+on work that had not yet begun. **It has now been met**, and is kept rather than
+deleted because the reasoning is what a future reader will need.
 
-`conversations.project_id` is nullable, and `val_policy.project_resolution`
+**What was recorded:** `conversations.project_id` is nullable and the resolver
 reads an established conversation with a NULL there as an explicit no-project
-decision. **That reading is correct today only because the table has zero rows.**
+decision. That was true *only because the table had zero rows* — exactly the
+position `model_calls` had been in before nine pre-WP-0.6 NULLs forced migration
+`0006` to add an attribution column. Whatever wrote the first conversation had
+to resolve scope first, or the same ambiguity would recur with no date to
+separate the sets by.
 
-That is exactly the situation `model_calls` was in and did not survive.
-`model_calls` had nine rows written before project scope existed, all carrying
-NULL, none of them decisions — which is why `0006` had to add a
-`project_attribution` column to say which NULLs meant what. `conversations` has
-no such history yet, so there is no ambiguous set to disambiguate.
+**What WP-0.7 did.** `val_gateway.conversations.create` takes a `ProjectScope`,
+and `AmbiguousProject` is not of that type. A conversation cannot be opened
+without scope having been settled, so every NULL from the first row onward is a
+decision by construction. Migration `0008` then makes that scope immutable by
+trigger, so it cannot be rewritten afterwards either.
 
-**WP-0.7 is the first thing that will write rows here.** Whatever creates a
-conversation must resolve scope first, exactly as `converse` does. A conversation
-created with a NULL because nobody asked would recreate the defect `0006` had to
-correct — and this time there would be no date to separate the sets by, because
-the clean and unclean rows would be interleaved from the start.
+**No attribution column was added, and that is now demonstrated rather than
+deferred.** The distinction `0006` had to record cannot arise here. A column to
+record a distinction that cannot occur would be machinery for its own sake.
 
-**No column was added.** Adding attribution to a table with no rows and no writer
-would be building WP-0.7's machinery early, which is the first standing exclusion
-in `CLAUDE.md`. The constraint is recorded here and in the `Conversation`
-docstring in `val_domain/schema.py` instead, so it is in front of whoever opens
-that file to add the writer.
+**Nothing further is required.** Kept as closed history.
+
+---
+
+## 10. Semantic retrieval — **DEFERRED, NOT A DECISION REQUIRED NOW**
+
+Recorded 18 August 2026 during WP-0.7. **No decision is needed from you today.**
+It is here because the alternative was to make four decisions quietly inside an
+implementation.
+
+WP-0.7 retrieves prior conversation with **PostgreSQL full-text search**. The
+governing criterion asks that retrieval be project-scoped and that Val recall
+prior context within a project; it does not ask for semantic similarity, and
+`04-layer-0.md` does not require vector retrieval at Layer 0.
+
+`pgvector` is installed. Using it would require:
+
+1. **A new provider or route** for producing embeddings.
+2. **A new data-egress path** — every conversation to be searchable would have to
+   be sent to an embedding endpoint. Layer 0 conversation carries unreleased
+   creative IP, which `01-architecture.md` §1.1 puts in Protected.
+3. **An eligibility ruling** on whether that endpoint may receive Protected
+   material, which is yours and not an implementation detail.
+4. **Embedding-version governance** — a model change re-indexes the corpus, and
+   an index built from two model versions silently mixes two notions of nearness.
+
+Each is a decision. Making them inside WP-0.7 because a column type exists is
+the first standing exclusion in `CLAUDE.md`.
+
+**The honest limit of what was built instead:** retrieval is lexical, so a
+question sharing no vocabulary with the earlier conversation will not recall it.
+Stated in the audit rather than papered over.
+
+**Revisit when** a real conversation fails to recall something it should have,
+and the reason is vocabulary rather than scope. That is the evidence that would
+justify paying the four costs above.
 
 ---
 

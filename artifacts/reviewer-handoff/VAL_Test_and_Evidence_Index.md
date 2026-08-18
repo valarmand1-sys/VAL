@@ -268,6 +268,97 @@ should, rather than proving it passes what it should.
 > records — and all were re-verified before the acceptance was recorded. Full
 > account: `VAL_WP06_Project_Resolution_Audit.md`.
 
+## 5f. Conversation loop and memory — WP-0.7, 18 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5f.1 | A project conversation stores its project | | **PASS** |
+| 5f.2 | An explicit-no-project conversation stores NULL | And by decision — nothing else can write one | **PASS** |
+| 5f.3 | **Unresolved scope creates no conversation** | Clarification returned; conversation count unchanged | **PASS** |
+| 5f.4 | **Ambiguous scope creates no conversation and no message** | Zero rows in both tables | **PASS** |
+| 5f.5 | The type system refuses an ambiguous scope | `create` takes `ProjectScope`, no default — WP-0.6's mechanism one table further | **PASS** |
+| 5f.6 | A user message persists with every required field | id, conversation, role, content, sequence, created_at | **PASS** |
+| 5f.7 | A Val message persists as `val`, not `assistant` | The house's record says who spoke; `assistant` exists only on the wire | **PASS** |
+| 5f.8 | **Content is preserved exactly** | Whitespace, tabs, unicode, and a 10,000-character body — byte-identical | **PASS** |
+| 5f.9 | Sequence begins at 1 | | **PASS** |
+| 5f.10 | Sequence is per-conversation, not a shared counter | Two conversations both start at 1 | **PASS** |
+| 5f.11 | The database refuses a duplicate sequence | The backstop, asserted directly | **PASS** |
+| 5f.12 | **Concurrent appends are gapless across independent connections** | 40 writers, 40 separate engines, barrier-released; assigned set is exactly 1..40 — not merely unique | **PASS** |
+| 5f.13 | Content-to-sequence mapping is stable when reread | | **PASS** |
+| 5f.14 | **A rolled-back append leaves no permanent gap** | The reason a PostgreSQL `SEQUENCE` was not used: it is non-transactional and would leave 1, 2, 4 | **PASS** |
+| 5f.15 | `last_message_at` tracks the newest committed message | `greatest(...)`, same transaction | **PASS** |
+| 5f.16 | A rolled-back append does not advance `last_message_at` | | **PASS** |
+| 5f.17 | **A conversation's project cannot be changed** | Database trigger, migration `0008` | **PASS** |
+| 5f.18 | Nor emptied to NULL | Alpha cannot quietly become explicit-no-project | **PASS** |
+| 5f.19 | A title may still be changed | The guard is on scope, not on the row | **PASS** |
+| 5f.20 | **Switching project starts a new conversation and preserves the old** | WP-0.6 forward-only, at conversation scale | **PASS** |
+| 5f.21 | No-project → project preserves the old conversation | It is not adopted later | **PASS** |
+| 5f.22 | Resume recovers scope and history from the record | `via=conversation`, sequence order | **PASS** |
+| 5f.23 | An explicit-no-project conversation resumes as explicit-no-project | Not unresolved, and it does not ask | **PASS** |
+| 5f.24 | **An unknown conversation id fails clearly** | It does not quietly start a different conversation under the same name | **PASS** |
+| 5f.25 | Appending to an unknown conversation fails clearly | | **PASS** |
+| 5f.26 | **A stale session cannot change a resumed conversation's scope** | Session in Beta, Alpha conversation resumed → Alpha, and no Beta material in the payload | **PASS** |
+| 5f.27 | A conversation naming a missing project raises rather than degrading | A dangling reference is a broken row, not a decision | **PASS** |
+| 5f.28 | **History reaches the provider in sequence order** | user/Val/user; asserted on what the adapter was handed | **PASS** |
+| 5f.29 | The current message is not duplicated | Persisted first, so history already ends with it | **PASS** |
+| 5f.30 | **The persona appears exactly once, and only in `system`** | WP-0.5's guarantee, holding with memory in the request | **PASS** |
+| 5f.31 | History is bounded but the record is not | 57 messages stored, 40 sent, nothing edited | **PASS** |
+| 5f.32 | A stored `system` message is never sent as a turn | Application bookkeeping is not a participant | **PASS** |
+| 5f.33 | **The model call names the conversation and the triggering user message** | And explicitly not Val's reply — it did not exist when the call was made | **PASS** |
+| 5f.34 | Model-call attribution agrees with the conversation | | **PASS** |
+| 5f.35 | A no-project conversation records `explicit_none` | | **PASS** |
+| 5f.36 | The model call names the active persona | | **PASS** |
+| 5f.37 | **Old provenance survives a later switch** | A new conversation writes new rows; it does not re-attribute old ones | **PASS** |
+| 5f.38 | Project A retrieval returns only A | Sentinel facts one word apart | **PASS** |
+| 5f.39 | Project B retrieval returns only B | | **PASS** |
+| 5f.40 | Explicit no-project retrieves no project material | | **PASS** |
+| 5f.41 | A project never retrieves no-project material | The mirror; no shared pool | **PASS** |
+| 5f.42 | **A much stronger match in B cannot leak into A** | Beta's message repeats the query terms five times; Alpha returns only Alpha | **PASS** |
+| 5f.43 | **The limit is spent only on the requested project** | The quieter leak: 20 Beta matches, limit 3, Alpha still gets its own history | **PASS** |
+| 5f.44 | Recall carries provenance back to exact rows | message id, conversation, sequence, role all match the stored row | **PASS** |
+| 5f.45 | **A second conversation recalls the first within the project** | A2 has no history of its own, so anything it knows came from retrieval | **PASS** |
+| 5f.46 | **The assembled payload for A contains no B material** | At the boundary the criterion actually names | **PASS** |
+| 5f.47 | An explicit-no-project exchange sends no project material | | **PASS** |
+| 5f.48 | Retrieval excludes the current conversation | Its history is assembled in full; recalling it would duplicate it | **PASS** |
+| 5f.49 | A query with no searchable terms recalls nothing | Empty is ordinary, not an error and not everything | **PASS** |
+| 5f.50 | **Provider substitution preserves the whole conversation** | Different adapter, different provider name, no shared state | **PASS** |
+| 5f.51 | **A fresh runtime sees the whole conversation** | New engine, pool, gateway, loader — nothing but the URL and the id | **PASS** |
+| 5f.52 | **Retrieved history is never injected as system governance** | It is a delimited `user` turn; `system` holds the persona alone | **PASS** |
+| 5f.53 | **Restricted material in retrieved history blocks the call** | Seeded into a *stored* message; provider not contacted, source untouched | **PASS** |
+| 5f.54 | The budget ceiling sees the assembled payload including memory | A large recalled message raises the reservation | **PASS** |
+| 5f.55 | **A provider failure leaves the user turn as real history** | One row, `(1, user)`, no fabricated reply | **PASS** |
+| 5f.56 | The next turn after a failure takes the next sequence | The abandoned turn is not tidied away | **PASS** |
+| 5f.57 | A transmitted call that failed keeps its provenance | | **PASS** |
+| 5f.58 | **A Restricted refusal is raised, not returned as unanswered** | Found while writing 5f.53 — refusing to send is not failing to send | **FOUND AND FIXED** |
+| 5f.59 | `projects.status` still has no resolution authority | Seven values, one identical resolution and retrieval | **PASS** |
+| 5f.60 | **Trap — never approved** | Enthusiasm retrieved and labelled discussion; nothing asserts approval | **PASS** |
+| 5f.61 | **Trap — approved then superseded** | Both halves retrieved; order recoverable from `sequence` | **PASS** |
+| 5f.62 | **Trap — mentioned once then abandoned** | | **PASS** |
+| 5f.63 | Trap material does not cross projects | Beta's "approved on the fourth of March" never reaches an Alpha payload | **PASS** |
+| 5f.64 | `0008` downgrade is clean when no conversation was held | And re-appliable | **PASS** |
+| 5f.65 | **`0008` downgrade refuses once conversations exist** | It would leave their scope silently rewritable | **PASS** |
+| 5f.66 | The message sequence guarantees predate WP-0.7 | Audited before `0008`; `0001` already had both, so nothing was added | **PASS** |
+
+### 5f-live — the real acceptance, against the authoritative store
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5f.67 | A real conversation, a real reply | A1, `gpt-5.5`, $0.024430 | **PASS** |
+| 5f.68 | **An actual PostgreSQL restart** | `pg_postmaster_start_time` moved from 2026-08-17 15:32:05 to 2026-08-18 10:32:03 | **PASS** |
+| 5f.69 | **Resume by id in a new process recovers scope and history** | The creating process had already exited | **PASS** |
+| 5f.70 | **Continuity across the restart** | "catalogued as **CN-4417** […] **cobalt blue**", from PostgreSQL alone | **PASS** |
+| 5f.71 | Cross-conversation recall, live | A2 retrieved 4 A1 messages, ids recorded | **PASS** |
+| 5f.72 | **Conflicting Beta detail never reaches Alpha** | CN-9902/amber absent from retrieval and from the answer | **PASS** |
+| 5f.73 | No-project receives neither project, live | Retrieval returned 0 | **PASS** |
+| 5f.74 | **The three trap questions, real retrieval and real provider** | Correct negatives, no confabulated dates | **PASS** |
+| 5f.75 | Provider independence, live | A1 continued through an OpenAI-only gateway; everything preserved | **PASS** |
+| 5f.76 | Every WP-0.7 model call carries full provenance | 16/16 conversation, message, persona; 0 attributed to a non-user message; 0 disagreeing with their conversation's project | **PASS** |
+| 5f.77 | Gapless across the whole store | 0 conversations with a gap or duplicate | **PASS** |
+
+> **WP-0.7 is submitted as IMPLEMENTED, ready for acceptance.** The governing
+> criterion — including the trap-question amendment of 15 August 2026 — is
+> satisfied. Full account: `VAL_WP07_Conversation_Memory_Audit.md`.
+
 ## 6. Data-eligibility and Restricted handling
 
 | # | Claim | Evidence | Result |
@@ -327,7 +418,9 @@ should, rather than proving it passes what it should.
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
-| **Automated tests** | **489 passing** | — |
+| Conversation loop and memory | 66 | — |
+| Conversation memory — live acceptance | 11 | — |
+| **Automated tests** | **555 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.

@@ -372,7 +372,7 @@ counts were all unchanged, `03-persona.md` on disk still hashed to the digest it
 was seeded from, 373 tests passed, and CI was green on `73e9947`. **WP-0.5 is
 COMPLETE.**
 
-### WP-0.6 — Project resolution and attribution · IMPLEMENTED / ACCEPTANCE BLOCKED
+### WP-0.6 — Project resolution and attribution · COMPLETE
 
 **Exists:** three typed resolution states with `ProjectScope` — the union that
 structurally excludes ambiguity; a pure deterministic resolver with a recorded
@@ -417,8 +417,18 @@ of one.
 >    constraint, not by convention"*, which is why nobody re-checked it.
 >
 > **Corrected at source commit `699ed24`.** Full account:
-> `VAL_WP06_Corrective_Audit.md`. WP-0.6 returns to COMPLETE only on
-> re-acceptance.
+> `VAL_WP06_Corrective_Audit.md`.
+>
+> **RE-ACCEPTED as COMPLETE by Lord Armand, 18 August 2026.** The reopening
+> history above is preserved deliberately and is not rewritten now that the
+> package is complete again: it is the record of how it got there, and the two
+> rounds of independent review are the reason WP-0.7 could be built on top of
+> it. The accepted state includes explicit project and explicit no-project as
+> equal current-interaction authority, established scopes, forward-only
+> switching, no untrusted candidate able to establish scope, stable candidate
+> identity, explicit model-call attribution, `legacy_unknown` preserved as
+> history and closed to new writes, and `projects.status` having no resolution
+> authority until a later explicit ruling.
 
 **Originally accepted 17 August 2026.** Re-verified before that acceptance: 437
 tests, `mypy` clean over 43 files, boundaries holding, Alembic unchanged at
@@ -464,13 +474,79 @@ count without ever reaching the constraint under test — one of them naming a
 constraint that does not exist. They now read the constraint from psycopg's
 diagnostics. A test that cannot fail for the right reason is not evidence.
 
-### WP-0.7 to WP-0.10 · NOT STARTED
+### WP-0.7 — Conversation loop and memory · IMPLEMENTED, ready for acceptance
 
-No implementation exists for the conversation loop, execution-history capture,
-deliberation capture, or the text interface. **The schema for
-`execution_events` and `deliberations` exists and is migrated, but nothing
-writes to them** — those tables are empty and there is no write path.
-`conversations` and `messages` likewise have no write path until WP-0.7.
+**Exists:** a conversation lifecycle (`create` from a settled `ProjectScope`,
+`resume` recovering scope from the stored row, `append`, `history`); one
+authoritative message-append path with database-safe gapless sequencing;
+project-scoped retrieval over PostgreSQL full text with the restriction inside
+the query; bounded context assembly placing recalled material as delimited data
+rather than governance; and the turn boundary that orders all of it.
+
+**Paths:** `packages/domain/src/val_domain/conversation.py`,
+`packages/gateway/src/val_gateway/{conversations,memory,loop,context}.py`,
+migration `0008_conversation_scope_recall`.
+
+**Migration `0008` adds a trigger and two indexes and no columns.** The audit
+that preceded it found `uq_messages_conversation_id_sequence` and
+`ck_messages_sequence_positive` already present from `0001`, so nothing was
+added for them. What was missing: `conversations.project_id` was writable, and
+nothing indexed the project filter.
+
+**Conversation scope is immutable, by trigger.** A conversation held in Alpha
+has messages said in Alpha and `model_calls` rows attributed to Alpha; moving
+the parent would leave all of them describing a conversation that now claims it
+was never Alpha. Switching starts a new conversation — WP-0.6's forward-only
+doctrine at conversation scale.
+
+**No `legacy_unknown` conversation state, and that is a demonstrated choice
+rather than a deferral.** `model_calls` needed one because nine rows predated
+the distinction. `conversations` began empty and its only writer takes a
+`ProjectScope`, so every NULL from the first row onward is a decision by
+construction.
+
+**Sequence is assigned under the conversation's own row lock**, in the same
+transaction as the insert. A PostgreSQL `SEQUENCE` was rejected: it is
+non-transactional by design, so a rolled-back append consumes a number
+permanently and leaves 1, 2, 4. Gapless and lock-free-by-sequence are
+incompatible and the criterion picks gapless. Proved with 40 writers on 40
+independent engines, asserting the set is exactly 1..40 — the existing unique
+constraint is the backstop, not the mechanism.
+
+**Retrieval is lexical, not semantic, deliberately.** PostgreSQL full text with
+the project restriction and the limit both inside the query. Embeddings would
+need a new provider, a new egress route for Protected conversation, an
+eligibility ruling and version governance — four decisions, recorded rather
+than pulled forward.
+
+**Recalled material is data, never `system`.** It arrives as a delimited `user`
+turn stating that discussion is not decision and enthusiasm is not approval.
+`system` holds the persona and nothing else.
+
+**Verified:** a real conversation surviving an **actual** PostgreSQL restart
+(`pg_postmaster_start_time` moved) and resumed by id in a new process, recalling
+CN-4417/cobalt from records alone; cross-conversation recall with inspectable
+provenance; a deliberately conflicting Beta detail never reaching an Alpha
+payload; explicit no-project receiving neither; the three governing trap
+questions answered with correct negatives against a real provider; 16 live model
+calls all carrying conversation, message, project and persona provenance, none
+attributed to a non-user message.
+
+**Two defects found while proving it.** A Restricted refusal was being degraded
+into an unanswered turn — refusing to send is not failing to send, and only
+provider errors degrade now. And a test fixture recreated the schema without
+disposing the connection pool, leaving stale enum OIDs that failed only in
+full-suite order.
+
+**Honest limit:** live substitution between two *different* providers is still
+unproved, blocked by the Anthropic account (WP-0.4). Provider independence is
+proved deterministically and, live, across two different routing configurations.
+
+### WP-0.8 to WP-0.10 · NOT STARTED
+
+No implementation exists for execution-history capture, deliberation capture,
+or the text interface.
+
 
 ---
 
