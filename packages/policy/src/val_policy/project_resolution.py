@@ -43,15 +43,29 @@ decision that becomes invisible once it works:
 
 1. **Trusted application project id** — supplied by application state, never by
    a user typing into a message.
-2. **Explicit selection or switch** in this interaction.
+2. **The explicit current-interaction scope choice**, in *either* form:
+   **selecting a project** or **declining one**. One authority class — see below.
 3. **The conversation's established scope** — a project, *or* a deliberate
    explicit-none. Both are decisions and both outrank the session.
-4. **The session's current project.**
-5. **An unambiguous exact canonical name or slug** in the text.
-6. **An explicit "this has no project" instruction.**
-7. Otherwise: **unresolved** — including the case where the only thing pointing
+4. **The session's current scope** — likewise a project *or* a deliberate none.
+5. **An unambiguous exact canonical name or slug** in the text, trusted only.
+6. Otherwise: **unresolved** — including the case where the only thing pointing
    at a project was an untrusted suggestion, which is offered for confirmation
    and never acted on.
+
+**Level 2 holds two sources, and that is the correction of 18 August 2026.**
+*"Select Project Beta"* and *"this is not for a project"* are the same kind of
+act: the user deciding scope now. Ranking the second at level 6 — below
+conversation and session — meant a session set an hour ago outranked a decision
+being made in this breath, so a user who said *"this isn't for a project"* while
+Alpha was selected got Alpha. Both supplied at once is a contradiction between
+instructions of equal authority, and it asks rather than picking.
+
+**Established scope is a pair, for both conversation and session.** `…_is_set`
+says a decision exists; `…_project_id` says whether it names a project or
+declines one. The two are handled by the same code, which is what stopped the
+session's explicit-none from being a special case that only survived when
+nothing else was said.
 
 **Higher authority wins outright; comparable authority in conflict asks.** A
 session in Alpha and an exact reference to Beta is not a case for preferring one
@@ -88,16 +102,24 @@ from val_domain.project import (
     ResolvedProject,
 )
 
-#: The precedence order, as data. `ResolutionSource`'s member order is asserted
-#: equal to this by a test, so the documentation above and the behaviour below
-#: cannot drift apart.
-PRECEDENCE: tuple[ResolutionSource, ...] = (
-    ResolutionSource.TRUSTED_APPLICATION_ID,
-    ResolutionSource.EXPLICIT_SELECTION,
-    ResolutionSource.CONVERSATION,
-    ResolutionSource.SESSION,
-    ResolutionSource.EXACT_REFERENCE,
-    ResolutionSource.EXPLICIT_NONE_INSTRUCTION,
+#: The precedence order, as data — **levels**, not a flat list. Corrected
+#: 18 August 2026: level 2 holds two sources because *"select Project Beta"* and
+#: *"this is not for a project"* are the same kind of act, and ranking one below
+#: conversation and session state let stale scope outrank a decision being made
+#: now.
+#:
+#: A test asserts that flattening this in order reproduces `tuple(ResolutionSource)`
+#: exactly, so the enum's declaration order, the documentation above, and the
+#: behaviour below cannot drift apart.
+PRECEDENCE: tuple[frozenset[ResolutionSource], ...] = (
+    frozenset({ResolutionSource.TRUSTED_APPLICATION_ID}),
+    # One authority class: an explicit current-interaction scope choice, whether
+    # it names a project or declines one. Both present is a contradiction the
+    # user has to settle, not one for this module to pick between.
+    frozenset({ResolutionSource.EXPLICIT_SELECTION, ResolutionSource.EXPLICIT_NONE_INSTRUCTION}),
+    frozenset({ResolutionSource.CONVERSATION}),
+    frozenset({ResolutionSource.SESSION}),
+    frozenset({ResolutionSource.EXACT_REFERENCE}),
 )
 
 
@@ -124,7 +146,13 @@ class ProjectSignals:
     #: explicit-none is a different fact from a conversation not yet resolved,
     #: and `conversation_project_id = None` cannot tell them apart on its own.
     conversation_is_established: bool = False
-    #: The session's current project, and whether the session has been set.
+    #: The session's current scope, **read exactly like the conversation pair
+    #: above**. Corrected 18 August 2026.
+    #:
+    #: `session_is_set` with `session_project_id = None` means *the session is
+    #: explicitly set to no project* — a decision — not *the session is unset*.
+    #: `session_is_set = False` is the unset case. Collapsing the two would make
+    #: a fresh process indistinguishable from a deliberate choice.
     session_project_id: UUID | None = None
     session_is_set: bool = False
     #: An exact name or slug from a **deterministic, application-owned** source:
@@ -226,12 +254,34 @@ def resolve(signals: ProjectSignals, catalogue: ProjectCatalogue) -> ProjectReso
             )
         return ResolvedProject(found, via=ResolutionSource.TRUSTED_APPLICATION_ID)
 
-    # 2. An explicit selection or switch. The deliberate way to change scope,
-    #    and the reason a mere mention lower down never has to be treated as one.
+    # 2. The explicit current-interaction scope choice — either form.
+    #
+    #    Corrected 18 August 2026. "Select Project Beta" and "this is not for a
+    #    project" are the same kind of act: the user deciding scope now. The
+    #    second used to sit at precedence 6, below conversation and session, so a
+    #    session set an hour ago outranked a decision being made in this breath.
+    #
+    #    Both supplied at once is a contradiction between two instructions of
+    #    equal authority. There is no principled way to pick, so it asks.
+    if signals.explicit_selection is not None and signals.explicit_no_project:
+        return AmbiguousProject(
+            reason=AmbiguityReason.CONFLICTING_SIGNALS,
+            question=(
+                f"You have asked for {signals.explicit_selection.strip()} and also said "
+                "this is not for a project. Those are both scope decisions and they "
+                "disagree, so I have not chosen between them — which did you mean?"
+            ),
+        )
     if signals.explicit_selection is not None:
         return _from_reference(
             signals.explicit_selection, catalogue, ResolutionSource.EXPLICIT_SELECTION
         )
+    if signals.explicit_no_project:
+        # Level 2, not a fallback. It outranks conversation and session exactly
+        # as naming a project does, and it is how a user steps out of project
+        # scope — the forward-only counterpart of an explicit selection. Nothing
+        # historical is touched: this decides *this* exchange only.
+        return ExplicitNoProject(via=ResolutionSource.EXPLICIT_NONE_INSTRUCTION)
 
     # 3-4. Established scope, and the conflict rule that governs both.
     #
@@ -285,11 +335,7 @@ def resolve(signals: ProjectSignals, catalogue: ProjectCatalogue) -> ProjectReso
         if resolved.reason is AmbiguityReason.MULTIPLE_NAME_MATCHES:
             return resolved
 
-    # 6. An explicit instruction that this has no project.
-    if signals.explicit_no_project:
-        return ExplicitNoProject(via=ResolutionSource.EXPLICIT_NONE_INSTRUCTION)
-
-    # 6b. An untrusted suggestion, and nothing else. It is **offered**, never
+    # 6. An untrusted suggestion, and nothing else. It is **offered**, never
     #     acted on. A model naming a real project correctly is still a model
     #     naming it, and WP-0.6 says application code sets final scope. So this
     #     asks — with the suggestion attached, so confirming it is one answer
@@ -355,7 +401,14 @@ def _established_scope(
             return found, ResolutionSource.CONVERSATION
         raise InconsistentConversationScopeError(signals.conversation_project_id)
 
-    if signals.session_is_set and signals.session_project_id is not None:
+    if signals.session_is_set:
+        if signals.session_project_id is None:
+            # A session explicitly set to no project. Corrected 18 August 2026:
+            # this used to require a non-NULL id to count, so the decision
+            # vanished from resolution the moment any other signal appeared —
+            # and a trusted reference to another project then resolved outright
+            # instead of asking.
+            return None, ResolutionSource.SESSION
         found = catalogue.by_id(signals.session_project_id)
         if found is not None:
             return found, ResolutionSource.SESSION

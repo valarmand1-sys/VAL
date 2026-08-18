@@ -167,9 +167,24 @@ class Conversation(Base):
     """§2.1 — `conversations`.
 
     `project_id` is nullable because "no project" is a real, explicit state and
-    not a null accident (§2.1). The distinction between "explicitly none" and
-    "not yet resolved" is not expressible in this schema; WP-0.6 requires it to
-    be queryable, and the resolution is recorded there, not invented here.
+    not a null accident (§2.1).
+
+    **A NULL here means an explicit no-project decision, and that holds because
+    the table is empty.** `model_calls` needed a `project_attribution` column
+    precisely because its NULLs were not all decisions — nine rows predated the
+    distinction. `conversations` has no such history: it has zero rows, so there
+    is no ambiguous set to disambiguate, and `val_policy.project_resolution`
+    reads an established conversation with a NULL project as `ExplicitNoProject`
+    on that basis.
+
+    **This is a fact about today, not a property of the schema**, and WP-0.7 is
+    the first thing that will write rows here. Whatever creates a conversation
+    must resolve scope first, exactly as `converse` does — a conversation
+    created with a NULL because nobody asked would recreate the defect that
+    `0006` had to correct, and there would be no date to separate the sets by.
+    No column is added now: adding attribution to a table with no rows and no
+    writer would be building WP-0.7's machinery early. Recorded in
+    `VAL_Open_Decisions.md` instead.
     """
 
     __tablename__ = "conversations"
@@ -400,16 +415,13 @@ class ModelCall(Base):
             "(project_attribution = 'resolved') = (project_id IS NOT NULL)",
             name="resolved_attribution_has_a_project",
         ),
-        # `legacy_unknown` is a *read* state describing rows written before the
-        # distinction existed. Reserving it in the database is what stops it
-        # becoming a convenient way for new code to avoid deciding scope — the
-        # same shape of guarantee as `certainty_required_after_the_amendment`.
-        CheckConstraint(
-            "project_attribution <> 'legacy_unknown' "
-            "OR created_at < TIMESTAMPTZ '2026-08-18T00:00:00+00:00'",
-            name="legacy_attribution_is_reserved_to_history",
-        ),
     )
+    # `legacy_unknown` is reserved to history by a **trigger**, not a constraint
+    # — see migration `0007_legacy_attribution_closed`. `0006` used a check on
+    # `created_at`, which a direct writer controls: a row inserted today with a
+    # backdated timestamp satisfied it. The rule being enforced is about the
+    # *operation* — this value may persist but may not be acquired — and a check
+    # constraint cannot see whether it is looking at an INSERT or an UPDATE.
 
 
 class ExecutionEvent(Base):

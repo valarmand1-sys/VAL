@@ -53,9 +53,15 @@ created from 18 August 2026 onward, the same shape of guarantee that
 value would become exactly what it must never be: a convenient way for new code
 to avoid deciding scope.
 
-**Downgrade is clean.** Dropping an annotation destroys no captured fact — every
-`project_id` survives untouched, which is the whole reason this was added
-alongside them rather than folded into them.
+**Downgrade is clean only while nothing irreplaceable has been captured, and it
+checks.** *Corrected 18 August 2026 after independent review.* The original
+claim here — that this column "adds interpretation but stores no fact of its
+own" — is true exactly until the first `explicit_none` row is written. After
+that it stores something nothing else does: a NULL `project_id` marked
+`explicit_none` and a NULL marked `legacy_unknown` are **identical once the
+column is gone**, and no rule can tell them apart afterwards. That is a captured
+decision destroyed by a rollback, which is the thing `0002`, `0003`, and `0005`
+all refuse to do. So this refuses too, once there is something to lose.
 
 Revision ID: 0006_project_attribution
 Revises: 0005_persona_provenance
@@ -131,17 +137,49 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Remove the annotation. Every project_id is untouched either way.
+    """Remove the annotation — and refuse once it holds something irreplaceable.
 
-    Clean against real data, unlike `0002`, `0003`, and `0005`. Those refuse
-    because reversing them would destroy captured facts; this one adds a
-    statement *about* facts and stores none of its own, so removing it loses an
-    interpretation and no evidence. The nine legacy NULLs and the resolved rows
-    are exactly as they were before it ran.
+    **Clean on a database with no `explicit_none` row**, which is CI and any
+    fresh checkout: there, every attribution is derivable again from
+    `project_id` alone, so dropping the column loses an interpretation and no
+    evidence.
+
+    **Refuses once a deliberate no-project decision has been recorded.** Such a
+    row is `project_id` NULL with `explicit_none`; a legacy row is `project_id`
+    NULL with `legacy_unknown`. Drop the column and they become the same row,
+    permanently — the decision is not recoverable from anything that remains.
+    Rolling that back is destroying a captured fact, and it is refused for the
+    same reason `0002` refuses on reaction-only rows and `0005` on seeded
+    personas.
+
+    Nothing is deleted, rewritten, or coerced to make the downgrade succeed.
     """
+    decisions = (
+        op.get_bind()
+        .execute(
+            sa.text("select count(*) from model_calls where project_attribution = 'explicit_none'")
+        )
+        .scalar_one()
+    )
+    if decisions:
+        raise RuntimeError(
+            f"Refusing to downgrade: {decisions} model_calls row(s) record a deliberate "
+            "no-project decision (project_id NULL, project_attribution 'explicit_none'). "
+            "Dropping project_attribution would make them indistinguishable from the "
+            "legacy rows that carry NULL because they predate the distinction, and "
+            "nothing left in the table could tell them apart afterwards. Retire those "
+            "records deliberately first; this migration will not coerce or delete them."
+        )
+
     op.execute("DROP VIEW model_calls_accounted")
 
-    op.drop_constraint("ck_model_calls_legacy_attribution_is_reserved_to_history", "model_calls")
+    # `0007` may have replaced this constraint with a trigger, so the drop is
+    # conditional: a downgrade must not fail on the absence of something a later
+    # migration legitimately removed.
+    op.execute(
+        "ALTER TABLE model_calls DROP CONSTRAINT IF EXISTS "
+        "ck_model_calls_legacy_attribution_is_reserved_to_history"
+    )
     op.drop_constraint("ck_model_calls_resolved_attribution_has_a_project", "model_calls")
     op.drop_column("model_calls", "project_attribution")
 

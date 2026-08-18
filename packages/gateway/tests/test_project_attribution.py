@@ -13,6 +13,7 @@ projects are "A" and "B" proves nothing about the case that bites.
 from uuid import UUID, uuid4
 
 import pytest
+from conftest import fabricate_a_legacy_row
 from gateway_fakes import FakeLedger, StubAdapter
 from sqlalchemy import Engine, text
 from test_persona import REPO_ROOT, clean_personas  # noqa: F401 - fixture reused
@@ -550,19 +551,13 @@ def test_every_persisted_null_project_id_is_a_decision(store: Engine) -> None:
 
 
 def legacy_row(engine: Engine) -> None:
-    """A row shaped like the nine that predate WP-0.6: NULL, and never a decision."""
-    with engine.begin() as connection:
-        connection.execute(
-            text(
-                "insert into model_calls (created_at, model_config_id, provider, "
-                "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
-                "project_id, project_attribution, task_type, latency_ms, "
-                "provider_request_id, status) values "
-                "(timestamptz '2026-08-15 20:43:09+00', gen_random_uuid(), 'anthropic', "
-                "'claude-opus-5', 10, 5, 0.001, 'known', null, 'legacy_unknown', "
-                "'conversation', 900, '', 'ok')"
-            )
-        )
+    """A row shaped like the nine that predate WP-0.6: NULL, and never a decision.
+
+    Fabricated deliberately — see `conftest.fabricate_a_legacy_row` for why the
+    database refuses this shape and why suspending the guard is confined to one
+    place in the tests.
+    """
+    fabricate_a_legacy_row(engine)
 
 
 def attribution_counts(engine: Engine) -> dict[str, int]:
@@ -676,11 +671,11 @@ def test_a_request_whose_attribution_disagrees_with_its_id_is_refused(
 
 
 def test_the_database_refuses_a_new_legacy_row(store: Engine) -> None:
-    """Reserved by constraint, not by convention.
+    """Reserved by the database, not by convention.
 
-    Application code could be bypassed by the next writer; the check constraint
-    cannot, and `legacy_unknown` becoming the easy way out is the one failure
-    that would quietly undo this whole correction.
+    Application code can be bypassed by the next writer; the database cannot,
+    and `legacy_unknown` becoming the easy way out is the one failure that would
+    quietly undo this whole correction.
     """
     with pytest.raises(Exception) as caught:
         with store.begin() as connection:
@@ -693,7 +688,32 @@ def test_the_database_refuses_a_new_legacy_row(store: Engine) -> None:
                     "'legacy_unknown', 'conversation', 1, '', 'ok')"
                 )
             )
-    assert "legacy_attribution_is_reserved_to_history" in str(caught.value)
+    assert "closed to new rows" in str(caught.value)
+
+
+def test_backdating_the_row_does_not_get_it_past_the_guard(store: Engine) -> None:
+    """The second review finding, at the gateway's own boundary.
+
+    `0006` reserved the value with a check constraint on `created_at`, and
+    `created_at` is supplied by whoever writes the row — so a writer avoiding a
+    scope decision only had to claim the row was old. `0007` moved the rule onto
+    the operation, and the same insert now fails whatever date it carries.
+    """
+    with pytest.raises(Exception) as caught:
+        with store.begin() as connection:
+            connection.execute(
+                text(
+                    "insert into model_calls (created_at, model_config_id, provider, "
+                    "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
+                    "project_id, project_attribution, task_type, latency_ms, "
+                    "provider_request_id, status) values "
+                    "(timestamptz '2026-08-15 12:00:00+00', gen_random_uuid(), 'anthropic', "
+                    "'x', 1, 1, 0.01, 'known', null, 'legacy_unknown', 'conversation', "
+                    "1, '', 'ok')"
+                )
+            )
+    assert "closed to new rows" in str(caught.value)
+    assert "Backdating created_at does not reopen it" in str(caught.value)
 
 
 def test_analytics_can_separate_a_decision_from_a_legacy_null(store: Engine) -> None:

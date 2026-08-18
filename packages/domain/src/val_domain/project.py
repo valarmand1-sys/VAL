@@ -6,19 +6,26 @@ project or explicitly to none, and resolution is deterministic"*, and that
 'explicitly none,' and the distinction is queryable."*
 
 **The whole design follows from one observation about NULL.** A nullable
-`project_id` can carry exactly one meaning, and the schema already spends it:
-NULL means *explicitly no project*. It therefore cannot also mean *nobody has
-worked out which project this is yet*. Those two are opposite in consequence —
-one is a decision, the other is the absence of one — and a system that stores
-them in the same field will eventually read an unanswered question as an answer.
+`project_id` can carry exactly one meaning, and the schema already spends it on
+*explicitly no project*. It therefore cannot also mean *nobody has worked out
+which project this is yet*. Those two are opposite in consequence — one is a
+decision, the other is the absence of one — and a system that stores them in the
+same field will eventually read an unanswered question as an answer.
 
 So there are three states in the domain and only two of them can be persisted:
 
 | State | Means | Persists as |
 |---|---|---|
-| `ResolvedProject` | A specific existing project, deterministically identified | its `id` |
-| `ExplicitNoProject` | This exchange is deliberately outside any project | **NULL** |
-| `AmbiguousProject` | Scope cannot be determined safely | **nothing — it must be asked about** |
+| `ResolvedProject` | A specific project, deterministically identified | its `id`, as `resolved` |
+| `ExplicitNoProject` | Deliberately outside any project | NULL, as `explicit_none` |
+| `AmbiguousProject` | Scope cannot be determined safely | **nothing — it is asked about** |
+
+**A NULL `project_id` is not by itself an explicit no-project decision**, and no
+code here should read it as one. `model_calls` rows carry a `ProjectAttribution`
+that says which state produced them, and the nine rows written before WP-0.6
+existed carry NULL with `legacy_unknown` — a NULL nobody chose. Query
+`project_attribution = 'explicit_none'` for the decisions; `project_id IS NULL`
+alone returns those decisions *and* that history mixed together.
 
 **`ProjectScope` is the union of the first two, and that is the mechanism.**
 Every function that attributes or persists an exchange takes a `ProjectScope`,
@@ -116,18 +123,27 @@ class ResolutionSource(StrEnum):
     #: A project id supplied by trusted application state, not by a user typing.
     TRUSTED_APPLICATION_ID = "trusted_application_id"
     #: An explicit select-or-switch action taken in this interaction.
+    #:
+    #: **This and `EXPLICIT_NONE_INSTRUCTION` are one authority class.** Corrected
+    #: 18 August 2026: *"select Project Beta"* and *"this is not for a project"*
+    #: are both explicit current-interaction scope choices, and treating the
+    #: second as a weak fallback below conversation and session state meant a
+    #: stale session outranked a decision the user was making right now.
     EXPLICIT_SELECTION = "explicit_selection"
-    #: The project this conversation was already established in.
+    #: The user said, in this interaction, that this work has no project. Same
+    #: authority as naming one — see `EXPLICIT_SELECTION`.
+    EXPLICIT_NONE_INSTRUCTION = "explicit_none_instruction"
+    #: The scope this conversation was already established in — a project, or a
+    #: deliberate none.
     CONVERSATION = "conversation"
-    #: The project currently selected for the session.
+    #: The scope currently selected for the session — a project, or a deliberate
+    #: none.
     SESSION = "session"
     #: An exact canonical name or slug **from a trusted origin**, with nothing
     #: higher-authority to weigh it against. An untrusted candidate never
     #: appears here — it has no `ResolutionSource` at all, because it never
     #: resolves anything.
     EXACT_REFERENCE = "exact_reference"
-    #: The user said this exchange has no project.
-    EXPLICIT_NONE_INSTRUCTION = "explicit_none_instruction"
 
 
 class AmbiguityReason(StrEnum):

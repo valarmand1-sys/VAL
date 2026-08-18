@@ -389,18 +389,24 @@ def test_mentioning_the_project_you_are_already_in_is_not_a_conflict() -> None:
     assert outcome.project_id == ALPHA.id
 
 
-def test_an_explicit_selection_outranks_an_explicit_no_project_instruction() -> None:
-    """Precedence 2 over 6. Naming a project is a decision about scope."""
+def test_an_explicit_selection_and_an_explicit_none_no_longer_rank() -> None:
+    """*Superseded 18 August 2026 by independent review — see case F below.*
+
+    This test used to assert that naming a project beats "not for a project",
+    on the reasoning that precedence 2 outranks precedence 6. The ranking was
+    the defect. Both utterances are the *same act* — a person stating scope for
+    this exchange — so one cannot outrank the other, and a resolver that picks
+    the naming one is guessing which of two contradictory instructions the
+    speaker meant. They now share an authority class and fail closed.
+
+    Kept as a named test rather than deleted: the old behaviour is the thing a
+    future reader is most likely to reintroduce, since it looks decisive.
+    """
     outcome = resolve(
         signals(explicit_selection="Project Alpha", explicit_no_project=True), CATALOGUE
     )
-    assert isinstance(outcome, ResolvedProject)
-    assert outcome.project_id == ALPHA.id
-
-
-def test_the_documented_precedence_matches_the_implemented_one() -> None:
-    """A precedence documented in one place and implemented in another drifts."""
-    assert PRECEDENCE == tuple(ResolutionSource)
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.reason is AmbiguityReason.CONFLICTING_SIGNALS
 
 
 # --- inconsistent established state ------------------------------------------
@@ -681,3 +687,138 @@ def test_project_status_has_no_resolution_authority(status: str) -> None:
     for outcome in (by_slug, by_name, by_id):
         assert isinstance(outcome, ResolvedProject)
         assert outcome.project_id == project.id
+
+
+# =========================================================================
+# WP-0.6 corrective round two, 18 August 2026 — explicit scope authority
+# =========================================================================
+#
+# "Select Project Beta" and "this is not for a project" are the same kind of
+# act. Ranking the second below conversation and session meant a session set an
+# hour ago outranked a decision being made now.
+
+
+def test_an_explicit_no_project_beats_a_session_project() -> None:
+    """Case A. Was `ResolvedProject(Alpha)` via session."""
+    outcome = resolve(
+        signals(session_project_id=ALPHA.id, session_is_set=True, explicit_no_project=True),
+        CATALOGUE,
+    )
+    assert isinstance(outcome, ExplicitNoProject), "a stale session outranked a live decision"
+    assert outcome.via is ResolutionSource.EXPLICIT_NONE_INSTRUCTION
+
+
+def test_an_explicit_no_project_beats_an_established_conversation() -> None:
+    """Case B. The forward-only counterpart of an explicit selection.
+
+    It decides *this* exchange. Nothing historical is touched — the resolver
+    writes nothing, and switching has always been forward-only.
+    """
+    outcome = resolve(
+        signals(
+            conversation_project_id=ALPHA.id,
+            conversation_is_established=True,
+            explicit_no_project=True,
+        ),
+        CATALOGUE,
+    )
+    assert isinstance(outcome, ExplicitNoProject)
+    assert outcome.via is ResolutionSource.EXPLICIT_NONE_INSTRUCTION
+
+
+def test_an_explicit_no_project_beats_a_trusted_reference() -> None:
+    """Level 2 over level 5, the same way an explicit selection would."""
+    outcome = resolve(
+        signals(explicit_no_project=True, trusted_reference="Project Beta"), CATALOGUE
+    )
+    assert isinstance(outcome, ExplicitNoProject)
+
+
+def test_a_trusted_application_id_still_outranks_an_explicit_no_project() -> None:
+    """Level 1 is unchanged. The correction raised level 6 to 2, not to 0."""
+    outcome = resolve(signals(supplied_project_id=ALPHA.id, explicit_no_project=True), CATALOGUE)
+    assert isinstance(outcome, ResolvedProject)
+    assert outcome.project_id == ALPHA.id
+
+
+def test_two_contradictory_explicit_choices_fail_closed() -> None:
+    """Case F. Same authority class, disagreeing. There is no principled pick."""
+    outcome = resolve(
+        signals(explicit_selection="Project Beta", explicit_no_project=True), CATALOGUE
+    )
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.reason is AmbiguityReason.CONFLICTING_SIGNALS
+    assert "not for a project" in outcome.question
+    assert "Project Beta" in outcome.question
+
+
+# --- the session's explicit-none is structural, not a special case -----------
+
+
+def test_a_session_explicitly_set_to_no_project_resolves_to_none() -> None:
+    """Case C, expressed the way the resolver now reads it: a pair.
+
+    `session_is_set` with a NULL id means the session holds a decision to work
+    outside every project — read exactly like the conversation pair.
+    """
+    outcome = resolve(signals(session_is_set=True, session_project_id=None), CATALOGUE)
+    assert isinstance(outcome, ExplicitNoProject)
+    assert outcome.via is ResolutionSource.SESSION
+
+
+def test_an_explicit_none_session_conflicts_with_a_trusted_reference() -> None:
+    """Case D. It used to vanish, and Beta resolved outright with no question."""
+    outcome = resolve(
+        signals(session_is_set=True, session_project_id=None, trusted_reference="Project Beta"),
+        CATALOGUE,
+    )
+    assert isinstance(outcome, AmbiguousProject), "the session's decision disappeared"
+    assert outcome.reason is AmbiguityReason.CONFLICTING_SIGNALS
+    assert BETA.id in {p.id for p in outcome.candidates}
+    assert "no project" in outcome.question
+
+
+def test_an_explicit_none_session_conflicts_with_an_untrusted_candidate() -> None:
+    """Case E. The model must not establish Beta *and* must not erase the session."""
+    outcome = resolve(
+        signals(session_is_set=True, session_project_id=None, untrusted_candidate="Project Beta"),
+        CATALOGUE,
+    )
+    assert not isinstance(outcome, ResolvedProject), "a model established scope"
+    assert isinstance(outcome, AmbiguousProject)
+    assert outcome.reason is AmbiguityReason.CONFLICTING_SIGNALS
+
+
+def test_an_unset_session_is_still_distinct_from_an_explicit_none_session() -> None:
+    """The two must not collapse. One asks; the other is a decision."""
+    unset = resolve(signals(session_is_set=False, session_project_id=None), CATALOGUE)
+    decided = resolve(signals(session_is_set=True, session_project_id=None), CATALOGUE)
+
+    assert isinstance(unset, AmbiguousProject)
+    assert isinstance(decided, ExplicitNoProject)
+
+
+def test_a_conversation_outranks_a_session_for_explicit_none_too() -> None:
+    """Symmetry: the pair is read the same way at both levels."""
+    outcome = resolve(
+        signals(
+            conversation_is_established=True,
+            conversation_project_id=None,
+            session_project_id=ALPHA.id,
+            session_is_set=True,
+        ),
+        CATALOGUE,
+    )
+    assert isinstance(outcome, ExplicitNoProject)
+    assert outcome.via is ResolutionSource.CONVERSATION
+
+
+def test_the_documented_precedence_levels_match_the_enum() -> None:
+    """The drift guard, now over levels rather than a flat list."""
+    flattened = [source for level in PRECEDENCE for source in sorted(level, key=lambda s: s.value)]
+    assert set(flattened) == set(ResolutionSource)
+    assert len(flattened) == len(ResolutionSource)
+    # Level 2 is the one that holds two, and they are the pair that must.
+    assert PRECEDENCE[1] == frozenset(
+        {ResolutionSource.EXPLICIT_SELECTION, ResolutionSource.EXPLICIT_NONE_INSTRUCTION}
+    )

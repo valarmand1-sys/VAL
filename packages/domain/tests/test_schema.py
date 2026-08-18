@@ -7,12 +7,15 @@ Any divergence between §2, the models, and the migrated database fails here.
 """
 
 from collections.abc import Iterator
+from contextlib import contextmanager
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import Connection, Engine, text
+from sqlalchemy.exc import DBAPIError
 
 from val_domain.schema import SPECIFIED_TABLES
 
@@ -852,10 +855,124 @@ def test_the_accounting_view_exposes_every_base_column(engine: Engine) -> None:
     assert view - base == {"effective_cost_certainty", "accounted_cost", "accounting_note"}
 
 
+def _fabricating_history(connection: Connection) -> None:
+    """Suspend the `legacy_unknown` guard for this rolled-back transaction.
+
+    Migration `0007` closed `legacy_unknown` to new rows: it describes
+    `model_calls` written before project attribution existed, and that set was
+    backfilled once and is finished. A test that needs such a row is therefore
+    asking for something the database is built to refuse, and it has to say so
+    out loud rather than find a way in.
+
+    Two tests below genuinely need one, because what they exercise *is* the
+    handling of pre-amendment rows — the accounting view's treatment of a NULL
+    `cost_certainty`, which only historical rows carry. They fabricate the row,
+    and this function is where that admission lives.
+
+    Safe here for reasons that do not generalise: the `connection` fixture rolls
+    everything back, and Postgres makes DDL transactional, so the trigger is
+    restored with the rest. Nothing in `val_gateway` or the application may do
+    this — a writer that disables the guard has simply chosen not to decide
+    scope, which is the exact failure `0007` exists to prevent.
+    """
+    connection.execute(
+        text("ALTER TABLE model_calls DISABLE TRIGGER model_calls_legacy_attribution_is_closed")
+    )
+
+
+def test_a_new_legacy_unknown_row_is_refused_however_it_is_dated(
+    engine: Engine, connection: Connection
+) -> None:
+    """The finding from independent review, as a test.
+
+    `0006` reserved `legacy_unknown` with a check constraint on `created_at`,
+    and `created_at` is supplied by whoever writes the row. Backdating it walked
+    straight through. This asserts the row is refused *because of what it does*,
+    not because of when it claims to have happened — so all three dates fail:
+    today, before the old cutoff, and long before the system existed.
+    """
+    attempt = text(
+        "insert into model_calls (created_at, model_config_id, provider, model_identifier, "
+        "tokens_in, tokens_out, cost, cost_certainty, project_id, project_attribution, "
+        "task_type, latency_ms, provider_request_id, status) values "
+        "(:dated, gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
+        "'legacy_unknown', 'conversation', 1, '', 'ok')"
+    )
+    dates = (
+        datetime.now(UTC),
+        datetime(2026, 8, 15, tzinfo=UTC),  # before `0006`'s cutoff — the demonstrated bypass
+        datetime(2001, 1, 1, tzinfo=UTC),  # long before the system existed
+    )
+    for dated in dates:
+        # A savepoint per attempt: a refused statement aborts the surrounding
+        # transaction, and the fixture still needs a live one to roll back.
+        savepoint = connection.begin_nested()
+        with pytest.raises(DBAPIError) as raised:
+            connection.execute(attempt, {"dated": dated})
+        assert "closed to new rows" in str(raised.value)
+        savepoint.rollback()
+
+
+def test_an_existing_row_cannot_be_turned_into_a_legacy_one(
+    engine: Engine, connection: Connection
+) -> None:
+    """The other half of the rule, and the half a check constraint cannot state.
+
+    Refusing the INSERT alone would leave the obvious way round it: write the
+    row honestly, then update it to `legacy_unknown` afterwards. The guard is on
+    the transition, so it catches that too.
+    """
+    connection.execute(
+        text(
+            "insert into model_calls (model_config_id, provider, model_identifier, "
+            "tokens_in, tokens_out, cost, cost_certainty, project_id, "
+            "project_attribution, task_type, latency_ms, provider_request_id, status) "
+            "values (gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
+            "'explicit_none', 'conversation', 1, '', 'ok') returning id"
+        )
+    )
+    with pytest.raises(DBAPIError) as raised:
+        connection.execute(text("update model_calls set project_attribution = 'legacy_unknown'"))
+    assert "closed to new rows" in str(raised.value)
+
+
+def test_a_historical_row_stays_an_ordinary_row(engine: Engine, connection: Connection) -> None:
+    """Closed to new members, not frozen.
+
+    The nine real historical rows must remain correctable — a wrong latency or a
+    missing provider request id is still worth fixing. The guard refuses rows
+    *becoming* `legacy_unknown`; a row that already is one and stays one is
+    updated like any other.
+    """
+    _fabricating_history(connection)
+    call = connection.execute(
+        text(
+            "insert into model_calls (created_at, model_config_id, provider, "
+            "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
+            "project_attribution, task_type, latency_ms, provider_request_id, status) "
+            "values (timestamptz '2026-08-15 12:00:00+00', gen_random_uuid(), 'anthropic', "
+            "'x', 1, 1, 0.01, 'known', 'legacy_unknown', 'conversation', 1, '', 'ok') "
+            "returning id"
+        )
+    ).scalar_one()
+    connection.execute(
+        text("ALTER TABLE model_calls ENABLE TRIGGER model_calls_legacy_attribution_is_closed")
+    )
+
+    connection.execute(text("update model_calls set latency_ms = 42 where id = :i"), {"i": call})
+
+    row = connection.execute(
+        text("select latency_ms, project_attribution from model_calls where id = :i"), {"i": call}
+    ).one()
+    assert row.latency_ms == 42
+    assert row.project_attribution == "legacy_unknown"
+
+
 def test_the_view_never_leaves_effective_certainty_null(
     engine: Engine, connection: Connection
 ) -> None:
     """Every row resolves to known or unknown. There is no third state."""
+    _fabricating_history(connection)
     connection.execute(
         text(
             "insert into model_calls (created_at, model_config_id, provider, "
@@ -880,6 +997,7 @@ def test_the_superseding_rule_is_exact_not_a_blanket(
     and fabricated figures only on error. A rule that distrusted every legacy row
     would be discarding good evidence to be safe, which is its own kind of wrong.
     """
+    _fabricating_history(connection)
     legacy_insert = text(
         "insert into model_calls (created_at, model_config_id, provider, "
         "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
@@ -913,3 +1031,130 @@ def test_the_view_holds_no_state_of_its_own(engine: Engine) -> None:
             )
         ).scalar_one()
     assert kind == "VIEW"
+
+
+# =========================================================================
+# Migration reversibility — WP-0.6 corrective round two, 18 August 2026
+# =========================================================================
+#
+# `0006` originally claimed its downgrade was clean unconditionally, on the
+# reasoning that `project_attribution` "adds interpretation but stores no fact
+# of its own". True until the first `explicit_none` row exists; false forever
+# after. These two tests are the before and the after.
+
+
+@contextmanager
+def _restored_to_head(engine: Engine, alembic_config: Config) -> Iterator[None]:
+    """Run a migration test, leaving the scratch database back at head.
+
+    The session `engine` fixture builds head once and every other test assumes
+    it. A test that deliberately downgrades therefore has to put it back, and
+    has to do so even when it fails — otherwise one failure here reports itself
+    as a cascade of unrelated ones.
+    """
+    try:
+        yield
+    finally:
+        with engine.begin() as connection:
+            connection.execute(text("DROP SCHEMA public CASCADE"))
+            connection.execute(text("CREATE SCHEMA public"))
+        command.upgrade(alembic_config, "head")
+
+
+def test_the_attribution_downgrade_is_clean_when_nothing_was_decided(
+    engine: Engine, alembic_config: Config
+) -> None:
+    """A fresh checkout can roll back freely.
+
+    With no `explicit_none` row, every attribution is derivable from
+    `project_id` again, so dropping the column loses an interpretation and no
+    evidence. This is the state CI is always in.
+    """
+    with _restored_to_head(engine, alembic_config):
+        command.downgrade(alembic_config, "0005_persona_provenance")
+
+        with engine.connect() as connection:
+            columns = connection.execute(
+                text(
+                    "select column_name from information_schema.columns "
+                    "where table_name = 'model_calls'"
+                )
+            ).scalars()
+            assert "project_attribution" not in set(columns)
+
+        # And forward again, so the pair is reversible rather than merely
+        # droppable — a downgrade that cannot be re-applied is a dead end.
+        command.upgrade(alembic_config, "head")
+        with engine.connect() as connection:
+            assert (
+                connection.execute(text("select count(*) from model_calls_accounted")).scalar_one()
+                == 0
+            )
+
+
+def test_the_attribution_downgrade_refuses_once_a_decision_is_recorded(
+    engine: Engine, alembic_config: Config
+) -> None:
+    """One deliberate no-project row is enough to make the rollback destructive.
+
+    `project_id` NULL + `explicit_none` and `project_id` NULL + `legacy_unknown`
+    become the *same row* when the column goes, and nothing left in the table
+    distinguishes them afterwards. So the migration refuses, rather than
+    quietly turning a decision into a gap — the doctrine `0002`, `0003` and
+    `0005` already follow.
+    """
+    with _restored_to_head(engine, alembic_config):
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "insert into model_calls (model_config_id, provider, model_identifier, "
+                    "tokens_in, tokens_out, cost, cost_certainty, project_id, "
+                    "project_attribution, task_type, latency_ms, provider_request_id, status) "
+                    "values (gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
+                    "'explicit_none', 'conversation', 1, '', 'ok')"
+                )
+            )
+
+        with pytest.raises(RuntimeError) as raised:
+            command.downgrade(alembic_config, "0005_persona_provenance")
+        assert "Refusing to downgrade" in str(raised.value)
+        assert "explicit_none" in str(raised.value)
+
+        # Refused, not half-applied: the column and the decision are both still
+        # there. A migration that raises after dropping something is worse than
+        # one that never checked.
+        with engine.connect() as connection:
+            surviving = connection.execute(
+                text("select count(*) from model_calls where project_attribution = 'explicit_none'")
+            ).scalar_one()
+            assert surviving == 1
+
+
+def test_the_legacy_guard_downgrade_restores_the_earlier_constraint(
+    engine: Engine, alembic_config: Config
+) -> None:
+    """`0007` swapped enforcement for stronger enforcement and captured nothing.
+
+    So its downgrade is clean in both directions, and puts `0006`'s constraint
+    back rather than leaving the column unguarded.
+    """
+    with _restored_to_head(engine, alembic_config):
+        command.downgrade(alembic_config, "0006_project_attribution")
+
+        with engine.connect() as connection:
+            triggers = connection.execute(
+                text("select tgname from pg_trigger where not tgisinternal")
+            ).scalars()
+            assert "model_calls_legacy_attribution_is_closed" not in set(triggers)
+
+            constraints = connection.execute(
+                text("select conname from pg_constraint where conrelid = 'model_calls'::regclass")
+            ).scalars()
+            assert "ck_model_calls_legacy_attribution_is_reserved_to_history" in set(constraints)
+
+        command.upgrade(alembic_config, "head")
+        with engine.connect() as connection:
+            triggers = connection.execute(
+                text("select tgname from pg_trigger where not tgisinternal")
+            ).scalars()
+            assert "model_calls_legacy_attribution_is_closed" in set(triggers)

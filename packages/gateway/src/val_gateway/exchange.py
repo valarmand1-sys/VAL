@@ -31,7 +31,7 @@ that does not include `AmbiguousProject`, so an unresolved exchange cannot be
 attributed even by a caller who wants to. The type is the guarantee.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from uuid import UUID
 
 from val_domain.gateway import Classification, GatewayResponse, Message, TaskType
@@ -96,29 +96,30 @@ def resolve_scope(
 ) -> ProjectResolution:
     """Settle scope from signals, the session, and the catalogue.
 
-    The session contributes only where the signals are silent about it, so an
-    explicit selection in this interaction still outranks whatever was selected
-    earlier — which is what makes switching work without special-casing it.
+    The session is folded into the signals **as a pair**, exactly the way the
+    conversation is: `session_is_set` says a decision exists, and
+    `session_project_id` says whether that decision names a project or declines
+    one. The resolver then treats the two symmetrically and this function does
+    no deciding of its own.
+
+    **Corrected 18 August 2026.** It previously erased an explicit-none session
+    from the signals — `session_is_set=session.is_set and not
+    session.is_explicit_none` — and restored it only through a special case that
+    fired when *nothing else had been said*. So the moment any other signal
+    appeared the session's decision simply vanished: a trusted reference to
+    another project resolved outright instead of asking, and an untrusted
+    candidate produced the wrong question. A decision that survives only in the
+    absence of other input is not a decision the system is holding.
+
+    Signals the caller stated explicitly always win over the session object, so
+    a caller that supplies its own session pair is not overridden.
     """
     if session is not None and not signals.session_is_set:
-        signals = ProjectSignals(
-            supplied_project_id=signals.supplied_project_id,
-            explicit_selection=signals.explicit_selection,
-            explicit_no_project=signals.explicit_no_project,
-            conversation_project_id=signals.conversation_project_id,
-            conversation_is_established=signals.conversation_is_established,
+        signals = replace(
+            signals,
             session_project_id=session.project_id,
-            session_is_set=session.is_set and not session.is_explicit_none,
-            trusted_reference=signals.trusted_reference,
-            untrusted_candidate=signals.untrusted_candidate,
+            session_is_set=session.is_set,
         )
-        # A session set to explicit none is a decision, and it stands until the
-        # user changes it — otherwise every unspecified exchange after choosing
-        # "no project" would go back to asking.
-        if session.is_explicit_none and _nothing_else_said(signals):
-            scope = session.scope(catalogue)
-            if scope is not None:
-                return scope
 
     try:
         return resolve(signals, catalogue)
@@ -132,17 +133,6 @@ def resolve_scope(
                 "project should it be?"
             ),
         )
-
-
-def _nothing_else_said(signals: ProjectSignals) -> bool:
-    """Whether any signal other than the session speaks to scope."""
-    return (
-        signals.supplied_project_id is None
-        and signals.explicit_selection is None
-        and signals.any_reference is None
-        and not signals.conversation_is_established
-        and not signals.explicit_no_project
-    )
 
 
 def exchange(

@@ -9,9 +9,14 @@ from collections.abc import Iterator
 from uuid import uuid4
 
 import pytest
+from conftest import fabricate_a_legacy_row
 from sqlalchemy import Engine, create_engine, text
+from sqlalchemy.exc import DBAPIError
 
-from val_domain.database import test_database_url
+# Aliased on import: pytest collects any module-level name starting with `test_`,
+# so importing this helper under its own name made pytest treat the scratch-URL
+# accessor as a test case and warn about its return value.
+from val_domain.database import test_database_url as scratch_database_url
 from val_domain.gateway import CallStatus, CostCertainty
 from val_domain.project import ProjectAttribution
 from val_gateway.gateway import CallRecord
@@ -26,7 +31,7 @@ from val_gateway.persistence import (
 @pytest.fixture
 def engine() -> Iterator[Engine]:
     """The scratch database, never the authoritative store."""
-    url = test_database_url()
+    url = scratch_database_url()
     assert url.rsplit("/", 1)[-1].endswith("_test"), "refusing to run against a non-test database"
     made = create_engine(url)
     yield made
@@ -138,34 +143,57 @@ def test_unknown_cost_calls_are_countable(engine: Engine) -> None:
     assert uncosted_calls_this_month(engine) == before + 1
 
 
+#: Both refusal tests below name the constraint they expect. *Corrected 18
+#: August 2026.* They previously asserted only `pytest.raises(Exception)`, and
+#: when `0006` added `project_attribution` the value was appended without the
+#: column name — so the statement failed on argument count and the tests passed
+#: without ever reaching the constraint they exist to prove. A test that cannot
+#: fail for the right reason is not evidence, and this one had stopped being.
+def _violated_constraint(error: DBAPIError) -> str | None:
+    """The constraint the database actually refused on.
+
+    Read from psycopg's diagnostics rather than matched in the message text,
+    because SQLAlchemy truncates long statements into the string form, and the
+    constraint name is what gets cut. Reading it exactly also caught that the
+    name asserted here was simply wrong — the constraint is
+    `ck_model_calls_known_cost_is_recorded` — which a substring match against a
+    truncated message would have gone on hiding.
+    """
+    diagnostic = getattr(error.orig, "diag", None)
+    return None if diagnostic is None else diagnostic.constraint_name
+
+
+_CALL_COLUMNS = (
+    "insert into model_calls (model_config_id, provider, model_identifier, tokens_in, "
+    "tokens_out, cost, cost_certainty, task_type, project_attribution, latency_ms, "
+    "provider_request_id, status) values "
+)
+
+
 def test_the_database_refuses_an_unknown_cost_carrying_a_zero(engine: Engine) -> None:
     """The false factual zero is unwritable, not merely discouraged."""
-    with pytest.raises(Exception):  # noqa: B017 - the driver's own constraint error
+    with pytest.raises(DBAPIError) as caught:
         with engine.begin() as connection:
             connection.execute(
                 text(
-                    "insert into model_calls (model_config_id, provider, model_identifier, "
-                    "tokens_in, tokens_out, cost, cost_certainty, task_type, latency_ms, "
-                    "provider_request_id, status) values "
-                    "(gen_random_uuid(), 'anthropic', 'x', 0, 0, 0, 'unknown', "
-                    "'conversation', 'legacy_unknown', 1, '', 'error')"
+                    _CALL_COLUMNS + "(gen_random_uuid(), 'anthropic', 'x', 0, 0, 0, "
+                    "'unknown', 'conversation', 'explicit_none', 1, '', 'error')"
                 )
             )
+    assert _violated_constraint(caught.value) == "ck_model_calls_unknown_cost_is_not_a_zero"
 
 
 def test_the_database_refuses_a_known_cost_with_no_figure(engine: Engine) -> None:
     """The other half: `known` is a claim, and it must carry what it claims."""
-    with pytest.raises(Exception):  # noqa: B017 - the driver's own constraint error
+    with pytest.raises(DBAPIError) as caught:
         with engine.begin() as connection:
             connection.execute(
                 text(
-                    "insert into model_calls (model_config_id, provider, model_identifier, "
-                    "tokens_in, tokens_out, cost, cost_certainty, task_type, latency_ms, "
-                    "provider_request_id, status) values "
-                    "(gen_random_uuid(), 'anthropic', 'x', null, null, null, 'known', "
-                    "'conversation', 'legacy_unknown', 1, '', 'ok')"
+                    _CALL_COLUMNS + "(gen_random_uuid(), 'anthropic', 'x', null, null, "
+                    "null, 'known', 'conversation', 'explicit_none', 1, '', 'ok')"
                 )
             )
+    assert _violated_constraint(caught.value) == "ck_model_calls_known_cost_is_recorded"
 
 
 # --- the superseded fabricated zeroes — §2.2 amendment, 17 August 2026 -------
@@ -176,19 +204,15 @@ def test_the_database_refuses_a_known_cost_with_no_figure(engine: Engine) -> Non
 
 
 def a_superseded_row(engine: Engine) -> None:
-    """Insert a row shaped exactly like the 15 August ones: 0/0/$0, no certainty."""
-    with engine.begin() as connection:
-        connection.execute(
-            text(
-                "insert into model_calls (created_at, model_config_id, provider, "
-                "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
-                "task_type, project_attribution, latency_ms, provider_request_id, "
-                "status) values "
-                "(timestamptz '2026-08-15 20:43:09+00', gen_random_uuid(), 'anthropic', "
-                "'claude-opus-5', 0, 0, 0, null, 'conversation', 'legacy_unknown', "
-                "900, '', 'error')"
-            )
-        )
+    """Insert a row shaped exactly like the 15 August ones: 0/0/$0, no certainty.
+
+    Those rows also predate project attribution, so they carry `legacy_unknown`
+    — a value migration `0007` has since closed to new rows. The fabrication is
+    therefore explicit; see `conftest.fabricate_a_legacy_row`.
+    """
+    fabricate_a_legacy_row(
+        engine, tokens_in=0, tokens_out=0, cost=0, cost_certainty="null", status="'error'"
+    )
 
 
 def test_the_original_row_is_preserved_exactly_as_written(engine: Engine) -> None:
@@ -259,18 +283,18 @@ def test_a_legacy_success_row_is_still_treated_as_known(engine: Engine) -> None:
     The superseded implementation wrote real usage on success and refusal. Only
     its error path fabricated figures, so only its error rows are superseded.
     """
-    with engine.begin() as connection:
-        connection.execute(
-            text(
-                "insert into model_calls (created_at, model_config_id, provider, "
-                "model_identifier, tokens_in, tokens_out, cost, cost_certainty, "
-                "task_type, project_attribution, latency_ms, provider_request_id, "
-                "status) values "
-                "(timestamptz '2026-08-15 20:43:36+00', gen_random_uuid(), 'openai', "
-                "'gpt-5.5', 37, 24, 0.000905, null, 'conversation', 'legacy_unknown', "
-                "3378, 'req', 'ok')"
-            )
-        )
+    fabricate_a_legacy_row(
+        engine,
+        created_at="timestamptz '2026-08-15 20:43:36+00'",
+        provider="'openai'",
+        model_identifier="'gpt-5.5'",
+        tokens_in=37,
+        tokens_out=24,
+        cost=0.000905,
+        cost_certainty="null",
+        latency_ms=3378,
+        provider_request_id="'req'",
+    )
     with engine.connect() as connection:
         row = connection.execute(
             text(
