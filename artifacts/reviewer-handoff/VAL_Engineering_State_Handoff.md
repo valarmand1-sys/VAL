@@ -555,19 +555,19 @@ or the text interface.
 | | |
 |---|---|
 | PostgreSQL | 18.4 (Homebrew), port **5433** |
-| pgvector | 0.8.6 (installed; no vector column exists yet — retrieval is WP-0.7) |
-| Alembic revision | `0005_persona_provenance` (head) |
+| pgvector | 0.8.6 (installed, **unused** — WP-0.7 retrieval is PostgreSQL full text; see `VAL_Open_Decisions.md` item 10) |
+| Alembic revision | `0008_conversation_scope_recall` (head) |
 | Databases | `val` (authoritative), `val_test` (schema tests; refuses any name not ending `_test`) |
 
 ### Tables
 
 | Table | Purpose | Rows in `val` |
 |---|---|---|
-| `projects` | Projects Val works across | 0 |
-| `conversations` | `project_id` nullable — "no project" is explicit | 0 |
-| `messages` | `role` ∈ user/val/system; `sequence` unique per conversation | 0 |
+| `projects` | Projects Val works across | **6** — 4 from WP-0.6, 2 disposable from WP-0.7 acceptance |
+| `conversations` | `project_id` nullable and **immutable** — "no project" is explicit | **11** (10 scoped, 1 explicit no-project) |
+| `messages` | `role` ∈ user/val/system; `sequence` unique per conversation | **26**, no gaps or duplicates |
 | `personas` | Versioned; at most one active (partial unique index) | **1** — revision 1, authored v1.2 |
-| `model_calls` | Per-call cost attribution | **6** |
+| `model_calls` | Per-call cost attribution | **30** — 4 resolved (WP-0.6), 9 legacy_unknown, 17 from WP-0.7 |
 | `execution_events` | Acceptances, rejections, revisions, corrections, **reactions** | 0 |
 | `deliberations` | Blind position, confidence, ordering, outcome | 0 |
 | `ideas` | Idea lifecycle, manual marking only | 0 |

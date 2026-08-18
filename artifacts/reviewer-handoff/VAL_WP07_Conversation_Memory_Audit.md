@@ -111,6 +111,17 @@ The audit in §A is why it is that small: the sequence guarantees WP-0.7 needs w
 
 **`ix_conversations_project_id` is declared on the model too**, so `alembic check` reports no drift. Verified: *"No new upgrade operations detected."*
 
+**The authoritative store was migrated after the acceptance run, not before, and that is recorded rather than tidied.** The acceptance in §W ran against `val` while it was still at `0007`: the schema `0001` created was sufficient for every conversation and message written, and retrieval is correct without the index — it is a performance structure, not a correctness one. But **the scope-immutability trigger was not in force during that run**, and a direct `UPDATE` against a live conversation's `project_id` would have succeeded. Confirmed by trying it, inside a rolled-back transaction, before applying the migration.
+
+Nothing in the acceptance attempted such a rewrite, so no result in §W depends on the guard. It has since been applied — an encrypted backup first, then `alembic upgrade head` — and the same `UPDATE` is now refused against `val`:
+
+```
+before : UPDATE 1
+after  : ERROR: conversations.project_id is immutable. […]
+```
+
+Row counts across the migration: conversations 11 → 11, messages 26 → 26, `model_calls` 30 → 30, `legacy_unknown` 9 → 9. Nothing was rewritten. `0008`'s downgrade will now refuse on this database, which is the intended consequence of holding real conversations.
+
 ---
 
 ## F. Conversation lifecycle
@@ -528,6 +539,8 @@ Coverage of the assignment's 40-case matrix, plus the trap suite and the two mig
 **2. A test fixture left stale enum OIDs in the connection pool.** The persona fixture drops and recreates the schema; every enum gets a new OID, and pooled connections kept the old ones. `messages.role` began failing with `cache lookup failed for type <oid>` — **only in full-suite order**, passing in isolation. The fixture now disposes the pool, which is the honest response to that DDL.
 
 Two test-quality problems were also corrected: the budget test compared figures too close to distinguish, and the status test accumulated history inside its own loop and failed on its own side effects.
+
+**3. The authoritative store had not been migrated when the acceptance ran.** Found in the final verification sweep, not by a test: `val` was still at `0007`, so the scope-immutability guard was absent during §W. No acceptance result depended on it, and it has been applied with a backup taken first — see §E. The lesson is that "the tests pass and the acceptance passes" does not imply "the migration reached the store the acceptance ran against"; the two were verified separately here only because the final sweep checked the revision explicitly.
 
 ### Deferred, by design
 
