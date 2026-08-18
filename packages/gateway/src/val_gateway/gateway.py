@@ -64,6 +64,7 @@ from val_domain.gateway import (
     ModelConfig,
     TaskType,
 )
+from val_domain.project import ProjectScope, attribution_of
 from val_domain.registry import active, by_id, fallback_for, stale_rates
 from val_gateway.context import assemble
 from val_gateway.ledger import BudgetLedger, Refusal, Reservation
@@ -211,9 +212,9 @@ class Gateway:
         self,
         messages: tuple[Message, ...],
         *,
+        scope: ProjectScope,
         classification: Classification = Classification.PROTECTED,
         task_type: TaskType = TaskType.CONVERSATION,
-        project_id: UUID | None = None,
         conversation_id: UUID | None = None,
         message_id: UUID | None = None,
         max_output_tokens: int = 4096,
@@ -229,6 +230,15 @@ class Gateway:
 
         If no persona can be established the call does not happen. There is no
         degraded mode — see `val_gateway.persona`.
+
+        **`scope` is required and is a `ProjectScope`** — WP-0.6. It replaced
+        `project_id: UUID | None = None`, which was wrong in two ways at once: the
+        default let a caller who said nothing about scope silently write NULL,
+        and `None` had to mean both *explicitly no project* and *nobody decided*.
+        A `ProjectScope` is `ResolvedProject | ExplicitNoProject`, so it is always
+        a decision, it must be passed, and `AmbiguousProject` is not of the right
+        type to offer. Unresolved cannot reach persistence by construction rather
+        than by a check some later caller forgets.
         """
         if self._persona_loader is None:
             raise PersonaUnavailableError(
@@ -243,7 +253,7 @@ class Gateway:
             messages,
             classification=classification,
             task_type=task_type,
-            project_id=project_id,
+            project_id=attribution_of(scope),
             conversation_id=conversation_id,
             message_id=message_id,
             max_output_tokens=max_output_tokens,

@@ -40,6 +40,7 @@ from val_domain.persona import (
     read_source,
     semantic_version_of,
 )
+from val_domain.project import ExplicitNoProject
 from val_gateway.context import assemble, persona_occurrences
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.persistence import record_call
@@ -582,6 +583,7 @@ def test_a_hostile_persona_does_not_make_restricted_content_routable(
     with pytest.raises(Exception):  # noqa: B017 - the gateway's normalized refusal
         gateway.converse(
             (Message(role="user", content="Handle this."),),
+            scope=ExplicitNoProject(),
             classification=Classification.RESTRICTED,
         )
     assert adapter.calls == 0
@@ -688,7 +690,9 @@ def test_an_invalidated_active_persona_refuses_rather_than_falling_back(
     )
 
     with pytest.raises(PersonaUnavailableError) as caught:
-        gateway.converse((Message(role="user", content="Good evening."),))
+        gateway.converse(
+            (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+        )
     assert caught.value.problem is PersonaProblem.NONE_ACTIVE
     assert adapter.calls == 0, "a call was made with no persona"
 
@@ -708,7 +712,7 @@ def test_a_model_call_records_the_persona_revision_used(clean_personas: Engine) 
         ledger=FakeLedger(),
         persona_loader=DatabasePersonaLoader(clean_personas),
     )
-    gateway.converse((Message(role="user", content="Good evening."),))
+    gateway.converse((Message(role="user", content="Good evening."),), scope=ExplicitNoProject())
 
     with clean_personas.connect() as connection:
         row = connection.execute(
@@ -770,7 +774,7 @@ def test_historical_attribution_survives_a_later_activation(
         ledger=FakeLedger(),
         persona_loader=DatabasePersonaLoader(clean_personas),
     )
-    gateway.converse((Message(role="user", content="Good evening."),))
+    gateway.converse((Message(role="user", content="Good evening."),), scope=ExplicitNoProject())
 
     with clean_personas.connect() as connection:
         before = connection.execute(
@@ -826,4 +830,6 @@ def test_converse_refuses_without_a_loader() -> None:
         ledger=FakeLedger(),
     )
     with pytest.raises(PersonaUnavailableError):
-        gateway.converse((Message(role="user", content="Good evening."),))
+        gateway.converse(
+            (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+        )
