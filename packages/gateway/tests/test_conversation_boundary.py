@@ -134,3 +134,24 @@ def test_no_supporting_module_initiates_conversation_inference(module: str) -> N
     source = (SOURCE_ROOT / module).read_text()
 
     assert not (_calls_in(source) & PROVIDER_ENTRANCES)
+
+
+def test_the_real_gateway_is_built_with_a_verifier() -> None:
+    """The running application must be able to check provenance.
+
+    Found by running the live trap questions after the corrective change: the
+    first attempt returned an `UnansweredTurn` because `startup.start` built a
+    gateway with no verifier, and a gateway without one refuses conversation
+    calls. The guard was working; the wiring was missing.
+
+    Asserted on the source of the one place that builds the real gateway, so
+    the omission cannot come back silently. It would not be a quiet weakening if
+    it did — Val would stop talking, which is the right direction to fail — but
+    a boot-time failure found by a test is better than one found by a person.
+    """
+    source = (SOURCE_ROOT / "startup.py").read_text()
+
+    assert "verify_provenance=verifier(engine)" in source, (
+        "the application's gateway is built without a provenance verifier, so it "
+        "will refuse every conversation call"
+    )

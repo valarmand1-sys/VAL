@@ -29,6 +29,7 @@ from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
 from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
+from val_gateway.provenance import verifier
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
 from val_providers.openai_adapter import OpenAIAdapter
@@ -151,5 +152,16 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         recorder=lambda record: record_call(engine, record),
         ledger=ledger,
         persona_loader=persona_loader,
+        # WP-0.7 corrective round. A conversation call's conversation, message
+        # and project must agree with the records before anything is
+        # transmitted, and that is a database question — so the check arrives
+        # the same way the recorder and the ledger do, bound to this engine.
+        #
+        # **The running application must have one.** A gateway without a
+        # verifier refuses conversation calls outright, so omitting it here
+        # would not weaken the guarantee quietly; it would stop Val talking.
+        # That is the right direction to fail, and it is why this line is not
+        # optional in the one place that builds the real gateway.
+        verify_provenance=verifier(engine),
     )
     return Startup(gateway=gateway, warnings=warnings)
