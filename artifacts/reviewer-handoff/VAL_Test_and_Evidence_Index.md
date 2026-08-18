@@ -171,6 +171,48 @@ should, rather than proving it passes what it should.
 > Lord Armand read the exchange. Full account:
 > `VAL_WP05_Persona_Loading_Audit.md`.
 
+## 5c. Project resolution and attribution — WP-0.6, 17 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5c.1 | Exact id, slug, and canonical name each resolve | Three tests, one per key | **PASS** |
+| 5c.2 | Normalisation is deterministic and idempotent | Case, outer and internal whitespace; `normalise(normalise(x)) == normalise(x)` | **PASS** |
+| 5c.3 | **Near-misses do not resolve** | `Project Alpah`, `Alpha`, `Projekt Alpha`, `Project Alph` all fail. Similarity has no authority. | **PASS** |
+| 5c.4 | A well-formed but unknown UUID is unresolved, not none | `UNKNOWN_IDENTIFIER`; the outcome carries no `project_id` attribute at all | **PASS** |
+| 5c.5 | **A name matching two projects asks** | Two projects named `Winter Light`; `MULTIPLE_NAME_MATCHES` with both candidates | **PASS** |
+| 5c.6 | The question names only the candidates | Unrelated projects asserted absent from the text | **PASS** |
+| 5c.7 | **A clarification distinguishes candidates that share a name** | Found by running acceptance case E: the question said "Winter Light and Winter Light". Now falls back to the unique slug, and only where names collide. | **PASS** |
+| 5c.8 | **A confident, wrong model cannot establish scope** | Session says Alpha, "model" insists on Beta → a question, not Beta | **PASS** |
+| 5c.9 | A model naming a non-existent project creates no scope | No candidates, no attribution | **PASS** |
+| 5c.10 | **The resolver cannot reach a model at all** | Import graph asserted: no provider, no gateway, no SDK | **PASS** |
+| 5c.11 | Explicit no-project resolves to NULL | `ExplicitNoProject.project_id is None` | **PASS** |
+| 5c.12 | **Silence is unresolved and never no-project** | The heart of the package: an unanswered question must not become an answer | **PASS** |
+| 5c.13 | No ambiguous outcome can be read as no-project | Five ambiguous paths, none an `ExplicitNoProject` or `ResolvedProject` | **PASS** |
+| 5c.14 | Precedence is as documented | `PRECEDENCE == tuple(ResolutionSource)`; each rank tested against the one below | **PASS** |
+| 5c.15 | **Conflicting signals ask rather than choose** | Session in Alpha, mention of Beta → `CONFLICTING_SIGNALS` with both candidates | **PASS** |
+| 5c.16 | Restating the current project is not a conflict | Agreement resolves; it does not ask | **PASS** |
+| 5c.17 | An inconsistent established scope asks | Conversation or session pointing at a deleted project | **PASS** |
+| 5c.18 | Session lifetime is the process, and unset asks | A fresh session is unresolved, not none; `clear()` returns to unset | **PASS** |
+| 5c.19 | An explicit-none session persists as a decision | Later unspecified exchanges stay at none rather than re-asking | **PASS** |
+| 5c.20 | **Ambiguity contacts no provider and writes no row** | `adapter.calls == 0`, `model_calls` count unchanged. Invariant 16: scope-unknown content is not sent to a model to ask what it is. | **PASS** |
+| 5c.21 | A resolved project reaches `model_calls.project_id` | Equal to the resolved id | **PASS** |
+| 5c.22 | Explicit no-project reaches it as NULL | And by decision, because nothing else can write one | **PASS** |
+| 5c.23 | **Switching A→B preserves A's history** | Alpha's row unchanged, still exactly one | **PASS** |
+| 5c.24 | Switching to no-project preserves prior history | Alpha then NULL, in order | **PASS** |
+| 5c.25 | **A and B attribution never cross** | Four alternating exchanges, exactly 2 each, with confusable fixtures | **PASS** |
+| 5c.26 | Stale session state cannot leak in | Session in Alpha, explicit call about Beta → Beta | **PASS** |
+| 5c.27 | **Scope does not come from provider conversation memory** | Messages naming Alpha repeatedly, exchange scoped to Beta → Beta | **PASS** |
+| 5c.28 | One persona revision across projects | Alpha, Beta, and none produce a single distinct `persona_id` | **PASS** |
+| 5c.29 | Provider substitution does not alter attribution | Same project across both configured providers | **PASS** |
+| 5c.30 | **`converse` cannot be called without a scope** | `TypeError`. The signature is the guarantee; there is no default that writes NULL. | **PASS** |
+| 5c.31 | **Every persisted NULL is a decision** | Resolved, explicit-none, and two unresolved exchanges: 2 rows, 1 NULL. The unresolved ones wrote nothing. | **PASS** |
+| 5c.32 | Restricted is refused before scope is considered | §16's ordering, with an unresolved scope too | **PASS** |
+| 5c.33 | **All eight real acceptance cases** | A–H against the authoritative store, incl. a live `gpt-5-5` call at $0.022740 whose `project_id` equals the resolved project | **PASS** |
+
+> **WP-0.6 is COMPLETE.** No criterion here required a human reading — every one
+> is a mechanical property of code and records. Full account:
+> `VAL_WP06_Project_Resolution_Audit.md`.
+
 ## 6. Data-eligibility and Restricted handling
 
 | # | Claim | Evidence | Result |
@@ -224,10 +266,11 @@ should, rather than proving it passes what it should.
 | Backup / restore | 8 | **1** (4.8) |
 | Gateway / providers | 24 | 3 (5.9, 5.10, 5.11) |
 | Persona loading | 29 | — |
+| Project resolution | 33 | — |
 | Eligibility / Restricted | 12 | — |
 | Security | 6 | — |
 | Build | 4 | — |
-| **Automated tests** | **373 passing** | — |
+| **Automated tests** | **437 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.

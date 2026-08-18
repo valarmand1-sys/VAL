@@ -9,8 +9,10 @@ added. **Updated again the same day**: items 4, 5, and 6 are **decided and
 recorded below**, and item 7 — the WP-0.5 persona-adherence acceptance — is
 recorded with them.
 
-**Nothing on this page currently awaits a decision.** Item 1 remains an action
-only Lord Armand can take; items 2 and 3 stand as previously recommended.
+**Updated again 17 August 2026** after WP-0.6: **item 8 is new and is the only
+thing on this page awaiting a decision.** Item 1 remains an action only Lord
+Armand can take; items 2 and 3 stand as previously recommended; items 4–7 are
+decided and recorded below.
 
 ---
 
@@ -205,6 +207,34 @@ were all unchanged. **WP-0.5 is COMPLETE.**
 This is the first acceptance in the project that a model was structurally
 forbidden from signing, and the structure held: the criterion sat unsigned until
 a human read the text.
+
+---
+
+## 8. `projects.status` has no defined vocabulary — **AWAITING A DECISION**
+
+**Narrow, and not blocking.** Raised by WP-0.6 rather than guessed at.
+
+The column exists and is `NOT NULL`. **No baseline enumerates its values or
+attaches meaning to any of them.** So WP-0.6 treats no status as disqualifying:
+an archived project resolves by slug like any other, and a test asserts it.
+
+Inventing a rule — that an archived project may be referenced but not made
+current, say — would be writing policy this implementation is not entitled to
+write, and §10 of the authorisation says as much: *"Do not invent status policy
+if the current baseline does not define it."*
+
+Two things would need deciding together:
+
+1. **The vocabulary.** What values `status` may take.
+2. **Whether any of them restricts conversation.** Read-only? Referenceable but
+   not selectable? No restriction at all?
+
+**Recommendation: leave it until there is a real archived project.** Today there
+are four fixture projects and nothing archived in real use, so deciding now
+means deciding without the case that would inform it. The behaviour in the
+meantime is the permissive one, which is visible, tested, and easy to narrow —
+and narrowing later costs nothing, while having wrongly forbidden something
+would have cost a conversation somebody wanted to have.
 
 ---
 

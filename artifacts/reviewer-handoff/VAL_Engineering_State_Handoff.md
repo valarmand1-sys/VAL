@@ -72,7 +72,7 @@ is something to govern.
 
 | Layer | Delivers | State |
 |---|---|---|
-| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — **3 of 10 work packages complete** (WP-0.1, WP-0.2, WP-0.5) |
+| **0** | Core loop — exists, remembers, useful across projects | **IN PROGRESS** — **4 of 10 work packages complete** (WP-0.1, WP-0.2, WP-0.5, WP-0.6) |
 | 1 | Presence — voice, face, local inference | SPECIFIED FOR LATER |
 | 2 | Hands — MCP tools, read-only | SPECIFIED FOR LATER |
 | 3 | Agents — Roles, supervision, Temporal | SPECIFIED FOR LATER |
@@ -133,6 +133,15 @@ created through Alembic; no manual DDL at any point. Details in §E.
 
 All inference enters through `packages/gateway`. No component calls a provider
 SDK directly, enforced in CI. Details in §F.
+
+### Project scope — IMPLEMENTED NOW
+
+Every exchange resolves to a specific project or deliberately to none before
+anything is attributed. Unresolved is a third domain state that **cannot be
+persisted**: `converse` takes a `ProjectScope`, a union of resolved-and-none
+that excludes ambiguity, so an unsettled exchange is not the right type to pass.
+That is what makes `project_id IS NULL` trustworthy as the explicit-none set —
+the only value that writes a NULL is a decision. Details in §D.
 
 ### Data classifications — IMPLEMENTED NOW
 
@@ -363,12 +372,38 @@ counts were all unchanged, `03-persona.md` on disk still hashed to the digest it
 was seeded from, 373 tests passed, and CI was green on `73e9947`. **WP-0.5 is
 COMPLETE.**
 
-### WP-0.6 to WP-0.10 · NOT STARTED
+### WP-0.6 — Project resolution and attribution · COMPLETE
 
-No implementation exists for project resolution, the conversation loop,
-execution-history capture, deliberation capture, or the text interface. **The
-schema for `execution_events` and `deliberations` exists and is migrated, but
-nothing writes to them** — those tables are empty and there is no write path.
+**Exists:** three typed resolution states with `ProjectScope` — the union that
+structurally excludes ambiguity; a pure deterministic resolver with a recorded
+precedence order and exact-only matching; catalogue loading with existence
+validation; an application-owned session; and the exchange boundary that orders
+Restricted preflight → resolution → clarify-or-converse.
+
+**Paths:** `packages/domain/src/val_domain/project.py`,
+`packages/policy/src/val_policy/project_resolution.py`,
+`packages/gateway/src/val_gateway/{projects,exchange}.py`.
+
+**NO SCHEMA CHANGE.** The nullable `project_id` already spends its one meaning
+on *explicitly no project*, so unresolved is eliminated before persistence
+rather than stored. `converse` now takes a required `ProjectScope`, replacing
+`project_id: UUID | None = None` — which let a caller who said nothing about
+scope silently write NULL, and made `None` mean both a decision and the absence
+of one.
+
+**Verified:** all eight real acceptance cases, including a live model call whose
+`model_calls.project_id` equals the resolved project; ambiguity producing a
+question with **zero** provider calls and **zero** rows; cross-project
+attribution with deliberately confusable fixtures; and one persona revision
+across Alpha, Beta, and explicit none.
+
+### WP-0.7 to WP-0.10 · NOT STARTED
+
+No implementation exists for the conversation loop, execution-history capture,
+deliberation capture, or the text interface. **The schema for
+`execution_events` and `deliberations` exists and is migrated, but nothing
+writes to them** — those tables are empty and there is no write path.
+`conversations` and `messages` likewise have no write path until WP-0.7.
 
 ---
 
@@ -692,14 +727,16 @@ requirement at WP-0.10.
 
 ## I. Tests and verification
 
-Run everything with `uv run pytest -q` from the repository root. **373 tests, all
+Run everything with `uv run pytest -q` from the repository root. **437 tests, all
 passing** — 213 at `ccc94e3`, plus 97 from the corrective work, 21 from the
-reviewer-evidence issues, and 42 from WP-0.5.
+reviewer-evidence issues, 42 from WP-0.5, and 64 from WP-0.6.
 
 | Suite | Count | Command | Result |
 |---|---|---|---|
 | Schema and migrations | 101 | `uv run pytest packages/domain/tests/test_schema.py` | **PASS** |
 | **Persona loading (WP-0.5)** | 39 | `uv run pytest packages/gateway/tests/test_persona.py` | **PASS** |
+| **Project resolution (WP-0.6)** | 40 | `uv run pytest packages/policy/tests/test_project_resolution.py` | **PASS** |
+| **Project attribution (WP-0.6)** | 24 | `uv run pytest packages/gateway/tests/test_project_attribution.py` | **PASS** |
 | Restricted preflight | 34 | `uv run pytest packages/policy/tests/test_restricted.py` | **PASS** |
 | Version pinning | 26 | `uv run pytest infrastructure/ci/tests/test_check_pins.py` | **PASS** |
 | Gateway | 28 | `uv run pytest packages/gateway/tests/test_gateway.py` | **PASS** |
@@ -774,6 +811,9 @@ actually assert. Full account in `VAL_WP04_Corrective_Audit.md` §P.
 | **A live provider fallback, persona intact across it** | Anthropic unpayable → OpenAI; both attempts carried identical persona content and the same `persona_id` | 17 Aug | **PASS** |
 | **Database restart leaves the persona authoritative** | `brew services restart postgresql@18`; same persona id, content intact, source check clean | 17 Aug | **PASS** |
 | **A hostile persona moves no institutional state** | ceiling, eligibility, violations, admits, Restricted refusal — identical before and after activation | 17 Aug | **PASS** |
+| **A real model call carries its resolved project** | `gpt-5-5`, 4050/83, $0.022740; `model_calls.project_id` equals the resolved Project Alpha | 17 Aug | **PASS** |
+| **Ambiguity contacts no provider and writes no row** | "Winter Light" matching two projects: clarification returned, 0 calls, 0 rows | 17 Aug | **PASS** |
+| **One persona revision across Alpha, Beta, and no-project** | a single distinct `persona_id`; active persona identical before and after a switch | 17 Aug | **PASS** |
 | Restricted refused, no row | rows unchanged | 15 Aug | **PASS** |
 | Error normalisation | 3 real failure classes | 15 Aug | **PASS** |
 | Downgrade refuses to destroy records | scratch DB, `NotNullViolation`, record survived | 15 Aug | **PASS** |
@@ -823,9 +863,11 @@ Every one is recorded in the governing documents at the point it applies.
 | 4 | ~~No fallback routing~~ | — | **CLEARED 17 Aug** — implemented, with the fallback independently re-checked rather than inherited |
 | 5 | Capture write paths absent for `execution_events` / `deliberations` | WP-0.8, WP-0.9 | Sequenced |
 
-**All four decisions of 17 August are recorded and discharged**, and a fifth —
-the WP-0.5 persona-adherence acceptance — with them. `VAL_Open_Decisions.md`
-carries each with what it settled. **No decision is currently outstanding.**
+**All five decisions of 17 August are recorded and discharged.** WP-0.6 raised
+**one new one**, narrow and not blocking: `projects.status` has no defined
+vocabulary, so no status currently restricts conversation. Recorded as item 8 in
+`VAL_Open_Decisions.md` with a recommendation to leave it until there is a real
+archived project to decide it against.
 
 ---
 
