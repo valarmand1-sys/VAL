@@ -1,11 +1,11 @@
 VAL repository manifest
-Commit: f17d0d8c2c124d6f29cdf923b4e550464fb8cef4
-Generated: 2026-08-18T04:41:06Z
+Commit: 646e96508efecbd680ad931832a20654a04e3c68
+Generated: 2026-08-18T04:41:29Z
 Scope: every git-tracked project file, each with its size and SHA-256 — text and
        binary alike, in one table. Excludes .git internals, node_modules,
        virtualenvs, build output, caches, database data, backup repositories,
        and .env (which is git-ignored and never packaged).
-Files: 152
+Files: 153
 
 SIZE          SHA-256                                                           PATH
 2995          39bd780de21eea8e5aae74dad6aaf097813bc344169a6fff7377eff695dd830c  .env.example
@@ -57,8 +57,9 @@ SIZE          SHA-256                                                           
 7613          2314b4d742ee1efb07c8eea3971b7c291ecdaab534ad8403171c0b0127f096e0  artifacts/reviewer-handoff/VAL_Crossreference_Audit.md
 56189         7c4bd031a8ff1ddf7d173a629680db9bb221e0a568476d4ee09647403c29057f  artifacts/reviewer-handoff/VAL_Engineering_State_Handoff.md
 14554         ef134eadade6de23db8549bc5158feb40d59ec01fb209bedf0745760fe88f7e6  artifacts/reviewer-handoff/VAL_Open_Decisions.md
-18830         c3dba0501b487a3d30ce7778995ec521bef6459daa3f13a6155a6c4152b59c44  artifacts/reviewer-handoff/VAL_Repo_Manifest.txt
+18830         a700ac479d6d046457dccaa764474e10c3854ba52a439f9b635020f82c5e5b35  artifacts/reviewer-handoff/VAL_Repo_Manifest.txt
 400102        0972f207886aafacb6cc263291f747b07dcb8171cc83d4299191f17db135df42  artifacts/reviewer-handoff/VAL_Source_Snapshot_4ff6838.zip
+420122        d8a29d0f2b666b58a1c5cb3a8baad9ff995fba2b206b76f7bd944e3292b12408  artifacts/reviewer-handoff/VAL_Source_Snapshot_699ed24.zip
 38275         fe89d07862a725d39f15bebdd7d0cabd42afa137dc9be40ca7e00b78b0afb277  artifacts/reviewer-handoff/VAL_Test_and_Evidence_Index.md
 60758         0c4abd58c3bf1f2c3dfa0ce340c24db4bb1c4a39b43c9ebc900ca1da9b449a74  artifacts/reviewer-handoff/VAL_WP04_Corrective_Audit.md
 25885         62904cae73e45d3f43ca6ff4dea7b0258dd725467ce4e08934834bb5e00c80b6  artifacts/reviewer-handoff/VAL_WP05_Persona_Loading_Audit.md
