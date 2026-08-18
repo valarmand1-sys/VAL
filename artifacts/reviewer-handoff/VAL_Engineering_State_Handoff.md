@@ -474,7 +474,7 @@ count without ever reaching the constraint under test — one of them naming a
 constraint that does not exist. They now read the constraint from psycopg's
 diagnostics. A test that cannot fail for the right reason is not evidence.
 
-### WP-0.7 — Conversation loop and memory · IMPLEMENTED, ready for acceptance
+### WP-0.7 — Conversation loop and memory · IMPLEMENTED / ACCEPTANCE BLOCKED
 
 **Exists:** a conversation lifecycle (`create` from a settled `ProjectScope`,
 `resume` recovering scope from the stored row, `append`, `history`); one
@@ -542,6 +542,52 @@ full-suite order.
 unproved, blocked by the Anthropic account (WP-0.4). Provider independence is
 proved deterministically and, live, across two different routing configurations.
 
+> **Reopened 18 August 2026.** Independent source review of
+> `VAL_Source_Snapshot_d137925.zip` found **three acceptance defects**, all
+> confirmed against the source before anything was changed:
+>
+> 1. **A second, non-persistent conversation path.** WP-0.6's `exchange()` still
+>    called `converse()` directly, so a caller who chose it held a real
+>    conversation with nothing persisted — the whole package bypassed by picking
+>    the older of two functions that both looked like the front door.
+> 2. **Conversation requests without provenance.** `conversation_id`,
+>    `message_id` and `persona_id` were three independently optional fields, so
+>    *"all three or none"* was a convention breakable one field at a time.
+> 3. **Three unrelated ids could agree with nothing.** A row could record
+>    conversation A + a message from conversation B + project C, every column
+>    populated and every constraint satisfied.
+>
+> Two further corrections were required alongside them: an explicit
+> current-interaction scope choice was ignored when resuming a conversation, and
+> the memory envelope rendered recalled history as prose in a fresh user turn —
+> so Val's own prior words returned at the wire role of a live instruction, and
+> stored content could forge the framing.
+>
+> **Corrected at source commit `e6fb16c`.** No schema change. Full account:
+> `VAL_WP07_Corrective_Audit.md`. WP-0.7 returns to COMPLETE only on independent
+> re-acceptance.
+
+**One conversation boundary.** `val_gateway.loop.send` is the only application
+path that may initiate conversation inference, asserted by a source-level
+boundary test rather than by behaviour — a test that calls `send` and sees rows
+proves `send` persists, not that nothing else can converse without persisting.
+`exchange.py` keeps its deterministic WP-0.6 helpers and no longer imports a
+`Gateway` at all.
+
+**Conversation provenance is one indivisible object**, required for
+`TaskType.CONVERSATION` and absent for classification, strip, blind_position and
+title — the house reasoning on its own behalf rather than Val answering Lord
+Armand. Before transmission the gateway verifies the ids agree with the records:
+the message exists, is a user turn, belongs to the conversation named, and the
+conversation's scope matches the call's. A gateway built without a verifier
+refuses conversation calls rather than skipping the check.
+
+**Recalled memory is a serialised envelope**, not delimited prose. Content lives
+in JSON string values that cannot end the structure, each excerpt carries its own
+`stored_role` and speaker, and the current turn is a separate, later message. The
+wire vocabulary has no data role; `user` is the least-wrong of the two available
+and the tradeoff is documented where the code is.
+
 ### WP-0.8 to WP-0.10 · NOT STARTED
 
 No implementation exists for execution-history capture, deliberation capture,
@@ -564,10 +610,10 @@ or the text interface.
 | Table | Purpose | Rows in `val` |
 |---|---|---|
 | `projects` | Projects Val works across | **6** — 4 from WP-0.6, 2 disposable from WP-0.7 acceptance |
-| `conversations` | `project_id` nullable and **immutable** — "no project" is explicit | **11** (10 scoped, 1 explicit no-project) |
-| `messages` | `role` ∈ user/val/system; `sequence` unique per conversation | **26**, no gaps or duplicates |
+| `conversations` | `project_id` nullable and **immutable** — "no project" is explicit | **16** (15 scoped, 1 explicit no-project) |
+| `messages` | `role` ∈ user/val/system; `sequence` unique per conversation | **37**, no gaps or duplicates |
 | `personas` | Versioned; at most one active (partial unique index) | **1** — revision 1, authored v1.2 |
-| `model_calls` | Per-call cost attribution | **30** — 4 resolved (WP-0.6), 9 legacy_unknown, 17 from WP-0.7 |
+| `model_calls` | Per-call cost attribution | **40** — 4 resolved (WP-0.6), 9 legacy_unknown, 27 from WP-0.7 and its corrective round |
 | `execution_events` | Acceptances, rejections, revisions, corrections, **reactions** | 0 |
 | `deliberations` | Blind position, confidence, ordering, outcome | 0 |
 | `ideas` | Idea lifecycle, manual marking only | 0 |

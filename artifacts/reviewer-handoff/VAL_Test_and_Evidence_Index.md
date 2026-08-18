@@ -359,6 +359,48 @@ should, rather than proving it passes what it should.
 > criterion — including the trap-question amendment of 15 August 2026 — is
 > satisfied. Full account: `VAL_WP07_Conversation_Memory_Audit.md`.
 
+### 5f-corrective — independent review findings, 18 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5g.1 | **`converse` is called from exactly one module** | Source assertion over `val_gateway`. A behaviour test proves `send` persists; only this proves nothing *else* can converse without persisting. | **PASS** |
+| 5g.2 | `exchange.py` does not import a `Gateway` | It cannot acquire the ability to call one without the import appearing in a diff | **PASS** |
+| 5g.3 | **The retired function is gone, not deprecated** | The compatibility on offer was a conversation that left no record | **PASS** |
+| 5g.4 | Its surviving helpers take no `Gateway` | `resolve_scope`, `ClarificationNeeded`, `RestrictedContentRefusedError` remain | **PASS** |
+| 5g.5 | No supporting module initiates conversation inference | Parameterised over five modules so a failure names the culprit | **PASS** |
+| 5g.6 | **The real gateway is built with a verifier** | Found live, not by a test: `startup` omitted it and the application would have refused every conversation | **FOUND AND FIXED** |
+| 5g.7 | **A conversation request without provenance is refused** | The exact shape review reproduced | **PASS** |
+| 5g.8 | Non-conversation work needs none | Parameterised over classification, strip, blind_position, title | **PASS** |
+| 5g.9 | **The three ids cannot be supplied one at a time** | `ConversationProvenance` has no defaults | **PASS** |
+| 5g.10 | **A gateway without a verifier refuses conversation calls** | An optional guarantee is not a guarantee | **PASS** |
+| 5g.11 | **A message from another conversation is refused** | conversation A + message from B; provider not contacted, no row | **PASS** |
+| 5g.12 | **A project disagreeing with the conversation is refused** | conversation A + project C | **PASS** |
+| 5g.13 | Val's own reply cannot be the triggering message | It did not exist when the call was made | **PASS** |
+| 5g.14 | A non-existent message is refused before transmission | Not by the foreign key afterwards | **PASS** |
+| 5g.15 | Coherent provenance passes and is recorded | So the four refusals are not vacuous | **PASS** |
+| 5g.16 | **Case A — Alpha + explicit Beta ⇒ new Beta conversation** | Alpha unchanged | **PASS** |
+| 5g.17 | **Case B — Alpha + explicit no-project ⇒ new no-project conversation** | Alpha unchanged | **PASS** |
+| 5g.18 | **Case C — no-project + explicit Alpha ⇒ new Alpha conversation** | The old one unchanged | **PASS** |
+| 5g.19 | Case D — a stale session still cannot change a resumed conversation | The behaviour the correction must not break | **PASS** |
+| 5g.20 | **Case E — a mere mention is not a switch** | Trusted *and* untrusted; precedence 5 sits below established scope | **PASS** |
+| 5g.21 | **Case F — contradictory explicit choices clarify** | No conversation, no provider call, no rows | **PASS** |
+| 5g.22 | A switch never mutates the conversation it leaves | Asserted on the row | **PASS** |
+| 5g.23 | **Forged delimiters stay inside the envelope** | Literal footer, fake provenance, CURRENT USER INSTRUCTION, ignore-later-messages, an approval claim — all one JSON string value | **PASS** |
+| 5g.24 | The marker cannot create a second envelope | Exactly one | **PASS** |
+| 5g.25 | **Recalled Val output is not a fresh instruction** | Instruction-shaped `val` message keeps `stored_role: "val"`, never sent as a bare turn | **PASS** |
+| 5g.26 | The current turn is separate, later, and last | The note claims it; the payload matches | **PASS** |
+| 5g.27 | The envelope is never the system prompt | `system` holds the persona alone | **PASS** |
+| 5g.28 | The stored message is unchanged by being recalled | Escaping is on the wire; PostgreSQL holds the original | **PASS** |
+| 5g.29 | **WP-0.6 attribution suite passes through the persisted loop** | Its 23 sites rerouted, assertions unchanged — evidence that closing the old path cost WP-0.6 nothing | **PASS** |
+| 5g.30 | **The three trap questions, live, through the JSON envelope** | Re-run against the authoritative store and a real provider; correct negatives, no confabulated dates | **PASS** |
+| 5g.31 | Live isolation, restart continuity and explicit switch re-proved | 27 calls: 0 non-user messages, 0 cross-conversation, 0 project disagreements | **PASS** |
+
+> **WP-0.7 was reopened on 18 August** after independent review of
+> `VAL_Source_Snapshot_d137925.zip` found three acceptance defects, all
+> confirmed. The rows above record the corrections. WP-0.7 returns to COMPLETE
+> only on independent re-acceptance. Full account:
+> `VAL_WP07_Corrective_Audit.md`.
+
 ## 6. Data-eligibility and Restricted handling
 
 | # | Claim | Evidence | Result |
@@ -420,7 +462,8 @@ should, rather than proving it passes what it should.
 | Build | 4 | — |
 | Conversation loop and memory | 66 | — |
 | Conversation memory — live acceptance | 11 | — |
-| **Automated tests** | **555 passing** | — |
+| Conversation memory — corrective round | 31 | — |
+| **Automated tests** | **591 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.
