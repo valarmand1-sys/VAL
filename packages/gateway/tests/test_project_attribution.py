@@ -18,7 +18,13 @@ from gateway_fakes import FakeLedger, StubAdapter
 from sqlalchemy import Engine, text
 from test_persona import REPO_ROOT, clean_personas  # noqa: F401 - fixture reused
 
-from val_domain.gateway import Classification, GatewayRequest, Message, TaskType
+from val_domain.gateway import (
+    Classification,
+    GatewayRequest,
+    GatewayResponse,
+    Message,
+    TaskType,
+)
 from val_domain.project import (
     AmbiguityReason,
     AmbiguousProject,
@@ -32,14 +38,15 @@ from val_domain.project import (
 from val_gateway.exchange import (
     ClarificationNeeded,
     RestrictedContentRefusedError,
-    exchange,
     resolve_scope,
 )
 from val_gateway.gateway import Gateway
+from val_gateway.loop import UnansweredTurn, send
 from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader, seed
 from val_gateway.projects import ProjectSession, load_catalogue, project_exists
-from val_policy.project_resolution import ProjectSignals
+from val_gateway.provenance import verifier
+from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_providers.base import ProviderResult
 
 ALPHA_SLUG, BETA_SLUG = "project-alpha", "project-beta"
@@ -74,6 +81,58 @@ def project_id(engine: Engine, slug: str) -> UUID:
     return found
 
 
+def exchange(
+    engine: Engine,
+    gateway: Gateway,
+    messages: tuple[Message, ...],
+    signals: ProjectSignals,
+    catalogue: ProjectCatalogue,
+    *,
+    session: ProjectSession | None = None,
+    classification: Classification = Classification.PROTECTED,
+    task_type: TaskType = TaskType.CONVERSATION,
+    max_output_tokens: int = 4096,
+) -> GatewayResponse | ClarificationNeeded:
+    """WP-0.6's `exchange()`, reimplemented over the persisted conversation loop.
+
+    **The function this replaces no longer exists.** *WP-0.7 corrective round,
+    18 August 2026.* `val_gateway.exchange.exchange` resolved scope and then
+    called `gateway.converse` directly, so a caller choosing it got a real
+    conversation call with nothing persisted — WP-0.7 bypassed entirely by
+    picking the older of two functions that both looked like the front door.
+    Independent review found it, and it was removed rather than kept "for
+    compatibility", because the compatibility on offer was the ability to hold a
+    conversation that left no record.
+
+    Every assertion in this file is about WP-0.6 attribution — which project a
+    call is filed under, and that ambiguity files nothing — and none of it is
+    about *how* the call was made. So the tests keep their shape and are routed
+    through `loop.send`, which is now the only path. That they still pass
+    unchanged is itself the proof that closing the old path cost WP-0.6 nothing.
+
+    The last message is taken as the user's turn; these tests pass exactly one.
+    """
+    assert len(messages) == 1, "the persisted loop takes one user turn at a time"
+    outcome = send(
+        engine,
+        gateway,
+        messages[-1].content,
+        catalogue=catalogue,
+        signals=signals,
+        session=session,
+        classification=classification,
+        task_type=task_type,
+        max_output_tokens=max_output_tokens,
+    )
+    if isinstance(outcome, ClarificationNeeded):
+        return outcome
+    if isinstance(outcome, UnansweredTurn):
+        # The old function raised provider failures; the loop returns them so the
+        # persisted user turn is not mistaken for nothing having happened.
+        raise outcome.error
+    return outcome.response
+
+
 def build_gateway(engine: Engine, adapter: StubAdapter) -> Gateway:
     return Gateway(
         adapters={"anthropic": adapter, "openai": adapter},
@@ -81,6 +140,11 @@ def build_gateway(engine: Engine, adapter: StubAdapter) -> Gateway:
         ledger=FakeLedger(),
         observe_block=lambda message: None,
         persona_loader=DatabasePersonaLoader(engine),
+        # WP-0.7 corrective round. A gateway without a verifier refuses
+        # conversation calls rather than transmitting them unchecked, so every
+        # test gateway that holds conversations carries one — otherwise the
+        # suite would be exercising a configuration the application never uses.
+        verify_provenance=verifier(engine),
     )
 
 
@@ -111,6 +175,7 @@ def test_a_resolved_project_reaches_the_model_call(store: Engine) -> None:
     alpha = project_id(store, ALPHA_SLUG)
     adapter = answering()
     outcome = exchange(
+        store,
         build_gateway(store, adapter),
         (Message(role="user", content="Good evening."),),
         ProjectSignals(supplied_project_id=alpha),
@@ -124,6 +189,7 @@ def test_explicit_no_project_reaches_the_model_call_as_null(store: Engine) -> No
     """Test 23. NULL, and it means a decision because nothing else can write one."""
     adapter = answering()
     exchange(
+        store,
         build_gateway(store, adapter),
         (Message(role="user", content="A general question."),),
         ProjectSignals(explicit_no_project=True),
@@ -146,6 +212,7 @@ def test_ambiguity_makes_no_provider_call_and_no_row(store: Engine) -> None:
     before = call_count(store)
 
     outcome = exchange(
+        store,
         build_gateway(store, adapter),
         (Message(role="user", content="Let's continue with the boards."),),
         ProjectSignals(explicit_selection="Winter Light"),
@@ -164,6 +231,7 @@ def test_silence_asks_rather_than_filing_under_no_project(store: Engine) -> None
     adapter = answering()
     before = call_count(store)
     outcome = exchange(
+        store,
         build_gateway(store, adapter),
         (Message(role="user", content="Where were we?"),),
         ProjectSignals(),
@@ -179,6 +247,7 @@ def test_a_stale_project_uuid_is_rejected_without_attribution(store: Engine) -> 
     adapter = answering()
     before = call_count(store)
     outcome = exchange(
+        store,
         build_gateway(store, adapter),
         (Message(role="user", content="Continue."),),
         ProjectSignals(supplied_project_id=uuid4()),
@@ -223,6 +292,7 @@ def test_switching_changes_future_scope_only(store: Engine) -> None:
 
     session.select(resolve_scope(ProjectSignals(explicit_selection=ALPHA_SLUG), catalogue))  # type: ignore[arg-type]
     exchange(
+        store,
         gateway,
         (Message(role="user", content="In Alpha."),),
         ProjectSignals(),
@@ -233,6 +303,7 @@ def test_switching_changes_future_scope_only(store: Engine) -> None:
 
     session.select(resolve_scope(ProjectSignals(explicit_selection=BETA_SLUG), catalogue))  # type: ignore[arg-type]
     exchange(
+        store,
         gateway,
         (Message(role="user", content="Now in Beta."),),
         ProjectSignals(),
@@ -259,6 +330,7 @@ def test_switching_to_no_project_preserves_prior_project_history(store: Engine) 
 
     session.select(resolve_scope(ProjectSignals(explicit_selection=ALPHA_SLUG), catalogue))  # type: ignore[arg-type]
     exchange(
+        store,
         gateway,
         (Message(role="user", content="In Alpha."),),
         ProjectSignals(),
@@ -268,6 +340,7 @@ def test_switching_to_no_project_preserves_prior_project_history(store: Engine) 
 
     session.select(ExplicitNoProject())
     exchange(
+        store,
         gateway,
         (Message(role="user", content="Just a general note."),),
         ProjectSignals(),
@@ -331,6 +404,7 @@ def test_project_a_and_b_attribution_never_cross(store: Engine) -> None:
 
     for slug in (ALPHA_SLUG, BETA_SLUG, ALPHA_SLUG, BETA_SLUG):
         exchange(
+            store,
             gateway,
             (Message(role="user", content="Work."),),
             ProjectSignals(explicit_selection=slug),
@@ -357,6 +431,7 @@ def test_stale_session_state_cannot_leak_into_a_resolved_exchange(store: Engine)
 
     gateway = build_gateway(store, answering())
     exchange(
+        store,
         gateway,
         (Message(role="user", content="Work."),),
         ProjectSignals(supplied_project_id=beta),
@@ -376,12 +451,24 @@ def test_scope_does_not_come_from_provider_conversation_memory(store: Engine) ->
     """
     beta = project_id(store, BETA_SLUG)
     adapter = answering()
+    # The turn names Alpha repeatedly and would, if content had any say, drag the
+    # exchange there. Scope is supplied as Beta and the record says Beta.
+    #
+    # *WP-0.7 corrective round:* this used to pass three hand-built messages to
+    # the retired `exchange()`. The persisted loop takes one turn at a time and
+    # reads the rest from the store, which is itself the stronger form of the
+    # same claim — prior turns are House Armand's record, not a provider's.
     exchange(
+        store,
         build_gateway(store, adapter),
         (
-            Message(role="user", content="Earlier we worked on Project Alpha."),
-            Message(role="assistant", content="Yes, Project Alpha."),
-            Message(role="user", content="Continue."),
+            Message(
+                role="user",
+                content=(
+                    "Earlier we worked on Project Alpha. Yes, Project Alpha. "
+                    "Project Alpha, Project Alpha. Continue."
+                ),
+            ),
         ),
         ProjectSignals(supplied_project_id=beta),
         load_catalogue(store),
@@ -403,7 +490,9 @@ def test_the_same_persona_revision_is_used_across_projects(store: Engine) -> Non
         ProjectSignals(explicit_selection=BETA_SLUG),
         ProjectSignals(explicit_no_project=True),
     ):
-        exchange(gateway, (Message(role="user", content="Good evening."),), signals, catalogue)
+        exchange(
+            store, gateway, (Message(role="user", content="Good evening."),), signals, catalogue
+        )
 
     with store.connect() as connection:
         rows = connection.execute(
@@ -432,8 +521,10 @@ def test_provider_substitution_does_not_alter_project_attribution(store: Engine)
             recorder=lambda record: record_call(store, record),
             ledger=FakeLedger(),
             persona_loader=DatabasePersonaLoader(store),
+            verify_provenance=verifier(store),
         )
         exchange(
+            store,
             gateway,
             (Message(role="user", content="Work."),),
             ProjectSignals(supplied_project_id=alpha),
@@ -482,6 +573,7 @@ def test_restricted_content_is_refused_before_scope_is_even_considered(store: En
     before = call_count(store)
     with pytest.raises(RestrictedContentRefusedError):
         exchange(
+            store,
             build_gateway(store, adapter),
             (Message(role="user", content="ssn 123-45-6789"),),
             ProjectSignals(),  # unresolved too — the Restricted refusal comes first
@@ -512,19 +604,22 @@ def test_every_persisted_null_project_id_is_a_decision(store: Engine) -> None:
     gateway = build_gateway(store, answering())
 
     exchange(
+        store,
         gateway,
         (Message(role="user", content="a"),),
         ProjectSignals(explicit_selection=ALPHA_SLUG),
         catalogue,
     )
     exchange(
+        store,
         gateway,
         (Message(role="user", content="b"),),
         ProjectSignals(explicit_no_project=True),
         catalogue,
     )
-    exchange(gateway, (Message(role="user", content="c"),), ProjectSignals(), catalogue)
+    exchange(store, gateway, (Message(role="user", content="c"),), ProjectSignals(), catalogue)
     exchange(
+        store,
         gateway,
         (Message(role="user", content="d"),),
         ProjectSignals(explicit_selection="Winter Light"),
@@ -587,6 +682,7 @@ def test_a_legacy_null_row_is_never_read_as_explicit_none(store: Engine) -> None
 def test_a_new_explicit_no_project_exchange_is_recorded_as_a_decision(store: Engine) -> None:
     """Case B. NULL, and the row says a person chose it."""
     exchange(
+        store,
         build_gateway(store, answering()),
         (Message(role="user", content="A general question."),),
         ProjectSignals(explicit_no_project=True),
@@ -607,6 +703,7 @@ def test_a_new_resolved_exchange_is_recorded_as_resolved(store: Engine) -> None:
     """Case C."""
     alpha = project_id(store, ALPHA_SLUG)
     exchange(
+        store,
         build_gateway(store, answering()),
         (Message(role="user", content="Work."),),
         ProjectSignals(supplied_project_id=alpha),
@@ -641,9 +738,15 @@ def test_the_generic_gateway_path_cannot_omit_attribution(store: Engine) -> None
 
 def test_a_request_cannot_claim_legacy_attribution(store: Engine) -> None:
     """`LEGACY_UNKNOWN` is a read state. New code may not reach for it."""
+    # `TaskType.CLASSIFICATION`, not `CONVERSATION`. *WP-0.7 corrective round:*
+    # a conversation request now requires its provenance, and that validator
+    # would fire first — so the test would still pass, and would have stopped
+    # testing what it names. Classification is a task type that legitimately has
+    # no conversation behind it, which leaves attribution as the only thing
+    # under test here.
     with pytest.raises(Exception) as caught:
         GatewayRequest(
-            task_type=TaskType.CONVERSATION,
+            task_type=TaskType.CLASSIFICATION,
             classification=Classification.PROTECTED,
             messages=(Message(role="user", content="hi"),),
             project_id=None,
@@ -725,6 +828,7 @@ def test_analytics_can_separate_a_decision_from_a_legacy_null(store: Engine) -> 
     """
     legacy_row(store)
     exchange(
+        store,
         build_gateway(store, answering()),
         (Message(role="user", content="A general question."),),
         ProjectSignals(explicit_no_project=True),

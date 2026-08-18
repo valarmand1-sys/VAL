@@ -349,14 +349,17 @@ def test_provider_substitution_changes_no_identity_or_governance_state() -> None
     openai = StubAdapter(ProviderResult("Good evening, my lord.", 20, 10, "o", False))
 
     project = uuid4()
-    conversation = uuid4()
 
     def ask(adapter: StubAdapter, slug: str) -> object:
         gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
         outgoing = request()
-        pinned = outgoing.model_copy(
-            update={"project_id": project, "conversation_id": conversation}
-        )
+        # *WP-0.7 corrective round:* `conversation_id` is no longer a settable
+        # field — it is read from the conversation provenance object, which a
+        # non-conversation task type does not carry. Provider substitution
+        # leaving institutional facts alone is shown by `project_id`;
+        # conversation identity across providers is proved against real
+        # persisted conversations in `test_conversation_memory.py`.
+        pinned = outgoing.model_copy(update={"project_id": project})
         gateway.complete_with_configuration(pinned, config(slug))
         return rows[0]
 
@@ -367,7 +370,6 @@ def test_provider_substitution_changes_no_identity_or_governance_state() -> None
     assert first.model_identifier != second.model_identifier  # type: ignore[attr-defined]
     # Everything institutional is identical.
     assert first.project_id == second.project_id == project  # type: ignore[attr-defined]
-    assert first.conversation_id == second.conversation_id == conversation  # type: ignore[attr-defined]
     assert first.task_type == second.task_type  # type: ignore[attr-defined]
     assert first.status == second.status  # type: ignore[attr-defined]
     assert first.cost_certainty == second.cost_certainty  # type: ignore[attr-defined]

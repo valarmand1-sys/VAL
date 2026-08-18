@@ -74,6 +74,7 @@ from val_domain.gateway import (
     GatewayErrorKind,
     GatewayResponse,
     TaskType,
+    TurnReference,
 )
 from val_domain.project import AmbiguousProject, ProjectCandidate, ProjectScope
 from val_gateway import conversations
@@ -122,6 +123,20 @@ class UnansweredTurn:
 TurnOutcome = Turn | UnansweredTurn | ClarificationNeeded
 
 
+#: The two forms of an explicit current-interaction scope choice. WP-0.6 put
+#: them in one authority class — level 2 — because *"select Project Beta"* and
+#: *"this is not for a project"* are the same act: the user stating scope now.
+#:
+#: A *mention* of a project is not one of these. `trusted_reference` and
+#: `untrusted_candidate` sit at level 5 and below established conversation
+#: scope, so naming Beta in passing inside an Alpha conversation is not a
+#: switch — which is the whole difference between saying where you are and
+#: talking about somewhere else.
+def _states_scope_now(signals: ProjectSignals) -> bool:
+    """Whether the user has just stated scope, in either of its two forms."""
+    return signals.explicit_selection is not None or signals.explicit_no_project
+
+
 def send(
     engine: Engine,
     gateway: Gateway,
@@ -152,10 +167,38 @@ def send(
         raise RestrictedContentRefusedError(refusal_message(finding))
 
     # 2. Scope, and the conversation it belongs to.
-    if conversation_id is not None:
+    #
+    # Three cases, in authority order:
+    #
+    #   resuming, nothing stated   -> the conversation's own record decides
+    #   resuming, scope stated now -> the statement wins; a NEW conversation
+    #   not resuming               -> resolve the WP-0.6 way
+    stated = signals or ProjectSignals()
+    switching = conversation_id is not None and _states_scope_now(stated)
+
+    if conversation_id is not None and not switching:
+        # The conversation's stored scope is the authority. Session state is not
+        # consulted at all — a session pointing elsewhere is stale relative to
+        # the conversation actually open (WP-0.7 §18) — and a mere *mention* of
+        # another project is lower authority than established conversation scope,
+        # so it does not reach here either.
         conversation, scope = conversations.resume(engine, conversation_id)
     else:
-        resolution = resolve_scope(signals or ProjectSignals(), catalogue, session)
+        # **An explicit choice made now outranks the conversation being resumed.**
+        # *Corrected 18 August 2026, after independent review.* Resuming used to
+        # drop `signals` entirely, so "switch to Project Beta" typed inside an
+        # Alpha conversation was answered inside Alpha. WP-0.6 settled that
+        # naming a project and declining one are one authority class, and that
+        # both outrank established conversation state — they are a decision being
+        # made in this breath, not a record of an older one.
+        #
+        # The resolver decides, not this function, so two contradictory
+        # statements at once conflict and ask rather than being picked between.
+        #
+        # `session` is passed only when starting fresh. On a switch it is
+        # deliberately withheld: the user has just said where they are, and a
+        # stale session has nothing to add to that.
+        resolution = resolve_scope(stated, catalogue, None if switching else session)
         if isinstance(resolution, AmbiguousProject):
             # Nothing is created. An unresolved exchange has no conversation to
             # belong to, and inventing one would be inventing its scope.
@@ -165,6 +208,9 @@ def send(
                 candidates=tuple(ProjectCandidate.of(p) for p in resolution.candidates),
             )
         scope = resolution
+        # **Forward-only.** A switch starts a new conversation and never rewrites
+        # the one being left — whose `project_id` is immutable in the database
+        # anyway (migration `0008`).
         conversation = conversations.create(
             engine, scope=scope, title=title or _title_from(content)
         )
@@ -205,8 +251,10 @@ def send(
             scope=scope,
             classification=classification,
             task_type=task_type,
-            conversation_id=conversation.id,
-            message_id=user_message.id,
+            # One object rather than two loose ids — and `persona_id` is filled
+            # in by `assemble`, which is where the persona is known. The gateway
+            # verifies the three agree with the records before transmitting.
+            turn=TurnReference(conversation_id=conversation.id, message_id=user_message.id),
             max_output_tokens=max_output_tokens,
         )
     except GatewayError as failure:

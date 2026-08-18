@@ -1,48 +1,43 @@
-"""One user exchange, from input to attributed answer — or to a question.
+"""Scope resolution at the application boundary — WP-0.6.
 
-This is the application boundary WP-0.6 asks for: the place where scope becomes
-a settled fact *before* anything protected is sent anywhere. The order is
-deliberate and each step is a gate on the next:
+**This module no longer talks to a provider.** *Corrected 18 August 2026, after
+independent source review of `VAL_Source_Snapshot_d137925.zip`.*
 
-    user input
-      → Restricted preflight            content that must never leave, refused
-      → project resolution              deterministic, local, no provider
-      → if unresolved: ask              no model call, no attribution, no row
-      → active persona                  the runtime authority (WP-0.5)
-      → context assembly                persona whole, exactly once
-      → gateway routing                 eligibility, budget, provider
-      → attributed persistence          one project id, consistently
+It used to export an `exchange()` function that resolved scope and then called
+`gateway.converse()` directly. That was correct for WP-0.6, when an exchange
+held nothing and there was nothing to persist. WP-0.7 made it a defect: a caller
+choosing this path got a real `TaskType.CONVERSATION` provider call with **no
+conversation created, no user message persisted, no reply persisted, and no
+durable provenance** — the whole of WP-0.7 bypassed, by picking the older of two
+functions that both looked like the front door.
 
-**Why resolution comes before the persona and the provider, not after.**
-`00-charter.md` invariant 16 — *ambiguous or unresolved project context blocks
-protected or consequential action* — and invariant 17 puts unreleased creative
-IP in Protected. An exchange whose scope is unknown may well be Protected
-project material, so sending it to a cloud model to work out which project it
-belongs to would be doing the thing the invariant forbids, in order to find out
-whether the invariant applies. The question is asked locally instead.
+Review found it while the module still described itself as *the* application
+exchange boundary. It is not. **`val_gateway.loop.send` is the only application
+path that may initiate conversation inference**, and it is the only one that
+persists what it sends.
 
-**A clarification is not a model call.** It is deterministic application text
-assembled from the catalogue, so no provider is contacted and **no `model_calls`
-row is written** — writing one would assert a call that never happened, which is
-the same error `cost_certainty` exists to prevent on the accounting side.
+What remains here is what was always deterministic and provider-free:
 
-**Ambiguity is never persisted.** `converse` takes a `ProjectScope`, a union
-that does not include `AmbiguousProject`, so an unresolved exchange cannot be
-attributed even by a caller who wants to. The type is the guarantee.
+- `resolve_scope` — folds session state into signals and settles scope, or
+  produces the question that must be asked first;
+- `ClarificationNeeded` — an unresolved exchange as an ordinary outcome rather
+  than an exception;
+- `RestrictedContentRefusedError` — raised when content must never leave.
+
+None of it can reach a model: this module imports no `Gateway`, and a boundary
+test asserts that it never will again. Keeping the helpers is not "keeping the
+old function for compatibility" — there is no longer a compatibility path by
+which a conversation can happen without being recorded.
 """
 
 from dataclasses import dataclass, replace
-from uuid import UUID
 
-from val_domain.gateway import Classification, GatewayResponse, Message, TaskType
 from val_domain.project import (
     AmbiguityReason,
     AmbiguousProject,
     ProjectCandidate,
     ProjectResolution,
-    ProjectScope,
 )
-from val_gateway.gateway import Gateway
 from val_gateway.projects import ProjectSession
 from val_policy.project_resolution import (
     InconsistentConversationScopeError,
@@ -50,7 +45,6 @@ from val_policy.project_resolution import (
     ProjectSignals,
     resolve,
 )
-from val_policy.restricted import preflight, refusal_message
 
 
 @dataclass(frozen=True)
@@ -79,10 +73,6 @@ class ClarificationNeeded:
     def project_id(self) -> None:
         """No attribution. There is nothing here to file anything under."""
         return None
-
-
-#: What an exchange produces: an answer, or the question that must come first.
-ExchangeOutcome = GatewayResponse | ClarificationNeeded
 
 
 class RestrictedContentRefusedError(Exception):
@@ -133,55 +123,3 @@ def resolve_scope(
                 "project should it be?"
             ),
         )
-
-
-def exchange(
-    gateway: Gateway,
-    messages: tuple[Message, ...],
-    signals: ProjectSignals,
-    catalogue: ProjectCatalogue,
-    *,
-    session: ProjectSession | None = None,
-    classification: Classification = Classification.PROTECTED,
-    task_type: TaskType = TaskType.CONVERSATION,
-    conversation_id: UUID | None = None,
-    message_id: UUID | None = None,
-    max_output_tokens: int = 4096,
-) -> ExchangeOutcome:
-    """Run one exchange, in the order the invariants require.
-
-    Returns a `GatewayResponse` when scope was settled and the provider
-    answered, or a `ClarificationNeeded` when it was not — in which case no
-    provider was contacted, no `model_calls` row exists, and no project was
-    attributed to anything.
-    """
-    # 1. Restricted first. Content that must never leave the machine is refused
-    #    before it is even worth asking which project it belongs to.
-    parts = tuple(message.content for message in messages)
-    finding = preflight(parts)
-    if finding is not None:
-        raise RestrictedContentRefusedError(refusal_message(finding))
-
-    # 2. Scope, deterministically and locally.
-    resolution = resolve_scope(signals, catalogue, session)
-
-    # 3. Unresolved stops here. No provider, no row, no attribution.
-    if isinstance(resolution, AmbiguousProject):
-        return ClarificationNeeded(
-            question=resolution.question,
-            reason=resolution.reason,
-            candidates=tuple(ProjectCandidate.of(p) for p in resolution.candidates),
-        )
-
-    # 4. Settled. `resolution` is now a `ProjectScope` by elimination, and the
-    #    signature below will not accept anything else.
-    scope: ProjectScope = resolution
-    return gateway.converse(
-        messages,
-        scope=scope,
-        classification=classification,
-        task_type=task_type,
-        conversation_id=conversation_id,
-        message_id=message_id,
-        max_output_tokens=max_output_tokens,
-    )

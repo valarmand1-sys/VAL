@@ -63,6 +63,7 @@ from val_domain.gateway import (
     Message,
     ModelConfig,
     TaskType,
+    TurnReference,
 )
 from val_domain.project import (
     ProjectAttribution,
@@ -204,12 +205,19 @@ class Gateway:
         ledger: BudgetLedger,
         observe_block: Callable[[str], None] | None = None,
         persona_loader: PersonaLoader | None = None,
+        verify_provenance: Callable[[GatewayRequest], None] | None = None,
     ) -> None:
         self._adapters = adapters
         self._record = recorder
         self._ledger = ledger
         self._observe_block = observe_block or _log_block
         self._persona_loader = persona_loader
+        #: WP-0.7 corrective round. Checks that a conversation call's ids
+        #: describe one coherent event before anything is transmitted. Supplied
+        #: by the application because it is a database question; see
+        #: `val_gateway.provenance.verifier`. A gateway without one **refuses**
+        #: conversation calls rather than skipping the check.
+        self._verify_provenance = verify_provenance
 
     # --- the entrances ---------------------------------------------------------
 
@@ -220,8 +228,7 @@ class Gateway:
         scope: ProjectScope,
         classification: Classification = Classification.PROTECTED,
         task_type: TaskType = TaskType.CONVERSATION,
-        conversation_id: UUID | None = None,
-        message_id: UUID | None = None,
+        turn: TurnReference | None = None,
         max_output_tokens: int = 4096,
     ) -> GatewayResponse:
         """Talk to Val. The persona is loaded, assembled whole, and attributed.
@@ -259,8 +266,7 @@ class Gateway:
             classification=classification,
             task_type=task_type,
             scope=scope,
-            conversation_id=conversation_id,
-            message_id=message_id,
+            turn=turn,
             max_output_tokens=max_output_tokens,
         )
         return self.complete(request)
@@ -272,6 +278,7 @@ class Gateway:
         and what the work is; the gateway decides where that may go.
         """
         self._refuse_restricted(request)
+        self._refuse_incoherent_provenance(request)
 
         parts = content_parts(request)
         committed = self._ledger.committed_usd()
@@ -484,6 +491,38 @@ class Gateway:
         )
 
     # --- refusals that are not calls -----------------------------------------
+
+    def _refuse_incoherent_provenance(self, request: GatewayRequest) -> None:
+        """Refuse a conversation call whose ids do not agree with the records.
+
+        Runs **before** routing, the budget, and the provider, for the same
+        reason `_refuse_restricted` does: a call that must not happen should not
+        first select a route, reserve money, and transmit content. The foreign
+        keys would catch a wholly invented id when the row was written, which is
+        after the provider has been paid — and they would not catch a *real*
+        message belonging to a different conversation at all.
+
+        Non-conversation task types have no provenance and are not checked;
+        `GatewayRequest` already refuses a conversation without one.
+        """
+        if request.conversation is None:
+            return
+
+        if self._verify_provenance is None:
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                "this gateway was built without a provenance verifier, so it cannot "
+                "confirm that this call's conversation, message and project agree "
+                "with the records. Conversation calls are refused rather than "
+                "transmitted unverified (04-layer-0.md WP-0.7, corrective round). "
+                "Build it with `verify_provenance=val_gateway.provenance.verifier(engine)`.",
+            )
+
+        try:
+            self._verify_provenance(request)
+        except Exception as mismatch:
+            self._blocked(request, "incoherent conversation provenance")
+            raise GatewayError(GatewayErrorKind.INVALID_REQUEST, str(mismatch)) from mismatch
 
     def _refuse_restricted(self, request: GatewayRequest) -> None:
         """Refuse obvious Restricted material before a route is even selected.

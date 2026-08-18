@@ -25,12 +25,15 @@ import pytest
 from gateway_fakes import FakeLedger, StubAdapter, config
 from sqlalchemy import Engine, text
 
+from val_domain.conversation import StoredRole
 from val_domain.gateway import (
     Classification,
+    ConversationProvenance,
     CostCertainty,
     GatewayRequest,
     Message,
     TaskType,
+    TurnReference,
 )
 from val_domain.persona import (
     GOVERNING_PERSONA_PATH,
@@ -44,9 +47,11 @@ from val_domain.project import (
     ExplicitNoProject,
     ProjectAttribution,
     ProjectRecord,
+    ProjectScope,
     ResolutionSource,
     ResolvedProject,
 )
+from val_gateway import conversations
 from val_gateway.context import assemble, persona_occurrences
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.persistence import record_call
@@ -61,6 +66,7 @@ from val_gateway.persona import (
     seed,
     verify_against_source,
 )
+from val_gateway.provenance import verifier
 from val_providers.base import ProviderResult
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -100,6 +106,39 @@ def clean_personas(ledger_engine: Engine) -> Engine:
     # connection believes about this database is still reliable.
     ledger_engine.dispose()
     return ledger_engine
+
+
+def _a_turn_scoped(engine: Engine, scope: ProjectScope) -> TurnReference:
+    """A persisted turn in a conversation of the given scope.
+
+    A conversation call's project must agree with its conversation's — verified
+    before transmission since the WP-0.7 corrective round — so a scoped call
+    needs a scoped conversation rather than a convenient no-project one.
+    """
+    conversation = conversations.create(engine, scope=scope, title="persona test")
+    message = conversations.append(
+        engine, conversation.id, role=StoredRole.USER, content="Good evening."
+    )
+    return TurnReference(conversation_id=conversation.id, message_id=message.id)
+
+
+def a_persisted_turn(engine: Engine) -> TurnReference:
+    """A real conversation and a real user message, for a conversation call.
+
+    *WP-0.7 corrective round, 18 August 2026.* A `TaskType.CONVERSATION` request
+    now has to name the conversation and the persisted user message that caused
+    it, and the gateway verifies the pair against the records before
+    transmitting. These persona tests are conversation tests — persona
+    attribution on a Val utterance — so they get a real turn rather than an
+    exemption. Fabricating ids to satisfy the check would defeat the check.
+
+    Explicit no-project, because none of them is about scope.
+    """
+    conversation = conversations.create(engine, scope=ExplicitNoProject(), title="persona test")
+    message = conversations.append(
+        engine, conversation.id, role=StoredRole.USER, content="Good evening."
+    )
+    return TurnReference(conversation_id=conversation.id, message_id=message.id)
 
 
 def fixture_source(text_body: str, version: str = "9.9") -> PersonaSource:
@@ -389,7 +428,10 @@ def test_check_one_assembled_context_matches_the_active_database_row(
     active = DatabasePersonaLoader(clean_personas).active()
 
     request = assemble(
-        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+        active,
+        (Message(role="user", content="Good evening."),),
+        scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
     )
 
     assert request.system == active.content
@@ -433,7 +475,10 @@ def test_the_two_checks_are_genuinely_independent(clean_personas: Engine) -> Non
 
     # Check one still passes: the context matches the (drifted) record.
     request = assemble(
-        drifted, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+        drifted,
+        (Message(role="user", content="Good evening."),),
+        scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
     )
     assert request.system == drifted.content
 
@@ -473,6 +518,7 @@ def test_the_persona_appears_exactly_once(clean_personas: Engine) -> None:
             Message(role="user", content="Where would you begin?"),
         ),
         scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
     )
     assert persona_occurrences(request, active) == 1
     assert all(message.content != active.content for message in request.messages)
@@ -488,7 +534,10 @@ def test_the_persona_precedes_the_conversation(clean_personas: Engine) -> None:
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
     request = assemble(
-        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+        active,
+        (Message(role="user", content="Good evening."),),
+        scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
     )
 
     assert request.system == active.content
@@ -512,7 +561,9 @@ def test_provider_substitution_leaves_the_persona_identical(
             ledger=FakeLedger(),
             persona_loader=FixedPersonaLoader(active),
         )
-        request = assemble(active, messages, scope=ExplicitNoProject())
+        request = assemble(
+            active, messages, scope=ExplicitNoProject(), turn=a_persisted_turn(clean_personas)
+        )
         gateway.complete_with_configuration(request, config(slug))
         assert request.system is not None
         sent.append(request.system)
@@ -526,15 +577,44 @@ def test_switching_project_leaves_the_persona_identical(clean_personas: Engine) 
     active = DatabasePersonaLoader(clean_personas).active()
 
     def scoped(name: str) -> ResolvedProject:
+        """A real project row. *WP-0.7 corrective round.*
+
+        This used to fabricate a `ProjectRecord` with a random id, which was
+        fine when `assemble` only copied the id into a request. A conversation
+        call now belongs to a conversation, and a conversation belongs to a
+        project that exists — so the fixture creates one rather than inventing
+        an id the foreign key would refuse.
+        """
+        with clean_personas.begin() as connection:
+            row = connection.execute(
+                text(
+                    "insert into projects (name, slug, description, status) "
+                    "values (:n, :s, '', 'active') returning id, name, slug, status"
+                ),
+                {"n": name, "s": name.lower()},
+            ).one()
         return ResolvedProject(
-            ProjectRecord(id=uuid4(), name=name, slug=name.lower(), status="active"),
+            ProjectRecord(id=row.id, name=row.name, slug=row.slug, status=row.status),
             via=ResolutionSource.EXPLICIT_SELECTION,
         )
 
     a, b = scoped("alpha"), scoped("beta")
     project_a, project_b = a.project_id, b.project_id
-    in_a = assemble(active, (Message(role="user", content="A"),), scope=a)
-    in_b = assemble(active, (Message(role="user", content="B"),), scope=b)
+    # Each needs its own conversation: a conversation call's scope must agree
+    # with its conversation's, and `a_persisted_turn` opens an explicit-no-project
+    # one. So these are scoped conversations, created to match.
+    in_a = assemble(
+        active,
+        (Message(role="user", content="A"),),
+        scope=a,
+        turn=_a_turn_scoped(clean_personas, a),
+    )
+    in_b = assemble(
+        active,
+        (Message(role="user", content="B"),),
+        scope=b,
+        turn=_a_turn_scoped(clean_personas, b),
+    )
 
     assert in_a.system == in_b.system == active.content
     assert in_a.persona_id == in_b.persona_id == active.id
@@ -693,7 +773,10 @@ def test_runtime_works_when_the_source_document_is_unavailable(
 
     active = DatabasePersonaLoader(clean_personas).active()
     request = assemble(
-        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+        active,
+        (Message(role="user", content="Good evening."),),
+        scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
     )
     assert request.system == active.content
     assert len(request.system or "") > 10_000
@@ -720,6 +803,7 @@ def test_an_invalidated_active_persona_refuses_rather_than_falling_back(
         recorder=lambda record: uuid4(),
         ledger=FakeLedger(),
         persona_loader=DatabasePersonaLoader(clean_personas),
+        verify_provenance=verifier(clean_personas),
     )
 
     with pytest.raises(PersonaUnavailableError) as caught:
@@ -744,8 +828,13 @@ def test_a_model_call_records_the_persona_revision_used(clean_personas: Engine) 
         recorder=lambda record: record_call(clean_personas, record),
         ledger=FakeLedger(),
         persona_loader=DatabasePersonaLoader(clean_personas),
+        verify_provenance=verifier(clean_personas),
     )
-    gateway.converse((Message(role="user", content="Good evening."),), scope=ExplicitNoProject())
+    gateway.converse(
+        (Message(role="user", content="Good evening."),),
+        scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
+    )
 
     with clean_personas.connect() as connection:
         row = connection.execute(
@@ -778,7 +867,10 @@ def test_a_transmitted_call_that_errors_still_records_its_persona(
         persona_loader=FixedPersonaLoader(active),
     )
     request = assemble(
-        active, (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+        active,
+        (Message(role="user", content="Good evening."),),
+        scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
     )
     with pytest.raises(GatewayError):
         gateway.complete_with_configuration(request, config("opus-5"))
@@ -808,8 +900,13 @@ def test_historical_attribution_survives_a_later_activation(
         recorder=lambda record: record_call(clean_personas, record),
         ledger=FakeLedger(),
         persona_loader=DatabasePersonaLoader(clean_personas),
+        verify_provenance=verifier(clean_personas),
     )
-    gateway.converse((Message(role="user", content="Good evening."),), scope=ExplicitNoProject())
+    gateway.converse(
+        (Message(role="user", content="Good evening."),),
+        scope=ExplicitNoProject(),
+        turn=a_persisted_turn(clean_personas),
+    )
 
     with clean_personas.connect() as connection:
         before = connection.execute(
@@ -840,14 +937,22 @@ def test_a_call_that_was_never_sent_records_no_persona(clean_personas: Engine) -
         observe_block=lambda message: None,
         persona_loader=FixedPersonaLoader(active),
     )
+    turn = a_persisted_turn(clean_personas)
     leaking = GatewayRequest(
         task_type=TaskType.CONVERSATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="ssn 123-45-6789"),),
         system=active.content,
-        persona_id=active.id,
         project_id=None,
         project_attribution=ProjectAttribution.EXPLICIT_NONE,
+        # *WP-0.7 corrective round.* `persona_id` is no longer a field of its
+        # own; it travels with the conversation it was assembled for, so the
+        # three ids cannot be supplied one at a time.
+        conversation=ConversationProvenance(
+            conversation_id=turn.conversation_id,
+            message_id=turn.message_id,
+            persona_id=active.id,
+        ),
     )
     with pytest.raises(Exception):  # noqa: B017 - the Restricted refusal
         gateway.complete_with_configuration(leaking, config("opus-5"))

@@ -20,6 +20,7 @@ from uuid import UUID, uuid4
 
 from val_domain.gateway import (
     Classification,
+    ConversationProvenance,
     CostCertainty,
     GatewayRequest,
     Message,
@@ -175,9 +176,29 @@ def request(
     classification: Classification = Classification.PROTECTED,
     content: str = "Good evening.",
     max_output_tokens: int = 4096,
+    task_type: TaskType = TaskType.CLASSIFICATION,
+    conversation: ConversationProvenance | None = None,
 ) -> GatewayRequest:
+    """A request for the routing, budget and recording tests.
+
+    **`CLASSIFICATION` rather than `CONVERSATION`.** *WP-0.7 corrective round,
+    18 August 2026.* A conversation call now has to carry the conversation and
+    the persisted user message that caused it, and these tests have neither —
+    they are about which route is chosen, what it costs, and what is recorded,
+    none of which is conversation-specific. Giving them fabricated conversation
+    ids would have been inventing provenance to satisfy a check, which is the
+    opposite of what the check is for.
+
+    `classification` here is the *data* classification (Protected, Internal);
+    `task_type` is the kind of work. They are different axes that happen to
+    share a word.
+
+    A test that genuinely needs conversation semantics passes `task_type` and a
+    real `conversation`.
+    """
     return GatewayRequest(
-        task_type=TaskType.CONVERSATION,
+        task_type=task_type,
+        conversation=conversation,
         classification=classification,
         messages=(Message(role="user", content=content),),
         max_output_tokens=max_output_tokens,

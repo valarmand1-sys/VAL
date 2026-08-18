@@ -44,7 +44,14 @@ def test_cost_scales_linearly() -> None:
 
 
 def test_a_successful_call_writes_one_row_with_cost_project_and_task_type() -> None:
-    """The WP-0.4 criterion: cost, project, and task type populated."""
+    """The WP-0.4 criterion: cost, project, and task type populated.
+
+    *WP-0.7 corrective round:* the shared `request()` builder now defaults to
+    `CLASSIFICATION`, because a conversation call must carry the conversation
+    and the persisted user message that caused it, and these budget and
+    recording tests have neither. What is under test — that the task type
+    reaches the row — is unchanged.
+    """
     adapter = StubAdapter(ProviderResult("Good evening, my lord.", 1000, 500, "req_1", False))
     gateway, rows, _, _ = build(adapter)
     response = gateway.complete_with_configuration(request(), config())
@@ -54,7 +61,7 @@ def test_a_successful_call_writes_one_row_with_cost_project_and_task_type() -> N
     assert row.cost_usd == pytest.approx(compute_cost(config(), 1000, 500))
     assert row.cost_certainty is CostCertainty.KNOWN
     assert row.project_id is not None
-    assert row.task_type == "conversation"
+    assert row.task_type == "classification"
     assert row.status is CallStatus.OK
     assert row.slug == "opus-5"
     assert response.cost_usd == row.cost_usd
@@ -190,7 +197,7 @@ def test_a_tiny_prompt_with_a_large_output_cap_is_refused_before_transmission() 
     gateway, rows, ledger, _ = build(adapter, committed=CLOUD_CEILING_USD - 2.00)
 
     spacious = GatewayRequest(
-        task_type=TaskType.CONVERSATION,
+        task_type=TaskType.CLASSIFICATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="Good evening."),),
         max_output_tokens=128_000,
@@ -218,7 +225,7 @@ def test_the_same_tiny_prompt_with_a_modest_output_cap_proceeds() -> None:
     gateway, rows, _, _ = build(adapter, committed=CLOUD_CEILING_USD - 2.00)
 
     modest = GatewayRequest(
-        task_type=TaskType.CONVERSATION,
+        task_type=TaskType.CLASSIFICATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="Good evening."),),
         max_output_tokens=1000,
@@ -236,7 +243,7 @@ def test_the_reservation_covers_the_whole_authorised_output() -> None:
     gateway, _, ledger, _ = build(adapter)
 
     spacious = GatewayRequest(
-        task_type=TaskType.CONVERSATION,
+        task_type=TaskType.CLASSIFICATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="Good evening."),),
         max_output_tokens=64_000,
@@ -289,7 +296,7 @@ def test_a_credential_in_protected_content_is_blocked_before_transmission() -> N
     gateway, _, _, blocks = build(adapter)
 
     leaking = GatewayRequest(
-        task_type=TaskType.CONVERSATION,
+        task_type=TaskType.CLASSIFICATION,
         classification=Classification.PROTECTED,
         messages=(
             Message(
@@ -313,7 +320,7 @@ def test_a_blocked_request_writes_no_model_calls_row() -> None:
     gateway, rows, ledger, _ = build(adapter)
 
     leaking = GatewayRequest(
-        task_type=TaskType.CONVERSATION,
+        task_type=TaskType.CLASSIFICATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="ssn 123-45-6789"),),
         project_id=None,
@@ -333,7 +340,7 @@ def test_the_preflight_runs_before_the_budget_check() -> None:
     adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
     gateway, _, _, _ = build(adapter, committed=999.0)
     leaking = GatewayRequest(
-        task_type=TaskType.CONVERSATION,
+        task_type=TaskType.CLASSIFICATION,
         classification=Classification.PROTECTED,
         messages=(Message(role="user", content="password = " + fake("hunter", "2hunter2")),),
         project_id=None,

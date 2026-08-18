@@ -240,6 +240,64 @@ class Message(BaseModel):
     content: str
 
 
+class TurnReference(BaseModel):
+    """The turn a conversation call answers: a conversation and its user message.
+
+    What a caller holds *before* the persona is loaded. `converse` takes this;
+    context assembly adds the persona revision it just read and produces the
+    complete `ConversationProvenance`. Two objects rather than one optional
+    field, so no code path can construct provenance with the persona missing and
+    no code path has to pass `None` for a value it is about to supply.
+
+    Both ids are required. They are the pair `val_gateway.loop.send` already
+    holds by the time it calls the gateway, because it persisted the message.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    conversation_id: UUID
+    message_id: UUID
+
+
+class ConversationProvenance(BaseModel):
+    """What caused a conversation call, as one indivisible fact — WP-0.7 corrective.
+
+    Independent review of `VAL_Source_Snapshot_d137925.zip` found that a
+    `TaskType.CONVERSATION` request could still be built with
+    `conversation_id`, `message_id` and `persona_id` all `None` — a Val
+    utterance with nothing tying it to a conversation, a question, or an
+    identity. WP-0.7's persistence guarantee held for `loop.send` and for
+    nothing else.
+
+    **Three optional fields were the defect, not three missing checks.** They
+    were independently defaultable, so "all three or none" was a convention any
+    caller could break one field at a time. Here they are one object with no
+    defaults: a caller either has the provenance or cannot construct it, which
+    is the same device that kept `AmbiguousProject` out of persistence in
+    WP-0.6.
+
+    | Field | Means |
+    |---|---|
+    | `conversation_id` | the conversation this turn belongs to |
+    | `message_id` | the **persisted user message** that caused the call |
+    | `persona_id` | the persona revision assembled into it (WP-0.5) |
+
+    `message_id` is the *triggering* turn — the question — not Val's reply,
+    which does not exist when the call is made.
+
+    **This object asserts the three ids exist together. It does not assert they
+    agree.** Coherence — that the message really belongs to the conversation and
+    that the conversation's scope matches the call's — is a fact about the
+    database, and is checked in `val_gateway.provenance` before transmission.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    conversation_id: UUID
+    message_id: UUID
+    persona_id: UUID
+
+
 class GatewayRequest(BaseModel):
     """What a caller asks of the gateway.
 
@@ -267,13 +325,50 @@ class GatewayRequest(BaseModel):
     #: deciding now.
     project_id: UUID | None
     project_attribution: ProjectAttribution
-    conversation_id: UUID | None = None
-    message_id: UUID | None = None
-    #: Which persona revision was assembled into this request's context (WP-0.5).
-    #: Attribution, exactly like the three fields above it — set by context
-    #: assembly, recorded by the gateway, never chosen by a provider. None on the
-    #: paths that legitimately assemble no persona, which are not Val utterances.
-    persona_id: UUID | None = None
+    #: WP-0.7 corrective round, 18 August 2026. **One object, not three
+    #: independently optional ids.** Required for `TaskType.CONVERSATION` and
+    #: absent on the task types that legitimately have no conversation behind
+    #: them — classification, strip, blind_position, title. Those are machinery
+    #: the house runs on its own behalf; a conversation is Val speaking to Lord
+    #: Armand, and it must be possible to say which turn it answered.
+    conversation: ConversationProvenance | None = None
+
+    @property
+    def conversation_id(self) -> UUID | None:
+        """The conversation, if this call has one. Read by the recorder."""
+        return None if self.conversation is None else self.conversation.conversation_id
+
+    @property
+    def message_id(self) -> UUID | None:
+        """The persisted user message that caused this call, if there is one."""
+        return None if self.conversation is None else self.conversation.message_id
+
+    @property
+    def persona_id(self) -> UUID | None:
+        """The persona revision assembled into this request, if any."""
+        return None if self.conversation is None else self.conversation.persona_id
+
+    @model_validator(mode="after")
+    def _a_conversation_call_carries_its_provenance(self) -> GatewayRequest:
+        """A Val utterance must say which turn it answered — WP-0.7 corrective.
+
+        The other task types are exempt because they are not conversation:
+        classification and strip are the house reasoning about content before it
+        is routed, `blind_position` is a deliberation step, and `title` names
+        something. None of them is Val answering Lord Armand, and requiring a
+        conversation of them would be requiring a fiction.
+        """
+        if self.task_type is TaskType.CONVERSATION and self.conversation is None:
+            raise ValueError(
+                "a conversation call must carry its provenance: the conversation it "
+                "belongs to, the persisted user message that caused it, and the "
+                "persona revision assembled into it. Without them a Val utterance is "
+                "recorded with nothing tying it to what was said or who said it "
+                "(04-layer-0.md WP-0.7). Use `val_gateway.loop.send`, which persists "
+                "the message first and supplies all three; task types that are not "
+                "conversation are exempt."
+            )
+        return self
 
     @model_validator(mode="after")
     def _attribution_agrees_with_the_id(self) -> GatewayRequest:
