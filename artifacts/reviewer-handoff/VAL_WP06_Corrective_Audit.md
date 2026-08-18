@@ -552,7 +552,21 @@ WP-0.7 is the first thing that will write conversation rows. Whatever creates on
 
 **No column was added.** Adding attribution to a table with no rows and no writer would be building WP-0.7's machinery early — the first standing exclusion in `CLAUDE.md`. It is recorded in `VAL_Open_Decisions.md` and in the `Conversation` docstring instead.
 
-## S. Executive decisions required
+## S. Bundle
+
+| | |
+|---|---|
+| Source commit | `699ed24` |
+| Artifact commit | recorded in the manifest below |
+| Snapshot | `VAL_Source_Snapshot_699ed24.zip`, 179 files |
+| SHA-256 | `d8a29d0f2b666b58a1c5cb3a8baad9ff995fba2b206b76f7bd944e3292b12408` |
+
+The snapshot is source only — `artifacts/` is excluded, as in the two previous
+bundles, so the review reads the code rather than my account of it.
+
+---
+
+## T. Executive decisions required
 
 **NONE.**
 
