@@ -39,7 +39,7 @@ The governing rule (`04-layer-0.md` WP-0.6) is *"application code sets final sco
 if signals.mentioned_reference is not None:
     resolved = _from_reference(...)
     if not isinstance(resolved, AmbiguousProject):
-        return resolved          # <- a model just set scope
+        return resolved  # <- a model just set scope
 ```
 
 **The existing test only ever exercised the case where a session disagreed.** With no conversation and no session there is nothing of higher authority to disagree, so an exact match from any origin resolved outright.
