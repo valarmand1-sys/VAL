@@ -305,6 +305,17 @@ The live store remains at `0008_conversation_scope_recall`.
 
 **One observation worth the reviewer's attention.** Two of the three findings were *shapes the code permitted* rather than behaviour anything exercised: no test called `exchange()` in production, and nothing built an incoherent request. Both were found by reading the contract rather than by running it, which is the second time on this package that the useful review was structural. The boundary test added here is an attempt to make that class of defect fail automatically rather than wait for a reader.
 
+## M. Bundle
+
+| | |
+|---|---|
+| Source commit | `e6fb16c` |
+| Snapshot | `VAL_Source_Snapshot_e6fb16c.zip`, 187 files |
+| SHA-256 | `c1139a69ff041cdaeee36de88ed067dee1bfe7fe79916c29204dd43ebd72dd1b` |
+
+Source only — `artifacts/` excluded, as in every previous bundle. Verified
+file-by-file against the commit: identical.
+
 ## Executive decisions required
 
 **NONE.**
