@@ -112,8 +112,11 @@ def upper_bound_output_tokens(requested_max_output_tokens: int, config: ModelCon
 
     Reasoning and thinking tokens need no separate term: every provider in this
     registry bills them as output and counts them inside the same cap, so they
-    are already inside this number. `reasoning_effort` is `NOT_APPLICABLE` on
-    every current entry in any case.
+    are already inside this number. That holds for the configured efforts too —
+    Opus 5 runs at `HIGH` and GPT-5.5 at `MEDIUM` (independent-review
+    correction, 18 August 2026), and both providers bill the resulting
+    reasoning tokens as ordinary output inside `max_tokens` /
+    `max_output_tokens`, which is exactly the cap this bound prices.
     """
     return min(requested_max_output_tokens, config.max_output_tokens)
 

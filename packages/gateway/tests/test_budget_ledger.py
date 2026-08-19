@@ -29,7 +29,7 @@ from val_policy.budget import CLOUD_CEILING_USD
 
 
 def config() -> object:
-    found = by_slug("haiku-4-5")
+    found = by_slug("haiku-4-5-20251001")
     assert found is not None
     return found
 

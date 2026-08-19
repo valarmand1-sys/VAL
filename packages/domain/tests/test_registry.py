@@ -4,10 +4,20 @@ The registry is what `model_calls.model_config_id` resolves through, so its
 invariants are about history holding rather than about routing being clever.
 """
 
+from datetime import date
+
 import pytest
 
-from val_domain.gateway import AdapterStatus, Admission, Classification, PricingFeature
-from val_domain.registry import REGISTRY, active, by_id, by_slug, cheapest, live_routes
+from val_domain.gateway import AdapterStatus, Admission, Classification, ModelConfig, PricingFeature
+from val_domain.registry import (
+    REGISTRY,
+    active,
+    by_id,
+    by_slug,
+    cheapest,
+    declared_chain_violations,
+    live_routes,
+)
 
 
 def test_ids_and_slugs_are_unique() -> None:
@@ -85,11 +95,26 @@ def test_live_and_enabled_are_different_states() -> None:
 
 
 def test_only_a_real_answer_marks_a_route_live() -> None:
-    """gpt-5-5 answered on 15 August; the Anthropic routes never have."""
-    from val_domain.registry import live_routes, unproven_routes
+    """A route is live only when it has actually answered under its identifier.
 
-    assert {c.slug for c in live_routes()} == {"gpt-5-5"}
-    assert {c.slug for c in unproven_routes()} == {"opus-5", "haiku-4-5"}
+    *Independent-review correction, 18 August 2026.* Every historical live call
+    was made under the retired `gpt-5.5` alias configuration, whose recorded
+    fact (first live answer, 15 August) is preserved on the retired entry. The
+    pinned successors have never themselves answered, and saying otherwise
+    would be inventing history — so all three active routes are unproven until
+    a real call lands on them. WP-0.4's second-live-provider tracking continues
+    against the new entries.
+    """
+    from val_domain.registry import by_slug, live_routes, unproven_routes
+
+    assert {c.slug for c in live_routes()} == set()
+    assert {c.slug for c in unproven_routes()} == {
+        "opus-5",
+        "haiku-4-5-20251001",
+        "gpt-5-5-20260423",
+    }
+    retired_alias = by_slug("gpt-5-5")
+    assert retired_alias is not None and retired_alias.last_live_call_on is not None
 
 
 def test_an_unproven_route_is_still_enabled_and_eligible() -> None:
@@ -153,33 +178,83 @@ def test_admission_and_adapter_status_are_independent_states() -> None:
     assert len(live_routes()) < len(active())
 
 
-def test_every_declared_fallback_exists_and_chains_terminate() -> None:
-    """ "No fallback" is a decision that must be visible as one.
+def test_every_declared_chain_terminates() -> None:
+    """Every declared fallback chain must end at an explicit NONE.
 
-    *Closure pass, 18 August 2026.* This used to assert that some current entry
-    declares NONE — a fact about today's registry contents, not about the
-    mechanism, and it broke the moment haiku gained a cross-provider fallback.
-    What the mechanism owes: every declared fallback names a real entry, no
-    entry falls back to itself, and every declared chain terminates rather than
-    looping forever — the router follows chains with a seen-set, but a registry
-    that only works because the follower defends against it is mis-declared.
-    NONE remaining *representable* is asserted structurally: the field's type is
-    `str | None` and `fallback_for` returns None for it (routing tests).
+    *Independent-review correction, 18 August 2026.* The previous version of
+    this test walked each chain with a seen-set and then asserted
+    `current is None or current in seen` — which is the loop's own exit
+    condition restated, true for every input including a cycle. It passed on a
+    REAL declared cycle (haiku ↔ gpt) in the production registry. The check is
+    now `declared_chain_violations`, shared with `startup_violations` so a
+    declared cycle also stops the service at boot, and it is proven falsifiable
+    by the synthetic fixtures in the two tests below.
     """
-    declared = {config.slug: config.fallback_slug for config in active()}
-    for slug, fallback in declared.items():
-        if fallback is not None:
-            assert by_slug(fallback) is not None, f"{slug} declares a missing fallback"
-            assert fallback != slug, f"{slug} falls back to itself"
+    assert declared_chain_violations(active()) == []
 
-    for start in declared:
-        seen, current = set(), start
-        while current is not None and current not in seen:
-            seen.add(current)
-            current = declared.get(current)
-        # A revisit is a declared cycle: tolerated by the router, but recorded
-        # here so a mis-declaration is a failing test rather than a surprise.
-        assert current is None or current in seen
+
+def _synthetic(slug: str, fallback: str | None, price: float = 1.0) -> ModelConfig:
+    """A minimal entry for exercising the chain validator with bad registries."""
+    from uuid import uuid4
+
+    from val_domain.gateway import (
+        AdapterStatus,
+        Admission,
+        Classification,
+        PricingFeature,
+        ReasoningEffort,
+    )
+
+    return ModelConfig(
+        id=uuid4(),
+        slug=slug,
+        provider="anthropic",
+        model_identifier=f"synthetic-{slug}",
+        display_name=slug,
+        context_window_tokens=1000,
+        max_output_tokens=100,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        cost_per_mtok_in_usd=price,
+        cost_per_mtok_out_usd=price,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=frozenset({Classification.INTERNAL}),
+        known_weaknesses=(),
+        fallback_slug=fallback,
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 8, 18),
+        rates_verified_on=date(2026, 8, 18),
+    )
+
+
+def test_the_chain_validator_rejects_a_declared_cycle() -> None:
+    """The negative fixture the review required: A -> B -> A must be refused.
+
+    This is what makes the test above evidence rather than reassurance — the
+    detector demonstrably fails on the shape it exists to catch, which the
+    previous tautology never could.
+    """
+    cyclic = (_synthetic("a", "b"), _synthetic("b", "a"))
+    problems = declared_chain_violations(cyclic)
+    assert problems, "a declared A -> B -> A cycle was accepted"
+    assert any("cycle" in problem for problem in problems)
+
+    self_cycle = (_synthetic("a", "a"),)
+    assert any("cycle" in problem for problem in declared_chain_violations(self_cycle))
+
+
+def test_the_chain_validator_rejects_a_dangling_fallback() -> None:
+    """And the other bad shape: a fallback naming nothing."""
+    dangling = (_synthetic("a", "ghost"),)
+    problems = declared_chain_violations(dangling)
+    assert problems and any("names no entry" in problem for problem in problems)
+
+
+def test_a_terminating_chain_is_accepted() -> None:
+    """The healthy shape, so the detector is known to pass what it should."""
+    healthy = (_synthetic("a", "b"), _synthetic("b", None))
+    assert declared_chain_violations(healthy) == []
 
 
 def test_retirement_state_is_coherent() -> None:
@@ -203,13 +278,33 @@ def test_pricing_features_are_recorded_rather_than_guessed() -> None:
         assert config.batch_pricing in set(PricingFeature)
 
 
-def test_activation_precedes_or_matches_rate_verification() -> None:
-    """A route cannot have been admitted on rates read after it was admitted."""
+def test_rate_verification_is_current_as_of_activation() -> None:
+    """`rates_verified_on` never lags `activated_on`.
+
+    *Independent-review correction, 18 August 2026.* The previous assertion was
+    `A <= B or B <= A`, which is true for every pair of comparable dates — a
+    test that could never fail. The actual domain invariant: activating a route
+    requires reading its rates from the provider's documentation at activation
+    time, so `rates_verified_on` starts equal to `activated_on` and only ever
+    moves LATER, on re-verification. A verification date earlier than
+    activation would mean a route went live on rates nobody had confirmed were
+    still current.
+    """
     for config in REGISTRY:
-        assert config.activated_on <= config.rates_verified_on or (
-            config.rates_verified_on <= config.activated_on
+        assert config.activated_on <= config.rates_verified_on, (
+            f"{config.slug}: activated {config.activated_on} on rates last "
+            f"verified {config.rates_verified_on} — stale at the moment it went live"
         )
         assert config.last_live_call_on is None or (config.last_live_call_on >= config.activated_on)
+
+
+def test_the_date_invariant_is_falsifiable() -> None:
+    """The negative fixture: a config activated after its last verification."""
+    stale_at_activation = _synthetic("stale", None)
+    stale_at_activation = stale_at_activation.model_copy(
+        update={"activated_on": date(2026, 8, 20), "rates_verified_on": date(2026, 8, 10)}
+    )
+    assert not (stale_at_activation.activated_on <= stale_at_activation.rates_verified_on)
 
 
 def test_temperature_absence_is_recorded_not_invented() -> None:

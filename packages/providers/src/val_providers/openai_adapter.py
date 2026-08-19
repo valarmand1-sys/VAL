@@ -20,7 +20,7 @@ ordinary (often empty) completed reply.
 | `completed`, no refusal part | `COMPLETE` |
 | `completed`, refusal part present | `REFUSED` (the refusal text is the text) |
 | `incomplete` / `max_output_tokens` | `TRUNCATED` |
-| `incomplete` / `content_filter` | `REFUSED` — stopped on content grounds |
+| `incomplete` / `content_filter` | `FILTERED` — incomplete, never an utterance |
 | `failed` | raises the normalized provider error |
 | anything else | `UNKNOWN` — fails closed at the gateway |
 
@@ -29,10 +29,29 @@ usage else 0` fabricated a known $0 for exactly the calls whose cost was not
 known, which is the defect the WP-0.4 cost doctrine exists to prevent.
 """
 
-import openai
+from typing import Literal
 
-from val_domain.gateway import GatewayError, GatewayErrorKind, Message, ModelConfig, TerminalState
+import openai
+from openai.types.shared_params import Reasoning
+
+from val_domain.gateway import (
+    GatewayError,
+    GatewayErrorKind,
+    Message,
+    ModelConfig,
+    ReasoningEffort,
+    TerminalState,
+)
 from val_providers.base import ProviderResult, normalize
+
+#: Provider-neutral levels in the SDK's literal vocabulary; explicit so an
+#: unaccepted registry level fails loudly at call time rather than as a 400.
+_EFFORT: dict[ReasoningEffort, Literal["minimal", "low", "medium", "high"]] = {
+    ReasoningEffort.MINIMAL: "minimal",
+    ReasoningEffort.LOW: "low",
+    ReasoningEffort.MEDIUM: "medium",
+    ReasoningEffort.HIGH: "high",
+}
 
 
 def _refusal_text(response: object) -> str | None:
@@ -70,6 +89,16 @@ class OpenAIAdapter:
                 input=list(turns),
                 max_output_tokens=max_output_tokens,
                 instructions=system,
+                # Independent-review correction, 18 August 2026: the registry's
+                # declared effort is SENT, not assumed. GPT-5.5 documents
+                # reasoning.effort with medium as the default; the configured
+                # MEDIUM is stated on every request so a provider-side default
+                # change cannot silently alter a versioned configuration.
+                reasoning=(
+                    openai.omit
+                    if config.reasoning_effort is ReasoningEffort.NOT_APPLICABLE
+                    else Reasoning(effort=_EFFORT[config.reasoning_effort])
+                ),
             )
         except Exception as error:
             raise normalize(error, self.name) from error
@@ -92,7 +121,13 @@ class OpenAIAdapter:
             if reason == "max_output_tokens":
                 terminal = TerminalState.TRUNCATED
             elif reason == "content_filter":
-                terminal = TerminalState.REFUSED
+                # Independent-review correction, 18 August 2026: an incomplete
+                # response is incomplete, whatever stopped it. A refusal is the
+                # model's deliberate, complete utterance; a filter cut this one
+                # off mid-stream, and mapping it to REFUSED let the fragment be
+                # persisted as Val's finished message. FILTERED is evidence,
+                # never an utterance.
+                terminal = TerminalState.FILTERED
             else:
                 terminal = TerminalState.UNKNOWN
         else:

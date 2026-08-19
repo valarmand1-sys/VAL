@@ -90,6 +90,7 @@ class TerminalState(StrEnum):
     | `COMPLETE` | the model finished naturally | yes |
     | `REFUSED` | the model declined; its refusal is deliberate and complete | yes |
     | `TRUNCATED` | the output cap cut it off; the text is a fragment | **no** — evidence only |
+    | `FILTERED` | the content filter cut it off; a fragment | **no** — evidence only |
     | `UNKNOWN` | a stop state this adapter does not recognise | **no** — the call fails closed |
 
     Tool/action handoff states (`tool_use`, `pause_turn`) are not reachable at
@@ -101,6 +102,14 @@ class TerminalState(StrEnum):
     COMPLETE = "complete"
     REFUSED = "refused"
     TRUNCATED = "truncated"
+    #: *Independent-review correction, 18 August 2026.* A content-filter stop is
+    #: an INCOMPLETE result, not a refusal: a refusal is the model's deliberate,
+    #: complete utterance, while a filter cut generation off mid-stream. The
+    #: first closure pass mapped OpenAI's `incomplete`/`content_filter` to
+    #: REFUSED, which `loop.send` persists as Val's finished message — partial
+    #: filtered text entering history as though she finished speaking, the exact
+    #: semantic class the terminal-state repair existed to close.
+    FILTERED = "filtered"
     UNKNOWN = "unknown"
 
 
@@ -394,14 +403,27 @@ class GatewayRequest(BaseModel):
         return None if self.conversation is None else self.conversation.persona_id
 
     @model_validator(mode="after")
-    def _a_conversation_call_carries_its_provenance(self) -> GatewayRequest:
-        """A Val utterance must say which turn it answered — WP-0.7 corrective.
+    def _provenance_iff_conversation(self) -> GatewayRequest:
+        """Conversation provenance is present iff the task is conversation.
 
-        The other task types are exempt because they are not conversation:
-        classification and strip are the house reasoning about content before it
-        is routed, `blind_position` is a deliberation step, and `title` names
-        something. None of them is Val answering Lord Armand, and requiring a
-        conversation of them would be requiring a fiction.
+        *Independent-review correction, 18 August 2026.* The first closure pass
+        enforced only the forward direction — a conversation must carry
+        provenance — and left the inverse open: a CLASSIFICATION request could
+        carry real conversation, message, and persona ids and, through a
+        generic entrance that never runs the conversation verifier, write
+        coherent-looking `model_calls` attribution for machinery that was never
+        part of any conversation. The contract was always meant as an iff, and
+        now it is one.
+
+        Forward: a Val utterance must say which turn it answered
+        (`04-layer-0.md` WP-0.7) — use `val_gateway.loop.send`, which persists
+        the message first and supplies all three ids.
+
+        Inverse: classification and strip are the house reasoning about content
+        before it is routed, `blind_position` is a deliberation step, and
+        `title` names something. None of them is Val answering Lord Armand, and
+        provenance on one would be attribution to a conversation that did not
+        cause it.
         """
         if self.task_type is TaskType.CONVERSATION and self.conversation is None:
             raise ValueError(
@@ -410,8 +432,16 @@ class GatewayRequest(BaseModel):
                 "persona revision assembled into it. Without them a Val utterance is "
                 "recorded with nothing tying it to what was said or who said it "
                 "(04-layer-0.md WP-0.7). Use `val_gateway.loop.send`, which persists "
-                "the message first and supplies all three; task types that are not "
-                "conversation are exempt."
+                "the message first and supplies all three."
+            )
+        if self.task_type is not TaskType.CONVERSATION and self.conversation is not None:
+            raise ValueError(
+                f"a {self.task_type.value!r} request may not carry conversation "
+                "provenance. Only a conversation is caused by a conversation turn; "
+                "attaching real conversation, message, and persona ids to machinery "
+                "would record model_calls attribution for a conversation that never "
+                "made the call (current-version closure, independent-review "
+                "correction, 18 August 2026)."
             )
         return self
 

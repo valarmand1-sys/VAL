@@ -433,9 +433,9 @@ def test_the_registry_entry_itself_is_accepted() -> None:
         ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "req"), name="anthropic"
     )
     gateway, rows, _, _ = build(adapter)
-    gateway.complete_with_configuration(request(), config("haiku-4-5"))
+    gateway.complete_with_configuration(request(), config("haiku-4-5-20251001"))
     assert adapter.calls == 1
-    assert rows[0].slug == "haiku-4-5"
+    assert rows[0].slug == "haiku-4-5-20251001"
 
 
 def test_the_fake_ledger_matches_the_real_accounting_rule() -> None:

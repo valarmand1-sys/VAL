@@ -139,6 +139,7 @@ class CallRecord:
         tokens_out: int | None,
         cost_usd: float | None,
         cost_certainty: CostCertainty,
+        terminal_state: str,
         project_id: UUID | None,
         project_attribution: ProjectAttribution,
         task_type: str,
@@ -157,6 +158,7 @@ class CallRecord:
         self.tokens_out = tokens_out
         self.cost_usd = cost_usd
         self.cost_certainty = cost_certainty
+        self.terminal_state = terminal_state
         self.project_id = project_id
         self.project_attribution = project_attribution
         self.task_type = task_type
@@ -383,6 +385,13 @@ class Gateway:
                 "among registered configurations and never among raw models "
                 "(01-architecture.md §5.2); a configuration assembled by a caller is not one.",
             )
+        if known.retired:
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                f"{known.slug} is retired. A retired configuration resolves history; "
+                "it does not serve new calls, and naming it explicitly does not "
+                "un-retire it (closure red-team, 18 August 2026).",
+            )
         if not is_admitted(known) or not is_eligible(known, request.classification):
             raise GatewayError(
                 GatewayErrorKind.NO_ELIGIBLE_ROUTE,
@@ -482,6 +491,7 @@ class Gateway:
         status = {
             TerminalState.COMPLETE: CallStatus.OK,
             TerminalState.TRUNCATED: CallStatus.OK,
+            TerminalState.FILTERED: CallStatus.OK,
             TerminalState.REFUSED: CallStatus.REFUSED,
             TerminalState.UNKNOWN: CallStatus.ERROR,
         }[result.terminal]
@@ -496,6 +506,7 @@ class Gateway:
                 tokens_out=result.tokens_out,
                 cost_usd=cost,
                 cost_certainty=certainty,
+                terminal_state=result.terminal.value,
                 project_id=request.project_id,
                 project_attribution=request.project_attribution,
                 task_type=request.task_type.value,
@@ -566,6 +577,9 @@ class Gateway:
                 tokens_out=None,
                 cost_usd=None,
                 cost_certainty=CostCertainty.UNKNOWN,
+                # No response object exists, so no provider terminal state does
+                # either; `failed` records that truthfully rather than guessing.
+                terminal_state="failed",
                 project_id=request.project_id,
                 project_attribution=request.project_attribution,
                 task_type=request.task_type.value,
@@ -606,6 +620,20 @@ class Gateway:
                 "The generic entrances serve non-conversation work only; accepting a "
                 "hand-built conversation request here would let any typed persona UUID "
                 "stand in for Val (current-version closure pass, 18 August 2026).",
+            )
+
+        # The inverse, at the entrance as well as in the request validator —
+        # independent-review correction, 18 August 2026. `model_copy` skips
+        # pydantic validation, so a shape the constructor refuses can still be
+        # assembled; the entrance refuses it again before anything is routed,
+        # reserved, or transmitted. Provenance on machinery would write
+        # model_calls attribution for a conversation that never made the call.
+        if request.conversation is not None:
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                f"a {request.task_type.value!r} request may not carry conversation "
+                "provenance: only a conversation is caused by a conversation turn. "
+                "Refused before routing (independent-review correction, 18 August 2026).",
             )
 
     def _refuse_incoherent_provenance(self, request: GatewayRequest) -> None:

@@ -124,7 +124,7 @@ class UnansweredTurn:
 
 @dataclass(frozen=True)
 class TruncatedTurn:
-    """The provider answered, but the output cap cut the answer off.
+    """The provider produced a fragment — cut off by the output cap or the filter.
 
     *Closure pass, 18 August 2026.* The user's message is persisted — it was
     said. Val's fragment is **not** persisted as her reply: a message record is
@@ -308,7 +308,13 @@ def send(
     #     — the caller can see it, raise the cap, and ask again — and the
     #     user's turn stays in the record as asked-and-not-yet-answered, which
     #     is what actually happened.
-    if response.terminal is TerminalState.TRUNCATED:
+    if response.terminal in (TerminalState.TRUNCATED, TerminalState.FILTERED):
+        # TRUNCATED: the output cap cut it off. FILTERED — independent-review
+        # correction, 18 August 2026: the provider's content filter cut it off,
+        # which the first closure pass mis-mapped to REFUSED and therefore
+        # persisted as a finished utterance. Both are fragments; neither enters
+        # history as Val's message. The precise state rides on
+        # `outcome.response.terminal` and is durable on the model_calls row.
         return TruncatedTurn(
             conversation=conversation,
             scope=scope,

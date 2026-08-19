@@ -1292,9 +1292,9 @@ def test_a_fresh_runtime_sees_the_whole_conversation(store: Engine) -> None:
 def test_retrieved_history_is_never_injected_as_system_governance(store: Engine) -> None:
     """Case 35. `system` holds the persona and nothing else.
 
-    Retrieved conversation arrives as a delimited `user` turn framed as a record
-    of what was said. If it were `system`, anything ever said in a project could
-    become an instruction by being remembered.
+    Retrieved conversation arrives as a serialised JSON envelope in a `user`
+    turn, framed as a record of what was said. If it were `system`, anything
+    ever said in a project could become an instruction by being remembered.
     """
     _seed_both_projects(store)
 

@@ -108,7 +108,7 @@ def test_the_router_prefers_the_cheaper_of_two_eligible_routes() -> None:
     adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "req"))
     gateway, _, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
     response = gateway.complete(request())
-    assert response.slug == "haiku-4-5", "the cheapest eligible route was not chosen"
+    assert response.slug == "haiku-4-5-20251001", "the cheapest eligible route was not chosen"
 
 
 def test_selection_is_stable_across_identical_requests() -> None:
@@ -407,7 +407,7 @@ def test_provider_substitution_changes_no_identity_or_governance_state() -> None
         return rows[0]
 
     first = ask(anthropic, "opus-5")
-    second = ask(openai, "gpt-5-5")
+    second = ask(openai, "gpt-5-5-20260423")
 
     assert first.provider != second.provider  # type: ignore[attr-defined]
     assert first.model_identifier != second.model_identifier  # type: ignore[attr-defined]
@@ -429,14 +429,26 @@ def test_every_declared_fallback_resolves() -> None:
 
 
 def test_no_fallback_chain_loops() -> None:
-    """Following a declared chain must terminate."""
+    """Following a declared chain terminates at NONE — for every entry.
+
+    *Independent-review correction, 18 August 2026.* The previous assertion,
+    `current is None or current.slug in seen`, restated the loop's own exit
+    condition and was true for every registry including one with a real cycle —
+    which the production registry HAD (haiku ↔ gpt), hidden by exactly this
+    tautology. The falsifiable form: the walk must end because the chain ended
+    (`current is None`), never because it revisited an entry. On a cycle this
+    assertion fails; `test_the_chain_validator_rejects_a_declared_cycle` in the
+    registry suite proves the shared validator fails on an injected A -> B -> A.
+    """
     for entry in active():
         seen: set[str] = set()
         current: ModelConfig | None = entry
         while current is not None and current.slug not in seen:
             seen.add(current.slug)
             current = fallback_for(current)
-        assert current is None or current.slug in seen
+        assert current is None, (
+            f"the declared chain from {entry.slug} revisited {current.slug} — a cycle"
+        )
 
 
 def test_registry_slugs_are_unique() -> None:

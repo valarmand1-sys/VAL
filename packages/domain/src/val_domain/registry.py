@@ -22,9 +22,23 @@ provider pricing changes, and a historical record that silently re-prices itself
 is not a record.
 
 Every rate and model identifier below was read from the provider's own
-documentation on 15 August 2026, not recalled. Raising a rate means re-reading
-it the same way and adding a new entry — never editing one in place, because
-calls already costed against the old rate must keep resolving to it.
+documentation, not recalled; each entry carries its own `rates_verified_on`.
+Raising a rate means re-reading it the same way and adding a new entry — never
+editing one in place, because calls already costed against the old rate must
+keep resolving to it.
+
+**The identifier rule — independent-review correction, 18 August 2026.** A
+configuration's `model_identifier` is part of its identity, and it must be a
+**pinned snapshot**, never a movable alias: an alias the provider can repoint
+would let one configuration id serve different models over time, which is the
+identifier-shaped version of a record that silently re-prices itself. Correcting
+an identifier is therefore the same act as correcting a rate: **retire the old
+entry in place and add a new entry with a new UUID.** The first closure pass
+edited Haiku's identifier in place under its existing UUID, which broke this
+rule; the retired entries below restore it, and the interim rows written during
+that window are documented in the closure audit rather than rewritten.
+(`claude-opus-5` is itself a pinned dateless snapshot per Anthropic's model-ID
+documentation, so it needs no date suffix to satisfy the rule.)
 """
 
 from datetime import date, timedelta
@@ -67,16 +81,22 @@ REGISTRY: tuple[ModelConfig, ...] = (
         id=UUID("4e38c060-3b9a-495d-bc54-73acd1530cd5"),
         slug="opus-5",
         provider="anthropic",
+        # A pinned dateless snapshot, per Anthropic's model-ID documentation
+        # ("Starting with the Claude 4.6 generation, model IDs use a dateless
+        # format that is also a pinned snapshot, not an evergreen pointer") —
+        # verified 18 August 2026. No date suffix is needed to satisfy the
+        # identifier rule above.
         model_identifier="claude-opus-5",
         display_name="Claude Opus 5",
         context_window_tokens=1_000_000,
         max_output_tokens=128_000,
         # Closure pass, 18 August 2026: `NOT_APPLICABLE` was stale. Per the
-        # models overview (platform.claude.com, verified today), Opus 5 supports
-        # the `effort` parameter and it **defaults to `high` on the Claude
-        # API**. This configuration sets nothing, so `HIGH` records the level
-        # the calls actually run at; adaptive-thinking tokens bill as output
-        # inside `max_tokens`, which the budget's output bound already covers.
+        # models overview (platform.claude.com, verified 18 August 2026), Opus 5
+        # supports the `effort` parameter, defaulting to `high` on the Claude
+        # API. `HIGH` is the level these calls run at, and — independent-review
+        # correction — the adapter now SENDS it explicitly rather than trusting
+        # the provider default to stay put. Adaptive-thinking tokens bill as
+        # output inside `max_tokens`, which the budget's output bound covers.
         reasoning_effort=ReasoningEffort.HIGH,
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=25.00,
@@ -89,23 +109,33 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # The cheaper Anthropic route. Both are on the same account, so this
         # fallback does not survive an account-level failure — which is exactly
         # what the credit blocker of WP-0.4 is, and why it is written down here.
-        fallback_slug="haiku-4-5",
+        fallback_slug="haiku-4-5-20251001",
         admission=Admission.PROVISIONALLY_ADMITTED,
         adapter_status=AdapterStatus.IMPLEMENTED,
         activated_on=_ADMITTED_ON,
         rates_verified_on=_VERIFIED_ON,
     ),
+    # ------------------------------------------------------------------
+    # RETIRED — independent-review correction, 18 August 2026.
+    #
+    # This is the configuration every pre-closure Haiku call was made under:
+    # the movable alias identifier. The first closure pass edited the
+    # identifier to the pinned snapshot IN PLACE under this same UUID, which
+    # violated the registry's own rule that identity-bearing facts are never
+    # edited — historical `model_calls` carrying this id must resolve to what
+    # those calls actually used. The alias is restored here and the entry is
+    # retired; the pinned successor below has its own UUID. A handful of rows
+    # written during the in-place window (the closure smoke) carry this UUID
+    # with the pinned identifier denormalised on the row — the row's own copy
+    # is the truth of what was sent, and the audit documents the window rather
+    # than rewriting it.
+    # ------------------------------------------------------------------
     ModelConfig(
         id=UUID("b123b7f1-fc59-4de3-95c1-0a884cd43953"),
         slug="haiku-4-5",
         provider="anthropic",
-        # The pinned snapshot, not the alias. Closure pass, 18 August 2026,
-        # against platform.claude.com/docs models overview: the API ID is
-        # `claude-haiku-4-5-20251001`; `claude-haiku-4-5` is a convenience
-        # alias that resolves to it. A historical record must name the exact
-        # model that answered, and an alias is a pointer someone else can move.
-        model_identifier="claude-haiku-4-5-20251001",
-        display_name="Claude Haiku 4.5",
+        model_identifier="claude-haiku-4-5",
+        display_name="Claude Haiku 4.5 (alias, retired)",
         context_window_tokens=200_000,
         max_output_tokens=64_000,
         reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
@@ -115,33 +145,66 @@ REGISTRY: tuple[ModelConfig, ...] = (
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
         known_weaknesses=(),
-        # Closure pass, 18 August 2026 — this entry previously declared an
-        # explicit NONE, reasoning that the cheapest route had nothing cheaper
-        # beneath it. Haiku therefore had no declared fallback, which the
-        # (now fixed) router papered over by falling through to the rest of the
-        # ranked list. With "NONE means none" enforced, an undeclared fallback
-        # here would make an Anthropic outage halt conversation entirely while
-        # an eligible OpenAI route sat unused — against "Val degrades rather
-        # than halts" (00-charter.md). Cross-provider, deliberately, exactly as
-        # gpt-5-5 already declares haiku for the mirror-image outage.
-        fallback_slug="gpt-5-5",
+        # Retired entries take no part in routing; a declared fallback here
+        # would be a pointer from history into the live graph.
+        fallback_slug=None,
         admission=Admission.PROVISIONALLY_ADMITTED,
         adapter_status=AdapterStatus.IMPLEMENTED,
         activated_on=_ADMITTED_ON,
         rates_verified_on=_VERIFIED_ON,
+        retired=True,
+        retired_on=date(2026, 8, 18),
     ),
+    # The pinned successor. Same model, same rates — a new entry because the
+    # exact identifier is identity, and `claude-haiku-4-5` is an alias Anthropic
+    # documents as a convenience pointer to this snapshot (verified 18 August
+    # 2026, platform.claude.com models overview).
+    ModelConfig(
+        id=UUID("7c1c3c85-4c2b-49a2-9c46-1d1b41b0a5aa"),
+        slug="haiku-4-5-20251001",
+        provider="anthropic",
+        model_identifier="claude-haiku-4-5-20251001",
+        display_name="Claude Haiku 4.5",
+        context_window_tokens=200_000,
+        max_output_tokens=64_000,
+        # Haiku 4.5 has no `effort` parameter (extended thinking exists but is
+        # not configured here). NOT_APPLICABLE is the recorded absence, and the
+        # adapter sends no effort field for it.
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        cost_per_mtok_in_usd=1.00,
+        cost_per_mtok_out_usd=5.00,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        known_weaknesses=(),
+        # Cross-provider, so an Anthropic-account outage degrades to OpenAI
+        # rather than halting ("Val degrades rather than halts", 00-charter.md).
+        # The chain deliberately ENDS at the GPT entry — see its NONE — so the
+        # declared graph terminates: opus → haiku → gpt → nothing.
+        fallback_slug="gpt-5-5-20260423",
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 8, 18),
+        rates_verified_on=_VERIFIED_ON,
+    ),
+    # ------------------------------------------------------------------
+    # RETIRED — independent-review correction, 18 August 2026.
+    #
+    # The configuration every historical GPT-5.5 call was made under: the
+    # `gpt-5.5` alias identifier. Retired for the same identifier rule as the
+    # Haiku alias above — OpenAI's model page exposes a dated snapshot, and
+    # one rule applies to both providers. Operational facts here carry the
+    # closure pass's corrections (window, threshold), with the original error
+    # recorded: until 18 August 2026 this entry miscoded the 272K pricing
+    # threshold as the context window, and calls routed under that mistake
+    # were bounded by 272K — a smaller, safe-direction error.
+    # ------------------------------------------------------------------
     ModelConfig(
         id=UUID("3b9d25f4-e00c-448a-a4cd-ecdd79380008"),
         slug="gpt-5-5",
         provider="openai",
         model_identifier="gpt-5.5",
-        display_name="GPT-5.5",
-        # Closure pass, 18 August 2026, against developers.openai.com/api/docs/
-        # models/gpt-5.5: the context window is 1,050,000 tokens. The previous
-        # figure here, 272,000, was the *pricing threshold* mistaken for the
-        # window — above 272K input tokens the whole session is billed at 2x
-        # input and 1.5x output, which is recorded below where the budget
-        # estimator reads it, not silently absorbed into a smaller window.
+        display_name="GPT-5.5 (alias, retired)",
         context_window_tokens=1_050_000,
         max_output_tokens=128_000,
         reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
@@ -154,17 +217,103 @@ REGISTRY: tuple[ModelConfig, ...] = (
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
         known_weaknesses=(),
-        # A different provider, so this fallback survives an Anthropic-account
-        # failure in a way `opus-5 → haiku-4-5` does not.
-        fallback_slug="haiku-4-5",
+        fallback_slug=None,
         admission=Admission.PROVISIONALLY_ADMITTED,
         adapter_status=AdapterStatus.IMPLEMENTED,
         activated_on=_ADMITTED_ON,
         rates_verified_on=_VERIFIED_ON,
-        # Answered a real call on 15 August 2026: 37 tokens in, 24 out, $0.000905.
+        # The recorded fact as it stood: this route first answered live on
+        # 15 August 2026. It kept answering through the WP-0.7 acceptance; the
+        # marker was never advanced, and retiring is not a licence to backfill.
         last_live_call_on=date(2026, 8, 15),
+        retired=True,
+        retired_on=date(2026, 8, 18),
+    ),
+    # The pinned successor: the dated snapshot the `gpt-5.5` alias currently
+    # resolves to (developers.openai.com/api/docs/models/gpt-5.5, verified
+    # 18 August 2026 — "Default snapshot: gpt-5.5-2026-04-23").
+    ModelConfig(
+        id=UUID("9f7de5b2-6f3a-4f6e-8f2a-2b7c9d4e1c55"),
+        slug="gpt-5-5-20260423",
+        provider="openai",
+        model_identifier="gpt-5.5-2026-04-23",
+        display_name="GPT-5.5",
+        context_window_tokens=1_050_000,
+        max_output_tokens=128_000,
+        # Independent-review correction, 18 August 2026: GPT-5.5 supports
+        # reasoning.effort — "none, low, medium (default), high and xhigh" —
+        # so NOT_APPLICABLE was factually false (01-architecture.md §5.2: that
+        # value means the provider has no such concept). MEDIUM is the level
+        # these calls run at, and the adapter now sends it explicitly.
+        reasoning_effort=ReasoningEffort.MEDIUM,
+        cost_per_mtok_in_usd=5.00,
+        cost_per_mtok_out_usd=30.00,
+        # Above 272K input tokens the whole session bills at 2x input and
+        # 1.5x output (same page, same date). Read by the budget bound and the
+        # settlement through one `effective_rates` function.
+        long_context_threshold_tokens=272_000,
+        long_context_in_multiplier=2.0,
+        long_context_out_multiplier=1.5,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        known_weaknesses=(),
+        # Explicit NONE, and the router honours it as none: this is the end of
+        # the declared graph. A backward hop to Haiku could never run — Haiku
+        # is cheaper, so whenever it is independently eligible, ready and
+        # affordable it is already the primary; the only situations in which
+        # GPT leads are ones where the Anthropic routes cannot serve at all,
+        # and a fallback into them would fail the independent re-check anyway.
+        # Declaring it would re-create the cycle the independent review found.
+        fallback_slug=None,
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 8, 18),
+        rates_verified_on=_VERIFIED_ON,
     ),
 )
+
+
+def declared_chain_violations(configs: tuple[ModelConfig, ...]) -> list[str]:
+    """Every declared fallback chain must terminate at an explicit NONE.
+
+    *Independent-review correction, 18 August 2026.* The registry carried a real
+    declared cycle — haiku ↔ gpt — hidden by two tests whose assertions restated
+    their own loop's exit conditions and therefore could not fail. The router's
+    seen-set kept the runtime finite, but defensive cycle handling is not
+    permission for the registry to declare one: a cycle is a chain that never
+    terminates, and "every declared chain terminates" is this registry's own
+    stated doctrine.
+
+    Checked here as data validation — called from `startup_violations`, so a
+    declared cycle stops the service at boot — and exercised by tests against
+    synthetic cyclic and dangling registries, which is what makes the tests
+    themselves falsifiable.
+    """
+    problems: list[str] = []
+    by_slug_map = {config.slug: config for config in configs}
+
+    for start_config in configs:
+        walked: list[str] = [start_config.slug]
+        current = start_config
+        while current.fallback_slug is not None:
+            successor = by_slug_map.get(current.fallback_slug)
+            if successor is None:
+                problems.append(
+                    f"{current.slug} declares fallback {current.fallback_slug!r}, "
+                    "which names no entry"
+                )
+                break
+            if successor.slug in walked:
+                cycle = " -> ".join([*walked, successor.slug])
+                problems.append(
+                    f"declared fallback cycle: {cycle}. A chain that revisits an "
+                    "entry never terminates; declare NONE where the chain ends."
+                )
+                break
+            walked.append(successor.slug)
+            current = successor
+    return problems
 
 
 def active() -> tuple[ModelConfig, ...]:

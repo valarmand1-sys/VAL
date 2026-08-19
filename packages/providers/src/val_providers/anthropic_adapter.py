@@ -17,27 +17,46 @@ do not understand, which is what `UNKNOWN` is for.
 | `stop_reason` | `TerminalState` |
 |---|---|
 | `end_turn` | `COMPLETE` |
-| `stop_sequence` | `COMPLETE` |
 | `refusal` | `REFUSED` |
 | `max_tokens` | `TRUNCATED` |
 | anything else | `UNKNOWN` |
 
 Missing usage becomes `None`, never zero: a zero that is not known to be zero
 would be priced and recorded as a known $0 (closure pass, 18 August 2026).
+
+The registry's `reasoning_effort` is carried on the request via the SDK's
+`output_config={"effort": ...}` (anthropic 0.122.0 type surface, matching the
+`effort` parameter in Anthropic's current docs). `NOT_APPLICABLE` sends nothing.
 """
 
 import time
+from typing import Literal
 
 import anthropic
+from anthropic.types import OutputConfigParam
 
-from val_domain.gateway import Message, ModelConfig, TerminalState
+from val_domain.gateway import Message, ModelConfig, ReasoningEffort, TerminalState
 from val_providers.base import ProviderResult, normalize
+
+#: The provider-neutral levels this house configures, in the SDK's own literal
+#: vocabulary. An explicit mapping rather than `.value` so a registry level the
+#: SDK does not accept is a KeyError at call time, not a silent 400.
+_EFFORT: dict[ReasoningEffort, Literal["low", "medium", "high"]] = {
+    ReasoningEffort.LOW: "low",
+    ReasoningEffort.MEDIUM: "medium",
+    ReasoningEffort.HIGH: "high",
+}
 
 _STOP_REASONS: dict[str, TerminalState] = {
     "end_turn": TerminalState.COMPLETE,
-    "stop_sequence": TerminalState.COMPLETE,
     "refusal": TerminalState.REFUSED,
     "max_tokens": TerminalState.TRUNCATED,
+    # `stop_sequence` is deliberately absent — closure red-team, 18 August
+    # 2026. This adapter never sends `stop_sequences`, so the provider cannot
+    # legitimately return that reason; receiving it means the provider answered
+    # a request we did not make, which is the same cannot-occur rationale that
+    # keeps `tool_use` and `pause_turn` out of this table. Absent maps to
+    # UNKNOWN, which fails closed.
 }
 
 
@@ -67,6 +86,18 @@ class AnthropicAdapter:
                 max_tokens=max_output_tokens,
                 messages=turns,
                 system=system if system is not None else anthropic.omit,
+                # Independent-review correction, 18 August 2026: the registry's
+                # declared effort is SENT, not assumed. The provider's default
+                # happens to match today (Opus 5 defaults to high on the Claude
+                # API), but a versioned configuration must not depend on a
+                # provider default silently staying put. NOT_APPLICABLE sends
+                # nothing — the model has no such parameter, and inventing one
+                # would be configuring a concept the provider does not offer.
+                output_config=(
+                    anthropic.omit
+                    if config.reasoning_effort is ReasoningEffort.NOT_APPLICABLE
+                    else OutputConfigParam(effort=_EFFORT[config.reasoning_effort])
+                ),
             )
         except Exception as error:
             raise normalize(error, self.name) from error

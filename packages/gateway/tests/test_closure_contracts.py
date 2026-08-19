@@ -11,6 +11,7 @@ from uuid import uuid4
 
 import pytest
 from gateway_fakes import FakeLedger, StubAdapter
+from pydantic import ValidationError
 from sqlalchemy import Engine, text
 from test_persona import REPO_ROOT, clean_personas  # noqa: F401 - fixture reused
 
@@ -143,7 +144,7 @@ def test_complete_with_configuration_refuses_a_conversation_request(store: Engin
     )
     adapter = StubAdapter(ProviderResult("hi", TerminalState.COMPLETE, 1, 1, None))
     gateway = conversational_gateway(store, adapter)
-    config = by_slug("haiku-4-5")
+    config = by_slug("haiku-4-5-20251001")
     assert config is not None
 
     with pytest.raises(GatewayError) as caught:
@@ -380,7 +381,7 @@ def test_missing_usage_settles_the_reservation_at_its_maximum(store: Engine) -> 
 
 def test_an_over_cap_output_request_is_refused_not_clamped() -> None:
     """§8. Asking a 64k model for 100k output is refused in those words."""
-    config = by_slug("haiku-4-5")
+    config = by_slug("haiku-4-5-20251001")
     assert config is not None
     reason = limit_overrun(config, ("hello",), 100_000)
     assert reason is not None and "at most" in reason
@@ -409,7 +410,7 @@ def test_the_budget_and_the_adapter_agree_on_max_output(store: Engine) -> None:
 
 def test_long_context_pricing_reaches_the_bound_and_the_settlement() -> None:
     """§7. GPT-5.5's >272K threshold: 2x input, 1.5x output, in both figures."""
-    config = by_slug("gpt-5-5")
+    config = by_slug("gpt-5-5-20260423")
     assert config is not None
 
     base_in, base_out = effective_rates(config, 100_000)
@@ -431,13 +432,270 @@ def test_long_context_pricing_reaches_the_bound_and_the_settlement() -> None:
 
 def test_the_registry_context_window_is_the_window_not_the_threshold() -> None:
     """§7's named correction, pinned so it cannot regress."""
-    config = by_slug("gpt-5-5")
+    config = by_slug("gpt-5-5-20260423")
     assert config is not None
     assert config.context_window_tokens == 1_050_000
     assert config.long_context_threshold_tokens == 272_000
 
-    haiku = by_slug("haiku-4-5")
+    haiku = by_slug("haiku-4-5-20251001")
     assert haiku is not None
     assert haiku.model_identifier == "claude-haiku-4-5-20251001", (
         "the registry must pin the dated snapshot, not the movable alias"
     )
+
+    # Independent-review correction: the alias configurations survive as
+    # RETIRED entries under their ORIGINAL UUIDs, so historical
+    # model_config_ids still resolve to the identifier those calls used.
+    from uuid import UUID
+
+    from val_domain.registry import by_id
+
+    old_haiku = by_id(UUID("b123b7f1-fc59-4de3-95c1-0a884cd43953"))
+    assert old_haiku is not None and old_haiku.retired
+    assert old_haiku.model_identifier == "claude-haiku-4-5"
+    old_gpt = by_id(UUID("3b9d25f4-e00c-448a-a4cd-ecdd79380008"))
+    assert old_gpt is not None and old_gpt.retired
+    assert old_gpt.model_identifier == "gpt-5.5"
+
+
+# =============================================================================
+# Independent-review corrections, 18 August 2026
+# =============================================================================
+#
+# The review of `VAL_Source_Snapshot_05a5116.zip` found defects the closure
+# red-team missed. Each block below is one finding's proof, and the negative
+# fixtures are the point: every repaired invariant is shown to FAIL on a shape
+# that violates it, because "611 passed" hid a real registry cycle behind
+# assertions that could not fail.
+
+
+# --- finding 1: provenance iff conversation ----------------------------------
+
+
+def test_a_conversation_without_provenance_is_refused() -> None:
+    """Iff, forward direction (case A)."""
+    with pytest.raises(ValidationError, match="must carry its provenance"):
+        GatewayRequest(
+            task_type=TaskType.CONVERSATION,
+            classification=Classification.PROTECTED,
+            messages=(Message(role="user", content="hi"),),
+            project_id=None,
+            project_attribution=ProjectAttribution.EXPLICIT_NONE,
+        )
+
+
+def test_a_conversation_with_provenance_is_constructible() -> None:
+    """Case B — the healthy shape still stands."""
+    built = GatewayRequest(
+        task_type=TaskType.CONVERSATION,
+        classification=Classification.PROTECTED,
+        messages=(Message(role="user", content="hi"),),
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
+        conversation=ConversationProvenance(
+            conversation_id=uuid4(), message_id=uuid4(), persona_id=uuid4()
+        ),
+    )
+    assert built.conversation is not None
+
+
+@pytest.mark.parametrize(
+    "task_type",
+    [TaskType.CLASSIFICATION, TaskType.STRIP, TaskType.BLIND_POSITION, TaskType.TITLE],
+)
+def test_non_conversation_with_provenance_is_refused(task_type: TaskType) -> None:
+    """Cases C to F — the inverse the first closure pass left open.
+
+    A CLASSIFICATION request carrying real conversation/message/persona ids
+    would write coherent-looking `model_calls` attribution for machinery no
+    conversation ever caused.
+    """
+    with pytest.raises(ValidationError, match="may not carry conversation provenance"):
+        GatewayRequest(
+            task_type=task_type,
+            classification=Classification.PROTECTED,
+            messages=(Message(role="user", content="hi"),),
+            project_id=None,
+            project_attribution=ProjectAttribution.EXPLICIT_NONE,
+            conversation=ConversationProvenance(
+                conversation_id=uuid4(), message_id=uuid4(), persona_id=uuid4()
+            ),
+        )
+
+
+def test_the_entrances_refuse_a_smuggled_provenance_shape(store: Engine) -> None:
+    """Cases G to I. `model_copy` skips pydantic validation, so the entrances guard too.
+
+    Real persisted ids, real persona — the most convincing possible smuggle —
+    on a CLASSIFICATION request assembled past the constructor. Both public
+    entrances refuse it before routing: zero adapter calls, zero reservations,
+    zero `model_calls` rows.
+    """
+    turn = a_turn(store)
+    active = DatabasePersonaLoader(store).active()
+    smuggled = classification_request().model_copy(
+        update={
+            "conversation": ConversationProvenance(
+                conversation_id=turn.conversation_id,
+                message_id=turn.message_id,
+                persona_id=active.id,
+            )
+        }
+    )
+    adapter = StubAdapter(ProviderResult("never", TerminalState.COMPLETE, 1, 1, None))
+    ledger = FakeLedger()
+    gateway = Gateway(
+        adapters={"anthropic": adapter, "openai": adapter},
+        recorder=lambda record: record_call(store, record),
+        ledger=ledger,
+        observe_block=lambda message: None,
+        persona_loader=DatabasePersonaLoader(store),
+        verify_provenance=verifier(store),
+    )
+    config = by_slug("haiku-4-5-20251001")
+    assert config is not None
+
+    with pytest.raises(GatewayError, match="may not carry conversation provenance"):
+        gateway.complete(smuggled)
+    with pytest.raises(GatewayError, match="may not carry conversation provenance"):
+        gateway.complete_with_configuration(smuggled, config)
+
+    assert adapter.calls == 0
+    assert ledger.entries == {}
+    with store.connect() as connection:
+        assert connection.execute(text("select count(*) from model_calls")).scalar_one() == 0
+
+
+# --- finding 7: content-filter incomplete is not a refusal --------------------
+
+
+def test_a_filtered_fragment_is_never_persisted_as_val_speaking(store: Engine) -> None:
+    """The loop half: FILTERED behaves as a fragment, with its state preserved."""
+    adapter = StubAdapter(
+        ProviderResult("She began to answer but the fil—", TerminalState.FILTERED, 30, 12, "r")
+    )
+    outcome = send(
+        store,
+        conversational_gateway(store, adapter),
+        "Tell me.",
+        catalogue=load_catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+    )
+
+    assert isinstance(outcome, TruncatedTurn)
+    assert outcome.response.terminal is TerminalState.FILTERED
+    with store.connect() as connection:
+        roles = list(connection.execute(text("select role from messages")).scalars())
+        row = connection.execute(
+            text("select status, terminal_state from model_calls order by created_at desc limit 1")
+        ).one()
+    assert "val" not in roles, "a filtered fragment entered history as Val's message"
+    assert row.status == "ok"
+    assert row.terminal_state == "filtered"
+
+
+def test_a_refusal_and_a_filter_are_recorded_as_different_events(store: Engine) -> None:
+    """The distinction finding 7 exists for, on the durable record."""
+    refusal = StubAdapter(
+        ProviderResult("I will not, my lord.", TerminalState.REFUSED, 10, 5, "r1")
+    )
+    send(
+        store,
+        conversational_gateway(store, refusal),
+        "Do it.",
+        catalogue=load_catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+    )
+    filtered = StubAdapter(ProviderResult("partial…", TerminalState.FILTERED, 10, 5, "r2"))
+    send(
+        store,
+        conversational_gateway(store, filtered),
+        "Do it again.",
+        catalogue=load_catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+    )
+
+    with store.connect() as connection:
+        states = list(
+            connection.execute(
+                text("select terminal_state from model_calls order by created_at")
+            ).scalars()
+        )
+    assert states == ["refused", "filtered"]
+
+
+# --- finding 8: the terminal state is durable evidence ------------------------
+
+
+def test_the_terminal_state_survives_restart_on_the_row(store: Engine) -> None:
+    """`status = ok` no longer collapses TRUNCATED into COMPLETE.
+
+    Reconstruction is a query, not a runtime memory: two calls, both status
+    `ok`, distinguishable forever by `terminal_state`.
+    """
+    send(
+        store,
+        conversational_gateway(
+            store, StubAdapter(ProviderResult("whole answer", TerminalState.COMPLETE, 9, 9, "a"))
+        ),
+        "First.",
+        catalogue=load_catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+    )
+    send(
+        store,
+        conversational_gateway(
+            store, StubAdapter(ProviderResult("cut off mi—", TerminalState.TRUNCATED, 9, 9, "b"))
+        ),
+        "Second.",
+        catalogue=load_catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+    )
+
+    with store.connect() as connection:
+        rows = connection.execute(
+            text("select status, terminal_state from model_calls order by created_at")
+        ).all()
+    assert [(row.status, row.terminal_state) for row in rows] == [
+        ("ok", "complete"),
+        ("ok", "truncated"),
+    ]
+
+
+def test_a_new_row_cannot_omit_its_terminal_state(store: Engine) -> None:
+    """NULL is reserved to the rows that predate the contract — by trigger."""
+    with pytest.raises(Exception, match="terminal_state is required"):
+        with store.begin() as connection:
+            connection.execute(
+                text(
+                    "insert into model_calls (model_config_id, provider, model_identifier, "
+                    "tokens_in, tokens_out, cost, cost_certainty, project_id, "
+                    "project_attribution, task_type, latency_ms, provider_request_id, status) "
+                    "values (gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
+                    "'explicit_none', 'conversation', 1, '', 'ok')"
+                )
+            )
+
+
+def test_a_retired_configuration_cannot_be_explicitly_routed_to(store: Engine) -> None:
+    """Closure red-team, 18 August 2026. Retirement is not a suggestion.
+
+    The normal router only ranks active entries, but
+    `complete_with_configuration` resolves by id — and its checks (registry
+    identity, admission, eligibility) all passed for a retired entry, so naming
+    one explicitly was a working route around retirement. A retired
+    configuration resolves history; it does not serve new calls.
+    """
+    from uuid import UUID as _UUID
+
+    from val_domain.registry import by_id
+
+    retired = by_id(_UUID("b123b7f1-fc59-4de3-95c1-0a884cd43953"))
+    assert retired is not None and retired.retired
+
+    adapter = StubAdapter(ProviderResult("never", TerminalState.COMPLETE, 1, 1, None))
+    gateway = conversational_gateway(store, adapter)
+
+    with pytest.raises(GatewayError, match="is retired"):
+        gateway.complete_with_configuration(classification_request(), retired)
+    assert adapter.calls == 0

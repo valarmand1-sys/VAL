@@ -139,6 +139,8 @@ jobs:
       # the reservation design forbids relying on.
       - name: model_calls write path and budget ledger
         run: uv run pytest packages/gateway/tests
+      - name: Provider adapter contract tests
+        run: uv run pytest packages/providers/tests
 
   desktop:
     name: Desktop shell
