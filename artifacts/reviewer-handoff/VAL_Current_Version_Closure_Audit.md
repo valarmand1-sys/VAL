@@ -312,6 +312,17 @@ Through the **production startup path** (`start(engine)` unmodified — real led
 
 **611 passed**, no warnings. Strict mypy over 48 source files; `ruff check` and `ruff format --check` clean (103 files); import-linter 3/3; dependency direction across 8 components; pins clean (142 files); secrets clean (147 files); `alembic check` clean; migration round trip from empty 9/9/9; authoritative store at `0009_evidence_is_immutable`, counts unchanged.
 
+## 23b. Bundle
+
+| | |
+|---|---|
+| Source commit | `05a51165ca64ea6a7775d92f78feb69fc9f66a93` |
+| Snapshot | `VAL_Source_Snapshot_05a5116.zip`, **189 files** |
+| SHA-256 | `cfac7c8ea74be13024adec48be1b04971f2919119902e281c6f1650cf4778156` |
+
+Source only — `artifacts/` excluded and no prior snapshot embedded, verified
+file-by-file against `git archive` of the commit: identical.
+
 ## 24. Executive decisions required
 
 **NONE.** Both approved rulings are recorded; the haiku fallback declaration is documented as engineering-within-doctrine with its charter grounds (§3-§9) and is trivially reversible if you rule the other way.
