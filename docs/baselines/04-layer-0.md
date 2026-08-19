@@ -129,6 +129,23 @@ These three tables are the point of the layer.
 >
 > **The rule about errored calls and spend, stated truthfully.** A refusal and an error that reports usage count at their real cost. An error that reports no usage cannot count at its real cost because nobody knows it — so it counts against the ceiling at its **reserved maximum** (§2.5) while its `model_calls` row records the cost as unknown. The ledger is conservative about what may be gone; the call record is honest about what is known. They differ on purpose.
 
+> **Clarification — 19 August 2026, Lord Armand. SENT_COST_UNKNOWN versus process-death indeterminacy.**
+>
+> SENT_COST_UNKNOWN applies when Val remains alive and can durably record an
+> attempted provider operation whose outcome or cost is unknown — a timeout or
+> provider error. Process-death indeterminacy before durable `model_calls`
+> evidence exists is governed instead by §2.5: the surviving
+> `budget_reservations` row becomes `expired`, represents that transmission may
+> or may not have occurred, remains charged at its authorized maximum, and does
+> not cause Val to fabricate a `model_calls` row on restart. If independent
+> provider-side evidence later establishes that a call occurred, that evidence
+> may be appended truthfully; it is never inferred from the expired reservation
+> alone.
+>
+> *Recorded because the two sections overlapped: both describe an attempt whose
+> outcome is unknown, and without this line the SENT_COST_UNKNOWN row could be
+> misread as required in the crash case, where no process survives to write it.*
+
 > **Second amendment — 17 August 2026, Lord Armand. The five superseded rows, and `model_calls_accounted`.**
 >
 > The amendment above stopped the false zero being *written*. It did nothing about the five already in the store: rows from 15 August 2026 carrying `tokens_in = 0, tokens_out = 0, cost = 0.000000, status = 'error'` and a NULL certainty. **They are preserved exactly as written** — invariant 14 forbids editing history to make the present tidy — but preserving them is not the same as leaving them readable. As they stand, `sum(cost)` counts them as five confirmed free calls and nothing marks them as anything else.

@@ -7,7 +7,7 @@ defects against accepted criteria nor decisions needed now.
 
 | # | Item | Origin |
 |---|---|---|
-| 1 | `budget_reservations` transmission marker: a set-once `transmission_started_at` would let restart reconciliation release provably-never-sent holds instead of conservatively expiring them. Requires amending §2.5's enumerated column list — a baseline decision. | WP-0.4 crash-boundary work, 19 Aug 2026 |
+| 1 | `budget_reservations` transmission marker: a set-once `transmission_started_at` would let restart reconciliation release provably-never-sent holds instead of conservatively expiring them. Requires amending §2.5's enumerated column list — a baseline decision. **Lord Armand's recorded objection, 19 Aug 2026: current inclination is to reject — the marker records the boundary being entered, not transmission occurring, so it does not resolve the indeterminacy it was meant to address.** | WP-0.4 crash-boundary work, 19 Aug 2026 |
 | 2 | `GatewayErrorKind` granularity on failed calls is not durable beyond `terminal_state='failed'`. | Closure pass, 18 Aug 2026 |
 | 3 | Lexical retrieval limit: a question sharing no vocabulary with the earlier conversation will not recall it. Semantic retrieval needs four recorded decisions (`VAL_Open_Decisions.md` item 10). | WP-0.7 |
 | 4 | A provider inventing a new stop reason lands in `UNKNOWN` and fails closed until an adapter mapping entry is added. | Closure corrections, 18 Aug 2026 |
