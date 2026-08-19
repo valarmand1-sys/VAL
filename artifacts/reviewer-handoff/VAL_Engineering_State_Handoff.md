@@ -588,6 +588,61 @@ in JSON string values that cannot end the structure, each excerpt carries its ow
 wire vocabulary has no data role; `user` is the least-wrong of the two available
 and the tradeoff is documented where the code is.
 
+### Current-version closure pass · 18 August 2026, source `05a5116`
+
+A repair-everything pass over the implemented WP-0.1–WP-0.7 surface before
+WP-0.8 builds on it, on `closure/current-version-pass` (PR #2, **unmerged**).
+Every reviewer-supplied finding confirmed and fixed; nine additional findings
+(test-quality and red-team) fixed in the same package. Highlights, each with
+its proof in `VAL_Current_Version_Closure_Audit.md`:
+
+- **One Val entrance.** `converse` fixes its task type, loads the persona, and
+  is the only builder of conversation requests; both public generic doors
+  refuse `TaskType.CONVERSATION`; the verifier checks the persona id against
+  the active row, so a typed UUID is not an identity even past the private
+  execution body.
+- **Honest terminal states.** `TerminalState` replaces the `refused` boolean;
+  truncation is evidence (`TruncatedTurn`), never persisted as Val's message;
+  unknown states fail closed after honest accounting.
+- **Unknown cost stays unknown.** Missing provider usage → NULL/UNKNOWN and a
+  full-maximum settlement; the fabricated known $0 path is gone.
+- **A loud ledger.** Invalid reservation transitions raise, naming the actual
+  state; a ten-writer race admits exactly one winner.
+- **Registry verified against official docs (18 Aug 2026).** GPT-5.5 window
+  corrected to 1,050,000 (272K is the pricing threshold, now modeled and read
+  by bound and settlement through one function); haiku pinned to
+  `claude-haiku-4-5-20251001`; Opus 5 effort recorded.
+- **Limits enforced pre-transmission**, refuse-not-clamp, transmitted ==
+  budgeted.
+- **Fallback NONE means none.** The router's silent tail-extension removed;
+  haiku declares gpt-5-5 cross-provider so degrade-rather-than-halt survives
+  through an authorized channel.
+- **Evidence frozen** (migration `0009`): UPDATE refused on messages,
+  model_calls, idea_state_changes, execution_events, deliberations; reservation
+  identity pinned. Applied live after a backup; counts unchanged.
+- **Rulings recorded** in `01-architecture.md`: B2 backup-transport
+  eligibility; the corrected Anthropic retention premise (content not retained
+  by default for non-Covered Models; VAL uses none).
+- **Restore verifier hardened** with per-table content digests — a
+  count-identical interior substitution now fails, proved adversarially.
+
+> **Reopened by independent review, 18 August 2026.** The `05a5116` matrix rows
+> R and T were disproved: three tautological tests remained, two of them hiding
+> a **real declared fallback cycle** the closure pass itself had introduced.
+> Ten findings plus two fresh red-team findings were fixed on candidate
+> `b39f5be`: provenance is an iff at request and entrances; the fallback graph
+> terminates and is validated at boot; content-filter stops are FILTERED
+> fragments, never persisted utterances; the terminal state is durable on
+> `model_calls` (migration `0010`, 42 historical rows honestly NULL); the alias
+> configurations are retired under their original UUIDs with pinned successors
+> (`claude-haiku-4-5-20251001`, `gpt-5.5-2026-04-23`) under new ones; declared
+> reasoning efforts are actually sent (opus HIGH, gpt MEDIUM); retired
+> configurations refuse explicit routing; every repaired invariant ships with a
+> negative fixture proving it can fail.
+
+Amended matrix A–T: all PASS on `b39f5be`. 629 tests; every local gate green;
+live store at `0010_terminal_state_is_evidence`.
+
 ### WP-0.8 to WP-0.10 · NOT STARTED
 
 No implementation exists for execution-history capture, deliberation capture,
@@ -602,7 +657,7 @@ or the text interface.
 |---|---|
 | PostgreSQL | 18.4 (Homebrew), port **5433** |
 | pgvector | 0.8.6 (installed, **unused** — WP-0.7 retrieval is PostgreSQL full text; see `VAL_Open_Decisions.md` item 10) |
-| Alembic revision | `0008_conversation_scope_recall` (head) |
+| Alembic revision | `0010_terminal_state_is_evidence` (head) |
 | Databases | `val` (authoritative), `val_test` (schema tests; refuses any name not ending `_test`) |
 
 ### Tables
@@ -611,9 +666,9 @@ or the text interface.
 |---|---|---|
 | `projects` | Projects Val works across | **6** — 4 from WP-0.6, 2 disposable from WP-0.7 acceptance |
 | `conversations` | `project_id` nullable and **immutable** — "no project" is explicit | **16** (15 scoped, 1 explicit no-project) |
-| `messages` | `role` ∈ user/val/system; `sequence` unique per conversation | **37**, no gaps or duplicates |
+| `messages` | `role` ∈ user/val/system; `sequence` unique per conversation; **rows frozen (`0009`)** | **37+**, no gaps or duplicates |
 | `personas` | Versioned; at most one active (partial unique index) | **1** — revision 1, authored v1.2 |
-| `model_calls` | Per-call cost attribution | **40** — 4 resolved (WP-0.6), 9 legacy_unknown, 27 from WP-0.7 and its corrective round |
+| `model_calls` | Per-call cost attribution; rows frozen (`0009`); **terminal state durable (`0010`)** | **42+** — historical rows carry NULL terminal_state, honestly |
 | `execution_events` | Acceptances, rejections, revisions, corrections, **reactions** | 0 |
 | `deliberations` | Blind position, confidence, ordering, outcome | 0 |
 | `ideas` | Idea lifecycle, manual marking only | 0 |

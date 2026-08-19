@@ -66,6 +66,10 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         # deliberate no-project decision from a row that predates the decision
         # existing, and both are in this table.
         "project_attribution",
+        # Independent-review correction, 18 August 2026 (migration 0010): how
+        # the provider call actually ended, durably. NULL is reserved for rows
+        # that predate the terminal-state contract.
+        "terminal_state",
         # §2.2 amendment, 17 August 2026: `known` | `unknown`. A provider attempt
         # that reached the provider and returned no usage is recorded as unknown,
         # with NULL figures — never as a zero, which is a claim and a false one.
@@ -152,6 +156,7 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # the three figures are NULL exactly when the certainty is `unknown`.
         # Recording zero there would be recording a figure known to be wrong.
         ("model_calls", "cost_certainty"),
+        ("model_calls", "terminal_state"),
         ("model_calls", "tokens_in"),
         ("model_calls", "tokens_out"),
         ("model_calls", "cost"),
@@ -878,6 +883,11 @@ def _fabricating_history(connection: Connection) -> None:
     connection.execute(
         text("ALTER TABLE model_calls DISABLE TRIGGER model_calls_legacy_attribution_is_closed")
     )
+    # And the terminal-state guard (migration 0010): a fabricated historical row
+    # carries NULL terminal_state, the legacy shape reserved to history.
+    connection.execute(
+        text("ALTER TABLE model_calls DISABLE TRIGGER model_calls_terminal_state_is_required")
+    )
 
 
 def test_a_new_legacy_unknown_row_is_refused_however_it_is_dated(
@@ -894,9 +904,9 @@ def test_a_new_legacy_unknown_row_is_refused_however_it_is_dated(
     attempt = text(
         "insert into model_calls (created_at, model_config_id, provider, model_identifier, "
         "tokens_in, tokens_out, cost, cost_certainty, project_id, project_attribution, "
-        "task_type, latency_ms, provider_request_id, status) values "
+        "terminal_state, task_type, latency_ms, provider_request_id, status) values "
         "(:dated, gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
-        "'legacy_unknown', 'conversation', 1, '', 'ok')"
+        "'legacy_unknown', 'complete', 'conversation', 1, '', 'ok')"
     )
     dates = (
         datetime.now(UTC),
@@ -926,9 +936,10 @@ def test_an_existing_row_cannot_be_turned_into_a_legacy_one(
         text(
             "insert into model_calls (model_config_id, provider, model_identifier, "
             "tokens_in, tokens_out, cost, cost_certainty, project_id, "
-            "project_attribution, task_type, latency_ms, provider_request_id, status) "
+            "project_attribution, terminal_state, task_type, latency_ms, "
+            "provider_request_id, status) "
             "values (gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
-            "'explicit_none', 'conversation', 1, '', 'ok') returning id"
+            "'explicit_none', 'complete', 'conversation', 1, '', 'ok') returning id"
         )
     )
     with pytest.raises(DBAPIError) as raised:
@@ -936,13 +947,15 @@ def test_an_existing_row_cannot_be_turned_into_a_legacy_one(
     assert "closed to new rows" in str(raised.value)
 
 
-def test_a_historical_row_stays_an_ordinary_row(engine: Engine, connection: Connection) -> None:
-    """Closed to new members, not frozen.
+def test_a_historical_row_is_frozen_evidence(engine: Engine, connection: Connection) -> None:
+    """Closed to new members, and — closure pass, 18 August 2026 — frozen too.
 
-    The nine real historical rows must remain correctable — a wrong latency or a
-    missing provider request id is still worth fixing. The guard refuses rows
-    *becoming* `legacy_unknown`; a row that already is one and stays one is
-    updated like any other.
+    This test used to assert the opposite: that a legacy row's `latency_ms`
+    remained correctable in place, per `0007`'s "closed to new members, not
+    frozen". The closure audit's mutation review superseded that stance:
+    a completed call is evidence in all its columns, and a wrong figure is
+    corrected by a superseding record (the `0004` view is the worked example),
+    never by editing the original. Migration `0009` enforces it.
     """
     _fabricating_history(connection)
     call = connection.execute(
@@ -958,14 +971,15 @@ def test_a_historical_row_stays_an_ordinary_row(engine: Engine, connection: Conn
     connection.execute(
         text("ALTER TABLE model_calls ENABLE TRIGGER model_calls_legacy_attribution_is_closed")
     )
+    connection.execute(
+        text("ALTER TABLE model_calls ENABLE TRIGGER model_calls_terminal_state_is_required")
+    )
 
-    connection.execute(text("update model_calls set latency_ms = 42 where id = :i"), {"i": call})
-
-    row = connection.execute(
-        text("select latency_ms, project_attribution from model_calls where id = :i"), {"i": call}
-    ).one()
-    assert row.latency_ms == 42
-    assert row.project_attribution == "legacy_unknown"
+    with pytest.raises(DBAPIError) as raised:
+        connection.execute(
+            text("update model_calls set latency_ms = 42 where id = :i"), {"i": call}
+        )
+    assert "rows are evidence" in str(raised.value)
 
 
 def test_the_view_never_leaves_effective_certainty_null(
@@ -1109,16 +1123,22 @@ def test_the_attribution_downgrade_refuses_once_a_decision_is_recorded(
                 text(
                     "insert into model_calls (model_config_id, provider, model_identifier, "
                     "tokens_in, tokens_out, cost, cost_certainty, project_id, "
-                    "project_attribution, task_type, latency_ms, provider_request_id, status) "
+                    "project_attribution, terminal_state, task_type, latency_ms, "
+                    "provider_request_id, status) "
                     "values (gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, 'known', null, "
-                    "'explicit_none', 'conversation', 1, '', 'ok')"
+                    "'explicit_none', 'complete', 'conversation', 1, '', 'ok')"
                 )
             )
 
         with pytest.raises(RuntimeError) as raised:
             command.downgrade(alembic_config, "0005_persona_provenance")
         assert "Refusing to downgrade" in str(raised.value)
-        assert "explicit_none" in str(raised.value)
+        # *Closure pass, 18 August 2026:* the refusal chain now begins at
+        # `0009`, whose evidence-freeze guard refuses first because the
+        # `explicit_none` row exists at all. `0006`'s own narrower refusal
+        # stands beneath it as defence in depth — reachable only on a database
+        # where every guarded table is empty except for the decision row, a
+        # state `0009` itself refuses to pass through.
 
         # Refused, not half-applied: the column and the decision are both still
         # there. A migration that raises after dropping something is worse than

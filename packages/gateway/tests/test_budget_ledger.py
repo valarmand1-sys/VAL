@@ -19,12 +19,17 @@ from sqlalchemy import Engine, text
 
 from val_domain.gateway import CostCertainty, TaskType
 from val_domain.registry import by_slug
-from val_gateway.ledger import DatabaseLedger, Refusal, Reservation
+from val_gateway.ledger import (
+    DatabaseLedger,
+    InvalidReservationTransitionError,
+    Refusal,
+    Reservation,
+)
 from val_policy.budget import CLOUD_CEILING_USD
 
 
 def config() -> object:
-    found = by_slug("haiku-4-5")
+    found = by_slug("haiku-4-5-20251001")
     assert found is not None
     return found
 
@@ -272,8 +277,11 @@ def test_an_expired_reservation_is_not_settled_or_released(
     assert settled is None
     assert resolution is not None and "committed" in resolution
 
-    # And it can no longer be settled: settlement only acts on `reserved`.
-    ledger.settle(claim.id, 0.01, CostCertainty.KNOWN, None)
+    # And it can no longer be settled — loudly. *Closure pass, 18 August 2026:*
+    # this used to assert the settlement silently did nothing, which enshrined
+    # the defect: the caller believed a transition the ledger did not perform.
+    with pytest.raises(InvalidReservationTransitionError, match="already 'expired'"):
+        ledger.settle(claim.id, 0.01, CostCertainty.KNOWN, None)
     assert state_of(ledger_engine, claim.id)[0] == "expired"
 
 
@@ -309,16 +317,77 @@ def test_a_reservation_cannot_be_hard_deleted(ledger_engine: Engine) -> None:
     ledger = DatabaseLedger(ledger_engine)
     claim = reserve(ledger, 0.01)
     assert isinstance(claim, Reservation)
-    with pytest.raises(Exception):  # noqa: B017 - the driver's own refusal
+    with pytest.raises(Exception, match="hard delete"):
         with ledger_engine.begin() as connection:
             connection.execute(
                 text("delete from budget_reservations where id = :id"), {"id": claim.id}
             )
 
 
-def test_an_unrelated_reservation_id_settles_nothing(ledger_engine: Engine) -> None:
-    """Settlement is scoped to the row it names, and to `reserved` rows only."""
+def test_an_unknown_reservation_id_is_refused_by_name(ledger_engine: Engine) -> None:
+    """A transition naming nothing is an error, not a no-op.
+
+    *Closure pass, 18 August 2026.* The old assertion — that releasing a
+    made-up id left the committed figure unchanged — was true and useless: it
+    proved the SQL was scoped, while the caller walked away believing a release
+    happened. The ledger now says so.
+    """
     ledger = DatabaseLedger(ledger_engine)
     before = ledger.committed_usd()
-    ledger.release(uuid4(), "nothing by this id exists")
+    with pytest.raises(InvalidReservationTransitionError, match="does not exist"):
+        ledger.release(uuid4(), "nothing by this id exists")
     assert ledger.committed_usd() == pytest.approx(before)
+
+
+def test_a_settled_reservation_cannot_settle_or_release_again(ledger_engine: Engine) -> None:
+    """The double-settlement and hidden-release cases, named individually."""
+    ledger = DatabaseLedger(ledger_engine)
+    claim = reserve(ledger, 1.00)
+    assert isinstance(claim, Reservation)
+    ledger.settle(claim.id, 0.10, CostCertainty.KNOWN, None)
+    committed = ledger.committed_usd()
+
+    with pytest.raises(InvalidReservationTransitionError, match="already 'settled'"):
+        ledger.settle(claim.id, 0.99, CostCertainty.KNOWN, None)
+    with pytest.raises(InvalidReservationTransitionError, match="already 'settled'"):
+        ledger.release(claim.id, "trying to hide the spend")
+
+    # The first settlement stands, to the cent.
+    assert ledger.committed_usd() == pytest.approx(committed)
+    state, settled, _ = state_of(ledger_engine, claim.id)
+    assert state == "settled"
+    assert settled is not None and float(settled) == pytest.approx(0.10)
+
+
+def test_concurrent_settle_and_release_admit_exactly_one_winner(
+    ledger_engine: Engine,
+) -> None:
+    """The race §6 names: two transitions, one row, one winner, one loud loser.
+
+    Ten threads on independent connections all try to close the same
+    reservation — half settling, half releasing. The `where state='reserved'`
+    guard makes the transition atomic; the closure-pass rowcount check makes
+    the losers *know* they lost.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    ledger = DatabaseLedger(ledger_engine)
+    claim = reserve(ledger, 1.00)
+    assert isinstance(claim, Reservation)
+
+    def contend(index: int) -> str:
+        try:
+            if index % 2:
+                ledger.settle(claim.id, 0.05, CostCertainty.KNOWN, None)
+            else:
+                ledger.release(claim.id, "racing release")
+            return "won"
+        except InvalidReservationTransitionError:
+            return "refused"
+
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        outcomes = list(pool.map(contend, range(10)))
+
+    assert outcomes.count("won") == 1, f"expected one winner, got {outcomes}"
+    assert outcomes.count("refused") == 9
+    assert state_of(ledger_engine, claim.id)[0] in ("settled", "released")

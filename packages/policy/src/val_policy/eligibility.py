@@ -12,6 +12,7 @@ second — never the other way around.
 """
 
 from val_domain.gateway import Classification, GatewayErrorKind, ModelConfig
+from val_domain.registry import declared_chain_violations
 
 #: Providers ruled Protected-eligible on 15 August 2026, with the grounds
 #: recorded in 01-architecture.md §5.4. Google's eligibility is conditional and
@@ -36,6 +37,13 @@ def startup_violations(configs: list[ModelConfig]) -> list[str]:
     active = [config for config in configs if not config.retired]
     if not active:
         violations.append("no active model configuration exists; the gateway has no route")
+
+    # Independent-review correction, 18 August 2026: a declared fallback cycle
+    # is registry data that contradicts the registry's own doctrine, and the
+    # router's defensive seen-set must never be the only thing standing between
+    # a mis-declaration and an infinite chain. Validated at boot, over the
+    # active graph the router will actually walk.
+    violations.extend(declared_chain_violations(tuple(active)))
 
     for config in active:
         name = f"{config.slug} ({config.provider}/{config.model_identifier})"

@@ -63,6 +63,7 @@ from val_domain.gateway import (
     Message,
     ModelConfig,
     TaskType,
+    TerminalState,
     TurnReference,
 )
 from val_domain.project import (
@@ -76,6 +77,8 @@ from val_gateway.persona import PersonaLoader, PersonaProblem, PersonaUnavailabl
 from val_policy.budget import (
     admits,
     ceiling_message,
+    effective_rates,
+    limit_overrun,
     maximum_cost,
     no_affordable_route_message,
 )
@@ -136,6 +139,7 @@ class CallRecord:
         tokens_out: int | None,
         cost_usd: float | None,
         cost_certainty: CostCertainty,
+        terminal_state: str,
         project_id: UUID | None,
         project_attribution: ProjectAttribution,
         task_type: str,
@@ -154,6 +158,7 @@ class CallRecord:
         self.tokens_out = tokens_out
         self.cost_usd = cost_usd
         self.cost_certainty = cost_certainty
+        self.terminal_state = terminal_state
         self.project_id = project_id
         self.project_attribution = project_attribution
         self.task_type = task_type
@@ -166,14 +171,16 @@ class CallRecord:
 
 
 def compute_cost(config: ModelConfig, tokens_in: int, tokens_out: int) -> float:
-    """Cost in USD, from the configuration's rates, at call time.
+    """The settled cost of a completed call, at the rates that actually applied.
 
-    Stored, never derived later: provider pricing changes, and a historical
-    record that silently re-prices itself is not a record (`04-layer-0.md` §2.2).
+    Uses `effective_rates`, the same function the pre-call bound prices with —
+    closure pass, 18 August 2026 — so a call whose input crossed a provider's
+    long-context threshold settles at the multiplied rates the provider bills,
+    and the estimator and the settlement cannot disagree about what a token
+    costs.
     """
-    return (
-        tokens_in * config.cost_per_mtok_in_usd + tokens_out * config.cost_per_mtok_out_usd
-    ) / 1_000_000
+    rate_in, rate_out = effective_rates(config, tokens_in)
+    return round((tokens_in * rate_in + tokens_out * rate_out) / 1_000_000, 6)
 
 
 def check_startup(today: date) -> tuple[list[str], list[str]]:
@@ -226,9 +233,8 @@ class Gateway:
         messages: tuple[Message, ...],
         *,
         scope: ProjectScope,
+        turn: TurnReference,
         classification: Classification = Classification.PROTECTED,
-        task_type: TaskType = TaskType.CONVERSATION,
-        turn: TurnReference | None = None,
         max_output_tokens: int = 4096,
     ) -> GatewayResponse:
         """Talk to Val. The persona is loaded, assembled whole, and attributed.
@@ -264,18 +270,44 @@ class Gateway:
             persona,
             messages,
             classification=classification,
-            task_type=task_type,
+            # Fixed, not a parameter. *Closure pass, 18 August 2026*: `converse`
+            # is one real conversational turn by definition, and a caller who
+            # could relabel it CLASSIFICATION or TITLE could file Val's own
+            # utterances under machinery. The task type is what the function
+            # *is*, so the function states it.
+            task_type=TaskType.CONVERSATION,
             scope=scope,
             turn=turn,
             max_output_tokens=max_output_tokens,
         )
-        return self.complete(request)
+        return self._execute(request)
 
     def complete(self, request: GatewayRequest) -> GatewayResponse:
-        """Route this request and answer it, or fail truthfully.
+        """Route one piece of non-conversation model work, or fail truthfully.
 
         The caller names no provider and no model. It names what the content is
         and what the work is; the gateway decides where that may go.
+
+        **`TaskType.CONVERSATION` is refused here.** *Closure pass, 18 August
+        2026.* A conversation is Val speaking, and Val speaks through
+        `converse`, which loads her persona from the WP-0.5 loader and binds it
+        into the call's provenance. A hand-built conversation request arriving
+        here could carry any UUID in `persona_id` — coherent-looking provenance
+        for an identity that was never loaded. The generic entrance therefore
+        serves classification, strip, blind_position and title, and nothing
+        that claims to be Val.
+        """
+        self._refuse_masquerade(request)
+        return self._execute(request)
+
+    def _execute(self, request: GatewayRequest) -> GatewayResponse:
+        """The one execution body behind both entrances.
+
+        Private on purpose: `converse` builds conversation requests and comes
+        here directly, having just loaded the persona; `complete` comes here for
+        non-conversation work after refusing anything conversational. There is
+        exactly one copy of the guard order — Restricted, provenance, budget,
+        route — because two copies is how one of them drifts.
         """
         self._refuse_restricted(request)
         self._refuse_incoherent_provenance(request)
@@ -287,7 +319,15 @@ class Gateway:
             active(),
             request.classification,
             is_ready=lambda config: config.provider in self._adapters,
-            is_affordable=lambda config: self._affordable(config, request, parts, committed),
+            # A route whose model cannot hold this request — output cap or
+            # context window — is not a candidate, exactly as an unaffordable
+            # one is not. Filtered here so the request can still be served by a
+            # route that CAN hold it, and so `_attempt`'s own refusal is the
+            # backstop rather than the mechanism.
+            is_affordable=lambda config: (
+                limit_overrun(config, parts, request.max_output_tokens) is None
+                and self._affordable(config, request, parts, committed)
+            ),
             resolve_fallback=fallback_for,
         )
         if not order:
@@ -328,7 +368,12 @@ class Gateway:
         checks it was trying to walk around. Discovery of a shape is not
         authorization to route to it (`00-charter.md` invariant 6, in the spirit
         it was written).
+
+        Refuses `TaskType.CONVERSATION` for the same reason `complete` does:
+        naming a configuration explicitly is *more* deliberate, not more
+        trusted, and it must not become the quiet way to talk as Val.
         """
+        self._refuse_masquerade(request)
         self._refuse_restricted(request)
 
         known = by_id(config.id)
@@ -339,6 +384,13 @@ class Gateway:
                 "is not the Model Configuration Registry's entry for its id. Routing selects "
                 "among registered configurations and never among raw models "
                 "(01-architecture.md §5.2); a configuration assembled by a caller is not one.",
+            )
+        if known.retired:
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                f"{known.slug} is retired. A retired configuration resolves history; "
+                "it does not serve new calls, and naming it explicitly does not "
+                "un-retire it (closure red-team, 18 August 2026).",
             )
         if not is_admitted(known) or not is_eligible(known, request.classification):
             raise GatewayError(
@@ -370,6 +422,18 @@ class Gateway:
                 f"no adapter is configured for provider {config.provider!r}",
             )
 
+        # Closure pass, 18 August 2026: the model's own limits are enforced
+        # HERE, before a reservation is taken and before anything is
+        # transmitted. Relying on the provider to reject an impossible request
+        # would mean routing it, reserving money for it, and sending the
+        # content — three things that should not happen to a call that cannot
+        # succeed. Nothing is clamped: a request for more output than the model
+        # supports is refused in those words, because silently serving less
+        # than was asked is a quiet lie about what was authorised.
+        overrun = limit_overrun(config, parts, request.max_output_tokens)
+        if overrun is not None:
+            raise GatewayError(GatewayErrorKind.INVALID_REQUEST, overrun)
+
         authorised = maximum_cost(config, parts, request.max_output_tokens)
         claim = self._ledger.reserve(config, authorised, request.task_type, request.project_id)
         if isinstance(claim, Refusal):
@@ -400,8 +464,38 @@ class Gateway:
             raise
 
         latency = self._elapsed(started)
-        status = CallStatus.REFUSED if result.refused else CallStatus.OK
-        cost = compute_cost(config, result.tokens_in, result.tokens_out)
+
+        # Closure pass, 18 August 2026 — two corrections in what follows.
+        #
+        # **Missing usage is UNKNOWN, never zero.** A response can arrive whole
+        # with no usage block; pricing absent figures as 0 tokens recorded a
+        # *known* $0 for exactly the calls whose cost was not known. Tokens are
+        # `None` from the adapter in that case, the row records NULLs with
+        # UNKNOWN certainty, and the reservation settles at its full maximum —
+        # the same doctrine as a provider failure, because accounting-wise it is
+        # one: the provider was paid an amount it declined to state.
+        cost = (
+            compute_cost(config, result.tokens_in, result.tokens_out)
+            if result.tokens_in is not None and result.tokens_out is not None
+            else None
+        )
+        certainty = CostCertainty.KNOWN if cost is not None else CostCertainty.UNKNOWN
+
+        # **The terminal state decides the row's status and whether the text is
+        # an answer.** COMPLETE and TRUNCATED are successful provider calls
+        # (status OK — the *call* worked; whether the text may be persisted as a
+        # Val message is the caller's branch on `terminal`). REFUSED is the
+        # model's deliberate refusal. UNKNOWN is a stop state this system does
+        # not recognise: the row records ERROR and the call fails closed below,
+        # after the money has been accounted for honestly.
+        status = {
+            TerminalState.COMPLETE: CallStatus.OK,
+            TerminalState.TRUNCATED: CallStatus.OK,
+            TerminalState.FILTERED: CallStatus.OK,
+            TerminalState.REFUSED: CallStatus.REFUSED,
+            TerminalState.UNKNOWN: CallStatus.ERROR,
+        }[result.terminal]
+
         call_id = self._record(
             CallRecord(
                 model_config_id=config.id,
@@ -411,7 +505,8 @@ class Gateway:
                 tokens_in=result.tokens_in,
                 tokens_out=result.tokens_out,
                 cost_usd=cost,
-                cost_certainty=CostCertainty.KNOWN,
+                cost_certainty=certainty,
+                terminal_state=result.terminal.value,
                 project_id=request.project_id,
                 project_attribution=request.project_attribution,
                 task_type=request.task_type.value,
@@ -423,12 +518,22 @@ class Gateway:
                 status=status,
             )
         )
-        # Settling at the real figure returns the unspent difference between the
-        # reservation and the actual cost to the month's available budget.
-        self._ledger.settle(claim.id, cost, CostCertainty.KNOWN, call_id)
+        # Known cost settles at the real figure, returning the unspent
+        # difference; unknown cost settles at the reserved maximum.
+        self._ledger.settle(claim.id, cost, certainty, call_id)
+
+        if result.terminal is TerminalState.UNKNOWN:
+            raise GatewayError(
+                GatewayErrorKind.INVALID_OUTPUT,
+                f"{config.provider} ended this call in a state this system does not "
+                "recognise. The call is recorded and its cost accounted for, but the "
+                "text is not handed onward as an answer: an unrecognised outcome is "
+                "unverified, not successful (00-charter.md §4).",
+            )
 
         return GatewayResponse(
             text=result.text,
+            terminal=result.terminal,
             model_config_id=config.id,
             slug=config.slug,
             provider=config.provider,
@@ -472,6 +577,9 @@ class Gateway:
                 tokens_out=None,
                 cost_usd=None,
                 cost_certainty=CostCertainty.UNKNOWN,
+                # No response object exists, so no provider terminal state does
+                # either; `failed` records that truthfully rather than guessing.
+                terminal_state="failed",
                 project_id=request.project_id,
                 project_attribution=request.project_attribution,
                 task_type=request.task_type.value,
@@ -491,6 +599,42 @@ class Gateway:
         )
 
     # --- refusals that are not calls -----------------------------------------
+
+    def _refuse_masquerade(self, request: GatewayRequest) -> None:
+        """A generic entrance is not a way to talk as Val.
+
+        *Closure pass, 18 August 2026.* `GatewayRequest` already refuses a
+        conversation without provenance, and the verifier already refuses
+        provenance that disagrees with the records — but neither could tell a
+        persona revision *loaded through the WP-0.5 loader* from a UUID somebody
+        typed. The only structure that can is the entrance: `converse` loads the
+        persona itself and builds the request itself, so a conversation request
+        arriving at a public generic entrance is by definition one `converse`
+        did not build.
+        """
+        if request.task_type is TaskType.CONVERSATION:
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                "conversation inference goes through `converse`, which loads the active "
+                "persona from the WP-0.5 loader and binds it into the call's provenance. "
+                "The generic entrances serve non-conversation work only; accepting a "
+                "hand-built conversation request here would let any typed persona UUID "
+                "stand in for Val (current-version closure pass, 18 August 2026).",
+            )
+
+        # The inverse, at the entrance as well as in the request validator —
+        # independent-review correction, 18 August 2026. `model_copy` skips
+        # pydantic validation, so a shape the constructor refuses can still be
+        # assembled; the entrance refuses it again before anything is routed,
+        # reserved, or transmitted. Provenance on machinery would write
+        # model_calls attribution for a conversation that never made the call.
+        if request.conversation is not None:
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                f"a {request.task_type.value!r} request may not carry conversation "
+                "provenance: only a conversation is caused by a conversation turn. "
+                "Refused before routing (independent-review correction, 18 August 2026).",
+            )
 
     def _refuse_incoherent_provenance(self, request: GatewayRequest) -> None:
         """Refuse a conversation call whose ids do not agree with the records.

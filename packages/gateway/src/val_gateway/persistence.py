@@ -81,10 +81,10 @@ _SUPERSEDED_ZERO_CALLS = text(
 _INSERT_CALL = text(
     "insert into model_calls "
     "(model_config_id, provider, model_identifier, tokens_in, tokens_out, cost, "
-    " cost_certainty, project_id, project_attribution, task_type, conversation_id, "
+    " cost_certainty, terminal_state, project_id, project_attribution, task_type, conversation_id, "
     " message_id, persona_id, latency_ms, provider_request_id, status) "
     "values (:model_config_id, :provider, :model_identifier, :tokens_in, :tokens_out, "
-    " :cost, :cost_certainty, :project_id, :project_attribution, :task_type, "
+    " :cost, :cost_certainty, :terminal_state, :project_id, :project_attribution, :task_type, "
     " :conversation_id, :message_id, :persona_id, :latency_ms, :provider_request_id, "
     " :status) "
     "returning id"
@@ -112,6 +112,7 @@ def record_call(engine: Engine, record: CallRecord) -> UUID:
                 "tokens_out": record.tokens_out,
                 "cost": None if record.cost_usd is None else Decimal(str(record.cost_usd)),
                 "cost_certainty": record.cost_certainty.value,
+                "terminal_state": record.terminal_state,
                 "project_id": record.project_id,
                 # WP-0.6 corrective round: what that project_id *means*. A NULL
                 # alone cannot distinguish a decision from a row that predates

@@ -155,3 +155,28 @@ def test_the_real_gateway_is_built_with_a_verifier() -> None:
         "the application's gateway is built without a provenance verifier, so it "
         "will refuse every conversation call"
     )
+
+
+def test_no_module_reaches_the_private_execution_body_directly() -> None:
+    """Closure red-team, 18 August 2026. The private door stays private.
+
+    `complete` refuses conversation and `converse` is the conversation
+    entrance; both funnel into `_execute`. A module that called `_execute`
+    directly would stand where `converse` stands without loading a persona, so
+    the boundary assertion covers it the same way it covers `converse` —
+    nothing in the application source outside `gateway.py` itself may name it.
+    """
+    for name, source in _module_sources().items():
+        if name == "gateway.py":
+            continue
+        assert "_execute" not in _calls_in(source), (
+            f"{name} calls the gateway's private execution body directly"
+        )
+
+
+def test_the_generic_entrances_name_their_conversation_refusal() -> None:
+    """The masquerade guard exists in source, on both public generic doors."""
+    source = (SOURCE_ROOT / "gateway.py").read_text()
+    assert source.count("self._refuse_masquerade(request)") >= 2, (
+        "a public generic entrance lost its conversation refusal"
+    )

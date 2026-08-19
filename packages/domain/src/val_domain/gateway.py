@@ -68,6 +68,51 @@ class CostCertainty(StrEnum):
     UNKNOWN = "unknown"
 
 
+class TerminalState(StrEnum):
+    """How a provider call actually ended — the provider-neutral terminal contract.
+
+    Added in the current-version closure pass, 18 August 2026, because the
+    previous contract collapsed materially different outcomes into a boolean:
+    `ProviderResult.refused`. Under that shape an OpenAI `incomplete` (an output
+    that hit its cap) was recorded as a *refusal*, and an Anthropic `max_tokens`
+    truncation was recorded as an ordinary completed answer. A truncated reply
+    that is persisted as Val's message is a fabrication — she did not finish
+    saying it.
+
+    Every adapter maps its provider's own stop semantics onto these four values
+    explicitly. **Anything a provider returns that the adapter does not
+    recognise maps to `UNKNOWN`, and `UNKNOWN` fails closed**: the gateway
+    records the call honestly (it happened, it cost money) and then raises
+    rather than handing the text onward as an answer.
+
+    | State | Meaning | Becomes a Val message? |
+    |---|---|---|
+    | `COMPLETE` | the model finished naturally | yes |
+    | `REFUSED` | the model declined; its refusal is deliberate and complete | yes |
+    | `TRUNCATED` | the output cap cut it off; the text is a fragment | **no** — evidence only |
+    | `FILTERED` | the content filter cut it off; a fragment | **no** — evidence only |
+    | `UNKNOWN` | a stop state this adapter does not recognise | **no** — the call fails closed |
+
+    Tool/action handoff states (`tool_use`, `pause_turn`) are not reachable at
+    Layer 0 — no tool is ever sent — so an adapter receiving one maps it to
+    `UNKNOWN`, which is exactly right: a state that cannot legitimately occur is
+    a state we do not understand.
+    """
+
+    COMPLETE = "complete"
+    REFUSED = "refused"
+    TRUNCATED = "truncated"
+    #: *Independent-review correction, 18 August 2026.* A content-filter stop is
+    #: an INCOMPLETE result, not a refusal: a refusal is the model's deliberate,
+    #: complete utterance, while a filter cut generation off mid-stream. The
+    #: first closure pass mapped OpenAI's `incomplete`/`content_filter` to
+    #: REFUSED, which `loop.send` persists as Val's finished message — partial
+    #: filtered text entering history as though she finished speaking, the exact
+    #: semantic class the terminal-state repair existed to close.
+    FILTERED = "filtered"
+    UNKNOWN = "unknown"
+
+
 class GatewayErrorKind(StrEnum):
     """The one normalized error contract (`01-architecture.md` §5.1).
 
@@ -192,6 +237,15 @@ class ModelConfig(BaseModel):
     temperature: float | None = None
     cost_per_mtok_in_usd: float = Field(gt=0)
     cost_per_mtok_out_usd: float = Field(gt=0)
+    #: Closure pass, 18 August 2026. Some providers re-price a call whose input
+    #: crosses a threshold — GPT-5.5 bills 2x input and 1.5x output for the full
+    #: session above 272K input tokens (developers.openai.com, verified 18
+    #: August 2026). The threshold and multipliers live HERE, on the registry
+    #: entry, because a pricing fact embedded in code is a pricing fact nobody
+    #: re-verifies. `None` means the provider documents no such rule.
+    long_context_threshold_tokens: int | None = None
+    long_context_in_multiplier: float = Field(default=1.0, ge=1.0)
+    long_context_out_multiplier: float = Field(default=1.0, ge=1.0)
     #: Whether caching or batch pricing applies (§5.2). See `PricingFeature`:
     #: `NOT_VERIFIED` records that this has not been read from the provider.
     caching: PricingFeature = PricingFeature.NOT_VERIFIED
@@ -349,14 +403,27 @@ class GatewayRequest(BaseModel):
         return None if self.conversation is None else self.conversation.persona_id
 
     @model_validator(mode="after")
-    def _a_conversation_call_carries_its_provenance(self) -> GatewayRequest:
-        """A Val utterance must say which turn it answered — WP-0.7 corrective.
+    def _provenance_iff_conversation(self) -> GatewayRequest:
+        """Conversation provenance is present iff the task is conversation.
 
-        The other task types are exempt because they are not conversation:
-        classification and strip are the house reasoning about content before it
-        is routed, `blind_position` is a deliberation step, and `title` names
-        something. None of them is Val answering Lord Armand, and requiring a
-        conversation of them would be requiring a fiction.
+        *Independent-review correction, 18 August 2026.* The first closure pass
+        enforced only the forward direction — a conversation must carry
+        provenance — and left the inverse open: a CLASSIFICATION request could
+        carry real conversation, message, and persona ids and, through a
+        generic entrance that never runs the conversation verifier, write
+        coherent-looking `model_calls` attribution for machinery that was never
+        part of any conversation. The contract was always meant as an iff, and
+        now it is one.
+
+        Forward: a Val utterance must say which turn it answered
+        (`04-layer-0.md` WP-0.7) — use `val_gateway.loop.send`, which persists
+        the message first and supplies all three ids.
+
+        Inverse: classification and strip are the house reasoning about content
+        before it is routed, `blind_position` is a deliberation step, and
+        `title` names something. None of them is Val answering Lord Armand, and
+        provenance on one would be attribution to a conversation that did not
+        cause it.
         """
         if self.task_type is TaskType.CONVERSATION and self.conversation is None:
             raise ValueError(
@@ -365,8 +432,16 @@ class GatewayRequest(BaseModel):
                 "persona revision assembled into it. Without them a Val utterance is "
                 "recorded with nothing tying it to what was said or who said it "
                 "(04-layer-0.md WP-0.7). Use `val_gateway.loop.send`, which persists "
-                "the message first and supplies all three; task types that are not "
-                "conversation are exempt."
+                "the message first and supplies all three."
+            )
+        if self.task_type is not TaskType.CONVERSATION and self.conversation is not None:
+            raise ValueError(
+                f"a {self.task_type.value!r} request may not carry conversation "
+                "provenance. Only a conversation is caused by a conversation turn; "
+                "attaching real conversation, message, and persona ids to machinery "
+                "would record model_calls attribution for a conversation that never "
+                "made the call (current-version closure, independent-review "
+                "correction, 18 August 2026)."
             )
         return self
 
@@ -389,17 +464,24 @@ class GatewayRequest(BaseModel):
 
 
 class GatewayResponse(BaseModel):
-    """What the gateway returns, with the cost already attributed and recorded."""
+    """What the gateway returns, with the cost already attributed and recorded.
+
+    `terminal` says how the call actually ended; callers that persist the text
+    as a Val message must branch on it (`val_gateway.loop` does). `tokens_*` and
+    `cost_usd` are `None` exactly when the provider did not report usage — the
+    closure pass removed the path where missing usage became a fabricated zero.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     text: str
+    terminal: TerminalState
     model_config_id: UUID
     slug: str
     provider: str
     model_identifier: str
-    tokens_in: int
-    tokens_out: int
-    cost_usd: float
+    tokens_in: int | None
+    tokens_out: int | None
+    cost_usd: float | None
     latency_ms: int
     provider_request_id: str | None

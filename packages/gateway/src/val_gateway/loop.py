@@ -3,9 +3,9 @@
 `04-layer-0.md` WP-0.7: *"a real conversation persists across a full application
 restart and Val recalls prior context within a project."*
 
-`exchange.py` is WP-0.6's boundary: it settles scope and answers once, holding
-nothing. This is the same shape with a memory: the conversation is a row, the
-turn is a row, and what Val is sent is assembled from rows.
+`exchange.py` holds WP-0.6's deterministic scope resolution and nothing
+provider-bearing; this module is the conversation boundary. The conversation is
+a row, the turn is a row, and what Val is sent is assembled from rows.
 
 ## The order, and what each step gates
 
@@ -16,10 +16,12 @@ turn is a row, and what Val is sent is assembled from rows.
     4. load the active persona       WP-0.5, from `personas`, per call
     5. read same-conversation history in `sequence` order, ending on step 3
     6. recall project material       filtered by project inside the query
-    7. assemble                      persona whole; memory as delimited data
+    7. assemble                      persona whole; memory as a serialised envelope
     8. Restricted preflight          over the **assembled** request, memory included
     9. budget, routing, provider     the ceiling sees the final payload
-   10. persist Val's message         only if a real answer came back
+   10. persist Val's message         only if a complete answer came back
+       (a refusal is complete; a truncated fragment is returned as evidence,
+        never persisted as her reply — closure pass, 18 August 2026)
 
 **Step 3 before step 9 is the important ordering.** The user's message is
 persisted before the provider is called, so a provider failure leaves a real
@@ -73,7 +75,7 @@ from val_domain.gateway import (
     GatewayError,
     GatewayErrorKind,
     GatewayResponse,
-    TaskType,
+    TerminalState,
     TurnReference,
 )
 from val_domain.project import AmbiguousProject, ProjectCandidate, ProjectScope
@@ -120,7 +122,26 @@ class UnansweredTurn:
     error: Exception
 
 
-TurnOutcome = Turn | UnansweredTurn | ClarificationNeeded
+@dataclass(frozen=True)
+class TruncatedTurn:
+    """The provider produced a fragment — cut off by the output cap or the filter.
+
+    *Closure pass, 18 August 2026.* The user's message is persisted — it was
+    said. Val's fragment is **not** persisted as her reply: a message record is
+    the record of what she said, and she did not finish saying this. The
+    fragment rides along as `partial_text` so the caller can inspect it, and
+    the `model_calls` row records the call honestly (it happened and was paid
+    for). Retrying with a larger cap is the caller's ordinary next turn.
+    """
+
+    conversation: ConversationRecord
+    scope: ProjectScope
+    user_message: MessageRecord
+    partial_text: str
+    response: GatewayResponse
+
+
+TurnOutcome = Turn | UnansweredTurn | TruncatedTurn | ClarificationNeeded
 
 
 #: The two forms of an explicit current-interaction scope choice. WP-0.6 put
@@ -148,7 +169,6 @@ def send(
     conversation_id: UUID | None = None,
     title: str | None = None,
     classification: Classification = Classification.PROTECTED,
-    task_type: TaskType = TaskType.CONVERSATION,
     recall_limit: int = DEFAULT_LIMIT,
     max_output_tokens: int = 4096,
 ) -> TurnOutcome:
@@ -250,7 +270,6 @@ def send(
             messages,
             scope=scope,
             classification=classification,
-            task_type=task_type,
             # One object rather than two loose ids — and `persona_id` is filled
             # in by `assemble`, which is where the persona is known. The gateway
             # verifies the three agree with the records before transmitting.
@@ -280,7 +299,30 @@ def send(
             error=failure,
         )
 
-    # 10. A real answer, so it joins the record at the next sequence.
+    # 10. What happens to the text depends on how the call actually ended —
+    #     closure pass, 18 August 2026. COMPLETE and REFUSED are both whole
+    #     utterances (a deliberate refusal is Val's answer) and join the record.
+    #     TRUNCATED is a fragment: the provider cut it off at the output cap,
+    #     and persisting it as her message would put half a sentence in her
+    #     mouth as though she finished it. The fragment is returned as evidence
+    #     — the caller can see it, raise the cap, and ask again — and the
+    #     user's turn stays in the record as asked-and-not-yet-answered, which
+    #     is what actually happened.
+    if response.terminal in (TerminalState.TRUNCATED, TerminalState.FILTERED):
+        # TRUNCATED: the output cap cut it off. FILTERED — independent-review
+        # correction, 18 August 2026: the provider's content filter cut it off,
+        # which the first closure pass mis-mapped to REFUSED and therefore
+        # persisted as a finished utterance. Both are fragments; neither enters
+        # history as Val's message. The precise state rides on
+        # `outcome.response.terminal` and is durable on the model_calls row.
+        return TruncatedTurn(
+            conversation=conversation,
+            scope=scope,
+            user_message=user_message,
+            partial_text=response.text,
+            response=response,
+        )
+
     val_message = conversations.append(
         engine, conversation.id, role=StoredRole.VAL, content=response.text
     )

@@ -93,6 +93,12 @@ def fabricate_a_legacy_row(engine: Engine, **columns: object) -> None:
         connection.execute(
             text("ALTER TABLE model_calls DISABLE TRIGGER model_calls_legacy_attribution_is_closed")
         )
+        # A pre-terminal-state row too: NULL terminal_state is the legacy shape
+        # migration 0010 reserves to history, so fabricating history means
+        # suspending its insert guard in the same rolled-back-safe transaction.
+        connection.execute(
+            text("ALTER TABLE model_calls DISABLE TRIGGER model_calls_terminal_state_is_required")
+        )
         try:
             connection.execute(text(f"insert into model_calls ({named}) values ({rendered})"))  # noqa: S608
         finally:
@@ -100,5 +106,10 @@ def fabricate_a_legacy_row(engine: Engine, **columns: object) -> None:
                 text(
                     "ALTER TABLE model_calls ENABLE TRIGGER "
                     "model_calls_legacy_attribution_is_closed"
+                )
+            )
+            connection.execute(
+                text(
+                    "ALTER TABLE model_calls ENABLE TRIGGER model_calls_terminal_state_is_required"
                 )
             )

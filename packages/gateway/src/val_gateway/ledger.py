@@ -61,7 +61,7 @@ from decimal import Decimal
 from typing import Protocol
 from uuid import UUID
 
-from sqlalchemy import Engine, text
+from sqlalchemy import Connection, Engine, text
 
 from val_domain.gateway import CostCertainty, ModelConfig, TaskType
 from val_policy.budget import admits
@@ -86,6 +86,15 @@ class Reservation:
     id: UUID
     max_cost_usd: float
     committed_before_usd: float
+
+
+class InvalidReservationTransitionError(Exception):
+    """A reservation was asked to transition out of a state it is not in.
+
+    Raised instead of silently affecting zero rows. Double settlement, double
+    release, settlement after expiry, release after settlement — all land here,
+    each named with the state the row actually holds.
+    """
 
 
 @dataclass(frozen=True)
@@ -309,7 +318,7 @@ class DatabaseLedger:
             resolution = "settled against reported provider usage"
 
         with self._engine.begin() as connection:
-            connection.execute(
+            outcome = connection.execute(
                 _SETTLE,
                 {
                     "id": reservation_id,
@@ -319,6 +328,8 @@ class DatabaseLedger:
                     "resolution": resolution,
                 },
             )
+            if outcome.rowcount != 1:
+                self._refuse_transition(connection, reservation_id, "settle")
 
     def _unknown_settlement(self, reservation_id: UUID) -> tuple[Decimal, str]:
         """Charge the whole reservation, and say in the row why."""
@@ -337,7 +348,35 @@ class DatabaseLedger:
     def release(self, reservation_id: UUID, reason: str) -> None:
         """Return the headroom. Only ever called when no request was sent."""
         with self._engine.begin() as connection:
-            connection.execute(_RELEASE, {"id": reservation_id, "resolution": reason})
+            outcome = connection.execute(_RELEASE, {"id": reservation_id, "resolution": reason})
+            if outcome.rowcount != 1:
+                self._refuse_transition(connection, reservation_id, "release")
+
+    def _refuse_transition(self, connection: Connection, reservation_id: UUID, wanted: str) -> None:
+        """A guarded transition matched no row. Say why, loudly.
+
+        *Closure pass, 18 August 2026.* The `where state = 'reserved'` guards
+        made every transition atomic — and silent. A double settlement updated
+        zero rows and returned as though it had worked, so the caller believed a
+        state the ledger did not hold, which is `00-charter.md` invariant 29
+        wearing accounting clothes. The guard now reports: the terminal state a
+        reservation already reached is a fact, and a caller asking for a second
+        transition needs to hear it rather than proceed on an assumption.
+        """
+        state = connection.execute(
+            text("select state from budget_reservations where id = :id"),
+            {"id": reservation_id},
+        ).scalar_one_or_none()
+        if state is None:
+            raise InvalidReservationTransitionError(
+                f"reservation {reservation_id} does not exist; cannot {wanted} it."
+            )
+        raise InvalidReservationTransitionError(
+            f"reservation {reservation_id} is already {state!r}; a reservation "
+            f"transitions out of 'reserved' exactly once, so this {wanted} did not "
+            "happen. Whatever was already recorded stands — a terminal accounting "
+            "state is evidence, not a slot to overwrite."
+        )
 
     def expire_stale(self, older_than_seconds: int = STALE_AFTER_SECONDS) -> list[str]:
         """Move abandoned reservations out of `reserved`, and report them.

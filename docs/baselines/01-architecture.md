@@ -301,7 +301,7 @@ Eligibility is set by Lord Armand per provider, recorded in the registry, and re
 
 | Provider | Ruling | Grounds |
 |---|---|---|
-| Anthropic API | **Protected-eligible** | Commercial Terms: no training on API content; 7-day default retention |
+| Anthropic API | **Protected-eligible** | Commercial Terms: no training on API content without express permission. **Retention premise re-verified 18 August 2026, decided by Lord Armand** against `platform.claude.com/docs/en/manage-claude/api-and-data-retention`: conversation content is **not retained by default** on the Claude API for the models VAL uses — the 30-day retention requirement applies only to designated Covered Models (Claude Fable 5, Claude Mythos 5), which are not in VAL's registry. The former "7-day default retention" premise was stale and is superseded; the current verified terms are stronger. If a Covered Model is ever proposed for the registry, its 30-day retention is a new eligibility decision, not an inheritance. Restricted data remains prohibited regardless. |
 | OpenAI API | **Protected-eligible** | No training on API content by default; 30-day abuse-monitoring window |
 | Google Gemini API, **paid billing only** | **Protected-eligible only with verified paid billing** | Google uses free-tier content to improve its products, with possible human review. A billed and an unbilled key are indistinguishable in code, so the distinction is enforced **structurally**: a Gemini configuration must verify at startup that its key is attached to a paid billing account, and startup fails if that cannot be confirmed. Configuration claiming it is not acceptance. |
 | GLM via Zhipu/Z.ai direct | **Excluded — pending verification**, not permanently | Not for stated policy but for unverifiability: two legal entities, mainland terms unreviewable as of July 2026, and an individual-user carve-out differing from the API/DPA posture. GLM's weights are open, so a US-hosted route with SOC 2 and zero-data-retention terms, or self-hosting, can qualify later on its own merits. |
@@ -515,6 +515,26 @@ Model provider caches, embeddings, and derived indexes are excluded. They are re
 | Location | **Off-machine.** A backup on the same physical machine protects against nothing that is likely to happen. |
 | Point-in-time recovery | WAL archiving enabled, so recovery targets a moment rather than the last snapshot |
 | Automation | No step depends on a human remembering. An unautomated backup is an intention. |
+
+#### Backup-transport eligibility — 18 August 2026, decided by Lord Armand
+
+The 15 August egress amendment (§5.4) requires every external egress path to
+declare which classifications it may receive. The backup channel's declaration
+is recorded here:
+
+**VAL's encrypted pgBackRest → Backblaze B2 channel may carry every
+classification legitimately present in authoritative PostgreSQL, including
+sensitive material**, provided all of the following hold:
+
+- encryption occurs **before** transmission, and the encryption configuration
+  is verified;
+- the credential remains **bucket-scoped**;
+- the destination is the designated VAL backup repository and nothing else;
+- the permission covers **backup ciphertext only**.
+
+This does not authorise arbitrary B2 uploads, and it does not broaden any
+cloud-model or tool egress. It is transport eligibility for one channel whose
+payload is ciphertext of the store the channel exists to protect.
 
 ### 9.3 Retention and verified restore
 

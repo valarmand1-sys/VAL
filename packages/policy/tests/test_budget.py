@@ -114,7 +114,7 @@ def test_maximum_cost_is_capped_by_the_configuration_output_limit() -> None:
 def test_the_cheaper_route_authorises_a_smaller_maximum() -> None:
     """Which is why an unaffordable frontier call can yield to an affordable one."""
     expensive = maximum_cost(config("opus-5"), ["hello"], 4096)
-    cheap = maximum_cost(config("haiku-4-5"), ["hello"], 4096)
+    cheap = maximum_cost(config("haiku-4-5-20251001"), ["hello"], 4096)
     assert cheap < expensive
 
 
@@ -184,7 +184,7 @@ def test_a_tiny_prompt_with_a_large_output_cap_is_expensive() -> None:
 
 def test_the_maximum_is_the_sum_of_the_two_bounds() -> None:
     """The formula, asserted as arithmetic rather than described in a comment."""
-    entry = config("gpt-5-5")
+    entry = config("gpt-5-5-20260423")
     parts = ["Good evening, my lord.", "You are the Maester of House Armand."]
     expected = (
         upper_bound_input_tokens(parts, entry) * entry.cost_per_mtok_in_usd  # type: ignore[attr-defined]

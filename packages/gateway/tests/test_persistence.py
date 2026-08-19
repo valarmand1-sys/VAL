@@ -53,6 +53,7 @@ def a_record(
         tokens_out=500 if known else None,
         cost_usd=cost if known else None,
         cost_certainty=certainty,
+        terminal_state="complete" if known else "failed",
         project_id=None,
         project_attribution=ProjectAttribution.EXPLICIT_NONE,
         task_type="conversation",
@@ -165,8 +166,8 @@ def _violated_constraint(error: DBAPIError) -> str | None:
 
 _CALL_COLUMNS = (
     "insert into model_calls (model_config_id, provider, model_identifier, tokens_in, "
-    "tokens_out, cost, cost_certainty, task_type, project_attribution, latency_ms, "
-    "provider_request_id, status) values "
+    "tokens_out, cost, cost_certainty, terminal_state, task_type, project_attribution, "
+    "latency_ms, provider_request_id, status) values "
 )
 
 
@@ -177,7 +178,7 @@ def test_the_database_refuses_an_unknown_cost_carrying_a_zero(engine: Engine) ->
             connection.execute(
                 text(
                     _CALL_COLUMNS + "(gen_random_uuid(), 'anthropic', 'x', 0, 0, 0, "
-                    "'unknown', 'conversation', 'explicit_none', 1, '', 'error')"
+                    "'unknown', 'complete', 'conversation', 'explicit_none', 1, '', 'error')"
                 )
             )
     assert _violated_constraint(caught.value) == "ck_model_calls_unknown_cost_is_not_a_zero"
@@ -190,7 +191,7 @@ def test_the_database_refuses_a_known_cost_with_no_figure(engine: Engine) -> Non
             connection.execute(
                 text(
                     _CALL_COLUMNS + "(gen_random_uuid(), 'anthropic', 'x', null, null, "
-                    "null, 'known', 'conversation', 'explicit_none', 1, '', 'ok')"
+                    "null, 'known', 'complete', 'conversation', 'explicit_none', 1, '', 'ok')"
                 )
             )
     assert _violated_constraint(caught.value) == "ck_model_calls_known_cost_is_recorded"
@@ -314,14 +315,23 @@ def test_a_new_row_may_not_omit_its_cost_certainty(engine: Engine) -> None:
     Without this, a future writer could add an unstated-certainty row and the
     superseding rule would quietly widen to cover a row it was never written for.
     """
-    with pytest.raises(Exception):  # noqa: B017 - the driver's own constraint error
+    # *Closure pass, 18 August 2026.* Found by the test-quality audit: this
+    # statement listed eleven columns and supplied twelve values, so it failed
+    # on argument count and never reached the constraint it names — the same
+    # defect class the WP-0.6 corrective round fixed in this file's neighbours.
+    # It now names the constraint it expects, read from psycopg's diagnostics.
+    with pytest.raises(DBAPIError) as caught:
         with engine.begin() as connection:
             connection.execute(
                 text(
                     "insert into model_calls (model_config_id, provider, model_identifier, "
-                    "tokens_in, tokens_out, cost, cost_certainty, task_type, latency_ms, "
-                    "provider_request_id, status) values "
-                    "(gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, null, "
-                    "'conversation', 'legacy_unknown', 1, '', 'ok')"
+                    "tokens_in, tokens_out, cost, cost_certainty, project_attribution, "
+                    "terminal_state, task_type, latency_ms, provider_request_id, status) "
+                    "values (gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, null, "
+                    "'explicit_none', 'complete', 'conversation', 1, '', 'ok')"
                 )
             )
+    assert (
+        _violated_constraint(caught.value)
+        == "ck_model_calls_certainty_required_after_the_amendment"
+    )

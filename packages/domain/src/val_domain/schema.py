@@ -86,6 +86,20 @@ ModelCallStatus = Enum("ok", "error", "refused", name="model_call_status")
 # input tokens, so recording zero would be recording a figure that is known to be
 # false rather than one that is merely unknown.
 ModelCallCostCertainty = Enum("known", "unknown", name="model_call_cost_certainty")
+# Independent-review correction, 18 August 2026 (migration `0010`). How the
+# provider call actually ended, durably — `status` collapses TRUNCATED into
+# `ok`, and the distinction decides whether the text was ever Val's utterance.
+# NULL is reserved for rows that predate the contract; a trigger closes it to
+# new rows, the same shape as `cost_certainty` and `project_attribution`.
+ModelCallTerminalState = Enum(
+    "complete",
+    "refused",
+    "truncated",
+    "filtered",
+    "unknown",
+    "failed",
+    name="model_call_terminal_state",
+)
 # §2.2 amendment, 18 August 2026, WP-0.6 corrective round. What a stored
 # `project_id` *means*. A NULL alone cannot say whether somebody decided this
 # exchange was outside every project or whether the row simply predates the
@@ -370,6 +384,7 @@ class ModelCall(Base):
     # of one, and it is left rather than backfilled because guessing which of the
     # two an old row deserves would be inventing evidence (the 0002 precedent).
     cost_certainty: Mapped[str | None] = mapped_column(ModelCallCostCertainty, nullable=True)
+    terminal_state: Mapped[str | None] = mapped_column(ModelCallTerminalState, nullable=True)
     project_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
     )

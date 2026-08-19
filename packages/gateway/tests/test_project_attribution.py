@@ -24,6 +24,7 @@ from val_domain.gateway import (
     GatewayResponse,
     Message,
     TaskType,
+    TerminalState,
 )
 from val_domain.project import (
     AmbiguityReason,
@@ -90,7 +91,6 @@ def exchange(
     *,
     session: ProjectSession | None = None,
     classification: Classification = Classification.PROTECTED,
-    task_type: TaskType = TaskType.CONVERSATION,
     max_output_tokens: int = 4096,
 ) -> GatewayResponse | ClarificationNeeded:
     """WP-0.6's `exchange()`, reimplemented over the persisted conversation loop.
@@ -121,7 +121,6 @@ def exchange(
         signals=signals,
         session=session,
         classification=classification,
-        task_type=task_type,
         max_output_tokens=max_output_tokens,
     )
     if isinstance(outcome, ClarificationNeeded):
@@ -149,7 +148,9 @@ def build_gateway(engine: Engine, adapter: StubAdapter) -> Gateway:
 
 
 def answering() -> StubAdapter:
-    return StubAdapter(ProviderResult("Good evening, my lord.", 20, 10, "req", False))
+    return StubAdapter(
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "req")
+    )
 
 
 def latest_call(engine: Engine) -> object:
@@ -515,7 +516,9 @@ def test_provider_substitution_does_not_alter_project_attribution(store: Engine)
     catalogue = load_catalogue(store)
 
     for provider in ("anthropic", "openai"):
-        adapter = StubAdapter(ProviderResult("ok", 10, 10, "r", False), name=provider)
+        adapter = StubAdapter(
+            ProviderResult("ok", TerminalState.COMPLETE, 10, 10, "r"), name=provider
+        )
         gateway = Gateway(
             adapters={provider: adapter},
             recorder=lambda record: record_call(store, record),
@@ -763,9 +766,14 @@ def test_a_request_whose_attribution_disagrees_with_its_id_is_refused(
     store: Engine, attribution: ProjectAttribution, with_id: bool
 ) -> None:
     """The two fields cannot contradict each other, in either direction."""
-    with pytest.raises(Exception):  # noqa: B017 - pydantic's own ValidationError
+    # `CLASSIFICATION`, not `CONVERSATION` — *closure pass, 18 August 2026*: a
+    # conversation request without provenance now fails a different validator
+    # first, so this test would pass with the attribution check deleted. A
+    # non-conversation task type leaves attribution as the only thing on trial,
+    # and the match names the check itself.
+    with pytest.raises(Exception, match="attribution says"):
         GatewayRequest(
-            task_type=TaskType.CONVERSATION,
+            task_type=TaskType.CLASSIFICATION,
             classification=Classification.PROTECTED,
             messages=(Message(role="user", content="hi"),),
             project_id=project_id(store, ALPHA_SLUG) if with_id else None,
