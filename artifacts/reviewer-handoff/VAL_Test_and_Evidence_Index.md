@@ -401,6 +401,42 @@ should, rather than proving it passes what it should.
 > only on independent re-acceptance. Full account:
 > `VAL_WP07_Corrective_Audit.md`.
 
+## 5h. Current-version closure pass — 18 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5h.1 | **`complete()` refuses a hand-built conversation request** | Even one with real persisted ids and the active persona's UUID; zero adapter calls | **PASS** |
+| 5h.2 | **`complete_with_configuration()` refuses conversation** | Naming a configuration is more deliberate, not more trusted | **PASS** |
+| 5h.3 | **A typed persona UUID is not an identity** | Refused by the verifier even through the private execution body | **PASS** |
+| 5h.4 | Non-conversation work still flows through the generic entrance | Classification request answered | **PASS** |
+| 5h.5 | **`converse`/`send` expose no `task_type`** | A persisted Val turn cannot be filed as machinery; the row records `conversation` | **PASS** |
+| 5h.6 | **A truncated answer is never persisted as Val speaking** | `TruncatedTurn` carries the fragment as evidence; the record shows an unanswered user turn; the call is costed honestly | **PASS** |
+| 5h.7 | A refusal is her deliberate, complete answer | Persisted; row records `refused` | **PASS** |
+| 5h.8 | **An unknown terminal state fails closed** | Row records `error`, cost settled honestly, `INVALID_OUTPUT` raised, no `val` message | **PASS** |
+| 5h.9 | **Missing usage is UNKNOWN, never a known $0** | NULL figures + UNKNOWN certainty; response carries `None` | **PASS** |
+| 5h.10 | Missing usage settles the reservation at its maximum | Never released | **PASS** |
+| 5h.11 | **Invalid ledger transitions refuse by name** | Double-settle, double-release, settle-after-expire, unknown id — each names the actual state; first settlement stands to the cent | **PASS** |
+| 5h.12 | **Concurrent settle/release admits exactly one winner** | Ten writers, independent connections: 1 won, 9 refused loudly | **PASS** |
+| 5h.13 | **GPT-5.5 window is 1,050,000; 272K is the pricing threshold** | Registry corrected against developers.openai.com (18 Aug 2026); pinned by test | **PASS** |
+| 5h.14 | **Long-context pricing reaches the bound AND the settlement** | One `effective_rates` function: 2×/1.5× above 272K in both figures | **PASS** |
+| 5h.15 | Haiku pinned to the dated snapshot, not the alias | `claude-haiku-4-5-20251001` per platform.claude.com | **PASS** |
+| 5h.16 | **Over-cap output refused, not clamped** | In the model's own words | **PASS** |
+| 5h.17 | An oversized payload is refused locally with zero provider contact | `NO_ELIGIBLE_ROUTE`, adapter never called | **PASS** |
+| 5h.18 | **The value budgeted is the value transmitted** | `sent_max_output_tokens == 2048` | **PASS** |
+| 5h.19 | **Fallback NONE does not fall through** | `attempt_order` = primary + declared chain, full stop; both directions tested | **PASS** |
+| 5h.20 | **Evidence tables refuse UPDATE** (migration `0009`) | messages, model_calls, idea_state_changes, execution_events, deliberations; verified live, rolled back | **PASS** |
+| 5h.21 | Reservation identity columns frozen | State-machine fields alone transition | **PASS** |
+| 5h.22 | `0009` downgrade refuses over guarded rows; clean from empty | Round trip 9/9/9 | **PASS** |
+| 5h.23 | **Restore verifier catches a count-identical interior substitution** | Doctored template copy fails on the `messages` digest; self-comparison passes | **PASS** |
+| 5h.24 | **Nine tautological/wrong-guard tests found and fixed** | Incl. an 11-column/12-value INSERT, a TypeError-satisfied Restricted test, and one passing on this pass's own new guard | **FOUND AND FIXED** |
+| 5h.25 | No module reaches the private execution body; both public doors carry the refusal | Source-level boundary assertions | **PASS** |
+| 5h.26 | **Production-startup smoke** | Real `start(engine)`; stubs at the provider boundary only; persona byte-match, provenance row, raw-entrance refusal, generic path intact | **PASS** |
+| 5h.27 | Closure red-team leaves no unresolved finding | Two findings (stale comment, boundary coverage), both fixed same-package | **PASS** |
+
+> **Closure pass, 18 August 2026.** Source commit `05a5116` on
+> `closure/current-version-pass` (PR #2, unmerged). Acceptance matrix A–T all
+> PASS. Full account: `VAL_Current_Version_Closure_Audit.md`.
+
 ## 6. Data-eligibility and Restricted handling
 
 | # | Claim | Evidence | Result |
@@ -463,7 +499,8 @@ should, rather than proving it passes what it should.
 | Conversation loop and memory | 66 | — |
 | Conversation memory — live acceptance | 11 | — |
 | Conversation memory — corrective round | 31 | — |
-| **Automated tests** | **591 passing** | — |
+| Current-version closure pass | 27 | — |
+| **Automated tests** | **611 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.
