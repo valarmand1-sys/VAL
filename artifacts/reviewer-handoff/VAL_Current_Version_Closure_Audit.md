@@ -332,3 +332,70 @@ file-by-file against `git archive` of the commit: identical.
 **Every finding — supplied and discovered — is confirmed, fixed, and proved in this package.** The closure question ("any known defect knowingly carried into WP-0.8?") is answered **no** to the extent of this audit's evidence.
 
 Recommended state: **WP-0.7 = IMPLEMENTED / READY FOR INDEPENDENT RE-ACCEPTANCE.** Not marked COMPLETE here — that determination is Lord Armand's, on independent review of `VAL_Source_Snapshot_05a5116.zip`. PR #2 remains open and unmerged.
+
+---
+---
+
+# Independent-review corrections — 18 August 2026, second candidate
+
+**Independent review of the frozen candidate `05a5116` disproved two rows of the matrix above.** Items R and T claimed no tautological tests and no unresolved red-team findings; the actual source contained three tests whose assertions could not fail, and two of them were hiding a **real declared fallback cycle in the production registry**. The sections above are left as written — they record what was believed and claimed at the time — and this section records what the review found and what was done. Candidate `05a5116` is superseded; the acceptance candidate is now **`b39f5be2332d5b03ca3fd55acfe8e4d501afd55a`**.
+
+## Findings, each confirmed
+
+| # | Finding | Verdict | Root cause | Fix |
+|---|---|---|---|---|
+| 1 | Non-conversation tasks could carry conversation provenance | **CONFIRMED** | one-way validator where an iff was intended; `complete_with_configuration` never runs the conversation verifier, so smuggled real ids could write misleading attribution post-transmission | iff structural in `GatewayRequest`, plus the same refusal at **both** public entrances (because `model_copy` skips pydantic validation). Cases A–I proved, with zero calls / reservations / rows |
+| 2 | The live registry declared a cycle: `haiku ↔ gpt` | **CONFIRMED** — introduced by the first closure pass itself (haiku→gpt added while gpt→haiku already stood) | the pass reasoned about each edge separately and never validated the graph | chain is now `opus-5 → haiku-4-5-20251001 → gpt-5-5-20260423 → NONE`; `declared_chain_violations()` validates the graph, runs at **startup**, and the walk is proven acyclic on the live registry |
+| 3 | Two cycle tests were tautologies | **CONFIRMED** | both asserted their own loop's exit condition (`current is None or current in seen`) — true for every input including a cycle | replaced with `assert current is None` and with the shared validator; **synthetic `A → B → A` and dangling fixtures prove both detectors fail on the shapes they exist to catch** |
+| 4 | `A <= B or B <= A` date test | **CONFIRMED** — mathematically unfalsifiable | intended invariant never pinned down | now `activated_on <= rates_verified_on` (rates are verified at activation; re-verification only moves forward), docstring corrected, negative fixture added |
+| 5 | GPT-5.5 `reasoning_effort = NOT_APPLICABLE` factually false | **CONFIRMED** | stale fact; §5.2 reserves NOT_APPLICABLE for providers with no such concept | `MEDIUM` — reasoning.effort supported, medium default (`developers.openai.com/api/docs/models/gpt-5.5`, verified 18 Aug 2026) |
+| 6 | Neither adapter consumed the declared reasoning setting | **CONFIRMED** | the field was descriptive metadata; effective behaviour leaned on provider defaults staying put | Anthropic sends `output_config={"effort": …}` (SDK 0.122.0 surface); OpenAI sends `reasoning={"effort": …}`; NOT_APPLICABLE omits the parameter. **Payload tests assert on the kwargs the SDK call receives**, with a mutation fixture proving a wrong level is visible |
+| 7 | `content_filter` incomplete mapped to REFUSED | **CONFIRMED** — recreated the exact class the terminal-state repair closed: the loop persists REFUSED as Val's finished message | a refusal is a complete utterance; a filter stop is an incomplete one | `TerminalState.FILTERED`; the loop treats it as a fragment (evidence, never an utterance); proved at adapter-mapping **and** loop-persistence levels |
+| 8 | Terminal state existed only at runtime | **CONFIRMED insufficient** — `status='ok'` collapses TRUNCATED into COMPLETE, so the durable evidence could not say whether the provider finished speaking; "the runtime caller knew" is not reconstruction | the closure pass stopped at the response object | **migration `0010`**: `model_calls.terminal_state` (`complete/refused/truncated/filtered/unknown/failed` — `failed` is the transit-error path where no provider terminal state exists to record). The 42 historical rows stay **NULL, never guessed**; NULL closed to new rows by trigger (the `0007` pattern, not a caller-controlled cutoff); downgrade refuses once captured; the accounted view recreated (`0006` lesson). Reconstruction is now a query: two `status='ok'` rows distinguishable forever |
+| 9 | Haiku's identifier edited in place under its UUID | **CONFIRMED** — against the registry's own "never editing one in place… an entry is never deleted, only marked retired" | the first pass treated the identifier as an operational fact; it is identity | **Option A, from the registry's own doctrine**: both alias configurations retired in place under their original UUIDs with the identifiers their historical calls used (`claude-haiku-4-5`, `gpt-5.5`); pinned successors with **new UUIDs and slugs** (`haiku-4-5-20251001` → `claude-haiku-4-5-20251001`; `gpt-5-5-20260423` → `gpt-5.5-2026-04-23`, the dated snapshot the alias resolves to). **One rule, both providers.** The retired gpt entry keeps its recorded first-live date; the new entries have never answered live and say so — WP-0.4's second-provider tracking restarts against them honestly |
+| 10 | Stale text despite the sweep | **CONFIRMED** (registry read-date, budget's "NOT_APPLICABLE on every entry", delimiter-era envelope description) | — | corrected; re-swept |
+
+**The in-place window documented, not rewritten:** between `05a5116` and `b39f5be`, rows recorded under UUID `b123b7f1…` carry the pinned identifier while the (restored) configuration for that UUID names the alias. The row's own denormalised `model_identifier` — which exists precisely so a row stands alone — is the truth of what was sent in every case. No row was edited.
+
+## Fresh red-team after the fixes — two further findings, fixed same pass
+
+1. **`complete_with_configuration` never checked `retired`.** Identity, admission and eligibility all passed for a retired entry, so naming one explicitly was a working route around retirement. Now refused, with a test against the real retired entry.
+2. **Anthropic's `stop_sequence → COMPLETE` contradicted the adapter's own rationale.** No `stop_sequences` are ever sent, so the reason cannot legitimately occur — the same cannot-occur argument that maps `tool_use` to UNKNOWN. Now absent from the mapping; fails closed.
+
+The AST sweep for the tautology defect classes (same-operand OR comparisons, loop-exit restatements, constant asserts) runs over every test file and reports zero instances. Entry-point, SDK-import, evidence-mutation, and registry-fact-consumption sweeps re-run clean; every registry fact is now consumed by the component it configures (rates → cost, windows/caps → limits, effort → adapters, eligibility → routing, fallback → the terminating chain, temperature=None → deliberately omitted).
+
+## Amended acceptance matrix
+
+| | Question | Verdict | What changed |
+|---|---|---|---|
+| A–Q, S | as in §20 above | **PASS** | re-proved on `b39f5be`; K/L/M/N/O by the unchanged WP-0.7 suites, A–J by the corrected contracts |
+| **R** | tautological / wrong-guard tests? | **PASS — was disproved on `05a5116`** | three tautologies replaced with falsifiable detectors; synthetic negatives prove each can fail; AST sweep clean |
+| **T** | unresolved red-team findings? | **PASS — was disproved on `05a5116`** | review findings 1–10 fixed; two fresh red-team findings fixed same pass; final sweep clean |
+
+New durable guarantees added to the matrix's scope: provenance iff (A/B strengthened), terminal-state durability (E strengthened — the distinction now survives restart on the row), registry graph validity at boot (I strengthened), configuration identity (new, under J's doctrine).
+
+## Verification of the second candidate
+
+| | |
+|---|---|
+| Tests | **629 passed** (628 + the red-team proofs), stable across repeated runs |
+| Gates | mypy strict (48 files) · ruff + format (106 files) · import-linter 3/3 · boundaries (8 components — which itself caught the SDK-import misplacement and forced the adapter tests into `packages/providers/tests`, now run by CI) · pins · secrets · `alembic check` · round trip from empty 10/10/10 |
+| Live store | `0010_terminal_state_is_evidence`; 42 calls, all 42 historical `terminal_state` NULL; guard proved live (rolled back); backup taken before migrating |
+| Smoke | production `start(engine)` path re-run green, 9/9 |
+| Provider facts | re-verified 18 Aug 2026: GPT-5.5 1,050,000 / 128,000 / \$5–\$30 / >272K → 2×+1.5× / effort medium default / snapshot `gpt-5.5-2026-04-23` (`developers.openai.com`); Opus 5 1M / 128K / \$5–\$25 / effort high API default; Haiku 4.5 200K / 64K / \$1–\$5 / ID `claude-haiku-4-5-20251001` (`platform.claude.com`); retention premise unchanged from the §13 ruling |
+
+## Bundle — second candidate
+
+| | |
+|---|---|
+| Source commit | `b39f5be2332d5b03ca3fd55acfe8e4d501afd55a` |
+| Snapshot | `VAL_Source_Snapshot_b39f5be.zip`, **192 files** |
+| SHA-256 | `623b73680eaac2bf58d178690daf0881e2a2bd636578c8c6100cac6ba8ce8202` |
+
+Source only, `artifacts/` excluded, verified file-by-file against `git archive`: identical.
+
+## Recommendation, amended
+
+The lesson of this round is recorded rather than smoothed over: the first closure pass introduced two of the defects it was created to catch (the fallback cycle, the FILTERED mis-mapping) and its red-team missed both, because its structural tests were written to pass rather than to fail. Every repaired invariant in this round therefore ships with a fixture that violates it.
+
+**WP-0.7 = IMPLEMENTED / READY FOR INDEPENDENT RE-ACCEPTANCE**, on candidate `b39f5be` only. PR #2 remains open and unmerged. WP-0.8 not started.

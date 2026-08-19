@@ -437,6 +437,30 @@ should, rather than proving it passes what it should.
 > `closure/current-version-pass` (PR #2, unmerged). Acceptance matrix A–T all
 > PASS. Full account: `VAL_Current_Version_Closure_Audit.md`.
 
+### 5h-corrective — independent-review corrections, 18 August 2026
+
+| # | Claim | Evidence | Result |
+|---|---|---|---|
+| 5i.1 | **Provenance iff conversation** | Cases A–I: forward refusal, healthy construction, four non-conversation refusals, both entrances refuse a `model_copy`-smuggled shape with zero calls/reservations/rows | **PASS** |
+| 5i.2 | **The declared fallback graph terminates** | `opus → haiku → gpt → NONE` walked to None; `declared_chain_violations` empty on the live registry and wired into startup | **PASS** |
+| 5i.3 | **The cycle detector fails on a cycle** | Synthetic `A → B → A`, self-cycle, and dangling fixtures each rejected — the falsifiability the two replaced tautologies lacked | **PASS** |
+| 5i.4 | Two loop-exit tautologies replaced | Both now assert `current is None`; the production registry cycle they hid is fixed | **FOUND AND FIXED** |
+| 5i.5 | The `A<=B or B<=A` tautology replaced | One-directional invariant with a negative fixture; AST sweep over all tests finds zero further instances of the class | **FOUND AND FIXED** |
+| 5i.6 | **GPT-5.5 reasoning facts corrected** | effort supported, medium default, snapshot `gpt-5.5-2026-04-23` (developers.openai.com, 18 Aug 2026) | **PASS** |
+| 5i.7 | **Declared efforts reach the wire** | Payload tests on the kwargs the SDK receives: opus HIGH, gpt MEDIUM, haiku omits; mutation fixture proves a wrong level is visible | **PASS** |
+| 5i.8 | **content_filter is FILTERED, not REFUSED** | Adapter mapping + loop persistence: fragment returned as evidence, never persisted as Val's message | **PASS** |
+| 5i.9 | **Terminal state is durable** (migration `0010`) | Two `status='ok'` rows distinguishable forever (`complete` vs `truncated`); NULL reserved to the 42 historical rows and closed by trigger; live guard proved | **PASS** |
+| 5i.10 | **Configuration identity restored** | Alias configs retired under original UUIDs with their historical identifiers; pinned successors under new UUIDs; one rule, both providers | **PASS** |
+| 5i.11 | Retired entries keep honest live markers | The retired gpt alias keeps its recorded first-live date; the never-called pinned entries say so | **PASS** |
+| 5i.12 | **A retired configuration cannot be explicitly routed to** | Fresh red-team: `complete_with_configuration` gains the check it lacked | **FOUND AND FIXED** |
+| 5i.13 | `stop_sequence` fails closed | Fresh red-team: never sent, so cannot legitimately return — same rationale as `tool_use` | **FOUND AND FIXED** |
+| 5i.14 | Stale text corrected | Registry read-date, budget's NOT_APPLICABLE-everywhere claim, delimiter-era envelope description | **PASS** |
+
+> **The 05a5116 matrix rows R and T were disproved by this review** — the
+> tautologies were real and hid a real registry cycle. Amended matrix: A–T PASS
+> on candidate `b39f5be` only. Full account: the independent-review section of
+> `VAL_Current_Version_Closure_Audit.md`.
+
 ## 6. Data-eligibility and Restricted handling
 
 | # | Claim | Evidence | Result |
@@ -500,7 +524,8 @@ should, rather than proving it passes what it should.
 | Conversation memory — live acceptance | 11 | — |
 | Conversation memory — corrective round | 31 | — |
 | Current-version closure pass | 27 | — |
-| **Automated tests** | **611 passing** | — |
+| Independent-review corrections | 26 | — |
+| **Automated tests** | **629 passing** | — |
 
 **Four outstanding items, none a code defect** — down from five. Three need the
 Anthropic account balance; one needs a restore pulled back from B2.

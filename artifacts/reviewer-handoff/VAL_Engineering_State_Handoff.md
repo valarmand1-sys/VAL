@@ -626,8 +626,22 @@ its proof in `VAL_Current_Version_Closure_Audit.md`:
 - **Restore verifier hardened** with per-table content digests — a
   count-identical interior substitution now fails, proved adversarially.
 
-Acceptance matrix A–T: all PASS. 611 tests; every local gate green; live store
-at `0009_evidence_is_immutable`.
+> **Reopened by independent review, 18 August 2026.** The `05a5116` matrix rows
+> R and T were disproved: three tautological tests remained, two of them hiding
+> a **real declared fallback cycle** the closure pass itself had introduced.
+> Ten findings plus two fresh red-team findings were fixed on candidate
+> `b39f5be`: provenance is an iff at request and entrances; the fallback graph
+> terminates and is validated at boot; content-filter stops are FILTERED
+> fragments, never persisted utterances; the terminal state is durable on
+> `model_calls` (migration `0010`, 42 historical rows honestly NULL); the alias
+> configurations are retired under their original UUIDs with pinned successors
+> (`claude-haiku-4-5-20251001`, `gpt-5.5-2026-04-23`) under new ones; declared
+> reasoning efforts are actually sent (opus HIGH, gpt MEDIUM); retired
+> configurations refuse explicit routing; every repaired invariant ships with a
+> negative fixture proving it can fail.
+
+Amended matrix A–T: all PASS on `b39f5be`. 629 tests; every local gate green;
+live store at `0010_terminal_state_is_evidence`.
 
 ### WP-0.8 to WP-0.10 · NOT STARTED
 
@@ -643,7 +657,7 @@ or the text interface.
 |---|---|
 | PostgreSQL | 18.4 (Homebrew), port **5433** |
 | pgvector | 0.8.6 (installed, **unused** — WP-0.7 retrieval is PostgreSQL full text; see `VAL_Open_Decisions.md` item 10) |
-| Alembic revision | `0009_evidence_is_immutable` (head) |
+| Alembic revision | `0010_terminal_state_is_evidence` (head) |
 | Databases | `val` (authoritative), `val_test` (schema tests; refuses any name not ending `_test`) |
 
 ### Tables
@@ -654,7 +668,7 @@ or the text interface.
 | `conversations` | `project_id` nullable and **immutable** — "no project" is explicit | **16** (15 scoped, 1 explicit no-project) |
 | `messages` | `role` ∈ user/val/system; `sequence` unique per conversation; **rows frozen (`0009`)** | **37+**, no gaps or duplicates |
 | `personas` | Versioned; at most one active (partial unique index) | **1** — revision 1, authored v1.2 |
-| `model_calls` | Per-call cost attribution; **rows frozen (`0009`)** | **40+** — the closure smoke adds stub-adapter rows |
+| `model_calls` | Per-call cost attribution; rows frozen (`0009`); **terminal state durable (`0010`)** | **42+** — historical rows carry NULL terminal_state, honestly |
 | `execution_events` | Acceptances, rejections, revisions, corrections, **reactions** | 0 |
 | `deliberations` | Blind position, confidence, ordering, outcome | 0 |
 | `ideas` | Idea lifecycle, manual marking only | 0 |
