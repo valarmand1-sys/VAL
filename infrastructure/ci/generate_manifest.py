@@ -22,7 +22,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-MANIFEST = Path("artifacts/reviewer-handoff/VAL_Repo_Manifest.txt")
+MANIFEST = Path("docs/reviews/VAL_Repo_Manifest.txt")
 
 HEADER = """VAL repository manifest
 Commit: {commit}

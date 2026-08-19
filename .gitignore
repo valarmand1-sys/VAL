@@ -90,3 +90,7 @@ Thumbs.db
 pdf_pages.json
 /scratch/
 .DS_Store
+
+# Source snapshots are git's job; the review-era zips stay in history only.
+docs/reviews/*.zip
+artifacts/reviewer-handoff/*.zip
