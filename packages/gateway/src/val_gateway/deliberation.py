@@ -52,6 +52,7 @@ from uuid import UUID
 from sqlalchemy import Engine, Row, text
 
 from val_domain.deliberation import (
+    BlindPositionRecord,
     ClassifiedBy,
     Confidence,
     DeliberationClassification,
@@ -72,16 +73,34 @@ _INSERT = text(
     "  (project_id, conversation_id, message_id, position, confidence, "
     "   reasoning, stripped_content, ordering, user_response, outcome, "
     "   what_changed_her_mind, both_positions, predictions, classification, "
-    "   classified_by) "
+    "   classified_by, blind_position_id) "
     "values "
     "  (:project_id, :conversation_id, :message_id, :position, :confidence, "
     "   :reasoning, :stripped_content, :ordering, :user_response, :outcome, "
     "   :what_changed_her_mind, :both_positions, :predictions, :classification, "
-    "   :classified_by) "
+    "   :classified_by, :blind_position_id) "
     "returning id, project_id, conversation_id, message_id, position, confidence, "
     "          reasoning, stripped_content, ordering, user_response, outcome, "
     "          what_changed_her_mind, both_positions, predictions, classification, "
-    "          classified_by, created_at"
+    "          classified_by, blind_position_id, created_at"
+)
+
+_BLIND_ANCHOR = text(
+    "select conversation_id, message_id from blind_positions where id = :blind_position_id"
+)
+
+_BLIND_INSERT = text(
+    "insert into blind_positions "
+    "  (project_id, conversation_id, message_id, model_call_id, persona_id, "
+    "   position, confidence, reasoning, stripped_content, ordering, "
+    "   classification, classified_by) "
+    "values "
+    "  (:project_id, :conversation_id, :message_id, :model_call_id, :persona_id, "
+    "   :position, :confidence, :reasoning, :stripped_content, :ordering, "
+    "   :classification, :classified_by) "
+    "returning id, project_id, conversation_id, message_id, model_call_id, "
+    "          persona_id, position, confidence, reasoning, stripped_content, "
+    "          ordering, classification, classified_by, created_at"
 )
 
 
@@ -106,6 +125,7 @@ def record_deliberation(
     predictions: str | None = None,
     classification: DeliberationClassification = DeliberationClassification.CONSEQUENTIAL,
     classified_by: ClassifiedBy = ClassifiedBy.AUTOMATIC,
+    blind_position_id: UUID | None = None,
 ) -> DeliberationRecord:
     """Record one resolved deliberation, completely, at insert time.
 
@@ -177,6 +197,23 @@ def record_deliberation(
                 "turn would record a position about an exchange that never happened."
             )
 
+        if blind_position_id is not None:
+            blind = connection.execute(
+                _BLIND_ANCHOR, {"blind_position_id": blind_position_id}
+            ).one_or_none()
+            if blind is None:
+                raise IncoherentDeliberationError(
+                    f"blind position {blind_position_id} does not exist. A "
+                    "deliberation resolves evidence that was actually captured."
+                )
+            if blind.conversation_id != conversation_id or blind.message_id != message_id:
+                raise IncoherentDeliberationError(
+                    f"blind position {blind_position_id} belongs to a different "
+                    "exchange. A deliberation resolves the blind position formed "
+                    "for its own turn, not one borrowed from another — the link "
+                    "exists so the pairing can be trusted (ruling, 19 August 2026)."
+                )
+
         row = connection.execute(
             _INSERT,
             {
@@ -197,10 +234,88 @@ def record_deliberation(
                 "predictions": predictions,
                 "classification": classification.value,
                 "classified_by": classified_by.value,
+                "blind_position_id": blind_position_id,
             },
         ).one()
 
     return _record_from(row)
+
+
+def record_blind_position(
+    engine: Engine,
+    *,
+    conversation_id: UUID,
+    message_id: UUID,
+    model_call_id: UUID,
+    persona_id: UUID,
+    position: str,
+    confidence: Confidence,
+    reasoning: str,
+    stripped_content: str,
+    ordering: Ordering,
+    classification: DeliberationClassification,
+    classified_by: ClassifiedBy,
+) -> BlindPositionRecord:
+    """Persist one blind position as evidence — before the response call runs.
+
+    Append-only from the moment it exists (`0011`): the primary evidence that
+    the position was formed, and what it was, independent of whether the
+    exchange ever resolves into a `deliberations` row. `model_call_id` names
+    the blind call itself; `persona_id` names the revision assembled into it.
+    Both are facts about a call that already happened, which is why neither is
+    optional. `project_id` is derived from the anchoring conversation, the
+    same doctrine as everywhere.
+    """
+    if not position.strip() or not reasoning.strip():
+        raise IncoherentDeliberationError(
+            "a blind position without its position or reasoning is not evidence "
+            "of a formed judgment; there is nothing to record."
+        )
+    with engine.begin() as connection:
+        anchor = connection.execute(_ANCHOR, {"message_id": message_id}).one_or_none()
+        if anchor is None:
+            raise IncoherentDeliberationError(
+                f"message {message_id} does not exist. A blind position is formed "
+                "about something that was actually asked."
+            )
+        if anchor.message_conversation != conversation_id:
+            raise IncoherentDeliberationError(
+                f"message {message_id} belongs to conversation "
+                f"{anchor.message_conversation}, not {conversation_id}."
+            )
+        row = connection.execute(
+            _BLIND_INSERT,
+            {
+                "project_id": anchor.project_id,
+                "conversation_id": conversation_id,
+                "message_id": message_id,
+                "model_call_id": model_call_id,
+                "persona_id": persona_id,
+                "position": position,
+                "confidence": confidence.value,
+                "reasoning": reasoning,
+                "stripped_content": stripped_content,
+                "ordering": ordering.value,
+                "classification": classification.value,
+                "classified_by": classified_by.value,
+            },
+        ).one()
+    return _blind_record_from(row)
+
+
+def blind_positions_for(engine: Engine, conversation_id: UUID) -> tuple[BlindPositionRecord, ...]:
+    """Every blind position captured for one conversation, oldest first."""
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text(
+                "select id, project_id, conversation_id, message_id, model_call_id, "
+                "       persona_id, position, confidence, reasoning, stripped_content, "
+                "       ordering, classification, classified_by, created_at "
+                "  from blind_positions where conversation_id = :c order by created_at, id"
+            ),
+            {"c": conversation_id},
+        ).all()
+    return tuple(_blind_record_from(row) for row in rows)
 
 
 def deliberations_for(engine: Engine, conversation_id: UUID) -> tuple[DeliberationRecord, ...]:
@@ -211,7 +326,7 @@ def deliberations_for(engine: Engine, conversation_id: UUID) -> tuple[Deliberati
                 "select id, project_id, conversation_id, message_id, position, confidence, "
                 "       reasoning, stripped_content, ordering, user_response, outcome, "
                 "       what_changed_her_mind, both_positions, predictions, classification, "
-                "       classified_by, created_at "
+                "       classified_by, blind_position_id, created_at "
                 "  from deliberations where conversation_id = :c order by created_at, id"
             ),
             {"c": conversation_id},
@@ -242,6 +357,25 @@ def last_disagreement_at(engine: Engine) -> datetime | None:
         ).scalar()
 
 
+def _blind_record_from(row: Row[Any]) -> BlindPositionRecord:
+    return BlindPositionRecord(
+        id=row.id,
+        project_id=row.project_id,
+        conversation_id=row.conversation_id,
+        message_id=row.message_id,
+        model_call_id=row.model_call_id,
+        persona_id=row.persona_id,
+        position=row.position,
+        confidence=Confidence(row.confidence),
+        reasoning=row.reasoning,
+        stripped_content=row.stripped_content,
+        ordering=Ordering(row.ordering),
+        classification=DeliberationClassification(row.classification),
+        classified_by=ClassifiedBy(row.classified_by),
+        created_at=row.created_at,
+    )
+
+
 def _record_from(row: Row[Any]) -> DeliberationRecord:
     return DeliberationRecord(
         id=row.id,
@@ -260,5 +394,6 @@ def _record_from(row: Row[Any]) -> DeliberationRecord:
         predictions=row.predictions,
         classification=DeliberationClassification(row.classification),
         classified_by=ClassifiedBy(row.classified_by),
+        blind_position_id=row.blind_position_id,
         created_at=row.created_at,
     )

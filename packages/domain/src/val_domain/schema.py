@@ -407,7 +407,10 @@ class ModelCall(Base):
     #
     # Nullable for two honest reasons, not one lazy one: rows written before
     # WP-0.5 carry no persona, and a call on a path that legitimately assembles
-    # none — a strip step, a title — is not a Val utterance to attribute.
+    # none — classification, strip, a title — is not a call to attribute.
+    # 19 August 2026: blind_position calls carry the persona and attribute it;
+    # once a persona is assembled, NULL would mean "assembled and failed to
+    # attribute" — a false record, not a missing feature.
     persona_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("personas.id", ondelete="NO ACTION"), nullable=True
     )
@@ -522,6 +525,61 @@ class ExecutionEvent(Base):
     )
 
 
+class BlindPosition(Base):
+    """§2.2 — `blind_positions`, amendment of 19 August 2026.
+
+    The blind position is the primary evidence that Val formed a genuinely
+    independent judgment, and it exists before the exchange resolves — the
+    `deliberations` row cannot be written until the outcome is known. It is
+    therefore captured as an append-only evidence row, **persisted before step
+    3 of `04-layer-0.md` §4 begins**: not mutable interim state, complete when
+    written, no UPDATE, no hard delete (migration `0011`).
+
+    Cascades on nothing. It outlives the conversation that produced it (§2.3).
+    """
+
+    __tablename__ = "blind_positions"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    # Nullable for the same reason as on execution_events, above.
+    project_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    # The blind call itself. NOT NULL: this row exists only because a recorded
+    # call produced it, and evidence that cannot name its call is not evidence.
+    model_call_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=False
+    )
+    # The persona revision assembled into the blind call — WP-0.5's 19 August
+    # 2026 amendment: the position must be Val's position, so the call carries
+    # her persona and attributes it.
+    persona_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("personas.id", ondelete="NO ACTION"), nullable=False
+    )
+    position: Mapped[str] = mapped_column(Text, nullable=False)
+    confidence: Mapped[str] = mapped_column(DeliberationConfidence, nullable=False)
+    reasoning: Mapped[str] = mapped_column(Text, nullable=False)
+    stripped_content: Mapped[str] = mapped_column(Text, nullable=False)
+    # No default, same as on deliberations: whether the position was genuinely
+    # blind is the whole mechanism.
+    ordering: Mapped[str] = mapped_column(DeliberationOrdering, nullable=False)
+    classification: Mapped[str] = mapped_column(DeliberationClassification, nullable=False)
+    classified_by: Mapped[str] = mapped_column(DeliberationClassifiedBy, nullable=False)
+
+
 class Deliberation(Base):
     """§2.2 — `deliberations`, per `02-partner-systems.md` §4.7.
 
@@ -564,6 +622,14 @@ class Deliberation(Base):
     predictions: Mapped[str | None] = mapped_column(Text, nullable=True)
     classification: Mapped[str] = mapped_column(DeliberationClassification, nullable=False)
     classified_by: Mapped[str] = mapped_column(DeliberationClassifiedBy, nullable=False)
+    # 19 August 2026: the exact blind-position evidence this record resolves.
+    # Nullable — a deliberation recorded manually, or one whose exchange
+    # carried no preference to strip, has no blind call behind it.
+    blind_position_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("blind_positions.id", ondelete="NO ACTION"),
+        nullable=True,
+    )
 
     __table_args__ = (
         # §2 states the rule: required when outcome = 'updated'.
@@ -751,6 +817,7 @@ SPECIFIED_TABLES = frozenset(
         "model_calls",
         "execution_events",
         "deliberations",
+        "blind_positions",
         "ideas",
         "idea_state_changes",
         "budget_reservations",

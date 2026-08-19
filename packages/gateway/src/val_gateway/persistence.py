@@ -78,6 +78,16 @@ _SUPERSEDED_ZERO_CALLS = text(
     "select count(*) from model_calls_accounted where accounting_note is not null"
 )
 
+#: Month-to-date known spend, split by what the money was for. The WP-0.9
+#: ruling of 19 August 2026 requires classification spend visible separately
+#: from day one — read from the record, never inferred.
+_SPEND_BY_TASK_TYPE = text(
+    "select task_type, coalesce(sum(accounted_cost), 0) from model_calls_accounted "
+    "where accounted_cost is not null "
+    "and created_at >= date_trunc('month', now() at time zone 'utc') "
+    "group by task_type"
+)
+
 _INSERT_CALL = text(
     "insert into model_calls "
     "(model_config_id, provider, model_identifier, tokens_in, tokens_out, cost, "
@@ -145,6 +155,21 @@ def month_to_date_spend(engine: Engine) -> float:
     with engine.connect() as connection:
         total = connection.execute(_MONTH_TO_DATE_SPEND).scalar_one()
     return float(total)
+
+
+def spend_by_task_type(engine: Engine) -> dict[str, float]:
+    """This month's known spend, keyed by `task_type` — the cost view's split.
+
+    *WP-0.9 ruling, 19 August 2026.* The §4.8 classifier runs on every
+    exchange, so its recurring cost must be readable on its own line from day
+    one: `spend_by_task_type(engine).get("classification", 0.0)` is that line,
+    and if classification comes to dominate, it is seen here rather than
+    inferred. Same caveat as `month_to_date_spend`: known costs only, honest
+    alongside `uncosted_calls_this_month`.
+    """
+    with engine.connect() as connection:
+        rows = connection.execute(_SPEND_BY_TASK_TYPE).all()
+    return {str(task_type): float(total) for task_type, total in rows}
 
 
 def uncosted_calls_this_month(engine: Engine) -> int:

@@ -52,6 +52,7 @@ from val_domain.gateway import (
     GatewayErrorKind,
     GatewayRequest,
     Message,
+    PersonaAttribution,
     TaskType,
     TerminalState,
     TurnReference,
@@ -1795,6 +1796,11 @@ def test_non_conversation_work_needs_no_conversation(task_type: TaskType) -> Non
     routed, `blind_position` is a deliberation step, `title` names something.
     None is Val answering Lord Armand, and requiring a conversation of them would
     be requiring a fiction.
+
+    Since the WP-0.9 ruling of 19 August 2026, `blind_position` carries a
+    separate `PersonaAttribution` — the blind call assembles Val's persona and
+    must attribute it — but that is persona attribution, not conversation
+    provenance: the conversation exemption holds for all four.
     """
     request = GatewayRequest(
         task_type=task_type,
@@ -1802,11 +1808,17 @@ def test_non_conversation_work_needs_no_conversation(task_type: TaskType) -> Non
         messages=(Message(role="user", content="classify this"),),
         project_id=None,
         project_attribution=ProjectAttribution.EXPLICIT_NONE,
+        persona=(
+            PersonaAttribution(persona_id=uuid4()) if task_type is TaskType.BLIND_POSITION else None
+        ),
     )
 
     assert request.conversation is None
     assert request.conversation_id is None
-    assert request.persona_id is None
+    if task_type is TaskType.BLIND_POSITION:
+        assert request.persona_id is not None
+    else:
+        assert request.persona_id is None
 
 
 def test_the_three_ids_cannot_be_supplied_one_at_a_time() -> None:

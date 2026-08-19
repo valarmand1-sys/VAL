@@ -75,6 +75,7 @@ from val_domain.gateway import (
     GatewayError,
     GatewayErrorKind,
     GatewayResponse,
+    Message,
     TerminalState,
     TurnReference,
 )
@@ -144,6 +145,21 @@ class TruncatedTurn:
 TurnOutcome = Turn | UnansweredTurn | TruncatedTurn | ClarificationNeeded
 
 
+@dataclass(frozen=True)
+class OpenedTurn:
+    """A turn whose scope is resolved and whose user message is now history.
+
+    The state after steps 1-3, shared by the ordinary path (`send`) and the
+    deliberated path (`val_gateway.deliberate.send`) — WP-0.9 factored these
+    phases out rather than duplicating the scope/persistence doctrine, which
+    is how two copies of it would drift.
+    """
+
+    conversation: ConversationRecord
+    scope: ProjectScope
+    user_message: MessageRecord
+
+
 #: The two forms of an explicit current-interaction scope choice. WP-0.6 put
 #: them in one authority class — level 2 — because *"select Project Beta"* and
 #: *"this is not for a project"* are the same act: the user stating scope now.
@@ -179,6 +195,58 @@ def send(
     are not consulted, because the conversation's own record is the authority on
     what it is about (WP-0.7 §18). Starting one resolves scope the WP-0.6 way.
     """
+    opened = open_turn(
+        engine,
+        content,
+        catalogue=catalogue,
+        signals=signals,
+        session=session,
+        conversation_id=conversation_id,
+        title=title,
+    )
+    if isinstance(opened, ClarificationNeeded):
+        return opened
+
+    messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
+
+    # 8-9. Preflight over the assembled whole, budget over the same parts, then
+    #      the provider. All three happen inside `converse`/`complete`.
+    #
+    #      Only `GatewayError` is caught. A `PersonaUnavailableError` propagates:
+    #      Val having no identity to speak from is not a provider outage, and
+    #      WP-0.5 is explicit that there is no degraded mode. Returning it as an
+    #      unanswered turn would present a misconfigured house as a bad night on
+    #      the network.
+    try:
+        response = gateway.converse(
+            messages,
+            scope=opened.scope,
+            classification=classification,
+            # One object rather than two loose ids — and `persona_id` is filled
+            # in by `assemble`, which is where the persona is known. The gateway
+            # verifies the three agree with the records before transmitting.
+            turn=TurnReference(
+                conversation_id=opened.conversation.id, message_id=opened.user_message.id
+            ),
+            max_output_tokens=max_output_tokens,
+        )
+    except GatewayError as failure:
+        return unanswered_or_raise(opened, failure)
+
+    return settle_turn(engine, opened, recalled, response)
+
+
+def open_turn(
+    engine: Engine,
+    content: str,
+    *,
+    catalogue: ProjectCatalogue,
+    signals: ProjectSignals | None = None,
+    session: ProjectSession | None = None,
+    conversation_id: UUID | None = None,
+    title: str | None = None,
+) -> OpenedTurn | ClarificationNeeded:
+    """Steps 1-3: preflight what was typed, resolve scope, persist the message."""
     # 1. Restricted, on what the user just typed, before anything is stored.
     #    The assembled request is checked again at step 8; this one is so that
     #    obvious Restricted material is refused before it becomes history.
@@ -240,13 +308,23 @@ def send(
         engine, conversation.id, role=StoredRole.USER, content=content
     )
 
+    return OpenedTurn(conversation=conversation, scope=scope, user_message=user_message)
+
+
+def assemble_turn(
+    engine: Engine,
+    opened: OpenedTurn,
+    *,
+    recall_limit: int = DEFAULT_LIMIT,
+) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...]]:
+    """Steps 4-7: history and recall, assembled into the outbound messages."""
     # 4-6. Persona, this conversation's own history, and the project's.
-    history = conversations.history(engine, conversation.id)
+    history = conversations.history(engine, opened.conversation.id)
     recalled = recall(
         engine,
-        scope=scope,
-        query=content,
-        exclude_conversation=conversation.id,
+        scope=opened.scope,
+        query=opened.user_message.content,
+        exclude_conversation=opened.conversation.id,
         limit=recall_limit,
     )
 
@@ -256,58 +334,59 @@ def send(
     block = recall_block(recalled)
     turns = conversation_messages(history)
     messages = (block, *turns) if block is not None else turns
+    return messages, recalled
 
-    # 8-9. Preflight over the assembled whole, budget over the same parts, then
-    #      the provider. All three happen inside `converse`/`complete`.
-    #
-    #      Only `GatewayError` is caught. A `PersonaUnavailableError` propagates:
-    #      Val having no identity to speak from is not a provider outage, and
-    #      WP-0.5 is explicit that there is no degraded mode. Returning it as an
-    #      unanswered turn would present a misconfigured house as a bad night on
-    #      the network.
-    try:
-        response = gateway.converse(
-            messages,
-            scope=scope,
-            classification=classification,
-            # One object rather than two loose ids — and `persona_id` is filled
-            # in by `assemble`, which is where the persona is known. The gateway
-            # verifies the three agree with the records before transmitting.
-            turn=TurnReference(conversation_id=conversation.id, message_id=user_message.id),
-            max_output_tokens=max_output_tokens,
-        )
-    except GatewayError as failure:
-        # **Restricted is not an unanswered turn.** It is a refusal, and it is
-        # raised. WP-0.7 §15 requires the failure be explicit, and returning it
-        # as "the provider did not answer" would be the opposite: the quiet
-        # outcome, indistinguishable from a rate limit, when what happened is
-        # that the assembled payload contained material that must never leave the
-        # machine. That distinction matters most precisely here, because with
-        # memory the offending content can be something written months ago rather
-        # than something the user just typed.
-        if failure.kind is GatewayErrorKind.RESTRICTED_CONTENT:
-            raise RestrictedContentRefusedError(str(failure)) from failure
 
-        # Everything else the gateway normalises — timeout, rate limit, no
-        # eligible route, budget — is the provider not answering. No `val` row:
-        # writing one would fabricate the single thing this system exists to be
-        # able to prove it did not do.
-        return UnansweredTurn(
-            conversation=conversation,
-            scope=scope,
-            user_message=user_message,
-            error=failure,
-        )
+def unanswered_or_raise(opened: OpenedTurn, failure: GatewayError) -> UnansweredTurn:
+    """A gateway failure, as WP-0.7 §15 requires it surfaced.
 
-    # 10. What happens to the text depends on how the call actually ended —
-    #     closure pass, 18 August 2026. COMPLETE and REFUSED are both whole
-    #     utterances (a deliberate refusal is Val's answer) and join the record.
-    #     TRUNCATED is a fragment: the provider cut it off at the output cap,
-    #     and persisting it as her message would put half a sentence in her
-    #     mouth as though she finished it. The fragment is returned as evidence
-    #     — the caller can see it, raise the cap, and ask again — and the
-    #     user's turn stays in the record as asked-and-not-yet-answered, which
-    #     is what actually happened.
+    **Restricted is not an unanswered turn.** It is a refusal, and it is
+    raised. Returning it as "the provider did not answer" would be the
+    opposite: the quiet outcome, indistinguishable from a rate limit, when
+    what happened is that the assembled payload contained material that must
+    never leave the machine. That distinction matters most precisely here,
+    because with memory the offending content can be something written months
+    ago rather than something the user just typed.
+
+    Everything else the gateway normalises — timeout, rate limit, no eligible
+    route, budget — is the provider not answering. No `val` row: writing one
+    would fabricate the single thing this system exists to be able to prove it
+    did not do.
+    """
+    if failure.kind is GatewayErrorKind.RESTRICTED_CONTENT:
+        raise RestrictedContentRefusedError(str(failure)) from failure
+    return UnansweredTurn(
+        conversation=opened.conversation,
+        scope=opened.scope,
+        user_message=opened.user_message,
+        error=failure,
+    )
+
+
+def settle_turn(
+    engine: Engine,
+    opened: OpenedTurn,
+    recalled: tuple[RecalledMessage, ...],
+    response: GatewayResponse,
+    *,
+    spoken_text: str | None = None,
+) -> Turn | TruncatedTurn:
+    """Step 10: what happens to the text depends on how the call actually ended.
+
+    Closure pass, 18 August 2026. COMPLETE and REFUSED are both whole
+    utterances (a deliberate refusal is Val's answer) and join the record.
+    TRUNCATED is a fragment: the provider cut it off at the output cap, and
+    persisting it as her message would put half a sentence in her mouth as
+    though she finished it. The fragment is returned as evidence — the caller
+    can see it, raise the cap, and ask again — and the user's turn stays in
+    the record as asked-and-not-yet-answered, which is what actually happened.
+
+    `spoken_text`, when given, is what enters history as Val's message in
+    place of the raw response text — WP-0.9's deliberated path persists her
+    prose without the machine-readable reconciliation verdict that rides after
+    it. What she *said* is the prose; the verdict is machinery output, and the
+    raw text stays inspectable on `response.text`.
+    """
     if response.terminal in (TerminalState.TRUNCATED, TerminalState.FILTERED):
         # TRUNCATED: the output cap cut it off. FILTERED — independent-review
         # correction, 18 August 2026: the provider's content filter cut it off,
@@ -316,21 +395,24 @@ def send(
         # history as Val's message. The precise state rides on
         # `outcome.response.terminal` and is durable on the model_calls row.
         return TruncatedTurn(
-            conversation=conversation,
-            scope=scope,
-            user_message=user_message,
+            conversation=opened.conversation,
+            scope=opened.scope,
+            user_message=opened.user_message,
             partial_text=response.text,
             response=response,
         )
 
     val_message = conversations.append(
-        engine, conversation.id, role=StoredRole.VAL, content=response.text
+        engine,
+        opened.conversation.id,
+        role=StoredRole.VAL,
+        content=response.text if spoken_text is None else spoken_text,
     )
 
     return Turn(
-        conversation=conversations.load(engine, conversation.id),
-        scope=scope,
-        user_message=user_message,
+        conversation=conversations.load(engine, opened.conversation.id),
+        scope=opened.scope,
+        user_message=opened.user_message,
         val_message=val_message,
         response=response,
         recalled=recalled,

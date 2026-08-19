@@ -313,6 +313,30 @@ class TurnReference(BaseModel):
     message_id: UUID
 
 
+class PersonaAttribution(BaseModel):
+    """Which persona revision is assembled into a `blind_position` call.
+
+    *WP-0.9 ruling, 19 August 2026.* The blind position must be **Val's**
+    position, so the blind call carries the active persona whole (`04-layer-0.md`
+    WP-0.5, as amended) — and once a persona is assembled, the call must
+    attribute it: a NULL `model_calls.persona_id` on a persona-bearing call
+    would mean "assembled and failed to attribute," a false record.
+
+    Deliberately **not** `ConversationProvenance`. Conversation provenance is
+    conversation-only — a blind call is machinery, not Val answering a turn —
+    and reusing the conversation shape here would hand machinery the ids that
+    attribute utterances. This is the smallest separate contract that carries
+    the one fact the record needs.
+
+    The id must name the **active** persona; the gateway verifies that against
+    the WP-0.5 loader before transmission rather than trusting the caller.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    persona_id: UUID
+
+
 class ConversationProvenance(BaseModel):
     """What caused a conversation call, as one indivisible fact — WP-0.7 corrective.
 
@@ -386,6 +410,12 @@ class GatewayRequest(BaseModel):
     #: the house runs on its own behalf; a conversation is Val speaking to Lord
     #: Armand, and it must be possible to say which turn it answered.
     conversation: ConversationProvenance | None = None
+    #: WP-0.9 ruling, 19 August 2026. Present iff `task_type` is BLIND_POSITION:
+    #: the blind call carries the active persona and must attribute it, and no
+    #: other non-conversation task assembles one (WP-0.5's deliberate narrowing —
+    #: classification and strip are the house reading content, not Val speaking).
+    #: A conversation's persona rides in `ConversationProvenance`, never here.
+    persona: PersonaAttribution | None = None
 
     @property
     def conversation_id(self) -> UUID | None:
@@ -399,8 +429,17 @@ class GatewayRequest(BaseModel):
 
     @property
     def persona_id(self) -> UUID | None:
-        """The persona revision assembled into this request, if any."""
-        return None if self.conversation is None else self.conversation.persona_id
+        """The persona revision assembled into this request, if any.
+
+        From conversation provenance on a conversation call, from the separate
+        persona attribution on a blind-position call, and None on the paths
+        that legitimately assemble none.
+        """
+        if self.conversation is not None:
+            return self.conversation.persona_id
+        if self.persona is not None:
+            return self.persona.persona_id
+        return None
 
     @model_validator(mode="after")
     def _provenance_iff_conversation(self) -> GatewayRequest:
@@ -446,6 +485,36 @@ class GatewayRequest(BaseModel):
         return self
 
     @model_validator(mode="after")
+    def _persona_iff_blind_position(self) -> GatewayRequest:
+        """Separate persona attribution is present iff the task is blind_position.
+
+        *WP-0.9 ruling, 19 August 2026.* Forward: a blind-position call carries
+        the active persona (WP-0.5 as amended), and a persona assembled without
+        attribution writes a false NULL. Inverse: classification, strip, and
+        title assemble no persona — attributing one would record an identity
+        that was never in the call — and a conversation's persona rides in
+        `ConversationProvenance`, so a second copy here could only disagree
+        with it. Guarded at the entrances too, because `model_copy` skips
+        validators.
+        """
+        if self.task_type is TaskType.BLIND_POSITION and self.persona is None:
+            raise ValueError(
+                "a blind_position call must carry its persona attribution: the blind "
+                "position is Val's position, so the call assembles the active persona "
+                "(04-layer-0.md WP-0.5, amended 19 August 2026) and must say which "
+                "revision it assembled — a persona-bearing call recording NULL would "
+                "be a false record, not a missing feature."
+            )
+        if self.task_type is not TaskType.BLIND_POSITION and self.persona is not None:
+            raise ValueError(
+                f"a {self.task_type.value!r} request may not carry persona "
+                "attribution. Classification, strip, and title assemble no persona "
+                "(WP-0.5's deliberate narrowing), and a conversation's persona rides "
+                "in its ConversationProvenance (WP-0.9 ruling, 19 August 2026)."
+            )
+        return self
+
+    @model_validator(mode="after")
     def _attribution_agrees_with_the_id(self) -> GatewayRequest:
         """The two fields must say the same thing, or the record would lie."""
         if self.project_attribution is ProjectAttribution.LEGACY_UNKNOWN:
@@ -485,3 +554,8 @@ class GatewayResponse(BaseModel):
     cost_usd: float | None
     latency_ms: int
     provider_request_id: str | None
+    #: WP-0.9, 19 August 2026. The `model_calls` row this call wrote, so
+    #: evidence that must name its call — a `blind_positions` row — can name
+    #: it without a second query that might not find the same row. None only
+    #: when the recorder declined to return an id (test fakes).
+    model_call_id: UUID | None = None

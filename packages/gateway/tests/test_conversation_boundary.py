@@ -29,10 +29,18 @@ from val_gateway import exchange as exchange_module
 
 SOURCE_ROOT = Path(__file__).resolve().parents[1] / "src" / "val_gateway"
 
-#: The only module that may hand a conversation to a provider. Everything else
+#: The only modules that may hand a conversation to a provider. Everything else
 #: in `val_gateway` either does not reach the gateway at all, or reaches it for
 #: work that is not conversation.
-THE_CONVERSATION_BOUNDARY = "loop.py"
+#:
+#: Two since WP-0.9, and the second is not a second *doctrine*: `deliberate.py`
+#: runs the same turn through the same shared phases — `loop.open_turn` has
+#: persisted the message before its `converse` can run, and `loop.settle_turn`
+#: decides what enters history — so a conversation on either path leaves the
+#: same record. What the retired `exchange()` did, and what this list exists to
+#: refuse, is conversation inference *without* those phases; a third entry here
+#: needs the same argument this comment makes for the second.
+CONVERSATION_BOUNDARIES = ["deliberate.py", "loop.py"]
 
 #: How a provider call is actually initiated. `converse` assembles the persona
 #: and is the conversation entrance; `complete` and `complete_with_configuration`
@@ -67,10 +75,12 @@ def test_only_the_loop_initiates_conversation_inference() -> None:
     }
     reaching = sorted(name for name, entrances in callers.items() if entrances)
 
-    assert reaching == [THE_CONVERSATION_BOUNDARY], (
-        f"{reaching} initiate conversation inference. Exactly one module may: "
-        "a second path is a way to hold a conversation that leaves no record, "
-        "which is what the retired `exchange()` was."
+    assert reaching == CONVERSATION_BOUNDARIES, (
+        f"{reaching} initiate conversation inference. Only the listed boundaries "
+        "may — each runs the shared open/settle phases, so its conversations "
+        "leave the WP-0.7 record. An unlisted path is a way to hold a "
+        "conversation that leaves no record, which is what the retired "
+        "`exchange()` was."
     )
 
 

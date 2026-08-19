@@ -102,6 +102,32 @@ class ClassifiedBy(StrEnum):
 
 
 @dataclass(frozen=True)
+class BlindPositionRecord:
+    """One persisted blind position, as the authoritative store holds it.
+
+    Append-only evidence (`0011`), persisted **before** the response call is
+    assembled: the primary evidence that Val formed a genuinely independent
+    judgment, durable from the moment it exists. `model_call_id` names the
+    blind call itself; `persona_id` names the revision assembled into it.
+    """
+
+    id: UUID
+    project_id: UUID | None
+    conversation_id: UUID
+    message_id: UUID
+    model_call_id: UUID
+    persona_id: UUID
+    position: str
+    confidence: Confidence
+    reasoning: str
+    stripped_content: str
+    ordering: Ordering
+    classification: DeliberationClassification
+    classified_by: ClassifiedBy
+    created_at: datetime
+
+
+@dataclass(frozen=True)
 class DeliberationRecord:
     """One persisted deliberation, as the authoritative store holds it.
 
@@ -130,4 +156,7 @@ class DeliberationRecord:
     predictions: str | None
     classification: DeliberationClassification
     classified_by: ClassifiedBy
+    #: 19 August 2026: the exact blind-position evidence this record resolves,
+    #: or None for a deliberation with no blind call behind it.
+    blind_position_id: UUID | None
     created_at: datetime

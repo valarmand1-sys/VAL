@@ -123,6 +123,25 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "predictions",
         "classification",
         "classified_by",
+        "blind_position_id",
+    ),
+    # §2.2 blind_positions — amendment, 19 August 2026: the blind position is
+    # append-only evidence, persisted before step 3 of §4 begins.
+    "blind_positions": (
+        "id",
+        "created_at",
+        "project_id",
+        "conversation_id",
+        "message_id",
+        "model_call_id",
+        "persona_id",
+        "position",
+        "confidence",
+        "reasoning",
+        "stripped_content",
+        "ordering",
+        "classification",
+        "classified_by",
     ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
@@ -144,6 +163,10 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # would make a no-project exchange unrecordable. Flagged for ruling.
         ("execution_events", "project_id"),
         ("deliberations", "project_id"),
+        ("blind_positions", "project_id"),
+        # Amendment, 19 August 2026: a deliberation recorded manually, or one
+        # whose exchange carried no preference to strip, has no blind call.
+        ("deliberations", "blind_position_id"),
         # Amendment, 15 August 2026: a reaction with no event is a real record,
         # and a reaction is nullable because most events carry none.
         ("execution_events", "event_type"),

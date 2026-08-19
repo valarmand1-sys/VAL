@@ -109,7 +109,7 @@ These three tables are the point of the layer.
 | `project_id` | Nullable, matching `conversations` |
 | `task_type` | Enumerated. Layer 0 values: `conversation`, `classification`, `strip`, `blind_position`, `title` |
 | `conversation_id`, `message_id` | Nullable |
-| `persona_id` | **WP-0.5, 17 August 2026.** Which persona revision was assembled into this call's context. Nullable: rows written before a persona existed, and paths that legitimately assemble none, are not Val utterances to attribute. |
+| `persona_id` | **WP-0.5, 17 August 2026.** Which persona revision was assembled into this call's context. Nullable: rows written before a persona existed, and paths that legitimately assemble none, are not calls to attribute. **19 August 2026:** `blind_position` calls carry the persona and therefore attribute it — once a persona is assembled, a NULL here would mean "assembled and failed to attribute," which is a false record, not a missing feature. |
 | `latency_ms`, `provider_request_id` | |
 | `status` | `ok` \| `error` \| `refused` |
 
@@ -199,6 +199,24 @@ These three tables are the point of the layer.
 | `both_positions`, `predictions` | Nullable. Populated on compromise. **This is the seed of the prediction ledger.** |
 | `classification` | `consequential` \| `uncertain` |
 | `classified_by` | `automatic` \| `user` \| `val` |
+| `blind_position_id` | **19 August 2026.** The exact `blind_positions` evidence this record resolves. Nullable: a deliberation recorded manually, or one whose exchange carried no preference to strip, has no blind call behind it. |
+
+**`blind_positions`** — amendment, 19 August 2026, Lord Armand
+
+The blind position is the primary evidence that Val formed a genuinely independent judgment — Layer 5 exists partly to determine exactly that — and it exists *before* the exchange resolves, while the `deliberations` row cannot be written until the outcome is known. Keeping the most load-bearing record in the least durable place would be backwards, so the position is captured as an **append-only evidence row, persisted before step 3 of §4 begins**, on the same footing as every other Layer 0 capture table. It is not mutable interim state: no UPDATE, no hard delete, complete when written.
+
+| Column | Note |
+|---|---|
+| `id`, `created_at` | |
+| `project_id`, `conversation_id`, `message_id` | The exchange it belongs to. Project derived from the conversation's stored scope. |
+| `model_call_id` | The blind call itself — the `model_calls` row that produced this position |
+| `persona_id` | The persona revision assembled into the blind call (see WP-0.5's 19 August 2026 amendment) |
+| `position`, `confidence`, `reasoning` | The position as formed, blind |
+| `stripped_content` | What the strip step removed |
+| `ordering` | `enforced` \| `contaminated` |
+| `classification`, `classified_by` | The §4.8 provenance that triggered the capture |
+
+The exact blind-call payload is additionally logged for WP-0.9's inspection criterion; the log is for inspection, this table is the evidence.
 
 ### 2.3 Constraints
 
@@ -314,6 +332,8 @@ Each states what exists when it is done and how that is verified.
 - Editing the persona creates a new version row and leaves the prior row intact.
 - Val's register in a real exchange is recognisably that of `03-persona.md` §9. Assessed by reading, not asserted.
 
+> **Amendment — 19 August 2026, Lord Armand. "Every context" is deliberately narrowed to every context in which Val speaks.** WP-0.9 is the first place non-conversation model calls exist, and the rule is resolved rather than left to be read two ways: the **blind-position call carries the active persona whole** — the position must be *Val's* position, and a persona-less blind position compared against her persona-bearing response is two different speakers, which she would update away from nearly every time. That is the same failure `02-partner-systems.md` §4.1 names for a weaker model forming the blind position — theatre generating a paper trail of false independence — arriving through a different door. **Classification and strip calls carry no persona**: they are the house reading content, not Val speaking. This is a narrowing recorded as a decision, not an omission. Every call that carries the persona attributes it: `model_calls.persona_id` names the revision, verified against the active row before transmission.
+
 ### WP-0.6 — Project resolution and attribution
 
 **Done when:** every exchange is attributable to a project or explicitly to none, and resolution is deterministic.
@@ -374,6 +394,10 @@ Layer 0 therefore runs the strip step on **the cheapest configured route** — w
 The alternative — recording positions at Layer 0 without enforcing ordering, and adding the structure at Layer 3 — was rejected. Positions recorded without the ordering guarantee are contaminated by construction, and they would seed the prediction ledger with exactly the data the mechanism exists to exclude. Months of records that cannot be trusted are worse than no records, because they look like evidence.
 
 Cost: two extra calls on consequential exchanges only, one of them on the cheapest configured route. At Layer 0 conversation volumes this is small, and it is measurable from day one via `model_calls.task_type`.
+
+> **Amendment — 19 August 2026, Lord Armand. The true cost, stated.** The paragraph above prices only the deliberation structure. The §4.8 classification is itself a model call, and it runs on **every** exchange, before any position is formed, because it decides whether the structure runs at all. The true recurring cost is therefore: **one classification call per exchange on the cheapest eligible route, plus the two calls above on consequential exchanges only.** This cost is approved. Classification spend is reported **separately** in the cost view from day one — if it comes to dominate, that is read from the record, never inferred.
+>
+> **Resolved reading — 19 August 2026, Lord Armand.** `02-partner-systems.md` §4.8 says that at Layer 0 the classification "gates recording only," while this section runs the blind-position structure at Layer 0. This document owns Layer 0 scope and records the deviation deliberately, so the resolved reading is: *"recording only" means recording, and the calls recording requires.* The contrast §4.8 draws is with Layer 3, where the classification additionally gates machinery beyond capture.
 
 ---
 

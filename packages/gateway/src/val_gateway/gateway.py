@@ -236,6 +236,7 @@ class Gateway:
         turn: TurnReference,
         classification: Classification = Classification.PROTECTED,
         max_output_tokens: int = 4096,
+        configuration: ModelConfig | None = None,
     ) -> GatewayResponse:
         """Talk to Val. The persona is loaded, assembled whole, and attributed.
 
@@ -280,7 +281,21 @@ class Gateway:
             turn=turn,
             max_output_tokens=max_output_tokens,
         )
-        return self._execute(request)
+        if configuration is None:
+            return self._execute(request)
+
+        # The pinned conversational path — WP-0.9's same-configuration rule
+        # (ruling, 19 August 2026). Still `converse`: the persona was loaded
+        # above and the provenance verifier still runs, so pinning narrows only
+        # *which route*, never which checks. The named configuration must be
+        # the registry's own entry and passes admission, eligibility, and the
+        # budget on this call's own account. No fallback: if this route cannot
+        # answer, the turn is unanswered — a silent config change would break
+        # the same-configuration guarantee the caller pinned this for.
+        self._refuse_restricted(request)
+        self._refuse_incoherent_provenance(request)
+        known = self._verify_named_configuration(configuration, request.classification)
+        return self._attempt(request, known, content_parts(request))
 
     def complete(self, request: GatewayRequest) -> GatewayResponse:
         """Route one piece of non-conversation model work, or fail truthfully.
@@ -306,11 +321,12 @@ class Gateway:
         Private on purpose: `converse` builds conversation requests and comes
         here directly, having just loaded the persona; `complete` comes here for
         non-conversation work after refusing anything conversational. There is
-        exactly one copy of the guard order — Restricted, provenance, budget,
-        route — because two copies is how one of them drifts.
+        exactly one copy of the guard order — Restricted, provenance, persona,
+        budget, route — because two copies is how one of them drifts.
         """
         self._refuse_restricted(request)
         self._refuse_incoherent_provenance(request)
+        self._refuse_unverified_persona(request)
 
         parts = content_parts(request)
         committed = self._ledger.committed_usd()
@@ -375,7 +391,15 @@ class Gateway:
         """
         self._refuse_masquerade(request)
         self._refuse_restricted(request)
+        self._refuse_unverified_persona(request)
 
+        known = self._verify_named_configuration(config, request.classification)
+        return self._attempt(request, known, content_parts(request))
+
+    def _verify_named_configuration(
+        self, config: ModelConfig, classification: Classification
+    ) -> ModelConfig:
+        """The registry's own entry for this id, or a refusal. Never the caller's copy."""
         known = by_id(config.id)
         if known is None or known != config:
             raise GatewayError(
@@ -392,15 +416,14 @@ class Gateway:
                 "it does not serve new calls, and naming it explicitly does not "
                 "un-retire it (closure red-team, 18 August 2026).",
             )
-        if not is_admitted(known) or not is_eligible(known, request.classification):
+        if not is_admitted(known) or not is_eligible(known, classification):
             raise GatewayError(
                 GatewayErrorKind.NO_ELIGIBLE_ROUTE,
                 f"{known.slug} is not admitted for Layer 0 use, or not eligible for "
-                f"{request.classification.value} content. Naming it explicitly does not "
+                f"{classification.value} content. Naming it explicitly does not "
                 "admit it (00-charter.md invariant 17).",
             )
-
-        return self._attempt(request, known, content_parts(request))
+        return known
 
     # --- one attempt on one configuration ------------------------------------
 
@@ -543,6 +566,9 @@ class Gateway:
             cost_usd=cost,
             latency_ms=latency,
             provider_request_id=result.provider_request_id,
+            # WP-0.9: evidence that must name its call — blind_positions —
+            # names the row this call actually wrote.
+            model_call_id=call_id,
         )
 
     def _settle_unknown(
@@ -667,6 +693,90 @@ class Gateway:
         except Exception as mismatch:
             self._blocked(request, "incoherent conversation provenance")
             raise GatewayError(GatewayErrorKind.INVALID_REQUEST, str(mismatch)) from mismatch
+
+    def _refuse_unverified_persona(self, request: GatewayRequest) -> None:
+        """A blind-position call attributes the active persona, verified, or does not run.
+
+        *WP-0.9 ruling, 19 August 2026.* The blind call carries Val's persona
+        (WP-0.5 as amended), so its `model_calls` row must name the revision —
+        and the id must be the **active** persona's, checked against the WP-0.5
+        loader here rather than trusted from the caller: a typed UUID naming a
+        retired revision would record an identity that was not assembled.
+
+        Both directions are guarded at the entrance as well as in the request
+        validator, for the `model_copy` reason `_refuse_masquerade` states.
+        """
+        if request.task_type is TaskType.BLIND_POSITION:
+            if request.persona is None:
+                raise GatewayError(
+                    GatewayErrorKind.INVALID_REQUEST,
+                    "a blind_position call must carry its persona attribution: the "
+                    "blind position is Val's position, and a persona-bearing call "
+                    "recording NULL persona_id would be a false record (WP-0.9 "
+                    "ruling, 19 August 2026).",
+                )
+            if self._persona_loader is None:
+                raise GatewayError(
+                    GatewayErrorKind.INVALID_REQUEST,
+                    "this gateway was built without a persona loader, so it cannot "
+                    "verify that this blind_position call attributes the active "
+                    "persona. The call is refused rather than transmitted with an "
+                    "unverified identity claim.",
+                )
+            active_persona = self._persona_loader.active()
+            if request.persona.persona_id != active_persona.id:
+                raise GatewayError(
+                    GatewayErrorKind.INVALID_REQUEST,
+                    f"persona attribution names revision {request.persona.persona_id}, "
+                    f"but the active persona is {active_persona.id}. The record must "
+                    "name the identity that was actually assembled; a stale or typed "
+                    "id is refused before transmission (WP-0.9 ruling, 19 August 2026).",
+                )
+        elif request.persona is not None:
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                f"a {request.task_type.value!r} request may not carry persona "
+                "attribution: classification, strip, and title assemble no persona "
+                "(WP-0.5's deliberate narrowing), and a conversation's persona rides "
+                "in its provenance. Refused before routing.",
+            )
+
+    def select_configuration(
+        self,
+        classification: Classification,
+        parts: tuple[str, ...],
+        max_output_tokens: int,
+    ) -> ModelConfig:
+        """The configuration routing would choose for this work, without calling.
+
+        *WP-0.9, 19 August 2026.* §4.1 requires the blind position and the
+        response to use **the same model configuration, selected once**. The
+        deliberation orchestrator selects here, then runs both calls pinned to
+        the result — each still passing every admission, eligibility, and
+        budget check on its own account. A mid-turn failure of the selected
+        route leaves the turn unanswered rather than falling back: a silent
+        config change between the two calls would produce a clean paper trail
+        of an independence that never existed.
+        """
+        committed = self._ledger.committed_usd()
+        order = attempt_order(
+            active(),
+            classification,
+            is_ready=lambda config: config.provider in self._adapters,
+            is_affordable=lambda config: (
+                limit_overrun(config, parts, max_output_tokens) is None
+                and admits(committed, maximum_cost(config, parts, max_output_tokens))
+            ),
+            resolve_fallback=fallback_for,
+        )
+        if not order:
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                "no configuration is admitted, eligible, ready, and affordable for "
+                f"{classification.value} content of this size. Truthful "
+                "unavailability, not a licence to downgrade (01-architecture.md §5.4).",
+            )
+        return order[0]
 
     def _refuse_restricted(self, request: GatewayRequest) -> None:
         """Refuse obvious Restricted material before a route is even selected.
