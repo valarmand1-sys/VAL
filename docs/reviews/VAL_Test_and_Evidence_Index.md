@@ -536,3 +536,33 @@ historical spend rather than against the call being proposed, and a provider
 failure after transmission was being recorded as a $0.00 call. Both are now
 proved in the negative — the provider is not contacted, and the false zero is
 refused by the database itself. Full account: `VAL_WP04_Corrective_Audit.md`.
+
+## 10. WP-0.3 operational acceptance — 19 August 2026
+
+Performed against the real Backblaze B2 repository, not a local copy.
+
+| # | Criterion | Evidence | Result |
+|---|---|---|---|
+| 10.1 | Backup runs unattended on schedule, two consecutive days observed | pgBackRest info: scheduled runs 2026-08-16 03:15 (full) and 2026-08-17 03:08 (incr), fired by launchd agent `house.armand.val.backup` with no human step; agent and watcher loaded | **PASS** |
+| 10.2 | Encrypted; key held apart from the backups; restore with backup alone fails | Restore attempted with the B2 repo reachable but the cipher passphrase removed from configuration: pgBackRest cannot read the encrypted `backup.info`, "no backup set found to restore", **zero files restored** | **PASS** |
+| 10.3 | **Full B2-origin restore to a scratch instance, verified** | `pgbackrest restore` from B2 to a scratch data directory (1m55s), archive recovery replayed all WAL from the repo, promoted; `verify_restore.py` live-vs-restored: row counts match per table, referential integrity holds, capture tables continuous, **all 11 per-table content digests identical** | **PASS** |
+| 10.4 | Point-in-time recovery to an arbitrary timestamp succeeds | `--type=time --target="2026-08-18 17:00:00-05"`: recovery stopped exactly before the first later transaction (log: "recovery stopping before commit … 17:08:50"); recovered state is the pre-target world — 16 conversations, 37 messages, 40 calls, no `closure-smoke` project, Alembic at `0008` — while the live store holds all of it | **PASS** |
+
+Scratch instances ran with `archive_mode=off` so nothing wrote back to the
+repository, and were stopped and deleted after verification. The live store
+was read, never written.
+
+## 11. WP-0.4 crash-boundary proofs — 19 August 2026
+
+`packages/gateway/tests/test_call_durability.py`, against real PostgreSQL:
+
+| # | Claim | Result |
+|---|---|---|
+| 11.1 | **The attempt is durable before the provider boundary** — observed by an adapter that queries the database from inside `complete()` and requires the committed reservation to already exist | **PASS** |
+| 11.2 | Crash after reserve, before transmission: hold expires, maximum stays committed, resolution states transmission cannot be established, no call row fabricated, nothing retried | **PASS** |
+| 11.3 | Crash after transmission, before call evidence: spend survives as the expired reservation; no `model_calls` row invented for an unprovable call; no blind retry | **PASS** |
+| 11.4 | Crash after call evidence, before settlement: the immutable row stands, the expired hold covers its cost, nothing duplicated | **PASS** |
+
+`model_calls` immutability preserved throughout; no schema change. The
+transmission-marker refinement (release provably-never-sent holds early) needs
+a column §2.5 does not enumerate → **Layer 0 gate list**.
