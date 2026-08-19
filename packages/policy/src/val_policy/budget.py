@@ -72,10 +72,21 @@ def upper_bound_input_tokens(parts: Iterable[str], config: ModelConfig) -> int:
     same function that feeds the Restricted preflight, so the two cannot drift
     apart and leave content that is scanned but not costed.
     """
+    return min(raw_input_bound(parts), config.context_window_tokens)
+
+
+def raw_input_bound(parts: Iterable[str]) -> int:
+    """The byte-level input bound, uncapped by any model's window.
+
+    Factored out in the closure pass so limit enforcement (`limit_overrun`) and
+    budget pricing (`upper_bound_input_tokens`) compute from the same figure.
+    Enforcement needs it *uncapped* — comparing a window-capped value against
+    the window would pass by construction — while pricing caps it, because
+    nothing above the window is ever billed.
+    """
     materialised = list(parts)
     bytes_total = sum(len(part.encode("utf-8")) for part in materialised)
-    framing = FRAMING_TOKENS_PER_MESSAGE * len(materialised)
-    return min(bytes_total + framing, config.context_window_tokens)
+    return bytes_total + FRAMING_TOKENS_PER_MESSAGE * len(materialised)
 
 
 def upper_bound_output_tokens(requested_max_output_tokens: int, config: ModelConfig) -> int:
@@ -92,9 +103,12 @@ def upper_bound_output_tokens(requested_max_output_tokens: int, config: ModelCon
 
     - **The request's own cap**, which is what is actually sent to the provider.
       The provider stops generating there.
-    - **The configuration's `max_output_tokens`.** A request asking for more than
-      the model permits is rejected outright rather than silently served at the
-      model's limit, so this is an upper bound either way.
+    - **The configuration's `max_output_tokens`.** `limit_overrun` refuses any
+      request asking for more than the model permits *before* transmission, so
+      by the time a call is priced the two figures agree — the value budgeted
+      is the value sent. (*Corrected in the closure pass, 18 August 2026: this
+      docstring used to claim the rejection existed while only the clamp did,
+      so budgeting assumed a capped value transmission did not honour.*)
 
     Reasoning and thinking tokens need no separate term: every provider in this
     registry bills them as output and counts them inside the same cap, so they
@@ -102,6 +116,43 @@ def upper_bound_output_tokens(requested_max_output_tokens: int, config: ModelCon
     every current entry in any case.
     """
     return min(requested_max_output_tokens, config.max_output_tokens)
+
+
+def limit_overrun(
+    config: ModelConfig, parts: Iterable[str], requested_max_output_tokens: int
+) -> str | None:
+    """Why this request cannot be served by this configuration, or `None`.
+
+    *Closure pass, 18 August 2026.* VAL enforces the model's own limits before
+    transmission; the provider's rejection is the backstop, never the mechanism.
+    Two checks, and neither clamps:
+
+    1. **Requested output beyond the model's cap is refused**, not silently
+       served at the cap. A caller asking for 100k tokens from a 64k model has
+       asked for something this route cannot do, and quietly doing less would
+       make the authorised bound and the actual request disagree.
+    2. **The input bound plus the requested output must fit the context
+       window.** The input figure is the same byte-level upper bound the budget
+       prices (`upper_bound_input_tokens`, uncapped), so enforcement and
+       budgeting cannot drift apart: one function, one estimate.
+    """
+    if requested_max_output_tokens > config.max_output_tokens:
+        return (
+            f"{config.slug} supports at most {config.max_output_tokens:,} output tokens "
+            f"and this request asks for {requested_max_output_tokens:,}. Refused rather "
+            "than clamped: serving less than was asked would make the authorised bound "
+            "and the transmitted request disagree."
+        )
+
+    input_bound = raw_input_bound(parts)
+    if input_bound + requested_max_output_tokens > config.context_window_tokens:
+        return (
+            f"{config.slug}'s context window is {config.context_window_tokens:,} tokens; "
+            f"this request's input bound ({input_bound:,}) plus its requested output "
+            f"({requested_max_output_tokens:,}) cannot fit. Refused locally — nothing "
+            "was routed, reserved, or transmitted."
+        )
+    return None
 
 
 def maximum_cost(config: ModelConfig, parts: Iterable[str], max_output_tokens: int) -> float:
@@ -145,9 +196,31 @@ def maximum_cost(config: ModelConfig, parts: Iterable[str], max_output_tokens: i
     """
     tokens_in = upper_bound_input_tokens(parts, config)
     tokens_out = upper_bound_output_tokens(max_output_tokens, config)
-    return (
-        tokens_in * config.cost_per_mtok_in_usd + tokens_out * config.cost_per_mtok_out_usd
-    ) / 1_000_000
+    rate_in, rate_out = effective_rates(config, tokens_in)
+    return (tokens_in * rate_in + tokens_out * rate_out) / 1_000_000
+
+
+def effective_rates(config: ModelConfig, tokens_in: int) -> tuple[float, float]:
+    """The per-mtok rates that actually apply at this input size.
+
+    *Closure pass, 18 August 2026.* Some providers re-price the whole call above
+    an input threshold — GPT-5.5 bills 2x input and 1.5x output for the full
+    session once input exceeds 272K tokens. A ceiling computed at base rates
+    would under-reserve exactly the largest calls, which is the ceiling failing
+    where it matters most. The threshold and multipliers come from the registry
+    entry, never from code, and both the pre-call bound (which feeds this an
+    *upper-bound* input figure — conservative, since crossing the threshold only
+    raises the price) and the post-call settlement (which feeds it the real
+    figure) use this one function, so the two cannot disagree about what a
+    token costs.
+    """
+    threshold = config.long_context_threshold_tokens
+    if threshold is not None and tokens_in > threshold:
+        return (
+            config.cost_per_mtok_in_usd * config.long_context_in_multiplier,
+            config.cost_per_mtok_out_usd * config.long_context_out_multiplier,
+        )
+    return config.cost_per_mtok_in_usd, config.cost_per_mtok_out_usd
 
 
 def remaining_usd(committed_usd: float) -> float:

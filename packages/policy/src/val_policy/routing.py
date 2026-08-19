@@ -92,12 +92,22 @@ def attempt_order(
     is_affordable: Callable[[ModelConfig], bool],
     resolve_fallback: Callable[[ModelConfig], ModelConfig | None],
 ) -> list[ModelConfig]:
-    """The order routes are tried: primary, its declared fallback, then the rest.
+    """The order routes are tried: the primary, then its declared chain. Nothing else.
 
     The primary is the cheapest surviving candidate. If it declares a fallback
     and that fallback **independently** survives every filter above, it is tried
-    next; otherwise it is skipped entirely rather than downgraded into. Anything
-    still unattempted follows in cost order.
+    next, and so on down the declared chain; otherwise the order ends there.
+
+    **A route with no declared fallback has no fallback.** *Corrected in the
+    current-version closure pass, 18 August 2026.* This function used to append
+    every remaining candidate in cost order after the declared chain, so
+    `fallback_slug=None` fell through to whatever else was ranked — which is
+    exactly the behaviour a declared NONE exists to forbid. "Another provider is
+    technically available" is not "this request is authorised to fall back to
+    it": the registry declaration is the authorisation, and an undeclared
+    fallback is an unauthorised one. Degrade-rather-than-halt still holds
+    wherever a fallback is actually declared; where none is, the honest outcome
+    is a truthful failure.
 
     Nothing is inherited. A declared fallback that is retired, unadmitted,
     ineligible for this content, unready, or unaffordable does not appear in
@@ -128,5 +138,4 @@ def attempt_order(
         seen.add(successor.slug)
         current = successor
 
-    order.extend(config for config in ranked if config.slug not in seen)
     return order

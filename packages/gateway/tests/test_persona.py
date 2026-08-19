@@ -28,11 +28,11 @@ from sqlalchemy import Engine, text
 from val_domain.conversation import StoredRole
 from val_domain.gateway import (
     Classification,
-    ConversationProvenance,
     CostCertainty,
-    GatewayRequest,
+    GatewayError,
+    GatewayErrorKind,
     Message,
-    TaskType,
+    TerminalState,
     TurnReference,
 )
 from val_domain.persona import (
@@ -45,7 +45,6 @@ from val_domain.persona import (
 )
 from val_domain.project import (
     ExplicitNoProject,
-    ProjectAttribution,
     ProjectRecord,
     ProjectScope,
     ResolutionSource,
@@ -307,7 +306,7 @@ def test_two_active_personas_fail_closed_rather_than_choosing(
         connection.rollback()
 
     # And the index is back, so the healthy guarantee still holds.
-    with pytest.raises(Exception):  # noqa: B017 - the index's own refusal
+    with pytest.raises(Exception, match="uq_personas_single_active"):
         with clean_personas.begin() as connection:
             connection.execute(
                 text("update personas set is_active = true, activated_at = now() where id = :id"),
@@ -552,21 +551,28 @@ def test_provider_substitution_leaves_the_persona_identical(
     active = DatabasePersonaLoader(clean_personas).active()
     messages = (Message(role="user", content="Good evening."),)
 
-    sent: list[str] = []
-    for provider, slug in (("anthropic", "opus-5"), ("openai", "gpt-5-5")):
-        adapter = StubAdapter(ProviderResult("Good evening, my lord.", 20, 10, "r", False))
+    # *Closure pass, 18 August 2026:* through `converse`, which is now the only
+    # conversation entrance — `complete_with_configuration` refuses conversation
+    # requests outright. Asserting on what each adapter was actually handed,
+    # which is the stronger form of the old `request.system` assertion anyway.
+    sent: list[str | None] = []
+    for provider in ("anthropic", "openai"):
+        adapter = StubAdapter(
+            ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "r")
+        )
         gateway = Gateway(
             adapters={provider: adapter},
             recorder=lambda record: uuid4(),
             ledger=FakeLedger(),
             persona_loader=FixedPersonaLoader(active),
+            verify_provenance=verifier(clean_personas),
         )
-        request = assemble(
-            active, messages, scope=ExplicitNoProject(), turn=a_persisted_turn(clean_personas)
+        gateway.converse(
+            messages,
+            scope=ExplicitNoProject(),
+            turn=a_persisted_turn(clean_personas),
         )
-        gateway.complete_with_configuration(request, config(slug))
-        assert request.system is not None
-        sent.append(request.system)
+        sent.append(adapter.sent_system)
 
     assert sent[0] == sent[1] == active.content
 
@@ -682,7 +688,7 @@ def test_a_hostile_persona_does_not_make_restricted_content_routable(
     create_revision(clean_personas, fixture_source(HOSTILE_PERSONA), activate=True)
     active = DatabasePersonaLoader(clean_personas).active()
 
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway = Gateway(
         adapters={"anthropic": adapter},
         recorder=lambda record: uuid4(),
@@ -691,12 +697,19 @@ def test_a_hostile_persona_does_not_make_restricted_content_routable(
         persona_loader=FixedPersonaLoader(active),
     )
 
-    with pytest.raises(Exception):  # noqa: B017 - the gateway's normalized refusal
+    # *Closure pass, 18 August 2026.* Found by the test-quality audit: this had
+    # been passing on a `TypeError` — `converse` gained a required `turn` and
+    # the bare `raises(Exception)` swallowed the signature error, proving
+    # nothing about Restricted at all. It now supplies the turn and names the
+    # refusal it expects.
+    with pytest.raises(GatewayError) as refused:
         gateway.converse(
             (Message(role="user", content="Handle this."),),
             scope=ExplicitNoProject(),
             classification=Classification.RESTRICTED,
+            turn=TurnReference(conversation_id=uuid4(), message_id=uuid4()),
         )
+    assert refused.value.kind is GatewayErrorKind.RESTRICTED_CONTENT
     assert adapter.calls == 0
 
 
@@ -797,7 +810,7 @@ def test_an_invalidated_active_persona_refuses_rather_than_falling_back(
     with clean_personas.begin() as connection:
         connection.execute(text("update personas set is_active = false where is_active"))
 
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway = Gateway(
         adapters={"anthropic": adapter},
         recorder=lambda record: uuid4(),
@@ -808,7 +821,10 @@ def test_an_invalidated_active_persona_refuses_rather_than_falling_back(
 
     with pytest.raises(PersonaUnavailableError) as caught:
         gateway.converse(
-            (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+            (Message(role="user", content="Good evening."),),
+            scope=ExplicitNoProject(),
+            # The loader refuses before this is ever read; any pair shows that.
+            turn=TurnReference(conversation_id=uuid4(), message_id=uuid4()),
         )
     assert caught.value.problem is PersonaProblem.NONE_ACTIVE
     assert adapter.calls == 0, "a call was made with no persona"
@@ -822,7 +838,9 @@ def test_a_model_call_records_the_persona_revision_used(clean_personas: Engine) 
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
 
-    adapter = StubAdapter(ProviderResult("Good evening, my lord.", 20, 10, "req", False))
+    adapter = StubAdapter(
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "req")
+    )
     gateway = Gateway(
         adapters={"anthropic": adapter, "openai": adapter},
         recorder=lambda record: record_call(clean_personas, record),
@@ -853,8 +871,6 @@ def test_a_transmitted_call_that_errors_still_records_its_persona(
     clean_personas: Engine,
 ) -> None:
     """Requirement 10: attribution survives a provider failure after transmission."""
-    from val_domain.gateway import GatewayError, GatewayErrorKind
-
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
 
@@ -865,15 +881,15 @@ def test_a_transmitted_call_that_errors_still_records_its_persona(
         ledger=FakeLedger(),
         observe_block=lambda message: None,
         persona_loader=FixedPersonaLoader(active),
+        verify_provenance=verifier(clean_personas),
     )
-    request = assemble(
-        active,
-        (Message(role="user", content="Good evening."),),
-        scope=ExplicitNoProject(),
-        turn=a_persisted_turn(clean_personas),
-    )
+    # *Closure pass:* through `converse` — the only conversation entrance now.
     with pytest.raises(GatewayError):
-        gateway.complete_with_configuration(request, config("opus-5"))
+        gateway.converse(
+            (Message(role="user", content="Good evening."),),
+            scope=ExplicitNoProject(),
+            turn=a_persisted_turn(clean_personas),
+        )
 
     with clean_personas.connect() as connection:
         row = connection.execute(
@@ -894,7 +910,7 @@ def test_historical_attribution_survives_a_later_activation(
     seed(clean_personas, REPO_ROOT)
     first = DatabasePersonaLoader(clean_personas).active()
 
-    adapter = StubAdapter(ProviderResult("ok", 10, 10, "req", False))
+    adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 10, 10, "req"))
     gateway = Gateway(
         adapters={"anthropic": adapter, "openai": adapter},
         recorder=lambda record: record_call(clean_personas, record),
@@ -929,7 +945,7 @@ def test_a_call_that_was_never_sent_records_no_persona(clean_personas: Engine) -
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
 
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway = Gateway(
         adapters={"anthropic": adapter},
         recorder=lambda record: record_call(clean_personas, record),
@@ -937,25 +953,29 @@ def test_a_call_that_was_never_sent_records_no_persona(clean_personas: Engine) -
         observe_block=lambda message: None,
         persona_loader=FixedPersonaLoader(active),
     )
-    turn = a_persisted_turn(clean_personas)
-    leaking = GatewayRequest(
-        task_type=TaskType.CONVERSATION,
-        classification=Classification.PROTECTED,
-        messages=(Message(role="user", content="ssn 123-45-6789"),),
-        system=active.content,
-        project_id=None,
-        project_attribution=ProjectAttribution.EXPLICIT_NONE,
-        # *WP-0.7 corrective round.* `persona_id` is no longer a field of its
-        # own; it travels with the conversation it was assembled for, so the
-        # three ids cannot be supplied one at a time.
-        conversation=ConversationProvenance(
-            conversation_id=turn.conversation_id,
-            message_id=turn.message_id,
-            persona_id=active.id,
-        ),
+    # *Closure pass, 18 August 2026.* Found by the test-quality audit: this had
+    # begun passing on the wrong guard. It hand-built a CONVERSATION request and
+    # sent it through `complete_with_configuration`, which now refuses
+    # conversation outright — so the bare `raises(Exception)` was satisfied by
+    # the masquerade refusal and the Restricted mechanism went untested. The
+    # conversation entrance is `converse`; the Restricted refusal it must give
+    # is named, and NOT_SENT is proved by the empty table.
+    gateway = Gateway(
+        adapters={"anthropic": adapter},
+        recorder=lambda record: record_call(clean_personas, record),
+        ledger=FakeLedger(),
+        observe_block=lambda message: None,
+        persona_loader=FixedPersonaLoader(active),
+        verify_provenance=verifier(clean_personas),
     )
-    with pytest.raises(Exception):  # noqa: B017 - the Restricted refusal
-        gateway.complete_with_configuration(leaking, config("opus-5"))
+    with pytest.raises(GatewayError) as refused:
+        gateway.converse(
+            (Message(role="user", content="ssn 123-45-6789"),),
+            scope=ExplicitNoProject(),
+            turn=a_persisted_turn(clean_personas),
+        )
+    assert refused.value.kind is GatewayErrorKind.RESTRICTED_CONTENT
+    assert adapter.calls == 0
 
     with clean_personas.connect() as connection:
         assert connection.execute(text("select count(*) from model_calls")).scalar_one() == 0
@@ -973,5 +993,7 @@ def test_converse_refuses_without_a_loader() -> None:
     )
     with pytest.raises(PersonaUnavailableError):
         gateway.converse(
-            (Message(role="user", content="Good evening."),), scope=ExplicitNoProject()
+            (Message(role="user", content="Good evening."),),
+            scope=ExplicitNoProject(),
+            turn=TurnReference(conversation_id=uuid4(), message_id=uuid4()),
         )

@@ -314,14 +314,23 @@ def test_a_new_row_may_not_omit_its_cost_certainty(engine: Engine) -> None:
     Without this, a future writer could add an unstated-certainty row and the
     superseding rule would quietly widen to cover a row it was never written for.
     """
-    with pytest.raises(Exception):  # noqa: B017 - the driver's own constraint error
+    # *Closure pass, 18 August 2026.* Found by the test-quality audit: this
+    # statement listed eleven columns and supplied twelve values, so it failed
+    # on argument count and never reached the constraint it names — the same
+    # defect class the WP-0.6 corrective round fixed in this file's neighbours.
+    # It now names the constraint it expects, read from psycopg's diagnostics.
+    with pytest.raises(DBAPIError) as caught:
         with engine.begin() as connection:
             connection.execute(
                 text(
                     "insert into model_calls (model_config_id, provider, model_identifier, "
-                    "tokens_in, tokens_out, cost, cost_certainty, task_type, latency_ms, "
-                    "provider_request_id, status) values "
+                    "tokens_in, tokens_out, cost, cost_certainty, project_attribution, "
+                    "task_type, latency_ms, provider_request_id, status) values "
                     "(gen_random_uuid(), 'anthropic', 'x', 1, 1, 0.01, null, "
-                    "'conversation', 'legacy_unknown', 1, '', 'ok')"
+                    "'explicit_none', 'conversation', 1, '', 'ok')"
                 )
             )
+    assert (
+        _violated_constraint(caught.value)
+        == "ck_model_calls_certainty_required_after_the_amendment"
+    )

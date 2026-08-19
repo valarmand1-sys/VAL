@@ -53,6 +53,9 @@ _COHERENCE = text(
 )
 
 
+_ACTIVE_PERSONA = text("select id from personas where is_active")
+
+
 class IncoherentProvenanceError(Exception):
     """The ids on a conversation call do not describe one coherent event.
 
@@ -79,10 +82,13 @@ def verify(engine: Engine, provenance: ConversationProvenance, project_id: UUID 
     rather than as a `ProjectScope`, so this module has no opinion about
     resolution and cannot be handed something unresolved to compare against.
 
-    `persona_id` is present by construction — `ConversationProvenance` has no
-    default for it — and is not re-read here: the persona is loaded from
-    `personas` moments earlier by the WP-0.5 loader, so a second lookup would
-    check the loader against itself.
+    5. **the persona named is the active persona row.** *Closure pass,
+       18 August 2026.* This was previously waved off as "checking the loader
+       against itself", which was true only on the path where the loader had
+       actually run. The check is one indexed read, and what it buys is that a
+       typed persona UUID — coherent-looking identity that no loader produced —
+       is refused even if a caller reaches execution without passing through
+       `converse`.
     """
     with engine.connect() as connection:
         row = connection.execute(_COHERENCE, {"message_id": provenance.message_id}).one_or_none()
@@ -118,6 +124,17 @@ def verify(engine: Engine, provenance: ConversationProvenance, project_id: UUID 
             f"call is attributed to {asked}. Conversation scope is immutable (migration "
             "`0008`) and switching project starts a new conversation, so these can only "
             "disagree because the wrong one was supplied."
+        )
+
+    with engine.connect() as connection:
+        active_persona = connection.execute(_ACTIVE_PERSONA).scalar_one_or_none()
+    if active_persona != provenance.persona_id:
+        raise IncoherentProvenanceError(
+            f"this call names persona {provenance.persona_id}, but the active persona "
+            f"row is {active_persona}. Val's identity comes from the WP-0.5 loader and "
+            "nowhere else; a persona id that does not match the active row was typed, "
+            "not loaded, and the call is refused rather than attributed to an identity "
+            "that never spoke."
         )
 
 

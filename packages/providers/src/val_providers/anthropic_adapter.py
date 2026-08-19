@@ -2,17 +2,43 @@
 
 Model identifiers and behaviour follow Anthropic's current documentation:
 thinking is on by default on Claude Opus 5 and `max_tokens` bounds thinking plus
-response text together, so callers give it headroom. A `stop_reason` of
-`refusal` is a content outcome, not an error — it returns a refused result, and
-the gateway records it as `status = refused` rather than raising.
+response text together, so callers give it headroom.
+
+## Stop-reason mapping — explicit, and closed
+
+Anthropic's documented `stop_reason` values map onto the provider-neutral
+`TerminalState` one by one. The mapping is a dict rather than a chain of
+conditionals so the whole contract is visible at once, and **anything not in
+it maps to `UNKNOWN`**, which the gateway fails closed on. `tool_use` and
+`pause_turn` are deliberately absent: Layer 0 never sends a tool, so receiving
+either would mean the provider answered a request we did not make — a state we
+do not understand, which is what `UNKNOWN` is for.
+
+| `stop_reason` | `TerminalState` |
+|---|---|
+| `end_turn` | `COMPLETE` |
+| `stop_sequence` | `COMPLETE` |
+| `refusal` | `REFUSED` |
+| `max_tokens` | `TRUNCATED` |
+| anything else | `UNKNOWN` |
+
+Missing usage becomes `None`, never zero: a zero that is not known to be zero
+would be priced and recorded as a known $0 (closure pass, 18 August 2026).
 """
 
 import time
 
 import anthropic
 
-from val_domain.gateway import Message, ModelConfig
+from val_domain.gateway import Message, ModelConfig, TerminalState
 from val_providers.base import ProviderResult, normalize
+
+_STOP_REASONS: dict[str, TerminalState] = {
+    "end_turn": TerminalState.COMPLETE,
+    "stop_sequence": TerminalState.COMPLETE,
+    "refusal": TerminalState.REFUSED,
+    "max_tokens": TerminalState.TRUNCATED,
+}
 
 
 class AnthropicAdapter:
@@ -48,12 +74,13 @@ class AnthropicAdapter:
         text = "".join(
             block.text for block in response.content if isinstance(block, anthropic.types.TextBlock)
         )
+        usage = getattr(response, "usage", None)
         return ProviderResult(
             text=text,
-            tokens_in=response.usage.input_tokens,
-            tokens_out=response.usage.output_tokens,
+            terminal=_STOP_REASONS.get(response.stop_reason or "", TerminalState.UNKNOWN),
+            tokens_in=getattr(usage, "input_tokens", None),
+            tokens_out=getattr(usage, "output_tokens", None),
             provider_request_id=getattr(response, "_request_id", None),
-            refused=response.stop_reason == "refusal",
         )
 
 

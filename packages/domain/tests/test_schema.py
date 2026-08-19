@@ -936,13 +936,15 @@ def test_an_existing_row_cannot_be_turned_into_a_legacy_one(
     assert "closed to new rows" in str(raised.value)
 
 
-def test_a_historical_row_stays_an_ordinary_row(engine: Engine, connection: Connection) -> None:
-    """Closed to new members, not frozen.
+def test_a_historical_row_is_frozen_evidence(engine: Engine, connection: Connection) -> None:
+    """Closed to new members, and — closure pass, 18 August 2026 — frozen too.
 
-    The nine real historical rows must remain correctable — a wrong latency or a
-    missing provider request id is still worth fixing. The guard refuses rows
-    *becoming* `legacy_unknown`; a row that already is one and stays one is
-    updated like any other.
+    This test used to assert the opposite: that a legacy row's `latency_ms`
+    remained correctable in place, per `0007`'s "closed to new members, not
+    frozen". The closure audit's mutation review superseded that stance:
+    a completed call is evidence in all its columns, and a wrong figure is
+    corrected by a superseding record (the `0004` view is the worked example),
+    never by editing the original. Migration `0009` enforces it.
     """
     _fabricating_history(connection)
     call = connection.execute(
@@ -959,13 +961,11 @@ def test_a_historical_row_stays_an_ordinary_row(engine: Engine, connection: Conn
         text("ALTER TABLE model_calls ENABLE TRIGGER model_calls_legacy_attribution_is_closed")
     )
 
-    connection.execute(text("update model_calls set latency_ms = 42 where id = :i"), {"i": call})
-
-    row = connection.execute(
-        text("select latency_ms, project_attribution from model_calls where id = :i"), {"i": call}
-    ).one()
-    assert row.latency_ms == 42
-    assert row.project_attribution == "legacy_unknown"
+    with pytest.raises(DBAPIError) as raised:
+        connection.execute(
+            text("update model_calls set latency_ms = 42 where id = :i"), {"i": call}
+        )
+    assert "rows are evidence" in str(raised.value)
 
 
 def test_the_view_never_leaves_effective_certainty_null(
@@ -1118,7 +1118,12 @@ def test_the_attribution_downgrade_refuses_once_a_decision_is_recorded(
         with pytest.raises(RuntimeError) as raised:
             command.downgrade(alembic_config, "0005_persona_provenance")
         assert "Refusing to downgrade" in str(raised.value)
-        assert "explicit_none" in str(raised.value)
+        # *Closure pass, 18 August 2026:* the refusal chain now begins at
+        # `0009`, whose evidence-freeze guard refuses first because the
+        # `explicit_none` row exists at all. `0006`'s own narrower refusal
+        # stands beneath it as defence in depth — reachable only on a database
+        # where every guarded table is empty except for the decision row, a
+        # state `0009` itself refuses to pass through.
 
         # Refused, not half-applied: the column and the decision are both still
         # there. A migration that raises after dropping something is worse than

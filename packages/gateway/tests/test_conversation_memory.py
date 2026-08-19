@@ -53,6 +53,7 @@ from val_domain.gateway import (
     GatewayRequest,
     Message,
     TaskType,
+    TerminalState,
     TurnReference,
 )
 from val_domain.project import (
@@ -141,7 +142,7 @@ def scope_of(engine: Engine, slug: str) -> ResolvedProject:
 
 
 def answering(text_body: str = "Cobalt, my lord.") -> StubAdapter:
-    return StubAdapter(ProviderResult(text_body, 20, 10, "req", False))
+    return StubAdapter(ProviderResult(text_body, TerminalState.COMPLETE, 20, 10, "req"))
 
 
 def failing(error: Exception) -> StubAdapter:
@@ -1201,7 +1202,8 @@ def test_provider_substitution_preserves_the_whole_conversation(store: Engine) -
     alpha, _ = _seed_both_projects(store)
 
     first_adapter = StubAdapter(
-        ProviderResult("Cobalt, my lord.", 20, 10, "req-a", False), name="anthropic"
+        ProviderResult("Cobalt, my lord.", TerminalState.COMPLETE, 20, 10, "req-a"),
+        name="anthropic",
     )
     started = send(
         store,
@@ -1214,7 +1216,8 @@ def test_provider_substitution_preserves_the_whole_conversation(store: Engine) -
 
     # A different provider object, a different name, and no shared state.
     second_adapter = StubAdapter(
-        ProviderResult("Still cobalt, my lord.", 20, 10, "req-b", False), name="openai"
+        ProviderResult("Still cobalt, my lord.", TerminalState.COMPLETE, 20, 10, "req-b"),
+        name="openai",
     )
     continued = send(
         store,

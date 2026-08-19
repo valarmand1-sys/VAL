@@ -4,7 +4,7 @@
 backup. This is what turns a restore into a verified restore, and it is the check
 `04-layer-0.md` WP-0.3 requires on a cadence.
 
-Three things are compared, because a restore can succeed and still be wrong:
+Four things are compared, because a restore can succeed and still be wrong:
 
 1. **Row counts per table.** The blunt check, and the one that catches a restore
    from the wrong point in time.
@@ -15,6 +15,20 @@ Three things are compared, because a restore can succeed and still be wrong:
    `deliberations` feed machinery that arrives at Layers 3 and 5 and cannot be
    backfilled. A gap in them is the failure that matters most and the one least
    likely to be noticed, so their extent and count are compared directly.
+4. **Per-table content digests.** *Closure pass, 18 August 2026.* Counts and
+   timestamp extents pass for a restore in which an interior row was replaced,
+   duplicated-and-deleted, or edited — same count, same ends, different
+   history. Each table is reduced to one deterministic digest — every row
+   rendered to text, hashed, and the hashes aggregated **in primary-key
+   order** — and the digests must match exactly. A single changed byte in a
+   single interior row changes the table's digest, so substitution, deletion
+   with substitution, duplication, identity changes, sequence corruption, and
+   silent content edits all surface. The Alembic revision is compared inside
+   the same check, so a restore missing migration state cannot verify.
+
+   No second source of truth is introduced: the digests are computed from both
+   instances at comparison time and stored nowhere. The authoritative store
+   remains PostgreSQL; this is an integrity proof of one restore against it.
 
 Usage:
 
@@ -104,6 +118,55 @@ def check_referential_integrity(restored: str) -> list[str]:
     return problems
 
 
+def compare_content_digests(source: str, restored: str) -> list[str]:
+    """One deterministic digest per table, on both sides, compared exactly.
+
+    `md5(row::text)` per row, aggregated in primary-key order. Rendering the
+    whole row to text covers every column without a per-table column list that
+    somebody has to keep complete; ordering by `id` (time-ordered UUIDv7
+    everywhere) makes the aggregate deterministic on both sides.
+    """
+    problems: list[str] = []
+    for table in sorted(SPECIFIED_TABLES):
+        # Table names come from SPECIFIED_TABLES, a frozen constant of the
+        # schema module — nothing user-supplied enters this statement.
+        statement = (
+            "select coalesce(md5(string_agg(row_hash, '' order by id)), 'empty') "  # noqa: S608
+            f"from (select id, md5(t::text) as row_hash from {table} t) hashed"
+        )
+        before = _text_scalar(source, statement)
+        after = _text_scalar(restored, statement)
+        marker = "MATCH" if before == after else "DIFFERS"
+        print(f"  {table:<24} {marker}")
+        if before != after:
+            problems.append(
+                f"{table}: content digest differs ({before[:12]}… vs {after[:12]}…). "
+                "Same counts do not clear this: an interior row was changed, "
+                "substituted, duplicated, or reordered."
+            )
+
+    revision_before = _text_scalar(source, "select version_num from alembic_version")
+    revision_after = _text_scalar(restored, "select version_num from alembic_version")
+    print(
+        f"  {'alembic_version':<24} {'MATCH' if revision_before == revision_after else 'DIFFERS'}"
+    )
+    if revision_before != revision_after:
+        problems.append(
+            f"alembic_version: source is at {revision_before!r}, restore at "
+            f"{revision_after!r}. A restore missing migration state is not the store."
+        )
+    return problems
+
+
+def _text_scalar(url: str, statement: str) -> str:
+    engine = create_engine(url)
+    try:
+        with engine.connect() as connection:
+            return str(connection.execute(text(statement)).scalar_one())
+    finally:
+        engine.dispose()
+
+
 def check_capture_continuity(source: str, restored: str) -> list[str]:
     """The three capture tables are continuous, with no gap at the tail.
 
@@ -139,6 +202,8 @@ def main() -> int:
     problems.extend(check_referential_integrity(arguments.restored))
     print("\nCapture-table continuity")
     problems.extend(check_capture_continuity(arguments.source, arguments.restored))
+    print("\nPer-table content digests")
+    problems.extend(compare_content_digests(arguments.source, arguments.restored))
 
     if problems:
         print(f"\nRESTORE NOT VERIFIED — {len(problems)} problem(s):", file=sys.stderr)
@@ -152,7 +217,8 @@ def main() -> int:
         return 1
 
     print(
-        "\nRESTORE VERIFIED: row counts match, no dangling references, capture tables continuous."
+        "\nRESTORE VERIFIED: row counts match, no dangling references, capture tables "
+        "continuous, and every table's content digest is identical."
     )
     return 0
 

@@ -27,6 +27,7 @@ from val_domain.gateway import (
     ModelConfig,
     PricingFeature,
     ReasoningEffort,
+    TerminalState,
 )
 from val_domain.registry import active, by_slug, fallback_for
 from val_gateway.gateway import RETRYABLE
@@ -88,7 +89,9 @@ PUBLIC_ONLY = frozenset({Classification.PUBLIC})
 
 def test_the_router_selects_without_the_caller_naming_a_provider() -> None:
     """A: two eligible enabled configurations, and `complete` picks one."""
-    adapter = StubAdapter(ProviderResult("Good evening, my lord.", 20, 10, "req", False))
+    adapter = StubAdapter(
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "req")
+    )
     gateway, rows, _, _ = build(
         adapters={"anthropic": adapter, "openai": adapter},
     )
@@ -102,7 +105,7 @@ def test_the_router_selects_without_the_caller_naming_a_provider() -> None:
 
 def test_the_router_prefers_the_cheaper_of_two_eligible_routes() -> None:
     """Cost ranks what eligibility has already admitted — and only that."""
-    adapter = StubAdapter(ProviderResult("ok", 5, 5, "req", False))
+    adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "req"))
     gateway, _, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
     response = gateway.complete(request())
     assert response.slug == "haiku-4-5", "the cheapest eligible route was not chosen"
@@ -110,7 +113,7 @@ def test_the_router_prefers_the_cheaper_of_two_eligible_routes() -> None:
 
 def test_selection_is_stable_across_identical_requests() -> None:
     """Two identical requests route the same way, or cost comparison is noise."""
-    adapter = StubAdapter(ProviderResult("ok", 5, 5, "req", False))
+    adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "req"))
     gateway, _, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
     first = gateway.complete(request())
     second = gateway.complete(request())
@@ -171,7 +174,9 @@ def test_fallback_occurs_only_to_an_independently_eligible_route() -> None:
     failing = StubAdapter(
         error=GatewayError(GatewayErrorKind.PROVIDER_ERROR, "502"), name="anthropic"
     )
-    answering = StubAdapter(ProviderResult("Good evening.", 10, 10, "req", False), name="openai")
+    answering = StubAdapter(
+        ProviderResult("Good evening.", TerminalState.COMPLETE, 10, 10, "req"), name="openai"
+    )
 
     # `haiku-4-5` is cheapest and is on anthropic, which fails. Its declared
     # fallback is None, so the router moves on to the next ranked candidate.
@@ -222,10 +227,38 @@ def test_a_declared_fallback_is_used_when_it_holds_independently() -> None:
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
     )
 
-    # `other` is cheapest so it is the primary; it declares no fallback, so the
-    # rest follow in cost order.
-    assert order[0].slug == "other"
-    assert {entry.slug for entry in order} == {"other", "successor", "primary"}
+    # `other` is cheapest so it is the primary — and it declares no fallback,
+    # so the order ends with it. *Closure pass, 18 August 2026*: the rest used
+    # to follow in cost order, which made `fallback_slug=None` fall through to
+    # routes nothing had authorised.
+    assert [entry.slug for entry in order] == ["other"]
+
+    # The declared chain is followed when the primary declares one: with `other`
+    # ineligible, `primary` leads and its declared successor follows.
+    chained = attempt_order(
+        [primary, successor],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
+    )
+    assert [entry.slug for entry in chained] == ["successor"], (
+        "successor is cheaper, so it leads; it declares nothing, so it stands alone"
+    )
+
+
+def _declared_chain_length() -> int:
+    """The primary (cheapest active entry) plus its declared fallback chain."""
+    ranked = sorted(active(), key=lambda entry: entry.cost_per_mtok_in_usd)
+    seen = {ranked[0].slug}
+    current = ranked[0]
+    while current.fallback_slug and current.fallback_slug not in seen:
+        seen.add(current.fallback_slug)
+        following = by_slug(current.fallback_slug)
+        if following is None:
+            break
+        current = following
+    return len(seen)
 
 
 def test_when_every_route_fails_the_failure_is_normalized() -> None:
@@ -237,9 +270,15 @@ def test_when_every_route_fails_the_failure_is_normalized() -> None:
         gateway.complete(request())
 
     assert caught.value.kind is GatewayErrorKind.TIMEOUT
-    assert failing.calls == len(active())
+    # *Closure pass, 18 August 2026:* the attempts are the primary and its
+    # declared chain — not every registered route. With the current registry the
+    # chain from the cheapest entry reaches every other entry, so the count is
+    # unchanged in effect; asserting the chain rather than `len(active())` keeps
+    # this true for registries where it is not.
+    expected = _declared_chain_length()
+    assert failing.calls == expected
     # Every attempt reached a provider, so every attempt is recorded — as unknown.
-    assert len(rows) == len(active())
+    assert len(rows) == expected
     assert all(row.cost_certainty is CostCertainty.UNKNOWN for row in rows)
 
 
@@ -260,7 +299,7 @@ def test_a_content_refusal_is_not_retried_elsewhere() -> None:
 
 def test_restricted_content_never_reaches_route_selection() -> None:
     """E: blocked before any route or provider is involved."""
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, blocks = build(adapters={"anthropic": adapter, "openai": adapter})
 
     with pytest.raises(GatewayError) as caught:
@@ -275,7 +314,7 @@ def test_restricted_content_never_reaches_route_selection() -> None:
 
 def test_restricted_content_by_detection_never_reaches_route_selection() -> None:
     """Adversarial proof 6 of the order: caller claims PROTECTED, content is not."""
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, _ = build(adapters={"anthropic": adapter, "openai": adapter})
 
     leaking = request(content="my routing number is 021000021, transfer it today")
@@ -307,7 +346,7 @@ def test_an_unaffordable_route_yields_to_an_affordable_eligible_one() -> None:
 
 def test_when_nothing_is_affordable_no_cloud_call_occurs() -> None:
     """F, second half: no route fits, so nothing is sent and nothing is recorded."""
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, _ = build(
         adapters={"anthropic": adapter, "openai": adapter}, committed=199.999
     )
@@ -345,8 +384,12 @@ def test_provider_substitution_changes_no_identity_or_governance_state() -> None
     classification, the task type, the project, and the conversation the work
     belongs to are hers and do not move.
     """
-    anthropic = StubAdapter(ProviderResult("Good evening, my lord.", 20, 10, "a", False))
-    openai = StubAdapter(ProviderResult("Good evening, my lord.", 20, 10, "o", False))
+    anthropic = StubAdapter(
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "a")
+    )
+    openai = StubAdapter(
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "o")
+    )
 
     project = uuid4()
 
@@ -462,7 +505,8 @@ def test_an_unpayable_primary_falls_back_to_a_working_route() -> None:
         name="anthropic",
     )
     working = StubAdapter(
-        ProviderResult("Good evening, my lord.", 20, 10, "req", False), name="openai"
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "req"),
+        name="openai",
     )
 
     gateway, rows, _, _ = build(adapters={"anthropic": unpayable, "openai": working})

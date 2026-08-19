@@ -68,6 +68,42 @@ class CostCertainty(StrEnum):
     UNKNOWN = "unknown"
 
 
+class TerminalState(StrEnum):
+    """How a provider call actually ended — the provider-neutral terminal contract.
+
+    Added in the current-version closure pass, 18 August 2026, because the
+    previous contract collapsed materially different outcomes into a boolean:
+    `ProviderResult.refused`. Under that shape an OpenAI `incomplete` (an output
+    that hit its cap) was recorded as a *refusal*, and an Anthropic `max_tokens`
+    truncation was recorded as an ordinary completed answer. A truncated reply
+    that is persisted as Val's message is a fabrication — she did not finish
+    saying it.
+
+    Every adapter maps its provider's own stop semantics onto these four values
+    explicitly. **Anything a provider returns that the adapter does not
+    recognise maps to `UNKNOWN`, and `UNKNOWN` fails closed**: the gateway
+    records the call honestly (it happened, it cost money) and then raises
+    rather than handing the text onward as an answer.
+
+    | State | Meaning | Becomes a Val message? |
+    |---|---|---|
+    | `COMPLETE` | the model finished naturally | yes |
+    | `REFUSED` | the model declined; its refusal is deliberate and complete | yes |
+    | `TRUNCATED` | the output cap cut it off; the text is a fragment | **no** — evidence only |
+    | `UNKNOWN` | a stop state this adapter does not recognise | **no** — the call fails closed |
+
+    Tool/action handoff states (`tool_use`, `pause_turn`) are not reachable at
+    Layer 0 — no tool is ever sent — so an adapter receiving one maps it to
+    `UNKNOWN`, which is exactly right: a state that cannot legitimately occur is
+    a state we do not understand.
+    """
+
+    COMPLETE = "complete"
+    REFUSED = "refused"
+    TRUNCATED = "truncated"
+    UNKNOWN = "unknown"
+
+
 class GatewayErrorKind(StrEnum):
     """The one normalized error contract (`01-architecture.md` §5.1).
 
@@ -192,6 +228,15 @@ class ModelConfig(BaseModel):
     temperature: float | None = None
     cost_per_mtok_in_usd: float = Field(gt=0)
     cost_per_mtok_out_usd: float = Field(gt=0)
+    #: Closure pass, 18 August 2026. Some providers re-price a call whose input
+    #: crosses a threshold — GPT-5.5 bills 2x input and 1.5x output for the full
+    #: session above 272K input tokens (developers.openai.com, verified 18
+    #: August 2026). The threshold and multipliers live HERE, on the registry
+    #: entry, because a pricing fact embedded in code is a pricing fact nobody
+    #: re-verifies. `None` means the provider documents no such rule.
+    long_context_threshold_tokens: int | None = None
+    long_context_in_multiplier: float = Field(default=1.0, ge=1.0)
+    long_context_out_multiplier: float = Field(default=1.0, ge=1.0)
     #: Whether caching or batch pricing applies (§5.2). See `PricingFeature`:
     #: `NOT_VERIFIED` records that this has not been read from the provider.
     caching: PricingFeature = PricingFeature.NOT_VERIFIED
@@ -389,17 +434,24 @@ class GatewayRequest(BaseModel):
 
 
 class GatewayResponse(BaseModel):
-    """What the gateway returns, with the cost already attributed and recorded."""
+    """What the gateway returns, with the cost already attributed and recorded.
+
+    `terminal` says how the call actually ended; callers that persist the text
+    as a Val message must branch on it (`val_gateway.loop` does). `tokens_*` and
+    `cost_usd` are `None` exactly when the provider did not report usage — the
+    closure pass removed the path where missing usage became a fabricated zero.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     text: str
+    terminal: TerminalState
     model_config_id: UUID
     slug: str
     provider: str
     model_identifier: str
-    tokens_in: int
-    tokens_out: int
-    cost_usd: float
+    tokens_in: int | None
+    tokens_out: int | None
+    cost_usd: float | None
     latency_ms: int
     provider_request_id: str | None

@@ -13,18 +13,39 @@ provider (`01-architecture.md` §3).
 from dataclasses import dataclass
 from typing import Protocol
 
-from val_domain.gateway import GatewayError, GatewayErrorKind, Message, ModelConfig
+from val_domain.gateway import (
+    GatewayError,
+    GatewayErrorKind,
+    Message,
+    ModelConfig,
+    TerminalState,
+)
 
 
 @dataclass(frozen=True)
 class ProviderResult:
-    """What a provider returned, before cost is attributed to it."""
+    """What a provider returned, before cost is attributed to it.
+
+    *Current-version closure pass, 18 August 2026.* Two corrections:
+
+    - **`terminal` replaced the `refused` boolean.** A boolean could not say
+      "truncated", so an OpenAI `incomplete` was recorded as a refusal and an
+      Anthropic `max_tokens` cut-off passed as an ordinary completed answer.
+      Each adapter now maps its provider's own documented stop semantics onto
+      `TerminalState` explicitly, and anything unrecognised is `UNKNOWN`, which
+      the gateway fails closed on.
+    - **`tokens_*` are `None` when the provider did not report usage.** The
+      previous contract typed them `int`, and the OpenAI adapter filled missing
+      usage with `0` — which the gateway then priced and recorded as a *known*
+      cost of $0. A zero that is not known to be zero is a fabrication; `None`
+      is the honest value, and the gateway records the cost as UNKNOWN.
+    """
 
     text: str
-    tokens_in: int
-    tokens_out: int
+    terminal: TerminalState
+    tokens_in: int | None
+    tokens_out: int | None
     provider_request_id: str | None
-    refused: bool
 
 
 class ProviderAdapter(Protocol):

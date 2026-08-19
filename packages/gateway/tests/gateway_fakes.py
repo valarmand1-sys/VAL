@@ -56,6 +56,9 @@ class StubAdapter:
         #: inspected too.
         self.sent_messages: tuple[Message, ...] = ()
         self.sent_system: str | None = None
+        #: Closure pass, §8: the value actually transmitted, so a test can
+        #: assert the budget and the adapter were told the same number.
+        self.sent_max_output_tokens: int | None = None
 
     def complete(
         self,
@@ -67,6 +70,7 @@ class StubAdapter:
         self.calls += 1
         self.sent_messages = messages
         self.sent_system = system
+        self.sent_max_output_tokens = max_output_tokens
         if self._error is not None:
             raise self._error
         assert self._result is not None

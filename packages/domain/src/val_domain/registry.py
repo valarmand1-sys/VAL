@@ -48,7 +48,7 @@ _PROTECTED = frozenset({Classification.PUBLIC, Classification.INTERNAL, Classifi
 #: The day every rate below was read from the provider's own documentation.
 #: A new rate means a new entry stamped with a new date, never an edit in place —
 #: calls already costed against the old rate must keep resolving to it.
-_VERIFIED_ON = date(2026, 8, 15)
+_VERIFIED_ON = date(2026, 8, 18)
 
 #: Past this, a rate is old enough that cost attribution may be quietly wrong.
 #: A warning, deliberately, not a failure: stale rates degrade a record, they do
@@ -71,7 +71,13 @@ REGISTRY: tuple[ModelConfig, ...] = (
         display_name="Claude Opus 5",
         context_window_tokens=1_000_000,
         max_output_tokens=128_000,
-        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # Closure pass, 18 August 2026: `NOT_APPLICABLE` was stale. Per the
+        # models overview (platform.claude.com, verified today), Opus 5 supports
+        # the `effort` parameter and it **defaults to `high` on the Claude
+        # API**. This configuration sets nothing, so `HIGH` records the level
+        # the calls actually run at; adaptive-thinking tokens bill as output
+        # inside `max_tokens`, which the budget's output bound already covers.
+        reasoning_effort=ReasoningEffort.HIGH,
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=25.00,
         caching=PricingFeature.NOT_VERIFIED,
@@ -93,7 +99,12 @@ REGISTRY: tuple[ModelConfig, ...] = (
         id=UUID("b123b7f1-fc59-4de3-95c1-0a884cd43953"),
         slug="haiku-4-5",
         provider="anthropic",
-        model_identifier="claude-haiku-4-5",
+        # The pinned snapshot, not the alias. Closure pass, 18 August 2026,
+        # against platform.claude.com/docs models overview: the API ID is
+        # `claude-haiku-4-5-20251001`; `claude-haiku-4-5` is a convenience
+        # alias that resolves to it. A historical record must name the exact
+        # model that answered, and an alias is a pointer someone else can move.
+        model_identifier="claude-haiku-4-5-20251001",
         display_name="Claude Haiku 4.5",
         context_window_tokens=200_000,
         max_output_tokens=64_000,
@@ -104,10 +115,16 @@ REGISTRY: tuple[ModelConfig, ...] = (
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
         known_weaknesses=(),
-        # Explicit NONE. The cheapest route has nothing cheaper to fall back to,
-        # and falling *up* to a frontier model on failure would spend more money
-        # in response to an outage, which is the wrong reflex.
-        fallback_slug=None,
+        # Closure pass, 18 August 2026 — this entry previously declared an
+        # explicit NONE, reasoning that the cheapest route had nothing cheaper
+        # beneath it. Haiku therefore had no declared fallback, which the
+        # (now fixed) router papered over by falling through to the rest of the
+        # ranked list. With "NONE means none" enforced, an undeclared fallback
+        # here would make an Anthropic outage halt conversation entirely while
+        # an eligible OpenAI route sat unused — against "Val degrades rather
+        # than halts" (00-charter.md). Cross-provider, deliberately, exactly as
+        # gpt-5-5 already declares haiku for the mirror-image outage.
+        fallback_slug="gpt-5-5",
         admission=Admission.PROVISIONALLY_ADMITTED,
         adapter_status=AdapterStatus.IMPLEMENTED,
         activated_on=_ADMITTED_ON,
@@ -119,11 +136,20 @@ REGISTRY: tuple[ModelConfig, ...] = (
         provider="openai",
         model_identifier="gpt-5.5",
         display_name="GPT-5.5",
-        context_window_tokens=272_000,
+        # Closure pass, 18 August 2026, against developers.openai.com/api/docs/
+        # models/gpt-5.5: the context window is 1,050,000 tokens. The previous
+        # figure here, 272,000, was the *pricing threshold* mistaken for the
+        # window — above 272K input tokens the whole session is billed at 2x
+        # input and 1.5x output, which is recorded below where the budget
+        # estimator reads it, not silently absorbed into a smaller window.
+        context_window_tokens=1_050_000,
         max_output_tokens=128_000,
         reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=30.00,
+        long_context_threshold_tokens=272_000,
+        long_context_in_multiplier=2.0,
+        long_context_out_multiplier=1.5,
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,

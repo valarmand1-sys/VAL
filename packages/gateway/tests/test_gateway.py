@@ -21,6 +21,7 @@ from val_domain.gateway import (
     GatewayRequest,
     Message,
     TaskType,
+    TerminalState,
 )
 from val_domain.project import ProjectAttribution
 from val_gateway.gateway import Gateway, check_startup, compute_cost
@@ -52,7 +53,9 @@ def test_a_successful_call_writes_one_row_with_cost_project_and_task_type() -> N
     recording tests have neither. What is under test — that the task type
     reaches the row — is unchanged.
     """
-    adapter = StubAdapter(ProviderResult("Good evening, my lord.", 1000, 500, "req_1", False))
+    adapter = StubAdapter(
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 1000, 500, "req_1")
+    )
     gateway, rows, _, _ = build(adapter)
     response = gateway.complete_with_configuration(request(), config())
 
@@ -69,7 +72,7 @@ def test_a_successful_call_writes_one_row_with_cost_project_and_task_type() -> N
 
 def test_a_refusal_is_recorded_as_refused_not_as_an_error() -> None:
     """A refusal is a content outcome; the call happened and cost money."""
-    adapter = StubAdapter(ProviderResult("", 800, 0, "req_2", True))
+    adapter = StubAdapter(ProviderResult("", TerminalState.REFUSED, 800, 0, "req_2"))
     gateway, rows, _, _ = build(adapter)
     gateway.complete_with_configuration(request(), config())
     assert rows[0].status is CallStatus.REFUSED
@@ -113,7 +116,7 @@ def test_an_unknown_cost_does_not_hand_the_reservation_back() -> None:
 
 def test_a_known_cost_releases_the_unspent_difference() -> None:
     """Requirement E: actual below reservation, difference becomes available."""
-    adapter = StubAdapter(ProviderResult("ok", 10, 10, "req", False))
+    adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 10, 10, "req"))
     gateway, _, ledger, _ = build(adapter)
     gateway.complete_with_configuration(request(), config())
 
@@ -144,7 +147,7 @@ def test_the_ceiling_is_enforced_against_the_proposed_call_not_history() -> None
     old rule admitted it because `199.99 < 200`. The provider must not be
     contacted.
     """
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, _, _ = build(adapter, committed=199.99)
 
     proposed = request()
@@ -165,7 +168,7 @@ def test_a_call_that_fits_in_the_remainder_is_still_admitted() -> None:
     Replaces `test_just_under_the_ceiling_still_calls`, which asserted that
     $199.99 of $200 admits any call at all. That assertion encoded the defect.
     """
-    adapter = StubAdapter(ProviderResult("ok", 10, 10, None, False))
+    adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 10, 10, None))
     tiny = request(max_output_tokens=1)
     authorised = maximum_cost(config(), ("Good evening.",), 1)
     gateway, _, _, _ = build(adapter, committed=CLOUD_CEILING_USD - authorised)
@@ -176,7 +179,7 @@ def test_a_call_that_fits_in_the_remainder_is_still_admitted() -> None:
 
 def test_the_hard_stop_fires_above_the_ceiling() -> None:
     """Adversarial proof 6: seeded above the ceiling, nothing is contacted."""
-    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("x", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, _, _ = build(adapter, committed=250.00)
     with pytest.raises(GatewayError) as caught:
         gateway.complete_with_configuration(request(), config())
@@ -193,7 +196,7 @@ def test_a_tiny_prompt_with_a_large_output_cap_is_refused_before_transmission() 
     input against 128,000 authorised output tokens — $3.20 on Opus 5, against
     $2.00 of remaining ceiling. **The provider must never be contacted.**
     """
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, _ = build(adapter, committed=CLOUD_CEILING_USD - 2.00)
 
     spacious = GatewayRequest(
@@ -221,7 +224,9 @@ def test_a_tiny_prompt_with_a_large_output_cap_is_refused_before_transmission() 
 
 def test_the_same_tiny_prompt_with_a_modest_output_cap_proceeds() -> None:
     """The refusal above is the output cap, not the prompt and not the ceiling."""
-    adapter = StubAdapter(ProviderResult("Good evening, my lord.", 10, 10, "req", False))
+    adapter = StubAdapter(
+        ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 10, 10, "req")
+    )
     gateway, rows, _, _ = build(adapter, committed=CLOUD_CEILING_USD - 2.00)
 
     modest = GatewayRequest(
@@ -239,7 +244,7 @@ def test_the_same_tiny_prompt_with_a_modest_output_cap_proceeds() -> None:
 
 def test_the_reservation_covers_the_whole_authorised_output() -> None:
     """What is held is the bound, not what the call turned out to use."""
-    adapter = StubAdapter(ProviderResult("brief", 10, 10, "req", False))
+    adapter = StubAdapter(ProviderResult("brief", TerminalState.COMPLETE, 10, 10, "req"))
     gateway, _, ledger, _ = build(adapter)
 
     spacious = GatewayRequest(
@@ -261,7 +266,7 @@ def test_the_reservation_covers_the_whole_authorised_output() -> None:
 
 def test_the_refusal_states_the_arithmetic() -> None:
     """What Val says has to be actionable, not just a policy announcement."""
-    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("x", TerminalState.COMPLETE, 1, 1, None))
     gateway, _, _, _ = build(adapter, committed=199.99)
     with pytest.raises(GatewayError) as caught:
         gateway.complete_with_configuration(request(), config())
@@ -275,7 +280,7 @@ def test_the_refusal_states_the_arithmetic() -> None:
 
 def test_restricted_content_is_refused_and_writes_no_row() -> None:
     """It was never a call: no provider contacted, nothing to cost (WP-0.4)."""
-    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("x", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, _ = build(adapter)
     with pytest.raises(GatewayError) as caught:
         gateway.complete_with_configuration(request(Classification.RESTRICTED), config())
@@ -292,7 +297,7 @@ def fake(*fragments: str) -> str:
 
 def test_a_credential_in_protected_content_is_blocked_before_transmission() -> None:
     """The gap this closes: the caller says PROTECTED, the message holds a key."""
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, _, _, blocks = build(adapter)
 
     leaking = GatewayRequest(
@@ -316,7 +321,7 @@ def test_a_credential_in_protected_content_is_blocked_before_transmission() -> N
 
 def test_a_blocked_request_writes_no_model_calls_row() -> None:
     """No provider was contacted, so a row would assert a call that never happened."""
-    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("x", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, _ = build(adapter)
 
     leaking = GatewayRequest(
@@ -337,7 +342,7 @@ def test_the_preflight_runs_before_the_budget_check() -> None:
 
     Order matters: the reason Lord Armand is given must be the real one.
     """
-    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("x", TerminalState.COMPLETE, 1, 1, None))
     gateway, _, _, _ = build(adapter, committed=999.0)
     leaking = GatewayRequest(
         task_type=TaskType.CLASSIFICATION,
@@ -353,7 +358,7 @@ def test_the_preflight_runs_before_the_budget_check() -> None:
 
 def test_ordinary_work_still_passes_the_preflight() -> None:
     """The guard must not block the work it exists to protect."""
-    adapter = StubAdapter(ProviderResult("Noted, my lord.", 20, 10, "req", False))
+    adapter = StubAdapter(ProviderResult("Noted, my lord.", TerminalState.COMPLETE, 20, 10, "req"))
     gateway, rows, _, _ = build(adapter)
     gateway.complete_with_configuration(request(), config())
     assert adapter.calls == 1
@@ -379,7 +384,7 @@ def test_startup_warns_but_does_not_fail_on_stale_rates() -> None:
 
 def test_slug_appears_in_every_recorded_row() -> None:
     """Any cost view Lord Armand reads displays the slug, not the UUID."""
-    adapter = StubAdapter(ProviderResult("x", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("x", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, _, _ = build(adapter)
     gateway.complete_with_configuration(request(), config())
     assert rows[0].slug == "opus-5"
@@ -395,7 +400,7 @@ def test_a_fabricated_configuration_is_refused() -> None:
     A caller that assembles its own `ModelConfig` — or copies a real one and
     edits the model identifier — must not thereby create a route.
     """
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, _ = build(adapter, adapters={"anthropic": adapter, "rogue": adapter})
 
     forged = config().model_copy(update={"provider": "rogue", "model_identifier": "anything-1"})
@@ -410,7 +415,7 @@ def test_a_fabricated_configuration_is_refused() -> None:
 
 def test_a_widened_eligibility_set_is_refused() -> None:
     """The subtler bypass: the real route, with Restricted quietly added."""
-    adapter = StubAdapter(ProviderResult("should never run", 1, 1, None, False))
+    adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, _, _ = build(adapter)
 
     widened = config().model_copy(update={"eligible_classifications": frozenset(Classification)})
@@ -424,7 +429,9 @@ def test_a_widened_eligibility_set_is_refused() -> None:
 
 def test_the_registry_entry_itself_is_accepted() -> None:
     """The explicit path still works for what it exists for — the strip step."""
-    adapter = StubAdapter(ProviderResult("ok", 5, 5, "req", False), name="anthropic")
+    adapter = StubAdapter(
+        ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "req"), name="anthropic"
+    )
     gateway, rows, _, _ = build(adapter)
     gateway.complete_with_configuration(request(), config("haiku-4-5"))
     assert adapter.calls == 1

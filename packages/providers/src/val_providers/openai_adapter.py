@@ -2,15 +2,46 @@
 
 Uses the Responses API, which is OpenAI's primary surface: `responses.create`
 takes `input` and `instructions`, and returns `output_text` with token counts on
-`usage.input_tokens` / `usage.output_tokens` — the same two numbers Anthropic
-reports, which is why the normalized contract can carry both without a per-
-provider shape.
+`usage.input_tokens` / `usage.output_tokens`.
+
+## Terminal-state mapping — explicit, and closed
+
+*Corrected in the current-version closure pass, 18 August 2026.* The previous
+adapter mapped `status == "incomplete"` to *refused*, which is wrong in the
+provider's own vocabulary: `incomplete` means the output stopped early —
+`incomplete_details.reason` says whether the output-token cap or the content
+filter stopped it — while an actual refusal arrives as a `refusal` content part
+inside an otherwise `completed` response. Under the old mapping a truncated
+answer was recorded as Val declining, and a real refusal fell through as an
+ordinary (often empty) completed reply.
+
+| Responses API state | `TerminalState` |
+|---|---|
+| `completed`, no refusal part | `COMPLETE` |
+| `completed`, refusal part present | `REFUSED` (the refusal text is the text) |
+| `incomplete` / `max_output_tokens` | `TRUNCATED` |
+| `incomplete` / `content_filter` | `REFUSED` — stopped on content grounds |
+| `failed` | raises the normalized provider error |
+| anything else | `UNKNOWN` — fails closed at the gateway |
+
+Missing usage becomes `None`, never zero. The previous `usage.input_tokens if
+usage else 0` fabricated a known $0 for exactly the calls whose cost was not
+known, which is the defect the WP-0.4 cost doctrine exists to prevent.
 """
 
 import openai
 
-from val_domain.gateway import Message, ModelConfig
+from val_domain.gateway import GatewayError, GatewayErrorKind, Message, ModelConfig, TerminalState
 from val_providers.base import ProviderResult, normalize
+
+
+def _refusal_text(response: object) -> str | None:
+    """The refusal content, if any output item carries one."""
+    for item in getattr(response, "output", None) or []:
+        for part in getattr(item, "content", None) or []:
+            if getattr(part, "type", "") == "refusal":
+                return str(getattr(part, "refusal", "")) or "(refused without stated reason)"
+    return None
 
 
 class OpenAIAdapter:
@@ -43,11 +74,35 @@ class OpenAIAdapter:
         except Exception as error:
             raise normalize(error, self.name) from error
 
+        if response.status == "failed":
+            # The response object arrived but reports its own failure. This is a
+            # provider failure wearing a 200, and it is raised as one.
+            failure = getattr(response, "error", None)
+            raise GatewayError(
+                GatewayErrorKind.PROVIDER_ERROR,
+                f"{self.name}: response {response.id} reports status 'failed': "
+                f"{getattr(failure, 'message', failure)}",
+            )
+
+        refusal = _refusal_text(response)
+        if response.status == "completed":
+            terminal = TerminalState.REFUSED if refusal else TerminalState.COMPLETE
+        elif response.status == "incomplete":
+            reason = getattr(getattr(response, "incomplete_details", None), "reason", None)
+            if reason == "max_output_tokens":
+                terminal = TerminalState.TRUNCATED
+            elif reason == "content_filter":
+                terminal = TerminalState.REFUSED
+            else:
+                terminal = TerminalState.UNKNOWN
+        else:
+            terminal = TerminalState.UNKNOWN
+
         usage = response.usage
         return ProviderResult(
-            text=response.output_text or "",
-            tokens_in=usage.input_tokens if usage else 0,
-            tokens_out=usage.output_tokens if usage else 0,
+            text=refusal if refusal is not None else (response.output_text or ""),
+            terminal=terminal,
+            tokens_in=usage.input_tokens if usage else None,
+            tokens_out=usage.output_tokens if usage else None,
             provider_request_id=response.id,
-            refused=response.status == "incomplete",
         )

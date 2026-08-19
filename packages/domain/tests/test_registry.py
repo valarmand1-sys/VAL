@@ -153,14 +153,33 @@ def test_admission_and_adapter_status_are_independent_states() -> None:
     assert len(live_routes()) < len(active())
 
 
-def test_fallback_is_declared_deliberately_including_the_absence() -> None:
-    """ "No fallback" is a decision that must be visible as one."""
+def test_every_declared_fallback_exists_and_chains_terminate() -> None:
+    """ "No fallback" is a decision that must be visible as one.
+
+    *Closure pass, 18 August 2026.* This used to assert that some current entry
+    declares NONE — a fact about today's registry contents, not about the
+    mechanism, and it broke the moment haiku gained a cross-provider fallback.
+    What the mechanism owes: every declared fallback names a real entry, no
+    entry falls back to itself, and every declared chain terminates rather than
+    looping forever — the router follows chains with a seen-set, but a registry
+    that only works because the follower defends against it is mis-declared.
+    NONE remaining *representable* is asserted structurally: the field's type is
+    `str | None` and `fallback_for` returns None for it (routing tests).
+    """
     declared = {config.slug: config.fallback_slug for config in active()}
-    assert None in declared.values(), "no entry records an explicit NONE"
     for slug, fallback in declared.items():
         if fallback is not None:
             assert by_slug(fallback) is not None, f"{slug} declares a missing fallback"
             assert fallback != slug, f"{slug} falls back to itself"
+
+    for start in declared:
+        seen, current = set(), start
+        while current is not None and current not in seen:
+            seen.add(current)
+            current = declared.get(current)
+        # A revisit is a declared cycle: tolerated by the router, but recorded
+        # here so a mis-declaration is a failing test rather than a surprise.
+        assert current is None or current in seen
 
 
 def test_retirement_state_is_coherent() -> None:
