@@ -31,6 +31,11 @@ val-providers = { workspace = true }
 [dependency-groups]
 dev = [
     "import-linter==2.13",
+    # The version already resolved in uv.lock (a transitive dependency of the
+    # provider SDKs), declared here because the API tests use it directly
+    # through fastapi.testclient — a test dependency should not be an accident
+    # of someone else's dependency tree.
+    "httpx==0.28.1",
     "mypy==2.3.0",
     "pytest==9.1.1",
     "ruff==0.16.2",
@@ -111,6 +116,7 @@ files = [
 
 [tool.pytest.ini_options]
 testpaths = [
+    "apps/api/tests",
     "infrastructure/ci/tests",
     "packages/domain/tests",
     "packages/gateway/tests",

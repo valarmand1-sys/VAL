@@ -39,6 +39,15 @@ _SELECT_PROJECTS = text("select id, name, slug, status from projects order by sl
 _SELECT_ONE = text("select id, name, slug, status from projects where id = :id")
 
 
+def project_listing(engine: Engine) -> tuple[ProjectRecord, ...]:
+    """Every project as the store holds it, in stable slug order — WP-0.10."""
+    with engine.connect() as connection:
+        rows = connection.execute(_SELECT_PROJECTS).all()
+    return tuple(
+        ProjectRecord(id=row.id, name=row.name, slug=row.slug, status=row.status) for row in rows
+    )
+
+
 def load_catalogue(engine: Engine) -> ProjectCatalogue:
     """Every project, as a snapshot the pure resolver can be handed.
 

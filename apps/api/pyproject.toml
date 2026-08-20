@@ -7,12 +7,16 @@ dependencies = [
     "val-domain",
     "val-policy",
     "val-providers",
+    "val-gateway",
     # Pinned here because WP-0.1 owns toolchain pinning and 01-architecture.md §3
-    # names this stack. No application code uses them yet; that is WP-0.7 onward.
+    # names this stack.
     "fastapi==0.141.1",
     "pydantic-settings==2.15.0",
     "uvicorn==0.52.1",
 ]
+
+[project.scripts]
+val-api = "val_api.main:serve"
 
 [build-system]
 requires = ["hatchling==1.32.0"]
@@ -25,3 +29,4 @@ packages = ["src/val_api"]
 val-domain = { workspace = true }
 val-policy = { workspace = true }
 val-providers = { workspace = true }
+val-gateway = { workspace = true }

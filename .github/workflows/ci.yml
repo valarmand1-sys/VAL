@@ -141,6 +141,9 @@ jobs:
         run: uv run pytest packages/gateway/tests
       - name: Provider adapter contract tests
         run: uv run pytest packages/providers/tests
+      # WP-0.10: the service behind the text interface, against the real store.
+      - name: Text-interface service
+        run: uv run pytest apps/api/tests
 
   desktop:
     name: Desktop shell
@@ -153,6 +156,10 @@ jobs:
           cache: npm
           cache-dependency-path: apps/desktop/package-lock.json
       - run: npm ci
+        working-directory: apps/desktop
+      # WP-0.10: invariant 29 at the display layer — the presentation rules
+      # (pending means pending; contamination is named) are tested directly.
+      - run: npm test
         working-directory: apps/desktop
       - run: npm run build
         working-directory: apps/desktop

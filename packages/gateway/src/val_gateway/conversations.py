@@ -159,6 +159,36 @@ def create(engine: Engine, *, scope: ProjectScope, title: str) -> ConversationRe
     return _record(row)
 
 
+def listing(
+    engine: Engine,
+    *,
+    project_id: UUID | None = None,
+    explicit_none: bool = False,
+) -> tuple[ConversationRecord, ...]:
+    """Conversations, most recently active first — WP-0.10's history view.
+
+    Three shapes, matching how scope is actually asked about: everything
+    (neither filter), one project's conversations (`project_id`), or the
+    explicitly-no-project ones (`explicit_none=True`). Asking for both at once
+    is a contradiction and raises rather than picking one.
+    """
+    if project_id is not None and explicit_none:
+        raise ValueError("a conversation is in a project or explicitly in none, never both")
+    columns = "select id, project_id, title, started_at, last_message_at from conversations"
+    order = "order by last_message_at desc, id desc"
+    if project_id is not None:
+        statement = text(f"{columns} where project_id = :p {order}")
+    elif explicit_none:
+        statement = text(f"{columns} where project_id is null {order}")
+    else:
+        statement = text(f"{columns} {order}")
+    with engine.connect() as connection:
+        rows = connection.execute(
+            statement, {"p": project_id} if project_id is not None else {}
+        ).all()
+    return tuple(_record(row) for row in rows)
+
+
 def load(engine: Engine, conversation_id: UUID) -> ConversationRecord:
     """One conversation, by identity. Raises if it does not exist."""
     with engine.connect() as connection:

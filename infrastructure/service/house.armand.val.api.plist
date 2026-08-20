@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key><string>house.armand.val.api</string>
+    <!-- The service behind the text interface — WP-0.10's "daily use without
+         developer tooling": launchd keeps it running; no terminal is involved.
+         Startup enforcement still applies — a refused startup exits, KeepAlive
+         retries, and the reasons are in the log below. -->
+    <key>RunAtLoad</key><true/>
+    <key>KeepAlive</key><true/>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/josepharmand/.local/bin/uv</string>
+        <string>run</string>
+        <string>--directory</string>
+        <string>/Users/josepharmand/Projects/val</string>
+        <string>val-api</string>
+    </array>
+    <key>WorkingDirectory</key><string>/Users/josepharmand/Projects/val</string>
+    <key>StandardOutPath</key><string>/opt/homebrew/var/log/val/api.log</string>
+    <key>StandardErrorPath</key><string>/opt/homebrew/var/log/val/api.log</string>
+    <!-- VAL_DATABASE_URL names the authoritative store and is not a secret.
+         The provider keys (VAL_ANTHROPIC_API_KEY, VAL_OPENAI_API_KEY) are
+         added to the INSTALLED copy at ~/Library/LaunchAgents, never to this
+         committed file: the registry rule applies to plists too — a committed
+         key is a leaked key (val_gateway.startup). -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>VAL_DATABASE_URL</key><string>postgresql+psycopg://josepharmand@localhost:5433/val</string>
+    </dict>
+</dict>
+</plist>
