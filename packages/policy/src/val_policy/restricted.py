@@ -211,6 +211,44 @@ def _iban_valid(candidate: str) -> bool:
 #: a bare 16-digit run is far more often an identifier than a card.
 _CARD_CANDIDATE = re.compile(r"\b(?:\d[ -]?){13,19}\b")
 
+_HEX_CHARACTERS = frozenset("0123456789abcdefABCDEF")
+
+
+def _identifier_embedded(content: str, start: int, end: int) -> bool:
+    """Whether a card candidate is a fragment of a longer hex identifier.
+
+    Found in real use, 31 August 2026: the WP-0.7 memory envelope serialises
+    message and conversation UUIDs into the payload the preflight scans, and a
+    UUID whose variant group and tail happen to be all digits is a 16-digit
+    dash-separated run that can pass Luhn — one in a few thousand UUIDs — at
+    which point a real conversation was refused as carrying a payment card it
+    did not carry. A card number in prose is bounded by prose; a digit run
+    joined *through dashes* to further hex characters is part of an identifier,
+    and no card is ever presented that way. The check looks outward through
+    dashes on both sides and skips the candidate if hex characters continue —
+    narrowing the false positives while leaving every real presentation
+    (spaces, dashes, bare digits, punctuation-bounded) exactly as detected.
+    """
+    # Attachment is through dashes only. A space between the run and what
+    # follows is prose; a word boundary already rules out directly adjacent
+    # hex letters or digits. The candidate regex may also have consumed a
+    # trailing separator, so the right side is trimmed back to the last digit
+    # before probing outward.
+    left = start - 1
+    if left >= 0 and content[left] == "-":
+        while left >= 0 and content[left] == "-":
+            left -= 1
+        if left >= 0 and content[left] in _HEX_CHARACTERS:
+            return True
+    right = end
+    while right > start and content[right - 1] in " -":
+        right -= 1
+    if right < len(content) and content[right] == "-":
+        while right < len(content) and content[right] == "-":
+            right += 1
+        return right < len(content) and content[right] in _HEX_CHARACTERS
+    return False
+
 
 def _luhn(digits: str) -> bool:
     """Whether a digit string satisfies the Luhn checksum."""
@@ -237,6 +275,8 @@ def find_restricted(content: str) -> RestrictedFinding | None:
             return RestrictedFinding(kind=kind, explanation=explanation)
 
     for candidate in _CARD_CANDIDATE.finditer(content):
+        if _identifier_embedded(content, candidate.start(), candidate.end()):
+            continue
         digits = re.sub(r"[ -]", "", candidate.group(0))
         if 13 <= len(digits) <= 19 and _luhn(digits):
             return RestrictedFinding(

@@ -85,6 +85,40 @@ def test_a_bare_long_number_is_not_a_card_unless_it_checksums() -> None:
     assert find_restricted("reference 1234567812345678") is None
 
 
+def test_a_luhn_valid_run_inside_a_uuid_is_an_identifier_not_a_card() -> None:
+    """Found in real use, 31 August 2026: the memory envelope serialises
+    message UUIDs into the scanned payload, and a UUID whose variant group and
+    tail are all digits is a dash-separated 16-digit run that can pass Luhn —
+    at which point a real conversation was refused as carrying a payment card
+    it did not carry. Digits joined through dashes to further hex characters
+    are an identifier fragment; no card is presented that way.
+
+    The digit run here (9994-123456789014) is genuinely Luhn-valid — bare, it
+    IS detected, which is what keeps this fixture honest about what changed:
+    only the identifier context suppresses the finding.
+    """
+    luhn_valid = "9994-123456789014"
+    assert find_restricted(luhn_valid.replace("-", " ")) is not None, (
+        "the fixture's digit run must itself be Luhn-valid, or this test tests nothing"
+    )
+    envelope_fragment = f'"message_id": "01a01b2c-4f3d-7e5a-{luhn_valid}"'
+    assert find_restricted(envelope_fragment) is None
+    # Attachment on either side is enough: hex continues after the run too.
+    assert find_restricted(f"id {luhn_valid}-9c8d7e6f5a4b done") is None
+
+
+def test_a_real_card_bounded_by_prose_is_still_detected_every_way() -> None:
+    """The identifier carve-out must not swallow any real presentation."""
+    for presentation in (
+        "4111 1111 1111 1111",
+        "4111-1111-1111-1111",
+        "4111111111111111",
+        "card: 4111-1111-1111-1111.",
+        "(4111 1111 1111 1111)",
+    ):
+        assert find_restricted(presentation) is not None, presentation
+
+
 # --- it fails closed ----------------------------------------------------------
 
 
