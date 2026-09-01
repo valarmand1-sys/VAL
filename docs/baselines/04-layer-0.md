@@ -55,6 +55,21 @@ One migration set, Alembic, from the first commit. No manual DDL at any point.
 
 **`messages`** — `id`, `conversation_id`, `role` (`user` | `val` | `system`), `content`, `created_at`, `sequence`
 
+> **Requirement — 31 August 2026, Lord Armand. Revision and retraction of his own messages. Recorded against the core loop; no work before Lord Armand authorizes it after the Layer 0 gate.**
+>
+> Lord Armand must be able to correct and retract messages he has sent — typos, a badly worded question, something sent to the wrong conversation. Today a mistake is permanent and visible forever, and that is a defect in daily use.
+>
+> **The bound he set with the requirement: the append-only record is not weakened.** The honest version is *correction and retraction, never erasure*: the original stands, the revision stands, and which came later is visible. A retracted message stops cluttering the live conversation and is not treated as live intent, but remains in the record. This is the shape the record already uses everywhere — the persona's edit-is-a-new-revision, `idea_state_changes`' append-only lineage, `model_calls_accounted`'s supersede-by-view — applied to `messages`.
+>
+> **Design constraints that bind any implementation:**
+>
+> - `messages` rows stay frozen (`0009`) and undeletable (§2.3). Revision and retraction are *new facts appended*, never edits to the original.
+> - Retraction authority is per-author: this mechanism touches `role = 'user'` rows only. Nobody retracts another speaker's words — Val's answers are hers.
+> - Evidence anchors never dangle: `model_calls`, `execution_events`, `deliberations`, and `blind_positions` reference specific message ids, and a retraction must leave every anchor resolving to exactly what was said when the anchored event happened.
+> - Money already spent answering the original stays spent and stays attributed. A retraction rewrites no cost.
+>
+> **Open questions, his to decide when this is taken up** (options and recommendations were given at recording time): what recall does with a retracted message; what happens to an answer whose question is then revised; and how the sunk cost of a retracted exchange is shown.
+
 **`personas`** — `id`, `version`, `semantic_version`, `content`, `source_sha256`, `source_path`, `created_at`, `is_active`, `activated_at`, `authored_by`. Versioned from the first load. Editing the persona creates a version; it never mutates a row.
 
 > **Clarification — 17 August 2026, Lord Armand. Recorded before WP-0.5 begins, not implemented by it.**
