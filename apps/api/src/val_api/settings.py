@@ -17,7 +17,9 @@ class Settings(BaseSettings):
 
     #: The authoritative store. `VAL_DATABASE_URL`.
     database_url: str
-    #: Where the service listens. Loopback only: the desktop shell is on the
-    #: same machine, and Layer 0 exposes nothing beyond it.
-    host: str = "127.0.0.1"
+    #: Where the service listens. The port is configurable; the addresses are
+    #: not — `main.loopback_sockets` binds exactly 127.0.0.1 and ::1, so the
+    #: service is reachable from this machine on either stack and from nowhere
+    #: else. A `host` setting used to exist here and was removed deliberately:
+    #: a configurable host is a wildcard bind waiting to be configured.
     port: int = 8756

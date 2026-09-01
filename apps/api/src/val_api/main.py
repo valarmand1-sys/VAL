@@ -11,6 +11,7 @@ interface can show them without anyone tailing a log.
 from __future__ import annotations
 
 import logging
+import socket
 
 import uvicorn
 from fastapi import FastAPI
@@ -21,6 +22,37 @@ from val_api.settings import Settings
 from val_gateway.startup import start
 
 _LOGGER = logging.getLogger("val.api")
+
+#: Both loopback addresses, by family. The service must be reachable from this
+#: machine and from nowhere else, and "this machine" has two loopbacks: macOS
+#: resolves `localhost` to ::1 first, so an IPv4-only bind made the service
+#: invisible to any client that resolved the name instead of spelling the
+#: address (found in real use, 31 August 2026 — curl to 127.0.0.1 answered
+#: while ::1 was empty). Binding the pair keeps the loopback-only guarantee
+#: exactly: neither address is routable off-machine, and no wildcard bind is
+#: involved anywhere.
+_LOOPBACKS = ((socket.AF_INET, "127.0.0.1"), (socket.AF_INET6, "::1"))
+
+
+def loopback_sockets(port: int) -> list[socket.socket]:
+    """One bound socket per loopback stack, and nothing else.
+
+    Built by hand rather than asking uvicorn to bind, because uvicorn takes a
+    single host — and the alternatives are worse: `localhost` binds whatever
+    the resolver says first, and a wildcard would be reachable off-machine.
+    Explicit addresses cannot drift with resolver configuration. `IPV6_V6ONLY`
+    is set so the ::1 socket can never be widened into a dual-stack one by a
+    platform default.
+    """
+    sockets: list[socket.socket] = []
+    for family, address in _LOOPBACKS:
+        bound = socket.socket(family, socket.SOCK_STREAM)
+        bound.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if family == socket.AF_INET6:
+            bound.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 1)
+        bound.bind((address, port))
+        sockets.append(bound)
+    return sockets
 
 
 def build() -> tuple[FastAPI, Settings]:
@@ -36,10 +68,11 @@ def build() -> tuple[FastAPI, Settings]:
 
 
 def serve() -> None:
-    """Run the service. The `val-api` entry point."""
+    """Run the service on both loopbacks. The `val-api` entry point."""
     logging.basicConfig(level=logging.INFO)
     app, settings = build()
-    uvicorn.run(app, host=settings.host, port=settings.port)
+    server = uvicorn.Server(uvicorn.Config(app, port=settings.port))
+    server.run(sockets=loopback_sockets(settings.port))
 
 
 if __name__ == "__main__":
