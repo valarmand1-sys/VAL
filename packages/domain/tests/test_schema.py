@@ -23,8 +23,24 @@ from val_domain.schema import SPECIFIED_TABLES
 
 SPECIFIED: dict[str, tuple[str, ...]] = {
     # §2.1 Core
-    "projects": ("id", "name", "slug", "description", "status", "created_at", "updated_at"),
-    "conversations": ("id", "project_id", "title", "started_at", "last_message_at"),
+    "projects": (
+        "id",
+        "name",
+        "slug",
+        "description",
+        "status",
+        "created_at",
+        "updated_at",
+        "archived_at",
+    ),
+    "conversations": (
+        "id",
+        "project_id",
+        "title",
+        "started_at",
+        "last_message_at",
+        "archived_at",
+    ),
     "messages": ("id", "conversation_id", "role", "content", "created_at", "sequence"),
     "personas": (
         "id",
@@ -152,6 +168,11 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
 SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
     {
         ("conversations", "project_id"),
+        # Amendment, 31 August 2026: presentation scoping, no evidentiary
+        # meaning. NULL is the ordinary state; set means hidden from default
+        # listings and nothing else.
+        ("conversations", "archived_at"),
+        ("projects", "archived_at"),
         ("model_calls", "project_id"),
         ("model_calls", "conversation_id"),
         ("model_calls", "message_id"),

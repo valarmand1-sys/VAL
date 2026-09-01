@@ -112,16 +112,27 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
     # --- reads: projections of the authoritative record ----------------------
 
     @app.get("/projects")
-    def projects() -> list[ProjectView]:
-        return [ProjectView.of(record) for record in project_listing(engine)]
+    def projects(archived: bool = False) -> list[ProjectView]:
+        """Projects, archived ones excluded unless asked for — display scoping only."""
+        return [
+            ProjectView.of(record) for record in project_listing(engine, include_archived=archived)
+        ]
 
     @app.get("/conversations")
     def conversation_listing(
-        project_id: UUID | None = None, scope: str | None = None
+        project_id: UUID | None = None, scope: str | None = None, archived: bool = False
     ) -> list[ConversationView]:
-        """All conversations, one project's, or the explicitly-no-project ones."""
+        """All conversations, one project's, or the explicitly-no-project ones.
+
+        `archived=true` includes archived rows; the flag is presentation
+        scoping and carries no evidentiary meaning (§2.1 amendment, 31 August
+        2026). Everything outside these two listings is archive-blind.
+        """
         records = conversations.listing(
-            engine, project_id=project_id, explicit_none=scope == "none"
+            engine,
+            project_id=project_id,
+            explicit_none=scope == "none",
+            include_archived=archived,
         )
         return [ConversationView.of(record) for record in records]
 

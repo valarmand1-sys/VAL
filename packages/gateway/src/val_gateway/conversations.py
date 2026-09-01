@@ -71,11 +71,12 @@ from val_gateway.projects import load_project
 
 _INSERT_CONVERSATION = text(
     "insert into conversations (project_id, title) values (:project_id, :title) "
-    "returning id, project_id, title, started_at, last_message_at"
+    "returning id, project_id, title, started_at, last_message_at, archived_at"
 )
 
 _SELECT_CONVERSATION = text(
-    "select id, project_id, title, started_at, last_message_at from conversations where id = :id"
+    "select id, project_id, title, started_at, last_message_at, archived_at "
+    "from conversations where id = :id"
 )
 
 #: Locks the conversation row for the rest of the transaction. Every appender to
@@ -131,6 +132,7 @@ def _record(row: object) -> ConversationRecord:
         title=row.title,  # type: ignore[attr-defined]
         started_at=row.started_at,  # type: ignore[attr-defined]
         last_message_at=row.last_message_at,  # type: ignore[attr-defined]
+        archived_at=row.archived_at,  # type: ignore[attr-defined]
     )
 
 
@@ -164,6 +166,7 @@ def listing(
     *,
     project_id: UUID | None = None,
     explicit_none: bool = False,
+    include_archived: bool = False,
 ) -> tuple[ConversationRecord, ...]:
     """Conversations, most recently active first — WP-0.10's history view.
 
@@ -171,17 +174,26 @@ def listing(
     (neither filter), one project's conversations (`project_id`), or the
     explicitly-no-project ones (`explicit_none=True`). Asking for both at once
     is a contradiction and raises rather than picking one.
+
+    Archived conversations are excluded by default — that is the whole of what
+    archiving does (§2.1 amendment, 31 August 2026: presentation scoping,
+    never evidentiary). Only this listing filters: `load`, `resume`, recall,
+    and every capture path are archive-blind, so an archived conversation
+    still behaves identically everywhere except the sidebar.
     """
     if project_id is not None and explicit_none:
         raise ValueError("a conversation is in a project or explicitly in none, never both")
-    columns = "select id, project_id, title, started_at, last_message_at from conversations"
+    columns = (
+        "select id, project_id, title, started_at, last_message_at, archived_at from conversations"
+    )
     order = "order by last_message_at desc, id desc"
+    clauses = [] if include_archived else ["archived_at is null"]
     if project_id is not None:
-        statement = text(f"{columns} where project_id = :p {order}")
+        clauses.append("project_id = :p")
     elif explicit_none:
-        statement = text(f"{columns} where project_id is null {order}")
-    else:
-        statement = text(f"{columns} {order}")
+        clauses.append("project_id is null")
+    where = f"where {' and '.join(clauses)} " if clauses else ""
+    statement = text(f"{columns} {where}{order}")
     with engine.connect() as connection:
         rows = connection.execute(
             statement, {"p": project_id} if project_id is not None else {}

@@ -51,6 +51,7 @@ Nothing here touches a database or a model. Resolution rules live in
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
@@ -180,6 +181,11 @@ class ProjectRecord:
     name: str
     slug: str
     status: str
+    #: Presentation scoping only, never evidentiary (§2.1 amendment, 31 August
+    #: 2026): set means hidden from default listings, nothing more. Defaulted
+    #: so the many constructors that predate the column stay valid — an absent
+    #: value and an unarchived row mean the same thing.
+    archived_at: datetime | None = None
 
 
 @dataclass(frozen=True)

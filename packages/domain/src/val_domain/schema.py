@@ -173,6 +173,11 @@ class Project(Base):
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
+    # Presentation scoping only — hidden from default listings, nothing more.
+    # Lifecycle-class and mutable, like `title` on conversations. NEVER
+    # evidentiary: the first rows marked are cited gate evidence (§2.1
+    # amendment, 31 August 2026; migration 0012).
+    archived_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
 
     __table_args__ = (UniqueConstraint("slug", name="uq_projects_slug"),)
 
@@ -218,6 +223,9 @@ class Conversation(Base):
     last_message_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
+    # Presentation scoping only; see the same column on Project. An archived
+    # conversation still resumes, still recalls, and is still evidence.
+    archived_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
 
     __table_args__ = (
         # WP-0.7 retrieval filters by project *inside* the query, before ranking.

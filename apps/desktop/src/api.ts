@@ -11,6 +11,9 @@ export interface ProjectView {
   name: string;
   slug: string;
   status: string;
+  // Presentation scoping only, never evidentiary: hidden from default
+  // listings, and nothing else may be inferred from it.
+  archived: boolean;
 }
 
 export interface ConversationView {
@@ -19,6 +22,8 @@ export interface ConversationView {
   title: string;
   started_at: string;
   last_message_at: string;
+  // Same rule as ProjectView.archived: display scoping, no evidentiary meaning.
+  archived: boolean;
 }
 
 export interface MessageView {
@@ -211,11 +216,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: () => request<Health>("/health"),
-  projects: () => request<ProjectView[]>("/projects"),
-  conversations: (query: { project_id?: string; scope?: "none" } = {}) => {
+  projects: (query: { archived?: boolean } = {}) =>
+    request<ProjectView[]>(query.archived ? "/projects?archived=true" : "/projects"),
+  conversations: (query: { project_id?: string; scope?: "none"; archived?: boolean } = {}) => {
     const parameters = new URLSearchParams();
     if (query.project_id) parameters.set("project_id", query.project_id);
     if (query.scope) parameters.set("scope", query.scope);
+    if (query.archived) parameters.set("archived", "true");
     const suffix = parameters.size > 0 ? `?${parameters.toString()}` : "";
     return request<ConversationView[]>(`/conversations${suffix}`);
   },

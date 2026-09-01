@@ -261,3 +261,18 @@ body {
   font-size: 0.75rem;
   color: var(--accent);
 }
+
+.archived-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+.archived-tag {
+  font-size: 0.75em;
+  color: var(--accent);
+  font-style: italic;
+}

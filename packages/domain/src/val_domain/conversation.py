@@ -149,6 +149,9 @@ class ConversationRecord:
     title: str
     started_at: datetime
     last_message_at: datetime
+    #: Presentation scoping only, never evidentiary (§2.1 amendment, 31 August
+    #: 2026). An archived conversation still resumes and still recalls.
+    archived_at: datetime | None = None
 
     @property
     def is_explicit_no_project(self) -> bool:

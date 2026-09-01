@@ -45,9 +45,13 @@ One migration set, Alembic, from the first commit. No manual DDL at any point.
 
 ### 2.1 Core
 
-**`projects`** — `id`, `name`, `slug`, `description`, `status`, `created_at`, `updated_at`
+**`projects`** — `id`, `name`, `slug`, `description`, `status`, `created_at`, `updated_at`, `archived_at`
 
-**`conversations`** — `id`, `project_id` (nullable — "no project" is a real, explicit state, not a null accident), `title`, `started_at`, `last_message_at`
+**`conversations`** — `id`, `project_id` (nullable — "no project" is a real, explicit state, not a null accident), `title`, `started_at`, `last_message_at`, `archived_at`
+
+> **Amendment — 31 August 2026, Lord Armand. `archived_at` is presentation scoping and carries no evidentiary meaning.** Nullable, lifecycle-class (mutable, like `conversations.title`), on `projects` and `conversations` only. Set means exactly one thing: *hidden from the interface's default listings*. It means nothing else. **It must never be read as superseded, retracted, mistaken, or not real** — the first rows ever marked (migration `0012`: the seven demonstration projects and eighteen demonstration conversations of 15–19 August 2026) are all cited Layer 0 gate evidence, real conversations with real providers, preserved whole. Archiving changes no behavior outside listings: an archived conversation still resumes, an archived project still resolves and still scopes recall, and every capture and evidence table is untouched. Deletion remains impossible (§2.3) — archiving exists precisely because it is not deletion.
+>
+> **Standing rule, same date: demonstration fixtures never enter the live store again.** The August fixtures exist because the early acceptance runs deliberately ran live; that era is closed. Anything future that needs seeded data — with or without live providers — runs in a scratch database. The one exception is the Layer 0 gate's own single-session demonstration, which is real use through the interface and belongs in the live store by definition.
 
 **`messages`** — `id`, `conversation_id`, `role` (`user` | `val` | `system`), `content`, `created_at`, `sequence`
 

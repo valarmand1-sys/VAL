@@ -41,10 +41,19 @@ class ProjectView(BaseModel):
     name: str
     slug: str
     status: str
+    #: Presentation scoping only, never evidentiary (§2.1 amendment, 31 August
+    #: 2026): hidden from default listings, and nothing else may be inferred.
+    archived: bool = False
 
     @classmethod
     def of(cls, record: ProjectRecord) -> ProjectView:
-        return cls(id=record.id, name=record.name, slug=record.slug, status=record.status)
+        return cls(
+            id=record.id,
+            name=record.name,
+            slug=record.slug,
+            status=record.status,
+            archived=record.archived_at is not None,
+        )
 
 
 class ConversationView(BaseModel):
@@ -55,6 +64,8 @@ class ConversationView(BaseModel):
     title: str
     started_at: datetime
     last_message_at: datetime
+    #: Same rule as on ProjectView: display scoping, no evidentiary meaning.
+    archived: bool = False
 
     @classmethod
     def of(cls, record: ConversationRecord) -> ConversationView:
@@ -64,6 +75,7 @@ class ConversationView(BaseModel):
             title=record.title,
             started_at=record.started_at,
             last_message_at=record.last_message_at,
+            archived=record.archived_at is not None,
         )
 
 

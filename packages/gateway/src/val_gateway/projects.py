@@ -34,18 +34,37 @@ from val_domain.project import (
 )
 from val_policy.project_resolution import ProjectCatalogue
 
-_SELECT_PROJECTS = text("select id, name, slug, status from projects order by slug")
+_SELECT_PROJECTS = text("select id, name, slug, status, archived_at from projects order by slug")
 
-_SELECT_ONE = text("select id, name, slug, status from projects where id = :id")
+_SELECT_ONE = text("select id, name, slug, status, archived_at from projects where id = :id")
 
 
-def project_listing(engine: Engine) -> tuple[ProjectRecord, ...]:
-    """Every project as the store holds it, in stable slug order — WP-0.10."""
+def _project(row: object) -> ProjectRecord:
+    return ProjectRecord(
+        id=row.id,  # type: ignore[attr-defined]
+        name=row.name,  # type: ignore[attr-defined]
+        slug=row.slug,  # type: ignore[attr-defined]
+        status=row.status,  # type: ignore[attr-defined]
+        archived_at=row.archived_at,  # type: ignore[attr-defined]
+    )
+
+
+def project_listing(engine: Engine, *, include_archived: bool = False) -> tuple[ProjectRecord, ...]:
+    """Every project as the store holds it, in stable slug order — WP-0.10.
+
+    Archived projects are excluded by default; that is the whole of what
+    archiving does (§2.1 amendment, 31 August 2026). Only this listing
+    filters — `load_catalogue` deliberately does not, so name resolution,
+    ambiguity questions, and recall scoping treat an archived project exactly
+    as before. A name resolving differently because of a display flag would be
+    presentation acquiring authority over scope.
+    """
     with engine.connect() as connection:
         rows = connection.execute(_SELECT_PROJECTS).all()
-    return tuple(
-        ProjectRecord(id=row.id, name=row.name, slug=row.slug, status=row.status) for row in rows
-    )
+    records = tuple(_project(row) for row in rows)
+    if include_archived:
+        return records
+    return tuple(record for record in records if record.archived_at is None)
 
 
 def load_catalogue(engine: Engine) -> ProjectCatalogue:
@@ -58,9 +77,7 @@ def load_catalogue(engine: Engine) -> ProjectCatalogue:
     """
     with engine.connect() as connection:
         rows = connection.execute(_SELECT_PROJECTS).all()
-    return ProjectCatalogue(
-        ProjectRecord(id=row.id, name=row.name, slug=row.slug, status=row.status) for row in rows
-    )
+    return ProjectCatalogue(_project(row) for row in rows)
 
 
 def project_exists(engine: Engine, project_id: UUID) -> bool:
@@ -88,7 +105,7 @@ def load_project(engine: Engine, project_id: UUID) -> ProjectRecord | None:
         row = connection.execute(_SELECT_ONE, {"id": project_id}).one_or_none()
     if row is None:
         return None
-    return ProjectRecord(id=row.id, name=row.name, slug=row.slug, status=row.status)
+    return _project(row)
 
 
 @dataclass

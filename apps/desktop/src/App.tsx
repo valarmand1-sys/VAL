@@ -42,16 +42,24 @@ export function App(): React.JSX.Element {
   const [pendingContent, setPendingContent] = useState<string>("");
   const [composer, setComposer] = useState("");
   const [busy, setBusy] = useState(false);
+  // Whether archived rows are listed. Display scoping only — the flag carries
+  // no evidentiary meaning (§2.1 amendment, 31 August 2026), and everything
+  // outside the two listings is archive-blind.
+  const [showArchived, setShowArchived] = useState(false);
 
-  const refreshConversations = useCallback(async (at: Scope) => {
-    if (at.kind === "project") {
-      setConversations(await api.conversations({ project_id: at.project.id }));
-    } else if (at.kind === "none") {
-      setConversations(await api.conversations({ scope: "none" }));
-    } else {
-      setConversations(await api.conversations());
-    }
-  }, []);
+  const refreshConversations = useCallback(
+    async (at: Scope) => {
+      const archived = showArchived ? { archived: true } : {};
+      if (at.kind === "project") {
+        setConversations(await api.conversations({ project_id: at.project.id, ...archived }));
+      } else if (at.kind === "none") {
+        setConversations(await api.conversations({ scope: "none", ...archived }));
+      } else {
+        setConversations(await api.conversations(archived));
+      }
+    },
+    [showArchived],
+  );
 
   const refreshSignals = useCallback(async () => {
     setCosts(await api.costs());
@@ -80,7 +88,7 @@ export function App(): React.JSX.Element {
         setWarnings((await api.health()).warnings);
       });
       await step("projects", async () => {
-        setProjects(await api.projects());
+        setProjects(await api.projects(showArchived ? { archived: true } : {}));
       });
       await step("conversations", async () => {
         await refreshConversations({ kind: "all" });
@@ -93,7 +101,7 @@ export function App(): React.JSX.Element {
       });
       setBootProblems(problems);
     })();
-  }, [refreshConversations]);
+  }, [refreshConversations, showArchived]);
 
   const openConversation = useCallback(async (id: string) => {
     setDetail(await api.conversation(id));
@@ -177,6 +185,7 @@ export function App(): React.JSX.Element {
                   onClick={() => void chooseScope({ kind: "project", project })}
                 >
                   {project.name}
+                  {project.archived && <span className="archived-tag"> (archived)</span>}
                 </button>
               </li>
             ))}
@@ -198,6 +207,7 @@ export function App(): React.JSX.Element {
                   onClick={() => void openConversation(conversation.id)}
                 >
                   {conversation.title}
+                  {conversation.archived && <span className="archived-tag"> (archived)</span>}
                 </button>
               </li>
             ))}
@@ -205,6 +215,14 @@ export function App(): React.JSX.Element {
           <button className="new-conversation" onClick={() => setDetail(null)}>
             New conversation
           </button>
+          <label className="archived-toggle">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(event) => setShowArchived(event.target.checked)}
+            />
+            Show archived
+          </label>
         </nav>
       </aside>
 
