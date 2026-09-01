@@ -435,6 +435,7 @@ Recorded so it is not added under pressure of seeming incomplete:
 | **Processing Restricted content** — requires local inference (§1.1) | Layer 1 |
 | **Per-content data classification and per-call eligibility checks** — Layer 0 satisfies invariant 17 structurally (§1.1); tools break that guarantee | Layer 2 |
 | MCP, Tool Registry, any tool at all | Layer 2 |
+| **Vision** — images reaching the model *as images*, with sight recorded per exchange. Requirement recorded 31 August 2026: `01-architecture.md` §2.2 | Layer 2 |
 | Roles, agents, self-evaluation, standing adversary, prediction ledger scoring | Layer 3 |
 | Temporal, graduated budget thresholds, reserve, cost dashboard | Layer 3 |
 | Outbox, audit chain, approval flow, versioned writes, risk-tier machinery | Layer 4 |

@@ -85,6 +85,21 @@ Val is a native MCP client (§7). Governance enters here because there is now so
 - **Read-only tools first.** Write tools remain disabled until Layer 4.
 - **Arbitrary-code tools are permanently excluded, not gated** (invariants 7, 8).
 
+> **Requirement — 31 August 2026, Lord Armand. Val must be able to see images. Recorded against this layer; no work before it.**
+>
+> **The requirement is sight, not receipt.** The image reaches the model *as an image*, and Val can describe what is in it, reason about it, compare it against another image, and notice things Lord Armand did not point out. Anything less is not the requirement.
+>
+> **Why it is load-bearing:** most of the actual work is visual — setting masters, character sheets, storyboard frames. A partner who cannot see an image cannot help with the majority of what Lord Armand actually does.
+>
+> **The capability bar, concretely.** Val must be capable of: judging whether two setting images match on style, palette, and architecture; checking a character against a model sheet for continuity; reading a storyboard frame and saying what is wrong with the composition; comparing a generated image against the reference it was meant to follow.
+>
+> **Implications recorded now, built then:**
+>
+> - **Vision must reach the actual model call.** A filename or path in the prompt is not sight. An implementation that passes a path and lets the model narrate around it fails the requirement while appearing to meet it — that is the failure mode to test for.
+> - **What she saw is recorded as part of the exchange**, so her judgment is attributable to the specific image — the same capture doctrine as everything else in the record: a visual judgment whose subject cannot be identified later is not evidence.
+> - **Filesystem access via MCP is preferred over an upload control.** The files already live in structured folders on this machine, and this layer's read-only tool discipline is the natural fit. The Tool Registry rules above apply to it in full.
+> - **An image is external egress, same as text.** It is classified before it leaves the house and respects data eligibility (§5.4, invariant 17); cost and availability never override eligibility. A vision-capable route must be eligible for the image's classification, not merely capable of receiving it.
+
 ### 2.3 Layer 3 — Agents
 
 *Val builds and supervises her own working teams.*
