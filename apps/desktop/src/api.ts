@@ -148,11 +148,56 @@ export class ApiRefusal extends Error {
   }
 }
 
+// fetch() rejected without any response. From inside the page this is ONE
+// observable fact covering TWO causes a browser deliberately does not let
+// script distinguish: the service was not running, or the request was blocked
+// by policy (CORS, CSP) before or after the wire. The 31 August 2026 outage
+// was the second cause wearing a banner that asserted the first, and the
+// assertion cost real diagnostic time — so this class records only what was
+// established: no response.
+export class NoResponseError extends Error {
+  constructor(public readonly caught: unknown) {
+    super("the request produced no response");
+  }
+}
+
+// One honest sentence per failure class, naming only what was established.
+// The words "not reachable" appear nowhere: script cannot establish
+// unreachability, only the absence of a response — and an error message that
+// names a cause it has not established is a false claim (Lord Armand,
+// 31 August 2026; invariant 29 applied to error display).
+export function describeFailure(failure: unknown): string {
+  if (failure instanceof NoResponseError) {
+    return (
+      "no response: either the service is not running, or the request was " +
+      "blocked by policy before completing. `curl http://127.0.0.1:8756/health` " +
+      "in Terminal tells the two apart."
+    );
+  }
+  if (failure instanceof ApiRefusal) {
+    return `the service answered and refused (HTTP ${failure.status}): ${failure.message}`;
+  }
+  return `unexpected failure: ${String(failure)}`;
+}
+
+// Only a request that carries a body declares a content type. A GET with
+// `Content-Type: application/json` is not a CORS-simple request, so the
+// webview preflights it — which is how every read in the app came to hinge on
+// an OPTIONS route the service did not have (31 August 2026).
+export function initFor(init?: RequestInit): RequestInit {
+  if (init?.body === undefined) {
+    return init ?? {};
+  }
+  return { headers: { "Content-Type": "application/json" }, ...init };
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, initFor(init));
+  } catch (caught) {
+    throw new NoResponseError(caught);
+  }
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => response.statusText);
     const detail =

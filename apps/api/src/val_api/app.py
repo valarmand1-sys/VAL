@@ -26,6 +26,7 @@ from __future__ import annotations
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import Engine
 
 from val_api.contracts import (
@@ -88,6 +89,20 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
     one that was allowed to start (`04-layer-0.md` WP-0.4).
     """
     app = FastAPI(title="Val", version="0.0.0")
+
+    # The desktop shell is a browser client on its own origin (Tauri serves the
+    # interface from tauri://localhost on macOS, http://tauri.localhost on
+    # Windows), so the webview enforces CORS on every call here — found in real
+    # use, 31 August 2026, when a healthy service was invisible to the app
+    # because its preflights were answered 405. This grant is browser policy,
+    # not reachability: the loopback-only bind is untouched, and exactly the
+    # shell's origins are granted, nothing wider.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["tauri://localhost", "http://tauri.localhost"],
+        allow_methods=["GET", "POST"],
+        allow_headers=["content-type"],
+    )
     startup_warnings = list(warnings or [])
 
     @app.get("/health")

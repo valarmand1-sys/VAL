@@ -23,7 +23,7 @@ import type {
   ProjectView,
   TurnClarification,
 } from "./api";
-import { api, ApiRefusal } from "./api";
+import { api, ApiRefusal, describeFailure } from "./api";
 import { describeDeliberation, outcomeLabel, resolutionOf } from "./presentation";
 
 type Scope = { kind: "project"; project: ProjectView } | { kind: "none" } | { kind: "all" };
@@ -37,6 +37,7 @@ export function App(): React.JSX.Element {
   const [costs, setCosts] = useState<CostView | null>(null);
   const [lastDisagreement, setLastDisagreement] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [bootProblems, setBootProblems] = useState<string[]>([]);
   const [clarification, setClarification] = useState<TurnClarification | null>(null);
   const [pendingContent, setPendingContent] = useState<string>("");
   const [composer, setComposer] = useState("");
@@ -58,21 +59,41 @@ export function App(): React.JSX.Element {
     setLastDisagreement(signal.last_disagreement_at);
   }, []);
 
+  // Bootstrap: five independent reads, each reported individually. The old
+  // version wrapped all five in one catch whose only output asserted the
+  // service was "not reachable" — a cause it had not established, and on
+  // 31 August 2026 a false one (the failures were CORS policy against a
+  // healthy service). Now each step names itself and its actual failure, and
+  // no wording claims more than what was observed (invariant 29 applied to
+  // error display).
   useEffect(() => {
     void (async () => {
-      try {
-        const health = await api.health();
-        setWarnings(health.warnings);
+      const problems: string[] = [];
+      const step = async (name: string, run: () => Promise<void>) => {
+        try {
+          await run();
+        } catch (failure) {
+          problems.push(`${name}: ${describeFailure(failure)}`);
+        }
+      };
+      await step("health", async () => {
+        setWarnings((await api.health()).warnings);
+      });
+      await step("projects", async () => {
         setProjects(await api.projects());
+      });
+      await step("conversations", async () => {
         await refreshConversations({ kind: "all" });
-        await refreshSignals();
-      } catch {
-        setNotice(
-          "The service is not reachable. Start it (val-api) and reopen — nothing runs without the record.",
-        );
-      }
+      });
+      await step("costs", async () => {
+        setCosts(await api.costs());
+      });
+      await step("disagreement signal", async () => {
+        setLastDisagreement((await api.disagreement()).last_disagreement_at);
+      });
+      setBootProblems(problems);
     })();
-  }, [refreshConversations, refreshSignals]);
+  }, [refreshConversations]);
 
   const openConversation = useCallback(async (id: string) => {
     setDetail(await api.conversation(id));
@@ -124,11 +145,7 @@ export function App(): React.JSX.Element {
         await refreshConversations(scope);
         await refreshSignals();
       } catch (failure) {
-        setNotice(
-          failure instanceof ApiRefusal
-            ? String(failure.message)
-            : "The service could not be reached.",
-        );
+        setNotice(describeFailure(failure));
       } finally {
         setBusy(false);
       }
@@ -192,6 +209,13 @@ export function App(): React.JSX.Element {
       </aside>
 
       <main className="thread">
+        {bootProblems.length > 0 && (
+          <div className="notice">
+            {bootProblems.map((problem) => (
+              <p key={problem}>{problem}</p>
+            ))}
+          </div>
+        )}
         {notice !== null && <div className="notice">{notice}</div>}
         {warnings.length > 0 && (
           <div className="warnings">
@@ -389,7 +413,7 @@ function JudgeControl(props: {
         const detail_ = failure.detail as { message?: unknown };
         setPrompt(typeof detail_.message === "string" ? detail_.message : String(failure.message));
       } else {
-        setPrompt(failure instanceof ApiRefusal ? String(failure.message) : "unreachable");
+        setPrompt(describeFailure(failure));
       }
     }
   };
@@ -454,7 +478,7 @@ function MarkConsequentialControl(props: {
       setOpen(false);
       onRecorded();
     } catch (failure) {
-      setProblem(failure instanceof ApiRefusal ? String(failure.message) : "unreachable");
+      setProblem(describeFailure(failure));
     }
   };
 

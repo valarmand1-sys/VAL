@@ -383,6 +383,8 @@ Each states what exists when it is done and how that is verified.
 - Project switching, conversation history, and marking an exchange consequential are all reachable from the interface.
 - Nothing in the interface displays a state the database does not support (`00-charter.md` invariant 29).
 
+> **Amendment — 31 August 2026, Lord Armand. Invariant 29 applies to error display.** An error message that names a cause it has not established is a false claim. Recorded from real use: the interface asserted the service was "not reachable" while the service was demonstrably healthy — the actual failure was browser policy — and the asserted cause sent diagnosis down a network path that did not exist. Binding on the interface: a failure is reported as what was actually observed ("no response", "the service refused with this status", "the reply could not be read"), never as a diagnosis the observing code cannot make; where script cannot distinguish two causes, the message names both rather than picking one; and a multi-step operation reports each step's failure individually rather than collapsing them into one claim.
+
 ---
 
 ## 4. The blind position call at Layer 0 — a deviation
