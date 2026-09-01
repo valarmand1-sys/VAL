@@ -260,15 +260,35 @@ def test_a_superseded_row_adds_nothing_to_known_spend(engine: Engine) -> None:
     assert month_to_date_spend(engine) == pytest.approx(before)
 
 
-def test_a_superseded_row_is_counted_as_uncosted(engine: Engine) -> None:
-    """The half that stops the zero being silent.
+def test_a_superseded_row_reads_as_uncosted_in_its_own_month_only(engine: Engine) -> None:
+    """The half that stops the zero being silent — restated durably.
 
-    Adding nothing to the total is only honest if something says the total is
-    incomplete. This is that something.
+    Until 31 August 2026 this test asserted the current-month counter moved,
+    and it failed on the first CI run after the UTC month rolled over: the
+    legacy set is bounded by check constraint to rows dated before 17 August
+    2026, so from September onward a superseded row is honestly *outside*
+    every "this month" window, permanently — the calendar was being tested by
+    accident. The durable rules are the two asserted here: the month-scoped
+    counter does not move for a row from a closed prior month, and the view
+    still reads that row's cost as unknown, never as a confirmed zero. The
+    current-month incompleteness signal is `test_unknown_cost_calls_are_countable`.
     """
     before = uncosted_calls_this_month(engine)
     a_superseded_row(engine)
-    assert uncosted_calls_this_month(engine) == before + 1
+    assert uncosted_calls_this_month(engine) == before, (
+        "a superseded row from a closed prior month must not count against the "
+        "current month's figure"
+    )
+    with engine.connect() as connection:
+        row = connection.execute(
+            text(
+                "select effective_cost_certainty, accounted_cost from model_calls_accounted "
+                "where cost_certainty is null and status = 'error' "
+                "order by created_at desc limit 1"
+            )
+        ).one()
+    assert row.effective_cost_certainty == "unknown"
+    assert row.accounted_cost is None, "the fabricated zero must never read as a known cost"
 
 
 def test_superseded_rows_are_separately_countable(engine: Engine) -> None:

@@ -61,7 +61,7 @@ from val_gateway.gateway import CallRecord
 _MONTH_TO_DATE_SPEND = text(
     "select coalesce(sum(accounted_cost), 0) from model_calls_accounted "
     "where accounted_cost is not null "
-    "and created_at >= date_trunc('month', now() at time zone 'utc')"
+    "and created_at >= date_trunc('month', now() at time zone 'utc') at time zone 'utc'"
 )
 
 #: Calls that reached a provider whose cost was never established — including
@@ -70,7 +70,7 @@ _MONTH_TO_DATE_SPEND = text(
 _UNCOSTED_THIS_MONTH = text(
     "select count(*) from model_calls_accounted "
     "where effective_cost_certainty = 'unknown' "
-    "and created_at >= date_trunc('month', now() at time zone 'utc')"
+    "and created_at >= date_trunc('month', now() at time zone 'utc') at time zone 'utc'"
 )
 
 #: Every superseded row, whenever written, for review rather than for arithmetic.
@@ -84,7 +84,7 @@ _SUPERSEDED_ZERO_CALLS = text(
 _SPEND_BY_TASK_TYPE = text(
     "select task_type, coalesce(sum(accounted_cost), 0) from model_calls_accounted "
     "where accounted_cost is not null "
-    "and created_at >= date_trunc('month', now() at time zone 'utc') "
+    "and created_at >= date_trunc('month', now() at time zone 'utc') at time zone 'utc' "
     "group by task_type"
 )
 

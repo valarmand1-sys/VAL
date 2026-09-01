@@ -155,13 +155,13 @@ _COMMITTED = text(
         end)
         from budget_reservations
         where state <> 'released'
-          and created_at >= date_trunc('month', now() at time zone 'utc')
+          and created_at >= date_trunc('month', now() at time zone 'utc') at time zone 'utc'
       ), 0)
       +
       coalesce((
         select sum(mc.accounted_cost)
         from model_calls_accounted mc
-        where mc.created_at >= date_trunc('month', now() at time zone 'utc')
+        where mc.created_at >= date_trunc('month', now() at time zone 'utc') at time zone 'utc'
           and mc.accounted_cost is not null
           and not exists (
             select 1 from budget_reservations br where br.model_call_id = mc.id
@@ -221,7 +221,7 @@ _UNACCOUNTED = text(
     select count(*)
       from model_calls_accounted mc
      where mc.effective_cost_certainty = 'unknown'
-       and mc.created_at >= date_trunc('month', now() at time zone 'utc')
+       and mc.created_at >= date_trunc('month', now() at time zone 'utc') at time zone 'utc'
        and not exists (
          select 1 from budget_reservations br where br.model_call_id = mc.id
        )
