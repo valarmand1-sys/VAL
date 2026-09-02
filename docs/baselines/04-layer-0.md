@@ -453,6 +453,16 @@ Points 4 through 7 are the gate. Points 1 through 3 are what makes the layer ple
 > 4. Image vision (`01-architecture.md` §2.2 requirement, 31 August 2026)
 > 5. Audio and video afterward, **each designed against specific real tasks, with a cost model established before implementation**
 
+<!-- scope-ruling: 2026-09-01 -->
+> **Amendment — 1 September 2026, Lord Armand. Sight re-scoped out of Layer 2 (`01-architecture.md` §2.2, as amended); the post-gate order changes with it.**
+>
+> Image vision depends only on the attachment substrate, not on documents, so items 3 and 4 above become **siblings rather than sequential**. The amended order:
+>
+> 1. Message revision and retraction
+> 2. Attachment substrate, provenance designed once for all four modalities before either sibling begins
+> 3. **Image vision and documents, as siblings** — image vision is attachment-scoped (an image deliberately attached to a conversation), which satisfies "sight, not receipt" without Layer 2 Hands; MCP filesystem access — reading folders at scale — stays Layer 2
+> 4. Audio and video afterward, each designed against specific real tasks, with a cost model established before implementation
+
 ---
 
 ## 6. Explicitly deferred
@@ -465,7 +475,7 @@ Recorded so it is not added under pressure of seeming incomplete:
 | **Processing Restricted content** — requires local inference (§1.1) | Layer 1 |
 | **Per-content data classification and per-call eligibility checks** — Layer 0 satisfies invariant 17 structurally (§1.1); tools break that guarantee | Layer 2 |
 | MCP, Tool Registry, any tool at all | Layer 2 |
-| **Vision** — images reaching the model *as images*, with sight recorded per exchange. Requirement recorded 31 August 2026: `01-architecture.md` §2.2 | Layer 2 |
+| **Vision** — images reaching the model *as images*, with sight recorded per exchange (`01-architecture.md` §2.2). Re-scoped 1 September 2026: attachment-scoped sight arrives **post-gate** (§5 amended order); folder-scale filesystem reading stays Layer 2 | Post-gate / Layer 2 |
 | Roles, agents, self-evaluation, standing adversary, prediction ledger scoring | Layer 3 |
 | Temporal, graduated budget thresholds, reserve, cost dashboard | Layer 3 |
 | Outbox, audit chain, approval flow, versioned writes, risk-tier machinery | Layer 4 |

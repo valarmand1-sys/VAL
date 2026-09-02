@@ -109,6 +109,20 @@ Val is a native MCP client (§7). Governance enters here because there is now so
 > - **Filesystem access via MCP is preferred over an upload control.** The files already live in structured folders on this machine, and this layer's read-only tool discipline is the natural fit. The Tool Registry rules above apply to it in full.
 > - **An image is external egress, same as text.** It is classified before it leaves the house and respects data eligibility (§5.4, invariant 17); cost and availability never override eligibility. A vision-capable route must be eligible for the image's classification, not merely capable of receiving it.
 
+<!-- scope-ruling: 2026-09-01 -->
+> **Amendment — 1 September 2026, Lord Armand, after external review. Sight is re-scoped: it is not a Layer 2 capability and should not have been recorded against one. This is a plan change, not a defect.**
+>
+> **The reasoning: sight and filesystem access are different authority classes.** Sight is a property of the *model call* — image bytes reach a vision-capable route that is eligible for that content's classification, and what she saw is recorded against the exchange. Filesystem access is a property of *tool governance* — discovery, registry, read-only discipline, path confinement. Bundling them meant the first time Val could see anything was also the first time she could read the disk, which is both later and more dangerous than it needs to be.
+>
+> - **Sight may begin post-gate as attachment-scoped vision**: an image Lord Armand deliberately attached to a conversation. That satisfies "sight, not receipt" without Layer 2 Hands. Sequencing: `04-layer-0.md` §5.
+> - **MCP filesystem access stays Layer 2.** The implication above that filesystem access is the preferred route to vision is **superseded**: it is the preferred route to *reading folders at scale*, which is a different requirement and stays where it is.
+> - **Write and modify tools still wait for Layer 4.**
+> - **Eligibility is unchanged and non-negotiable**: an image is external egress and the route must be eligible for its classification.
+>
+> **Why now rather than at Layer 2, stated in the accurate form:** the evidence record is append-only, so every visual judgment made before Val can see is *permanently* a worse class of evidence — her reasoning from Lord Armand's descriptions rather than from the thing itself. That is true now, not contingent on Layer 5 arriving.
+>
+> Everything else in the requirement above — the capability bar, sight-not-receipt, vision reaching the actual model call, what-she-saw recorded per exchange — stands unchanged.
+
 ### 2.3 Layer 3 — Agents
 
 *Val builds and supervises her own working teams.*
