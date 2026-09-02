@@ -119,7 +119,13 @@ The 379-page draft PDF is **source material, not specification.** It is supersed
 
 ## Current work
 
-**Authorized layer: Layer 0 only.** Work order: `docs/baselines/04-layer-0.md`.
+This section restates the current scope ruling for convenience; **the ruling itself lives in the baselines**, and on any disagreement the baselines govern (see precedence above). Whoever records a scope ruling in a baseline updates this section in the same commit.
+
+**Two tracks — sequencing ruling, 31 August 2026** (`docs/baselines/04-layer-0.md` §5; `docs/baselines/01-architecture.md` §2.1):
+
+- **Track A, mandatory: the Layer 0 gate.** Evidence accumulates through Lord Armand's real use — no manufactured judgments, no deadline. The gate closes when the evidence exists. Work order: `docs/baselines/04-layer-0.md`.
+- **Track B, permitted in parallel: Layer 1 presence only** — speech-to-text input, ElevenLabs output, avatar state loops, lip-sync — under the hard constraint stated in `01-architecture.md` §2.1: presence consumes the existing conversation contract and changes nothing about it. No new table, no new column, no migration, no change to what the conversation endpoints return. A presence feature that needs any of those stops and waits for the gate. Invariant 29 applies to avatar state: the avatar never depicts a state the system cannot confirm.
+- **Everything else stays behind the gate** — message revision/retraction, attachment ingestion, documents, image vision, and anything touching persistence, recall, routing, evidence semantics, or egress. The post-gate order is recorded in `04-layer-0.md` §5.
 
 Before starting a work package, identify its acceptance criteria, its dependencies, what tests are required, and what evidence demonstrates completion. Completion means demonstrated against those criteria.
 
