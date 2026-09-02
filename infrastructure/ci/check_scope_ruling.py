@@ -21,6 +21,26 @@ all, so the mechanism cannot be silently retired by deleting its inputs.
 
 The comparison is exact dates, no prose parsing: a ruling is in step or it is
 not, and the failure message says which document moved.
+
+## The controlled set is narrow, deliberately
+
+Ruled 1 September 2026: tripwire **temporary rulings and duplicated
+scope/status facts that must move together**; test behavioral invariants;
+minimize semantic duplication everywhere else. Matching markers prove
+synchronization of markers, not of meaning — two documents can carry the same
+date and contradict each other — so this file does not grow a marker for
+every cross-document restatement.
+
+Second controlled item, same date: **the strip-routing deviation.**
+`02-partner-systems.md` §4.1 routes the strip step locally; `04-layer-0.md`
+§4 sends it to the cheapest Protected-eligible cloud route until local
+inference exists. The deviation carries its own expiry, and temporary
+deviations with built-in invalidation conditions are exactly the rules that
+become permanent by accident. The pairing enforced: the deviation marker in
+`04-layer-0.md` must be present while the Model Configuration Registry holds
+no local route, and must be gone (the section moved) once it holds one — a
+provider outside the known cloud set is the machine-detectable form of "local
+inference exists."
 """
 
 from __future__ import annotations
@@ -35,10 +55,56 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 #: correctly as strings, which is the whole trick.
 MARKER = re.compile(r"<!--\s*scope-ruling:\s*(\d{4}-\d{2}-\d{2})\s*-->")
 
+#: The strip-routing deviation's marker (04-layer-0.md §4).
+DEVIATION_MARKER = "<!-- deviation: strip-routing-cloud-until-local -->"
+
+#: Providers with cloud adapters today. A registry provider outside this set
+#: is a local (or at least non-cloud) route, which is the deviation's
+#: built-in invalidation condition made machine-detectable.
+CLOUD_PROVIDERS = frozenset({"anthropic", "openai", "google"})
+
+_PROVIDER = re.compile(r'provider="([a-z0-9_-]+)"')
+
 
 def markers_in(text: str) -> list[str]:
     """Every scope-ruling date in one document, as written."""
     return MARKER.findall(text)
+
+
+def check_strip_deviation(layer0_md: Path, registry_py: Path) -> list[str]:
+    """The strip-routing deviation expires when a local route exists — enforced.
+
+    Marker present + no local route: the deviation stands, correctly.
+    Marker present + a local route: **the deviation has expired** and
+    `04-layer-0.md` §4 has not moved — the failure this exists to catch.
+    Marker absent + no local route: the deviation text was removed while its
+    condition still holds — the record no longer states the routing that is
+    actually happening.
+    """
+    problems: list[str] = []
+    deviation_stands = DEVIATION_MARKER in layer0_md.read_text(encoding="utf-8")
+    non_cloud = sorted(
+        provider
+        for provider in set(_PROVIDER.findall(registry_py.read_text(encoding="utf-8")))
+        if provider not in CLOUD_PROVIDERS
+    )
+
+    if deviation_stands and non_cloud:
+        problems.append(
+            f"the strip-routing deviation (04-layer-0.md §4) has expired: the Model "
+            f"Configuration Registry now holds non-cloud provider(s) {non_cloud}, so "
+            "local inference exists and the strip step must move to it "
+            "(02-partner-systems.md §4.1). Amend §4 and remove its deviation marker "
+            "— a temporary deviation does not get to become permanent by accident."
+        )
+    if not deviation_stands and not non_cloud:
+        problems.append(
+            "04-layer-0.md no longer carries the strip-routing deviation marker, but "
+            "the registry still holds only cloud providers — the strip step is still "
+            "routed to the cloud, and the record must say so. Restore the deviation "
+            "(and its marker), or stand up the local route it defers to."
+        )
+    return problems
 
 
 def check(baselines_dir: Path, claude_md: Path) -> list[str]:
@@ -89,12 +155,21 @@ def check(baselines_dir: Path, claude_md: Path) -> list[str]:
 
 def main() -> int:
     problems = check(REPO_ROOT / "docs" / "baselines", REPO_ROOT / "CLAUDE.md")
+    problems.extend(
+        check_strip_deviation(
+            REPO_ROOT / "docs" / "baselines" / "04-layer-0.md",
+            REPO_ROOT / "packages" / "domain" / "src" / "val_domain" / "registry.py",
+        )
+    )
     if problems:
         print("CLAUDE.md is out of step with the recorded scope ruling:", file=sys.stderr)
         for problem in problems:
             print(f"  {problem}", file=sys.stderr)
         return 1
-    print("CLAUDE.md restates the newest recorded scope ruling.")
+    print(
+        "CLAUDE.md restates the newest recorded scope ruling, and the controlled "
+        "deviation stands consistently with the registry."
+    )
     return 0
 
 

@@ -408,7 +408,11 @@ Each states what exists when it is done and how that is verified.
 
 ## 4. The blind position call at Layer 0 — a deviation
 
+<!-- deviation: strip-routing-cloud-until-local -->
+
 `02-partner-systems.md` §4.1 routes the strip step to local inference. **Local inference does not exist until Layer 1.**
+
+> *Tripwired, 1 September 2026: this deviation carries its own expiry — when a local inference route exists in the Model Configuration Registry, `infrastructure/ci/check_scope_ruling.py` fails until this section moves. Temporary deviations with built-in invalidation conditions are exactly the rules that become permanent by accident.*
 
 Layer 0 therefore runs the strip step on **the cheapest configured route** — which, under §1.1, is Protected-eligible by construction — and moves it to local at Layer 1. This is a routing deviation, recorded here rather than left to be discovered.
 
@@ -462,6 +466,15 @@ Points 4 through 7 are the gate. Points 1 through 3 are what makes the layer ple
 > 2. Attachment substrate, provenance designed once for all four modalities before either sibling begins
 > 3. **Image vision and documents, as siblings** — image vision is attachment-scoped (an image deliberately attached to a conversation), which satisfies "sight, not receipt" without Layer 2 Hands; MCP filesystem access — reading folders at scale — stays Layer 2
 > 4. Audio and video afterward, each designed against specific real tasks, with a cost model established before implementation
+
+<!-- scope-ruling: 2026-09-01 -->
+> **Amendment — 1 September 2026, Lord Armand, from external review. The attachment-substrate acceptance boundary.** Both reviewers found a hole in the sibling ruling that neither Lord Armand nor the implementation caught: the design-once rule did not cover **mixed-modality files**. A PDF with figures, a slide with a frame — "what she saw" and "what the document says" are *derived views of one attachment*, not two attachments, and without a rule, page 17 and the figure on page 17 become two provenances for one file.
+>
+> **Attachment Substrate v1 must be accepted as a shared contract for both image vision and document comprehension before implementation of either consumer begins.** The contract establishes at minimum: the immutable original; attachment identity and hash; typed derived representations; parent/child provenance; processing and model provenance; structural locators such as page/slide/region; processing status and errors; and rules for extending the representation model later.
+>
+> **The standard is contract-stable, not frozen.** Core provenance semantics may not be privately changed by either sibling. Additive typed representations are permitted. If a sibling finds a core assumption wrong, the contract is amended deliberately rather than quietly becoming the vision version of the attachment model.
+>
+> **Siblings describes dependency, not mandatory concurrency:** after the substrate is accepted, either may be implemented first, or both in parallel.
 
 ---
 

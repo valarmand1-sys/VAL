@@ -109,7 +109,7 @@ A distilled summary of each book travels in context always. **Full volumes are o
 
 This is retrieval-on-demand rather than permanent injection, and it is how context cost stays bounded as the library grows. It is also what makes "let me look at what we learned last season" a real action with a real latency rather than a figure of speech.
 
-**One interpretation, stated once.** `03-persona.md` §2 and this section describe the same mechanism from opposite ends — character and machinery — and must not be read as two policies:
+**One interpretation, stated once — and this section is the authority.** *Amended 1 September 2026, Lord Armand, from external review:* `03-persona.md` §2 and this section describe the same mechanism from opposite ends — character and machinery — and must not be read as two policies. **This section governs the mechanism; `03-persona.md` §2 is the character-side restatement and is subordinate to it.** The distinction matters more here than for any other restatement, because `03-persona.md` is loaded whole into every context: a drifted sentence there would arrive as an instruction to a live model, not as a stale summary on a shelf. On any divergence, this section is the mechanism and the persona document needs amending — through the persona-revision process, which is Lord Armand's. The five points:
 
 1. **The index is always resident in full.** Val always knows what she has written; a book she cannot see in the index is one she will never consult.
 2. **Bounded summaries are resident** to the configured token budget, relevance-ranked when the library exceeds it.
