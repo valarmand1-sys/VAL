@@ -71,6 +71,14 @@ Concrete work packages, schema, and acceptance criteria: `04-layer-0.md`.
 
 The reason for standing it up this early is that the cost gradient (§5.3) is fiction until local exists. Every routing decision before that point is cloud-to-cloud, the ceiling does no real work, and the assumptions behind the budget go untested. Layer 1 is also when speech-to-text arrives, so on-device inference is being set up regardless. Exercising the gradient under Layer 1–2 volume — where the consequences of getting it wrong are a slow reply — is materially safer than first exercising it at Layer 3, when agents multiply call volume.
 
+> **Sequencing ruling — 31 August 2026, Lord Armand. Presence may proceed in parallel with the Layer 0 gate, under one hard constraint.**
+>
+> Layer 0 gate evidence accumulates through real use — no manufactured judgments, no deadline; the gate closes when the evidence exists. Presence work (speech-to-text input, ElevenLabs output, avatar state loops, lip-sync) is **permitted before the gate on one condition, stated here as a constraint rather than a convention: it consumes the existing conversation contract and does not change it.** Concretely: **no new table, no new column, no migration, and no change to what the conversation endpoints return.** A presence feature that needs any of those **stops and waits for the gate** — it does not get a carve-out, and an implementation that finds a way to smuggle state into an existing column is violating the constraint, not satisfying it.
+>
+> Everything else stays behind the gate: message revision/retraction, attachment ingestion, documents, image vision, and anything touching persistence, recall, routing, evidence semantics, or egress.
+>
+> **Requirement, same date: invariant 29 applies to avatar state.** Every frame the avatar shows is a claim about what Val is doing. An idle or thinking loop displayed while something has actually failed is the same defect as an error banner asserting a cause it has not established — a confident assertion the system has not made true. Presence degrades honestly, and **the avatar must not depict a state the system cannot confirm**: a state loop is driven by confirmed backend state, never by optimism, and where the system cannot confirm what is happening, the avatar shows that — not a guess. This extends invariant 28 (animation is presentation only, §8) from "never implies success" to "never depicts the unestablished."
+
 Failure behavior: §8.3.
 
 This layer lands early deliberately. It is the difference between a chat application and Val, and that difference determines whether the system is used at all. A correct system nobody opens has failed.

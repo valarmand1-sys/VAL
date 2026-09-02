@@ -438,6 +438,20 @@ Points 4 through 7 are the gate. Points 1 through 3 are what makes the layer ple
 
 **Definition of done:** every work package's acceptance criteria met and demonstrated, not asserted. Compiling is not completion. Passing unit tests alone is not completion (`00-charter.md` §4).
 
+> **Sequencing ruling — 31 August 2026, Lord Armand. Two tracks.**
+>
+> **Track A, mandatory:** gate evidence accumulates through real use. No manufactured judgments, no deadline. The gate closes when the evidence exists.
+>
+> **Track B, permitted in parallel:** Layer 1 presence only, under the hard constraint stated in `01-architecture.md` §2.1 — it consumes the existing conversation contract and changes nothing about it (no new table, no new column, no migration, no change to what the conversation endpoints return); a presence feature needing any of those stops and waits for the gate.
+>
+> **Everything else stays behind the gate**, and the post-gate order is decided now so it is not re-litigated then:
+>
+> 1. Message revision and retraction (§2.1 requirement, 31 August 2026)
+> 2. Attachment substrate, **with provenance designed once for all four modalities** — not per-modality as each arrives
+> 3. Documents
+> 4. Image vision (`01-architecture.md` §2.2 requirement, 31 August 2026)
+> 5. Audio and video afterward, **each designed against specific real tasks, with a cost model established before implementation**
+
 ---
 
 ## 6. Explicitly deferred
