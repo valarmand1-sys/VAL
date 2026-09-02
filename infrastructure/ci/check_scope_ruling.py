@@ -62,6 +62,14 @@ DEVIATION_MARKER = "<!-- deviation: strip-routing-cloud-until-local -->"
 #: is a local (or at least non-cloud) route, which is the deviation's
 #: built-in invalidation condition made machine-detectable.
 #:
+#: **This roster is a temporary, conservative CI mechanism — it is NOT VAL's
+#: authoritative model of execution locality** (external review, 1 September
+#: 2026). Nothing architectural may be built on it, and CI depending on it is
+#: not evidence that it means more than it does. If real local inference
+#: creates a genuine system need to model execution locality, that is modelled
+#: properly then, as its own decision — at which point this roster and the
+#: deviation pairing it serves retire together.
+#:
 #: **Maintenance is bound to provider admission** (ruled 1 September 2026,
 #: after registry inspection found no authoritative execution-locality field —
 #: and `RULED_PROVIDERS` cannot serve, because a local route will also need a

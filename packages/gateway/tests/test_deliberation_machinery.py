@@ -431,6 +431,17 @@ def test_a_pinned_configuration_is_never_silently_reselected(store: Engine) -> N
     route for both calls. THIS test is the one a de-pinned implementation
     cannot pass — verified by mutation (removing `configuration=config` from
     the response call turns it red).
+
+    **Limit of proof — recorded 1 September 2026, Lord Armand, so nobody later
+    reads this test as proving both branches.** The ruling has two branches:
+    the response stays on A while A is usable, or the turn fails when A is
+    not. This test proves only the second — A unusable, fail closed, B never
+    called. The first branch — A still available, routing would now prefer B,
+    response must still use A — is NOT tested here, and an implementation
+    that fails closed when A's adapter is gone but silently re-routes
+    whenever A is present would pass this test and still violate pinning.
+    Same discipline as OP-2's "enforced only by absence": a stated limit,
+    not a claimed proof.
     """
     adapters: dict[str, ScriptedAdapter] = {}
     adapter_a = ScriptedAdapter(
