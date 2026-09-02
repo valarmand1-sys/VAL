@@ -1,14 +1,15 @@
-# Attachment Substrate v1.1 — the shared contract
+# Attachment Substrate v1.2 — the shared contract
 
-**Status: DRAFT v1.1, for Lord Armand's ruling. Not governing until accepted.**
+**Status: DRAFT v1.2, for Lord Armand's ruling. Not governing until accepted.**
 **No migration and no application code exists for anything below.**
 
-v1.0 (2 September 2026) was not accepted; v1.1 (same date) applies the eleven
-required amendments from the first ruling, on which both external reviewers
-independently converged. The central architecture stands unreopened: one file,
-one attachment, one provenance tree; sidecars rather than columns on
-protected tables; complete-at-insert representations; existing-gateway
-eligibility; the Track C isolation rule; contract-stable extension doctrine.
+v1.0 (2 September 2026) was not accepted; v1.1 (same date) applied the eleven
+required amendments of the first ruling. v1.1 was not accepted; **v1.2 (same
+date) applies the eight corrections of the second ruling** — the first seven
+converged on independently by both external reviewers, the eighth found by
+the third reviewer alone (reserve from the transmitted bytes, §8). The
+eleven amendments are not reopened; neither are the tree, the sidecars,
+Track C isolation, or per-act classification.
 
 Checkpoint review per the open-problems procedural rule: **OP-1** and
 **OP-3** name this work package; §10 records what this contract does about
@@ -44,7 +45,11 @@ reported before any migration is written:
 - expected annual raw and derived growth;
 - WAL and backup growth under the actual pgBackRest policy;
 - B2 storage impact under the actual retention policy;
-- restore time at projected one-year volume.
+- restore time at projected one-year volume;
+- estimated ordinary and consequential visual-turn inference cost at
+  representative median and high-percentile image dimensions on the approved
+  routes *(correction 2 — the consequential figure includes the §8 double
+  transmission)*.
 
 No object store is designed now. Nothing here freezes storage architecture
 past vision: **storage is explicitly reviewed again before audio or video.**
@@ -63,7 +68,7 @@ foreign key from the sidecar side.
 |---|---|
 | `sha256` | **Primary key.** Hex digest of `bytes`; verified equal to the computed digest at write. |
 | `byte_size` | Length of `bytes` |
-| `media_type` | Probed from the bytes (magic numbers), never trusted from filename or EXIF — a function of the bytes, so it lives with them |
+| `media_type` | Established by the **pre-commit admission preflight** (§3.3) from the bytes themselves (magic numbers), never trusted from filename or EXIF — a function of the bytes, so it lives with them |
 | `bytes` | The content |
 | `created_at` | First time these bytes entered the house |
 
@@ -83,6 +88,15 @@ Identity is the content, not the act; the acts live in §3.3. *(Amendment 4:
 no classification column here — bytes do not have a classification; the act
 does.)*
 
+**Why the table is this thin, and stays** *(correction 3)*: `blobs.sha256`
+means *these exact bytes exist in the content-addressed store*.
+`attachments.id` means *these bytes have been admitted as an original
+conversational attachment and are the root of this provenance tree*. Those
+are different concepts, and collapsing them would make five downstream
+tables use a cryptographic storage key as their domain identity, muddle a
+content store that originals and derived bytes deliberately share, and tie
+attachment identity permanently to one hashing scheme.
+
 ### 3.3 `message_attachments` — the act *(amendments 4, 5, 10)*
 
 | Column | Meaning |
@@ -100,13 +114,25 @@ defaulting `protected` again — never inheriting a weaker class from an
 earlier act** — and its own egress decision, over the same content row. A UI
 may pre-fill; the record is this act.
 
-**Evidence begins at send** *(amendment 10)*: composer selection is
-ephemeral client state and writes nothing. Ingestion (blob + attachment
-rows), association, and the user message **commit together at send**, in the
-same transactional motion that already persists the message before any
-provider is contacted. Remove-before-send therefore never created an
-immutable row — attach-preview-remove-choose-another accumulates no evidence
-of things never sent.
+**Evidence begins at the successful send commit, after admission preflight
+succeeds** *(amendment 10, boundary revised by correction 1)*: composer
+selection is ephemeral client state and writes nothing. The sequence:
+
+> send → **admission preflight** over the ephemeral candidate bytes — hash,
+> byte size, actual media type, decodability, dimensions, format support →
+> admission succeeds → **atomic evidence commit** (blob, attachment,
+> association, and the user message together, in the same transactional
+> motion that already persists the message before any provider is contacted)
+> → later processing.
+
+**The admission probe is pre-commit validation of ephemeral candidate bytes,
+not an attachment-processing event** — the attachment identity does not
+exist yet, and no temporary attachment row is invented so the probe can
+record itself. **Failed admission writes nothing**: no blob, no attachment,
+no association, no processing event, and no user message from that send.
+Remove-before-send therefore never created an immutable row —
+attach-preview-remove-choose-another accumulates no evidence of things never
+sent.
 
 ### 3.4 `attachment_representations` — typed derived views
 
@@ -132,13 +158,28 @@ and is immutable.
 | `id`, `created_at` | |
 | `attachment_id` | FK |
 | `attempt_id` | **Durable attempt identity** (uuid). All events of one attempt share it; terminal events refer to the attempt they end. |
-| `intent` | What is being attempted (`probe`, `derive:model_input_image`, …) |
+| `intent` | What is being attempted (`derive:model_input_image`, `verify`, …). **Not `probe`** *(correction 1)*: the admission probe is pre-commit and ephemeral (§3.3) — the identity this table requires does not exist yet. A later re-probe or verification of an *already-ingested* attachment may be an evidence-class attempt; the admission probe cannot be. |
 | `event` | `started` \| `succeeded` \| `failed` |
 | `representation_id` | Nullable FK — on `succeeded` derivations, what was produced |
 | `error` | Verbatim, on `failed`; NULL otherwise |
 
 Append-only; **current state is derived from the event sequence, never
-mutated.** The honesty rules, stated as contract:
+mutated.** *(Correction 6)* — and a derivation therefore requires the
+contract to say what a **valid sequence** is:
+
+1. Exactly **one `started` per `attempt_id`**.
+2. **At most one terminal event** (`succeeded` or `failed`) per `attempt_id`.
+3. A terminal event **matches its `started`'s attachment and intent**.
+4. `failed` **requires** `error`.
+5. A `succeeded` derivation naming a representation requires that
+   representation to **belong to the same attachment**.
+6. A successful derive commits **the representation row and the `succeeded`
+   event in ONE transaction.** This is the rule that matters most: without
+   it, the representation row commits, the process crashes, the success
+   event never lands — and the representation says *done* while the trail
+   says only *started*: two evidence sources disagreeing about one fact.
+
+The honesty rules, stated as contract:
 
 - `started` with no terminal event means exactly **"started; no terminal
   outcome recorded"** — never, automatically, "currently processing." A
@@ -150,39 +191,58 @@ mutated.** The honesty rules, stated as contract:
   state renders as **incomplete or unknown** — one false spinner is not
   fixed by building a spinner that becomes false after a crash.
 
-### 3.6 `model_call_inputs` — what was bound to the call *(amendments 2, 3, 4, 11)*
+### 3.6 `model_call_image_inputs` — the image inputs bound to the call *(amendments 2, 3, 4, 11; corrections 4, 7)*
 
-Renamed from v1.0's `model_call_sight`, because the row proves **which bytes
-were bound to a recorded call** — it cannot by itself prove she saw them.
+Name lineage, deliberate at every step: v1.0's `model_call_sight` overclaimed
+sight; v1.1's `model_call_inputs` overclaimed being the authoritative record
+of *all* inputs to a call, which it is not — it carries width, height,
+transmitted image media type, and visual provider options. Documents, audio,
+and video inherit this substrate later and must not inherit a name that
+overclaims; renamed **before the table exists** *(correction 7)*. The row
+proves **which image bytes were bound to a recorded call** — it cannot by
+itself prove she saw them.
 
 | Column | Meaning |
 |---|---|
 | `id`, `created_at` | |
 | `model_call_id` | FK → the existing call row |
+| `message_attachment_id` | FK → the exact **participating act** (§3.3), *(correction 4)* — structurally required to match this row's `attachment_id` (§5). Same attachment used `internal` on Monday and `protected` on Thursday: this names which act supplied the image to this call. |
 | `attachment_id` | FK — the identity |
 | `input_kind` | **`original` \| `representation`** — explicit discrimination, no semantic NULL |
 | `representation_id` | FK, **required iff `input_kind = 'representation'`, NULL iff `'original'`** — check-constrained as a pair |
 | `transmitted_sha256` | FK → `blobs`: the exact bytes bound to this call. One lookup, no reconstruction. Must equal the referenced original's or representation's digest (integrity rule, §5). |
-| `width`, `height` | Read from the **decoded bytes**, never trusted from EXIF *(amendment 11)* |
+| `width`, `height` | Read from the **decoded bytes**, never trusted from EXIF *(amendment 11)* — the dimensions of the transmitted bytes, which are what priced the call (§8) |
 | `media_type` | As transmitted |
 | `provider_options` | Any provider option that changes pricing or interpretation (e.g. a detail level); empty when none |
-| `stated_classification` | Copied from the participating act at send *(amendment 4)* — the egress record's meaning does not depend on a later join |
+| `stated_classification` | Copied from the participating act at send *(amendment 4)* — kept even though the act is now named directly, so the egress record remains self-contained |
 | `position` | Order within the call's payload; **unique per call** |
+
+**The chain, complete** *(correction 4)*: call → image input → attachment
+act → attachment → original blob.
 
 These are the **facts that priced and transmitted the image**, preserved so
 the reservation's factual basis survives — *not* so historical cost can be
 recomputed; doctrine forbids that, and settlement stays as recorded at call
 time.
 
-## 4. When sight may be claimed *(amendment 3)*
+## 4. When sight may be claimed *(amendment 3; correction 5)*
 
 **The existing `model_calls` lifecycle already provides the distinction, and
 this contract references it rather than adding machinery — stated
 explicitly:** since migration `0010`, every call durably records
 `terminal_state`. Evidence of sight is the conjunction:
 
-> `model_call_inputs` rows **and** the call's `terminal_state` is a
-> provider-issued completion — `complete` or `refused`.
+> `model_call_image_inputs` rows **and** the call's `terminal_state` is
+> **`complete`**.
+
+**`refused` is not sight** *(correction 5)*: a provider refusal can be
+produced by a safety layer that never ran vision, so claiming she saw the
+image would go beyond what is known — exactly the invariant 29 failure.
+`refused` establishes a provider-issued refusal and nothing more, **unless a
+provider-specific contract demonstrably guarantees the visual input was
+processed before that state is issued** — and no such guarantee is claimed
+for any v1 route. Nothing is lost: a refused call produces no visual
+judgment anyway.
 
 `failed` (transit error; pixels may or may not have left the machine) is
 **never** sight — the same crash-boundary honesty as cost, and no certainty
@@ -203,6 +263,10 @@ Binding on the migration, enumerated:
    already exist, and the self-parent check closes the one degenerate case.
 3. An input row's `representation_id` belongs to its stated `attachment_id`
    (same composite-FK device).
+3a. An input row's `message_attachment_id` names an act whose
+   `attachment_id` **equals the input row's own** *(correction 4)* — the
+   same composite-FK device, so the act linkage cannot quietly point at a
+   different file's act.
 4. `transmitted_sha256` equals the digest of the named original or
    representation (enforced mechanism chosen at migration time; the rule is
    contract).
@@ -232,7 +296,7 @@ provider options that change interpretation or price. **Derive once, reuse**
 call does not get the images, she forms a position on a description rather
 than the work — the exact inferior evidence class Track C exists to
 eliminate. If the two calls see different bytes, the deliberation ledger is
-theatre. Both calls' `model_call_inputs` rows make the binding checkable
+theatre. Both calls' `model_call_image_inputs` rows make the binding checkable
 after the fact.
 
 **The claim boundary, stated because pixels can carry preference** (an
@@ -244,17 +308,41 @@ built. When preference in an image is noticed, the existing `contaminated`
 marking and manual-override path apply. Successful text-stripping is never
 described — in records or interface — as a blinded *visual* deliberation.
 
-## 8. Cost, within existing doctrine *(amendment 11)*
+## 8. Cost, within existing doctrine *(amendment 11; corrections 2, 8)*
 
-Dimensions are read from decoded bytes before anything else depends on them:
-**probe before reservation** — no budget reservation is taken until the
-image's real dimensions are known, because `maximum_cost`'s image term is
-computed from them via each provider's published dimensional formula (a
-registry-adjacent fact, verified and dated like every rate). Settlement
-continues from returned usage, unchanged; reservations, expiry, and
-`cost_certainty` doctrine untouched. **The STOP condition stands**: if any
-provider's image pricing cannot be expressed through the existing doctrine,
-halt and present — do not adapt.
+**Reserve from the transmitted bytes, not the original** *(correction 8)*.
+Amendment 11's probe-before-reserve was written against the original, but
+transmission may use a `model_input_image` derived after admission — and
+reserving from the original's dimensions while sending a resize is another
+invented number, the exact class of defect this review exists to catch. The
+order, binding:
+
+> **admit → derive if needed → reserve from the dimensions of the bytes that
+> will actually be sent → call.**
+
+`maximum_cost`'s image term is computed from the transmitted bytes'
+dimensions via each provider's published dimensional formula (a
+registry-adjacent fact, verified and dated like every rate); those same
+dimensions land on the `model_call_image_inputs` row, so the reservation's
+basis and the transmission record are one set of facts. Dimensions are
+always read from decoded bytes, never EXIF. Settlement continues from
+returned usage, unchanged; reservations, expiry, and `cost_certainty`
+doctrine untouched. **The STOP condition stands**: if any provider's image
+pricing cannot be expressed through the existing doctrine, halt and present
+— do not adapt.
+
+**Double transmission is structural** *(correction 2)*: a consequential
+visual turn transmits the ruled image-input set to **both** the
+blind-position call and the final-response call, so image-input cost is
+incurred on both. This is a structural consequence of genuine visual
+anti-sycophancy, **not duplicate work to be optimized away** — cost pressure
+must not cause either call to omit, alter, or independently re-derive the
+visual input. Provider caching or discounted repeated input may reduce
+*settlement* if the provider reports it; **never reserve as though it
+will.** Estimated ordinary and consequential visual-turn costs are part of
+the §2 pre-implementation measurement report; operating targets live outside
+this contract, and eligibility and existing budget doctrine remain
+authoritative.
 
 **Preview**: no `ui_preview` in v1. The composer renders the selected
 original from ephemeral local bytes; after send, the client may downsample
@@ -286,7 +374,7 @@ editing or deletion.
 3. **Core provenance semantics may not be privately changed by either
    sibling**: content-hash identity, one-file-one-tree, parent/child links,
    complete-at-insert immutability, per-act classification, the
-   `model_call_inputs` binding, and the §4 sight-claim rule are the core.
+   `model_call_image_inputs` binding, and the §4 sight-claim rule are the core.
    A sibling finding a core assumption wrong stops; the contract is amended
    deliberately.
 4. Every amendment is dated, attributed, and notes which consumer forced it.
@@ -298,6 +386,6 @@ editing or deletion.
   the enumerated parts, now including explicitly declared attachment parts,
   and nothing else.
 - **OP-1** is *narrowed, not solved*: claims about what she received become
-  checkable against `model_call_inputs` plus the §4 sight rule — a
+  checkable against `model_call_image_inputs` plus the §4 sight rule — a
   deterministic record where none existed. Claims of approval and completion
   remain uncovered; OP-1 stays open with its remaining checkpoints.
