@@ -441,9 +441,7 @@ def test_a_pinned_configuration_is_never_silently_reselected(store: Engine) -> N
         ],
         after_last_call=lambda: adapters.pop("anthropic"),
     )
-    adapter_b = ScriptedAdapter(
-        [reconciled("B must never be asked to say this.", "held")]
-    )
+    adapter_b = ScriptedAdapter([reconciled("B must never be asked to say this.", "held")])
     adapters["anthropic"] = adapter_a
     adapters["openai"] = adapter_b
 
