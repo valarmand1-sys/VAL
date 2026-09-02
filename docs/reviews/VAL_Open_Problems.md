@@ -44,3 +44,39 @@ they demonstrably fail. (Also stated in `CLAUDE.md`, Current work.)
 | **Responsible layer / WP** | The post-gate core-loop packages above, then Layer 4. |
 | **Closure condition** | A remedy exists, demonstrated, that is honest about what the records can actually support — not closed because its first remedy failed. |
 | **Last reviewed** | 1 September 2026 (schema migration; substance unchanged). |
+
+---
+
+## OP-2 — The ideas enthusiasm-is-not-approval rule is enforced only by absence
+
+| Field | |
+|---|---|
+| **Problem ID** | OP-2 |
+| **Status** | **Open. Vacuously safe.** |
+| **Statement** | `04-layer-0.md` §2.4 rules that `ideas.lifecycle_state = 'approved'` is never inferred from enthusiasm — and today that rule is enforced by nothing but the absence of any writer: no application code can write `ideas` or `idea_state_changes` at all, so no test exercises the promotion because no path exists. Covered-by-absence is the "looks covered" failure mode: nothing forces the negative fixture to arrive when the writer eventually does. |
+| **Affected invariants** | `04-layer-0.md` §2.4 (both binding rules); the trap-question doctrine; `02-partner-systems.md` §2.1. |
+| **What is known** | The same rule is genuinely tested at every surface that has a code path: execution_events reaction-only records, deliberations `agreed_from_start`, retrieval framing, and the 0009 UPDATE refusal. |
+| **Current mitigation / detection** | Absence of a writer. Detection: this entry. |
+| **Why not being solved now** | Ruled 1 September 2026: a test against a nonexistent writer proves nothing. The obligation binds to the writer, not to now. |
+| **Review checkpoints** | **Any work package that first writes `ideas.lifecycle_state` or `idea_state_changes`.** |
+| **Responsible layer / WP** | The work package that introduces the ideas writer, whichever it is. |
+| **Closure condition** | That work package ships a negative acceptance case proving enthusiasm alone cannot produce `approved` — recorded evidence (a reaction, a deliberation, enthusiastic prose) with the approved count still zero. |
+| **Last reviewed** | 1 September 2026. |
+
+---
+
+## OP-3 — Message-channel context composition is not exactly pinned
+
+| Field | |
+|---|---|
+| **Problem ID** | OP-3 |
+| **Status** | **Open. Partially covered.** |
+| **Statement** | The `system` channel is pinned byte-exact by existing tests (`request.system == persona.content`, `persona_occurrences == 1`, adapters' `sent_system` asserted at every call site), so permanent injection of accumulated books — or anything else — into the governance channel fails today. The message channel is asserted piecewise (envelope excerpt count equals recall count; forged content stays one string; the current turn is last) but no test asserts the request contains *only* the recall envelope plus conversation turns, so a future non-conversation message block would not by itself fail an assertion. |
+| **Affected invariants** | `02-partner-systems.md` §2.4 (retrieval, not permanent injection — the authoritative side, per the 1 September 2026 amendment); WP-0.5 assembly doctrine. |
+| **What is known** | No books mechanism exists in any code path; the danger is future, not current. |
+| **Current mitigation / detection** | The system-channel byte pins, plus this entry. |
+| **Why not being solved now** | Ruled 1 September 2026: an exact-composition test today asserts the absence of a nonexistent feature. It becomes meaningful when the first legitimate non-conversation context type arrives. |
+| **Review checkpoints** | **The attachment substrate** — the first legitimate non-conversation context type. |
+| **Responsible layer / WP** | The attachment-substrate work package (post-gate order item 2). |
+| **Closure condition** | An exact-composition assertion lands with the substrate: the assembled request contains exactly the enumerated parts and nothing else, so any later addition must name itself in the test. |
+| **Last reviewed** | 1 September 2026. |

@@ -17,6 +17,13 @@ from val_domain.registry import declared_chain_violations
 #: Providers ruled Protected-eligible on 15 August 2026, with the grounds
 #: recorded in 01-architecture.md §5.4. Google's eligibility is conditional and
 #: carries the structural billing check below.
+#:
+#: **Bound maintenance (ruled 1 September 2026):** admitting a new CLOUD
+#: provider here also updates `CLOUD_PROVIDERS` in
+#: `infrastructure/ci/check_scope_ruling.py` in the same commit — that roster
+#: is how the strip-routing deviation's expiry (04-layer-0.md §4) tells a
+#: local route from a new cloud one, and an unlisted cloud provider fires a
+#: false red demanding the deviation move.
 RULED_PROVIDERS = frozenset({"anthropic", "openai", "google"})
 
 #: Excluded pending verification, not permanently: unverifiable terms as of

@@ -28,6 +28,7 @@ gate.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from uuid import uuid4
 
@@ -109,6 +110,11 @@ class ScriptedAdapter:
     name: str = "scripted"
     probe_engine: Engine | None = None
     sent: list[SentCall] = field(default_factory=list)
+    #: Runs once, immediately after this adapter serves its final scripted
+    #: response. The reselection counterfactual uses it to change routing
+    #: conditions between the blind call and the response — the exact window
+    #: the pinning rule governs.
+    after_last_call: Callable[[], None] | None = None
 
     def complete(
         self,
@@ -135,6 +141,8 @@ class ScriptedAdapter:
         step = self.script.pop(0)
         if isinstance(step, Exception):
             raise step
+        if not self.script and self.after_last_call is not None:
+            self.after_last_call()
         return step
 
 
@@ -396,6 +404,82 @@ def test_a_pinned_route_failure_does_not_fall_back(store: Engine) -> None:
 
     assert isinstance(outcome, UnansweredTurn)
     assert len(adapter.sent) == 4, "no fifth call: the pinned route has no fallback"
+
+
+def test_a_pinned_configuration_is_never_silently_reselected(store: Engine) -> None:
+    """The counterfactual — ruled 1 September 2026, from external review.
+
+    Distinct from `test_a_pinned_route_failure_does_not_fall_back`, and the two
+    stay separate deliberately: that one forbids following the DECLARED
+    FALLBACK when the pinned route fails mid-call; this one forbids the router
+    quietly RE-SELECTING when conditions change between the blind call and the
+    response.
+
+    The counterfactual, exactly: the blind call runs on configuration A (the
+    anthropic route, served by its own adapter). Immediately after the blind
+    reply, A's adapter is removed — from this moment, ordinary routing would
+    select B (the openai route) and answer happily. The pinned response must
+    NOT become B: A can no longer be used, so the turn fails, B's adapter is
+    never touched, and no conversation call lands anywhere. A response that
+    silently became B because B is what the router would now choose would be
+    the same-configuration guarantee failing exactly when it matters —
+    producing a clean paper trail of an independence that never existed.
+
+    Honesty note on the sibling test below: with one shared adapter and a
+    fixed registry, its slug-equality assertion would still pass if pinning
+    were deleted, because routing would coincidentally pick the same cheapest
+    route for both calls. THIS test is the one a de-pinned implementation
+    cannot pass — verified by mutation (removing `configuration=config` from
+    the response call turns it red).
+    """
+    adapters: dict[str, ScriptedAdapter] = {}
+    adapter_a = ScriptedAdapter(
+        [
+            classifier_says("consequential"),
+            strip_says(question=QUESTION, removed=PREFERENCE),
+            blind_says("Open on the close-up."),
+        ],
+        after_last_call=lambda: adapters.pop("anthropic"),
+    )
+    adapter_b = ScriptedAdapter(
+        [reconciled("B must never be asked to say this.", "held")]
+    )
+    adapters["anthropic"] = adapter_a
+    adapters["openai"] = adapter_b
+
+    gateway = Gateway(
+        adapters=adapters,  # type: ignore[arg-type]
+        recorder=lambda record: record_call(store, record),
+        ledger=FakeLedger(),
+        observe_block=lambda message: None,
+        persona_loader=DatabasePersonaLoader(store),
+        verify_provenance=verifier(store),
+    )
+    outcome = deliberated_send(
+        store,
+        gateway,
+        MIXED_MESSAGE,
+        catalogue=load_catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+    )
+
+    assert isinstance(outcome, UnansweredTurn), (
+        "with the pinned configuration unusable, the turn must fail — a routed "
+        "answer here means the router silently reselected"
+    )
+    assert adapter_b.sent == [], "the route the router would now choose was never contacted"
+    with store.connect() as connection:
+        conversation_calls = connection.execute(
+            text("select count(*) from model_calls where task_type = 'conversation'")
+        ).scalar_one()
+        val_messages = connection.execute(
+            text("select count(*) from messages where role = 'val'")
+        ).scalar_one()
+    assert conversation_calls == 0, "no conversation call was made on any configuration"
+    assert val_messages == 0, "no fabricated answer"
+    # The blind evidence stands: the position was formed and recorded on A
+    # before the conditions changed.
+    assert len(blind_positions_for(store, outcome.conversation.id)) == 1
 
 
 def test_blind_and_response_use_the_same_configuration(store: Engine) -> None:

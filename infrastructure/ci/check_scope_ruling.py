@@ -61,6 +61,16 @@ DEVIATION_MARKER = "<!-- deviation: strip-routing-cloud-until-local -->"
 #: Providers with cloud adapters today. A registry provider outside this set
 #: is a local (or at least non-cloud) route, which is the deviation's
 #: built-in invalidation condition made machine-detectable.
+#:
+#: **Maintenance is bound to provider admission** (ruled 1 September 2026,
+#: after registry inspection found no authoritative execution-locality field —
+#: and `RULED_PROVIDERS` cannot serve, because a local route will also need a
+#: ruling and would join it). Admitting a new CLOUD provider updates this
+#: roster in the same commit as its eligibility ruling; the reminder sits on
+#: `RULED_PROVIDERS` in `val_policy/eligibility.py`, the line that commit must
+#: touch anyway. Failure to update is a false RED, not a false green: the
+#: check misreads the new cloud provider as local and demands the strip
+#: deviation move, with the fix named in the message.
 CLOUD_PROVIDERS = frozenset({"anthropic", "openai", "google"})
 
 _PROVIDER = re.compile(r'provider="([a-z0-9_-]+)"')
@@ -95,7 +105,11 @@ def check_strip_deviation(layer0_md: Path, registry_py: Path) -> list[str]:
             f"Configuration Registry now holds non-cloud provider(s) {non_cloud}, so "
             "local inference exists and the strip step must move to it "
             "(02-partner-systems.md §4.1). Amend §4 and remove its deviation marker "
-            "— a temporary deviation does not get to become permanent by accident."
+            "— a temporary deviation does not get to become permanent by accident. "
+            "(If this provider is actually a NEW CLOUD provider, this is the bound "
+            "maintenance firing: add it to CLOUD_PROVIDERS in "
+            "infrastructure/ci/check_scope_ruling.py in the same commit as its "
+            "eligibility ruling.)"
         )
     if not deviation_stands and not non_cloud:
         problems.append(
