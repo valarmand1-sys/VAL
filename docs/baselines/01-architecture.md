@@ -71,6 +71,7 @@ Concrete work packages, schema, and acceptance criteria: `04-layer-0.md`.
 
 The reason for standing it up this early is that the cost gradient (§5.3) is fiction until local exists. Every routing decision before that point is cloud-to-cloud, the ceiling does no real work, and the assumptions behind the budget go untested. Layer 1 is also when speech-to-text arrives, so on-device inference is being set up regardless. Exercising the gradient under Layer 1–2 volume — where the consequences of getting it wrong are a slow reply — is materially safer than first exercising it at Layer 3, when agents multiply call volume.
 
+<!-- scope-ruling: 2026-08-31 -->
 > **Sequencing ruling — 31 August 2026, Lord Armand. Presence may proceed in parallel with the Layer 0 gate, under one hard constraint.**
 >
 > Layer 0 gate evidence accumulates through real use — no manufactured judgments, no deadline; the gate closes when the evidence exists. Presence work (speech-to-text input, ElevenLabs output, avatar state loops, lip-sync) is **permitted before the gate on one condition, stated here as a constraint rather than a convention: it consumes the existing conversation contract and does not change it.** Concretely: **no new table, no new column, no migration, and no change to what the conversation endpoints return.** A presence feature that needs any of those **stops and waits for the gate** — it does not get a carve-out, and an implementation that finds a way to smuggle state into an existing column is violating the constraint, not satisfying it.

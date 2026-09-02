@@ -438,6 +438,7 @@ Points 4 through 7 are the gate. Points 1 through 3 are what makes the layer ple
 
 **Definition of done:** every work package's acceptance criteria met and demonstrated, not asserted. Compiling is not completion. Passing unit tests alone is not completion (`00-charter.md` §4).
 
+<!-- scope-ruling: 2026-08-31 -->
 > **Sequencing ruling — 31 August 2026, Lord Armand. Two tracks.**
 >
 > **Track A, mandatory:** gate evidence accumulates through real use. No manufactured judgments, no deadline. The gate closes when the evidence exists.

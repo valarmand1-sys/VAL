@@ -43,6 +43,9 @@ jobs:
           enable-cache: true
       - run: uv python install
       - run: uv run --no-project python infrastructure/ci/check_pins.py
+      # Governance stays in step: CLAUDE.md's Current work restates the newest
+      # scope ruling recorded in the baselines, or this fails (1 September 2026).
+      - run: uv run --no-project python infrastructure/ci/check_scope_ruling.py
 
   boundaries:
     name: Dependency direction

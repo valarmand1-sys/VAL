@@ -119,7 +119,9 @@ The 379-page draft PDF is **source material, not specification.** It is supersed
 
 ## Current work
 
-This section restates the current scope ruling for convenience; **the ruling itself lives in the baselines**, and on any disagreement the baselines govern (see precedence above). Whoever records a scope ruling in a baseline updates this section in the same commit.
+This section restates the current scope ruling for convenience; **the ruling itself lives in the baselines**, and on any disagreement the baselines govern (see precedence above). Whoever records a scope ruling in a baseline updates this section in the same commit — and CI enforces it: `infrastructure/ci/check_scope_ruling.py` fails when the marker below is older than the newest `scope-ruling` marker in `docs/baselines/`.
+
+<!-- scope-ruling: 2026-08-31 -->
 
 **Two tracks — sequencing ruling, 31 August 2026** (`docs/baselines/04-layer-0.md` §5; `docs/baselines/01-architecture.md` §2.1):
 
