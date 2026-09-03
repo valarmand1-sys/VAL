@@ -1,7 +1,14 @@
 # Attachment Substrate v1.2 — the shared contract
 
-**Status: DRAFT v1.2, for Lord Armand's ruling. Not governing until accepted.**
-**No migration and no application code exists for anything below.**
+**Status: GOVERNING. v1.2 accepted by Lord Armand, 2 September 2026**, after
+both external reviewers verified the eight corrections of the second ruling
+and found no new contradiction. Amendments from here follow §9's
+contract-stable rules: dated, attributed, naming the consumer that forced
+them; core provenance semantics change only by deliberate amendment.
+
+**No migration and no application code yet exists for anything below.** The
+§2 sizing exercise blocks implementation: PostgreSQL remains only the
+candidate v1 byte store until Lord Armand rules on that report.
 
 v1.0 (2 September 2026) was not accepted; v1.1 (same date) applied the eleven
 required amendments of the first ruling. v1.1 was not accepted; **v1.2 (same
