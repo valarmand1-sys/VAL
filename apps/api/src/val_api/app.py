@@ -52,6 +52,7 @@ from val_api.contracts import (
     TurnUnanswered,
 )
 from val_domain.deliberation import ClassifiedBy
+from val_domain.gateway import GatewayError
 from val_gateway import conversations
 from val_gateway.conversations import ConversationNotFoundError
 from val_gateway.deliberate import send as deliberated_send
@@ -73,6 +74,7 @@ from val_gateway.gateway import Gateway
 from val_gateway.loop import TruncatedTurn, Turn, UnansweredTurn
 from val_gateway.persistence import (
     month_to_date_spend,
+    response_call_recorded,
     spend_by_task_type,
     uncosted_calls_this_month,
 )
@@ -193,10 +195,16 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
                 ],
             )
         if isinstance(outcome, UnansweredTurn):
+            failure = outcome.error
             return TurnUnanswered(
                 conversation=ConversationView.of(outcome.conversation),
                 user_message=MessageView.of(outcome.user_message),
-                error=str(outcome.error),
+                error=str(failure),
+                error_kind=(failure.kind.value if isinstance(failure, GatewayError) else "unknown"),
+                # From the record, not the message: a contacted provider leaves
+                # a model_calls row for this turn; a pre-contact refusal leaves
+                # none (ruled 2 September 2026).
+                provider_contacted=response_call_recorded(engine, outcome.user_message.id),
             )
 
         glimpse = DeliberationGlimpse(

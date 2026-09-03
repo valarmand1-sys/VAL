@@ -157,6 +157,28 @@ def month_to_date_spend(engine: Engine) -> float:
     return float(total)
 
 
+def response_call_recorded(engine: Engine, message_id: UUID) -> bool:
+    """Whether a conversation call for this user message reached the record.
+
+    *Ruled 2 September 2026.* The interface may claim provider contact only
+    where the durable call lifecycle supports it. A provider that was
+    contacted and failed leaves a `model_calls` row for the turn (transit
+    failures record `terminal_state = 'failed'`); a call refused before
+    contact — budget, no eligible route, incoherent provenance — leaves none.
+    This reads that fact from the record rather than inferring it from an
+    error message.
+    """
+    with engine.connect() as connection:
+        found = connection.execute(
+            text(
+                "select 1 from model_calls "
+                "where message_id = :m and task_type = 'conversation' limit 1"
+            ),
+            {"m": message_id},
+        ).first()
+    return found is not None
+
+
 def spend_by_task_type(engine: Engine) -> dict[str, float]:
     """This month's known spend, keyed by `task_type` — the cost view's split.
 

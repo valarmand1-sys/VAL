@@ -402,6 +402,25 @@ Each states what exists when it is done and how that is verified.
 - Project switching, conversation history, and marking an exchange consequential are all reachable from the interface.
 - Nothing in the interface displays a state the database does not support (`00-charter.md` invariant 29).
 
+<!-- scope-ruling: 2026-09-02 -->
+### WP-0.11 — Budget-control hardening (warn-and-raise) — recorded 2 September 2026, not yet begun
+
+**Ruled by Lord Armand after both external reviewers converged. Its own work package, not Track C**: Track C's isolation rule is attachments and derived views only, and budget policy colliding with vision in practice does not pull it into the substrate. Layer 0, because the ceiling it hardens is Layer 0's (`01-architecture.md` §5.5 as ruled 2 September 2026).
+
+**What it blocks and what it does not.** It does **not** block the attachment migration or the internal vision implementation after the storage ruling; those proceed on their existing path. It **does** block Track C becoming an operational working-day capability, and it blocks visual conversations contributing evidence to the Layer 0 gate — otherwise "she cannot see" is traded for "she stops mid-session and the raise is a code edit," the same stall through a different door. **Not a development blocker. A live-use blocker.**
+
+**Minimum shape when this work begins:**
+- Operating target and runaway safety ceiling are separate concepts with separate values. Neither is a source-code literal.
+- The operating target never admits, refuses, or reroutes. It is planning and reporting information only. **Only the runaway ceiling can refuse a call.**
+- A clear, non-blocking warning before the ceiling is reached; the first indication of approaching the limit may not be a hard refusal. The initial threshold is proposed with the work-package design, not ruled now.
+- Lord Armand can raise the safety ceiling at runtime without editing code, changing schema, restarting the service, or rebuilding Val. The raise is durably attributable: amount, scope, time, actor.
+- A runtime raise changes the safety ceiling, not the operating target, and never retroactively alters historical reporting; the concepts stay separate through the records and the interface.
+- Reservation, accounting, cost capture, and hard-refusal behavior remain authoritative against the effective ceiling.
+- **The degrade behavior is fixed here.** Today a routed call's `BUDGET_EXCEEDED` is retryable, so a turn steps down to a cheaper eligible route and refuses only when nothing affordable remains — Val silently doing worse work to stay under the only number she has, contradicting the quality priority and reading as resilience, which is why it went unnoticed. Under this package: a ceiling hit refuses, or resolves to `UnansweredTurn`. It does not pick a lesser model. An operating-target hit does nothing to the call at all.
+- **The number is Lord Armand's.** The refusal must not remain at $200 under a new name — that is still a planning figure stopping a heavy day. The safety ceiling is accident-scale: a figure that trips only when something is genuinely wrong, never because he is working hard. The design proposes the shape; the value is his.
+
+**Not authorized:** automatic increases, forecasting, dashboards, provider-specific budget management, spend optimization, or a policy engine. Premature.
+
 > **Amendment — 31 August 2026, Lord Armand. Invariant 29 applies to error display.** An error message that names a cause it has not established is a false claim. Recorded from real use: the interface asserted the service was "not reachable" while the service was demonstrably healthy — the actual failure was browser policy — and the asserted cause sent diagnosis down a network path that did not exist. Binding on the interface: a failure is reported as what was actually observed ("no response", "the service refused with this status", "the reply could not be read"), never as a diagnosis the observing code cannot make; where script cannot distinguish two causes, the message names both rather than picking one; and a multi-step operation reports each step's failure individually rather than collapsing them into one claim.
 
 ---

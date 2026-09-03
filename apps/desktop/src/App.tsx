@@ -24,7 +24,12 @@ import type {
   TurnClarification,
 } from "./api";
 import { api, ApiRefusal, describeFailure } from "./api";
-import { describeDeliberation, outcomeLabel, resolutionOf } from "./presentation";
+import {
+  describeDeliberation,
+  describeUnanswered,
+  outcomeLabel,
+  resolutionOf,
+} from "./presentation";
 
 type Scope = { kind: "project"; project: ProjectView } | { kind: "none" } | { kind: "all" };
 
@@ -142,7 +147,7 @@ export function App(): React.JSX.Element {
         }
         setComposer("");
         if (outcome.kind === "unanswered") {
-          setNotice(`The provider did not answer: ${outcome.error}. The question is history.`);
+          setNotice(describeUnanswered(outcome));
         }
         if (outcome.kind === "truncated") {
           setNotice(

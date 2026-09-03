@@ -118,6 +118,10 @@ export interface TurnUnanswered {
   conversation: ConversationView;
   user_message: MessageView;
   error: string;
+  error_kind: string;
+  // From the durable call lifecycle (a model_calls row for this turn), never
+  // from the error text. False means no provider was asked.
+  provider_contacted: boolean;
 }
 
 export interface TurnTruncated {

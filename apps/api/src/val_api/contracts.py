@@ -305,12 +305,21 @@ class TurnClarification(BaseModel):
 
 
 class TurnUnanswered(BaseModel):
-    """The message is history; the provider did not answer. No Val message exists."""
+    """The message is history; no answer exists. No Val message was written.
+
+    *Ruled 2 September 2026.* `provider_contacted` is read from the durable
+    call lifecycle — a `model_calls` row for this turn's conversation call —
+    never inferred from the error text. A pre-contact refusal (budget, no
+    eligible route) carries `False`, and the interface must not say "the
+    provider did not answer" over it: no provider was asked.
+    """
 
     kind: str = "unanswered"
     conversation: ConversationView
     user_message: MessageView
     error: str
+    error_kind: str
+    provider_contacted: bool
 
 
 class TurnTruncated(BaseModel):

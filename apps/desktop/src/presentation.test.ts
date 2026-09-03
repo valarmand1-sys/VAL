@@ -9,6 +9,7 @@ import type { BlindPositionView, DeliberationView } from "./api";
 import {
   OUTCOME_WORDS,
   describeDeliberation,
+  describeUnanswered,
   orderingLabel,
   outcomeLabel,
   resolutionOf,
@@ -109,5 +110,42 @@ describe("contamination is named, never dressed up", () => {
     expect(display.ordering).toContain("contaminated");
     expect(display.outcome).toContain("pending");
     expect(display.strippedPreference).toBeNull();
+  });
+});
+
+describe("an unanswered turn claims provider contact only from the record", () => {
+  const base = {
+    kind: "unanswered" as const,
+    conversation: {
+      id: "c",
+      project_id: null,
+      title: "t",
+      started_at: "",
+      last_message_at: "",
+      archived: false,
+    },
+    user_message: { id: "m", role: "user" as const, content: "x", sequence: 1, created_at: "" },
+  };
+
+  it("a pre-contact refusal never says the provider did not answer", () => {
+    const label = describeUnanswered({
+      ...base,
+      error: "no_eligible_route: nothing fits under the ceiling",
+      error_kind: "no_eligible_route",
+      provider_contacted: false,
+    });
+    expect(label).not.toContain("provider did not answer");
+    expect(label).toContain("before any provider was contacted");
+    expect(label).toContain("no_eligible_route");
+  });
+
+  it("a recorded provider failure may say so", () => {
+    const label = describeUnanswered({
+      ...base,
+      error: "provider_error: timed out",
+      error_kind: "provider_error",
+      provider_contacted: true,
+    });
+    expect(label).toContain("The provider did not answer");
   });
 });

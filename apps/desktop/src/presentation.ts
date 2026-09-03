@@ -13,7 +13,22 @@
 // deliberation-or-null, and the null branch has exactly one output. There is
 // no code path from "no row" to an outcome word.
 
-import type { BlindPositionView, DeliberationView, Outcome } from "./api";
+import type { BlindPositionView, DeliberationView, Outcome, TurnUnanswered } from "./api";
+
+// An unanswered turn, described by what the record supports (ruled
+// 2 September 2026). "The provider did not answer" is a claim of provider
+// contact, and the interface may make it only where the durable call
+// lifecycle carries a call for this turn. A refusal before contact — the
+// ceiling, no eligible route — is stated as exactly that.
+export function describeUnanswered(outcome: TurnUnanswered): string {
+  if (outcome.provider_contacted) {
+    return `The provider did not answer: ${outcome.error}. The question is history.`;
+  }
+  return (
+    `No answer — the call was refused before any provider was contacted ` +
+    `(${outcome.error_kind}): ${outcome.error}. The question is history.`
+  );
+}
 
 export const OUTCOME_WORDS: Record<Outcome, string> = {
   held: "she held",

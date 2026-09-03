@@ -111,11 +111,30 @@ class OpenLedger:
         self.entries.pop(reservation_id, None)
 
 
-def client(engine: Engine, adapter: ScriptedAdapter) -> TestClient:
+@dataclass
+class RefusingLedger(OpenLedger):
+    """A ledger at its ceiling: every route is unaffordable, nothing is admitted."""
+
+    def committed_usd(self) -> float:
+        return 1_000_000.0
+
+    def reserve(
+        self,
+        config: ModelConfig,
+        max_cost_usd: float,
+        task_type: TaskType,
+        project_id: UUID | None,
+    ) -> Reservation | Refusal:
+        return Refusal(committed_usd=1_000_000.0, max_cost_usd=max_cost_usd)
+
+
+def client(
+    engine: Engine, adapter: ScriptedAdapter, ledger: OpenLedger | None = None
+) -> TestClient:
     gateway = Gateway(
         adapters={"anthropic": adapter, "openai": adapter},
         recorder=lambda record: record_call(engine, record),
-        ledger=OpenLedger(),
+        ledger=ledger if ledger is not None else OpenLedger(),
         observe_block=lambda message: None,
         persona_loader=DatabasePersonaLoader(engine),
         verify_provenance=verifier(engine),
@@ -356,8 +375,31 @@ def test_an_unanswered_turn_carries_no_val_message(store: Engine) -> None:
     assert outcome["kind"] == "unanswered"
     assert "val_message" not in outcome
     assert "provider_error" in outcome["error"] or "timed out" in outcome["error"]
+    # The provider WAS contacted and failed: the record holds the call, so
+    # the interface may say so (ruled 2 September 2026).
+    assert outcome["provider_contacted"] is True
+    assert outcome["error_kind"] == "provider_error"
     detail = api.get(f"/conversations/{outcome['conversation']['id']}").json()
     assert [m["role"] for m in detail["messages"]] == ["user"], "the question is history; no reply"
+
+
+def test_a_pre_contact_refusal_does_not_claim_provider_contact(store: Engine) -> None:
+    """Ruled 2 September 2026: a budget refusal must not say the provider did
+    not answer when no provider was contacted — the CORS-banner class of
+    defect. `provider_contacted` comes from the durable call lifecycle, and a
+    refusal before contact leaves no conversation call in the record."""
+    adapter = ScriptedAdapter([])  # nothing may reach a provider
+    api = client(store, adapter, ledger=RefusingLedger())
+    outcome = a_turn(api, "What time is the screening?")
+
+    assert outcome["kind"] == "unanswered"
+    assert outcome["provider_contacted"] is False
+    assert outcome["error_kind"] in ("no_eligible_route", "budget_exceeded")
+    assert "ceiling" in outcome["error"] or "afford" in outcome["error"]
+    assert adapter.calls == 0, "no provider was contacted"
+    with store.connect() as connection:
+        recorded = connection.execute(text("select count(*) from model_calls")).scalar_one()
+    assert recorded == 0, "the record supports no claim of contact"
 
 
 def test_restricted_content_is_a_plain_refusal(store: Engine) -> None:
