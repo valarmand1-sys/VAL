@@ -358,6 +358,25 @@ Fixed subscriptions are not routable and are therefore not gated. They are track
 
 **Local inference never counts against the ceiling and is never throttled when the cloud budget is tight.** It is free at the margin, and absorbing volume is its entire purpose. Throttling local work to protect a cloud budget is backwards.
 
+<!-- scope-ruling: 2026-09-02 -->
+> **Ruling — 2 September 2026, Lord Armand, after both external reviewers independently identified the same conflation. Cost exists to constrain accidents, not capability. This supersedes any single-budget reading of this section: "budget" has been carrying three meanings, and two standing instructions — "the ceiling still refuses when exceeded" and "she must not stop when I need her" — are only compatible if the hard ceiling is not the planning figure.**
+>
+> **Three separate concepts. The operating target and the runaway safety ceiling must never be conflated or implicitly tied to the same value.**
+>
+> **1. Quality priority.** Once an option is permitted by scope, eligibility, classification, evidence, and accounting rules, Val's capability, fidelity, reasoning quality, visual information, and evidence quality are **not degraded to save cents or modest incremental cost**. As many images as the work needs; derivation when the route requires it, at the highest fidelity that route will accept. This is an optimization priority among lawful options — never license to bypass reservation, omit cost capture, weaken egress, suppress a correct refusal, or cross a STOP condition.
+>
+> **2. Operating target.** The ~$250/month figure above is an **annualized planning average**. It is not a monthly cap, not a refusal threshold, not an architectural constant, and not an indication that a higher-spend month is abnormal — a $100 month and a $500 month are both normal. Nothing may be designed assuming monthly spend stays near it.
+>
+> **3. Runaway safety ceiling.** A **separate** hard refusal threshold, existing to stop a bug, a runaway loop, a compromised process, or anything generating materially excessive charges without Lord Armand's knowledge. It is accident control. It is not how a heavy working day ends.
+>
+> **The two must be independently configurable.** If legitimate work approaches the safety ceiling, Lord Armand must be able to raise or override it while working — without editing source, changing schema, running a migration, or rebuilding Val. Ideally an authorized runtime action whose amount, scope, time, and actor are durably recorded: an override is a deliberate, auditable, temporary increase, never an unbounded bypass. The intended behavior: at some fraction of the safety ceiling, a clear warning that names the situation and offers to continue or raise — never a silent stop mid-session because a planning figure was crossed. But if a bug fires hundreds of calls while he is away, the ceiling stops it. *(Requirement recorded; the override mechanism is not designed yet, by the same ruling.)*
+>
+> **Scale is a value change, never an architecture change.** Increasing the operating target or the safety ceiling tenfold or more must be a configuration/value change. Nothing in schema, reservation mathematics, numeric precision, UI assumptions, routing, or evidence doctrine may depend on spend remaining near today's figures.
+>
+> **Provider limits are a backstop, not the brake.** Val's runaway protection must not depend on a provider running out of credit. Billing arrangements differ by vendor — prepaid, postpaid, account limits — and none of them is Val's mechanism. The defense is layered: honest Val accounting, then the runaway ceiling, then provider billing controls. No single layer is assumed to save him.
+>
+> **One thing already solved, and not to be re-litigated as a quality cut:** the concern that a few minutes of conversation could eat the month was the history-replay finding, and it is ruled — turn-scoped images, visible chips, reserve only what this call actually sends. That stops ordinary talk from multiplying image cost tenfold. It does not mean fewer images or a weaker model.
+
 **Reserve.** 15% of the ceiling ($30) is held in reserve and unlocks only on explicit approval from Lord Armand. The routine allowance is therefore $170. This exists so that a genuinely urgent task late in the month is not blocked by routine spend earlier in it.
 
 **Threshold behavior**, measured against the routine allowance:
