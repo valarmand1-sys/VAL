@@ -125,7 +125,7 @@ This section restates the current scope ruling for convenience; **the ruling its
 
 <!-- scope-ruling: 2026-09-03 -->
 
-**Gate point 5 restarts from zero (ruled 3 September 2026, `04-layer-0.md` §5 and WP-0.9 amendment):** the §4.8 classifier never delivered a parseable verdict on a real consequential exchange before 3 September, so the deliberation machinery had never executed in real use; the contract was repaired (schema-constrained, data-framed) and the fallback changed — **unknown classification is never treated as ordinary**; one bounded retry, then the turn ends unanswered. Point-5 evidence and the fifty hand-labelled exchanges count from zero, from real use only, after the end-to-end demonstration.
+**Gate point 5 restarts from zero (ruled 3 September 2026, `04-layer-0.md` §5 and WP-0.9 amendment):** the §4.8 classifier never delivered a parseable verdict on a real consequential exchange before 3 September, so the deliberation machinery had never executed in real use; the contract was repaired (schema-constrained, data-framed) and the fallback changed — **unknown classification is never treated as ordinary**; one bounded retry, then the turn ends unanswered. Point-5 evidence and the fifty hand-labelled exchanges count from zero, from real use only, after the end-to-end demonstration; creative work is paused until the 3 September follow-up rulings (per-turn `classifications` evidence record; mechanically derived strip remainder, no paraphrase) are complete, and conversations in the meantime are not gate evidence for classification or deliberation.
 
 **Two tracks — sequencing ruling, 31 August 2026** (`docs/baselines/04-layer-0.md` §5; `docs/baselines/01-architecture.md` §2.1):
 

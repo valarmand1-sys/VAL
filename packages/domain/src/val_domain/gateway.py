@@ -203,12 +203,22 @@ class ReasoningEffort(StrEnum):
 
 
 class GatewayError(Exception):
-    """A failed gateway call, in normalized form."""
+    """A failed gateway call, in normalized form.
 
-    def __init__(self, kind: GatewayErrorKind, detail: str) -> None:
+    `model_call_ids` names every `model_calls` row the failed call wrote on its
+    way to failing — one per route attempted whose provider was contacted
+    (3 September 2026). Empty when nothing was transmitted. A caller that
+    records evidence about an attempt can then name the calls it paid for,
+    without inferring them from timestamps.
+    """
+
+    def __init__(
+        self, kind: GatewayErrorKind, detail: str, model_call_ids: tuple[UUID, ...] = ()
+    ) -> None:
         super().__init__(f"{kind.value}: {detail}")
         self.kind = kind
         self.detail = detail
+        self.model_call_ids = model_call_ids
 
 
 class ModelConfig(BaseModel):

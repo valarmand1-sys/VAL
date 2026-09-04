@@ -77,6 +77,7 @@ from sqlalchemy import Engine
 
 from val_domain.deliberation import (
     BlindPositionRecord,
+    ClassificationRecord,
     ClassifiedBy,
     DeliberationClassification,
     DeliberationRecord,
@@ -95,7 +96,11 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
-from val_gateway.deliberation import record_blind_position, record_deliberation
+from val_gateway.deliberation import (
+    record_blind_position,
+    record_classification,
+    record_deliberation,
+)
 from val_gateway.exchange import ClarificationNeeded
 from val_gateway.gateway import Gateway
 from val_gateway.loop import (
@@ -122,10 +127,12 @@ from val_policy.deliberation import (
     ClassifierVerdict,
     StripOutcome,
     classifier_envelope,
+    derive_stripped_question,
     parse_blind_outcome,
     parse_classifier_verdict,
     parse_strip_outcome,
     reconciliation_envelope,
+    same_text,
     split_reconciled,
 )
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
@@ -150,15 +157,21 @@ CLASSIFIER_ATTEMPTS = 2
 
 
 @dataclass(frozen=True)
-class ClassificationUnestablished:
-    """No verdict after every permitted attempt.
+class ClassificationAttempts:
+    """What the bounded classification did — the verdict, or why there is none.
 
-    Carries why, per attempt, in the words the record supports — the last
-    gateway failure's kind where the final attempt never got an answer, and
-    `INVALID_OUTPUT` where it got one that stated no verdict.
+    `model_call_ids` names every classification call made, in order, including
+    calls that failed after reaching a provider; `resolving_model_call_id` is
+    the call the verdict came from, or the final recorded attempt where none
+    did. `reasons` says, per failed attempt, what the record supports; `kind`
+    is the last gateway failure's kind where the final attempt never got an
+    answer, and `INVALID_OUTPUT` where it got one that stated no verdict.
     """
 
+    verdict: ClassifierVerdict | None
     attempts: int
+    model_call_ids: tuple[UUID, ...]
+    resolving_model_call_id: UUID | None
     reasons: tuple[str, ...]
     kind: GatewayErrorKind
 
@@ -170,6 +183,7 @@ class ClassificationUnestablished:
             "response was requested, because an exchange whose classification is "
             "unknown is not treated as ordinary (ruling, 3 September 2026). The "
             "message is in the record; saying it again is an ordinary next turn.",
+            model_call_ids=self.model_call_ids,
         )
 
 
@@ -194,6 +208,10 @@ class DeliberatedTurn:
     blind: BlindPositionRecord | None
     deliberation: DeliberationRecord | None
     blind_payload: str | None
+    #: The turn's classification evidence row (ruling, 3 September 2026) —
+    #: always present on a deliberated turn, since the turn cannot reach a
+    #: response without an established classification on the record.
+    classification: ClassificationRecord
 
 
 DeliberatedOutcome = DeliberatedTurn | UnansweredTurn | ClarificationNeeded
@@ -234,13 +252,29 @@ def send(
 
     # 2. Classify, before any position is formed (§4.8: the classification runs
     #    first, because it decides whether the blind call happens at all).
-    verdict = _classify(gateway, content, opened.scope, classification)
-    if isinstance(verdict, ClassificationUnestablished):
+    #    Whatever it concluded is evidence, written now (ruling, 3 September
+    #    2026) — before any strip or response call, and whether or not a
+    #    verdict was established — so the record can say how this turn was
+    #    classified, and why, from the classifier's own declared reason.
+    classified = _classify(gateway, content, opened.scope, classification)
+    verdict = classified.verdict
+    record = record_classification(
+        engine,
+        conversation_id=opened.conversation.id,
+        message_id=opened.user_message.id,
+        verdict=None if verdict is None else verdict.verdict,
+        hard_exclusion=None if verdict is None else verdict.hard_exclusion,
+        attempts=classified.attempts,
+        model_call_ids=classified.model_call_ids,
+        resolving_model_call_id=classified.resolving_model_call_id,
+        resolution=None if verdict is not None else "; ".join(classified.reasons),
+    )
+    if verdict is None:
         # Ruling, 3 September 2026: unknown classification is not ordinary
         # classification. The turn ends here, honestly — the message is in
         # the record, every classification call is on `model_calls`, and no
         # response call is made on an exchange the house could not classify.
-        return unanswered_or_raise(opened, verdict.as_error())
+        return unanswered_or_raise(opened, classified.as_error())
     captured_as = verdict.captured_as
     hard_exclusion = verdict.hard_exclusion
 
@@ -259,6 +293,7 @@ def send(
             blind=None,
             deliberation=None,
             blind_payload=None,
+            classification=record,
         )
 
     # 3. Strip. A failed or unparseable strip has not established separation,
@@ -281,15 +316,34 @@ def send(
             blind=None,
             deliberation=None,
             blind_payload=None,
+            classification=record,
         )
 
+    question, removed, ordering = content, "", Ordering.CONTAMINATED
     if strip is not None and strip.separable:
-        question, removed, ordering = strip.question, strip.removed, Ordering.ENFORCED
-    else:
-        # Preference present but not separable — or the strip itself failed.
-        # The position will be formed with the preference in view, and the
-        # record says exactly that.
-        question, removed, ordering = content, "", Ordering.CONTAMINATED
+        # Ruling, 3 September 2026: the blind question is DERIVED from the
+        # original message and the spans the strip named — mechanically, no
+        # semantic judgment — never taken from the strip's own "question",
+        # which real use showed can be a paraphrase. A span not found verbatim
+        # means separation was not established: contaminated, as for any
+        # failed strip.
+        derived = derive_stripped_question(content, strip.removed)
+        if derived is None:
+            _LOGGER.warning(
+                "strip named %d span(s) that are not verbatim in the message; separation "
+                "not established, recording ordering=contaminated",
+                len(strip.removed),
+            )
+        else:
+            if not same_text(strip.question, derived):
+                _LOGGER.warning(
+                    "strip's own question was not the verbatim remainder (a paraphrase); "
+                    "the derived remainder is used and the paraphrase is discarded"
+                )
+            question, removed, ordering = derived, "\n".join(strip.removed), Ordering.ENFORCED
+    # Otherwise: preference present but not separable — or the strip itself
+    # failed. The position will be formed with the preference in view, and
+    # the record says exactly that.
 
     # 4. One configuration for both remaining calls (ruling, 19 August 2026).
     persona = DatabasePersonaLoader(engine).active()
@@ -348,6 +402,7 @@ def send(
             blind=None,
             deliberation=None,
             blind_payload=blind_payload,
+            classification=record,
         )
 
     # 6. The evidence row — durable BEFORE the response call exists (0011).
@@ -440,6 +495,7 @@ def send(
         blind=blind_row,
         deliberation=deliberation,
         blind_payload=blind_payload,
+        classification=record,
     )
 
 
@@ -470,7 +526,7 @@ def _ordinary(
 
 def _classify(
     gateway: Gateway, content: str, scope: ProjectScope, classification: Classification
-) -> ClassifierVerdict | ClassificationUnestablished:
+) -> ClassificationAttempts:
     """The §4.8 classification on the cheapest eligible route, bounded.
 
     Routed through `complete`, whose attempt order is cheapest-first among the
@@ -482,7 +538,9 @@ def _classify(
     complete, or never arrives — is retried once, identically; after
     `CLASSIFIER_ATTEMPTS` the classification is **unestablished**, which the
     caller ends the turn on. Nothing here guesses a verdict, and nothing here
-    proceeds without one.
+    proceeds without one. Every call made is named in the result, including
+    calls that failed after reaching a provider, so the evidence record can
+    cite them rather than infer them.
     """
     request = GatewayRequest(
         task_type=TaskType.CLASSIFICATION,
@@ -495,11 +553,13 @@ def _classify(
         project_attribution=attribution_state_of(scope),
     )
     reasons: list[str] = []
+    calls: list[UUID] = []
     kind = GatewayErrorKind.INVALID_OUTPUT
     for attempt in range(1, CLASSIFIER_ATTEMPTS + 1):
         try:
             response = gateway.complete(request)
         except GatewayError as failure:
+            calls.extend(failure.model_call_ids)
             kind = failure.kind
             # The failure's own words travel with the kind: a ceiling refusal
             # must read as the ceiling, not as an anonymous failed attempt.
@@ -511,6 +571,8 @@ def _classify(
                 failure.kind.value,
             )
             continue
+        if response.model_call_id is not None:
+            calls.append(response.model_call_id)
         kind = GatewayErrorKind.INVALID_OUTPUT
         if response.terminal is not TerminalState.COMPLETE:
             reasons.append(f"attempt {attempt}: reply ended {response.terminal.value}")
@@ -532,14 +594,26 @@ def _classify(
                 CLASSIFIER_ATTEMPTS,
             )
             continue
-        return verdict
+        return ClassificationAttempts(
+            verdict=verdict,
+            attempts=attempt,
+            model_call_ids=tuple(calls),
+            resolving_model_call_id=response.model_call_id,
+            reasons=tuple(reasons),
+            kind=kind,
+        )
     _LOGGER.warning(
         "classification unestablished after %d attempts; the turn ends unanswered "
         "rather than proceeding as ordinary (ruling, 3 September 2026)",
         CLASSIFIER_ATTEMPTS,
     )
-    return ClassificationUnestablished(
-        attempts=CLASSIFIER_ATTEMPTS, reasons=tuple(reasons), kind=kind
+    return ClassificationAttempts(
+        verdict=None,
+        attempts=CLASSIFIER_ATTEMPTS,
+        model_call_ids=tuple(calls),
+        resolving_model_call_id=calls[-1] if calls else None,
+        reasons=tuple(reasons),
+        kind=kind,
     )
 
 

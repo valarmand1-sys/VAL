@@ -53,12 +53,26 @@ from sqlalchemy import Engine, Row, text
 
 from val_domain.deliberation import (
     BlindPositionRecord,
+    ClassificationRecord,
+    ClassificationVerdict,
     ClassifiedBy,
     Confidence,
     DeliberationClassification,
     DeliberationRecord,
     Ordering,
     Outcome,
+)
+
+_CLASSIFICATION_INSERT = text(
+    "insert into classifications "
+    "  (project_id, conversation_id, message_id, established, verdict, hard_exclusion, "
+    "   attempts, model_call_ids, resolving_model_call_id, resolution) "
+    "values "
+    "  (:project_id, :conversation_id, :message_id, :established, :verdict, "
+    "   :hard_exclusion, :attempts, :model_call_ids, :resolving_model_call_id, :resolution) "
+    "returning id, project_id, conversation_id, message_id, established, verdict, "
+    "          hard_exclusion, attempts, model_call_ids, resolving_model_call_id, "
+    "          resolution, created_at"
 )
 
 _ANCHOR = text(
@@ -301,6 +315,104 @@ def record_blind_position(
             },
         ).one()
     return _blind_record_from(row)
+
+
+def record_classification(
+    engine: Engine,
+    *,
+    conversation_id: UUID,
+    message_id: UUID,
+    verdict: ClassificationVerdict | None,
+    hard_exclusion: str | None,
+    attempts: int,
+    model_call_ids: tuple[UUID, ...],
+    resolving_model_call_id: UUID | None,
+    resolution: str | None,
+) -> ClassificationRecord:
+    """Persist one turn's classification as evidence — established or not.
+
+    Ruling, 3 September 2026. Written when classification concludes and before
+    any strip or response call, so the record exists whatever the turn then
+    does. `verdict` None means every permitted attempt failed to state one,
+    and `resolution` must then say why; a verdict with a resolution, or no
+    verdict without one, cannot describe one real classification and is
+    refused. `project_id` is derived from the anchoring conversation, the
+    same doctrine as everywhere.
+    """
+    if attempts < 1:
+        raise IncoherentDeliberationError("a classification that was never attempted is not one.")
+    if verdict is None and not (resolution or "").strip():
+        raise IncoherentDeliberationError(
+            "an unestablished classification must say why; a bare failure is not evidence."
+        )
+    if verdict is not None and resolution is not None:
+        raise IncoherentDeliberationError(
+            "an established classification carries no failure resolution."
+        )
+    if resolving_model_call_id is not None and resolving_model_call_id not in model_call_ids:
+        raise IncoherentDeliberationError(
+            "the resolving call must be one of the calls the classification made."
+        )
+    with engine.begin() as connection:
+        anchor = connection.execute(_ANCHOR, {"message_id": message_id}).one_or_none()
+        if anchor is None:
+            raise IncoherentDeliberationError(
+                f"message {message_id} does not exist. A classification is of something "
+                "that was actually said."
+            )
+        if anchor.message_conversation != conversation_id:
+            raise IncoherentDeliberationError(
+                f"message {message_id} belongs to conversation "
+                f"{anchor.message_conversation}, not {conversation_id}."
+            )
+        row = connection.execute(
+            _CLASSIFICATION_INSERT,
+            {
+                "project_id": anchor.project_id,
+                "conversation_id": conversation_id,
+                "message_id": message_id,
+                "established": verdict is not None,
+                "verdict": None if verdict is None else verdict.value,
+                "hard_exclusion": hard_exclusion,
+                "attempts": attempts,
+                "model_call_ids": list(model_call_ids),
+                "resolving_model_call_id": resolving_model_call_id,
+                "resolution": resolution,
+            },
+        ).one()
+    return _classification_record_from(row)
+
+
+def classifications_for(engine: Engine, conversation_id: UUID) -> tuple[ClassificationRecord, ...]:
+    """Every classification recorded for one conversation, oldest first."""
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text(
+                "select id, project_id, conversation_id, message_id, established, verdict, "
+                "       hard_exclusion, attempts, model_call_ids, resolving_model_call_id, "
+                "       resolution, created_at "
+                "  from classifications where conversation_id = :c order by created_at, id"
+            ),
+            {"c": conversation_id},
+        ).all()
+    return tuple(_classification_record_from(row) for row in rows)
+
+
+def _classification_record_from(row: Row[Any]) -> ClassificationRecord:
+    return ClassificationRecord(
+        id=row.id,
+        project_id=row.project_id,
+        conversation_id=row.conversation_id,
+        message_id=row.message_id,
+        established=row.established,
+        verdict=None if row.verdict is None else ClassificationVerdict(row.verdict),
+        hard_exclusion=row.hard_exclusion,
+        attempts=row.attempts,
+        model_call_ids=tuple(row.model_call_ids),
+        resolving_model_call_id=row.resolving_model_call_id,
+        resolution=row.resolution,
+        created_at=row.created_at,
+    )
 
 
 def blind_positions_for(engine: Engine, conversation_id: UUID) -> tuple[BlindPositionRecord, ...]:

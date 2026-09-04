@@ -1,8 +1,10 @@
 """The authoritative store's schema, exactly as `04-layer-0.md` §2 specifies it.
 
-Ten tables, in §2's order — seven from the original §2, two added by the
+Twelve tables, in §2's order — seven from the original §2, two added by the
 15 August 2026 amendments (`execution_events.reaction` and the idea tables of
-§2.4), and `budget_reservations` added by the 17 August 2026 amendment (§2.5).
+§2.4), `budget_reservations` added by the 17 August 2026 amendment (§2.5),
+`blind_positions` by the 19 August 2026 ruling, and `classifications` by the
+3 September 2026 ruling (§2.2).
 No table exists here that §2 does not name, and no column exists that §2 does
 not list. Where §2 is silent, the silence is recorded in a comment rather than
 filled in.
@@ -42,7 +44,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.dialects.postgresql import TIMESTAMP
+from sqlalchemy.dialects.postgresql import ARRAY, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -142,6 +144,11 @@ DeliberationOutcome = Enum(
 )
 DeliberationClassification = Enum("consequential", "uncertain", name="deliberation_classification")
 DeliberationClassifiedBy = Enum("automatic", "user", "val", name="deliberation_classified_by")
+# Ruling, 3 September 2026: the classifier's full declared vocabulary, so the
+# classification evidence record can say "ordinary" as well as "captured".
+ClassificationVerdict = Enum(
+    "consequential", "uncertain", "not_consequential", name="classification_verdict"
+)
 
 
 # Primary keys are time-ordered UUIDs. PostgreSQL 18's `uuidv7()` sorts by
@@ -648,6 +655,60 @@ class Deliberation(Base):
     )
 
 
+class Classification(Base):
+    """§2.2 — `classifications`, ruling of 3 September 2026.
+
+    One row per turn's §4.8 classification, written when classification
+    concludes — established or not — and before any strip or response call.
+    It exists because the classifier's verdict and declared reason were never
+    persisted and its calls carry no turn provenance (the 18 August rule,
+    provenance iff conversation, is kept intact): the turn linkage lives here,
+    and `model_calls` stays as it was. Append-only evidence like every other
+    capture table: no UPDATE, no hard delete (migration `0013`).
+
+    `verdict` and `hard_exclusion` are the classifier's declared structured
+    reason, never inferred. `established` is False when every permitted
+    attempt failed to state a verdict. `model_call_ids` names every
+    classification call made for the turn, in order; the array may be empty
+    when no attempt reached a provider (a pre-contact refusal writes no call).
+    """
+
+    __tablename__ = "classifications"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    project_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    established: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    verdict: Mapped[str | None] = mapped_column(ClassificationVerdict, nullable=True)
+    hard_exclusion: Mapped[str | None] = mapped_column(Text, nullable=True)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False)
+    model_call_ids: Mapped[list[UUID]] = mapped_column(ARRAY(PG_UUID(as_uuid=True)), nullable=False)
+    resolving_model_call_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=True
+    )
+    resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        # A verdict exists exactly when the classification was established.
+        CheckConstraint("established = (verdict IS NOT NULL)", name="established_iff_verdict"),
+        CheckConstraint("attempts >= 1", name="classification_attempted_at_least_once"),
+    )
+
+
 # --- §2.4 Ideas — amendment, 15 August 2026 ----------------------------------
 #
 # An idea's history cannot be reconstructed later: the same capture argument as
@@ -826,6 +887,7 @@ SPECIFIED_TABLES = frozenset(
         "execution_events",
         "deliberations",
         "blind_positions",
+        "classifications",
         "ideas",
         "idea_state_changes",
         "budget_reservations",

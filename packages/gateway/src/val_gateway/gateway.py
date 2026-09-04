@@ -353,11 +353,16 @@ class Gateway:
             )
 
         last: GatewayError | None = None
+        # Every call written on the way to failing, across routes, so the
+        # failure that is finally raised names all of them (3 September 2026).
+        attempted: list[UUID] = []
         for config in order:
             try:
                 return self._attempt(request, config, parts)
             except GatewayError as error:
                 last = error
+                attempted.extend(error.model_call_ids)
+                error.model_call_ids = tuple(attempted)
                 if error.kind not in RETRYABLE:
                     raise
                 self._observe_block(
@@ -487,8 +492,14 @@ class Gateway:
                 output_schema=request.output_schema,
             )
         except GatewayError as error:
-            self._settle_unknown(request, config, claim, error, self._elapsed(started))
-            raise
+            call_id = self._settle_unknown(request, config, claim, error, self._elapsed(started))
+            # A fresh error naming exactly this attempt's call, never a
+            # mutation of the adapter's own exception object: an adapter (or a
+            # scripted one in tests) may raise the same instance twice, and
+            # ids from an earlier call must not travel with it.
+            raise GatewayError(
+                error.kind, error.detail, model_call_ids=() if call_id is None else (call_id,)
+            ) from error
 
         latency = self._elapsed(started)
 
@@ -582,8 +593,11 @@ class Gateway:
         claim: Reservation,
         error: GatewayError,
         latency_ms: int,
-    ) -> None:
+    ) -> UUID | None:
         """A provider failure whose cost cannot be established.
+
+        Returns the `model_calls` id written for the failed call, so the
+        failure raised to the caller can name it.
 
         The request left the machine — or may have; a timeout cannot tell us
         which — and a request that reached the provider consumed its input
@@ -627,6 +641,7 @@ class Gateway:
             f"Recorded as unknown cost, and its reservation of "
             f"${claim.max_cost_usd:.4f} stays charged against this month."
         )
+        return call_id
 
     # --- refusals that are not calls -----------------------------------------
 

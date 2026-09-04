@@ -99,17 +99,22 @@ def test_the_strip_and_blind_schemas_match_their_parsers() -> None:
     whole = "How should the film open?"
     assert parse_strip_outcome(
         json.dumps(
-            {"preference_present": False, "separable": True, "question": whole, "removed": ""}
+            {"preference_present": False, "separable": True, "question": whole, "removed": []}
         )
     )
     assert parse_strip_outcome(
         json.dumps(
-            {"preference_present": True, "separable": False, "question": whole, "removed": ""}
+            {"preference_present": True, "separable": False, "question": whole, "removed": []}
         )
     )
     assert parse_strip_outcome(
         json.dumps(
-            {"preference_present": True, "separable": True, "question": whole, "removed": "I think"}
+            {
+                "preference_present": True,
+                "separable": True,
+                "question": whole,
+                "removed": ["I think"],
+            }
         )
     )
     assert parse_blind_outcome(
@@ -126,3 +131,90 @@ def test_the_demonstrations_strip_reply_shape_does_not_parse() -> None:
         '"removed": null}\n```\n\nThe preference and question cannot be cleanly separated.'
     )
     assert parse_strip_outcome(reply) is None
+
+
+# --- ruling, 3 September 2026: the blind question is derived, never trusted --
+
+from val_policy.deliberation import derive_stripped_question, same_text  # noqa: E402
+
+
+def test_the_remainder_is_the_original_minus_the_spans_exactly() -> None:
+    original = (
+        "Should the storyboard open on the wide shot or on the close-up? "
+        "I think the wide shot is stronger, honestly. "
+        "Either way, we commit before Friday."
+    )
+    spans = ("I think the wide shot is stronger, honestly.",)
+    assert derive_stripped_question(original, spans) == (
+        "Should the storyboard open on the wide shot or on the close-up? "
+        "Either way, we commit before Friday."
+    )
+
+
+def test_several_spans_are_removed_in_order_and_everything_else_survives() -> None:
+    original = "A first question, unchanged. I lean to X. A second question? I'd prefer Y here."
+    spans = ("I lean to X.", "I'd prefer Y here.")
+    assert derive_stripped_question(original, spans) == (
+        "A first question, unchanged. A second question?"
+    )
+
+
+def test_a_span_copied_across_a_line_break_still_matches() -> None:
+    original = "How should it open?\nI think\nthe wide shot.\nDecide."
+    assert derive_stripped_question(original, ("I think the wide shot.",)) == (
+        "How should it open? Decide."
+    )
+
+
+def test_a_span_not_verbatim_in_the_message_is_not_a_separation() -> None:
+    original = "How should it open? I think the wide shot."
+    assert derive_stripped_question(original, ("I prefer the wide shot.",)) is None
+    assert derive_stripped_question(original, ("",)) is None
+
+
+def test_removing_everything_is_not_a_question() -> None:
+    original = "I think the wide shot."
+    assert derive_stripped_question(original, ("I think the wide shot.",)) is None
+
+
+def test_a_span_is_removed_once_even_when_it_occurs_twice() -> None:
+    original = "I think X. Decide. I think X."
+    assert derive_stripped_question(original, ("I think X.",)) == "Decide. I think X."
+    assert derive_stripped_question(original, ("I think X.", "I think X.")) == "Decide."
+
+
+def test_the_models_question_is_advisory_and_a_paraphrase_is_detectable() -> None:
+    original = "Which opening, wide or close? I think wide."
+    derived = derive_stripped_question(original, ("I think wide.",))
+    assert derived == "Which opening, wide or close?"
+    assert same_text("Which opening,  wide or\nclose?", derived)
+    assert not same_text("Which opening should we choose, wide or close?", derived)
+
+
+def test_a_list_shaped_strip_reply_parses_and_a_string_shaped_one_does_not() -> None:
+    from val_policy.deliberation import parse_strip_outcome
+
+    listed = parse_strip_outcome(
+        json.dumps(
+            {
+                "preference_present": True,
+                "separable": True,
+                "question": "Which?",
+                "removed": ["I think wide.", ""],
+            }
+        )
+    )
+    assert listed is not None and listed.removed == ("I think wide.",)
+    assert (
+        parse_strip_outcome(
+            json.dumps(
+                {
+                    "preference_present": True,
+                    "separable": True,
+                    "question": "Which?",
+                    "removed": "I think wide.",
+                }
+            )
+        )
+        is None
+    )

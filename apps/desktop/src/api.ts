@@ -83,9 +83,28 @@ export interface ExecutionEventView {
   created_at: string;
 }
 
+// A turn's classification as recorded (ruling, 3 September 2026). Read here
+// so the type is honest about what the detail carries; not yet rendered —
+// whether an ordinary turn's verdict is shown is a presentation decision
+// WP-0.10 made the other way ("absence of machinery is not a state to
+// announce"), and changing it is Lord Armand's call.
+export interface ClassificationView {
+  id: string;
+  message_id: string;
+  established: boolean;
+  verdict: "consequential" | "uncertain" | "not_consequential" | null;
+  hard_exclusion: string | null;
+  attempts: number;
+  model_call_ids: string[];
+  resolving_model_call_id: string | null;
+  resolution: string | null;
+  created_at: string;
+}
+
 export interface ConversationDetail {
   conversation: ConversationView;
   messages: MessageView[];
+  classifications: ClassificationView[];
   blind_positions: BlindPositionView[];
   deliberations: DeliberationView[];
   execution_events: ExecutionEventView[];

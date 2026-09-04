@@ -19,6 +19,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from val_domain.conversation import ConversationRecord, MessageRecord
 from val_domain.deliberation import (
     BlindPositionRecord,
+    ClassificationRecord,
+    ClassificationVerdict,
     ClassifiedBy,
     Confidence,
     DeliberationClassification,
@@ -138,6 +140,43 @@ class BlindPositionView(BaseModel):
         )
 
 
+class ClassificationView(BaseModel):
+    """A turn's classification as recorded — ruling, 3 September 2026.
+
+    `verdict` and `hard_exclusion` are the classifier's declared reason,
+    verbatim from the row; `established` False means no verdict was stated in
+    any permitted attempt and `resolution` says why. Nothing here is derived.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    message_id: UUID
+    established: bool
+    verdict: ClassificationVerdict | None
+    hard_exclusion: str | None
+    attempts: int
+    model_call_ids: list[UUID]
+    resolving_model_call_id: UUID | None
+    resolution: str | None
+    created_at: datetime
+
+    @classmethod
+    def of(cls, record: ClassificationRecord) -> ClassificationView:
+        return cls(
+            id=record.id,
+            message_id=record.message_id,
+            established=record.established,
+            verdict=record.verdict,
+            hard_exclusion=record.hard_exclusion,
+            attempts=record.attempts,
+            model_call_ids=list(record.model_call_ids),
+            resolving_model_call_id=record.resolving_model_call_id,
+            resolution=record.resolution,
+            created_at=record.created_at,
+        )
+
+
 class DeliberationView(BaseModel):
     """A resolved deliberation. This shape existing at all means the row does."""
 
@@ -224,6 +263,9 @@ class ConversationDetail(BaseModel):
 
     conversation: ConversationView
     messages: list[MessageView]
+    #: Ruling, 3 September 2026: how each turn was classified, from the
+    #: evidence record, so the answer is readable here and not only in SQL.
+    classifications: list[ClassificationView]
     blind_positions: list[BlindPositionView]
     deliberations: list[DeliberationView]
     execution_events: list[ExecutionEventView]

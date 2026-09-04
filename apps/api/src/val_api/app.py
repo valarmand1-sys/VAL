@@ -32,6 +32,7 @@ from sqlalchemy import Engine
 from val_api.contracts import (
     BlindPositionView,
     CandidateView,
+    ClassificationView,
     ConversationDetail,
     ConversationView,
     CostView,
@@ -59,6 +60,7 @@ from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import (
     IncoherentDeliberationError,
     blind_positions_for,
+    classifications_for,
     deliberations_for,
     last_disagreement_at,
     record_deliberation,
@@ -149,6 +151,9 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
             messages=[
                 MessageView.of(message)
                 for message in conversations.history(engine, conversation_id)
+            ],
+            classifications=[
+                ClassificationView.of(row) for row in classifications_for(engine, conversation_id)
             ],
             blind_positions=[
                 BlindPositionView.of(row) for row in blind_positions_for(engine, conversation_id)

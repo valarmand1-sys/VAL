@@ -237,6 +237,24 @@ The blind position is the primary evidence that Val formed a genuinely independe
 
 The exact blind-call payload is additionally logged for WP-0.9's inspection criterion; the log is for inspection, this table is the evidence.
 
+**`classifications`** — ruling, 3 September 2026, Lord Armand
+
+The §4.8 classifier's verdict and declared reason were never persisted, and its `model_calls` rows carry no conversation or message id under the 18 August rule (provenance iff conversation), so a turn's classification could be tied to its call only by timestamp — and for an ordinary turn nothing durable said how it had been classified at all. The ruling adds a **separate, append-only, per-turn evidence record** and keeps `model_calls` exactly as it was: the turn linkage lives here. Written when classification concludes — established or not — and before any strip or response call, so it exists whatever the turn then does. It must answer, later, *how was this specific turn classified, and why?* for ordinary turns as well as consequential ones, from the classifier's own declared structured reason; nothing is inferred, and nothing historical is retrofitted from timestamps.
+
+| Column | Meaning |
+|---|---|
+| `id`, `created_at` | As everywhere |
+| `project_id` (nullable), `conversation_id`, `message_id` | The turn: project derived from the conversation, never supplied; `message_id` is the user message classified |
+| `established` | Whether any permitted attempt stated a verdict; `false` ends the turn unanswered |
+| `verdict` (nullable) | `consequential` \| `uncertain` \| `not_consequential` — the classifier's declared verdict, present iff `established` |
+| `hard_exclusion` (nullable) | The exclusion the classifier named, if any — the other half of its declared reason |
+| `attempts` | Calls permitted and made for this turn, at most two |
+| `model_call_ids` | Every classification `model_calls` id for this turn, in order, including calls that failed after reaching a provider; may be empty when nothing was transmitted |
+| `resolving_model_call_id` (nullable) | The call the verdict came from, or the final recorded attempt where none did |
+| `resolution` (nullable) | Where unestablished: why, per attempt, in the orchestrator's own words |
+
+Guarded by the standing functions: no UPDATE, no hard delete (migration `0013`). The conversation detail carries these rows; whether an ordinary turn's verdict is *displayed* is a WP-0.10 presentation decision not changed by this ruling.
+
 ### 2.3 Constraints
 
 - Every `message` resolves to a `conversation`. Every `conversation` resolves to a `project` or explicitly to none.
@@ -402,6 +420,14 @@ Each states what exists when it is done and how that is verified.
 > **The ruling.** Until now a classifier failure was a logged capture miss and the turn proceeded as an ordinary turn — the mechanism deciding whether the safeguard applies switched the safeguard off when it failed. **Unknown classification may not be treated as ordinary classification.** The recovery is bounded: one retry of the identical request; if the classification is still unestablished, the turn ends unanswered — the message stays in the record, no `val` message is written, every classification call is on `model_calls`, and the interface says no provider was asked for a response. It does not proceed as ordinary. Retroactive marking remains. This is not a conflict with invariant 25 (degrade rather than halt): a turn ending unanswered with a plain statement is the existing `UnansweredTurn` shape a provider outage already produces, and Val continues; what is refused is the silent substitution of a lesser path.
 >
 > **The record, corrected without erasure.** The 19 August report to Lord Armand described the WP-0.9 implementation as *demonstrated* on the strength of the orchestration tests, which run against a scripted provider. That was accurate about the orchestration and inaccurate as a claim about the mechanism: nothing had run against a real provider, and the first real exchanges found the contract failing. The 19 August report stands as written; this amendment records that its "demonstrated" did not cover the provider contract, and that the first real-provider demonstration of the full path is the one of 3 September 2026. The gate consequence is recorded in §5.
+>
+> **Follow-up rulings, 3 September 2026, on the repair's acceptance.**
+>
+> *Classification evidence.* A separate durable per-turn record, `classifications` (§2.2), answers how each turn was classified and why — ordinary turns included — from the classifier's declared structured reason. `model_calls` stays non-conversation; the 18 August provenance rule is intact.
+>
+> *The strip must not paraphrase — a defect, not sample quality.* The first real demonstration showed the strip returning a rewritten question that leaked no preference. Overruled as review material: the contract requires the verbatim remainder, because a stripper permitted to rewrite can alter emphasis, drop qualifiers, introduce interpretation, or narrow the choice, and the blind position would then answer something subtly different from what was asked — a structural guarantee, not a sample-quality issue. The enforcement is mechanical: the strip names the spans it removed, each copied verbatim; the house **derives** the blind question from the original message and those spans (whitespace-normalised, deleted in order of appearance, no overlap), refuses any span it cannot find verbatim (recorded `contaminated`), and discards the strip's own `question`, which is advisory only and logged when it differs. No semantic model judgment decides whether a paraphrase is close enough. Demonstrated the same day against the real route.
+>
+> *The `updated` outcome.* Inspected on the demonstration of record and reported for ruling; not changed. See the report of 3 September 2026.
 
 ### WP-0.10 — Text interface
 
@@ -474,7 +500,7 @@ Points 4 through 7 are the gate. Points 1 through 3 are what makes the layer ple
 <!-- scope-ruling: 2026-09-03 -->
 > **Gate-state ruling — 3 September 2026, Lord Armand. Point 5 restarts from zero; evidence depending on consequential deliberation is paused until the repair is demonstrated.**
 >
-> Point 5 had not lacked samples; the machinery it names had never executed successfully in real use (WP-0.9 amendment of this date). An unparseable classification attempt is not a classification and counts for nothing. Accordingly: **point 5 stands at zero deliberations**, and WP-0.9's fifty hand-labelled exchanges start from zero — no prior classification is on the record to label against. Points 4, 6 and 7, and the real conversations behind points 1–3, are unaffected and keep their evidence; point 6 continues to count the failed classification calls, which are costed honestly. Accumulation of point-5 evidence and of the fifty resumes only once the repaired path has been demonstrated end to end against real providers, and then through Lord Armand's real use — no manufactured exchanges.
+> Point 5 had not lacked samples; the machinery it names had never executed successfully in real use (WP-0.9 amendment of this date). An unparseable classification attempt is not a classification and counts for nothing. Accordingly: **point 5 stands at zero deliberations**, and WP-0.9's fifty hand-labelled exchanges start from zero — no prior classification is on the record to label against. Points 4, 6 and 7, and the real conversations behind points 1–3, are unaffected and keep their evidence; point 6 continues to count the failed classification calls, which are costed honestly. Accumulation of point-5 evidence and of the fifty resumes only once the repaired path has been demonstrated end to end against real providers, and then through Lord Armand's real use — no manufactured exchanges. **Creative work with Val is paused by Lord Armand until the follow-up rulings of 3 September (classification evidence record, strip enforcement) are complete; no conversation held in the meantime is gate evidence for classification or deliberation.**
 
 <!-- scope-ruling: 2026-08-31 -->
 > **Sequencing ruling — 31 August 2026, Lord Armand. Two tracks.**

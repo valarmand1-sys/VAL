@@ -164,7 +164,7 @@ def strip_separates() -> ProviderResult:
                 "preference_present": True,
                 "separable": True,
                 "question": QUESTION,
-                "removed": PREFERENCE,
+                "removed": [PREFERENCE],
             }
         )
     )
@@ -594,3 +594,36 @@ def test_the_disagreement_signal_is_readable(store: Engine) -> None:
     assert api.get("/signals/disagreement").json()["last_disagreement_at"] is None
     a_turn(api, MIXED)  # resolves as held — a real disagreement
     assert api.get("/signals/disagreement").json()["last_disagreement_at"] is not None
+
+
+def test_the_detail_says_how_each_turn_was_classified(store: Engine) -> None:
+    """Ruling, 3 September 2026: the record answers "how was this turn classified?"."""
+    unparseable = ok(
+        'Cannot see it.\n```json\n{"verdict": "uncertain", "hard_exclusion": null}\n```'
+    )
+    api = client(
+        store,
+        ScriptedAdapter([*plain_script(), *deliberated_script(), unparseable, unparseable]),
+    )
+    first = a_turn(api, "What time is the screening?")
+    conversation_id = first["conversation"]["id"]
+
+    def continue_with(content: str) -> dict:
+        # Resuming: no project stated, or the statement would start a new
+        # conversation (WP-0.6: an explicit scope choice outranks resumption).
+        response = api.post("/turns", json={"content": content, "conversation_id": conversation_id})
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    continue_with(MIXED)
+    third = continue_with("Wide or close? I lean wide.")
+    assert third["kind"] == "unanswered"
+
+    detail = api.get(f"/conversations/{conversation_id}").json()
+    rows = detail["classifications"]
+    assert [row["verdict"] for row in rows] == ["not_consequential", "consequential", None]
+    assert [row["established"] for row in rows] == [True, True, False]
+    assert rows[2]["attempts"] == 2 and len(rows[2]["model_call_ids"]) == 2
+    assert "no parseable verdict" in rows[2]["resolution"]
+    user_messages = [m["id"] for m in detail["messages"] if m["role"] == "user"]
+    assert [row["message_id"] for row in rows] == user_messages

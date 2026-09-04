@@ -37,7 +37,12 @@ from gateway_fakes import FakeLedger
 from sqlalchemy import Engine, text
 from test_persona import REPO_ROOT, clean_personas  # noqa: F401 - fixture reused
 
-from val_domain.deliberation import DeliberationClassification, Ordering, Outcome
+from val_domain.deliberation import (
+    ClassificationVerdict,
+    DeliberationClassification,
+    Ordering,
+    Outcome,
+)
 from val_domain.gateway import (
     Classification,
     GatewayError,
@@ -52,7 +57,7 @@ from val_domain.gateway import (
 from val_domain.project import ProjectAttribution
 from val_gateway.deliberate import CLASSIFIER_MAX_OUTPUT_TOKENS, DeliberatedTurn
 from val_gateway.deliberate import send as deliberated_send
-from val_gateway.deliberation import blind_positions_for, deliberations_for
+from val_gateway.deliberation import blind_positions_for, classifications_for, deliberations_for
 from val_gateway.gateway import Gateway
 from val_gateway.loop import Turn, UnansweredTurn
 from val_gateway.persistence import record_call, spend_by_task_type
@@ -174,7 +179,7 @@ def strip_says(
                 "preference_present": present,
                 "separable": separable,
                 "question": question,
-                "removed": removed,
+                "removed": [removed] if removed else [],
             }
         )
     )
@@ -391,6 +396,147 @@ def test_a_classifier_provider_failure_does_not_proceed_as_ordinary(store: Engin
     assert outcome.error.kind is GatewayErrorKind.INVALID_REQUEST, "the real failure's kind"
     assert len(adapter.sent) == 2
     assert _val_messages(store) == 0
+
+
+# --- ruling, 3 September 2026: every turn leaves classification evidence ------
+
+
+def _classification_rows(engine: Engine) -> list[tuple[str, list[object]]]:
+    with engine.connect() as connection:
+        return [
+            (str(row[0]), list(row[1]))
+            for row in connection.execute(
+                text("select id, model_call_ids from classifications order by created_at, id")
+            ).all()
+        ]
+
+
+def _classification_call_ids(engine: Engine) -> list[str]:
+    with engine.connect() as connection:
+        return [
+            str(row[0])
+            for row in connection.execute(
+                text(
+                    "select id from model_calls where task_type = 'classification' "
+                    "order by created_at, id"
+                )
+            ).all()
+        ]
+
+
+def test_an_ordinary_turn_records_its_verdict_and_declared_reason(store: Engine) -> None:
+    adapter = ScriptedAdapter(
+        [classifier_says("not_consequential", "status_progress_schedule_or_cost"), ok("Two.")]
+    )
+    outcome = deliberate(store, adapter, "What time is the screening?")
+
+    assert isinstance(outcome, DeliberatedTurn)
+    record = outcome.classification
+    assert record.established is True
+    assert record.verdict is ClassificationVerdict.NOT_CONSEQUENTIAL
+    assert record.hard_exclusion == "status_progress_schedule_or_cost"
+    assert record.attempts == 1
+    assert record.resolution is None
+    assert record.message_id == outcome.turn.user_message.id
+    assert [str(i) for i in record.model_call_ids] == _classification_call_ids(store)
+    assert record.resolving_model_call_id == record.model_call_ids[0]
+    assert classifications_for(store, outcome.turn.conversation.id) == (record,)
+
+
+def test_a_consequential_turn_records_consequential(store: Engine) -> None:
+    outcome = deliberate(store, ScriptedAdapter(full_script()))
+
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.classification.verdict is ClassificationVerdict.CONSEQUENTIAL
+    assert outcome.classification.hard_exclusion is None
+    assert outcome.blind is not None
+    assert outcome.classification.created_at <= outcome.blind.created_at, (
+        "the classification is on the record before the strip and the blind call"
+    )
+
+
+def test_an_unestablished_classification_is_recorded_with_every_call(store: Engine) -> None:
+    adapter = ScriptedAdapter([PROSE_THEN_FENCED_VERDICT, VERDICT_THEN_PROSE_TRUNCATED])
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, UnansweredTurn)
+    rows = _classification_rows(store)
+    assert len(rows) == 1
+    _, call_ids = rows[0]
+    assert [str(i) for i in call_ids] == _classification_call_ids(store)
+    assert len(call_ids) == 2
+    record = classifications_for(store, outcome.conversation.id)[0]
+    assert record.established is False and record.verdict is None
+    assert record.attempts == 2
+    assert record.resolving_model_call_id == record.model_call_ids[-1]
+    assert record.resolution is not None
+    assert "attempt 1: reply stated no parseable verdict" in record.resolution
+    assert "attempt 2: reply ended truncated" in record.resolution
+    assert isinstance(outcome.error, GatewayError)
+    assert outcome.error.model_call_ids == record.model_call_ids
+
+
+def test_calls_that_failed_after_reaching_a_provider_are_named_too(store: Engine) -> None:
+    failure = GatewayError(GatewayErrorKind.INVALID_REQUEST, "the provider rejected it")
+    outcome = deliberate(store, ScriptedAdapter([failure, failure]))
+
+    assert isinstance(outcome, UnansweredTurn)
+    record = classifications_for(store, outcome.conversation.id)[0]
+    assert record.established is False
+    assert len(record.model_call_ids) == 2, "each failed contact wrote a model_calls row"
+    assert [str(i) for i in record.model_call_ids] == _classification_call_ids(store)
+
+
+def test_the_evidence_row_refuses_update_and_delete(store: Engine) -> None:
+    deliberate(store, ScriptedAdapter([classifier_says("not_consequential"), ok("Yes.")]))
+    with store.connect() as connection, pytest.raises(Exception, match="rows are evidence"):
+        connection.execute(text("update classifications set attempts = 9"))
+    with store.connect() as connection, pytest.raises(Exception, match="hard delete"):
+        connection.execute(text("delete from classifications"))
+
+
+# --- ruling, 3 September 2026: the blind question is derived, not trusted -----
+
+
+def test_a_paraphrased_strip_question_is_discarded_for_the_derived_remainder(
+    store: Engine,
+) -> None:
+    """The strip's `question` is advisory; the blind question is the original minus spans."""
+    script = full_script()
+    script[1] = strip_says(
+        question="How would you say the film ought to begin?", removed=PREFERENCE
+    )
+    adapter = ScriptedAdapter(script, probe_engine=store)
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    blind_call = adapter.sent[2]
+    assert blind_call.messages[0].content.endswith(f"The question:\n{QUESTION}")
+    assert "ought to begin" not in blind_call.messages[0].content
+    assert PREFERENCE not in blind_call.messages[0].content
+    assert outcome.blind.ordering is Ordering.ENFORCED
+    assert outcome.blind.stripped_content == PREFERENCE
+
+
+def test_spans_not_verbatim_in_the_message_record_contaminated(store: Engine) -> None:
+    script = full_script()
+    script[1] = strip_says(question=QUESTION, removed="I would rather we opened wide.")
+    adapter = ScriptedAdapter(script, probe_engine=store)
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    assert outcome.blind.ordering is Ordering.CONTAMINATED
+    assert outcome.blind.stripped_content == ""
+    assert adapter.sent[2].messages[0].content.endswith(f"The question:\n{MIXED_MESSAGE}")
+
+
+def test_the_strip_request_asks_for_spans(store: Engine) -> None:
+    adapter = ScriptedAdapter(full_script())
+    deliberate(store, adapter)
+    strip_call = adapter.sent[1]
+    assert strip_call.output_schema is not None
+    properties = strip_call.output_schema["properties"]
+    assert isinstance(properties, dict) and properties["removed"]["type"] == "array"
 
 
 def test_a_parseable_verdict_on_the_first_attempt_is_not_retried(store: Engine) -> None:

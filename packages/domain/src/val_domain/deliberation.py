@@ -101,6 +101,53 @@ class ClassifiedBy(StrEnum):
     VAL = "val"
 
 
+class ClassificationVerdict(StrEnum):
+    """The §4.8 classifier's declared verdict — the full contract vocabulary.
+
+    `DeliberationClassification` is the subset that *captures*; this is what
+    the classifier can say, including the ordinary case, because the
+    classification evidence record (ruling, 3 September 2026) must answer
+    "how was this turn classified" for ordinary turns too.
+    """
+
+    CONSEQUENTIAL = "consequential"
+    UNCERTAIN = "uncertain"
+    NOT_CONSEQUENTIAL = "not_consequential"
+
+
+@dataclass(frozen=True)
+class ClassificationRecord:
+    """One turn's §4.8 classification, as durable evidence.
+
+    Ruling, 3 September 2026: the classifier's verdict and declared reason
+    were not persisted, and its calls carry no turn provenance by the 18 August
+    rule (provenance iff conversation), so a turn's classification could be
+    tied to its call only by timestamp. This record carries the turn linkage
+    itself and leaves `model_calls` as it was.
+
+    `verdict` and `hard_exclusion` are the classifier's declared structured
+    reason under the contract — nothing inferred. `established` is False when
+    every permitted attempt failed to state a verdict; `resolution` then says
+    why, per attempt, in the words the orchestrator logged. `model_call_ids`
+    names every classification call made for the turn, in order, and
+    `resolving_model_call_id` the one whose reply the verdict came from, or
+    the final attempt where none did and a call was recorded.
+    """
+
+    id: UUID
+    project_id: UUID | None
+    conversation_id: UUID
+    message_id: UUID
+    established: bool
+    verdict: ClassificationVerdict | None
+    hard_exclusion: str | None
+    attempts: int
+    model_call_ids: tuple[UUID, ...]
+    resolving_model_call_id: UUID | None
+    resolution: str | None
+    created_at: datetime
+
+
 @dataclass(frozen=True)
 class BlindPositionRecord:
     """One persisted blind position, as the authoritative store holds it.

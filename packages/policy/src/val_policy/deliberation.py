@@ -24,7 +24,12 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-from val_domain.deliberation import Confidence, DeliberationClassification, Outcome
+from val_domain.deliberation import (
+    ClassificationVerdict,
+    Confidence,
+    DeliberationClassification,
+    Outcome,
+)
 
 # =============================================================================
 # §4.8 — the consequential classification
@@ -142,6 +147,9 @@ class ClassifierVerdict:
     captured_as: DeliberationClassification | None
     #: The hard exclusion the classifier named, if any.
     hard_exclusion: str | None
+    #: The verdict as declared on the wire, before the backstop — recorded as
+    #: the classifier's own structured reason (ruling, 3 September 2026).
+    verdict: ClassificationVerdict
 
 
 def parse_classifier_verdict(text: str) -> ClassifierVerdict | None:
@@ -161,9 +169,12 @@ def parse_classifier_verdict(text: str) -> ClassifierVerdict | None:
         return None
     if exclusion is not None and exclusion not in HARD_EXCLUSIONS:
         return None
+    declared = ClassificationVerdict(verdict)
     if exclusion is not None or verdict == "not_consequential":
-        return ClassifierVerdict(captured_as=None, hard_exclusion=exclusion)
-    return ClassifierVerdict(captured_as=DeliberationClassification(verdict), hard_exclusion=None)
+        return ClassifierVerdict(captured_as=None, hard_exclusion=exclusion, verdict=declared)
+    return ClassifierVerdict(
+        captured_as=DeliberationClassification(verdict), hard_exclusion=None, verdict=declared
+    )
 
 
 # =============================================================================
@@ -178,55 +189,132 @@ STRIP_INSTRUCTION = (
     "what remains; the question must survive verbatim minus the removed "
     "clauses.\n"
     "\n"
+    "Report what you removed as a list of spans, each copied EXACTLY from the "
+    "message — character for character, including punctuation — because the "
+    "house rebuilds the question by deleting those spans from the original "
+    "message and refuses any span it cannot find verbatim. Your own "
+    '"question" field is checked against that rebuilt remainder; a paraphrase '
+    "is not accepted.\n"
+    "\n"
     "If the message contains no preference, say so and return it whole as the "
-    "question, with nothing removed. If the preference IS the question — they "
-    "cannot be cleanly separated — say so rather than producing a mangled "
-    "question: return the message whole as the question, with nothing "
-    "removed.\n"
+    "question, with an empty list removed. If the preference IS the question "
+    "— they cannot be cleanly separated — say so rather than producing a "
+    "mangled question: return the message whole as the question, with an "
+    "empty list removed.\n"
     "\n"
     "Answer with exactly one JSON object and nothing else:\n"
     '{"preference_present": true | false, "separable": true | false, '
-    '"question": "<the message minus removed clauses>", '
-    '"removed": "<the removed clauses, verbatim>"}'
+    '"question": "<the message minus removed spans>", '
+    '"removed": ["<a removed span, verbatim>", ...]}'
 )
 
 #: The strip's shape, provider-enforced (3 September 2026). Exposed by the
 #: first real-provider demonstration of the deliberated path: the strip
 #: answered with a fenced JSON object carrying nulls, followed by prose
 #: explaining itself — unparseable, therefore recorded `contaminated` by
-#: parse failure rather than by the model's own verdict. The outcome happened
-#: to coincide that time; on a separable message the same formatting would
-#: have cost the blind position its independence for no reason in the
-#: content. Every field a string or boolean, all required.
+#: parse failure rather than by the model's own verdict. `removed` is a list
+#: of spans (ruling, 3 September 2026): the house derives the blind question
+#: from the original message and those spans, mechanically, rather than
+#: trusting the model's `question` to be the verbatim remainder.
 STRIP_OUTPUT_SCHEMA: dict[str, object] = {
     "type": "object",
     "properties": {
         "preference_present": {"type": "boolean"},
         "separable": {"type": "boolean"},
         "question": {"type": "string"},
-        "removed": {"type": "string"},
+        "removed": {"type": "array", "items": {"type": "string"}},
     },
     "required": ["preference_present", "separable", "question", "removed"],
     "additionalProperties": False,
 }
 
 
+def _collapse(text_value: str) -> str:
+    """Whitespace-normalised text: runs of whitespace become one space.
+
+    The only transformation the mechanical check permits. Line breaks and
+    double spaces are how a message was typed, not what it asked, and a span
+    copied across a line break must still be found.
+    """
+    return " ".join(text_value.split())
+
+
+def derive_stripped_question(original: str, removed: tuple[str, ...]) -> str | None:
+    """The original message minus the removed spans — derived, never trusted.
+
+    Ruling, 3 September 2026: the strip contract's "question" is *the message
+    minus the removed clauses*, verbatim, and a paraphrase is not compliant
+    even when it leaks no preference — a rewritten question can alter
+    emphasis, drop qualifiers, or narrow the choice, and the blind position
+    would then answer something other than what was asked. So the remainder
+    is built here from the original text and the spans the model named: each
+    span must occur in the (whitespace-normalised) original exactly, spans are
+    deleted in order of appearance without overlap, and what is left is the
+    question. No semantic judgment is applied anywhere in this function.
+
+    Returns None when separation is not established: a span that is not
+    found verbatim, an empty span, or nothing left once the spans are gone.
+    The caller records `contaminated` in that case.
+    """
+    haystack = _collapse(original)
+    cuts: list[tuple[int, int]] = []
+    for span in removed:
+        needle = _collapse(span)
+        if not needle:
+            return None
+        start = 0
+        placed = False
+        while True:
+            found = haystack.find(needle, start)
+            if found == -1:
+                break
+            end = found + len(needle)
+            if all(end <= s or found >= e for s, e in cuts):
+                cuts.append((found, end))
+                placed = True
+                break
+            start = found + 1
+        if not placed:
+            return None
+    cuts.sort()
+    pieces: list[str] = []
+    cursor = 0
+    for start, end in cuts:
+        pieces.append(haystack[cursor:start])
+        cursor = end
+    pieces.append(haystack[cursor:])
+    remainder = _collapse("".join(pieces))
+    return remainder or None
+
+
+def same_text(left: str, right: str) -> bool:
+    """Whether two texts are the same words in the same order, whitespace aside."""
+    return _collapse(left) == _collapse(right)
+
+
 @dataclass(frozen=True)
 class StripOutcome:
-    """One parsed strip result."""
+    """One parsed strip result.
+
+    `question` is the model's own statement of the remainder and is advisory:
+    the orchestrator derives the remainder from `removed` and the original
+    (`derive_stripped_question`) and only compares the model's version to it.
+    """
 
     preference_present: bool
     separable: bool
     question: str
-    removed: str
+    removed: tuple[str, ...]
 
 
 def parse_strip_outcome(text: str) -> StripOutcome | None:
     """The strip result, or None — which the caller records as contaminated.
 
     Shape rules a valid result must satisfy: no preference means nothing
-    removed; a separated preference means both halves are non-empty. A reply
-    violating them has not established the separation it claims.
+    removed; a separated preference means a non-empty question and at least
+    one non-empty span. A reply violating them has not established the
+    separation it claims. Whether the spans are actually verbatim is the
+    orchestrator's mechanical check, not this parser's.
     """
     document = _json_object(text)
     if document is None:
@@ -237,14 +325,17 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
     removed = document.get("removed")
     if not isinstance(present, bool) or not isinstance(separable, bool):
         return None
-    if not isinstance(question, str) or not isinstance(removed, str):
+    if not isinstance(question, str) or not isinstance(removed, list):
         return None
-    if not present and removed.strip():
+    if not all(isinstance(span, str) for span in removed):
         return None
-    if present and separable and (not question.strip() or not removed.strip()):
+    spans = tuple(span for span in removed if span.strip())
+    if not present and spans:
+        return None
+    if present and separable and (not question.strip() or not spans):
         return None
     return StripOutcome(
-        preference_present=present, separable=separable, question=question, removed=removed
+        preference_present=present, separable=separable, question=question, removed=spans
     )
 
 

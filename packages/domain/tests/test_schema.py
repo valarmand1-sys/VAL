@@ -159,6 +159,22 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "classification",
         "classified_by",
     ),
+    # §2.2 classifications — ruling, 3 September 2026: per-turn classification
+    # evidence, established or not, written before any strip or response call.
+    "classifications": (
+        "id",
+        "created_at",
+        "project_id",
+        "conversation_id",
+        "message_id",
+        "established",
+        "verdict",
+        "hard_exclusion",
+        "attempts",
+        "model_call_ids",
+        "resolving_model_call_id",
+        "resolution",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -185,6 +201,14 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("execution_events", "project_id"),
         ("deliberations", "project_id"),
         ("blind_positions", "project_id"),
+        # Ruling, 3 September 2026: a verdict exists iff established; the
+        # exclusion, the resolving call, and the failure resolution each
+        # describe one branch of that.
+        ("classifications", "project_id"),
+        ("classifications", "verdict"),
+        ("classifications", "hard_exclusion"),
+        ("classifications", "resolving_model_call_id"),
+        ("classifications", "resolution"),
         # Amendment, 19 August 2026: a deliberation recorded manually, or one
         # whose exchange carried no preference to strip, has no blind call.
         ("deliberations", "blind_position_id"),
