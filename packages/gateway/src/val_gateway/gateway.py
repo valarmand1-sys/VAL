@@ -480,7 +480,11 @@ class Gateway:
         started = time.monotonic()
         try:
             result = adapter.complete(
-                config, request.messages, request.system, request.max_output_tokens
+                config,
+                request.messages,
+                request.system,
+                request.max_output_tokens,
+                output_schema=request.output_schema,
             )
         except GatewayError as error:
             self._settle_unknown(request, config, claim, error, self._elapsed(started))

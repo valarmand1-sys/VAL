@@ -393,6 +393,16 @@ Each states what exists when it is done and how that is verified.
 - **The disagreement signal:** time since Val last disagreed is queryable and correct.
 - **Trap questions — amendment, 15 August 2026.** The WP-0.7 trap-question suite runs against deliberation records too: enthusiasm recorded in a deliberation — or an `agreed_from_start` outcome — is never reported as an approval.
 
+> **Amendment — 3 September 2026, Lord Armand. The classifier contract failed in real use, and unknown classification is not ordinary classification.**
+>
+> **What was found.** Through 3 September, `blind_positions` and `deliberations` held zero rows and no strip or blind-position call had ever been made: the §4.8 classifier had never delivered a parseable verdict on a real exchange that warranted one. Of 27 classification calls on the record, six ended at the 256-token output cap and at least ten more completed unparseably. Controlled reproduction on the live route showed the shape: the exchange was sent as a bare `user` turn under an instruction-only JSON contract, and the model treated it as a message *to* it — a correct verdict followed by prose answering the exchange until the cap, or prose followed by a fenced verdict. The output cap was a symptom, not the cause; raising it was ruled out. The verdicts, where present, agreed with §4.8's test.
+>
+> **The repair, smallest correct surface.** Two halves. The reply is **schema-constrained** through the providers' structured-output mechanisms (Anthropic `output_config.format`, GA on the classifier's route, no extra billing beyond the format's own system text, grammar compiled once and cached provider-side; OpenAI strict `json_schema` on the fallback route) — the schema is the parser's exact vocabulary, so the parser stays strict. And the exchange is **framed as data** in a serialised envelope (`VAL-CLASSIFY-V1`), the same device as the memory envelope, so it cannot read as addressed to the classifier. The strip and blind-position contracts are unchanged; they were exercised for the first time in the demonstration below and behaved. A `GatewayRequest` may now carry `output_schema`; an adapter that cannot enforce one refuses rather than drops it.
+>
+> **The ruling.** Until now a classifier failure was a logged capture miss and the turn proceeded as an ordinary turn — the mechanism deciding whether the safeguard applies switched the safeguard off when it failed. **Unknown classification may not be treated as ordinary classification.** The recovery is bounded: one retry of the identical request; if the classification is still unestablished, the turn ends unanswered — the message stays in the record, no `val` message is written, every classification call is on `model_calls`, and the interface says no provider was asked for a response. It does not proceed as ordinary. Retroactive marking remains. This is not a conflict with invariant 25 (degrade rather than halt): a turn ending unanswered with a plain statement is the existing `UnansweredTurn` shape a provider outage already produces, and Val continues; what is refused is the silent substitution of a lesser path.
+>
+> **The record, corrected without erasure.** The 19 August report to Lord Armand described the WP-0.9 implementation as *demonstrated* on the strength of the orchestration tests, which run against a scripted provider. That was accurate about the orchestration and inaccurate as a claim about the mechanism: nothing had run against a real provider, and the first real exchanges found the contract failing. The 19 August report stands as written; this amendment records that its "demonstrated" did not cover the provider contract, and that the first real-provider demonstration of the full path is the one of 3 September 2026. The gate consequence is recorded in §5.
+
 ### WP-0.10 — Text interface
 
 **Done when:** the interface supports daily use without developer tooling.
@@ -460,6 +470,11 @@ Layer 0 is complete when all of the following hold simultaneously, demonstrated 
 Points 4 through 7 are the gate. Points 1 through 3 are what makes the layer pleasant to use; 4 through 7 are what makes the next five layers possible.
 
 **Definition of done:** every work package's acceptance criteria met and demonstrated, not asserted. Compiling is not completion. Passing unit tests alone is not completion (`00-charter.md` §4).
+
+<!-- scope-ruling: 2026-09-03 -->
+> **Gate-state ruling — 3 September 2026, Lord Armand. Point 5 restarts from zero; evidence depending on consequential deliberation is paused until the repair is demonstrated.**
+>
+> Point 5 had not lacked samples; the machinery it names had never executed successfully in real use (WP-0.9 amendment of this date). An unparseable classification attempt is not a classification and counts for nothing. Accordingly: **point 5 stands at zero deliberations**, and WP-0.9's fifty hand-labelled exchanges start from zero — no prior classification is on the record to label against. Points 4, 6 and 7, and the real conversations behind points 1–3, are unaffected and keep their evidence; point 6 continues to count the failed classification calls, which are costed honestly. Accumulation of point-5 evidence and of the fifty resumes only once the repaired path has been demonstrated end to end against real providers, and then through Lord Armand's real use — no manufactured exchanges.
 
 <!-- scope-ruling: 2026-08-31 -->
 > **Sequencing ruling — 31 August 2026, Lord Armand. Two tracks.**

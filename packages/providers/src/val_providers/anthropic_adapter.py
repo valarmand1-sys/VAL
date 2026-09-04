@@ -30,10 +30,11 @@ The registry's `reasoning_effort` is carried on the request via the SDK's
 """
 
 import time
+from collections.abc import Mapping
 from typing import Literal
 
 import anthropic
-from anthropic.types import OutputConfigParam
+from anthropic.types import JSONOutputFormatParam, OutputConfigParam
 
 from val_domain.gateway import Message, ModelConfig, ReasoningEffort, TerminalState
 from val_providers.base import ProviderResult, normalize
@@ -74,30 +75,42 @@ class AnthropicAdapter:
         messages: tuple[Message, ...],
         system: str | None,
         max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
     ) -> ProviderResult:
         """Run one completion, or raise the normalized error."""
         turns: list[anthropic.types.MessageParam] = [
             {"role": "user" if m.role == "user" else "assistant", "content": m.content}
             for m in messages
         ]
+        # Independent-review correction, 18 August 2026: the registry's
+        # declared effort is SENT, not assumed. The provider's default happens
+        # to match today (Opus 5 defaults to high on the Claude API), but a
+        # versioned configuration must not depend on a provider default
+        # silently staying put. NOT_APPLICABLE sends nothing — the model has no
+        # such parameter, and inventing one would be configuring a concept the
+        # provider does not offer.
+        #
+        # 3 September 2026: the same `output_config` carries the schema
+        # constraint (Anthropic's structured outputs, GA, `format` of type
+        # `json_schema`). The provider then guarantees the text block is valid
+        # JSON conforming to the schema; the grammar is compiled once per
+        # schema and cached provider-side, and no extra tokens are billed
+        # beyond the format's own system text, which the usage block reports
+        # like any other input. An empty config is omitted, as before.
+        output_config: OutputConfigParam = {}
+        if config.reasoning_effort is not ReasoningEffort.NOT_APPLICABLE:
+            output_config["effort"] = _EFFORT[config.reasoning_effort]
+        if output_schema is not None:
+            output_config["format"] = JSONOutputFormatParam(
+                type="json_schema", schema=dict(output_schema)
+            )
         try:
             response = self._client.messages.create(
                 model=config.model_identifier,
                 max_tokens=max_output_tokens,
                 messages=turns,
                 system=system if system is not None else anthropic.omit,
-                # Independent-review correction, 18 August 2026: the registry's
-                # declared effort is SENT, not assumed. The provider's default
-                # happens to match today (Opus 5 defaults to high on the Claude
-                # API), but a versioned configuration must not depend on a
-                # provider default silently staying put. NOT_APPLICABLE sends
-                # nothing — the model has no such parameter, and inventing one
-                # would be configuring a concept the provider does not offer.
-                output_config=(
-                    anthropic.omit
-                    if config.reasoning_effort is ReasoningEffort.NOT_APPLICABLE
-                    else OutputConfigParam(effort=_EFFORT[config.reasoning_effort])
-                ),
+                output_config=output_config if output_config else anthropic.omit,
             )
         except Exception as error:
             raise normalize(error, self.name) from error

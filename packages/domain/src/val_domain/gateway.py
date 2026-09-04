@@ -416,6 +416,16 @@ class GatewayRequest(BaseModel):
     #: classification and strip are the house reading content, not Val speaking).
     #: A conversation's persona rides in `ConversationProvenance`, never here.
     persona: PersonaAttribution | None = None
+    #: 3 September 2026. A JSON Schema the provider must constrain its reply
+    #: to, for callers whose contract is a machine-readable document — the §4.8
+    #: classifier first. Added after the classifier's instruction-only JSON
+    #: contract was observed failing on real replies (a correct verdict followed
+    #: by prose answering the exchange; prose followed by a fenced verdict):
+    #: an output contract enforced by instruction alone is asserted, not
+    #: structural. An adapter that cannot enforce the schema refuses the call
+    #: rather than dropping it — a constraint silently not applied would be the
+    #: same defect through a different door.
+    output_schema: dict[str, object] | None = None
 
     @property
     def conversation_id(self) -> UUID | None:

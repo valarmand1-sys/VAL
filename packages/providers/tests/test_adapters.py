@@ -18,7 +18,7 @@ import anthropic
 import openai
 import pytest
 
-from val_domain.gateway import Message, TerminalState
+from val_domain.gateway import Message, ModelConfig, TerminalState
 from val_domain.registry import by_slug
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.openai_adapter import OpenAIAdapter
@@ -242,3 +242,77 @@ def test_stop_sequence_fails_closed_because_none_is_ever_sent() -> None:
     adapter, _ = _anthropic_adapter(_anthropic_response(stop_reason="stop_sequence"))
 
     assert adapter.complete(config, MESSAGES, "system", 100).terminal is TerminalState.UNKNOWN
+
+
+# --- 3 September 2026: a schema constraint reaches the wire, or is absent -----
+
+
+def _haiku() -> ModelConfig:
+    config = by_slug("haiku-4-5-20251001")
+    assert config is not None
+    return config
+
+
+def _opus() -> ModelConfig:
+    config = by_slug("opus-5")
+    assert config is not None
+    return config
+
+
+def _gpt() -> ModelConfig:
+    config = by_slug("gpt-5-5-20260423")
+    assert config is not None
+    return config
+
+
+SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {"verdict": {"type": "string", "enum": ["a", "b"]}},
+    "required": ["verdict"],
+    "additionalProperties": False,
+}
+
+
+def test_anthropic_sends_the_schema_as_a_json_schema_output_format() -> None:
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    adapter.complete(_haiku(), MESSAGES, "classify", 256, output_schema=SCHEMA)
+
+    output_config = fake.kwargs["output_config"]
+    assert isinstance(output_config, dict)
+    assert output_config["format"] == {"type": "json_schema", "schema": SCHEMA}
+    assert "effort" not in output_config, "NOT_APPLICABLE still sends no effort"
+
+
+def test_anthropic_carries_effort_and_schema_in_the_same_config() -> None:
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    adapter.complete(_opus(), MESSAGES, "classify", 256, output_schema=SCHEMA)
+
+    output_config = fake.kwargs["output_config"]
+    assert isinstance(output_config, dict)
+    assert output_config["effort"] == "high"
+    assert output_config["format"]["type"] == "json_schema"  # type: ignore[index]
+
+
+def test_anthropic_omits_output_config_entirely_without_schema_or_effort() -> None:
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    adapter.complete(_haiku(), MESSAGES, "classify", 256)
+
+    assert fake.kwargs["output_config"] is anthropic.omit
+
+
+def test_openai_sends_the_schema_as_a_strict_json_schema_text_format() -> None:
+    adapter, fake = _openai_adapter(_openai_response())
+    adapter.complete(_gpt(), MESSAGES, "classify", 256, output_schema=SCHEMA)
+
+    text_config = fake.kwargs["text"]
+    assert isinstance(text_config, dict)
+    fmt = text_config["format"]
+    assert fmt["type"] == "json_schema" and fmt["strict"] is True
+    assert fmt["schema"] == SCHEMA
+
+
+def test_openai_omits_text_format_without_a_schema() -> None:
+    adapter, fake = _openai_adapter(_openai_response())
+    adapter.complete(_gpt(), MESSAGES, "classify", 256)
+
+    assert fake.kwargs["text"] is openai.omit

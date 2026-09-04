@@ -29,9 +29,14 @@ usage else 0` fabricated a known $0 for exactly the calls whose cost was not
 known, which is the defect the WP-0.4 cost doctrine exists to prevent.
 """
 
+from collections.abc import Mapping
 from typing import Literal
 
 import openai
+from openai.types.responses import (
+    ResponseFormatTextJSONSchemaConfigParam,
+    ResponseTextConfigParam,
+)
 from openai.types.shared_params import Reasoning
 
 from val_domain.gateway import (
@@ -77,18 +82,35 @@ class OpenAIAdapter:
         messages: tuple[Message, ...],
         system: str | None,
         max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
     ) -> ProviderResult:
         """Run one completion, or raise the normalized error."""
         turns: list[openai.types.responses.EasyInputMessageParam] = [
             {"role": "user" if m.role == "user" else "assistant", "content": m.content}
             for m in messages
         ]
+        # 3 September 2026: a schema constraint rides on the Responses API's
+        # `text.format` as a strict `json_schema`, the provider's structured
+        # output mechanism — the reply is then guaranteed to conform. Strict
+        # mode requires `additionalProperties: false` and every property
+        # required, which the house's schemas state explicitly.
+        text_config: ResponseTextConfigParam | openai.Omit = openai.omit
+        if output_schema is not None:
+            text_config = ResponseTextConfigParam(
+                format=ResponseFormatTextJSONSchemaConfigParam(
+                    type="json_schema",
+                    name="val_structured_reply",
+                    schema=dict(output_schema),
+                    strict=True,
+                )
+            )
         try:
             response = self._client.responses.create(
                 model=config.model_identifier,
                 input=list(turns),
                 max_output_tokens=max_output_tokens,
                 instructions=system,
+                text=text_config,
                 # Independent-review correction, 18 August 2026: the registry's
                 # declared effort is SENT, not assumed. GPT-5.5 documents
                 # reasoning.effort with medium as the default; the configured

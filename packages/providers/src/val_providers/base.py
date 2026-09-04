@@ -10,6 +10,7 @@ never depends on `val_policy` — routing asks policy, policy never asks a
 provider (`01-architecture.md` §3).
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -59,8 +60,16 @@ class ProviderAdapter(Protocol):
         messages: tuple[Message, ...],
         system: str | None,
         max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
     ) -> ProviderResult:
-        """Run one completion, or raise `GatewayError`."""
+        """Run one completion, or raise `GatewayError`.
+
+        `output_schema`, when given, is a JSON Schema the reply **must** conform
+        to, enforced by the provider's schema-constrained output mechanism. An
+        adapter for a provider that cannot enforce it raises
+        `GatewayErrorKind.INVALID_REQUEST` rather than sending the request
+        unconstrained (3 September 2026).
+        """
         ...
 
 

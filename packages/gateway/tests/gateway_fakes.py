@@ -15,6 +15,7 @@ Two kinds of test use this file and they prove different things:
   instead, and skip rather than pretend when no database is configured.
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
@@ -59,6 +60,9 @@ class StubAdapter:
         #: Closure pass, §8: the value actually transmitted, so a test can
         #: assert the budget and the adapter were told the same number.
         self.sent_max_output_tokens: int | None = None
+        #: 3 September 2026: the schema constraint the adapter was handed, so a
+        #: test can assert a machine-readable contract was actually enforced.
+        self.sent_output_schema: Mapping[str, object] | None = None
 
     def complete(
         self,
@@ -66,11 +70,13 @@ class StubAdapter:
         messages: tuple[Message, ...],
         system: str | None,
         max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
     ) -> ProviderResult:
         self.calls += 1
         self.sent_messages = messages
         self.sent_system = system
         self.sent_max_output_tokens = max_output_tokens
+        self.sent_output_schema = output_schema
         if self._error is not None:
             raise self._error
         assert self._result is not None

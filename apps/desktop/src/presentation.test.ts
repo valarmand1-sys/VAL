@@ -135,8 +135,24 @@ describe("an unanswered turn claims provider contact only from the record", () =
       provider_contacted: false,
     });
     expect(label).not.toContain("provider did not answer");
-    expect(label).toContain("before any provider was contacted");
+    expect(label).toContain("no provider was asked for a response");
     expect(label).toContain("no_eligible_route");
+  });
+
+  it("an unestablished classification claims neither provider silence nor no contact", () => {
+    // 3 September 2026: the classifier's provider was contacted (twice) and
+    // answered; no response call was made. Neither "the provider did not
+    // answer" nor "no provider was contacted" is true of that turn.
+    const label = describeUnanswered({
+      ...base,
+      error: "invalid_output: the exchange could not be classified after 2 attempts",
+      error_kind: "invalid_output",
+      provider_contacted: false,
+    });
+    expect(label).not.toContain("provider did not answer");
+    expect(label).not.toContain("no provider was contacted");
+    expect(label).toContain("no provider was asked for a response");
+    expect(label).toContain("invalid_output");
   });
 
   it("a recorded provider failure may say so", () => {

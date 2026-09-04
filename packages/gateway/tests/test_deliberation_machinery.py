@@ -28,7 +28,7 @@ gate.
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from uuid import uuid4
 
@@ -50,7 +50,7 @@ from val_domain.gateway import (
     TerminalState,
 )
 from val_domain.project import ProjectAttribution
-from val_gateway.deliberate import DeliberatedTurn
+from val_gateway.deliberate import CLASSIFIER_MAX_OUTPUT_TOKENS, DeliberatedTurn
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import blind_positions_for, deliberations_for
 from val_gateway.gateway import Gateway
@@ -59,7 +59,14 @@ from val_gateway.persistence import record_call, spend_by_task_type
 from val_gateway.persona import DatabasePersonaLoader, seed
 from val_gateway.projects import load_catalogue
 from val_gateway.provenance import verifier
-from val_policy.deliberation import RECONCILIATION_VERDICT_MARKER
+from val_policy.deliberation import (
+    BLIND_POSITION_OUTPUT_SCHEMA,
+    CLASSIFIER_INSTRUCTION,
+    CLASSIFIER_OUTPUT_SCHEMA,
+    CLASSIFY_ENVELOPE_MARKER,
+    RECONCILIATION_VERDICT_MARKER,
+    STRIP_OUTPUT_SCHEMA,
+)
 from val_policy.project_resolution import ProjectSignals
 from val_providers.base import ProviderResult
 
@@ -93,6 +100,8 @@ class SentCall:
     #: What the probe observed at the moment this call was transmitted —
     #: for the durability assertion, the count of blind_positions rows.
     observed_blind_rows: int | None
+    #: 3 September 2026: the schema constraint handed to the provider, if any.
+    output_schema: Mapping[str, object] | None = None
 
 
 @dataclass
@@ -122,6 +131,7 @@ class ScriptedAdapter:
         messages: tuple[Message, ...],
         system: str | None,
         max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
     ) -> ProviderResult:
         observed = None
         if self.probe_engine is not None:
@@ -136,6 +146,7 @@ class ScriptedAdapter:
                 system=system,
                 max_output_tokens=max_output_tokens,
                 observed_blind_rows=observed,
+                output_schema=output_schema,
             )
         )
         step = self.script.pop(0)
@@ -253,13 +264,141 @@ def test_a_named_hard_exclusion_is_never_captured(store: Engine) -> None:
     assert len(adapter.sent) == 2
 
 
-def test_an_unparseable_classifier_reply_is_a_miss_not_a_guess(store: Engine) -> None:
-    adapter = ScriptedAdapter([ok("perhaps??"), ok("As you say.")])
+# --- 3 September 2026: the classifier contract, and unknown is not ordinary --
+
+#: The two real failure shapes, reproduced against the live route before the
+#: repair (scratch reproduction, 3 September 2026): a correct verdict followed
+#: by the model answering the exchange until the cap cut it off, and prose
+#: followed by a fenced verdict. Neither is a verdict the parser may take.
+VERDICT_THEN_PROSE_TRUNCATED = ProviderResult(
+    '{"verdict": "consequential", "hard_exclusion": null}\n\nYou are right. I need to '
+    "reevaluate. The strongest version of A does what C cannot: it",
+    TerminalState.TRUNCATED,
+    700,
+    256,
+    "req",
+)
+PROSE_THEN_FENCED_VERDICT = ok(
+    "I don't have access to your previous conversations. If you'd like me to "
+    "review a specific exchange, please share it.\n\n```json\n"
+    '{"verdict": "not_consequential", "hard_exclusion": "no_choice_present"}\n```'
+)
+
+
+def _calls_by_task(engine: Engine) -> dict[str, int]:
+    with engine.connect() as connection:
+        rows = connection.execute(
+            text("select task_type::text, count(*) from model_calls group by 1")
+        ).all()
+    return {task: int(count) for task, count in rows}
+
+
+def _val_messages(engine: Engine) -> int:
+    with engine.connect() as connection:
+        return int(
+            connection.execute(
+                text("select count(*) from messages where role = 'val'")
+            ).scalar_one()
+        )
+
+
+def test_the_classifier_request_is_schema_constrained_and_framed_as_data(store: Engine) -> None:
+    """The repair's two halves reach the wire: a schema, and an envelope."""
+    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("As you say.")])
+    deliberate(store, adapter)
+
+    classify = adapter.sent[0]
+    assert classify.output_schema == CLASSIFIER_OUTPUT_SCHEMA
+    assert classify.system == CLASSIFIER_INSTRUCTION
+    assert classify.max_output_tokens == CLASSIFIER_MAX_OUTPUT_TOKENS, "the cap is unchanged"
+    marker, _, body = classify.messages[0].content.partition("\n")
+    assert marker == CLASSIFY_ENVELOPE_MARKER
+    document = json.loads(body)
+    assert document["kind"] == "exchange_to_classify"
+    assert document["content"] == MIXED_MESSAGE, "the exchange itself, verbatim, as data"
+    # The response call is not schema-constrained: Val speaks in prose.
+    assert adapter.sent[1].output_schema is None
+
+
+def test_the_strip_and_blind_calls_are_schema_constrained_and_the_response_is_not(
+    store: Engine,
+) -> None:
+    """Exposed by the first real-provider demonstration (3 September 2026)."""
+    adapter = ScriptedAdapter(full_script())
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    classify, strip, blind, response = adapter.sent
+    assert classify.output_schema == CLASSIFIER_OUTPUT_SCHEMA
+    assert strip.output_schema == STRIP_OUTPUT_SCHEMA
+    assert blind.output_schema == BLIND_POSITION_OUTPUT_SCHEMA
+    assert response.output_schema is None, "Val's reply is prose plus a verdict line"
+
+
+def test_a_truncated_classifier_reply_is_retried_and_the_verdict_then_followed(
+    store: Engine,
+) -> None:
+    """One bounded retry; a valid verdict on the retry runs the full structure."""
+    adapter = ScriptedAdapter([VERDICT_THEN_PROSE_TRUNCATED, *full_script()])
     outcome = deliberate(store, adapter)
 
     assert isinstance(outcome, DeliberatedTurn)
-    assert outcome.captured_as is None, "a failed classification is a miss, never a verdict"
-    assert isinstance(outcome.turn, Turn)
+    assert outcome.captured_as is DeliberationClassification.CONSEQUENTIAL
+    assert outcome.blind is not None and outcome.deliberation is not None
+    assert [call.system for call in adapter.sent[:2]] == [CLASSIFIER_INSTRUCTION] * 2
+    assert adapter.sent[0].messages == adapter.sent[1].messages, "the retry is identical"
+    assert _calls_by_task(store)["classification"] == 2, "both attempts are on the record"
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [VERDICT_THEN_PROSE_TRUNCATED, PROSE_THEN_FENCED_VERDICT],
+    ids=["truncated", "completed_but_unparseable"],
+)
+def test_an_unestablished_classification_ends_the_turn_not_as_ordinary(
+    store: Engine, reply: ProviderResult
+) -> None:
+    """Unknown classification is never treated as ordinary (ruling, 3 Sep 2026).
+
+    Two attempts, no verdict: no response call is made, no Val message is
+    written, the user's message stays in the record, and every classification
+    call that was paid for is on `model_calls`.
+    """
+    adapter = ScriptedAdapter([reply, reply, ok("This must never be sent.")])
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, UnansweredTurn), "not a DeliberatedTurn, not ordinary"
+    assert isinstance(outcome.error, GatewayError)
+    assert outcome.error.kind is GatewayErrorKind.INVALID_OUTPUT
+    assert "could not be classified" in str(outcome.error)
+    assert "2 classification attempt" in str(outcome.error)
+    assert len(adapter.sent) == 2, "exactly the bounded attempts; no response call"
+    assert all(call.system == CLASSIFIER_INSTRUCTION for call in adapter.sent)
+    calls = _calls_by_task(store)
+    assert calls.get("classification") == 2 and "conversation" not in calls
+    assert _val_messages(store) == 0, "no answer is fabricated on an unclassified exchange"
+    assert outcome.user_message.content == MIXED_MESSAGE, "his message is history regardless"
+
+
+def test_a_classifier_provider_failure_does_not_proceed_as_ordinary(store: Engine) -> None:
+    """A classification that never arrives is unknown too, and unknown is not ordinary."""
+    failure = GatewayError(GatewayErrorKind.INVALID_REQUEST, "the route rejected the request")
+    adapter = ScriptedAdapter([failure, failure, ok("This must never be sent.")])
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, UnansweredTurn)
+    assert isinstance(outcome.error, GatewayError)
+    assert outcome.error.kind is GatewayErrorKind.INVALID_REQUEST, "the real failure's kind"
+    assert len(adapter.sent) == 2
+    assert _val_messages(store) == 0
+
+
+def test_a_parseable_verdict_on_the_first_attempt_is_not_retried(store: Engine) -> None:
+    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("As you say.")])
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, DeliberatedTurn) and isinstance(outcome.turn, Turn)
+    assert _calls_by_task(store)["classification"] == 1
 
 
 def test_the_classifier_runs_on_the_cheapest_eligible_route(store: Engine) -> None:

@@ -123,7 +123,9 @@ This section restates the current scope ruling for convenience; **the ruling its
 
 **Tripwire scope is narrow, deliberately (ruled 1 September 2026):** tripwire temporary rulings and duplicated scope or status facts that must move together — currently the scope-ruling marker and the strip-routing deviation's expiry. Test behavioral invariants; minimize semantic duplication everywhere else. Matching markers prove synchronization of markers, not of meaning, so do not extend dated markers to every cross-document restatement.
 
-<!-- scope-ruling: 2026-09-02 -->
+<!-- scope-ruling: 2026-09-03 -->
+
+**Gate point 5 restarts from zero (ruled 3 September 2026, `04-layer-0.md` §5 and WP-0.9 amendment):** the §4.8 classifier never delivered a parseable verdict on a real consequential exchange before 3 September, so the deliberation machinery had never executed in real use; the contract was repaired (schema-constrained, data-framed) and the fallback changed — **unknown classification is never treated as ordinary**; one bounded retry, then the turn ends unanswered. Point-5 evidence and the fifty hand-labelled exchanges count from zero, from real use only, after the end-to-end demonstration.
 
 **Two tracks — sequencing ruling, 31 August 2026** (`docs/baselines/04-layer-0.md` §5; `docs/baselines/01-architecture.md` §2.1):
 

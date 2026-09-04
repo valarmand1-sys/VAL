@@ -42,11 +42,25 @@ manually.
 
 ## What degrades, and how
 
-Every fallback here is an honest one. A classifier failure or unparseable
-verdict is a capture *miss*, logged, and the turn proceeds as an ordinary
-WP-0.7 turn — manual retroactive marking remains (§4.8). A strip failure is a
-failed separation and records `contaminated`. An unparseable blind position is
-no position: nothing is recorded, the turn proceeds ordinarily, and the
+**Unknown classification is never treated as ordinary classification** —
+ruling, 3 September 2026. The classification decides whether the safeguard
+applies, so a classification that fails must not switch the safeguard off:
+until that ruling, a classifier failure was logged as a capture miss and the
+turn proceeded as an ordinary WP-0.7 turn, which meant the mechanism that
+decides whether the anti-sycophancy structure runs disabled that structure
+exactly when it failed. Real use found it failing on most exchanges — a
+correct verdict followed by prose, prose followed by a fenced verdict — and
+zero captures had ever occurred. The repair is in two halves: the request is
+schema-constrained and framed as data (`val_policy.deliberation`), and the
+recovery here is **bounded**: one retry, then an honest failure. The turn
+ends as `UnansweredTurn`, the user's message stays in the record, no `val`
+message is written, and every classification call that was made is on
+`model_calls`. Retroactive marking (§4.8) remains for a turn that ends this
+way, as for any other.
+
+The remaining fallbacks are honest ones. A strip failure is a failed
+separation and records `contaminated`. An unparseable blind position is no
+position: nothing is recorded, the turn proceeds ordinarily, and the
 `model_calls` row keeps the honest account of the call that was paid for. An
 unparseable reconciliation verdict settles the turn but records no outcome —
 never a guessed one. Nothing on any path fabricates a record.
@@ -71,6 +85,7 @@ from val_domain.deliberation import (
 from val_domain.gateway import (
     Classification,
     GatewayError,
+    GatewayErrorKind,
     GatewayRequest,
     Message,
     ModelConfig,
@@ -98,11 +113,15 @@ from val_gateway.persona import DatabasePersonaLoader
 from val_gateway.projects import ProjectSession
 from val_policy.deliberation import (
     BLIND_POSITION_INSTRUCTION,
+    BLIND_POSITION_OUTPUT_SCHEMA,
     CLASSIFIER_INSTRUCTION,
+    CLASSIFIER_OUTPUT_SCHEMA,
     STRIP_INSTRUCTION,
+    STRIP_OUTPUT_SCHEMA,
     BlindOutcome,
     ClassifierVerdict,
     StripOutcome,
+    classifier_envelope,
     parse_blind_outcome,
     parse_classifier_verdict,
     parse_strip_outcome,
@@ -121,6 +140,37 @@ _LOGGER = logging.getLogger("val.deliberation")
 CLASSIFIER_MAX_OUTPUT_TOKENS = 256
 STRIP_MAX_OUTPUT_TOKENS = 4096
 BLIND_MAX_OUTPUT_TOKENS = 1024
+
+#: The bound on classification attempts per exchange (ruling, 3 September
+#: 2026). Two: the first call, and one retry of the identical request. A
+#: schema-constrained reply that still fails to parse or complete is not a
+#: transient the house should keep paying to re-ask; after the second, the
+#: classification is unestablished and the turn ends honestly.
+CLASSIFIER_ATTEMPTS = 2
+
+
+@dataclass(frozen=True)
+class ClassificationUnestablished:
+    """No verdict after every permitted attempt.
+
+    Carries why, per attempt, in the words the record supports — the last
+    gateway failure's kind where the final attempt never got an answer, and
+    `INVALID_OUTPUT` where it got one that stated no verdict.
+    """
+
+    attempts: int
+    reasons: tuple[str, ...]
+    kind: GatewayErrorKind
+
+    def as_error(self) -> GatewayError:
+        return GatewayError(
+            self.kind,
+            f"the exchange could not be classified: {self.attempts} classification "
+            f"attempt(s) established no verdict ({'; '.join(self.reasons)}). No "
+            "response was requested, because an exchange whose classification is "
+            "unknown is not treated as ordinary (ruling, 3 September 2026). The "
+            "message is in the record; saying it again is an ordinary next turn.",
+        )
 
 
 @dataclass(frozen=True)
@@ -185,12 +235,18 @@ def send(
     # 2. Classify, before any position is formed (§4.8: the classification runs
     #    first, because it decides whether the blind call happens at all).
     verdict = _classify(gateway, content, opened.scope, classification)
-    captured_as = None if verdict is None else verdict.captured_as
-    hard_exclusion = None if verdict is None else verdict.hard_exclusion
+    if isinstance(verdict, ClassificationUnestablished):
+        # Ruling, 3 September 2026: unknown classification is not ordinary
+        # classification. The turn ends here, honestly — the message is in
+        # the record, every classification call is on `model_calls`, and no
+        # response call is made on an exchange the house could not classify.
+        return unanswered_or_raise(opened, verdict.as_error())
+    captured_as = verdict.captured_as
+    hard_exclusion = verdict.hard_exclusion
 
     if captured_as is None:
-        # Not captured — or the classifier failed, which is a logged miss, not
-        # a reason to guess. An ordinary WP-0.7 turn from here on.
+        # A valid verdict of not-consequential, or a named hard exclusion: an
+        # ordinary WP-0.7 turn from here on.
         outcome = _ordinary(
             engine, gateway, opened, classification, recall_limit, max_output_tokens
         )
@@ -258,6 +314,9 @@ def send(
         system=persona.content,
         persona=PersonaAttribution(persona_id=persona.id),
         max_output_tokens=BLIND_MAX_OUTPUT_TOKENS,
+        # Provider-enforced shape (3 September 2026): the evidence row must
+        # not be lost to a fenced-JSON-plus-commentary habit.
+        output_schema=BLIND_POSITION_OUTPUT_SCHEMA,
         project_id=attribution_of(opened.scope),
         project_attribution=attribution_state_of(opened.scope),
     )
@@ -411,39 +470,77 @@ def _ordinary(
 
 def _classify(
     gateway: Gateway, content: str, scope: ProjectScope, classification: Classification
-) -> ClassifierVerdict | None:
-    """One §4.8 classification call on the cheapest eligible route, or None.
+) -> ClassifierVerdict | ClassificationUnestablished:
+    """The §4.8 classification on the cheapest eligible route, bounded.
 
     Routed through `complete`, whose attempt order is cheapest-first among the
     admitted, eligible, ready, and affordable — the routing already is the
-    "cheapest eligible operational configuration" the ruling names. A failure
-    is a logged capture miss, never a guessed verdict.
+    "cheapest eligible operational configuration" the ruling names.
+
+    The request is schema-constrained and the exchange is framed as data
+    (3 September 2026). A reply that still states no verdict — or does not
+    complete, or never arrives — is retried once, identically; after
+    `CLASSIFIER_ATTEMPTS` the classification is **unestablished**, which the
+    caller ends the turn on. Nothing here guesses a verdict, and nothing here
+    proceeds without one.
     """
     request = GatewayRequest(
         task_type=TaskType.CLASSIFICATION,
         classification=classification,
-        messages=(Message(role="user", content=content),),
+        messages=(Message(role="user", content=classifier_envelope(content)),),
         system=CLASSIFIER_INSTRUCTION,
         max_output_tokens=CLASSIFIER_MAX_OUTPUT_TOKENS,
+        output_schema=CLASSIFIER_OUTPUT_SCHEMA,
         project_id=attribution_of(scope),
         project_attribution=attribution_state_of(scope),
     )
-    try:
-        response = gateway.complete(request)
-    except GatewayError as failure:
-        _LOGGER.warning(
-            "consequential classification failed (%s); this exchange is a capture "
-            "miss, not a guessed verdict. Manual retroactive marking remains (§4.8).",
-            failure.kind.value,
-        )
-        return None
-    verdict = parse_classifier_verdict(response.text)
-    if verdict is None:
-        _LOGGER.warning(
-            "consequential classification answered unparseably; treated as a "
-            "capture miss and logged, never repaired into a verdict."
-        )
-    return verdict
+    reasons: list[str] = []
+    kind = GatewayErrorKind.INVALID_OUTPUT
+    for attempt in range(1, CLASSIFIER_ATTEMPTS + 1):
+        try:
+            response = gateway.complete(request)
+        except GatewayError as failure:
+            kind = failure.kind
+            # The failure's own words travel with the kind: a ceiling refusal
+            # must read as the ceiling, not as an anonymous failed attempt.
+            reasons.append(f"attempt {attempt}: {failure.kind.value}: {failure}")
+            _LOGGER.warning(
+                "classification attempt %d of %d failed (%s)",
+                attempt,
+                CLASSIFIER_ATTEMPTS,
+                failure.kind.value,
+            )
+            continue
+        kind = GatewayErrorKind.INVALID_OUTPUT
+        if response.terminal is not TerminalState.COMPLETE:
+            reasons.append(f"attempt {attempt}: reply ended {response.terminal.value}")
+            _LOGGER.warning(
+                "classification attempt %d of %d ended %s, not complete; no verdict taken "
+                "from a fragment",
+                attempt,
+                CLASSIFIER_ATTEMPTS,
+                response.terminal.value,
+            )
+            continue
+        verdict = parse_classifier_verdict(response.text)
+        if verdict is None:
+            reasons.append(f"attempt {attempt}: reply stated no parseable verdict")
+            _LOGGER.warning(
+                "classification attempt %d of %d answered unparseably; never repaired "
+                "into a verdict",
+                attempt,
+                CLASSIFIER_ATTEMPTS,
+            )
+            continue
+        return verdict
+    _LOGGER.warning(
+        "classification unestablished after %d attempts; the turn ends unanswered "
+        "rather than proceeding as ordinary (ruling, 3 September 2026)",
+        CLASSIFIER_ATTEMPTS,
+    )
+    return ClassificationUnestablished(
+        attempts=CLASSIFIER_ATTEMPTS, reasons=tuple(reasons), kind=kind
+    )
 
 
 def _strip(
@@ -461,6 +558,10 @@ def _strip(
         messages=(Message(role="user", content=content),),
         system=STRIP_INSTRUCTION,
         max_output_tokens=STRIP_MAX_OUTPUT_TOKENS,
+        # Provider-enforced shape (3 September 2026), after the first real
+        # demonstration recorded `contaminated` by parse failure — a fenced
+        # object with nulls, then commentary — rather than by verdict.
+        output_schema=STRIP_OUTPUT_SCHEMA,
         project_id=attribution_of(scope),
         project_attribution=attribution_state_of(scope),
     )

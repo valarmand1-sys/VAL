@@ -34,6 +34,8 @@ return money sooner in one crash case.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import pytest
 from gateway_fakes import StubAdapter
 from sqlalchemy import Engine, text
@@ -112,13 +114,14 @@ class _ProbingAdapter(StubAdapter):
         messages: tuple[Message, ...],
         system: str | None,
         max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
     ) -> ProviderResult:
         with self._engine.connect() as connection:
             reserved = connection.execute(
                 text("select count(*) from budget_reservations where state = 'reserved'")
             ).scalar_one()
         self.durable_at_transmission = reserved == 1
-        return super().complete(config, messages, system, max_output_tokens)
+        return super().complete(config, messages, system, max_output_tokens, output_schema)
 
 
 def test_the_attempt_is_durable_before_the_provider_boundary(store: Engine) -> None:

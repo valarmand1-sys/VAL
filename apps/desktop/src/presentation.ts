@@ -18,14 +18,18 @@ import type { BlindPositionView, DeliberationView, Outcome, TurnUnanswered } fro
 // An unanswered turn, described by what the record supports (ruled
 // 2 September 2026). "The provider did not answer" is a claim of provider
 // contact, and the interface may make it only where the durable call
-// lifecycle carries a call for this turn. A refusal before contact — the
-// ceiling, no eligible route — is stated as exactly that.
+// lifecycle carries a *response* call for this turn. Where there is none,
+// the interface says only that: no provider was asked for a response. It
+// does not say "no provider was contacted" — since 3 September 2026 a turn
+// can end unanswered because the classification could not be established,
+// and the classifier's provider WAS contacted; the record for that turn is
+// the classification calls, not a response call (invariant 29).
 export function describeUnanswered(outcome: TurnUnanswered): string {
   if (outcome.provider_contacted) {
     return `The provider did not answer: ${outcome.error}. The question is history.`;
   }
   return (
-    `No answer — the call was refused before any provider was contacted ` +
+    `No answer — no provider was asked for a response ` +
     `(${outcome.error_kind}): ${outcome.error}. The question is history.`
   );
 }

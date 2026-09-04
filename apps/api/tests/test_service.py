@@ -26,6 +26,7 @@ through the interface — is Lord Armand's and accumulates through use.
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
@@ -70,6 +71,7 @@ class ScriptedAdapter:
         messages: tuple[Message, ...],
         system: str | None,
         max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
     ) -> ProviderResult:
         self.calls += 1
         step = self.script.pop(0)
@@ -472,6 +474,35 @@ def test_a_missing_reason_surfaces_the_prompt_in_place(store: Engine) -> None:
 # =============================================================================
 # In-flow marking: the §4.8 manual channel
 # =============================================================================
+
+
+def test_an_unestablished_classification_is_an_unanswered_turn(store: Engine) -> None:
+    """Ruling, 3 September 2026: unknown classification is not ordinary.
+
+    Two unparseable classifier replies — the completed-but-unparseable shape
+    seen in real use — end the turn honestly: no Val message, the error names
+    the cause, and `provider_contacted` is False because no *response* call
+    exists for this turn (the classification calls do, on `model_calls`).
+    """
+    unparseable = ok(
+        'I cannot see that exchange.\n\n```json\n{"verdict": "not_consequential", '
+        '"hard_exclusion": null}\n```'
+    )
+    api = client(store, ScriptedAdapter([unparseable, unparseable, ok("never sent")]))
+    outcome = a_turn(api, MIXED)
+
+    assert outcome["kind"] == "unanswered"
+    assert outcome["error_kind"] == "invalid_output"
+    assert "could not be classified" in outcome["error"]
+    assert outcome["provider_contacted"] is False
+    assert "val_message" not in outcome
+    detail = api.get(f"/conversations/{outcome['conversation']['id']}").json()
+    assert [m["role"] for m in detail["messages"]] == ["user"], "his message stands, unanswered"
+    with store.connect() as connection:
+        classification_calls = connection.execute(
+            text("select count(*) from model_calls where task_type = 'classification'")
+        ).scalar_one()
+    assert classification_calls == 2, "both bounded attempts are on the record"
 
 
 def test_marking_an_exchange_consequential_by_hand(store: Engine) -> None:
