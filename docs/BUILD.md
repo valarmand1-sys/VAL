@@ -99,16 +99,22 @@ brew services start postgresql@18
 /opt/homebrew/opt/postgresql@18/bin/createdb -p 5433 val && /opt/homebrew/opt/postgresql@18/bin/createdb -p 5433 val_test
 ```
 
-Then apply the migration set:
+Then apply the migration set to the live store — the deployment path is
+spelled out, always:
 
 ```bash
-uv run alembic upgrade head
+uv run alembic -x deploy=live upgrade head
 ```
 
 The URL is read from `VAL_DATABASE_URL`, defaulting to
-`postgresql+psycopg://localhost:5433/val`. The schema tests use
-`VAL_TEST_DATABASE_URL`, defaulting to the `val_test` database, and refuse to run
-against any database whose name does not end in `_test`.
+`postgresql+psycopg://localhost:5433/val`. **A migration command whose
+resolved target is not a scratch database is refused unless `-x deploy=live`
+is passed** (ruling, 7 September 2026, after a scratch round-trip check
+reached the live store through the environment). To run migrations against
+scratch, name it: `uv run alembic -x url=postgresql+psycopg://localhost:5433/val_test upgrade head`.
+The schema tests use `VAL_TEST_DATABASE_URL`, defaulting to the `val_test`
+database, and refuse to run against any database whose name does not end in
+`_test`.
 
 **The PostgreSQL patch version is not pinned.** See
 [`TOOLCHAIN.md`](TOOLCHAIN.md) — the major version is enforced in the test suite,

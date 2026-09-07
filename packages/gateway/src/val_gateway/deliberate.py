@@ -340,7 +340,7 @@ def send(
                     "strip's own question was not the verbatim remainder (a paraphrase); "
                     "the derived remainder is used and the paraphrase is discarded"
                 )
-            question, removed, ordering = derived, "\n".join(strip.removed), Ordering.ENFORCED
+            question, removed, ordering = derived, strip.removed_text, Ordering.ENFORCED
     # Otherwise: preference present but not separable — or the strip itself
     # failed. The position will be formed with the preference in view, and
     # the record says exactly that.
@@ -452,8 +452,9 @@ def send(
         # the exchange going unanswered does not unhappen it.
         return unanswered_or_raise(opened, failure)
 
-    # 8. Her prose becomes her message; the verdict is machinery output.
-    prose, reconciliation = split_reconciled(response.text)
+    # 8. Her prose becomes her message; the verdict is machinery output,
+    #    checked against the recorded position (ruling, 7 September 2026).
+    prose, reconciliation, problem = split_reconciled(response.text, blind_outcome.position)
     turn = settle_turn(
         engine,
         opened,
@@ -483,9 +484,11 @@ def send(
         )
     elif isinstance(turn, Turn):
         _LOGGER.warning(
-            "response carried no valid reconciliation verdict; the turn is "
-            "settled but no deliberation outcome is recorded. The blind evidence "
-            "stands, and the exchange can be resolved manually (§4.8 override)."
+            "response carried no valid reconciliation verdict (%s); the turn is "
+            "settled but no deliberation outcome is recorded — never an invented one. "
+            "The blind evidence stands, and the exchange can be resolved manually "
+            "(§4.8 override).",
+            problem,
         )
 
     return DeliberatedTurn(

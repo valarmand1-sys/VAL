@@ -164,7 +164,7 @@ def strip_separates() -> ProviderResult:
                 "preference_present": True,
                 "separable": True,
                 "question": QUESTION,
-                "removed": [PREFERENCE],
+                "removed": [{"text": PREFERENCE, "occurrence": 1}],
             }
         )
     )
@@ -174,8 +174,20 @@ def blind_says(position: str) -> ProviderResult:
     return ok(json.dumps({"position": position, "confidence": "medium", "reasoning": "Brief."}))
 
 
-def reconciled(prose: str, outcome: str) -> ProviderResult:
-    verdict = json.dumps({"outcome": outcome, "what_changed_her_mind": None})
+CLOSE_UP = "Open on the close-up: the film is about her hands."
+
+
+def reconciled(prose: str, outcome: str, prior: str = CLOSE_UP) -> ProviderResult:
+    verdict = json.dumps(
+        {
+            "recorded_prior": prior,
+            "final_position": prior,
+            "changed_from_recorded_prior": False,
+            "recorded_prior_agreed_with_stated_preference": outcome == "agreed_from_start",
+            "outcome": outcome,
+            "what_changed_her_mind": None,
+        }
+    )
     return ok(f"{prose}\n{RECONCILIATION_VERDICT_MARKER}\n{verdict}")
 
 
@@ -183,7 +195,7 @@ def deliberated_script() -> list[ProviderResult | Exception]:
     return [
         classifier_says("consequential"),
         strip_separates(),
-        blind_says("Open on the close-up: the film is about her hands."),
+        blind_says(CLOSE_UP),
         reconciled("I hold: open on the close-up, my lord.", "held"),
     ]
 
@@ -344,7 +356,11 @@ def test_a_contaminated_position_is_never_presented_as_independent(store: Engine
                     )
                 ),
                 blind_says("It should stay as one sequence."),
-                reconciled("It stays as one sequence, my lord.", "agreed_from_start"),
+                reconciled(
+                    "It stays as one sequence, my lord.",
+                    "agreed_from_start",
+                    prior="It should stay as one sequence.",
+                ),
             ]
         ),
     )

@@ -171,15 +171,21 @@ def classifier_says(verdict: str, hard_exclusion: str | None = None) -> Provider
 
 
 def strip_says(
-    *, present: bool = True, separable: bool = True, question: str = "", removed: str = ""
+    *,
+    present: bool = True,
+    separable: bool = True,
+    question: str = "",
+    removed: str = "",
+    occurrence: int = 1,
 ) -> ProviderResult:
+    spans = [{"text": removed, "occurrence": occurrence}] if removed else []
     return ok(
         json.dumps(
             {
                 "preference_present": present,
                 "separable": separable,
                 "question": question,
-                "removed": [removed] if removed else [],
+                "removed": spans,
             }
         )
     )
@@ -191,8 +197,44 @@ def blind_says(
     return ok(json.dumps({"position": position, "confidence": confidence, "reasoning": reasoning}))
 
 
-def reconciled(prose: str, outcome: str, what_changed: str | None = None) -> ProviderResult:
-    verdict = json.dumps({"outcome": outcome, "what_changed_her_mind": what_changed})
+#: The blind position `full_script` forms, and the default recorded prior a
+#: scripted verdict echoes (ruling, 7 September 2026: the verdict must name it).
+CLOSE_UP = "Open on the close-up: the film is about her hands."
+
+
+def reconciled(
+    prose: str,
+    outcome: str,
+    what_changed: str | None = None,
+    *,
+    prior: str = CLOSE_UP,
+    final: str | None = None,
+    changed: bool | None = None,
+    agreed: bool | None = None,
+    echo: str | None = None,
+) -> ProviderResult:
+    """A verdict block consistent with `outcome` unless a test says otherwise.
+
+    `prior` is the recorded blind position the verdict must echo; `echo`
+    overrides what is actually echoed, for the tests that prove a verdict
+    reconciled against an attributed prior is refused.
+    """
+    if changed is None:
+        changed = outcome == "updated"
+    if agreed is None:
+        agreed = outcome == "agreed_from_start"
+    if final is None:
+        final = "A different position, then." if changed else prior
+    verdict = json.dumps(
+        {
+            "recorded_prior": prior if echo is None else echo,
+            "final_position": final,
+            "changed_from_recorded_prior": changed,
+            "recorded_prior_agreed_with_stated_preference": agreed,
+            "outcome": outcome,
+            "what_changed_her_mind": what_changed,
+        }
+    )
     return ok(f"{prose}\n{RECONCILIATION_VERDICT_MARKER}\n{verdict}")
 
 
@@ -229,7 +271,7 @@ def full_script() -> list[ProviderResult | Exception]:
     return [
         classifier_says("consequential"),
         strip_says(question=QUESTION, removed=PREFERENCE),
-        blind_says("Open on the close-up: the film is about her hands."),
+        blind_says(CLOSE_UP),
         reconciled("I hold: open on the close-up, my lord — the film is about her hands.", "held"),
     ]
 
@@ -803,7 +845,11 @@ def test_inseparable_preference_records_contaminated(store: Engine) -> None:
             classifier_says("consequential"),
             strip_says(present=True, separable=False, question="", removed=""),
             blind_says("It should stay as one sequence."),
-            reconciled("It stays as one sequence, my lord.", "agreed_from_start"),
+            reconciled(
+                "It stays as one sequence, my lord.",
+                "agreed_from_start",
+                prior="It should stay as one sequence.",
+            ),
         ]
     )
     outcome = deliberate(store, adapter)
@@ -826,7 +872,7 @@ def test_an_unparseable_strip_reply_records_contaminated(store: Engine) -> None:
             classifier_says("consequential"),
             ok("I removed some words, probably."),
             blind_says("Open on the close-up."),
-            reconciled("I hold, my lord.", "held"),
+            reconciled("I hold, my lord.", "held", prior="Open on the close-up."),
         ]
     )
     outcome = deliberate(store, adapter)
@@ -897,6 +943,8 @@ def test_an_updated_verdict_carries_what_changed_her_mind(store: Engine) -> None
                 "the antagonist, and the audience should meet it first.",
                 "updated",
                 what_changed="His point that the location is the antagonist.",
+                prior="Open on the close-up.",
+                final="Open on the wide shot.",
             ),
         ]
     )
@@ -936,7 +984,7 @@ def test_an_overridden_verdict_from_val_is_not_accepted(store: Engine) -> None:
             classifier_says("consequential"),
             strip_says(question=QUESTION, removed=PREFERENCE),
             blind_says("Open on the close-up."),
-            reconciled("As you decided, my lord.", "overridden"),
+            reconciled("As you decided, my lord.", "overridden", prior="Open on the close-up."),
         ]
     )
     outcome = deliberate(store, adapter)
@@ -951,7 +999,11 @@ def test_agreed_from_start_is_recorded_and_is_still_not_an_approval(store: Engin
             classifier_says("consequential"),
             strip_says(question=QUESTION, removed=PREFERENCE),
             blind_says("The wide shot: the location is the antagonist."),
-            reconciled("We agree, my lord: the wide shot.", "agreed_from_start"),
+            reconciled(
+                "We agree, my lord: the wide shot.",
+                "agreed_from_start",
+                prior="The wide shot: the location is the antagonist.",
+            ),
         ]
     )
     outcome = deliberate(store, adapter)
@@ -1049,3 +1101,150 @@ def test_blind_evidence_refuses_update_and_delete(store: Engine) -> None:
             connection.execute(
                 text("delete from blind_positions where id = :i"), {"i": outcome.blind.id}
             )
+
+
+# =============================================================================
+# Ruling, 7 September 2026: the recorded blind position is the sole prior
+# =============================================================================
+
+#: The exact failure shape from the demonstration of 3 September: the message
+#: attributes prior support for A to Val, her blind position independently
+#: chooses B, the stated preference is B, and her final position stays B.
+ATTRIBUTED_MESSAGE = (
+    "I think we should open on the wide shot. You argued last week for the "
+    "close-up. Which do you choose? Defend it or change your mind."
+)
+WIDE = "Open on the wide shot."
+
+
+def _false_attribution_script(verdict: ProviderResult) -> list[ProviderResult | Exception]:
+    return [
+        classifier_says("consequential"),
+        strip_says(
+            question="Which do you choose? Defend it or change your mind.",
+            removed=(
+                "I think we should open on the wide shot. You argued last week for the close-up."
+            ),
+        ),
+        blind_says(WIDE),
+        verdict,
+    ]
+
+
+def test_a_false_updated_against_an_attributed_prior_does_not_enter_the_record(
+    store: Engine,
+) -> None:
+    """She narrates updating from the close-up. The record never held the close-up."""
+    verdict = reconciled(
+        "You are right about last week; I change my position. We open on the street.",
+        "updated",
+        what_changed="Committing the outline needs emotional clarity first.",
+        prior=WIDE,
+        echo="Open on the close-up.",  # the attributed prior, not the recorded one
+        final=WIDE,
+    )
+    outcome = deliberate(
+        store, ScriptedAdapter(_false_attribution_script(verdict)), ATTRIBUTED_MESSAGE
+    )
+
+    assert isinstance(outcome, DeliberatedTurn) and isinstance(outcome.turn, Turn)
+    assert outcome.blind is not None and outcome.blind.position == WIDE
+    assert outcome.deliberation is None, "an outcome contradicting the record is not recorded"
+    assert deliberations_for(store, outcome.turn.conversation.id) == ()
+    assert outcome.turn.val_message.content.startswith("You are right about last week")
+
+
+def test_updated_with_a_final_position_equal_to_the_recorded_prior_is_refused(
+    store: Engine,
+) -> None:
+    """Echoes the recorded prior correctly, still claims a change that is no change."""
+    verdict = reconciled(
+        "I change my position. We open on the street.",
+        "updated",
+        what_changed="Emotional clarity first.",
+        prior=WIDE,
+        final=WIDE,
+    )
+    outcome = deliberate(
+        store, ScriptedAdapter(_false_attribution_script(verdict)), ATTRIBUTED_MESSAGE
+    )
+
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.deliberation is None
+
+
+def test_the_same_shape_reconciled_honestly_records_agreed_from_start(store: Engine) -> None:
+    verdict = reconciled(
+        "My recorded position was the wide shot, and it still is; what you say I argued "
+        "last week is not in this record. We agree from the start.",
+        "agreed_from_start",
+        prior=WIDE,
+        final=WIDE,
+    )
+    outcome = deliberate(
+        store, ScriptedAdapter(_false_attribution_script(verdict)), ATTRIBUTED_MESSAGE
+    )
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.deliberation is not None
+    assert outcome.deliberation.outcome is Outcome.AGREED_FROM_START
+    assert outcome.deliberation.what_changed_her_mind is None
+
+
+def test_a_genuine_update_is_recorded_with_its_reason(store: Engine) -> None:
+    """Blind position A, stated preference B, final position B because of the argument."""
+    script = [
+        classifier_says("consequential"),
+        strip_says(question=QUESTION, removed=PREFERENCE),
+        blind_says("Open on the close-up."),
+        reconciled(
+            "You have moved me: the wide shot.",
+            "updated",
+            what_changed="His point that the location is the antagonist.",
+            prior="Open on the close-up.",
+            final=WIDE,
+        ),
+    ]
+    outcome = deliberate(store, ScriptedAdapter(script))
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.deliberation is not None
+    assert outcome.deliberation.outcome is Outcome.UPDATED
+    assert outcome.deliberation.what_changed_her_mind == (
+        "His point that the location is the antagonist."
+    )
+
+
+@pytest.mark.parametrize(
+    ("outcome", "changed", "agreed"),
+    [
+        ("held", True, False),  # held cannot have changed
+        ("held", False, True),  # held while the prior agreed with the preference
+        ("agreed_from_start", False, False),  # agreed from start without agreement
+        ("agreed_from_start", True, True),  # agreed from start yet changed
+        ("updated", False, False),  # updated without a change
+    ],
+)
+def test_an_outcome_contradicting_the_declared_flags_is_refused(
+    store: Engine, outcome: str, changed: bool, agreed: bool
+) -> None:
+    script = full_script()
+    script[3] = reconciled(
+        "Prose.",
+        outcome,
+        what_changed="A reason." if outcome == "updated" else None,
+        changed=changed,
+        agreed=agreed,
+        final="Something else." if changed else CLOSE_UP,
+    )
+    result = deliberate(store, ScriptedAdapter(script))
+
+    assert isinstance(result, DeliberatedTurn) and isinstance(result.turn, Turn)
+    assert result.deliberation is None
+
+
+def test_the_envelope_names_the_recorded_position_as_the_sole_prior(store: Engine) -> None:
+    adapter = ScriptedAdapter(full_script())
+    deliberate(store, adapter)
+    envelope = adapter.sent[3].messages[-1].content
+    assert "SOLE authoritative prior" in envelope
+    assert "claim by its author, untrusted" in envelope
+    assert "recorded_prior" in envelope and "changed_from_recorded_prior" in envelope

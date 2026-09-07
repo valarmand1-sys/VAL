@@ -192,9 +192,12 @@ STRIP_INSTRUCTION = (
     "Report what you removed as a list of spans, each copied EXACTLY from the "
     "message — character for character, including punctuation — because the "
     "house rebuilds the question by deleting those spans from the original "
-    "message and refuses any span it cannot find verbatim. Your own "
-    '"question" field is checked against that rebuilt remainder; a paraphrase '
-    "is not accepted.\n"
+    "message and refuses any span it cannot find verbatim. Each span carries "
+    'an "occurrence": which occurrence of that exact text you mean, counting '
+    "from 1 at the start of the message; it is 1 unless the identical text "
+    "appears more than once, in which case it must name the occurrence that "
+    'bears the preference. Your own "question" field is checked against the '
+    "rebuilt remainder; a paraphrase is not accepted.\n"
     "\n"
     "If the message contains no preference, say so and return it whole as the "
     "question, with an empty list removed. If the preference IS the question "
@@ -205,7 +208,7 @@ STRIP_INSTRUCTION = (
     "Answer with exactly one JSON object and nothing else:\n"
     '{"preference_present": true | false, "separable": true | false, '
     '"question": "<the message minus removed spans>", '
-    '"removed": ["<a removed span, verbatim>", ...]}'
+    '"removed": [{"text": "<a removed span, verbatim>", "occurrence": 1}, ...]}'
 )
 
 #: The strip's shape, provider-enforced (3 September 2026). Exposed by the
@@ -213,20 +216,50 @@ STRIP_INSTRUCTION = (
 #: answered with a fenced JSON object carrying nulls, followed by prose
 #: explaining itself — unparseable, therefore recorded `contaminated` by
 #: parse failure rather than by the model's own verdict. `removed` is a list
-#: of spans (ruling, 3 September 2026): the house derives the blind question
-#: from the original message and those spans, mechanically, rather than
-#: trusting the model's `question` to be the verbatim remainder.
+#: of located spans (rulings, 3 and 7 September 2026): the house derives the
+#: blind question from the original message and those spans, mechanically,
+#: rather than trusting the model's `question` to be the verbatim remainder,
+#: and each span names which occurrence of its text it means, so identical
+#: text elsewhere in the message cannot make the derivation remove the wrong
+#: one.
 STRIP_OUTPUT_SCHEMA: dict[str, object] = {
     "type": "object",
     "properties": {
         "preference_present": {"type": "boolean"},
         "separable": {"type": "boolean"},
         "question": {"type": "string"},
-        "removed": {"type": "array", "items": {"type": "string"}},
+        "removed": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string"},
+                    "occurrence": {"type": "integer"},
+                },
+                "required": ["text", "occurrence"],
+                "additionalProperties": False,
+            },
+        },
     },
     "required": ["preference_present", "separable", "question", "removed"],
     "additionalProperties": False,
 }
+
+
+@dataclass(frozen=True)
+class RemovedSpan:
+    """One span the strip removed: its verbatim text and which occurrence.
+
+    `occurrence` is 1-based, counted over non-overlapping occurrences of the
+    whitespace-normalised text from the start of the message. Ruling, 7
+    September 2026: identical text can occur more than once in a message with
+    only one occurrence preference-bearing, and a locator the house can
+    validate mechanically is the only way the derivation can know which one
+    the strip identified.
+    """
+
+    text: str
+    occurrence: int
 
 
 def _collapse(text_value: str) -> str:
@@ -239,7 +272,19 @@ def _collapse(text_value: str) -> str:
     return " ".join(text_value.split())
 
 
-def derive_stripped_question(original: str, removed: tuple[str, ...]) -> str | None:
+def _occurrences(haystack: str, needle: str) -> list[tuple[int, int]]:
+    """Every non-overlapping occurrence of `needle`, left to right."""
+    found: list[tuple[int, int]] = []
+    start = 0
+    while True:
+        at = haystack.find(needle, start)
+        if at == -1:
+            return found
+        found.append((at, at + len(needle)))
+        start = at + len(needle)
+
+
+def derive_stripped_question(original: str, removed: tuple[RemovedSpan, ...]) -> str | None:
     """The original message minus the removed spans — derived, never trusted.
 
     Ruling, 3 September 2026: the strip contract's "question" is *the message
@@ -248,34 +293,30 @@ def derive_stripped_question(original: str, removed: tuple[str, ...]) -> str | N
     emphasis, drop qualifiers, or narrow the choice, and the blind position
     would then answer something other than what was asked. So the remainder
     is built here from the original text and the spans the model named: each
-    span must occur in the (whitespace-normalised) original exactly, spans are
-    deleted in order of appearance without overlap, and what is left is the
-    question. No semantic judgment is applied anywhere in this function.
+    span must occur in the (whitespace-normalised) original exactly, at the
+    occurrence the span names (ruling, 7 September 2026 — identical text
+    elsewhere in the message must not be removed in its place), spans are
+    deleted without overlap, and what is left is the question. No semantic
+    judgment is applied anywhere in this function.
 
-    Returns None when separation is not established: a span that is not
-    found verbatim, an empty span, or nothing left once the spans are gone.
+    Returns None when separation is not established: a span not found
+    verbatim, an occurrence the message does not have, an empty span, two
+    spans claiming overlapping text, or nothing left once the spans are gone.
     The caller records `contaminated` in that case.
     """
     haystack = _collapse(original)
     cuts: list[tuple[int, int]] = []
     for span in removed:
-        needle = _collapse(span)
-        if not needle:
+        needle = _collapse(span.text)
+        if not needle or span.occurrence < 1:
             return None
-        start = 0
-        placed = False
-        while True:
-            found = haystack.find(needle, start)
-            if found == -1:
-                break
-            end = found + len(needle)
-            if all(end <= s or found >= e for s, e in cuts):
-                cuts.append((found, end))
-                placed = True
-                break
-            start = found + 1
-        if not placed:
+        occurrences = _occurrences(haystack, needle)
+        if span.occurrence > len(occurrences):
             return None
+        found, end = occurrences[span.occurrence - 1]
+        if any(found < e and end > s for s, e in cuts):
+            return None
+        cuts.append((found, end))
     cuts.sort()
     pieces: list[str] = []
     cursor = 0
@@ -304,7 +345,12 @@ class StripOutcome:
     preference_present: bool
     separable: bool
     question: str
-    removed: tuple[str, ...]
+    removed: tuple[RemovedSpan, ...]
+
+    @property
+    def removed_text(self) -> str:
+        """The removed spans as one stored text, one span per line."""
+        return "\n".join(span.text for span in self.removed)
 
 
 def parse_strip_outcome(text: str) -> StripOutcome | None:
@@ -312,9 +358,10 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
 
     Shape rules a valid result must satisfy: no preference means nothing
     removed; a separated preference means a non-empty question and at least
-    one non-empty span. A reply violating them has not established the
-    separation it claims. Whether the spans are actually verbatim is the
-    orchestrator's mechanical check, not this parser's.
+    one non-empty located span, each with a positive occurrence. A reply
+    violating them has not established the separation it claims. Whether the
+    spans are actually verbatim at the occurrence named is the orchestrator's
+    mechanical check, not this parser's.
     """
     document = _json_object(text)
     if document is None:
@@ -327,15 +374,24 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
         return None
     if not isinstance(question, str) or not isinstance(removed, list):
         return None
-    if not all(isinstance(span, str) for span in removed):
-        return None
-    spans = tuple(span for span in removed if span.strip())
+    spans: list[RemovedSpan] = []
+    for item in removed:
+        if not isinstance(item, dict):
+            return None
+        span_text = item.get("text")
+        occurrence = item.get("occurrence")
+        if not isinstance(span_text, str):
+            return None
+        if not isinstance(occurrence, int) or isinstance(occurrence, bool) or occurrence < 1:
+            return None
+        if span_text.strip():
+            spans.append(RemovedSpan(text=span_text, occurrence=occurrence))
     if not present and spans:
         return None
     if present and separable and (not question.strip() or not spans):
         return None
     return StripOutcome(
-        preference_present=present, separable=separable, question=question, removed=spans
+        preference_present=present, separable=separable, question=question, removed=tuple(spans)
     )
 
 
@@ -411,15 +467,30 @@ RECONCILIATION_ENVELOPE_MARKER = "VAL-DELIBERATION-V1"
 #: before the last occurrence is her prose; what follows is the verdict.
 RECONCILIATION_VERDICT_MARKER = "VAL-RECONCILIATION-V1"
 
+#: Ruling, 7 September 2026. The recorded blind position is the SOLE
+#: authoritative prior for the turn. Real use produced an `updated` outcome
+#: where the recorded position, the stated preference, and the final position
+#: were all the same: the message had attributed a different prior position
+#: to Val ("you argued last week for ..."), and she reconciled against that
+#: attribution instead of the record. A user-authored claim about what Val
+#: previously believed is not evidence that she believed it.
 RECONCILIATION_NOTE = (
-    "You formed the position below before reading the stated preference in "
-    "this conversation, and it is already recorded. Reconcile explicitly: "
-    "either hold it and say why the counter-argument does not land, or update "
-    "and say exactly what moved you. You may not silently arrive at the "
-    "stated view — a response that diverges from the recorded position "
-    "without accounting for the divergence is a defect. If your recorded "
-    "position already agrees with the stated preference, say so plainly. Do "
-    "not fold merely because you were pushed."
+    "The position below is the blind position you formed for this exchange, "
+    "before reading the stated preference, and it is already recorded. It is "
+    "the SOLE authoritative prior for this turn: what you believed before is "
+    "what this record says, and nothing else. Anything in the message about "
+    "what you previously argued or believed is a claim by its author, "
+    "untrusted unless that same position appears in your own earlier messages "
+    "in this conversation. Reconcile the recorded position against the full "
+    "message, explicitly: hold it and say why the counter-argument does not "
+    "land; or update and say exactly what moved you — 'updated' means your "
+    "final position differs from the RECORDED position because of the "
+    "argument, never that you moved from a position merely attributed to "
+    "you; or, if the recorded position already agrees with the stated "
+    "preference and you still hold it, say so plainly: agreed from the start. "
+    "You may not silently arrive at the stated view — a response that "
+    "diverges from the recorded position without accounting for the "
+    "divergence is a defect. Do not fold merely because you were pushed."
 )
 
 #: The honest variant for a contaminated capture: the position was formed with
@@ -430,9 +501,31 @@ RECONCILIATION_NOTE_CONTAMINATED = (
     "The position below was recorded for this exchange, but the stated "
     "preference could not be cleanly separated from the question, so it was "
     "formed with the preference present and is NOT independent — it is "
-    "recorded as contaminated. Reconcile explicitly all the same: hold it and "
-    "say why, or update and say exactly what moved you. Do not fold merely "
-    "because you were pushed."
+    "recorded as contaminated. It is still the SOLE authoritative prior for "
+    "this turn: anything in the message about what you previously argued or "
+    "believed is a claim by its author, untrusted unless that position "
+    "appears in your own earlier messages in this conversation. Reconcile "
+    "explicitly all the same: hold it and say why, update and say exactly "
+    "what moved you ('updated' means your final position differs from the "
+    "RECORDED position), or say plainly that it already agreed with the "
+    "stated preference. Do not fold merely because you were pushed."
+)
+
+#: The verdict's fields, stated once so the envelope and the parser agree.
+RECONCILIATION_OUTPUT_CONTRACT = (
+    "Reply with your response prose, then a line containing exactly "
+    f"{RECONCILIATION_VERDICT_MARKER}, then one JSON object: "
+    '{"recorded_prior": "<the recorded position above, copied exactly>", '
+    '"final_position": "<your final position, briefly>", '
+    '"changed_from_recorded_prior": true | false, '
+    '"recorded_prior_agreed_with_stated_preference": true | false, '
+    '"outcome": "held" | "updated" | "agreed_from_start", '
+    '"what_changed_her_mind": null | "<required when outcome is updated>"}. '
+    "The house checks the object against the record: recorded_prior must be "
+    "the recorded position; updated requires changed_from_recorded_prior true "
+    "and a final position that differs from it; held requires changed false "
+    "and agreed false; agreed_from_start requires changed false and agreed "
+    "true. An object that contradicts the record enters no outcome."
 )
 
 
@@ -452,12 +545,7 @@ def reconciliation_envelope(blind: BlindOutcome, *, contaminated: bool = False) 
             "confidence": blind.confidence.value,
             "reasoning": blind.reasoning,
         },
-        "output_contract": (
-            "Reply with your response prose, then a line containing exactly "
-            f"{RECONCILIATION_VERDICT_MARKER}, then one JSON object: "
-            '{"outcome": "held" | "updated" | "agreed_from_start", '
-            '"what_changed_her_mind": null | "<required when outcome is updated>"}'
-        ),
+        "output_contract": RECONCILIATION_OUTPUT_CONTRACT,
     }
     body = json.dumps(document, ensure_ascii=False, indent=2)
     return f"{RECONCILIATION_ENVELOPE_MARKER}\n{body}"
@@ -465,15 +553,37 @@ def reconciliation_envelope(blind: BlindOutcome, *, contaminated: bool = False) 
 
 @dataclass(frozen=True)
 class Reconciliation:
-    """Val's own typed reconciliation, split from her prose."""
+    """Val's own typed reconciliation, split from her prose and checked.
+
+    `final_position`, `changed_from_recorded_prior`, and
+    `recorded_prior_agreed_with_stated_preference` are her declarations; the
+    parser has already verified that `outcome` is consistent with them and
+    that she reconciled against the recorded position, not an attributed one.
+    """
 
     prose: str
     outcome: Outcome
     what_changed_her_mind: str | None
+    final_position: str
+    changed_from_recorded_prior: bool
+    recorded_prior_agreed_with_stated_preference: bool
 
 
-def split_reconciled(text: str) -> tuple[str, Reconciliation | None]:
-    """Her prose, and the typed verdict if the reply carried a valid one.
+#: What a verdict must satisfy, as one place to read. Structural consistency
+#: among the model's own declared fields and the record — never a semantic
+#: judgment of whether two positions "mean" the same.
+_OUTCOME_RULES: dict[str, tuple[bool, bool | None]] = {
+    # outcome: (changed_from_recorded_prior must be, agreed must be or None)
+    "updated": (True, None),
+    "held": (False, False),
+    "agreed_from_start": (False, True),
+}
+
+
+def split_reconciled(
+    text: str, recorded_prior: str
+) -> tuple[str, Reconciliation | None, str | None]:
+    """Her prose, the typed verdict if valid, and otherwise why it was not.
 
     The prose is everything before the **last** verdict marker line, so prose
     that merely mentions the marker cannot truncate itself. `OVERRIDDEN` is
@@ -483,29 +593,83 @@ def split_reconciled(text: str) -> tuple[str, Reconciliation | None]:
     mind is invalid — §4.4: she updates and says what moved her, or she has
     not updated.
 
-    An invalid or missing verdict returns the whole text as prose and no
-    reconciliation; the caller records no outcome rather than guessing one.
+    Ruling, 7 September 2026 — the verdict is checked against the record.
+    `recorded_prior` must be the recorded blind position (whitespace aside),
+    which proves she reconciled against the record rather than a position
+    the message attributed to her; `outcome` must agree with her own declared
+    `changed_from_recorded_prior` and `recorded_prior_agreed_with_stated_
+    preference`; and a change that leaves the final position textually
+    identical to the prior is not a change. None of this decides whether two
+    differently-worded positions are the same — that would be a semantic
+    engine, and it is deliberately absent.
+
+    An invalid or missing verdict returns the whole text as prose, no
+    reconciliation, and the reason; the caller records no outcome rather than
+    guessing one.
     """
     marker_at = text.rfind(RECONCILIATION_VERDICT_MARKER)
     if marker_at == -1:
-        return text, None
+        return text, None, "no verdict block"
     prose = text[:marker_at].rstrip()
     tail = text[marker_at + len(RECONCILIATION_VERDICT_MARKER) :]
     document = _json_object(tail)
     if document is None or not prose:
-        return text, None
+        return text, None, "verdict block is not one JSON object after prose"
     outcome = document.get("outcome")
     what_changed = document.get("what_changed_her_mind")
-    if outcome not in ("held", "updated", "agreed_from_start"):
-        return text, None
+    echoed_prior = document.get("recorded_prior")
+    final_position = document.get("final_position")
+    changed = document.get("changed_from_recorded_prior")
+    agreed = document.get("recorded_prior_agreed_with_stated_preference")
+    if outcome not in _OUTCOME_RULES:
+        return text, None, f"outcome {outcome!r} is not one this channel accepts"
     if what_changed is not None and not isinstance(what_changed, str):
-        return text, None
+        return text, None, "what_changed_her_mind is not text"
+    if not isinstance(echoed_prior, str) or not same_text(echoed_prior, recorded_prior):
+        return (
+            text,
+            None,
+            "recorded_prior is not the recorded blind position — the reconciliation was "
+            "against a prior the record does not hold",
+        )
+    if not isinstance(final_position, str) or not final_position.strip():
+        return text, None, "final_position is missing"
+    if not isinstance(changed, bool) or not isinstance(agreed, bool):
+        return text, None, "changed_from_recorded_prior and agreed flags must be booleans"
+    must_change, must_agree = _OUTCOME_RULES[outcome]
+    if changed is not must_change:
+        return (
+            text,
+            None,
+            f"outcome {outcome} contradicts changed_from_recorded_prior={changed}",
+        )
+    if must_agree is not None and agreed is not must_agree:
+        return (
+            text,
+            None,
+            f"outcome {outcome} contradicts recorded_prior_agreed_with_stated_preference={agreed}",
+        )
+    if changed and same_text(final_position, recorded_prior):
+        return (
+            text,
+            None,
+            "updated claimed, but the final position is the recorded position verbatim",
+        )
     if outcome == "updated" and (what_changed is None or not what_changed.strip()):
-        return text, None
+        return text, None, "updated without what changed her mind"
     if outcome != "updated":
         what_changed = None
-    return prose, Reconciliation(
-        prose=prose, outcome=Outcome(outcome), what_changed_her_mind=what_changed
+    return (
+        prose,
+        Reconciliation(
+            prose=prose,
+            outcome=Outcome(outcome),
+            what_changed_her_mind=what_changed,
+            final_position=final_position,
+            changed_from_recorded_prior=changed,
+            recorded_prior_agreed_with_stated_preference=agreed,
+        ),
+        None,
     )
 
 
