@@ -99,21 +99,34 @@ def test_the_strip_and_blind_schemas_match_their_parsers() -> None:
     whole = "How should the film open?"
     assert parse_strip_outcome(
         json.dumps(
-            {"preference_present": False, "separable": True, "question": whole, "removed": []}
-        )
-    )
-    assert parse_strip_outcome(
-        json.dumps(
-            {"preference_present": True, "separable": False, "question": whole, "removed": []}
+            {
+                "preference_present": False,
+                "attributed_prior_present": False,
+                "separable": True,
+                "question": whole,
+                "removed": [],
+            }
         )
     )
     assert parse_strip_outcome(
         json.dumps(
             {
                 "preference_present": True,
+                "attributed_prior_present": False,
+                "separable": False,
+                "question": whole,
+                "removed": [],
+            }
+        )
+    )
+    assert parse_strip_outcome(
+        json.dumps(
+            {
+                "preference_present": True,
+                "attributed_prior_present": False,
                 "separable": True,
                 "question": whole,
-                "removed": [{"text": "I think", "occurrence": 1}],
+                "removed": [{"text": "I think", "occurrence": 1, "kind": "preference"}],
             }
         )
     )
@@ -240,11 +253,12 @@ def test_a_list_shaped_strip_reply_parses_and_a_string_shaped_one_does_not() -> 
         json.dumps(
             {
                 "preference_present": True,
+                "attributed_prior_present": False,
                 "separable": True,
                 "question": "Which?",
                 "removed": [
-                    {"text": "I think wide.", "occurrence": 1},
-                    {"text": "", "occurrence": 1},
+                    {"text": "I think wide.", "occurrence": 1, "kind": "preference"},
+                    {"text": "", "occurrence": 1, "kind": "preference"},
                 ],
             }
         )
@@ -255,6 +269,7 @@ def test_a_list_shaped_strip_reply_parses_and_a_string_shaped_one_does_not() -> 
             json.dumps(
                 {
                     "preference_present": True,
+                    "attributed_prior_present": False,
                     "separable": True,
                     "question": "Which?",
                     "removed": "I think wide.",

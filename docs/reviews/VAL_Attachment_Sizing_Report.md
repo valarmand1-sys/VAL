@@ -1,9 +1,10 @@
 # Attachment sizing report — Substrate v1.2 §2
 
-**Status: complete. Returned for Lord Armand's byte-store ruling.**
-PostgreSQL remains the only candidate byte store; this report supplies the
-measured and projected figures the ruling needs and recommends nothing
-architectural.
+**Status: complete. Ruled 7 September 2026: image bytes stay in
+PostgreSQL** (`docs/contracts/VAL_Attachment_Substrate_v1.md` §2). This
+report supplied the measured and projected figures the ruling rested on and
+recommended nothing architectural; no storage-size threshold for migration
+was established.
 
 Measurements were performed 2–3 September 2026 against the designated
 sample only: `VAL Attachment Sizing Sample/Images` — 38 files across

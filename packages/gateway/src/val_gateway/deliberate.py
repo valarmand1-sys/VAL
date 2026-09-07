@@ -125,6 +125,7 @@ from val_policy.deliberation import (
     STRIP_OUTPUT_SCHEMA,
     BlindOutcome,
     ClassifierVerdict,
+    RemovedSpan,
     StripOutcome,
     classifier_envelope,
     derive_stripped_question,
@@ -358,7 +359,9 @@ def send(
     blind_message = Message(
         role="user", content=f"{BLIND_POSITION_INSTRUCTION}\n\nThe question:\n{question}"
     )
-    blind_payload = _log_blind_payload(config, persona.id, blind_message)
+    blind_payload = _log_blind_payload(
+        config, persona.id, blind_message, withheld=() if strip is None else strip.removed
+    )
     blind_request = GatewayRequest(
         task_type=TaskType.BLIND_POSITION,
         classification=classification,
@@ -666,15 +669,27 @@ def _blind_outcome_from(text: str, terminal: TerminalState) -> BlindOutcome | No
     return parse_blind_outcome(text)
 
 
-def _log_blind_payload(config: ModelConfig, persona_id: UUID, message: Message) -> str:
+def _log_blind_payload(
+    config: ModelConfig,
+    persona_id: UUID,
+    message: Message,
+    *,
+    withheld: tuple[RemovedSpan, ...] = (),
+) -> str:
     """Log the exact payload of the blind call, before transmission.
 
     The WP-0.9 criterion: inspection of this payload must show no
-    preference-bearing content. The variable content — the messages — is
-    logged verbatim. The system prompt is the persona, whole; it is logged by
-    its immutable revision id rather than repeated in full, because the row it
-    names cannot change (`0005`) and twenty kilobytes of fixed identity per
-    call would bury the part inspection is for.
+    preference-bearing content — and, since 7 September 2026, no framing that
+    presupposes a prior position for Val. The variable content — the messages
+    — is logged verbatim. The system prompt is the persona, whole; it is
+    logged by its immutable revision id rather than repeated in full, because
+    the row it names cannot change (`0005`) and twenty kilobytes of fixed
+    identity per call would bury the part inspection is for.
+
+    What the strip **withheld**, and of which kind, is logged as a second
+    line rather than inside the payload: the payload line must be exactly
+    what was transmitted, so that inspecting it for preference-bearing
+    content means what it says.
     """
     payload = json.dumps(
         {
@@ -687,4 +702,14 @@ def _log_blind_payload(config: ModelConfig, persona_id: UUID, message: Message) 
         ensure_ascii=False,
     )
     _LOGGER.info("blind position payload: %s", payload)
+    _LOGGER.info(
+        "blind position withheld: %s",
+        json.dumps(
+            [
+                {"kind": span.kind, "occurrence": span.occurrence, "text": span.text}
+                for span in withheld
+            ],
+            ensure_ascii=False,
+        ),
+    )
     return payload

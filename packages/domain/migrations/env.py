@@ -35,7 +35,11 @@ from val_domain.schema import Base
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Keep loggers that already exist enabled. The default (`True`) silently
+    # disables every logger created before this call — in a test process that
+    # migrates the scratch database first, that is every application logger,
+    # including the one whose blind-payload lines are WP-0.9 evidence.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 try:
     _target = migration_target(

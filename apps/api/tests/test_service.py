@@ -162,9 +162,10 @@ def strip_separates() -> ProviderResult:
         json.dumps(
             {
                 "preference_present": True,
+                "attributed_prior_present": False,
                 "separable": True,
                 "question": QUESTION,
-                "removed": [{"text": PREFERENCE, "occurrence": 1}],
+                "removed": [{"text": PREFERENCE, "occurrence": 1, "kind": "preference"}],
             }
         )
     )
@@ -349,9 +350,10 @@ def test_a_contaminated_position_is_never_presented_as_independent(store: Engine
                     json.dumps(
                         {
                             "preference_present": True,
+                            "attributed_prior_present": False,
                             "separable": False,
                             "question": "",
-                            "removed": "",
+                            "removed": [],
                         }
                     )
                 ),

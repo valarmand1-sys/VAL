@@ -177,12 +177,19 @@ def strip_says(
     question: str = "",
     removed: str = "",
     occurrence: int = 1,
+    spans: list[dict[str, object]] | None = None,
+    attributed: bool = False,
 ) -> ProviderResult:
-    spans = [{"text": removed, "occurrence": occurrence}] if removed else []
+    """A strip reply. `spans` overrides the single `removed` span when given."""
+    if spans is None:
+        spans = (
+            [{"text": removed, "occurrence": occurrence, "kind": "preference"}] if removed else []
+        )
     return ok(
         json.dumps(
             {
                 "preference_present": present,
+                "attributed_prior_present": attributed,
                 "separable": separable,
                 "question": question,
                 "removed": spans,
@@ -1248,3 +1255,154 @@ def test_the_envelope_names_the_recorded_position_as_the_sole_prior(store: Engin
     assert "SOLE authoritative prior" in envelope
     assert "claim by its author, untrusted" in envelope
     assert "recorded_prior" in envelope and "changed_from_recorded_prior" in envelope
+
+
+# =============================================================================
+# Ruling, 7 September 2026: no blind position on framing that presupposes a
+# prior position for Val
+# =============================================================================
+
+FRAMED = (
+    "I think we should open on the wide shot. You argued last week for the close-up. "
+    "Which opening do we commit to for the outline: the wide shot or the close-up? "
+    "Defend the close-up or change your mind."
+)
+CHOICE = "Which opening do we commit to for the outline: the wide shot or the close-up?"
+
+
+def _framed_script(strip: ProviderResult) -> list[ProviderResult | Exception]:
+    return [
+        classifier_says("consequential"),
+        strip,
+        blind_says(WIDE),
+        reconciled("We agree from the start, my lord.", "agreed_from_start", prior=WIDE),
+    ]
+
+
+def test_attributed_prior_and_dependent_framing_are_withheld_from_the_blind_call(
+    store: Engine, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Demonstration 1: the framing cannot seed an enforced blind position."""
+    strip = strip_says(
+        question=CHOICE,
+        attributed=True,
+        spans=[
+            {
+                "text": "I think we should open on the wide shot.",
+                "occurrence": 1,
+                "kind": "preference",
+            },
+            {
+                "text": "You argued last week for the close-up.",
+                "occurrence": 1,
+                "kind": "attributed_prior",
+            },
+            {
+                "text": "Defend the close-up or change your mind.",
+                "occurrence": 1,
+                "kind": "attributed_prior",
+            },
+        ],
+    )
+    adapter = ScriptedAdapter(_framed_script(strip))
+    with caplog.at_level("INFO", logger="val.deliberation"):
+        outcome = deliberate(store, adapter, FRAMED)
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    assert outcome.blind.ordering is Ordering.ENFORCED
+    blind_call = adapter.sent[2].messages[0].content
+    assert blind_call.endswith(f"The question:\n{CHOICE}")
+    assert "argued last week" not in blind_call and "Defend the close-up" not in blind_call
+    # The logged payload is the evidence: what reached the call — and, on its
+    # own line, what did not. The payload line itself carries none of it.
+    payload = json.loads(outcome.blind_payload or "{}")
+    assert payload["messages"][0]["content"].endswith(CHOICE)
+    assert "argued last week" not in (outcome.blind_payload or "")
+    withheld_lines = [
+        record.getMessage()
+        for record in caplog.records
+        if "blind position withheld" in record.getMessage()
+    ]
+    assert len(withheld_lines) == 1
+    withheld = json.loads(withheld_lines[0].split("withheld: ", 1)[1])
+    assert [w["kind"] for w in withheld] == ["preference", "attributed_prior", "attributed_prior"]
+    assert any("blind position payload" in record.getMessage() for record in caplog.records)
+    assert "Defend the close-up or change your mind." in outcome.blind.stripped_content
+
+
+def test_a_genuine_choice_question_reaches_the_blind_call_unchanged(store: Engine) -> None:
+    """Demonstration 2: independently worded choice, one trailing preference."""
+    message = f"{CHOICE} I lean wide, for what it is worth."
+    strip = strip_says(question=CHOICE, removed="I lean wide, for what it is worth.")
+    adapter = ScriptedAdapter(_framed_script(strip))
+    outcome = deliberate(store, adapter, message)
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    assert outcome.blind.ordering is Ordering.ENFORCED
+    assert adapter.sent[2].messages[0].content.endswith(f"The question:\n{CHOICE}")
+
+
+def test_framing_that_cannot_be_removed_mechanically_fails_closed(
+    store: Engine, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Demonstration 4: inseparable means contaminated, never a rewritten question."""
+    strip = strip_says(present=True, separable=False, attributed=True, question="")
+    adapter = ScriptedAdapter(_framed_script(strip))
+    with caplog.at_level("INFO", logger="val.deliberation"):
+        outcome = deliberate(store, adapter, FRAMED)
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    assert outcome.blind.ordering is Ordering.CONTAMINATED
+    blind_call = adapter.sent[2].messages[0].content
+    assert blind_call.endswith(f"The question:\n{FRAMED}"), "the whole message, verbatim"
+    withheld_lines = [
+        record.getMessage()
+        for record in caplog.records
+        if "blind position withheld" in record.getMessage()
+    ]
+    assert withheld_lines and withheld_lines[0].endswith("withheld: []")
+
+
+def test_an_attributed_span_not_verbatim_in_the_message_fails_closed(store: Engine) -> None:
+    strip = strip_says(
+        question=CHOICE,
+        attributed=True,
+        spans=[
+            {
+                "text": "I think we should open on the wide shot.",
+                "occurrence": 1,
+                "kind": "preference",
+            },
+            {
+                "text": "You said you preferred the close-up.",
+                "occurrence": 1,
+                "kind": "attributed_prior",
+            },
+        ],
+    )
+    adapter = ScriptedAdapter(_framed_script(strip))
+    outcome = deliberate(store, adapter, FRAMED)
+
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    assert outcome.blind.ordering is Ordering.CONTAMINATED
+
+
+def test_a_strip_reply_without_span_kinds_does_not_parse(store: Engine) -> None:
+    reply = ok(
+        json.dumps(
+            {
+                "preference_present": True,
+                "attributed_prior_present": False,
+                "separable": True,
+                "question": QUESTION,
+                "removed": [{"text": PREFERENCE, "occurrence": 1}],
+            }
+        )
+    )
+    script = full_script()
+    script[1] = reply
+    outcome = deliberate(store, ScriptedAdapter(script))
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    assert outcome.blind.ordering is Ordering.CONTAMINATED, (
+        "an unparseable strip is a failed separation"
+    )

@@ -35,6 +35,8 @@ to exist without a resolvable path back to the immutable original.
 
 ## 2. Storage: PostgreSQL as measured candidate, not assumption *(amendment 1)*
 
+> **Ruled — 7 September 2026, Lord Armand. Image bytes stay in PostgreSQL.** On the sizing report (`docs/reviews/VAL_Attachment_Sizing_Report.md`, commit 2ea94a3): 26 GB verified from B2 in 3 h 02 min with zero digest mismatches, about 1 h 35 min at projected year-one volume and about 3 h at the heavy projection. Those figures do not justify a second authoritative byte store or giving up PITR coverage of attachment bytes; Track C has not compromised gate point 7 on this evidence. **No storage-size threshold for migration is established.** Byte placement is reopened only if measured or projected verified restore becomes operationally unacceptable for Val's actual recovery needs, or if blob volume materially degrades backup reliability, recovery reliability, database operation, or cost — not because restore time grows linearly. Any future move to object storage is an architectural ruling, because it changes the single-authoritative-store model. §2's pre-implementation deliverable is discharged; implementation may proceed on this contract.
+
 PostgreSQL remains the v1 candidate for original and derived bytes — the
 sole-authoritative-store argument is real, and backup, PITR, and restore
 verification then cover attachments with no second mechanism. But gate point

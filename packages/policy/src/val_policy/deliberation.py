@@ -189,6 +189,15 @@ STRIP_INSTRUCTION = (
     "what remains; the question must survive verbatim minus the removed "
     "clauses.\n"
     "\n"
+    "Remove, in the same way, whole clauses that assert or presuppose what "
+    'the addressee (Val) previously argued, chose, or believed — "you argued '
+    'last week for X", "last time you chose X" — AND any framing whose '
+    'meaning depends on that attribution, such as "defend X or change your '
+    'mind". A blind position may not be formed on a question that '
+    "presupposes a prior position for her; such claims are untrusted here. "
+    'Mark those spans kind "attributed_prior"; mark the author\'s own '
+    'preference spans kind "preference".\n'
+    "\n"
     "Report what you removed as a list of spans, each copied EXACTLY from the "
     "message — character for character, including punctuation — because the "
     "house rebuilds the question by deleting those spans from the original "
@@ -200,15 +209,18 @@ STRIP_INSTRUCTION = (
     "rebuilt remainder; a paraphrase is not accepted.\n"
     "\n"
     "If the message contains no preference, say so and return it whole as the "
-    "question, with an empty list removed. If the preference IS the question "
-    "— they cannot be cleanly separated — say so rather than producing a "
-    "mangled question: return the message whole as the question, with an "
-    "empty list removed.\n"
+    "question, with an empty list removed. If the preference IS the question, "
+    "or the remainder after removing the spans would not be a coherent "
+    "question without rewriting it — say separable is false rather than "
+    "producing a mangled or rewritten question: return the message whole as "
+    "the question, with an empty list removed.\n"
     "\n"
     "Answer with exactly one JSON object and nothing else:\n"
-    '{"preference_present": true | false, "separable": true | false, '
+    '{"preference_present": true | false, "attributed_prior_present": true | false, '
+    '"separable": true | false, '
     '"question": "<the message minus removed spans>", '
-    '"removed": [{"text": "<a removed span, verbatim>", "occurrence": 1}, ...]}'
+    '"removed": [{"text": "<a removed span, verbatim>", "occurrence": 1, '
+    '"kind": "preference" | "attributed_prior"}, ...]}'
 )
 
 #: The strip's shape, provider-enforced (3 September 2026). Exposed by the
@@ -226,6 +238,7 @@ STRIP_OUTPUT_SCHEMA: dict[str, object] = {
     "type": "object",
     "properties": {
         "preference_present": {"type": "boolean"},
+        "attributed_prior_present": {"type": "boolean"},
         "separable": {"type": "boolean"},
         "question": {"type": "string"},
         "removed": {
@@ -235,15 +248,30 @@ STRIP_OUTPUT_SCHEMA: dict[str, object] = {
                 "properties": {
                     "text": {"type": "string"},
                     "occurrence": {"type": "integer"},
+                    "kind": {"type": "string", "enum": ["preference", "attributed_prior"]},
                 },
-                "required": ["text", "occurrence"],
+                "required": ["text", "occurrence", "kind"],
                 "additionalProperties": False,
             },
         },
     },
-    "required": ["preference_present", "separable", "question", "removed"],
+    "required": [
+        "preference_present",
+        "attributed_prior_present",
+        "separable",
+        "question",
+        "removed",
+    ],
     "additionalProperties": False,
 }
+
+#: The two kinds of span the strip removes. `preference` is the author's own
+#: view; `attributed_prior` (ruling, 7 September 2026) is a claim about what
+#: Val previously argued or believed, and any framing whose meaning depends
+#: on that claim ("defend X or change your mind"). Both are removed by the
+#: same span-and-occurrence machinery; the kind is recorded so the evidence
+#: says what was withheld from the blind call and why.
+SPAN_KINDS = ("preference", "attributed_prior")
 
 
 @dataclass(frozen=True)
@@ -260,6 +288,7 @@ class RemovedSpan:
 
     text: str
     occurrence: int
+    kind: str = "preference"
 
 
 def _collapse(text_value: str) -> str:
@@ -346,6 +375,9 @@ class StripOutcome:
     separable: bool
     question: str
     removed: tuple[RemovedSpan, ...]
+    #: Ruling, 7 September 2026: the message asserted or presupposed a prior
+    #: position for Val. Recorded from the strip's own declaration.
+    attributed_prior_present: bool = False
 
     @property
     def removed_text(self) -> str:
@@ -367,10 +399,13 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
     if document is None:
         return None
     present = document.get("preference_present")
+    attributed = document.get("attributed_prior_present")
     separable = document.get("separable")
     question = document.get("question")
     removed = document.get("removed")
     if not isinstance(present, bool) or not isinstance(separable, bool):
+        return None
+    if not isinstance(attributed, bool):
         return None
     if not isinstance(question, str) or not isinstance(removed, list):
         return None
@@ -380,18 +415,25 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
             return None
         span_text = item.get("text")
         occurrence = item.get("occurrence")
+        kind = item.get("kind")
         if not isinstance(span_text, str):
             return None
         if not isinstance(occurrence, int) or isinstance(occurrence, bool) or occurrence < 1:
             return None
+        if kind not in SPAN_KINDS:
+            return None
         if span_text.strip():
-            spans.append(RemovedSpan(text=span_text, occurrence=occurrence))
-    if not present and spans:
+            spans.append(RemovedSpan(text=span_text, occurrence=occurrence, kind=kind))
+    if not present and not attributed and spans:
         return None
     if present and separable and (not question.strip() or not spans):
         return None
     return StripOutcome(
-        preference_present=present, separable=separable, question=question, removed=tuple(spans)
+        preference_present=present,
+        separable=separable,
+        question=question,
+        removed=tuple(spans),
+        attributed_prior_present=attributed,
     )
 
 
