@@ -84,7 +84,13 @@ from val_policy.budget import (
 )
 from val_policy.eligibility import refusal_for, startup_violations
 from val_policy.restricted import preflight, refusal_message
-from val_policy.routing import attempt_order, is_admitted, is_eligible
+from val_policy.routing import (
+    attempt_order,
+    is_admitted,
+    is_eligible,
+    required_profile,
+    satisfies_profile,
+)
 from val_providers.base import ProviderAdapter
 
 _LOGGER = logging.getLogger("val.gateway")
@@ -294,7 +300,9 @@ class Gateway:
         # the same-configuration guarantee the caller pinned this for.
         self._refuse_restricted(request)
         self._refuse_incoherent_provenance(request)
-        known = self._verify_named_configuration(configuration, request.classification)
+        known = self._verify_named_configuration(
+            configuration, request.classification, request.task_type
+        )
         return self._attempt(request, known, content_parts(request))
 
     def complete(self, request: GatewayRequest) -> GatewayResponse:
@@ -345,6 +353,9 @@ class Gateway:
                 and self._affordable(config, request, parts, committed)
             ),
             resolve_fallback=fallback_for,
+            # Ruling, 7 September 2026: the task's capability floor sits
+            # between eligibility and cost, and cost never lowers it.
+            profile=required_profile(request.task_type),
         )
         if not order:
             raise GatewayError(
@@ -398,11 +409,11 @@ class Gateway:
         self._refuse_restricted(request)
         self._refuse_unverified_persona(request)
 
-        known = self._verify_named_configuration(config, request.classification)
+        known = self._verify_named_configuration(config, request.classification, request.task_type)
         return self._attempt(request, known, content_parts(request))
 
     def _verify_named_configuration(
-        self, config: ModelConfig, classification: Classification
+        self, config: ModelConfig, classification: Classification, task_type: TaskType
     ) -> ModelConfig:
         """The registry's own entry for this id, or a refusal. Never the caller's copy."""
         known = by_id(config.id)
@@ -427,6 +438,14 @@ class Gateway:
                 f"{known.slug} is not admitted for Layer 0 use, or not eligible for "
                 f"{classification.value} content. Naming it explicitly does not "
                 "admit it (00-charter.md invariant 17).",
+            )
+        floor = required_profile(task_type)
+        if not satisfies_profile(known, floor):
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                f"{known.slug} does not satisfy the {floor.value} capability profile that "
+                f"{task_type.value} work requires. A pinned configuration below the floor "
+                "is refused, not used (ruling, 7 September 2026).",
             )
         return known
 
@@ -765,6 +784,8 @@ class Gateway:
         classification: Classification,
         parts: tuple[str, ...],
         max_output_tokens: int,
+        *,
+        task_type: TaskType,
     ) -> ModelConfig:
         """The configuration routing would choose for this work, without calling.
 
@@ -778,6 +799,7 @@ class Gateway:
         of an independence that never existed.
         """
         committed = self._ledger.committed_usd()
+        floor = required_profile(task_type)
         order = attempt_order(
             active(),
             classification,
@@ -787,13 +809,15 @@ class Gateway:
                 and admits(committed, maximum_cost(config, parts, max_output_tokens))
             ),
             resolve_fallback=fallback_for,
+            profile=floor,
         )
         if not order:
             raise GatewayError(
                 GatewayErrorKind.NO_ELIGIBLE_ROUTE,
-                "no configuration is admitted, eligible, ready, and affordable for "
-                f"{classification.value} content of this size. Truthful "
-                "unavailability, not a licence to downgrade (01-architecture.md §5.4).",
+                f"no configuration is admitted, eligible, qualified for the {floor.value} "
+                f"capability profile, ready, and affordable for {classification.value} "
+                "content of this size. Truthful unavailability, not a licence to "
+                "downgrade or to lower the floor (01-architecture.md §5.4, §5.5).",
             )
         return order[0]
 
@@ -853,15 +877,24 @@ class Gateway:
                 "classification or route to an unadmitted provider to get around it "
                 "(00-charter.md invariant 17)."
             )
-        ready = [config for config in eligible if config.provider in self._adapters]
+        floor = required_profile(request.task_type)
+        qualified = [config for config in eligible if satisfies_profile(config, floor)]
+        if not qualified:
+            return (
+                f"No eligible configuration is qualified for the {floor.value} capability "
+                f"profile that {request.task_type.value} work requires. I will not lower the "
+                "floor to a cheaper or merely available route (ruling, 7 September 2026)."
+            )
+        ready = [config for config in qualified if config.provider in self._adapters]
         if not ready:
             return (
-                "Every eligible configuration is missing its adapter or its credential "
-                "in this process. No call was made."
+                f"Every configuration qualified for the {floor.value} capability profile "
+                "is missing its adapter or its credential in this process. No call was "
+                "made, and no route below the floor was tried in its place."
             )
         if not any(self._affordable(config, request, parts, committed) for config in ready):
             return no_affordable_route_message(committed)
-        return "No eligible route could be selected."
+        return f"No route qualified for the {floor.value} capability profile could be selected."
 
     def _blocked(self, request: GatewayRequest, kind: str) -> None:
         """Record that a request was blocked — without recording a call.

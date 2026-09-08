@@ -200,6 +200,7 @@ def _synthetic(slug: str, fallback: str | None, price: float = 1.0) -> ModelConf
     from val_domain.gateway import (
         AdapterStatus,
         Admission,
+        CapabilityProfile,
         Classification,
         PricingFeature,
         ReasoningEffort,
@@ -219,6 +220,7 @@ def _synthetic(slug: str, fallback: str | None, price: float = 1.0) -> ModelConf
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=frozenset({Classification.INTERNAL}),
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
         known_weaknesses=(),
         fallback_slug=fallback,
         admission=Admission.PROVISIONALLY_ADMITTED,

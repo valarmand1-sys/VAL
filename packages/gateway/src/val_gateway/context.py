@@ -62,6 +62,8 @@ conversation for the same reason.
 """
 
 import json
+import logging
+import os
 
 from val_domain.conversation import MessageRecord, StoredRole
 from val_domain.gateway import (
@@ -75,6 +77,7 @@ from val_domain.gateway import (
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
 from val_gateway.memory import RecalledMessage
 from val_gateway.persona import ActivePersona
+from val_policy.history import HISTORY_TOKEN_BUDGET_DEFAULT, select_history_tail
 
 #: The most recent turns of the current conversation that are sent. WP-0.7 §14
 #: forbids injecting everything ever written and requires the bound be
@@ -158,16 +161,69 @@ MEMORY_ENVELOPE_NOTE = (
 RECALL_HEADER = MEMORY_ENVELOPE_MARKER
 
 
-def conversation_messages(history: tuple[MessageRecord, ...]) -> tuple[Message, ...]:
+_LOGGER = logging.getLogger("val.history")
+
+#: The environment setting for the soft history budget (ruled 7 September 2026).
+HISTORY_BUDGET_SETTING = "VAL_HISTORY_TOKEN_BUDGET"
+
+
+def history_token_budget() -> int:
+    """The soft history budget in the system's byte-bound accounting:
+    `VAL_HISTORY_TOKEN_BUDGET`, else 64,000. See `val_policy.history`."""
+    raw = os.environ.get(HISTORY_BUDGET_SETTING, "").strip()
+    if not raw:
+        return HISTORY_TOKEN_BUDGET_DEFAULT
+    value = int(raw)
+    if value <= 0:
+        raise ValueError(f"{HISTORY_BUDGET_SETTING} must be a positive integer, not {raw!r}")
+    return value
+
+
+def conversation_messages(
+    history: tuple[MessageRecord, ...], *, budget: int | None = None
+) -> tuple[Message, ...]:
     """Stored turns as the provider will see them, oldest first.
 
-    Ordered by `sequence` upstream and bounded to the last `MAX_HISTORY_TURNS`
-    here. Stored `system` rows are dropped rather than converted: they are the
-    application's own bookkeeping, and `provider_role` refuses them for the same
-    reason.
+    Ordered by `sequence` upstream and bounded here to a contiguous
+    chronological tail: at most `MAX_HISTORY_TURNS` messages, and within the
+    soft budget of `val_policy.history` (ruled 7 September 2026) — whole
+    messages, whole exchanges, never a hole, never a summary. Stored `system`
+    rows are dropped rather than converted: they are the application's own
+    bookkeeping, and `provider_role` refuses them for the same reason.
+
+    Every selection is logged, with each exchange's size and fate.
     """
     conversational = tuple(record for record in history if record.role.value in ("user", "val"))
-    return tuple(record.as_provider_message() for record in conversational[-MAX_HISTORY_TURNS:])
+    selection = select_history_tail(
+        conversational,
+        budget=history_token_budget() if budget is None else budget,
+        limit=MAX_HISTORY_TURNS,
+    )
+    retained = conversational[selection.retained_from :]
+    _LOGGER.info(
+        "history selection: %s",
+        json.dumps(
+            {
+                "budget": selection.budget,
+                "accounting": "raw_input_bound (utf-8 bytes + framing; an upper bound)",
+                "stored_messages": len(conversational),
+                "retained_messages": selection.retained_messages,
+                "retained_tokens": selection.retained_tokens,
+                "retained_from_sequence": retained[0].sequence if retained else None,
+                "exchanges": [
+                    {
+                        "exchange": decision.exchange_index,
+                        "messages": decision.message_count,
+                        "bound_tokens": decision.bound_tokens,
+                        "retained": decision.retained,
+                        "reason": decision.reason,
+                    }
+                    for decision in selection.decisions
+                ],
+            }
+        ),
+    )
+    return tuple(record.as_provider_message() for record in retained)
 
 
 def recall_block(recalled: tuple[RecalledMessage, ...]) -> Message | None:

@@ -113,6 +113,28 @@ class TerminalState(StrEnum):
     UNKNOWN = "unknown"
 
 
+class CapabilityProfile(StrEnum):
+    """What work a configuration is qualified for — ruling, 7 September 2026.
+
+    The 2 September quality-priority ruling (`01-architecture.md` §5.5) orders
+    routing as task → required quality floor → eligible routes meeting it →
+    cost among those. Routing had no floor step: it went from eligibility to
+    the cheapest candidate, so Val's own voice was served by the cheapest
+    admitted route. A configuration now declares the profiles it satisfies,
+    and a task names the profile it requires; cost ranks only routes that
+    satisfy it and never lowers it.
+
+    Two profiles, no broader than the ruling requires. `STRUCTURED` is
+    internal schema-constrained work — classification, preference stripping,
+    titling. `PARTNER` is Val's partner cognition — every user-visible
+    response and the blind position on a consequential exchange. Neither is a
+    numeric ranking, and neither names a model.
+    """
+
+    STRUCTURED = "structured"
+    PARTNER = "partner"
+
+
 class GatewayErrorKind(StrEnum):
     """The one normalized error contract (`01-architecture.md` §5.1).
 
@@ -261,6 +283,12 @@ class ModelConfig(BaseModel):
     caching: PricingFeature = PricingFeature.NOT_VERIFIED
     batch_pricing: PricingFeature = PricingFeature.NOT_VERIFIED
     eligible_classifications: frozenset[Classification]
+    #: Ruling, 7 September 2026. The capability profiles this configuration
+    #: is qualified to serve; a task requiring a profile the configuration
+    #: does not declare is never routed to it, whatever it costs. Required —
+    #: an entry that declares nothing serves nothing. Qualification for
+    #: `PARTNER` is a ruling, never inferred from eligibility, price, or name.
+    capability_profiles: frozenset[CapabilityProfile]
     #: Weaknesses observed in this house's own use (§5.2). Written from
     #: observation, never from a provider's or a benchmark's claims, so an empty
     #: tuple means "none observed here yet" rather than "none exist".

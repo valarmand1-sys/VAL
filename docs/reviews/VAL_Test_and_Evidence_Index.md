@@ -566,3 +566,34 @@ was read, never written.
 `model_calls` immutability preserved throughout; no schema change. The
 transmission-marker refinement (release provably-never-sent holds early) needs
 a column §2.5 does not enumerate → **Layer 0 gate list**.
+
+## 12. The quality floor and the point-5 evidence annotation — 7 September 2026
+
+**Point-5 evidence, annotated by ruling (`04-layer-0.md` §5).** Live store, `val` on port 5433:
+
+| Row | Table | Ordering / outcome | Standing |
+|---|---|---|---|
+| `01a07ec5-5649-7dcf-977b-2129ad2c5ce6` | `blind_positions` | `enforced` | **Valid enforced-path evidence.** Produced 21:07:37 local, before the capability floor existed, on the cost-ordered router's selection. Not evidence that partner routing worked; may not serve as the closing session's consequential turn. |
+| `01a07ec5-7396-78ce-a306-a1415daf0d62` | `deliberations` | `enforced` / `held` | The deliberation of the row above. Same standing. |
+| `01a07ec5-e17c-7380-9375-c070e9cf8d37` | `blind_positions` | `contaminated` | Non-evidence (WP-0.9 amendment, 7 September 2026). |
+| `01a07ec6-1bf7-73a9-858f-a5a64d997b99` | `deliberations` | `contaminated` / `agreed_from_start` | Non-evidence. |
+
+Point 5 stands at one enforced deliberation.
+
+**The quality floor (capability profiles), unit evidence** — `packages/gateway/tests/test_router.py` §G, `packages/policy/tests/test_history.py`, and the substitution tests rewritten in `test_persona.py` / `test_project_attribution.py`:
+
+| # | Claim | Result |
+|---|---|---|
+| 12.1 | Conversation and blind position require `partner`; classification, strip and title require `structured` | **PASS** |
+| 12.2 | Through the committed registry, conversation routes only to partner-qualified routes and the winner is not the cheapest route overall | **PASS** |
+| 12.3 | Classification and strip route to the cheapest structured route | **PASS** |
+| 12.4 | A cheaper structured-only route never wins a partner task | **PASS** |
+| 12.5 | A partner route's declared structured fallback never serves a partner task; the same successor serves a structured task | **PASS** |
+| 12.6 | With nothing satisfying the floor the candidate list is empty — no downgrade | **PASS** |
+| 12.7 | A configuration pinned below the floor is refused before transmission, naming the floor | **PASS** |
+| 12.8 | With no partner-qualified route ready, `converse` fails with `NO_ELIGIBLE_ROUTE` naming the floor; nothing structured is tried | **PASS** |
+| 12.9 | Provider substitution across two partner-qualified routes leaves persona and project attribution identical (tests 16 and 19, rewritten: the registry holds one partner route, so the pair is built) | **PASS** |
+| 12.10 | History: whole conversation retained when it fits; fewer exchanges than forty when long; newest exchange kept whole when it alone exceeds the budget; the tail stops at the first exchange that does not fit; never begins on an orphaned Val message; the forty-message maximum holds; nothing truncated or reordered | **PASS** |
+
+**Live demonstration** — recorded below on deployment, against the real providers.
+

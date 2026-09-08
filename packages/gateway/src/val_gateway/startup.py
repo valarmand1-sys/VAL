@@ -24,12 +24,14 @@ from datetime import UTC, datetime
 
 from sqlalchemy import Engine
 
+from val_domain.gateway import CapabilityProfile
 from val_domain.registry import active
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
 from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_gateway.provenance import verifier
+from val_policy.routing import is_admitted, satisfies_profile
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
 from val_providers.openai_adapter import OpenAIAdapter
@@ -121,6 +123,21 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             "established and which no reservation covers. Month-to-date spend is a "
             "figure for what is known, not a complete one, and must not be presented "
             "as complete while this is non-zero (00-charter.md invariant 29)."
+        )
+
+    # Ruling, 7 September 2026: a warning, not a refusal, when no admitted
+    # configuration declares the partner capability profile. Every conversation
+    # and blind-position call would then fail with the specific no-qualified-
+    # route cause; this only says so at boot instead of on the first exchange.
+    # Nothing is downgraded to a structured route in the meantime.
+    if not any(
+        is_admitted(config) and satisfies_profile(config, CapabilityProfile.PARTNER)
+        for config in active()
+    ):
+        warnings.append(
+            "no admitted configuration declares the partner capability profile: every "
+            "conversation and blind-position call will fail with no qualified route "
+            "until one is admitted. Nothing is downgraded to a structured route."
         )
 
     # WP-0.5. The persona is checked at startup and loaded per call. Checking it

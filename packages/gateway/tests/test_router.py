@@ -20,6 +20,7 @@ from gateway_fakes import StubAdapter, build, config, request
 from val_domain.gateway import (
     AdapterStatus,
     Admission,
+    CapabilityProfile,
     Classification,
     CostCertainty,
     GatewayError,
@@ -27,14 +28,18 @@ from val_domain.gateway import (
     ModelConfig,
     PricingFeature,
     ReasoningEffort,
+    TaskType,
     TerminalState,
 )
 from val_domain.registry import active, by_slug, fallback_for
 from val_gateway.gateway import RETRYABLE
-from val_policy.routing import attempt_order, candidates
+from val_policy.routing import attempt_order, candidates, required_profile
 from val_providers.base import ProviderResult
 
 ALWAYS = True
+
+#: Every profile, for routes whose test is about eligibility, not the floor.
+ALL_PROFILES = frozenset(CapabilityProfile)
 
 
 def always_ready(config: ModelConfig) -> bool:
@@ -53,12 +58,14 @@ def make(
     admission: Admission = Admission.PROVISIONALLY_ADMITTED,
     fallback: str | None = None,
     retired: bool = False,
+    profiles: frozenset[CapabilityProfile] = ALL_PROFILES,
+    provider: str = "anthropic",
 ) -> ModelConfig:
     """A configuration for a case the real registry cannot legally hold."""
     return ModelConfig(
         id=uuid4(),
         slug=slug,
-        provider="anthropic",
+        provider=provider,
         model_identifier=f"model-{slug}",
         display_name=slug,
         context_window_tokens=100_000,
@@ -69,6 +76,7 @@ def make(
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=eligible,
+        capability_profiles=profiles,
         fallback_slug=fallback,
         admission=admission,
         adapter_status=AdapterStatus.IMPLEMENTED,
@@ -133,6 +141,7 @@ def test_a_cheaper_ineligible_route_is_never_a_candidate() -> None:
         Classification.PROTECTED,
         always_ready,
         always_affordable,
+        profile=CapabilityProfile.PARTNER,
     )
 
     assert [entry.slug for entry in chosen] == ["proper"]
@@ -154,7 +163,11 @@ def test_an_unadmitted_route_is_never_a_candidate() -> None:
     )
     admitted = make("live", cost_in=9.0, eligible=PROTECTED_SET)
     chosen = candidates(
-        [unadmitted, admitted], Classification.PROTECTED, always_ready, always_affordable
+        [unadmitted, admitted],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.PARTNER,
     )
     assert [entry.slug for entry in chosen] == ["live"]
 
@@ -162,7 +175,13 @@ def test_an_unadmitted_route_is_never_a_candidate() -> None:
 def test_a_retired_route_is_never_a_candidate() -> None:
     """Retired entries stay for history and never for routing."""
     retired = make("old", cost_in=0.01, eligible=PROTECTED_SET, retired=True)
-    chosen = candidates([retired], Classification.PROTECTED, always_ready, always_affordable)
+    chosen = candidates(
+        [retired],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.PARTNER,
+    )
     assert chosen == []
 
 
@@ -206,6 +225,7 @@ def test_an_ineligible_fallback_does_not_execute() -> None:
         always_ready,
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
+        profile=CapabilityProfile.PARTNER,
     )
 
     assert [entry.slug for entry in order] == ["primary"]
@@ -225,6 +245,7 @@ def test_a_declared_fallback_is_used_when_it_holds_independently() -> None:
         always_ready,
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
+        profile=CapabilityProfile.PARTNER,
     )
 
     # `other` is cheapest so it is the primary — and it declares no fallback,
@@ -241,6 +262,7 @@ def test_a_declared_fallback_is_used_when_it_holds_independently() -> None:
         always_ready,
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
+        profile=CapabilityProfile.PARTNER,
     )
     assert [entry.slug for entry in chained] == ["successor"], (
         "successor is cheaper, so it leads; it declares nothing, so it stands alone"
@@ -340,6 +362,7 @@ def test_an_unaffordable_route_yields_to_an_affordable_eligible_one() -> None:
         Classification.PROTECTED,
         always_ready,
         is_affordable=lambda entry: entry.slug != "expensive",
+        profile=CapabilityProfile.PARTNER,
     )
     assert [entry.slug for entry in chosen] == ["modest"]
 
@@ -529,3 +552,145 @@ def test_an_unpayable_primary_falls_back_to_a_working_route() -> None:
     assert unpayable.calls >= 1
     # Every transmitted attempt is still recorded — zero calls without a row.
     assert len(rows) == unpayable.calls + 1
+
+
+# --- G. the capability floor — ruling, 7 September 2026 ----------------------
+#
+# Eligibility → required capability profile → readiness and budget → cost among
+# the routes that satisfy the floor. Cost ranks what the floor admitted; it
+# never lowers the floor. The tests below build routes where they need a shape
+# the registry cannot hold, and read the real registry where the point is what
+# Val actually runs on.
+
+PARTNER_ONLY = frozenset({CapabilityProfile.PARTNER})
+STRUCTURED_ONLY = frozenset({CapabilityProfile.STRUCTURED})
+
+
+def test_conversation_and_blind_position_require_the_partner_profile() -> None:
+    assert required_profile(TaskType.CONVERSATION) is CapabilityProfile.PARTNER
+    assert required_profile(TaskType.BLIND_POSITION) is CapabilityProfile.PARTNER
+    for internal in (TaskType.CLASSIFICATION, TaskType.STRIP, TaskType.TITLE):
+        assert required_profile(internal) is CapabilityProfile.STRUCTURED
+
+
+def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_registry() -> None:
+    """Through the registry as committed: every candidate for conversation declares
+    the partner profile, and the winner is the cheapest of those — never the
+    cheapest route overall."""
+    chosen = candidates(
+        active(),
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=required_profile(TaskType.CONVERSATION),
+    )
+    assert chosen, "the registry must hold at least one partner-qualified route"
+    assert all(CapabilityProfile.PARTNER in entry.capability_profiles for entry in chosen)
+    cheapest_overall = candidates(
+        active(),
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.STRUCTURED,
+    )[0]
+    assert CapabilityProfile.PARTNER not in cheapest_overall.capability_profiles, (
+        "the premise: the cheapest structured route is not partner-qualified"
+    )
+    assert chosen[0].slug != cheapest_overall.slug
+    # Registry state as of 7 September 2026 — the provisionally approved sole
+    # partner route. A changed ruling changes this line, nothing in routing.
+    assert chosen[0].slug == "opus-5"
+
+
+def test_classification_and_strip_route_to_the_cheapest_structured_route() -> None:
+    """Internal work stays on the cheapest route that satisfies the structured floor."""
+    for task in (TaskType.CLASSIFICATION, TaskType.STRIP):
+        chosen = candidates(
+            active(),
+            Classification.PROTECTED,
+            always_ready,
+            always_affordable,
+            profile=required_profile(task),
+        )
+        assert CapabilityProfile.STRUCTURED in chosen[0].capability_profiles
+        assert chosen[0].cost_per_mtok_in_usd == min(entry.cost_per_mtok_in_usd for entry in chosen)
+        assert chosen[0].slug.startswith("haiku"), "registry state as of 7 September 2026"
+
+
+def test_a_cheaper_structured_route_never_wins_a_partner_task() -> None:
+    """The finding that produced the ruling, as a test: Haiku cannot win Val's voice on cost."""
+    cheap = make("cheap-structured", cost_in=0.01, eligible=PROTECTED_SET, profiles=STRUCTURED_ONLY)
+    partner = make("partner", cost_in=50.0, eligible=PROTECTED_SET, profiles=PARTNER_ONLY)
+    chosen = candidates(
+        [cheap, partner],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.PARTNER,
+    )
+    assert [entry.slug for entry in chosen] == ["partner"]
+
+
+def test_a_partner_routes_structured_fallback_never_serves_a_partner_task() -> None:
+    """The declared fallback is re-checked against the floor on its own account."""
+    partner = make(
+        "partner",
+        cost_in=5.0,
+        eligible=PROTECTED_SET,
+        profiles=PARTNER_ONLY,
+        fallback="structured-successor",
+    )
+    successor = make(
+        "structured-successor", cost_in=1.0, eligible=PROTECTED_SET, profiles=STRUCTURED_ONLY
+    )
+    universe = {entry.slug: entry for entry in (partner, successor)}
+    order = attempt_order(
+        [partner, successor],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
+        profile=CapabilityProfile.PARTNER,
+    )
+    assert [entry.slug for entry in order] == ["partner"]
+    # And the same successor is exactly what a structured task should get.
+    structured = attempt_order(
+        [partner, successor],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
+        profile=CapabilityProfile.STRUCTURED,
+    )
+    assert [entry.slug for entry in structured] == ["structured-successor"]
+
+
+def test_when_nothing_satisfies_the_floor_the_answer_is_empty_not_a_downgrade() -> None:
+    only_structured = [
+        make("s1", cost_in=0.5, eligible=PROTECTED_SET, profiles=STRUCTURED_ONLY),
+        make("s2", cost_in=1.0, eligible=PROTECTED_SET, profiles=STRUCTURED_ONLY),
+    ]
+    assert (
+        candidates(
+            only_structured,
+            Classification.PROTECTED,
+            always_ready,
+            always_affordable,
+            profile=CapabilityProfile.PARTNER,
+        )
+        == []
+    )
+
+
+def test_the_partner_floor_is_a_floor_not_a_ceiling() -> None:
+    """A route declaring both profiles satisfies structured work; cost keeps it off it."""
+    both = make("partner-and-structured", cost_in=5.0, eligible=PROTECTED_SET)
+    cheap = make("cheap-structured", cost_in=1.0, eligible=PROTECTED_SET, profiles=STRUCTURED_ONLY)
+    chosen = candidates(
+        [both, cheap],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.STRUCTURED,
+    )
+    assert [entry.slug for entry in chosen] == ["cheap-structured", "partner-and-structured"]

@@ -235,7 +235,7 @@ Gateway responsibilities:
 | Responsibility | Requirement |
 |---|---|
 | Provider neutrality | Normalized request and response contract, independent of any one provider |
-| Routing | Select an **admitted** model configuration (§5.2.1) on capability, **data classification eligibility**, cost, latency, availability |
+| Routing | Select an **admitted** model configuration (§5.2.1) on **data classification eligibility**, then the **capability profile the task requires** (§5.2, §5.5 standing rule), then availability and budget, then cost among what remains |
 | Budget enforcement | Check the ceiling **before** the call is made, **against the cost of that call** (invariant 24; §5.7) |
 | Usage recording | Tokens in and out, computed cost, latency, provider request reference, project, task type |
 | Error normalization | Timeout, refusal, rate limit, invalid output, outage, and data-policy rejection normalized to one error contract |
@@ -252,6 +252,7 @@ A model configuration is a versioned record, not a model name in a settings file
 - Context and output limits
 - Reasoning or sampling settings
 - **Data classifications it is eligible to receive** (§5.4)
+- **The capability profiles it is qualified to serve** (`partner`, `structured`) — declared by ruling, never inferred from price, name, or eligibility; a task requiring a profile the configuration does not declare is never routed to it (ruling, 7 September 2026, below)
 - Cost per input and output unit, and whether caching or batch pricing applies
 - Known weaknesses
 - Fallback route **or an explicit NONE**, activation date, retirement state
@@ -294,6 +295,13 @@ Three rules follow, and each has already caught something:
 >
 > **Qualification supersedes provisional admission without changing configuration identity.** The `id` and `slug` are permanent, so a route promoted later is the same route, and every `model_calls` row already pointing at it keeps resolving. No admission state permits Val to add a provider, widen an eligibility class, or grant herself a capability — admission is set in the registry, which is committed, reviewed, and hers to read rather than to write (invariant 2).
 
+> **Ruling — 7 September 2026, Lord Armand. Capability profiles: the quality floor is declared per configuration and required per task; cost ranks only what the floor admits.** A cost and latency report of this date found the router selecting the cheapest eligible, ready, affordable route for every task — so Val's own voice, ordinary conversation and the consequential blind position alike, was being served by the route admitted for the classifier. That is the silent step-down the §5.5 standing rule of 2 September forbids, arriving through ordering rather than through the budget. Ruled and built the same day:
+>
+> - **Two profiles.** `partner` — partner-quality cognition: conversation and the blind position, everything in which Val speaks or forms a position. `structured` — schema-constrained internal work: classification, framing strip, titling. Each task type names the profile it requires in task policy (`val_policy.routing.required_profile`); each configuration declares the profiles it satisfies in the registry. A profile is a floor, not a ceiling: a partner-qualified route also satisfies structured work, and cost ordering is what keeps structured work off it in practice.
+> - **The order of the filters, restating the standing rule mechanically:** eligibility → required capability profile → readiness, policy and budget constraints → cost ordering among the routes that satisfy the floor. Cost may break ties or choose among qualified routes; it may never cause selection of a route below the floor. A declared fallback is re-checked against the profile on its own account, so a partner route's structured fallback never serves a partner task.
+> - **No qualified route is an honest refusal**, naming the floor, never a step down. A configuration pinned by name below the floor (the response call reuses the blind call's configuration) is refused, not used. Startup warns when no admitted configuration declares `partner`.
+> - **Provisional partner qualification is a ruling, not a measurement.** As of this date exactly one configuration is provisionally partner-qualified (`opus-5`, `04-layer-0.md` WP-0.4 amendment), as an implementation bridge for this floor — not a finding that it is uniquely or permanently correct for Val. Qualifying any other route as partner-quality is a separate ruling with its own evidence (the 15 August amendment below still governs what qualification means), never an inference from price, benchmark, or model name, and **no model name appears in routing logic.**
+
 > **Amendment — 15 August 2026, Lord Armand, from external architecture review.** Qualification for any new model configuration is a **system-specific exam suite run against this system's actual workload**, built at Layers 2–3: identity adherence under the persona, structured-output reliability, uncertainty handling — including the trap questions of `04-layer-0.md` WP-0.7 — cost per task class, and long-conversation behaviour. The standing rule: **a working model is never replaced because a benchmark sounds impressive.** Candidates run as experiments against the incumbent, and the prediction ledger (`02-partner-systems.md` §4.6) arbitrates.
 
 ### 5.3 The cost gradient
@@ -328,7 +336,8 @@ Rules:
 - Classification is deterministic and computed before routing, never inferred by the model that will receive the content.
 - Where classification is ambiguous, the **higher** classification applies.
 - Cost, latency, and availability never override eligibility. If no eligible route is available, the work waits or runs locally; it does not downgrade the content.
-- Fallback routes are checked for eligibility independently. A fallback is not inherited.
+- Among eligible routes, the task's required capability profile is applied before cost (§5.2 ruling, 7 September 2026); cost never lowers the floor.
+- Fallback routes are checked for eligibility independently — and, since 7 September 2026, against the required capability profile. A fallback is not inherited.
 - A retrieval that would mix classifications into one context assembles at the highest classification present.
 
 Eligibility is set by Lord Armand per provider, recorded in the registry, and reviewed when a provider changes its terms. Val does not set her own eligibility (invariant 2).

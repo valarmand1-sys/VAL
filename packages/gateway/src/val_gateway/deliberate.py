@@ -351,7 +351,9 @@ def send(
     messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
     sizing = (*(message.content for message in messages), persona.content)
     try:
-        config = gateway.select_configuration(classification, sizing, max_output_tokens)
+        config = gateway.select_configuration(
+            classification, sizing, max_output_tokens, task_type=TaskType.CONVERSATION
+        )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
 

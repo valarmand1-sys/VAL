@@ -47,6 +47,7 @@ from uuid import UUID
 from val_domain.gateway import (
     AdapterStatus,
     Admission,
+    CapabilityProfile,
     Classification,
     ModelConfig,
     PricingFeature,
@@ -103,6 +104,14 @@ REGISTRY: tuple[ModelConfig, ...] = (
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        # Ruling, 7 September 2026: the provisionally approved sole partner-quality
+        # route — an implementation bridge for the ruled quality floor, not a
+        # declaration that this model is uniquely or permanently correct for Val.
+        # A profile is a floor, not a ceiling: a partner-qualified route also
+        # satisfies structured work (schema-constrained output is supported on
+        # it), and cost ordering among qualified routes is what keeps structured
+        # work off it in practice — never a declaration that it cannot.
+        capability_profiles=frozenset({CapabilityProfile.PARTNER, CapabilityProfile.STRUCTURED}),
         # Nothing observed in this house's own use. Left empty rather than filled
         # from a benchmark or a provider's own copy.
         known_weaknesses=(),
@@ -144,6 +153,9 @@ REGISTRY: tuple[ModelConfig, ...] = (
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        # Ruling, 7 September 2026: structured, schema-constrained internal work
+        # only. Not partner-qualified; qualification is a separate ruling.
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
         known_weaknesses=(),
         # Retired entries take no part in routing; a declared fallback here
         # would be a pointer from history into the live graph.
@@ -176,6 +188,9 @@ REGISTRY: tuple[ModelConfig, ...] = (
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        # Ruling, 7 September 2026: structured, schema-constrained internal work
+        # only. Not partner-qualified; qualification is a separate ruling.
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
         known_weaknesses=(),
         # Cross-provider, so an Anthropic-account outage degrades to OpenAI
         # rather than halting ("Val degrades rather than halts", 00-charter.md).
@@ -216,6 +231,9 @@ REGISTRY: tuple[ModelConfig, ...] = (
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        # Ruling, 7 September 2026: structured, schema-constrained internal work
+        # only. Not partner-qualified; qualification is a separate ruling.
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
         known_weaknesses=(),
         fallback_slug=None,
         admission=Admission.PROVISIONALLY_ADMITTED,
@@ -257,6 +275,9 @@ REGISTRY: tuple[ModelConfig, ...] = (
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        # Ruling, 7 September 2026: structured, schema-constrained internal work
+        # only. Not partner-qualified; qualification is a separate ruling.
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
         known_weaknesses=(),
         # Explicit NONE, and the router honours it as none: this is the end of
         # the declared graph. A backward hop to Haiku could never run — Haiku

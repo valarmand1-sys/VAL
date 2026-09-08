@@ -510,8 +510,14 @@ def test_the_same_persona_revision_is_used_across_projects(store: Engine) -> Non
     )
 
 
-def test_provider_substitution_does_not_alter_project_attribution(store: Engine) -> None:
-    """Test 19."""
+def test_provider_substitution_does_not_alter_project_attribution(
+    store: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test 19. *Ruling, 7 September 2026:* substituted across two
+    partner-qualified routes, one per provider (see test 16 in `test_persona`)."""
+    from test_persona import partner_pair
+
+    monkeypatch.setattr("val_gateway.gateway.active", lambda: list(partner_pair()))
     alpha = project_id(store, ALPHA_SLUG)
     catalogue = load_catalogue(store)
 

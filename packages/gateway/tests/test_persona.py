@@ -27,11 +27,13 @@ from sqlalchemy import Engine, text
 
 from val_domain.conversation import StoredRole
 from val_domain.gateway import (
+    CapabilityProfile,
     Classification,
     CostCertainty,
     GatewayError,
     GatewayErrorKind,
     Message,
+    ModelConfig,
     TerminalState,
     TurnReference,
 )
@@ -50,6 +52,7 @@ from val_domain.project import (
     ResolutionSource,
     ResolvedProject,
 )
+from val_domain.registry import active as registry_active
 from val_gateway import conversations
 from val_gateway.context import assemble, persona_occurrences
 from val_gateway.gateway import Gateway, check_startup
@@ -544,7 +547,7 @@ def test_the_persona_precedes_the_conversation(clean_personas: Engine) -> None:
 
 
 def test_provider_substitution_leaves_the_persona_identical(
-    clean_personas: Engine,
+    clean_personas: Engine, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Test 16, and `00-charter.md` §1.2: Val is not a model."""
     seed(clean_personas, REPO_ROOT)
@@ -555,6 +558,14 @@ def test_provider_substitution_leaves_the_persona_identical(
     # conversation entrance — `complete_with_configuration` refuses conversation
     # requests outright. Asserting on what each adapter was actually handed,
     # which is the stronger form of the old `request.system` assertion anyway.
+    #
+    # *Ruling, 7 September 2026:* conversation requires the partner capability
+    # profile, and the registry declares exactly one partner-qualified route, so
+    # substitution is demonstrated across two partner-qualified routes on two
+    # providers rather than across whatever the registry happens to hold. The
+    # persona is identical on both; the floor is about who may speak for Val,
+    # not about what she says when she does.
+    monkeypatch.setattr("val_gateway.gateway.active", lambda: list(partner_pair()))
     sent: list[str | None] = []
     for provider in ("anthropic", "openai"):
         adapter = StubAdapter(
@@ -575,6 +586,49 @@ def test_provider_substitution_leaves_the_persona_identical(
         sent.append(adapter.sent_system)
 
     assert sent[0] == sent[1] == active.content
+
+
+def test_no_partner_route_ready_fails_honestly_naming_the_floor(clean_personas: Engine) -> None:
+    """Ruling, 7 September 2026: with the only partner-qualified route unavailable,
+    conversation fails with NO_ELIGIBLE_ROUTE naming the floor. The structured
+    route on the other provider is ready and is not tried."""
+    seed(clean_personas, REPO_ROOT)
+    active = DatabasePersonaLoader(clean_personas).active()
+    partner_providers = {
+        entry.provider
+        for entry in registry_active()
+        if CapabilityProfile.PARTNER in entry.capability_profiles
+    }
+    structured_provider = next(
+        entry.provider for entry in registry_active() if entry.provider not in partner_providers
+    )
+    adapter = StubAdapter(ProviderResult("must not run", TerminalState.COMPLETE, 1, 1, "r"))
+    gateway = Gateway(
+        adapters={structured_provider: adapter},
+        recorder=lambda record: uuid4(),
+        ledger=FakeLedger(),
+        persona_loader=FixedPersonaLoader(active),
+        verify_provenance=verifier(clean_personas),
+    )
+    with pytest.raises(GatewayError) as caught:
+        gateway.converse(
+            (Message(role="user", content="Good evening."),),
+            scope=ExplicitNoProject(),
+            turn=a_persisted_turn(clean_personas),
+        )
+    assert caught.value.kind is GatewayErrorKind.NO_ELIGIBLE_ROUTE
+    assert "partner" in caught.value.detail
+    assert adapter.calls == 0, "no structured route was tried in its place"
+
+
+def partner_pair() -> tuple[ModelConfig, ModelConfig]:
+    """Two partner-qualified routes, one per provider, for substitution tests."""
+    from test_router import make
+
+    return (
+        make("partner-anthropic", cost_in=5.0, eligible=frozenset(Classification)),
+        make("partner-openai", cost_in=5.0, eligible=frozenset(Classification), provider="openai"),
+    )
 
 
 def test_switching_project_leaves_the_persona_identical(clean_personas: Engine) -> None:

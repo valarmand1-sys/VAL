@@ -602,13 +602,14 @@ def test_the_classifier_runs_on_the_cheapest_eligible_route(store: Engine) -> No
     deliberate(store, adapter)
 
     from val_domain.registry import active
-    from val_policy.routing import candidates
+    from val_policy.routing import candidates, required_profile
 
     cheapest = candidates(
         active(),
         Classification.PROTECTED,
         is_ready=lambda config: True,
         is_affordable=lambda config: True,
+        profile=required_profile(TaskType.CLASSIFICATION),
     )[0]
     assert adapter.sent[0].config_slug == cheapest.slug
 
@@ -831,6 +832,15 @@ def test_blind_and_response_use_the_same_configuration(store: Engine) -> None:
 
     assert isinstance(outcome, DeliberatedTurn)
     assert adapter.sent[2].config_slug == adapter.sent[3].config_slug
+    # Ruling, 7 September 2026: the shared configuration sits inside the
+    # partner floor, and it is not the classifier's route.
+    from val_domain.gateway import CapabilityProfile
+    from val_domain.registry import by_slug
+
+    shared = by_slug(adapter.sent[2].config_slug)
+    assert shared is not None
+    assert CapabilityProfile.PARTNER in shared.capability_profiles
+    assert adapter.sent[0].config_slug != shared.slug, "the classifier ran on a cheaper route"
     with store.connect() as connection:
         configs = connection.execute(
             text(
@@ -1044,6 +1054,36 @@ def test_a_stale_persona_attribution_is_refused_before_transmission(store: Engin
     )
     with pytest.raises(GatewayError, match="active persona"):
         gateway.complete(request)
+    assert adapter.sent == [], "nothing was transmitted"
+
+
+def test_a_configuration_pinned_below_the_floor_is_refused(store: Engine) -> None:
+    """Ruling, 7 September 2026: the same-configuration pin cannot name a route
+    below the partner floor. Refused before transmission, naming the floor."""
+    from val_domain.gateway import CapabilityProfile
+    from val_domain.registry import active as active_configs
+
+    adapter = ScriptedAdapter([ok("unused")])
+    gateway = build_gateway(store, adapter)
+    persona = DatabasePersonaLoader(store).active()
+    request = GatewayRequest(
+        task_type=TaskType.BLIND_POSITION,
+        classification=Classification.PROTECTED,
+        messages=(Message(role="user", content="the question"),),
+        system=persona.content,
+        persona=PersonaAttribution(persona_id=persona.id),
+        project_id=None,
+        project_attribution=ProjectAttribution.EXPLICIT_NONE,
+    )
+    structured_only = next(
+        config
+        for config in active_configs()
+        if CapabilityProfile.PARTNER not in config.capability_profiles
+    )
+    with pytest.raises(GatewayError) as caught:
+        gateway.complete_with_configuration(request, structured_only)
+    assert caught.value.kind is GatewayErrorKind.NO_ELIGIBLE_ROUTE
+    assert "partner" in caught.value.detail and structured_only.slug in caught.value.detail
     assert adapter.sent == [], "nothing was transmitted"
 
 

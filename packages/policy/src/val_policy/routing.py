@@ -32,7 +32,13 @@ no dynamic provider installation. Those are Layers 1, 3, and 5.
 
 from collections.abc import Callable, Iterable
 
-from val_domain.gateway import Admission, Classification, ModelConfig
+from val_domain.gateway import (
+    Admission,
+    CapabilityProfile,
+    Classification,
+    ModelConfig,
+    TaskType,
+)
 
 #: Admission states that may carry Layer 0 traffic. `QUALIFIED` is included
 #: because it is strictly stronger, not because anything holds it — nothing
@@ -58,23 +64,57 @@ def is_eligible(config: ModelConfig, classification: Classification) -> bool:
     return classification in config.eligible_classifications
 
 
+#: Ruling, 7 September 2026: which capability profile each kind of work
+#: requires. Ordinary conversation and the consequential blind position are
+#: Val's partner cognition; classification, stripping, and titling are
+#: structured internal work. Task policy names the floor; configurations
+#: declare what they satisfy; nothing here names a model.
+_REQUIRED_PROFILE: dict[TaskType, CapabilityProfile] = {
+    TaskType.CONVERSATION: CapabilityProfile.PARTNER,
+    TaskType.BLIND_POSITION: CapabilityProfile.PARTNER,
+    TaskType.CLASSIFICATION: CapabilityProfile.STRUCTURED,
+    TaskType.STRIP: CapabilityProfile.STRUCTURED,
+    TaskType.TITLE: CapabilityProfile.STRUCTURED,
+}
+
+
+def required_profile(task_type: TaskType) -> CapabilityProfile:
+    """The capability floor this kind of work requires."""
+    return _REQUIRED_PROFILE[task_type]
+
+
+def satisfies_profile(config: ModelConfig, profile: CapabilityProfile) -> bool:
+    """Whether the configuration declares the required profile. Declared, never inferred."""
+    return profile in config.capability_profiles
+
+
 def candidates(
     configs: Iterable[ModelConfig],
     classification: Classification,
     is_ready: Callable[[ModelConfig], bool],
     is_affordable: Callable[[ModelConfig], bool],
+    *,
+    profile: CapabilityProfile,
 ) -> list[ModelConfig]:
     """Every configuration that may carry this request, cheapest first.
 
-    An empty list is a truthful answer — no eligible route — and the caller
-    must report it as one. It is never a licence to downgrade the content or to
-    reach for something unadmitted.
+    The order of the filters is the ruling of 7 September 2026, restating
+    `01-architecture.md` §5.5: eligibility → the task's required capability
+    profile → the remaining readiness and budget constraints → cost ordering
+    among the routes that satisfy the floor. Cost ranks only what the floor
+    has already admitted; it can break ties, never lower the floor.
+
+    An empty list is a truthful answer — no eligible route, or no route that
+    satisfies the required profile — and the caller must report it as one. It
+    is never a licence to downgrade the content, lower the floor, or reach for
+    something unadmitted.
     """
     admitted = [
         config
         for config in configs
         if is_admitted(config)
         and is_eligible(config, classification)
+        and satisfies_profile(config, profile)
         and is_ready(config)
         and is_affordable(config)
     ]
@@ -91,6 +131,8 @@ def attempt_order(
     is_ready: Callable[[ModelConfig], bool],
     is_affordable: Callable[[ModelConfig], bool],
     resolve_fallback: Callable[[ModelConfig], ModelConfig | None],
+    *,
+    profile: CapabilityProfile,
 ) -> list[ModelConfig]:
     """The order routes are tried: the primary, then its declared chain. Nothing else.
 
@@ -110,12 +152,15 @@ def attempt_order(
     is a truthful failure.
 
     Nothing is inherited. A declared fallback that is retired, unadmitted,
-    ineligible for this content, unready, or unaffordable does not appear in
-    this list at all, because it appears only if it passed the same five filters
-    on its own account (`01-architecture.md` §5.4: "Fallback routes are checked
-    for eligibility independently. A fallback is not inherited.").
+    ineligible for this content, **below the required capability profile**,
+    unready, or unaffordable does not appear in this list at all, because it
+    appears only if it passed the same six filters on its own account — which is
+    what keeps a partner route's declared structured fallback from ever serving
+    a partner task (ruling, 7 September 2026) (`01-architecture.md` §5.4:
+    "Fallback routes are checked for eligibility independently. A fallback is
+    not inherited.").
     """
-    ranked = candidates(configs, classification, is_ready, is_affordable)
+    ranked = candidates(configs, classification, is_ready, is_affordable, profile=profile)
     if not ranked:
         return []
 
