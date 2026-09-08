@@ -88,6 +88,7 @@ from val_domain.gateway import (
     GatewayError,
     GatewayErrorKind,
     GatewayRequest,
+    GatewayResponse,
     Message,
     ModelConfig,
     PersonaAttribution,
@@ -147,7 +148,18 @@ _LOGGER = logging.getLogger("val.deliberation")
 #: other oversized request, visibly.
 CLASSIFIER_MAX_OUTPUT_TOKENS = 256
 STRIP_MAX_OUTPUT_TOKENS = 4096
-BLIND_MAX_OUTPUT_TOKENS = 1024
+#: Ruling, 7 September 2026: the blind position's ceiling matches the response
+#: allowance. It is an output ceiling, not a request for a long position — the
+#: 1,024 that preceded it was calibrated when the cheapest route served the
+#: blind call, and the partner route's schema-constrained position exceeded it.
+BLIND_MAX_OUTPUT_TOKENS = 4096
+
+#: The bound on blind-position attempts per consequential exchange (ruling,
+#: 7 September 2026). Two: the first call, and one retry of the identical
+#: request — same configuration, schema, stripped input, and cap. A truncated
+#: or otherwise invalid position may never let a consequential exchange
+#: proceed as an ordinary turn; after the second failure it ends unanswered.
+BLIND_ATTEMPTS = 2
 
 #: The bound on classification attempts per exchange (ruling, 3 September
 #: 2026). Two: the first call, and one retry of the identical request. A
@@ -379,35 +391,60 @@ def send(
         project_id=attribution_of(opened.scope),
         project_attribution=attribution_state_of(opened.scope),
     )
-    try:
-        blind_response = gateway.complete_with_configuration(blind_request, config)
-    except GatewayError as failure:
-        # The pinned route could not answer. No fallback — the turn is
-        # unanswered rather than deliberated on a silently different route.
-        return unanswered_or_raise(opened, failure)
-
-    blind_outcome = _blind_outcome_from(blind_response.text, blind_response.terminal)
-    if blind_outcome is None:
+    blind_outcome: BlindOutcome | None = None
+    blind_response: GatewayResponse | None = None
+    blind_calls: list[UUID] = []
+    reasons: list[str] = []
+    for attempt in range(1, BLIND_ATTEMPTS + 1):
+        try:
+            blind_response = gateway.complete_with_configuration(blind_request, config)
+        except GatewayError as failure:
+            # The pinned route could not answer. No fallback — the turn is
+            # unanswered rather than deliberated on a silently different route.
+            # Not retried here either: a route refusal (ceiling, provider
+            # error, unverified persona) is not an invalid position, and the
+            # retry the ruling grants is for the position, not the route.
+            return unanswered_or_raise(opened, failure)
+        if blind_response.model_call_id is not None:
+            blind_calls.append(blind_response.model_call_id)
+        blind_outcome = _blind_outcome_from(blind_response.text, blind_response.terminal)
+        if blind_outcome is not None:
+            break
+        if blind_response.terminal not in (TerminalState.COMPLETE, TerminalState.REFUSED):
+            reasons.append(f"attempt {attempt}: reply ended {blind_response.terminal.value}")
+        else:
+            reasons.append(f"attempt {attempt}: reply stated no parseable position")
         _LOGGER.warning(
-            "blind position call answered but stated no parseable position "
-            "(terminal=%s). No evidence row is written — there is no position to "
-            "record — and the turn proceeds as an ordinary one. The model_calls "
-            "row keeps the honest account of the call.",
+            "blind position attempt %d of %d on %s stated no valid position (terminal=%s); "
+            "a fragment is not a position and nothing is recorded from it",
+            attempt,
+            BLIND_ATTEMPTS,
+            config.slug,
             blind_response.terminal.value,
         )
-        outcome = _ordinary(
-            engine, gateway, opened, classification, recall_limit, max_output_tokens
+
+    if blind_outcome is None or blind_response is None:
+        # Ruling, 7 September 2026: never the ordinary path. The user message
+        # stays; no Val response, no fabricated position, no deliberation;
+        # every attempt is preserved in model_calls under its own terminal
+        # state and is named here so the cause is truthful and traceable.
+        _LOGGER.warning(
+            "blind position unestablished after %d attempts on %s; the consequential "
+            "turn ends unanswered rather than proceeding as ordinary",
+            BLIND_ATTEMPTS,
+            config.slug,
         )
-        if isinstance(outcome, UnansweredTurn):
-            return outcome
-        return DeliberatedTurn(
-            turn=outcome,
-            captured_as=captured_as,
-            hard_exclusion=None,
-            blind=None,
-            deliberation=None,
-            blind_payload=blind_payload,
-            classification=record,
+        return unanswered_or_raise(
+            opened,
+            GatewayError(
+                GatewayErrorKind.INVALID_OUTPUT,
+                f"the blind position could not be established: {BLIND_ATTEMPTS} attempts on "
+                f"{config.slug} with an output ceiling of {BLIND_MAX_OUTPUT_TOKENS} tokens "
+                f"({'; '.join(reasons)}). The exchange was classified consequential and "
+                "is not answered as an ordinary one; no position and no deliberation were "
+                "recorded, and the attempts stand in model_calls.",
+                model_call_ids=tuple(blind_calls),
+            ),
         )
 
     # 6. The evidence row — durable BEFORE the response call exists (0011).

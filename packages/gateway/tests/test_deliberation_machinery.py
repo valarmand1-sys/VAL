@@ -55,7 +55,11 @@ from val_domain.gateway import (
     TerminalState,
 )
 from val_domain.project import ProjectAttribution
-from val_gateway.deliberate import CLASSIFIER_MAX_OUTPUT_TOKENS, DeliberatedTurn
+from val_gateway.deliberate import (
+    BLIND_MAX_OUTPUT_TOKENS,
+    CLASSIFIER_MAX_OUTPUT_TOKENS,
+    DeliberatedTurn,
+)
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import blind_positions_for, classifications_for, deliberations_for
 from val_gateway.gateway import Gateway
@@ -602,6 +606,7 @@ def test_the_classifier_runs_on_the_cheapest_eligible_route(store: Engine) -> No
     deliberate(store, adapter)
 
     from val_domain.registry import active
+    from val_policy.budget import maximum_cost
     from val_policy.routing import candidates, required_profile
 
     cheapest = candidates(
@@ -610,6 +615,7 @@ def test_the_classifier_runs_on_the_cheapest_eligible_route(store: Engine) -> No
         is_ready=lambda config: True,
         is_affordable=lambda config: True,
         profile=required_profile(TaskType.CLASSIFICATION),
+        cost_bound=lambda config: maximum_cost(config, ("x",), CLASSIFIER_MAX_OUTPUT_TOKENS),
     )[0]
     assert adapter.sent[0].config_slug == cheapest.slug
 
@@ -1446,3 +1452,103 @@ def test_a_strip_reply_without_span_kinds_does_not_parse(store: Engine) -> None:
     assert outcome.blind.ordering is Ordering.CONTAMINATED, (
         "an unparseable strip is a failed separation"
     )
+
+
+# =============================================================================
+# The blind position's bounded retry — ruling, 7 September 2026
+# =============================================================================
+#
+# A truncated or otherwise invalid blind position may never cause a
+# consequential exchange to proceed as an ordinary turn. One retry of the
+# identical request on the identical configuration; a second failure ends the
+# turn honestly unanswered, with every attempt preserved and nothing invented.
+
+TRUNCATED_BLIND = ProviderResult(
+    '{"position": "I hold to the close-up on her hands, my lord, and the reason is',
+    TerminalState.TRUNCATED,
+    6_000,
+    4_096,
+    "req",
+)
+INVALID_BLIND = ok(json.dumps({"position": "", "confidence": "medium", "reasoning": "x"}))
+
+
+def _blind_calls(adapter: ScriptedAdapter) -> list[SentCall]:
+    return [call for call in adapter.sent if call.output_schema == BLIND_POSITION_OUTPUT_SCHEMA]
+
+
+def test_the_blind_ceiling_is_the_response_allowance(store: Engine) -> None:
+    adapter = ScriptedAdapter(full_script())
+    deliberate(store, adapter)
+    assert BLIND_MAX_OUTPUT_TOKENS == 4096
+    assert adapter.sent[2].max_output_tokens == 4096
+
+
+def test_a_truncated_blind_position_is_retried_identically_and_the_turn_completes(
+    store: Engine,
+) -> None:
+    script = full_script()
+    adapter = ScriptedAdapter([*script[:2], TRUNCATED_BLIND, *script[2:]])
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.blind is not None and outcome.deliberation is not None
+    first, second = _blind_calls(adapter)
+    assert first.config_slug == second.config_slug
+    assert first.messages == second.messages, "the identical stripped blind input"
+    assert first.system == second.system
+    assert first.max_output_tokens == second.max_output_tokens == 4096
+    assert _calls_by_task(store)["blind_position"] == 2, "both attempts stand in model_calls"
+    assert len(blind_positions_for(store, outcome.turn.conversation.id)) == 1
+
+
+def test_a_completed_but_invalid_blind_position_is_retried(store: Engine) -> None:
+    script = full_script()
+    adapter = ScriptedAdapter([*script[:2], INVALID_BLIND, *script[2:]])
+    outcome = deliberate(store, adapter)
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.blind is not None and outcome.deliberation is not None
+    assert len(_blind_calls(adapter)) == 2
+
+
+def test_a_second_blind_failure_ends_the_turn_unanswered_never_ordinary(store: Engine) -> None:
+    script = full_script()
+    adapter = ScriptedAdapter([*script[:2], TRUNCATED_BLIND, INVALID_BLIND])
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, UnansweredTurn)
+    assert isinstance(outcome.error, GatewayError)
+    assert outcome.error.kind is GatewayErrorKind.INVALID_OUTPUT
+    assert "2 attempts" in str(outcome.error) and "4096" in str(outcome.error)
+    assert "attempt 1: reply ended truncated" in str(outcome.error)
+    assert "attempt 2: reply stated no parseable position" in str(outcome.error)
+    assert len(outcome.error.model_call_ids) == 2, "both attempts named"
+    # Exactly four calls: classifier, strip, blind, blind. No response call.
+    assert len(adapter.sent) == 4
+    assert len(_blind_calls(adapter)) == 2
+    with store.connect() as connection:
+        val_messages = connection.execute(
+            text("select count(*) from messages where role = 'val' and conversation_id = :c"),
+            {"c": outcome.conversation.id},
+        ).scalar_one()
+        user_messages = connection.execute(
+            text("select count(*) from messages where role = 'user' and conversation_id = :c"),
+            {"c": outcome.conversation.id},
+        ).scalar_one()
+        terminals = (
+            connection.execute(
+                text(
+                    "select terminal_state::text from model_calls "
+                    "where task_type = 'blind_position' order by created_at"
+                )
+            )
+            .scalars()
+            .all()
+        )
+        deliberations = connection.execute(text("select count(*) from deliberations")).scalar_one()
+    assert val_messages == 0, "no Val response"
+    assert user_messages == 1, "the user message is preserved"
+    assert terminals == ["truncated", "complete"], "each attempt under its own terminal state"
+    assert len(blind_positions_for(store, outcome.conversation.id)) == 0
+    assert deliberations == 0
+    assert _calls_by_task(store).get("conversation", 0) == 0, "never the ordinary path"

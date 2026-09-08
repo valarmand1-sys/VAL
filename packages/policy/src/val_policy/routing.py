@@ -30,7 +30,8 @@ Role-specific routing, no local-inference tier, no graduated budget gradient,
 no dynamic provider installation. Those are Layers 1, 3, and 5.
 """
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
+from itertools import pairwise
 
 from val_domain.gateway import (
     Admission,
@@ -95,8 +96,15 @@ def candidates(
     is_affordable: Callable[[ModelConfig], bool],
     *,
     profile: CapabilityProfile,
+    cost_bound: Callable[[ModelConfig], float],
 ) -> list[ModelConfig]:
     """Every configuration that may carry this request, cheapest first.
+
+    `cost_bound` is the candidate-specific **total** cost bound of the actual
+    call — input bound plus output bound at that candidate's rates, the same
+    figure reservation and admission use (ruling, 7 September 2026: an
+    input-rate-only order is not a cost order). Nothing here invents an
+    expected output length; the bound is the task's maximum-output allowance.
 
     The order of the filters is the ruling of 7 September 2026, restating
     `01-architecture.md` §5.5: eligibility → the task's required capability
@@ -118,11 +126,27 @@ def candidates(
         and is_ready(config)
         and is_affordable(config)
     ]
-    # Cost ranks what eligibility has already admitted, and only that. The tie
-    # break on slug keeps the order stable, so the same request routes the same
-    # way twice — a router that reshuffles equal candidates makes every cost
-    # comparison across days meaningless.
-    return sorted(admitted, key=lambda config: (config.cost_per_mtok_in_usd, config.slug))
+    # Cost ranks what eligibility has already admitted, and only that. The
+    # slug is a stable last-resort tie-break, not a cost decision: it keeps
+    # the same request routing the same way twice, and `true_ties` reports
+    # every place it actually decided so the caller can log that it did.
+    return sorted(admitted, key=lambda config: (cost_bound(config), config.slug))
+
+
+def true_ties(
+    ordered: Sequence[ModelConfig], cost_bound: Callable[[ModelConfig], float]
+) -> list[tuple[str, str, float]]:
+    """Adjacent candidates whose total cost bounds are exactly equal.
+
+    Between such a pair the order was decided by the last-resort slug
+    tie-break and by nothing else; the caller logs it as a tie, never as a
+    cost preference (ruling, 7 September 2026).
+    """
+    return [
+        (first.slug, second.slug, cost_bound(first))
+        for first, second in pairwise(ordered)
+        if cost_bound(first) == cost_bound(second)
+    ]
 
 
 def attempt_order(
@@ -133,6 +157,8 @@ def attempt_order(
     resolve_fallback: Callable[[ModelConfig], ModelConfig | None],
     *,
     profile: CapabilityProfile,
+    cost_bound: Callable[[ModelConfig], float],
+    on_tie: Callable[[str, str, float], None] | None = None,
 ) -> list[ModelConfig]:
     """The order routes are tried: the primary, then its declared chain. Nothing else.
 
@@ -160,7 +186,15 @@ def attempt_order(
     "Fallback routes are checked for eligibility independently. A fallback is
     not inherited.").
     """
-    ranked = candidates(configs, classification, is_ready, is_affordable, profile=profile)
+    ranked = candidates(
+        configs, classification, is_ready, is_affordable, profile=profile, cost_bound=cost_bound
+    )
+    # Ties are visible only here, among the ranked candidates: the attempt
+    # order that follows is the primary plus its declared chain, so a caller
+    # that wants to log a true tie is told of it from this list.
+    if on_tie is not None:
+        for first, second, bound in true_ties(ranked, cost_bound):
+            on_tie(first, second, bound)
     if not ranked:
         return []
 

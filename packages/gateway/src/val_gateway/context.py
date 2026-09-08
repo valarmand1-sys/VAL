@@ -168,7 +168,7 @@ HISTORY_BUDGET_SETTING = "VAL_HISTORY_TOKEN_BUDGET"
 
 
 def history_token_budget() -> int:
-    """The soft history budget in the system's byte-bound accounting:
+    """The soft history budget in estimated provider-context tokens:
     `VAL_HISTORY_TOKEN_BUDGET`, else 64,000. See `val_policy.history`."""
     raw = os.environ.get(HISTORY_BUDGET_SETTING, "").strip()
     if not raw:
@@ -205,7 +205,7 @@ def conversation_messages(
         json.dumps(
             {
                 "budget": selection.budget,
-                "accounting": "raw_input_bound (utf-8 bytes + framing; an upper bound)",
+                "accounting": "estimated provider-context tokens (val_policy.tokens)",
                 "stored_messages": len(conversational),
                 "retained_messages": selection.retained_messages,
                 "retained_tokens": selection.retained_tokens,
@@ -214,7 +214,7 @@ def conversation_messages(
                     {
                         "exchange": decision.exchange_index,
                         "messages": decision.message_count,
-                        "bound_tokens": decision.bound_tokens,
+                        "estimated_tokens": decision.estimated_tokens,
                         "retained": decision.retained,
                         "reason": decision.reason,
                     }

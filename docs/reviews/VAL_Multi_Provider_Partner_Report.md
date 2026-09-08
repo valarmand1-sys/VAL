@@ -90,3 +90,26 @@ Nothing in `val_policy.routing`, `val_gateway.gateway`, `deliberate.py`, or the 
 ---
 
 **Recommendation:** none on qualification — the evidence does not exist and this report was asked not to create it. The two items that need a ruling before any second partner route could be safely considered are the blind output cap (§5) and the input-rate tie-break (§4).
+
+---
+
+## Addendum — 8 September 2026: the five proposed items against the ruled packet requirements
+
+Lord Armand's ruling of 8 September set the shape of any qualification: an explicit ruling on a **finite, Val-specific evidence packet** — never model reputation, benchmark marketing, price, provider identity, or automatic scoring — and the packet must separate **prerequisites** (necessary, establishing nothing about partner quality) from **quality evidence**. The nine areas the packet must at minimum address are mapped below against the five items proposed in §3, so that one framework is kept rather than two invented. Two of the nine are not covered by the five as written; they are named, not papered over.
+
+**Prerequisites — necessary, never sufficient.** Adapter support, registry presence, Protected eligibility, and technical task eligibility (§1 rows 1–4). All four are true of `gpt-5-5-20260423` today and none of them bears on partner quality. The packet records them as a checklist, not as evidence.
+
+| Ruled requirement | Covered by | Notes |
+|---|---|---|
+| Provider, data and policy eligibility | **Prerequisite** (§1 rows 1–4), plus `01-architecture.md` §5.4 eligibility decision | Already established for OpenAI; re-verified against current provider terms at qualification time, as §5.4 requires when terms change. |
+| Partner-route mechanics and failure semantics | **E2** (blind-position completeness within the ruled 4,096 ceiling, through the bounded retry) and **E3** (reconciliation envelope discipline) | Both are structural, produced in the scratch store, and judge machinery only. To be complete they must also exercise the failure path: an invalid position ending the turn unanswered on that route, and the pinned-route-unavailable case (§4). |
+| Ordinary conversation quality on representative Val work | **E1** (register by reading) | Representative work means his real prompts, not synthetic ones; the set and its size are his to fix. Scratch-store exchanges are read side by side with the incumbent's answers to the same prompts. |
+| Consequential blind and reconciliation behaviour on the same configuration | **E2 + E3**, extended | The five items test the machinery; this requirement also asks whether the position and reconciliation are *Val's* — a blind position formed in her voice, a reconciliation that holds or changes for a stated reason. That is E1's reading applied to E2/E3 output: same evidence, read for quality as well as parsed for shape. |
+| Instruction following | **Partly E2/E3** (schema, envelope, and verdict discipline are instruction following of the narrowest kind) | **Not covered as such.** A small fixed set of instruction-bearing Val prompts, read for compliance, would be needed. Proposed as **E6**. |
+| Independent disagreement and reasoning | **Not covered.** | The five items never ask whether the candidate will disagree with Lord Armand when the record supports disagreement — the property the blind position exists to protect. Proposed as **E7**: prompts carrying a stated preference the record contradicts, run through the enforced path in the scratch store; read for whether the position is independent and reasoned. No judgments recorded; nothing counts toward point 5. |
+| Uncertainty and access-boundary honesty | **E4** (the three WP-0.7 trap questions) | The trap questions are exactly this: a correct negative rather than a confabulated date. To cover access boundaries, E4 should add one case asking for something Val cannot see (a file, a system state), read for an honest "I do not have that" rather than an invention. |
+| Long-context continuity | **Not covered by the five as written.** | Proposed as **E8**: a conversation at the ruled 64,000-token history tail on the candidate, with a question whose answer sits in the oldest retained exchange; read for continuity. The history demonstration harness already produces this shape. |
+| Measured cost and latency | **E5** | Per task class, from `model_calls`, reported beside the incumbent's. Reporting only; never a criterion. |
+
+**Conclusion.** The five items cover six of the nine areas; **instruction following (E6), independent disagreement (E7), and long-context continuity (E8)** are the additions the ruled packet requires. The packet would then be E1–E8 with the four prerequisites as a checklist: finite, Val-specific, produced in the scratch store except where reading real-use exchanges is the evidence, and ruled on explicitly. Nothing in it scores automatically, and nothing in it is a benchmark.
+

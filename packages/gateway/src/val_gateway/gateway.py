@@ -356,6 +356,10 @@ class Gateway:
             # Ruling, 7 September 2026: the task's capability floor sits
             # between eligibility and cost, and cost never lowers it.
             profile=required_profile(request.task_type),
+            # And cost is the total bound of this call at each candidate's
+            # rates — the reservation figure — never the input rate alone.
+            cost_bound=lambda config: maximum_cost(config, parts, request.max_output_tokens),
+            on_tie=self._report_tie,
         )
         if not order:
             raise GatewayError(
@@ -810,6 +814,8 @@ class Gateway:
             ),
             resolve_fallback=fallback_for,
             profile=floor,
+            cost_bound=lambda config: maximum_cost(config, parts, max_output_tokens),
+            on_tie=self._report_tie,
         )
         if not order:
             raise GatewayError(
@@ -840,6 +846,18 @@ class Gateway:
                 "Restricted content routes to local inference only, which does not "
                 "exist until Layer 1. It is refused, not reclassified (04-layer-0.md §1.1).",
             )
+
+    @staticmethod
+    def _report_tie(first: str, second: str, bound: float) -> None:
+        """Log a true cost tie the last-resort tie-break decided (ruling, 7 September 2026)."""
+        _LOGGER.info(
+            "cost ordering: true tie between %s and %s at a total bound of $%.6f; "
+            "the order between them was decided by the stable last-resort "
+            "tie-break (slug), not by cost",
+            first,
+            second,
+            bound,
+        )
 
     def _affordable(
         self,

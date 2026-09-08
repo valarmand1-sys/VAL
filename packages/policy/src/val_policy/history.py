@@ -3,14 +3,14 @@
 Ruled 7 September 2026. The count-only bound (forty messages) let sustained
 long messages grow the window past a provider's context and hard-fail.
 The forty-message maximum stays, and a configurable soft budget of 64,000
-is added, measured in **the system's own token accounting**: the byte-level
-upper bound of `val_policy.budget.raw_input_bound`, the same figure the
-budget reservation and the context preflight use. That bound is
-deliberately loose — roughly four times the provider's true count for
-English — so a budget of 64,000 in this accounting admits about 16,000
-provider-reported tokens of history. The number is configuration
-(`VAL_HISTORY_TOKEN_BUDGET`), not a buried literal, precisely so it can be
-re-ruled without code.
+tokens is added, **in provider-context-token scale**, estimated locally by
+`val_policy.tokens.estimate_tokens` — the same documented estimator recall
+uses. (The first cut of this module measured the budget in the byte upper
+bound the preflight uses, which is about four times the provider's count;
+that admitted a quarter of the ruled magnitude and was corrected the same
+day. The byte bound stays where it belongs: the context-window preflight.)
+The number is configuration (`VAL_HISTORY_TOKEN_BUDGET`), not a buried
+literal, precisely so it can be re-ruled without code.
 
 The rules, verbatim from the ruling:
 
@@ -39,9 +39,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
-from val_policy.budget import raw_input_bound
+from val_policy.tokens import estimate_tokens
 
-#: The soft history budget, in the system's byte-bound accounting. See above.
+#: The soft history budget, in estimated provider-context tokens. See above.
 HISTORY_TOKEN_BUDGET_DEFAULT = 64_000
 
 #: The maximum number of historical messages, unchanged from WP-0.7.
@@ -64,7 +64,7 @@ class HistoryDecision:
 
     exchange_index: int
     message_count: int
-    bound_tokens: int
+    estimated_tokens: int
     retained: bool
     reason: str
 
@@ -78,6 +78,10 @@ class HistorySelection:
     budget: int
     retained_tokens: int
     retained_messages: int
+
+
+def _estimate(messages: Sequence[Stored]) -> int:
+    return sum(estimate_tokens(message.content) for message in messages)
 
 
 def _exchanges(messages: Sequence[Stored]) -> list[tuple[int, int]]:
@@ -114,7 +118,7 @@ def select_history_tail(
     # The current turn: the last group, which begins with the just-persisted
     # user message. Always retained.
     current_start, current_end = groups[-1]
-    current_tokens = raw_input_bound(m.content for m in messages[current_start:current_end])
+    current_tokens = _estimate(messages[current_start:current_end])
     spent = current_tokens
     count = current_end - current_start
     retained_from = current_start
@@ -123,7 +127,7 @@ def select_history_tail(
     older = groups[:-1]
     for offset, (start, end) in enumerate(reversed(older)):
         index = offset + 1  # 1 = the newest complete exchange, counting backward
-        tokens = raw_input_bound(m.content for m in messages[start:end])
+        tokens = _estimate(messages[start:end])
         size = end - start
         if stopped:
             decisions.append(

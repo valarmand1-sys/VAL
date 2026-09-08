@@ -1,7 +1,7 @@
 """The contiguous-tail history budget — ruling of 7 September 2026.
 
-Each ruled demonstration as a pure test, in the system's own accounting
-(`raw_input_bound`: bytes plus framing, an upper bound): a conversation that
+Each ruled demonstration as a pure test, sized by the local estimator in
+provider-context-token scale (`val_policy.tokens`): a conversation that
 fits whole; long messages where fewer exchanges than the forty-message
 maximum fit; a newest exchange that alone exceeds the budget and is preserved
 whole; the tail stopping at the first exchange that does not fit rather than
@@ -13,12 +13,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from val_policy.budget import FRAMING_TOKENS_PER_MESSAGE, raw_input_bound
 from val_policy.history import (
     HISTORY_MESSAGE_LIMIT,
     HISTORY_TOKEN_BUDGET_DEFAULT,
     select_history_tail,
 )
+from val_policy.tokens import CHARS_PER_TOKEN_ESTIMATE, estimate_tokens
 
 
 @dataclass(frozen=True)
@@ -28,8 +28,8 @@ class Msg:
 
 
 def of_bound(role: str, tokens: int) -> Msg:
-    """A message whose byte bound is exactly `tokens` (ASCII: one byte per char)."""
-    return Msg(role, "x" * (tokens - FRAMING_TOKENS_PER_MESSAGE))
+    """A message whose estimate is exactly `tokens`."""
+    return Msg(role, "x" * int(tokens * CHARS_PER_TOKEN_ESTIMATE))
 
 
 def exchange(user_tokens: int, val_tokens: int) -> list[Msg]:
@@ -45,10 +45,11 @@ def conversation(exchanges: int, user_tokens: int, val_tokens: int) -> list[Msg]
     return history
 
 
-def test_the_budget_is_measured_in_the_systems_own_accounting() -> None:
-    """The same figure the preflight and the reservation use: bytes plus framing."""
+def test_the_budget_is_measured_in_estimated_provider_tokens() -> None:
+    """The same estimator recall uses; never the byte upper bound."""
     message = of_bound("user", 1_000)
-    assert raw_input_bound([message.content]) == 1_000
+    assert estimate_tokens(message.content) == 1_000
+    assert len(message.content.encode()) == 3_600, "bytes are not the unit"
 
 
 def test_a_short_conversation_is_retained_whole() -> None:

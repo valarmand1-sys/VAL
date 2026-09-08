@@ -18,20 +18,19 @@ admitted to the prompt. The rules, verbatim from the ruling:
 7. Never summarize, paraphrase, or truncate a recalled message to satisfy
    the budget.
 
-The 16,000-token value is a recall-context target, not a capability or
-spending limit. Tokens are estimated locally from characters — no provider is
-asked to count, because counting would be a network call per turn — at a
-ratio calibrated on a measured live call (34,365 provider-reported tokens
-for 123,676 characters of persona, envelope, and message on 7 September
-2026: 3.6 characters per token). The estimate errs toward admitting less.
+The 16,000-token value is a recall-context target in provider-context-token
+scale, not a capability or spending limit. Tokens are estimated locally by
+`val_policy.tokens.estimate_tokens` — the one documented estimator the
+history budget also uses — never by asking a provider to count.
 """
 
 from __future__ import annotations
 
-import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
+
+from val_policy.tokens import CHARS_PER_TOKEN_ESTIMATE, estimate_tokens
 
 #: The soft recall budget, in estimated tokens. Configuration, not a buried
 #: literal: `val_gateway.memory.token_budget()` reads `VAL_RECALL_TOKEN_BUDGET`
@@ -41,13 +40,16 @@ RECALL_TOKEN_BUDGET_DEFAULT = 16_000
 #: The maximum number of recalled messages, unchanged from WP-0.7.
 RECALL_MESSAGE_LIMIT = 6
 
-#: Characters per token for the local estimate. See the module docstring.
-CHARS_PER_TOKEN_ESTIMATE = 3.6
-
-
-def estimate_tokens(content: str) -> int:
-    """A local, deterministic token estimate — never a provider call."""
-    return math.ceil(len(content) / CHARS_PER_TOKEN_ESTIMATE)
+__all__ = [
+    "CHARS_PER_TOKEN_ESTIMATE",
+    "RECALL_MESSAGE_LIMIT",
+    "RECALL_TOKEN_BUDGET_DEFAULT",
+    "Ranked",
+    "RecallDecision",
+    "RecallSelection",
+    "estimate_tokens",
+    "select_within_budget",
+]
 
 
 class Ranked(Protocol):

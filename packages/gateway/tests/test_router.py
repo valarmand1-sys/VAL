@@ -33,10 +33,21 @@ from val_domain.gateway import (
 )
 from val_domain.registry import active, by_slug, fallback_for
 from val_gateway.gateway import RETRYABLE
-from val_policy.routing import attempt_order, candidates, required_profile
+from val_policy.budget import maximum_cost
+from val_policy.routing import attempt_order, candidates, required_profile, true_ties
 from val_providers.base import ProviderResult
 
 ALWAYS = True
+
+#: A fixed proposed call for the pure routing tests: the total cost bound of
+#: this content plus this output allowance, at each candidate's own rates.
+SIZING = ("x" * 1_000,)
+OUTPUT_ALLOWANCE = 4096
+
+
+def total_bound(config: ModelConfig) -> float:
+    return maximum_cost(config, SIZING, OUTPUT_ALLOWANCE)
+
 
 #: Every profile, for routes whose test is about eligibility, not the floor.
 ALL_PROFILES = frozenset(CapabilityProfile)
@@ -60,6 +71,7 @@ def make(
     retired: bool = False,
     profiles: frozenset[CapabilityProfile] = ALL_PROFILES,
     provider: str = "anthropic",
+    cost_out: float | None = None,
 ) -> ModelConfig:
     """A configuration for a case the real registry cannot legally hold."""
     return ModelConfig(
@@ -72,7 +84,7 @@ def make(
         max_output_tokens=4096,
         reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
         cost_per_mtok_in_usd=cost_in,
-        cost_per_mtok_out_usd=cost_in,
+        cost_per_mtok_out_usd=cost_in if cost_out is None else cost_out,
         caching=PricingFeature.NOT_VERIFIED,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=eligible,
@@ -142,6 +154,7 @@ def test_a_cheaper_ineligible_route_is_never_a_candidate() -> None:
         always_ready,
         always_affordable,
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
 
     assert [entry.slug for entry in chosen] == ["proper"]
@@ -168,6 +181,7 @@ def test_an_unadmitted_route_is_never_a_candidate() -> None:
         always_ready,
         always_affordable,
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
     assert [entry.slug for entry in chosen] == ["live"]
 
@@ -181,6 +195,7 @@ def test_a_retired_route_is_never_a_candidate() -> None:
         always_ready,
         always_affordable,
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
     assert chosen == []
 
@@ -226,6 +241,7 @@ def test_an_ineligible_fallback_does_not_execute() -> None:
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
 
     assert [entry.slug for entry in order] == ["primary"]
@@ -246,6 +262,7 @@ def test_a_declared_fallback_is_used_when_it_holds_independently() -> None:
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
 
     # `other` is cheapest so it is the primary — and it declares no fallback,
@@ -263,6 +280,7 @@ def test_a_declared_fallback_is_used_when_it_holds_independently() -> None:
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
     assert [entry.slug for entry in chained] == ["successor"], (
         "successor is cheaper, so it leads; it declares nothing, so it stands alone"
@@ -363,6 +381,7 @@ def test_an_unaffordable_route_yields_to_an_affordable_eligible_one() -> None:
         always_ready,
         is_affordable=lambda entry: entry.slug != "expensive",
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
     assert [entry.slug for entry in chosen] == ["modest"]
 
@@ -583,6 +602,7 @@ def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_regist
         always_ready,
         always_affordable,
         profile=required_profile(TaskType.CONVERSATION),
+        cost_bound=total_bound,
     )
     assert chosen, "the registry must hold at least one partner-qualified route"
     assert all(CapabilityProfile.PARTNER in entry.capability_profiles for entry in chosen)
@@ -592,6 +612,7 @@ def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_regist
         always_ready,
         always_affordable,
         profile=CapabilityProfile.STRUCTURED,
+        cost_bound=total_bound,
     )[0]
     assert CapabilityProfile.PARTNER not in cheapest_overall.capability_profiles, (
         "the premise: the cheapest structured route is not partner-qualified"
@@ -611,6 +632,7 @@ def test_classification_and_strip_route_to_the_cheapest_structured_route() -> No
             always_ready,
             always_affordable,
             profile=required_profile(task),
+            cost_bound=total_bound,
         )
         assert CapabilityProfile.STRUCTURED in chosen[0].capability_profiles
         assert chosen[0].cost_per_mtok_in_usd == min(entry.cost_per_mtok_in_usd for entry in chosen)
@@ -627,6 +649,7 @@ def test_a_cheaper_structured_route_never_wins_a_partner_task() -> None:
         always_ready,
         always_affordable,
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
     assert [entry.slug for entry in chosen] == ["partner"]
 
@@ -651,6 +674,7 @@ def test_a_partner_routes_structured_fallback_never_serves_a_partner_task() -> N
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
         profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
     )
     assert [entry.slug for entry in order] == ["partner"]
     # And the same successor is exactly what a structured task should get.
@@ -661,6 +685,7 @@ def test_a_partner_routes_structured_fallback_never_serves_a_partner_task() -> N
         always_affordable,
         resolve_fallback=lambda entry: universe.get(entry.fallback_slug or ""),
         profile=CapabilityProfile.STRUCTURED,
+        cost_bound=total_bound,
     )
     assert [entry.slug for entry in structured] == ["structured-successor"]
 
@@ -677,6 +702,7 @@ def test_when_nothing_satisfies_the_floor_the_answer_is_empty_not_a_downgrade() 
             always_ready,
             always_affordable,
             profile=CapabilityProfile.PARTNER,
+            cost_bound=total_bound,
         )
         == []
     )
@@ -692,5 +718,90 @@ def test_the_partner_floor_is_a_floor_not_a_ceiling() -> None:
         always_ready,
         always_affordable,
         profile=CapabilityProfile.STRUCTURED,
+        cost_bound=total_bound,
     )
     assert [entry.slug for entry in chosen] == ["cheap-structured", "partner-and-structured"]
+
+
+# --- H. cost is the total bound of the call, and a tie is reported as a tie --
+# Ruling, 7 September 2026: input-rate-only is not an implementation of cost
+# ordering. Among adequate routes the order is the candidate-specific total
+# cost bound — input bound plus output bound at that candidate's rates, the
+# reservation figure — and an exact tie falls to a stable last-resort
+# tie-break that is logged as a tie, never described as a cost decision.
+
+
+def test_cost_ordering_uses_the_total_bound_not_the_input_rate() -> None:
+    cheap_in_dear_out = make("cheap-in", cost_in=1.0, eligible=PROTECTED_SET, cost_out=100.0)
+    dearer_in_cheap_out = make("dearer-in", cost_in=2.0, eligible=PROTECTED_SET, cost_out=2.0)
+    assert total_bound(cheap_in_dear_out) > total_bound(dearer_in_cheap_out)
+    chosen = candidates(
+        [cheap_in_dear_out, dearer_in_cheap_out],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
+    )
+    assert [entry.slug for entry in chosen] == ["dearer-in", "cheap-in"], (
+        "the route that is cheaper on input rate alone loses on the total bound"
+    )
+    by_input_rate = sorted(chosen, key=lambda entry: entry.cost_per_mtok_in_usd)
+    assert by_input_rate[0].slug == "cheap-in", "the premise: input rate would have chosen it"
+
+
+def test_the_bound_is_the_reservation_figure_for_this_call() -> None:
+    """The same function, the same content, the same output allowance."""
+    route = make("route", cost_in=5.0, eligible=PROTECTED_SET, cost_out=25.0)
+    assert total_bound(route) == maximum_cost(route, SIZING, OUTPUT_ALLOWANCE)
+
+
+def test_an_exact_tie_falls_to_the_stable_tie_break_and_is_reported() -> None:
+    zed = make("zed", cost_in=5.0, eligible=PROTECTED_SET, cost_out=25.0)
+    alpha = make("alpha", cost_in=5.0, eligible=PROTECTED_SET, cost_out=25.0)
+    chosen = candidates(
+        [zed, alpha],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
+    )
+    assert [entry.slug for entry in chosen] == ["alpha", "zed"]
+    assert true_ties(chosen, total_bound) == [("alpha", "zed", total_bound(alpha))]
+    assert true_ties(chosen[:1], total_bound) == []
+
+
+def test_a_near_tie_is_not_a_tie() -> None:
+    a = make("a", cost_in=5.0, eligible=PROTECTED_SET, cost_out=25.0)
+    b = make("b", cost_in=5.0, eligible=PROTECTED_SET, cost_out=30.0)
+    chosen = candidates(
+        [b, a],
+        Classification.PROTECTED,
+        always_ready,
+        always_affordable,
+        profile=CapabilityProfile.PARTNER,
+        cost_bound=total_bound,
+    )
+    assert [entry.slug for entry in chosen] == ["a", "b"], "output rate decides it"
+    assert true_ties(chosen, total_bound) == []
+
+
+def test_the_gateway_logs_a_true_tie_as_a_tie(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Two structured routes at identical rates on one provider: the log names
+    the tie and the tie-break, and does not call it a cost preference."""
+    routes = [
+        make("tied-b", cost_in=1.0, eligible=PROTECTED_SET, cost_out=5.0),
+        make("tied-a", cost_in=1.0, eligible=PROTECTED_SET, cost_out=5.0),
+    ]
+    monkeypatch.setattr("val_gateway.gateway.active", lambda: routes)
+    adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 1, 1, "r"))
+    gateway, _, _, _ = build(adapters={"anthropic": adapter})
+    with caplog.at_level("INFO", logger="val.gateway"):
+        gateway.complete(request())
+    tie_lines = [r.getMessage() for r in caplog.records if "true tie" in r.getMessage()]
+    assert len(tie_lines) == 1
+    assert "tied-a and tied-b" in tie_lines[0]
+    assert "not by cost" in tie_lines[0]
