@@ -13,7 +13,16 @@
 // deliberation-or-null, and the null branch has exactly one output. There is
 // no code path from "no row" to an outcome word.
 
-import type { BlindPositionView, DeliberationView, Outcome, TurnUnanswered } from "./api";
+import type {
+  Agreement,
+  BlindPositionView,
+  DeliberationView,
+  Outcome,
+  ReviewConclusion,
+  ReviewProgressView,
+  TurnUnanswered,
+} from "./api";
+import { NONE_FAILS_INCLUSION_TEST } from "./api";
 
 // An unanswered turn, described by what the record supports (ruled
 // 2 September 2026). "The provider did not answer" is a claim of provider
@@ -31,6 +40,39 @@ export function describeUnanswered(outcome: TurnUnanswered): string {
   return (
     `No answer — no provider was asked for a response ` +
     `(${outcome.error_kind}): ${outcome.error}. The question is history.`
+  );
+}
+
+// Classification review — ruling, 7 September 2026. Words for the derived
+// agreement, verbatim in meaning: zero tolerance is named as such only where
+// Lord Armand named one of the six and the classifier said consequential.
+export const AGREEMENT_WORDS: Record<Agreement, string> = {
+  agree: "agrees with the classifier",
+  inclusion_disagreement: "inclusion-test disagreement — to be reviewed and used to tune",
+  zero_tolerance_failure:
+    "ZERO-TOLERANCE FAILURE — a hard exclusion the classifier called consequential",
+};
+
+export const CONCLUSION_WORDS: Record<ReviewConclusion, string> = {
+  label_upheld_classifier_wrong: "my label stands; the classifier was wrong",
+  classifier_upheld_label_wrong: "the classifier stands; my label was wrong",
+  ambiguous_needs_ruling: "genuinely ambiguous; needs a ruling",
+};
+
+export function determinationLabel(determination: string | null): string {
+  if (determination === null) return "";
+  if (determination === NONE_FAILS_INCLUSION_TEST) {
+    return "no hard exclusion — fails the inclusion test";
+  }
+  return `hard exclusion: ${determination.replace(/_/g, " ")}`;
+}
+
+export function progressLine(progress: ReviewProgressView): string {
+  return (
+    `${progress.labelled} of ${progress.target} labelled · ` +
+    `${progress.agreements} agree · ${progress.inclusion_disagreements} inclusion disagreements · ` +
+    `${progress.zero_tolerance_failures} zero-tolerance failures · ` +
+    `${progress.open_disagreements} open · ${progress.eligible_unlabelled} awaiting a label`
   );
 }
 

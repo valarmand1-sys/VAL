@@ -18,16 +18,25 @@ import type {
   ConversationDetail,
   ConversationView,
   CostView,
+  HumanClassification,
+  LabelledExchangeView,
   MessageView,
   Outcome,
   ProjectView,
+  QueuedExchangeView,
+  ReviewConclusion,
+  ReviewProgressView,
   TurnClarification,
 } from "./api";
-import { api, ApiRefusal, describeFailure } from "./api";
+import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST } from "./api";
 import {
+  AGREEMENT_WORDS,
+  CONCLUSION_WORDS,
   describeDeliberation,
   describeUnanswered,
+  determinationLabel,
   outcomeLabel,
+  progressLine,
   resolutionOf,
 } from "./presentation";
 
@@ -51,6 +60,9 @@ export function App(): React.JSX.Element {
   // no evidentiary meaning (§2.1 amendment, 31 August 2026), and everything
   // outside the two listings is archive-blind.
   const [showArchived, setShowArchived] = useState(false);
+  // Ruled 7 September 2026: the classification review queue lives beside the
+  // conversation thread, never over it.
+  const [view, setView] = useState<"conversation" | "review">("conversation");
 
   const refreshConversations = useCallback(
     async (at: Scope) => {
@@ -224,8 +236,20 @@ export function App(): React.JSX.Element {
               </li>
             ))}
           </ul>
-          <button className="new-conversation" onClick={() => setDetail(null)}>
+          <button
+            className="new-conversation"
+            onClick={() => {
+              setView("conversation");
+              setDetail(null);
+            }}
+          >
             New conversation
+          </button>
+          <button
+            className={view === "review" ? "new-conversation selected" : "new-conversation"}
+            onClick={() => setView(view === "review" ? "conversation" : "review")}
+          >
+            {view === "review" ? "Back to conversations" : "Review classifications"}
           </button>
           <label className="archived-toggle">
             <input
@@ -255,7 +279,9 @@ export function App(): React.JSX.Element {
           </div>
         )}
 
-        {detail === null ? (
+        {view === "review" ? (
+          <ReviewPanel onRefused={(message) => setNotice(message)} />
+        ) : detail === null ? (
           <p className="empty">
             {scope.kind === "project"
               ? `A new conversation in ${scope.project.name}.`
@@ -400,6 +426,212 @@ function MessageBlock(props: {
       )}
       {message.role === "user" && (
         <MarkConsequentialControl detail={detail} message={message} onRecorded={onRecorded} />
+      )}
+    </div>
+  );
+}
+
+// Ruled 7 September 2026: the classification review queue — the fifty. The
+// same doctrine as the blind position, applied to Lord Armand: the queue item
+// carries no verdict, and the verdict appears only after his label is stored.
+function ReviewPanel(props: { onRefused: (message: string) => void }): React.JSX.Element {
+  const { onRefused } = props;
+  const [queue, setQueue] = useState<QueuedExchangeView[]>([]);
+  const [progress, setProgress] = useState<ReviewProgressView | null>(null);
+  const [disagreements, setDisagreements] = useState<LabelledExchangeView[]>([]);
+  const [revealed, setRevealed] = useState<LabelledExchangeView | null>(null);
+  const [label, setLabel] = useState<HumanClassification | null>(null);
+  const [determination, setDetermination] = useState<string>("");
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      setQueue(await api.reviewQueue());
+      setProgress(await api.reviewProgress());
+      setDisagreements(await api.reviewDisagreements());
+    } catch (failure) {
+      onRefused(describeFailure(failure));
+    }
+  }, [onRefused]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const current = queue[0] ?? null;
+
+  const commit = async () => {
+    if (current === null || label === null || busy) return;
+    if (label === "not_consequential" && determination === "") return;
+    setBusy(true);
+    try {
+      const stored = await api.labelExchange({
+        classification_id: current.classification_id,
+        label,
+        ...(label === "not_consequential" ? { exclusion_determination: determination } : {}),
+      });
+      setRevealed(stored);
+      setLabel(null);
+      setDetermination("");
+      setQueue((items) => items.slice(1));
+      setProgress(await api.reviewProgress());
+      setDisagreements(await api.reviewDisagreements());
+    } catch (failure) {
+      onRefused(describeFailure(failure));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="review">
+      <h2>Review classifications</h2>
+      {progress !== null && <p className="note">{progressLine(progress)}</p>}
+
+      {revealed !== null ? (
+        <div className="review-card">
+          <p className="note">Your label is stored. The classifier said:</p>
+          <p>
+            <strong>{revealed.verdict}</strong>
+            {revealed.hard_exclusion !== null && ` · hard exclusion: ${revealed.hard_exclusion}`}
+          </p>
+          <p>
+            You said <strong>{revealed.label.label}</strong>
+            {revealed.label.exclusion_determination !== null &&
+              ` · ${determinationLabel(revealed.label.exclusion_determination)}`}
+          </p>
+          <p className={revealed.agreement === "agree" ? "" : "disagreement"}>
+            {AGREEMENT_WORDS[revealed.agreement]}
+          </p>
+          <button onClick={() => setRevealed(null)}>Next</button>
+        </div>
+      ) : current === null ? (
+        <p className="empty">Nothing awaiting a label.</p>
+      ) : (
+        <div className="review-card">
+          <p className="note">
+            {current.conversation_title} · {new Date(current.classified_at).toLocaleString()} ·{" "}
+            {queue.length} awaiting
+          </p>
+          <div className="content">{current.content}</div>
+          <p className="note">
+            Apply the contract yourself: is a choice being made among alternatives, and does it
+            bind later work? Check the hard exclusions first. The classifier&apos;s verdict is
+            revealed only after you record your label.
+          </p>
+          <div className="review-choices">
+            {(["consequential", "uncertain", "not_consequential"] as HumanClassification[]).map(
+              (choice) => (
+                <button
+                  key={choice}
+                  className={label === choice ? "selected" : ""}
+                  onClick={() => {
+                    setLabel(choice);
+                    if (choice !== "not_consequential") setDetermination("");
+                  }}
+                >
+                  {choice.replace(/_/g, " ")}
+                </button>
+              ),
+            )}
+          </div>
+          {label === "not_consequential" && (
+            <div className="review-determination">
+              <p className="note">Second determination, required:</p>
+              <select value={determination} onChange={(event) => setDetermination(event.target.value)}>
+                <option value="">— choose —</option>
+                {HARD_EXCLUSIONS.map((exclusion) => (
+                  <option key={exclusion} value={exclusion}>
+                    hard exclusion: {exclusion.replace(/_/g, " ")}
+                  </option>
+                ))}
+                <option value={NONE_FAILS_INCLUSION_TEST}>
+                  no hard exclusion — it fails the consequential inclusion test
+                </option>
+              </select>
+            </div>
+          )}
+          <button
+            onClick={() => void commit()}
+            disabled={
+              busy || label === null || (label === "not_consequential" && determination === "")
+            }
+          >
+            Record label
+          </button>
+        </div>
+      )}
+
+      <h3>Disagreements</h3>
+      {disagreements.length === 0 ? (
+        <p className="empty">None recorded.</p>
+      ) : (
+        disagreements.map((item) => (
+          <DisagreementCard key={item.classification_id} item={item} onRecorded={load} onRefused={onRefused} />
+        ))
+      )}
+    </div>
+  );
+}
+
+function DisagreementCard(props: {
+  item: LabelledExchangeView;
+  onRecorded: () => Promise<void>;
+  onRefused: (message: string) => void;
+}): React.JSX.Element {
+  const { item, onRecorded, onRefused } = props;
+  const [open, setOpen] = useState(false);
+  const [conclusion, setConclusion] = useState<ReviewConclusion>("classifier_upheld_label_wrong");
+  const [reason, setReason] = useState("");
+
+  const record = async () => {
+    if (reason.trim() === "") return;
+    try {
+      await api.reviewExchange({ classification_id: item.classification_id, conclusion, reason });
+      setOpen(false);
+      setReason("");
+      await onRecorded();
+    } catch (failure) {
+      onRefused(describeFailure(failure));
+    }
+  };
+
+  return (
+    <div className={`review-card ${item.open_disagreement ? "open" : ""}`}>
+      <div className="content">{item.content}</div>
+      <p>
+        You said <strong>{item.label.label}</strong>
+        {item.label.exclusion_determination !== null &&
+          ` · ${determinationLabel(item.label.exclusion_determination)}`}
+        ; the classifier said <strong>{item.verdict}</strong>
+        {item.hard_exclusion !== null && ` · hard exclusion: ${item.hard_exclusion}`}.
+      </p>
+      <p className="disagreement">{AGREEMENT_WORDS[item.agreement]}</p>
+      {item.reviews.map((review) => (
+        <p key={review.id} className="note">
+          Review: {CONCLUSION_WORDS[review.conclusion]} — {review.reason}
+          {review.tuning_state !== null && ` · ${review.tuning_state.replace(/_/g, " ")}`}
+          {review.tuning_change !== null && ` · change: ${review.tuning_change}`}
+        </p>
+      ))}
+      <p className="note">{item.open_disagreement ? "Open — not resolved by being viewed." : "Resolved."}</p>
+      {!open ? (
+        <button className="inline-action" onClick={() => setOpen(true)}>
+          Record a review
+        </button>
+      ) : (
+        <div className="judge">
+          <select value={conclusion} onChange={(event) => setConclusion(event.target.value as ReviewConclusion)}>
+            <option value="label_upheld_classifier_wrong">{CONCLUSION_WORDS.label_upheld_classifier_wrong}</option>
+            <option value="classifier_upheld_label_wrong">{CONCLUSION_WORDS.classifier_upheld_label_wrong}</option>
+            <option value="ambiguous_needs_ruling">{CONCLUSION_WORDS.ambiguous_needs_ruling}</option>
+          </select>
+          <textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder="why — in your own words" />
+          <button onClick={() => void record()} disabled={reason.trim() === ""}>
+            Record
+          </button>
+          <button onClick={() => setOpen(false)}>Cancel</button>
+        </div>
       )}
     </div>
   );

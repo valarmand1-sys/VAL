@@ -1,10 +1,11 @@
 """The authoritative store's schema, exactly as `04-layer-0.md` §2 specifies it.
 
-Twelve tables, in §2's order — seven from the original §2, two added by the
+Fourteen tables, in §2's order — seven from the original §2, two added by the
 15 August 2026 amendments (`execution_events.reaction` and the idea tables of
 §2.4), `budget_reservations` added by the 17 August 2026 amendment (§2.5),
-`blind_positions` by the 19 August 2026 ruling, and `classifications` by the
-3 September 2026 ruling (§2.2).
+`blind_positions` by the 19 August 2026 ruling, `classifications` by the
+3 September 2026 ruling, and `classification_labels` and
+`classification_reviews` by the 7 September 2026 ruling (§2.2).
 No table exists here that §2 does not name, and no column exists that §2 does
 not list. Where §2 is silent, the silence is recorded in a comment rather than
 filled in.
@@ -149,6 +150,18 @@ DeliberationClassifiedBy = Enum("automatic", "user", "val", name="deliberation_c
 ClassificationVerdict = Enum(
     "consequential", "uncertain", "not_consequential", name="classification_verdict"
 )
+# Ruling, 7 September 2026: Lord Armand's own verdict, the review conclusion,
+# and the tuning state of a classifier-was-wrong conclusion.
+HumanClassification = Enum(
+    "consequential", "uncertain", "not_consequential", name="human_classification"
+)
+ReviewConclusion = Enum(
+    "label_upheld_classifier_wrong",
+    "classifier_upheld_label_wrong",
+    "ambiguous_needs_ruling",
+    name="review_conclusion",
+)
+TuningState = Enum("tuning_required", "tuning_verified", name="tuning_state")
 
 
 # Primary keys are time-ordered UUIDs. PostgreSQL 18's `uuidv7()` sorts by
@@ -709,6 +722,91 @@ class Classification(Base):
     )
 
 
+class ClassificationLabel(Base):
+    """§2.2 — `classification_labels`, ruling of 7 September 2026.
+
+    One original blind hand-label per classification — Lord Armand's verdict
+    under the §4.8 contract, committed before the classifier's verdict is
+    revealed to him and never overwritten (migration `0014`). The evidence
+    the fifty-exchange criterion collects. `exclusion_determination` is
+    present iff the label is `not_consequential` and names one of the six
+    hard exclusions or the explicit `none_fails_inclusion_test`; an omitted
+    determination is refused by the writer, never read as "none".
+    """
+
+    __tablename__ = "classification_labels"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    classification_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("classifications.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    label: Mapped[str] = mapped_column(HumanClassification, nullable=False)
+    exclusion_determination: Mapped[str | None] = mapped_column(Text, nullable=True)
+    labelled_by: Mapped[str] = mapped_column(Text, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("classification_id", name="uq_classification_labels_classification_id"),
+        CheckConstraint(
+            "(label = 'not_consequential') = (exclusion_determination IS NOT NULL)",
+            name="determination_iff_not_consequential",
+        ),
+    )
+
+
+class ClassificationReview(Base):
+    """§2.2 — `classification_reviews`, ruling of 7 September 2026.
+
+    An adjudication appended after the reveal: what was concluded on comparing
+    the label with the classifier, with a stated reason. A conclusion that
+    the classifier was wrong carries a tuning state that starts
+    `tuning_required` and is closed only by a later row citing the engineering
+    change and its verification — never by viewing. Append-only (`0014`).
+    """
+
+    __tablename__ = "classification_reviews"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    classification_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("classifications.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    label_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("classification_labels.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    conclusion: Mapped[str] = mapped_column(ReviewConclusion, nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    tuning_state: Mapped[str | None] = mapped_column(TuningState, nullable=True)
+    tuning_change: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tuning_verification: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint(
+            "(conclusion = 'label_upheld_classifier_wrong') = (tuning_state IS NOT NULL)",
+            name="tuning_state_iff_classifier_wrong",
+        ),
+        CheckConstraint(
+            "(tuning_state = 'tuning_verified') = "
+            "(tuning_change IS NOT NULL AND tuning_verification IS NOT NULL)",
+            name="verified_cites_change",
+        ),
+    )
+
+
 # --- §2.4 Ideas — amendment, 15 August 2026 ----------------------------------
 #
 # An idea's history cannot be reconstructed later: the same capture argument as
@@ -888,6 +986,8 @@ SPECIFIED_TABLES = frozenset(
         "deliberations",
         "blind_positions",
         "classifications",
+        "classification_labels",
+        "classification_reviews",
         "ideas",
         "idea_state_changes",
         "budget_reservations",

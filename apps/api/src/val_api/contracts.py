@@ -16,6 +16,14 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from val_domain.classification_review import (
+    Agreement,
+    ClassificationLabelRecord,
+    ClassificationReviewRecord,
+    HumanClassification,
+    ReviewConclusion,
+    TuningState,
+)
 from val_domain.conversation import ConversationRecord, MessageRecord
 from val_domain.deliberation import (
     BlindPositionRecord,
@@ -30,6 +38,11 @@ from val_domain.deliberation import (
 )
 from val_domain.execution import ExecutionEventRecord, ExecutionEventType, Reaction
 from val_domain.project import ProjectRecord
+from val_gateway.classification_review import (
+    LabelledExchange,
+    QueuedExchange,
+    ReviewProgress,
+)
 
 # =============================================================================
 # Reads: projections of records, nothing else
@@ -282,6 +295,168 @@ class ConversationDetail(BaseModel):
     blind_positions: list[BlindPositionView]
     deliberations: list[DeliberationView]
     execution_events: list[ExecutionEventView]
+
+
+# =============================================================================
+# Classification review — ruling, 7 September 2026
+# =============================================================================
+
+
+class QueuedExchangeView(BaseModel):
+    """One exchange awaiting Lord Armand's label. **Carries no verdict.**
+
+    The queue is blind by construction: the service does not send the
+    classifier's verdict or hard exclusion until the label is durably stored,
+    the same doctrine as the blind position, applied to him.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    classification_id: UUID
+    conversation_id: UUID
+    conversation_title: str
+    message_id: UUID
+    content: str
+    classified_at: datetime
+
+    @classmethod
+    def of(cls, item: QueuedExchange) -> QueuedExchangeView:
+        return cls(
+            classification_id=item.classification_id,
+            conversation_id=item.conversation_id,
+            conversation_title=item.conversation_title,
+            message_id=item.message_id,
+            content=item.content,
+            classified_at=item.classified_at,
+        )
+
+
+class LabelRequest(BaseModel):
+    """The original blind label. `exclusion_determination` is required for
+    not_consequential — one of the six, or the explicit
+    `none_fails_inclusion_test` — and forbidden otherwise. Omitted is refused,
+    never read as none."""
+
+    model_config = ConfigDict(frozen=True)
+
+    classification_id: UUID
+    label: HumanClassification
+    exclusion_determination: str | None = None
+
+
+class ClassificationLabelView(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    label: HumanClassification
+    exclusion_determination: str | None
+    labelled_by: str
+    created_at: datetime
+
+    @classmethod
+    def of(cls, record: ClassificationLabelRecord) -> ClassificationLabelView:
+        return cls(
+            id=record.id,
+            label=record.label,
+            exclusion_determination=record.exclusion_determination,
+            labelled_by=record.labelled_by,
+            created_at=record.created_at,
+        )
+
+
+class ClassificationReviewView(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    conclusion: ReviewConclusion
+    reason: str
+    tuning_state: TuningState | None
+    tuning_change: str | None
+    tuning_verification: str | None
+    created_at: datetime
+
+    @classmethod
+    def of(cls, record: ClassificationReviewRecord) -> ClassificationReviewView:
+        return cls(
+            id=record.id,
+            conclusion=record.conclusion,
+            reason=record.reason,
+            tuning_state=record.tuning_state,
+            tuning_change=record.tuning_change,
+            tuning_verification=record.tuning_verification,
+            created_at=record.created_at,
+        )
+
+
+class LabelledExchangeView(BaseModel):
+    """A labelled exchange with the verdict revealed and agreement derived on read."""
+
+    model_config = ConfigDict(frozen=True)
+
+    classification_id: UUID
+    conversation_id: UUID
+    conversation_title: str
+    message_id: UUID
+    content: str
+    label: ClassificationLabelView
+    verdict: ClassificationVerdict
+    hard_exclusion: str | None
+    agreement: Agreement
+    open_disagreement: bool
+    reviews: list[ClassificationReviewView]
+
+    @classmethod
+    def of(cls, item: LabelledExchange) -> LabelledExchangeView:
+        return cls(
+            classification_id=item.classification_id,
+            conversation_id=item.conversation_id,
+            conversation_title=item.conversation_title,
+            message_id=item.message_id,
+            content=item.content,
+            label=ClassificationLabelView.of(item.label),
+            verdict=item.verdict,
+            hard_exclusion=item.hard_exclusion,
+            agreement=item.agreement,
+            open_disagreement=item.open_disagreement,
+            reviews=[ClassificationReviewView.of(review) for review in item.reviews],
+        )
+
+
+class ReviewRequest(BaseModel):
+    """An adjudication after the reveal, appended, with its stated reason."""
+
+    model_config = ConfigDict(frozen=True)
+
+    classification_id: UUID
+    conclusion: ReviewConclusion
+    reason: str = Field(min_length=1)
+    tuning_state: TuningState | None = None
+    tuning_change: str | None = None
+    tuning_verification: str | None = None
+
+
+class ReviewProgressView(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    labelled: int
+    target: int
+    agreements: int
+    inclusion_disagreements: int
+    zero_tolerance_failures: int
+    open_disagreements: int
+    eligible_unlabelled: int
+
+    @classmethod
+    def of(cls, item: ReviewProgress) -> ReviewProgressView:
+        return cls(
+            labelled=item.labelled,
+            target=item.target,
+            agreements=item.agreements,
+            inclusion_disagreements=item.inclusion_disagreements,
+            zero_tolerance_failures=item.zero_tolerance_failures,
+            open_disagreements=item.open_disagreements,
+            eligible_unlabelled=item.eligible_unlabelled,
+        )
 
 
 # =============================================================================

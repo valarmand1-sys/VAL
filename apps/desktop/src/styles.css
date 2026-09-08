@@ -276,3 +276,31 @@ body {
   color: var(--accent);
   font-style: italic;
 }
+
+/* Classification review — ruling, 7 September 2026. */
+.review {
+  max-width: 48rem;
+}
+.review-card {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+}
+.review-card.open {
+  border-color: #c66;
+}
+.review-choices button {
+  margin-right: 0.5rem;
+}
+.review-choices button.selected {
+  font-weight: 600;
+  outline: 2px solid #333;
+}
+.review-determination {
+  margin: 0.5rem 0;
+}
+.disagreement {
+  color: #a33;
+  font-weight: 600;
+}

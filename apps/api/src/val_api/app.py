@@ -32,6 +32,7 @@ from sqlalchemy import Engine
 from val_api.contracts import (
     BlindPositionView,
     CandidateView,
+    ClassificationReviewView,
     ClassificationView,
     ConversationDetail,
     ConversationView,
@@ -42,10 +43,15 @@ from val_api.contracts import (
     ExecutionEventRequest,
     ExecutionEventView,
     Health,
+    LabelledExchangeView,
+    LabelRequest,
     ManualDeliberationRequest,
     MessageView,
     ProjectCreateRequest,
     ProjectView,
+    QueuedExchangeView,
+    ReviewProgressView,
+    ReviewRequest,
     TurnAnswered,
     TurnClarification,
     TurnRequest,
@@ -56,6 +62,15 @@ from val_api.contracts import (
 from val_domain.deliberation import ClassifiedBy
 from val_domain.gateway import GatewayError
 from val_gateway import conversations
+from val_gateway.classification_review import (
+    ReviewRefusedError,
+    disagreements,
+    labelled,
+    progress,
+    record_label,
+    record_review,
+    review_queue,
+)
 from val_gateway.conversations import ConversationNotFoundError
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import (
@@ -324,6 +339,61 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
         return DeliberationView.of(recorded)
 
     # --- the cost view and the drift signal -------------------------------------
+
+    # --- classification review: the fifty, blind before reveal -----------------
+
+    @app.get("/classification-review/queue")
+    def classification_queue(limit: int = 20) -> list[QueuedExchangeView]:
+        """Eligible exchanges awaiting a label, oldest first. **No verdict.**"""
+        return [QueuedExchangeView.of(item) for item in review_queue(engine, limit=limit)]
+
+    @app.post("/classification-review/labels", status_code=201)
+    def label_exchange(request: LabelRequest) -> LabelledExchangeView:
+        """Store the original blind label; the reply is the first reveal."""
+        try:
+            return LabelledExchangeView.of(
+                record_label(
+                    engine,
+                    classification_id=request.classification_id,
+                    label=request.label,
+                    exclusion_determination=request.exclusion_determination,
+                )
+            )
+        except ReviewRefusedError as refused:
+            raise HTTPException(status_code=409, detail=str(refused)) from refused
+
+    @app.get("/classification-review/labelled/{classification_id}")
+    def labelled_exchange(classification_id: UUID) -> LabelledExchangeView:
+        item = labelled(engine, classification_id)
+        if item is None:
+            raise HTTPException(status_code=404, detail="no label exists for this exchange")
+        return LabelledExchangeView.of(item)
+
+    @app.get("/classification-review/disagreements")
+    def classification_disagreements() -> list[LabelledExchangeView]:
+        return [LabelledExchangeView.of(item) for item in disagreements(engine)]
+
+    @app.get("/classification-review/progress")
+    def classification_progress() -> ReviewProgressView:
+        return ReviewProgressView.of(progress(engine))
+
+    @app.post("/classification-review/reviews", status_code=201)
+    def review_exchange(request: ReviewRequest) -> ClassificationReviewView:
+        """Append an adjudication. Viewing a disagreement records nothing."""
+        try:
+            return ClassificationReviewView.of(
+                record_review(
+                    engine,
+                    classification_id=request.classification_id,
+                    conclusion=request.conclusion,
+                    reason=request.reason,
+                    tuning_state=request.tuning_state,
+                    tuning_change=request.tuning_change,
+                    tuning_verification=request.tuning_verification,
+                )
+            )
+        except ReviewRefusedError as refused:
+            raise HTTPException(status_code=409, detail=str(refused)) from refused
 
     @app.get("/costs")
     def costs() -> CostView:

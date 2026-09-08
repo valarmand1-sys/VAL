@@ -1,8 +1,8 @@
 """The scheduled backup: pre-flight, backup, GFS retention, status, alert.
 
-Run daily at 03:00 by the launchd agent `house.armand.val.backup`. launchd's
+Run daily at 20:00 local by the launchd agent `house.armand.val.backup`. launchd's
 StartCalendarInterval fires a missed run on the next wake, so a laptop asleep at
-03:00 is backed up when it opens; multiple missed firings coalesce into one run,
+the scheduled hour is backed up when it opens; multiple missed firings coalesce into one run,
 which for a backup is correct — current state, not replays.
 
 Order of operations, each failing loudly rather than proceeding:

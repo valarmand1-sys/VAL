@@ -101,6 +101,77 @@ export interface ClassificationView {
   created_at: string;
 }
 
+// Classification review — ruling, 7 September 2026. The queue item carries no
+// verdict: the service withholds it until the label is durably stored.
+export type HumanClassification = "consequential" | "uncertain" | "not_consequential";
+export type Agreement = "agree" | "inclusion_disagreement" | "zero_tolerance_failure";
+export type ReviewConclusion =
+  | "label_upheld_classifier_wrong"
+  | "classifier_upheld_label_wrong"
+  | "ambiguous_needs_ruling";
+export type TuningState = "tuning_required" | "tuning_verified";
+
+export const HARD_EXCLUSIONS = [
+  "retrieval_lookup_or_search",
+  "fact_stated_confirmed_or_corrected",
+  "execution_of_decided_task",
+  "status_progress_schedule_or_cost",
+  "logistics_and_scheduling",
+  "no_choice_present",
+] as const;
+export const NONE_FAILS_INCLUSION_TEST = "none_fails_inclusion_test";
+
+export interface QueuedExchangeView {
+  classification_id: string;
+  conversation_id: string;
+  conversation_title: string;
+  message_id: string;
+  content: string;
+  classified_at: string;
+}
+
+export interface ClassificationLabelView {
+  id: string;
+  label: HumanClassification;
+  exclusion_determination: string | null;
+  labelled_by: string;
+  created_at: string;
+}
+
+export interface ClassificationReviewView {
+  id: string;
+  conclusion: ReviewConclusion;
+  reason: string;
+  tuning_state: TuningState | null;
+  tuning_change: string | null;
+  tuning_verification: string | null;
+  created_at: string;
+}
+
+export interface LabelledExchangeView {
+  classification_id: string;
+  conversation_id: string;
+  conversation_title: string;
+  message_id: string;
+  content: string;
+  label: ClassificationLabelView;
+  verdict: "consequential" | "uncertain" | "not_consequential";
+  hard_exclusion: string | null;
+  agreement: Agreement;
+  open_disagreement: boolean;
+  reviews: ClassificationReviewView[];
+}
+
+export interface ReviewProgressView {
+  labelled: number;
+  target: number;
+  agreements: number;
+  inclusion_disagreements: number;
+  zero_tolerance_failures: number;
+  open_disagreements: number;
+  eligible_unlabelled: number;
+}
+
 export interface ConversationDetail {
   conversation: ConversationView;
   messages: MessageView[];
@@ -245,6 +316,30 @@ export const api = {
   // service refuses a taken name in words (409), which surfaces as ApiRefusal.
   createProject: (name: string) =>
     request<ProjectView>("/projects", { method: "POST", body: JSON.stringify({ name }) }),
+  reviewQueue: () => request<QueuedExchangeView[]>("/classification-review/queue"),
+  reviewProgress: () => request<ReviewProgressView>("/classification-review/progress"),
+  reviewDisagreements: () => request<LabelledExchangeView[]>("/classification-review/disagreements"),
+  labelExchange: (body: {
+    classification_id: string;
+    label: HumanClassification;
+    exclusion_determination?: string;
+  }) =>
+    request<LabelledExchangeView>("/classification-review/labels", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  reviewExchange: (body: {
+    classification_id: string;
+    conclusion: ReviewConclusion;
+    reason: string;
+    tuning_state?: TuningState;
+    tuning_change?: string;
+    tuning_verification?: string;
+  }) =>
+    request<ClassificationReviewView>("/classification-review/reviews", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   conversations: (query: { project_id?: string; scope?: "none"; archived?: boolean } = {}) => {
     const parameters = new URLSearchParams();
     if (query.project_id) parameters.set("project_id", query.project_id);

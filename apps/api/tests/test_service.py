@@ -677,3 +677,83 @@ def test_a_taken_project_name_is_refused_in_words(store: Engine) -> None:
     assert "already exists" in refused.json()["detail"]
     empty = api.post("/projects", json={"name": "   "})
     assert empty.status_code in (409, 422)
+
+
+# =============================================================================
+# Classification review — ruling, 7 September 2026: blind before reveal
+# =============================================================================
+
+
+def _make_classification_eligible(store: Engine) -> None:
+    """Live rows carry now(); the fixture rows here are made after the resume boundary."""
+    with store.begin() as connection:
+        connection.execute(text("update classifications set created_at = created_at where false"))
+
+
+def test_the_queue_withholds_the_verdict_until_the_label_is_stored(store: Engine) -> None:
+    api = client(store, ScriptedAdapter([*plain_script(), *deliberated_script()]))
+    a_turn(api, "What time is the screening?")
+    a_turn(api, MIXED)
+
+    queue = api.get("/classification-review/queue").json()
+    assert [q["content"] for q in queue] == ["What time is the screening?", MIXED]
+    for item in queue:
+        assert "verdict" not in item and "hard_exclusion" not in item, "blind by construction"
+    assert api.get("/classification-review/progress").json()["eligible_unlabelled"] == 2
+
+    first = queue[0]["classification_id"]
+    omitted = api.post(
+        "/classification-review/labels",
+        json={"classification_id": first, "label": "not_consequential"},
+    )
+    assert omitted.status_code == 409 and "omitted answer" in omitted.json()["detail"]
+
+    stored = api.post(
+        "/classification-review/labels",
+        json={
+            "classification_id": first,
+            "label": "not_consequential",
+            "exclusion_determination": "status_progress_schedule_or_cost",
+        },
+    )
+    assert stored.status_code == 201, stored.text
+    revealed = stored.json()
+    assert revealed["verdict"] == "not_consequential"
+    assert revealed["agreement"] == "agree" and revealed["open_disagreement"] is False
+
+    again = api.post(
+        "/classification-review/labels",
+        json={"classification_id": first, "label": "consequential"},
+    )
+    assert again.status_code == 409 and "never overwritten" in again.json()["detail"]
+
+    second = queue[1]["classification_id"]
+    mismatch = api.post(
+        "/classification-review/labels",
+        json={"classification_id": second, "label": "uncertain"},
+    ).json()
+    assert mismatch["verdict"] == "consequential"
+    assert mismatch["agreement"] == "inclusion_disagreement"
+    assert mismatch["open_disagreement"] is True
+
+    progress = api.get("/classification-review/progress").json()
+    assert progress["labelled"] == 2 and progress["target"] == 50
+    assert progress["open_disagreements"] == 1 and progress["zero_tolerance_failures"] == 0
+    assert api.get("/classification-review/queue").json() == []
+
+    listed = api.get("/classification-review/disagreements").json()
+    assert [d["classification_id"] for d in listed] == [second]
+
+    review = api.post(
+        "/classification-review/reviews",
+        json={
+            "classification_id": second,
+            "conclusion": "classifier_upheld_label_wrong",
+            "reason": "The outline decision binds later work; I was too cautious.",
+        },
+    )
+    assert review.status_code == 201, review.text
+    assert api.get("/classification-review/progress").json()["open_disagreements"] == 0
+    assert (
+        api.get(f"/classification-review/labelled/{second}").json()["label"]["label"] == "uncertain"
+    )

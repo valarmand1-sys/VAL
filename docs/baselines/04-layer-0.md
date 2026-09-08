@@ -255,6 +255,24 @@ The §4.8 classifier's verdict and declared reason were never persisted, and its
 
 Guarded by the standing functions: no UPDATE, no hard delete (migration `0013`). The conversation detail carries these rows; whether an ordinary turn's verdict is *displayed* is a WP-0.10 presentation decision not changed by this ruling.
 
+**`classification_labels`** and **`classification_reviews`** — ruling, 7 September 2026, Lord Armand
+
+WP-0.9's fifty-exchange criterion collects Lord Armand's own verdicts; nothing in the store could hold them. Two append-only tables (migration `0014`), with three amendments to the proposed shape ruled the same day:
+
+| Table | Column | Meaning |
+|---|---|---|
+| `classification_labels` | `classification_id` | the classification labelled; **unique** — one original blind label, never overwritten |
+| | `label` | `consequential` \| `uncertain` \| `not_consequential` — his verdict under §4.8, committed **before** the classifier's verdict is revealed to him |
+| | `exclusion_determination` (nullable) | present iff `not_consequential`: one of the six hard exclusions, or the explicit `none_fails_inclusion_test`. An omitted determination is refused, never read as "none" |
+| | `labelled_by` | `user` |
+| `classification_reviews` | `classification_id`, `label_id` | the exchange and the label adjudicated |
+| | `conclusion` | `label_upheld_classifier_wrong` \| `classifier_upheld_label_wrong` \| `ambiguous_needs_ruling` |
+| | `reason` | stated, in words |
+| | `tuning_state` (nullable) | present iff the classifier was wrong: `tuning_required` until a later row records `tuning_verified` |
+| | `tuning_change`, `tuning_verification` (nullable) | present iff `tuning_verified`: the engineering change and how it was verified |
+
+*Blind before reveal, structurally.* The review queue returns the exchange and never the verdict; the verdict and hard exclusion are returned only by the call that stores the label. *Scoring, derived on read and never stored:* agreement when label and verdict match; **zero tolerance fires only when the label named one of the six and the classifier said consequential**; every other mismatch, including `uncertain` against either verdict, is an inclusion-test disagreement. *Eligibility, applied by the service:* established classifications from live turns on or after the resume of 7 September 2026 (commit `b6d5c32`, 17:56 Central), oldest first; unestablished rows never enter the queue; classifications that accumulated before the interface existed remain reviewable in the same queue. No manufactured sample balance; the fifty are real exchanges of both kinds as use produces them. A disagreement is never resolved by being viewed.
+
 ### 2.3 Constraints
 
 - Every `message` resolves to a `conversation`. Every `conversation` resolves to a `project` or explicitly to none.
@@ -340,6 +358,8 @@ Each states what exists when it is done and how that is verified.
 - Point-in-time recovery to an arbitrary timestamp within retention succeeds.
 
 **This package does not pass on a backup that has been configured but never restored** (`00-charter.md` invariant 35).
+
+> **Amendment — 7 September 2026, Lord Armand. The backup window moves from 03:00 to 20:00 local.** Nightly runs grew from about forty seconds to sixteen minutes, six hours (the Sunday full of 6 September), and forty-eight minutes, with one run aborted on the write-ahead-log archive timeout. Established cause: the laptop was asleep on battery, and macOS advances a scheduled job only inside dark-wake maintenance windows of about three minutes every sixteen; every burst of file copies in the pgBackRest log aligned with a dark wake, and most of the 6 September copies completed in the three minutes after the machine fully woke. Nothing about pgBackRest, Backblaze, PostgreSQL byte placement, or backup architecture is reopened. PostgreSQL stays online and in normal use during the run. The next several unattended runs are observed; abnormal duration or reliability while the machine is awake is reported.
 
 ### WP-0.4 — Model Gateway
 
@@ -452,6 +472,8 @@ Each states what exists when it is done and how that is verified.
 >
 > **The logger defect** (alembic's `fileConfig` disabling existing loggers, so blind-payload evidence lines were absent in any test process that migrated first) is closed with the repair and its regression coverage. The finding is preserved here; completed work is not reopened solely because historical evidence lines may have been absent in affected test processes.
 >
+> **The fifty, made recordable — 7 September 2026.** The classifier-accuracy criterion had no mechanism: the interface showed no verdict and nothing could hold Lord Armand's label. Ruled and built: an in-app review queue, blind before reveal, with the original label immutable, the hard-exclusion determination explicit, and the scoring of amendment 3 — recorded in §2.2 under `classification_labels` and `classification_reviews`. Eligible exchanges accumulate from the resume boundary whether or not the interface existed when they were classified; nothing is manufactured.
+>
 > **Resume — 7 September 2026.** Every condition set for the WP-0.9 follow-up is closed with CI green on b6d5c32 and the repaired service deployed. Normal creative work with Val and consequential gate-evidence collection resume. Point 5 and the fifty hand-labelled exchanges begin from zero; nothing from the paused interval counts; no interaction is manufactured to accelerate either. The live-route attributed-prior removal case, consequential latency, and other operational behaviour accumulate through use. No further WP-0.9 repair cycle absent a new concrete invariant or contract violation.
 
 ### WP-0.10 — Text interface
@@ -483,6 +505,8 @@ Each states what exists when it is done and how that is verified.
 - **The number is Lord Armand's.** The refusal must not remain at $200 under a new name — that is still a planning figure stopping a heavy day. The safety ceiling is accident-scale: a figure that trips only when something is genuinely wrong, never because he is working hard. The design proposes the shape; the value is his.
 
 **Not authorized:** automatic increases, forecasting, dashboards, provider-specific budget management, spend optimization, or a policy engine. Premature.
+
+> **Values ruled — 7 September 2026, Lord Armand**, so the package does not stall when it begins: **operating target** approximately $250 per month, an annualized planning average, reporting only and never an admission limit; **warning threshold** $800; **runaway safety ceiling** $1,000 per month. The $1,000 is an accident-control tripwire, not a spending target and not a capability limit; it must never cause silent quality degradation; at the ceiling the call is refused honestly under the governing ruling, and the authorized runtime raise records amount, scope, time, and actor. The old $200 source literal is neither reused nor reinterpreted.
 
 > **Amendment — 31 August 2026, Lord Armand. Invariant 29 applies to error display.** An error message that names a cause it has not established is a false claim. Recorded from real use: the interface asserted the service was "not reachable" while the service was demonstrably healthy — the actual failure was browser policy — and the asserted cause sent diagnosis down a network path that did not exist. Binding on the interface: a failure is reported as what was actually observed ("no response", "the service refused with this status", "the reply could not be read"), never as a diagnosis the observing code cannot make; where script cannot distinguish two causes, the message names both rather than picking one; and a multi-step operation reports each step's failure individually rather than collapsing them into one claim.
 

@@ -175,6 +175,27 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "resolving_model_call_id",
         "resolution",
     ),
+    # §2.2 classification_labels / classification_reviews — ruling, 7 September
+    # 2026: the blind hand-label and the adjudication appended after the reveal.
+    "classification_labels": (
+        "id",
+        "created_at",
+        "classification_id",
+        "label",
+        "exclusion_determination",
+        "labelled_by",
+    ),
+    "classification_reviews": (
+        "id",
+        "created_at",
+        "classification_id",
+        "label_id",
+        "conclusion",
+        "reason",
+        "tuning_state",
+        "tuning_change",
+        "tuning_verification",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -209,6 +230,12 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("classifications", "hard_exclusion"),
         ("classifications", "resolving_model_call_id"),
         ("classifications", "resolution"),
+        # Ruling, 7 September 2026: the determination exists iff the label is
+        # not_consequential; tuning fields exist iff the conclusion needs them.
+        ("classification_labels", "exclusion_determination"),
+        ("classification_reviews", "tuning_state"),
+        ("classification_reviews", "tuning_change"),
+        ("classification_reviews", "tuning_verification"),
         # Amendment, 19 August 2026: a deliberation recorded manually, or one
         # whose exchange carried no preference to strip, has no blind call.
         ("deliberations", "blind_position_id"),

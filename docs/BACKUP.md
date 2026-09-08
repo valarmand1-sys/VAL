@@ -17,7 +17,7 @@ exists to keep that sentence enforceable.
 | Destination | Backblaze B2, bucket `valbackups`, prefix `/val`, via the S3-compatible API |
 | Encryption | aes-256-cbc, client-side, over every file including WAL |
 | WAL archiving | `archive_mode = on`, `archive_timeout = 300` — worst-case loss window five minutes |
-| Schedule | Daily 03:00: full on Sunday, incremental otherwise |
+| Schedule | Daily 20:00 local (moved from 03:00 on 7 September 2026): full on Sunday, incremental otherwise. PostgreSQL stays online and in use during the run. |
 | Retention | 30 daily / 12 weekly / 12 monthly, applied by the GFS selector in `run_backup.py` |
 
 Config: `/opt/homebrew/etc/pgbackrest/pgbackrest.conf`, mode `0600`, **outside
@@ -120,12 +120,14 @@ Two launchd user agents, installed from `infrastructure/backup/launchd/`:
 
 | Agent | Fires | Runs |
 |---|---|---|
-| `house.armand.val.backup` | daily 03:00 | `run_backup.py` — pre-flight, backup, retention, status |
+| `house.armand.val.backup` | daily 20:00 | `run_backup.py` — pre-flight, backup, retention, status |
 | `house.armand.val.backup-watch` | hourly at :15 | `watch_backup.py` — staleness check and alerts |
 
 Both use `StartCalendarInterval`, which per `launchd.plist(5)` **fires a missed
 run on the next wake** rather than skipping it, coalescing multiple missed
-firings into one. A laptop asleep at 03:00 is backed up when it opens.
+firings into one. A laptop asleep at the scheduled hour is backed up when it opens.
+
+> **Why 20:00 — ruled 7 September 2026.** With the run at 03:00 the laptop was asleep on battery, and macOS lets a scheduled job advance only inside dark-wake maintenance windows of about three minutes every sixteen; a 40-second backup crawled to hours (6 h for the Sunday full of 6 September) and one run aborted on the write-ahead-log archive timeout. The window moved to an hour the machine is normally awake and plugged in. Nothing about pgBackRest, Backblaze, or the store changed.
 
 **How failure surfaces**, computed from what the B2 repository actually holds
 (`pgbackrest info`), not from the job's own exit status:

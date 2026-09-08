@@ -7,11 +7,14 @@ import { describe, expect, it } from "vitest";
 
 import type { BlindPositionView, DeliberationView } from "./api";
 import {
+  AGREEMENT_WORDS,
   OUTCOME_WORDS,
   describeDeliberation,
   describeUnanswered,
+  determinationLabel,
   orderingLabel,
   outcomeLabel,
+  progressLine,
   resolutionOf,
 } from "./presentation";
 
@@ -163,5 +166,36 @@ describe("an unanswered turn claims provider contact only from the record", () =
       provider_contacted: true,
     });
     expect(label).toContain("The provider did not answer");
+  });
+});
+
+describe("classification review wording (ruling, 7 September 2026)", () => {
+  it("names zero tolerance only for the hard-exclusion-versus-consequential case", () => {
+    expect(AGREEMENT_WORDS.zero_tolerance_failure).toContain("ZERO-TOLERANCE");
+    expect(AGREEMENT_WORDS.inclusion_disagreement).toContain("inclusion-test disagreement");
+    expect(AGREEMENT_WORDS.agree).toContain("agrees");
+  });
+
+  it("renders the explicit determination, including the explicit none", () => {
+    expect(determinationLabel(null)).toBe("");
+    expect(determinationLabel("none_fails_inclusion_test")).toContain("no hard exclusion");
+    expect(determinationLabel("status_progress_schedule_or_cost")).toBe(
+      "hard exclusion: status progress schedule or cost",
+    );
+  });
+
+  it("states progress toward fifty from the record's counts", () => {
+    const line = progressLine({
+      labelled: 3,
+      target: 50,
+      agreements: 2,
+      inclusion_disagreements: 1,
+      zero_tolerance_failures: 0,
+      open_disagreements: 1,
+      eligible_unlabelled: 4,
+    });
+    expect(line).toBe(
+      "3 of 50 labelled · 2 agree · 1 inclusion disagreements · 0 zero-tolerance failures · 1 open · 4 awaiting a label",
+    );
   });
 });

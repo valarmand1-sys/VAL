@@ -3,10 +3,12 @@
 <plist version="1.0">
 <dict>
     <key>Label</key><string>house.armand.val.backup</string>
-    <!-- Daily at 03:00. launchd fires a run missed while asleep on the next
+    <!-- Daily at 20:00 local (ruled 7 September 2026, from 03:00: the laptop
+         slept on battery through the old window and the run crawled across
+         dark-wake maintenance windows). launchd fires a run missed while asleep on the next
          wake, coalescing multiple missed firings into one (launchd.plist(5)). -->
     <key>StartCalendarInterval</key>
-    <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>0</integer></dict>
+    <dict><key>Hour</key><integer>20</integer><key>Minute</key><integer>0</integer></dict>
     <key>ProgramArguments</key>
     <array>
         <string>/Users/josepharmand/.local/bin/uv</string>
