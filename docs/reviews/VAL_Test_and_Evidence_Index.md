@@ -684,6 +684,6 @@ Deployed: CI green on 820d2f1; service restarted; health running with no warning
 
 `packages/providers/tests/test_xai_guard.py`: the header must affirm `true` (case-insensitive, absent is not true); an affirmed response is handed onward; a response without the header, or denying ZDR, is refused as `not_eligible` with its text withheld; the schema is sent strict and no cache key or lifetime is sent; **nothing registers the adapter** (no registry entry, no key variable). All **PASS**. xAI remains not admitted.
 
-## 17. Claude Fable 5.1 access check — 8 September 2026
+## 17. Claude Fable 5.1 access check — 8 September 2026 (corrected the same day)
 
-One call, public content only ("Hello.", 12 in / 13 out, `end_turn`), through this organisation's key: **succeeded**, establishing that the organisation is a standard-retention organisation (a Covered Model request from a ZDR organisation returns 400). Consequence recorded in `VAL_Console_and_Effort_Report.md` §2.2: Fable 5.1 prompts and completions would be retained by Anthropic for at least 30 days; not Protected-eligible in this organisation as it stands; not a qualification candidate for Protected work without a ruling.
+One call, public content only ("Hello.", 12 in / 13 out, `end_turn`), through this organisation's key: **succeeded**. This establishes **model access only**; it does not establish the organisation's retention mode, which must be read from the Console's organisation and workspace data-retention controls (ruling, 8 September). Fable 5.1 is a Covered Model with 30-day retention; not admitted for Protected work; no Protected material is sent to it. `VAL_Console_and_Effort_Report.md` §2.2.
