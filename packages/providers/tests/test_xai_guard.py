@@ -145,9 +145,8 @@ def test_the_schema_is_sent_strict_and_the_ttl_is_not_sent() -> None:
 
 
 def test_nothing_registers_the_adapter() -> None:
-    """Not admitted: no registry entry names the provider and startup cannot build it."""
+    """Not admitted: no registry entry names the provider. (That startup builds no
+    adapter for it is asserted on the gateway side, where startup lives.)"""
     from val_domain.registry import REGISTRY
-    from val_gateway.startup import KEY_VARIABLES
 
     assert all(config.provider != "xai" for config in REGISTRY)
-    assert "xai" not in KEY_VARIABLES

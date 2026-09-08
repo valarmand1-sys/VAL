@@ -452,3 +452,13 @@ def test_gateway_requires_a_ledger() -> None:
     """There is no constructor that omits budget control."""
     with pytest.raises(TypeError):
         Gateway(adapters={}, recorder=lambda record: None)  # type: ignore[call-arg]
+
+
+def test_xai_is_not_wired_into_startup() -> None:
+    """Preparation only (ruling, 8 September 2026): the xAI adapter exists for its
+    zero-data-retention guard, and nothing builds it — no key variable, no route."""
+    from val_domain.registry import REGISTRY
+    from val_gateway.startup import KEY_VARIABLES
+
+    assert "xai" not in KEY_VARIABLES
+    assert all(config.provider != "xai" for config in REGISTRY)
