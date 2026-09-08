@@ -59,6 +59,9 @@ call, and cannot send a single word of a conversation anywhere.
 
 from __future__ import annotations
 
+import json
+import logging
+import os
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -66,6 +69,11 @@ from sqlalchemy import Engine, text
 
 from val_domain.conversation import StoredRole
 from val_domain.project import ProjectScope, ResolvedProject
+from val_policy.recall import (
+    RECALL_MESSAGE_LIMIT,
+    RECALL_TOKEN_BUDGET_DEFAULT,
+    select_within_budget,
+)
 
 #: ## Why the query matches *any* term rather than all of them
 #:
@@ -202,7 +210,24 @@ class CrossProjectLeakError(Exception):
 #: §14 forbids injecting everything ever written in a project, and a bound that
 #: is a constant is a bound somebody can reason about. It is applied *after* the
 #: project restriction, so it can never be spent on another project's material.
-DEFAULT_LIMIT = 6
+DEFAULT_LIMIT = RECALL_MESSAGE_LIMIT
+
+#: Ruling, 7 September 2026: a soft token budget alongside the count. Read from
+#: the environment so it is configuration, not a buried literal.
+RECALL_BUDGET_SETTING = "VAL_RECALL_TOKEN_BUDGET"
+
+_LOGGER = logging.getLogger("val.recall")
+
+
+def token_budget() -> int:
+    """The soft recall budget in estimated tokens: `VAL_RECALL_TOKEN_BUDGET`, else 16,000."""
+    raw = os.environ.get(RECALL_BUDGET_SETTING, "").strip()
+    if not raw:
+        return RECALL_TOKEN_BUDGET_DEFAULT
+    value = int(raw)
+    if value <= 0:
+        raise ValueError(f"{RECALL_BUDGET_SETTING} must be a positive integer, not {raw!r}")
+    return value
 
 
 def recall(
@@ -212,8 +237,9 @@ def recall(
     query: str,
     exclude_conversation: UUID | None = None,
     limit: int = DEFAULT_LIMIT,
+    budget: int | None = None,
 ) -> tuple[RecalledMessage, ...]:
-    """Prior conversation from this scope, most relevant first.
+    """Prior conversation from this scope, most relevant first, within budget.
 
     Returns an empty tuple when nothing matches, when the query has no
     searchable terms, or when the scope has no prior conversation. Empty is an
@@ -223,6 +249,12 @@ def recall(
     `exclude_conversation` keeps the current conversation out of the result. Its
     messages are assembled in full and in order by the caller, and a message that
     arrived through both paths would appear twice in the prompt.
+
+    Ruling, 7 September 2026: the ranked candidates then pass the hybrid
+    count-and-token bound of `val_policy.recall` — the top candidate always,
+    whole; each next candidate in rank order only if it fits the remaining
+    budget; stop at the first that does not; never truncate. Every decision
+    is logged so the selection can be reconstructed.
     """
     if not query.strip():
         return ()
@@ -262,4 +294,32 @@ def recall(
     if trespassers:
         raise CrossProjectLeakError(expected, trespassers)
 
-    return recalled
+    selection = select_within_budget(
+        recalled, budget=token_budget() if budget is None else budget, limit=limit
+    )
+    _LOGGER.info(
+        "recall selection: %s",
+        json.dumps(
+            {
+                "budget": selection.budget,
+                "admitted_tokens": selection.admitted_tokens,
+                "candidates": [
+                    {
+                        "rank_position": decision.rank_position,
+                        "message_id": str(recalled[decision.rank_position - 1].message_id),
+                        "conversation_id": str(
+                            recalled[decision.rank_position - 1].conversation_id
+                        ),
+                        "sequence": recalled[decision.rank_position - 1].sequence,
+                        "rank": recalled[decision.rank_position - 1].rank,
+                        "characters": len(recalled[decision.rank_position - 1].content),
+                        "estimated_tokens": decision.estimated_tokens,
+                        "admitted": decision.admitted,
+                        "reason": decision.reason,
+                    }
+                    for decision in selection.decisions
+                ],
+            }
+        ),
+    )
+    return tuple(recalled[position - 1] for position in selection.admitted_positions)

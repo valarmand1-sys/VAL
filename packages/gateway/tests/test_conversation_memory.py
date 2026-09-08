@@ -2359,3 +2359,85 @@ def test_the_stored_message_is_unchanged_by_being_recalled(store: Engine) -> Non
     )
 
     assert conv.history(store, conversation.id)[0].content == FORGED
+
+
+# =============================================================================
+# Recall budget — ruling, 7 September 2026: hybrid count and token bound
+# =============================================================================
+
+
+def _seed_no_project_messages(engine: Engine, sizes: list[int], marker: str) -> list[UUID]:
+    """One no-project conversation per message, each mentioning `marker`, sized in characters."""
+    ids: list[UUID] = []
+    with engine.begin() as connection:
+        for index, size in enumerate(sizes):
+            conversation = connection.execute(
+                text(
+                    "insert into conversations (project_id, title, started_at, last_message_at) "
+                    "values (null, :t, now(), now()) returning id"
+                ),
+                {"t": f"seed {index}"},
+            ).scalar_one()
+            body = f"{marker} " + ("lighthouse " * (size // 11 + 2))
+            ids.append(
+                connection.execute(
+                    text(
+                        "insert into messages (conversation_id, role, content, sequence) "
+                        "values (:c, 'user', :m, 1) returning id"
+                    ),
+                    {"c": conversation, "m": body[:size]},
+                ).scalar_one()
+            )
+    return ids
+
+
+def test_recall_admits_whole_messages_within_the_token_budget_and_logs_the_decision(
+    store: Engine, caplog: pytest.LogCaptureFixture
+) -> None:
+    from val_domain.project import ExplicitNoProject
+    from val_gateway.memory import recall
+
+    # Six candidates of about 6,000 estimated tokens each (3.6 chars/token).
+    _seed_no_project_messages(store, [21_600] * 6, "harbour")
+    with caplog.at_level("INFO", logger="val.recall"):
+        recalled = recall(store, scope=ExplicitNoProject(), query="harbour", budget=16_000)
+
+    assert len(recalled) == 2, "two whole messages fit; the third would not, so selection stops"
+    assert all(len(item.content) == 21_600 for item in recalled), "never truncated"
+    lines = [r.getMessage() for r in caplog.records if "recall selection" in r.getMessage()]
+    assert len(lines) == 1
+    decision = json.loads(lines[0].split("recall selection: ", 1)[1])
+    assert decision["budget"] == 16_000
+    assert [c["admitted"] for c in decision["candidates"]] == [
+        True,
+        True,
+        False,
+        False,
+        False,
+        False,
+    ]
+    assert "does not fit" in decision["candidates"][2]["reason"]
+    assert "not considered" in decision["candidates"][3]["reason"]
+
+
+def test_recall_keeps_the_top_candidate_whole_when_it_alone_exceeds_the_budget(
+    store: Engine,
+) -> None:
+    from val_domain.project import ExplicitNoProject
+    from val_gateway.memory import recall
+
+    _seed_no_project_messages(store, [90_000], "harbour")
+    recalled = recall(store, scope=ExplicitNoProject(), query="harbour", budget=16_000)
+    assert len(recalled) == 1 and len(recalled[0].content) == 90_000
+
+
+def test_the_budget_is_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
+    from val_gateway.memory import RECALL_BUDGET_SETTING, token_budget
+
+    monkeypatch.delenv(RECALL_BUDGET_SETTING, raising=False)
+    assert token_budget() == 16_000
+    monkeypatch.setenv(RECALL_BUDGET_SETTING, "8000")
+    assert token_budget() == 8_000
+    monkeypatch.setenv(RECALL_BUDGET_SETTING, "0")
+    with pytest.raises(ValueError, match="positive integer"):
+        token_budget()
