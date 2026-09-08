@@ -13,7 +13,7 @@
 | Lifetimes | 5 minutes (default) and 1 hour (`ttl: "1h"`); "the cache is refreshed for no additional cost each time the cached content is used"; "the lifetime is measured from the start of the request that writes or reads the cache entry, not from the end of its response." (prompt-caching page) |
 | Multipliers | 5m write 1.25×, 1h write 2×, read 0.1× base input. Claude Opus 5: $5 base, $6.25 / $10 write, $0.50 read, $25 output. Claude Sonnet 5: $2 / $2.50 / $4 / $0.20 / $10 — and the page states its $2/$10 "is now the standard price. The previously scheduled increase to $3/$15 … on September 1, 2026 will not occur." (pricing page) |
 | Minimum cacheable prefix | Claude Opus 5: **512 tokens**; Sonnet 5: 1,024; Haiku 4.5: **4,096**. "Shorter prompts cannot be cached, even if marked … processed without caching, and no error is returned." |
-| What invalidates a hit | Exact prefix match; hierarchy tools → system → messages; a change at a level invalidates it and everything after. **Structured outputs and effort changes invalidate the messages cache but not the system cache** — so the blind call (schema-constrained) and the response call (not) share the persona's cache entry. |
+| What invalidates a hit | Exact prefix match; hierarchy tools → system → messages; a change at a level invalidates it and everything after. **Structured outputs and effort changes invalidate the messages cache but not the system cache.** Read literally that would let the blind call (schema-constrained) and the response call share the persona's entry; measured, they do not — the schema's rendered text is part of the blind call's prefix and it keeps its own entry (§4). |
 | Growing conversations | Automatic top-level `cache_control` moves the breakpoint to the last block and reads the prior prefix incrementally; at most four breakpoints; a 20-position lookback. |
 | Usage fields | `input_tokens` is only the uncached remainder after the last breakpoint; total input = `cache_read_input_tokens` + `cache_creation_input_tokens` + `input_tokens`; `cache_creation` breaks writes down by lifetime. |
 | Retention | Retention page, feature table, prompt caching: ZDR-eligible **Yes** — "Your prompts and Claude's outputs are not stored. KV cache representations and cryptographic hashes are held in memory for the cache TTL and promptly deleted after expiry." Caches "are isolated between organizations … also isolated per workspace within an organization on the Claude API." Claude Opus 5 is not a Covered Model; content is "not retained by default". |
@@ -26,7 +26,7 @@ The rendered request on a partner call, in order:
 
 | Part | Bytes across turns | Cacheable |
 |---|---|---|
-| `system` — the persona, whole (`03-persona.md` from the active row; measured **5,787 tokens** as written to cache) | Identical on every partner call: response calls, blind calls, every conversation, every project | **Yes — the breakpoint.** |
+| `system` — the persona, whole (`03-persona.md` from the active row; measured **5,819 tokens** as written to cache) | Identical on every partner call: response calls, blind calls, every conversation, every project | **Yes — the breakpoint.** |
 | `messages[0]` — the memory envelope (`VAL-MEMORY-V1` marker, fixed note, then the recalled excerpts as JSON) | The marker and note are fixed; the excerpts differ per turn, and the block is absent when nothing is recalled | No: the fixed part is a few hundred tokens and the varying part is inside the same block |
 | Same-conversation history | Identical prefix turn to turn — **but it sits after the envelope**, so its prefix hash differs whenever the envelope does | Not under the present assembly order |
 | The current user message; the reconciliation envelope on a consequential response call | Per turn | No |
@@ -37,32 +37,32 @@ So the one lever available without changing what Val sees is the persona, and it
 
 ## 3. The arithmetic, at the measured persona size
 
-Persona as cached: 5,787 tokens on Claude Opus 5. Per partner call:
+Persona as cached: 5,819 tokens on Claude Opus 5 (the blind call's entry is 6,084 — see §4). Per partner call:
 
 | Cost of the persona alone | Amount |
 |---|---|
-| Uncached (before this change) | $0.02894 |
-| Written, 5m lifetime | $0.03617 |
-| Written, 1h lifetime | $0.05787 |
-| Read (either lifetime) | $0.00289 |
+| Uncached (before this change) | $0.02910 |
+| Written, 5m lifetime | $0.03637 |
+| Written, 1h lifetime | $0.05819 |
+| Read (either lifetime) | $0.00291 |
 
 **Break-even, per lifetime, for n partner calls that share the entry:**
 
 | Pattern | Uncached | 5-minute | 1-hour |
 |---|---|---|---|
-| 1 call, no reuse | $0.0289 | $0.0362 (worse) | $0.0579 (worse) |
-| 2 calls, both within the window | $0.0579 | $0.0391 | $0.0608 (still worse) |
-| 3 calls | $0.0868 | $0.0420 | $0.0637 |
-| 10 calls | $0.2894 | $0.0622 | $0.0839 |
-| n calls | 0.0289 n | 0.0362 + 0.0029 (n−1) | 0.0579 + 0.0029 (n−1) |
+| 1 call, no reuse | $0.0291 | $0.0364 (worse) | $0.0582 (worse) |
+| 2 calls, both within the window | $0.0582 | $0.0393 | $0.0611 (still worse) |
+| 3 calls | $0.0873 | $0.0422 | $0.0640 |
+| 10 calls | $0.2910 | $0.0626 | $0.0844 |
+| n calls | 0.0291 n | 0.0364 + 0.0029 (n−1) | 0.0582 + 0.0029 (n−1) |
 
-The reviewers' arithmetic holds: **a 5-minute entry must be reused once to beat uncached; a 1-hour entry needs two reads to clearly win.** Between the two lifetimes: 5-minute is $0.0217 cheaper per warm session **if no start-to-start gap between partner calls exceeds five minutes**; every gap longer than that costs a fresh 5-minute write ($0.0362) where the 1-hour entry would have cost a read ($0.0029) — so **one pause longer than five minutes within an hour pays for the dearer write with $0.0116 to spare, and every further pause saves $0.0333.** Lord Armand's stated cadence — pauses to think and read, often longer than five minutes — is the 1-hour case. A consequential turn is two partner calls (blind, then response) seconds apart, so it always reads twice on one write.
+The reviewers' arithmetic holds: **a 5-minute entry must be reused once to beat uncached; a 1-hour entry needs two reads to clearly win.** Between the two lifetimes: 5-minute is $0.0218 cheaper per warm session **if no start-to-start gap between partner calls exceeds five minutes**; every gap longer than that costs a fresh 5-minute write ($0.0364) where the 1-hour entry would have cost a read ($0.0029) — so **one pause longer than five minutes within an hour pays for the dearer write with $0.0117 to spare, and every further pause saves $0.0335.** Lord Armand's stated cadence — pauses to think and read, often longer than five minutes — is the 1-hour case. A consequential turn is two partner calls (blind, then response) seconds apart, so it always reads twice on one write.
 
 **Can breakpoints keep the persona warm while history grows?** Yes, trivially: the persona's entry is independent of anything after it, and a read refreshes it; every partner call in a session refreshes the same entry whatever the history does. What history does not get is its own entry (§2).
 
 ## 4. Measured — cold and warm, real provider
 
-Scratch store `val_test`, real Claude Opus 5 and Haiku 4.5, real waits (`demonstrate_cache.py`, `cache_run1.json`). Each turn is one classification on Haiku (uncacheable, ~$0.0009) plus the partner call(s) on Opus 5. "Cold" = the persona written this call; "warm" = read.
+Scratch store `val_test`, real Claude Opus 5 and Haiku 4.5, real waits (`demonstrate_cache.py`, `cache_run2.json`; the follow-up in `cache_run2b.json`). Each turn is one classification on Haiku (uncacheable, ~$0.0009) plus the partner call(s) on Opus 5. "Cold" = the persona written this call; "warm" = read.
 
 | Scenario (each a new conversation in the scratch project) | Lifetime | Persona entry | Uncached input | Output tokens | Partner call(s) | **Turn cost** | Wall |
 |---|---|---|---|---|---|---|---|
