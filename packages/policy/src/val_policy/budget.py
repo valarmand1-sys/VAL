@@ -36,7 +36,7 @@ Pure arithmetic. No clock, no database, no provider.
 
 from collections.abc import Iterable
 
-from val_domain.gateway import ModelConfig
+from val_domain.gateway import CacheTtl, ModelConfig
 
 #: The routing ceiling: cloud model inference, per month (01-architecture.md §5.5).
 CLOUD_CEILING_USD = 200.00
@@ -158,8 +158,22 @@ def limit_overrun(
     return None
 
 
-def maximum_cost(config: ModelConfig, parts: Iterable[str], max_output_tokens: int) -> float:
+def maximum_cost(
+    config: ModelConfig,
+    parts: Iterable[str],
+    max_output_tokens: int,
+    cache_ttl: CacheTtl | None = None,
+) -> float:
     """The most this proposed call is permitted to consume, in USD.
+
+    **Ruling, 8 September 2026 — the formula is widened for caching, as the
+    warning below required.** When the call requests a prompt cache for
+    `cache_ttl`, every input token is bounded at the **greater** of the base
+    input rate and that lifetime's cache-write rate: the maximum legitimate
+    cost state is a miss that writes the whole prefix at the write premium.
+    Nothing assumes a hit. The reservation is therefore never smaller than
+    the bill, and the difference is returned at settlement like any other
+    unspent reservation.
 
     This is the figure the ceiling is enforced against and the amount reserved
     before the provider is contacted. **It is a bound, not an estimate** — the
@@ -200,6 +214,11 @@ def maximum_cost(config: ModelConfig, parts: Iterable[str], max_output_tokens: i
     tokens_in = upper_bound_input_tokens(parts, config)
     tokens_out = upper_bound_output_tokens(max_output_tokens, config)
     rate_in, rate_out = effective_rates(config, tokens_in)
+    if cache_ttl is not None:
+        # The long-context multiplier stacks on cache rates as it does on the
+        # base rate (the provider's pricing page: multipliers stack).
+        multiplier = rate_in / config.cost_per_mtok_in_usd
+        rate_in = max(rate_in, config.cache_write_rate(cache_ttl) * multiplier)
     return (tokens_in * rate_in + tokens_out * rate_out) / 1_000_000
 
 

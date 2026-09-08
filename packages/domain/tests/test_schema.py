@@ -175,6 +175,23 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "resolving_model_call_id",
         "resolution",
     ),
+    # §2.2 model_call_cache_usage — ruling, 8 September 2026: the prompt-cache
+    # evidence sidecar; model_calls itself is unchanged.
+    "model_call_cache_usage": (
+        "id",
+        "created_at",
+        "model_call_id",
+        "requested_ttl",
+        "uncached_input_tokens",
+        "cache_write_5m_tokens",
+        "cache_write_1h_tokens",
+        "cache_read_tokens",
+        "outcome",
+        "cost_uncached",
+        "cost_cache_write",
+        "cost_cache_read",
+        "cost_output",
+    ),
     # §2.2 classification_labels / classification_reviews — ruling, 7 September
     # 2026: the blind hand-label and the adjudication appended after the reveal.
     "classification_labels": (

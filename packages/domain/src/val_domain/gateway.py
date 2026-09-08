@@ -191,6 +191,19 @@ class AdapterStatus(StrEnum):
     NOT_IMPLEMENTED = "not_implemented"
 
 
+class CacheTtl(StrEnum):
+    """A prompt-cache lifetime the provider documents (ruling, 8 September 2026).
+
+    Anthropic offers two: five minutes at 1.25x the input rate to write, one
+    hour at 2x. A read refreshes the entry at 0.1x. Which one Val uses is
+    configuration (`VAL_CACHE_TTL`), never a buried literal, because the right
+    answer depends on Lord Armand's cadence between messages.
+    """
+
+    FIVE_MINUTES = "5m"
+    ONE_HOUR = "1h"
+
+
 class PricingFeature(StrEnum):
     """Whether caching or batch pricing applies to a configuration (§5.2).
 
@@ -281,6 +294,16 @@ class ModelConfig(BaseModel):
     #: Whether caching or batch pricing applies (§5.2). See `PricingFeature`:
     #: `NOT_VERIFIED` records that this has not been read from the provider.
     caching: PricingFeature = PricingFeature.NOT_VERIFIED
+    #: Ruling, 8 September 2026. The provider's published cache rates, read
+    #: from its pricing page on the date in `rates_verified_on`, and the
+    #: shortest prefix it will cache. Present exactly when `caching` is
+    #: `AVAILABLE`: a route may not be cached on rates nobody has read, and a
+    #: verified route may not be missing the figures the bound and the
+    #: settlement price with. `None` otherwise.
+    cache_write_5m_per_mtok_in_usd: float | None = Field(default=None, gt=0)
+    cache_write_1h_per_mtok_in_usd: float | None = Field(default=None, gt=0)
+    cache_read_per_mtok_in_usd: float | None = Field(default=None, gt=0)
+    cache_minimum_prefix_tokens: int | None = Field(default=None, gt=0)
     batch_pricing: PricingFeature = PricingFeature.NOT_VERIFIED
     eligible_classifications: frozenset[Classification]
     #: Ruling, 7 September 2026. The capability profiles this configuration
@@ -321,6 +344,38 @@ class ModelConfig(BaseModel):
     #: Configuration cannot claim it; the verifier sets it.
     billing_verified: bool = False
     retired: bool = False
+
+    @model_validator(mode="after")
+    def _cache_rates_iff_available(self) -> ModelConfig:
+        """Cache rates travel with verified caching, and only with it."""
+        rates = (
+            self.cache_write_5m_per_mtok_in_usd,
+            self.cache_write_1h_per_mtok_in_usd,
+            self.cache_read_per_mtok_in_usd,
+            self.cache_minimum_prefix_tokens,
+        )
+        if self.caching is PricingFeature.AVAILABLE and any(rate is None for rate in rates):
+            raise ValueError(
+                f"{self.slug}: caching is AVAILABLE but the cache rates or minimum prefix are "
+                "missing; a route is cached only on rates read from the provider's pricing"
+            )
+        if self.caching is not PricingFeature.AVAILABLE and any(rate is not None for rate in rates):
+            raise ValueError(
+                f"{self.slug}: cache rates are declared but caching is {self.caching.value}; "
+                "rates on an unverified route are a guess wearing a number"
+            )
+        return self
+
+    def cache_write_rate(self, ttl: CacheTtl) -> float:
+        """The per-mtok cache-write rate for this TTL. Only on a verified route."""
+        rate = (
+            self.cache_write_5m_per_mtok_in_usd
+            if ttl is CacheTtl.FIVE_MINUTES
+            else self.cache_write_1h_per_mtok_in_usd
+        )
+        if rate is None:
+            raise ValueError(f"{self.slug}: no verified cache-write rate for {ttl.value}")
+        return rate
 
 
 class Message(BaseModel):

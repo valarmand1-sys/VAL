@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from val_domain.gateway import (
+    CacheTtl,
     GatewayError,
     GatewayErrorKind,
     Message,
@@ -44,9 +45,31 @@ class ProviderResult:
 
     text: str
     terminal: TerminalState
+    #: Input tokens billed at the base rate — after any cache breakpoint. When a
+    #: provider reports caching figures, this is the **uncached remainder**, and
+    #: the total input is the sum of this and the three cache figures below.
     tokens_in: int | None
     tokens_out: int | None
     provider_request_id: str | None
+    #: Ruling, 8 September 2026. Prompt-cache usage as the provider reported it:
+    #: tokens read from cache, and tokens written at each documented lifetime.
+    #: `None` means the provider reported no such figure — which, for a
+    #: provider that reported usage at all, is priced as zero cache activity.
+    cache_read_tokens: int | None = None
+    cache_write_5m_tokens: int | None = None
+    cache_write_1h_tokens: int | None = None
+
+    @property
+    def total_input_tokens(self) -> int | None:
+        """Everything the provider processed as input: uncached plus cached."""
+        if self.tokens_in is None:
+            return None
+        return (
+            self.tokens_in
+            + (self.cache_read_tokens or 0)
+            + (self.cache_write_5m_tokens or 0)
+            + (self.cache_write_1h_tokens or 0)
+        )
 
 
 class ProviderAdapter(Protocol):
@@ -61,6 +84,7 @@ class ProviderAdapter(Protocol):
         system: str | None,
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         """Run one completion, or raise `GatewayError`.
 
@@ -69,6 +93,11 @@ class ProviderAdapter(Protocol):
         adapter for a provider that cannot enforce it raises
         `GatewayErrorKind.INVALID_REQUEST` rather than sending the request
         unconstrained (3 September 2026).
+
+        `cache_ttl`, when given, asks the provider to cache the stable prefix —
+        the `system` text, whole — for that lifetime (ruling, 8 September
+        2026). An adapter for a provider with no such mechanism ignores it and
+        reports no cache figures; it never pretends.
         """
         ...
 

@@ -101,6 +101,17 @@ _INSERT_CALL = text(
 )
 
 
+_INSERT_CACHE_USAGE = text(
+    "insert into model_call_cache_usage "
+    "(model_call_id, requested_ttl, uncached_input_tokens, cache_write_5m_tokens, "
+    " cache_write_1h_tokens, cache_read_tokens, outcome, cost_uncached, cost_cache_write, "
+    " cost_cache_read, cost_output) "
+    "values (:model_call_id, :requested_ttl, :uncached_input_tokens, :cache_write_5m_tokens, "
+    " :cache_write_1h_tokens, :cache_read_tokens, :outcome, :cost_uncached, :cost_cache_write, "
+    " :cost_cache_read, :cost_output)"
+)
+
+
 def record_call(engine: Engine, record: CallRecord) -> UUID:
     """Write one `model_calls` row and return its id.
 
@@ -142,6 +153,27 @@ def record_call(engine: Engine, record: CallRecord) -> UUID:
                 "status": record.status.value,
             },
         ).scalar_one()
+        # Ruling, 8 September 2026: the prompt-cache evidence, in the same
+        # transaction as the call it describes, so neither exists without the
+        # other. Only when caching was requested and usage was reported.
+        usage = record.cache_usage
+        if usage is not None:
+            connection.execute(
+                _INSERT_CACHE_USAGE,
+                {
+                    "model_call_id": new_id,
+                    "requested_ttl": usage.requested_ttl.value,
+                    "uncached_input_tokens": usage.uncached_input_tokens,
+                    "cache_write_5m_tokens": usage.cache_write_5m_tokens,
+                    "cache_write_1h_tokens": usage.cache_write_1h_tokens,
+                    "cache_read_tokens": usage.cache_read_tokens,
+                    "outcome": usage.outcome,
+                    "cost_uncached": Decimal(str(usage.cost_uncached_usd)),
+                    "cost_cache_write": Decimal(str(usage.cost_cache_write_usd)),
+                    "cost_cache_read": Decimal(str(usage.cost_cache_read_usd)),
+                    "cost_output": Decimal(str(usage.cost_output_usd)),
+                },
+            )
     return new_id
 
 

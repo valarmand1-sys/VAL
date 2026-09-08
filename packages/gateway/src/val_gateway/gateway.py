@@ -49,10 +49,12 @@ guarantee `04-layer-0.md` §1.1 claims.
 import logging
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import date
 from uuid import UUID
 
 from val_domain.gateway import (
+    CacheTtl,
     CallStatus,
     Classification,
     CostCertainty,
@@ -62,6 +64,7 @@ from val_domain.gateway import (
     GatewayResponse,
     Message,
     ModelConfig,
+    PricingFeature,
     TaskType,
     TerminalState,
     TurnReference,
@@ -91,6 +94,7 @@ from val_policy.routing import (
     required_profile,
     satisfies_profile,
 )
+from val_policy.tokens import estimate_tokens
 from val_providers.base import ProviderAdapter
 
 _LOGGER = logging.getLogger("val.gateway")
@@ -126,6 +130,32 @@ def _log_block(message: str) -> None:
 CallRecorder = Callable[["CallRecord"], UUID | None]
 
 
+@dataclass(frozen=True)
+class CacheUsage:
+    """What the prompt cache did on one call, priced — the `model_call_cache_usage`
+    evidence row (ruling, 8 September 2026).
+
+    Written only when caching was requested and the provider reported usage.
+    Every figure is the provider's own; every cost is computed at call time
+    from the configuration's verified cache rates and never recomputed.
+    """
+
+    requested_ttl: CacheTtl
+    uncached_input_tokens: int
+    cache_write_5m_tokens: int
+    cache_write_1h_tokens: int
+    cache_read_tokens: int
+    #: `hit` (read, nothing written), `created` (written, nothing read),
+    #: `hit_and_created` (both — a longer prefix extended a hit), or
+    #: `not_cached` (requested, but the provider cached nothing — typically a
+    #: prefix below the model's minimum).
+    outcome: str
+    cost_uncached_usd: float
+    cost_cache_write_usd: float
+    cost_cache_read_usd: float
+    cost_output_usd: float
+
+
 class CallRecord:
     """One `model_calls` row, assembled by the gateway and handed to the writer.
 
@@ -155,8 +185,10 @@ class CallRecord:
         latency_ms: int,
         provider_request_id: str | None,
         status: CallStatus,
+        cache_usage: CacheUsage | None = None,
     ) -> None:
         self.model_config_id = model_config_id
+        self.cache_usage = cache_usage
         self.slug = slug
         self.provider = provider
         self.model_identifier = model_identifier
@@ -176,17 +208,71 @@ class CallRecord:
         self.status = status
 
 
-def compute_cost(config: ModelConfig, tokens_in: int, tokens_out: int) -> float:
-    """The settled cost of a completed call, at the rates that actually applied.
+def cost_components(
+    config: ModelConfig,
+    tokens_in: int,
+    tokens_out: int,
+    *,
+    cache_read: int = 0,
+    cache_write_5m: int = 0,
+    cache_write_1h: int = 0,
+) -> tuple[float, float, float, float]:
+    """The four billed components of a completed call, in USD: uncached input,
+    cache writes, cache reads, output — at the rates that actually applied.
 
     Uses `effective_rates`, the same function the pre-call bound prices with —
     closure pass, 18 August 2026 — so a call whose input crossed a provider's
     long-context threshold settles at the multiplied rates the provider bills,
     and the estimator and the settlement cannot disagree about what a token
-    costs.
+    costs. The threshold is judged on the **total** input the provider
+    processed, cached parts included, because that is what the provider does.
+
+    Ruling, 8 September 2026: cache figures are priced at the configuration's
+    verified cache rates. A cache figure reported by a provider whose entry
+    carries no verified cache rate is priced at the base input rate — never
+    cheaper than base on an unverified number.
     """
-    rate_in, rate_out = effective_rates(config, tokens_in)
-    return round((tokens_in * rate_in + tokens_out * rate_out) / 1_000_000, 6)
+    total_in = tokens_in + cache_read + cache_write_5m + cache_write_1h
+    rate_in, rate_out = effective_rates(config, total_in)
+    multiplier = rate_in / config.cost_per_mtok_in_usd
+    read_rate = (config.cache_read_per_mtok_in_usd or config.cost_per_mtok_in_usd) * multiplier
+    write_5m_rate = (
+        config.cache_write_5m_per_mtok_in_usd or config.cost_per_mtok_in_usd
+    ) * multiplier
+    write_1h_rate = (
+        config.cache_write_1h_per_mtok_in_usd or config.cost_per_mtok_in_usd
+    ) * multiplier
+    return (
+        tokens_in * rate_in / 1_000_000,
+        (cache_write_5m * write_5m_rate + cache_write_1h * write_1h_rate) / 1_000_000,
+        cache_read * read_rate / 1_000_000,
+        tokens_out * rate_out / 1_000_000,
+    )
+
+
+def compute_cost(
+    config: ModelConfig,
+    tokens_in: int,
+    tokens_out: int,
+    *,
+    cache_read: int = 0,
+    cache_write_5m: int = 0,
+    cache_write_1h: int = 0,
+) -> float:
+    """The settled cost of a completed call: the sum of `cost_components`."""
+    return round(
+        sum(
+            cost_components(
+                config,
+                tokens_in,
+                tokens_out,
+                cache_read=cache_read,
+                cache_write_5m=cache_write_5m,
+                cache_write_1h=cache_write_1h,
+            )
+        ),
+        6,
+    )
 
 
 def check_startup(today: date) -> tuple[list[str], list[str]]:
@@ -219,10 +305,12 @@ class Gateway:
         observe_block: Callable[[str], None] | None = None,
         persona_loader: PersonaLoader | None = None,
         verify_provenance: Callable[[GatewayRequest], None] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> None:
         self._adapters = adapters
         self._record = recorder
         self._ledger = ledger
+        self._cache_ttl = cache_ttl
         self._observe_block = observe_block or _log_block
         self._persona_loader = persona_loader
         #: WP-0.7 corrective round. Checks that a conversation call's ids
@@ -485,7 +573,10 @@ class Gateway:
         if overrun is not None:
             raise GatewayError(GatewayErrorKind.INVALID_REQUEST, overrun)
 
-        authorised = maximum_cost(config, parts, request.max_output_tokens)
+        # Ruling, 8 September 2026: the reservation assumes a cache miss that
+        # writes the whole prefix at the write premium, never a hit.
+        cache_ttl = self._cache_ttl_for(config, request)
+        authorised = maximum_cost(config, parts, request.max_output_tokens, cache_ttl)
         claim = self._ledger.reserve(config, authorised, request.task_type, request.project_id)
         if isinstance(claim, Refusal):
             # The ceiling stopped this call before the provider was contacted.
@@ -495,7 +586,28 @@ class Gateway:
                 ceiling_message(claim.committed_usd, claim.max_cost_usd),
             )
 
-        return self._call_and_settle(request, config, adapter, claim)
+        return self._call_and_settle(request, config, adapter, claim, cache_ttl)
+
+    def _cache_ttl_for(self, config: ModelConfig, request: GatewayRequest) -> CacheTtl | None:
+        """Whether this call asks the provider to cache its stable prefix, and for how long.
+
+        Ruling, 8 September 2026. Three conditions, all required: the gateway
+        is configured with a TTL (`VAL_CACHE_TTL`); the configuration's caching
+        is verified, with rates read from the provider (`caching = AVAILABLE`);
+        and the stable prefix — the `system` text, which is the persona on
+        every partner call — is at least the model's documented minimum
+        cacheable length, judged by the local estimator. Below the minimum the
+        provider would cache nothing and charge nothing, so nothing is
+        requested and nothing is reserved for it.
+        """
+        if self._cache_ttl is None or request.system is None:
+            return None
+        if config.caching is not PricingFeature.AVAILABLE:
+            return None
+        minimum = config.cache_minimum_prefix_tokens or 0
+        if estimate_tokens(request.system) < minimum:
+            return None
+        return self._cache_ttl
 
     def _call_and_settle(
         self,
@@ -503,6 +615,7 @@ class Gateway:
         config: ModelConfig,
         adapter: ProviderAdapter,
         claim: Reservation,
+        cache_ttl: CacheTtl | None = None,
     ) -> GatewayResponse:
         """Contact the provider with a reservation held, and always resolve it."""
         started = time.monotonic()
@@ -513,6 +626,7 @@ class Gateway:
                 request.system,
                 request.max_output_tokens,
                 output_schema=request.output_schema,
+                cache_ttl=cache_ttl,
             )
         except GatewayError as error:
             call_id = self._settle_unknown(request, config, claim, error, self._elapsed(started))
@@ -535,11 +649,57 @@ class Gateway:
         # UNKNOWN certainty, and the reservation settles at its full maximum —
         # the same doctrine as a provider failure, because accounting-wise it is
         # one: the provider was paid an amount it declined to state.
-        cost = (
-            compute_cost(config, result.tokens_in, result.tokens_out)
-            if result.tokens_in is not None and result.tokens_out is not None
-            else None
-        )
+        # Ruling, 8 September 2026: settled from the provider's four usage
+        # figures — uncached input, cache writes by lifetime, cache reads, and
+        # output — at the configuration's verified rates, stored at call time.
+        cost: float | None = None
+        cache_usage: CacheUsage | None = None
+        if result.tokens_in is not None and result.tokens_out is not None:
+            read = result.cache_read_tokens or 0
+            write_5m = result.cache_write_5m_tokens or 0
+            write_1h = result.cache_write_1h_tokens or 0
+            parts_usd = cost_components(
+                config,
+                result.tokens_in,
+                result.tokens_out,
+                cache_read=read,
+                cache_write_5m=write_5m,
+                cache_write_1h=write_1h,
+            )
+            cost = round(sum(parts_usd), 6)
+            if cache_ttl is not None:
+                if read and (write_5m or write_1h):
+                    outcome = "hit_and_created"
+                elif read:
+                    outcome = "hit"
+                elif write_5m or write_1h:
+                    outcome = "created"
+                else:
+                    outcome = "not_cached"
+                cache_usage = CacheUsage(
+                    requested_ttl=cache_ttl,
+                    uncached_input_tokens=result.tokens_in,
+                    cache_write_5m_tokens=write_5m,
+                    cache_write_1h_tokens=write_1h,
+                    cache_read_tokens=read,
+                    outcome=outcome,
+                    cost_uncached_usd=round(parts_usd[0], 6),
+                    cost_cache_write_usd=round(parts_usd[1], 6),
+                    cost_cache_read_usd=round(parts_usd[2], 6),
+                    cost_output_usd=round(parts_usd[3], 6),
+                )
+                _LOGGER.info(
+                    "prompt cache: %s on %s (ttl %s): uncached=%d write_5m=%d write_1h=%d "
+                    "read=%d; cost $%.6f",
+                    outcome,
+                    config.slug,
+                    cache_ttl.value,
+                    result.tokens_in,
+                    write_5m,
+                    write_1h,
+                    read,
+                    cost,
+                )
         certainty = CostCertainty.KNOWN if cost is not None else CostCertainty.UNKNOWN
 
         # **The terminal state decides the row's status and whether the text is
@@ -563,7 +723,10 @@ class Gateway:
                 slug=config.slug,
                 provider=config.provider,
                 model_identifier=config.model_identifier,
-                tokens_in=result.tokens_in,
+                # The row's `tokens_in` is everything the provider processed as
+                # input — uncached plus cached — so the column keeps meaning
+                # "tokens sent"; the split lives in the cache-usage row.
+                tokens_in=result.total_input_tokens,
                 tokens_out=result.tokens_out,
                 cost_usd=cost,
                 cost_certainty=certainty,
@@ -577,6 +740,7 @@ class Gateway:
                 latency_ms=latency,
                 provider_request_id=result.provider_request_id,
                 status=status,
+                cache_usage=cache_usage,
             )
         )
         # Known cost settles at the real figure, returning the unspent
@@ -599,7 +763,7 @@ class Gateway:
             slug=config.slug,
             provider=config.provider,
             model_identifier=config.model_identifier,
-            tokens_in=result.tokens_in,
+            tokens_in=result.total_input_tokens,
             tokens_out=result.tokens_out,
             cost_usd=cost,
             latency_ms=latency,

@@ -24,7 +24,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy import Engine
 
-from val_domain.gateway import CapabilityProfile
+from val_domain.gateway import CacheTtl, CapabilityProfile
 from val_domain.registry import active
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
@@ -59,6 +59,26 @@ class Startup:
 
     gateway: Gateway
     warnings: list[str]
+
+
+#: The prompt-cache lifetime the gateway requests on cacheable calls.
+CACHE_TTL_SETTING = "VAL_CACHE_TTL"
+
+
+def configured_cache_ttl() -> tuple[CacheTtl | None, str | None]:
+    """`VAL_CACHE_TTL` as a lifetime, or `(None, None)` when unset, or a startup
+    violation when set to something the provider does not document."""
+    raw = os.environ.get(CACHE_TTL_SETTING, "").strip()
+    if not raw or raw.lower() == "off":
+        return None, None
+    try:
+        return CacheTtl(raw), None
+    except ValueError:
+        documented = ", ".join(ttl.value for ttl in CacheTtl)
+        return None, (
+            f"{CACHE_TTL_SETTING}={raw!r} is not a documented cache lifetime "
+            f"({documented}, or unset/off for none)."
+        )
 
 
 def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], list[str]]:
@@ -108,6 +128,20 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
 
     adapters, problems = build_adapters({config.provider for config in active()})
     violations.extend(problems)
+
+    # Ruling, 8 September 2026: prompt caching on the partner route's stable
+    # prefix. The lifetime is configuration — unset means no caching is
+    # requested, and an unrecognised value stops startup rather than silently
+    # running uncached at a cost nobody chose.
+    cache_ttl, cache_problem = configured_cache_ttl()
+    if cache_problem is not None:
+        violations.append(cache_problem)
+    if cache_ttl is None:
+        warnings.append(
+            f"{CACHE_TTL_SETTING} is unset: no prompt cache is requested, and every "
+            "partner call pays the base input rate for the persona (ruling, 8 September "
+            "2026: set it to 5m or 1h)."
+        )
 
     if violations:
         raise StartupRefusedError(violations)
@@ -169,6 +203,7 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         recorder=lambda record: record_call(engine, record),
         ledger=ledger,
         persona_loader=persona_loader,
+        cache_ttl=cache_ttl,
         # WP-0.7 corrective round. A conversation call's conversation, message
         # and project must agree with the records before anything is
         # transmitted, and that is a database question — so the check arrives

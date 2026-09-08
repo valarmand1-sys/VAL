@@ -18,7 +18,7 @@ import anthropic
 import openai
 import pytest
 
-from val_domain.gateway import Message, ModelConfig, TerminalState
+from val_domain.gateway import CacheTtl, Message, ModelConfig, TerminalState
 from val_domain.registry import by_slug
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.openai_adapter import OpenAIAdapter
@@ -316,3 +316,92 @@ def test_openai_omits_text_format_without_a_schema() -> None:
     adapter.complete(_gpt(), MESSAGES, "classify", 256)
 
     assert fake.kwargs["text"] is openai.omit
+
+
+# --- prompt caching — ruling, 8 September 2026 --------------------------------
+
+
+def _cached_anthropic_response() -> object:
+    return SimpleNamespace(
+        content=[],
+        stop_reason="end_turn",
+        usage=SimpleNamespace(
+            input_tokens=40,
+            output_tokens=5,
+            cache_creation_input_tokens=5_000,
+            cache_read_input_tokens=0,
+            cache_creation=SimpleNamespace(
+                ephemeral_5m_input_tokens=0, ephemeral_1h_input_tokens=5_000
+            ),
+        ),
+        _request_id="req-a",
+    )
+
+
+def test_anthropic_marks_the_whole_system_text_as_the_cache_breakpoint_for_1h() -> None:
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    adapter.complete(_opus(), MESSAGES, "the persona, whole", 64, cache_ttl=CacheTtl.ONE_HOUR)
+    assert fake.kwargs["system"] == [
+        {
+            "type": "text",
+            "text": "the persona, whole",
+            "cache_control": {"type": "ephemeral", "ttl": "1h"},
+        }
+    ]
+    assert fake.kwargs["messages"] == [{"role": "user", "content": "Good evening."}]
+
+
+def test_anthropic_five_minute_ttl_sends_no_ttl_field() -> None:
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    adapter.complete(_opus(), MESSAGES, "persona", 64, cache_ttl=CacheTtl.FIVE_MINUTES)
+    assert fake.kwargs["system"] == [
+        {"type": "text", "text": "persona", "cache_control": {"type": "ephemeral"}}
+    ]
+
+
+def test_anthropic_without_a_ttl_sends_the_plain_system_string() -> None:
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    adapter.complete(_opus(), MESSAGES, "persona", 64)
+    assert fake.kwargs["system"] == "persona"
+
+
+def test_anthropic_reports_the_four_usage_figures() -> None:
+    adapter, _ = _anthropic_adapter(_cached_anthropic_response())
+    result = adapter.complete(_opus(), MESSAGES, "persona", 64, cache_ttl=CacheTtl.ONE_HOUR)
+    assert result.tokens_in == 40, "the uncached remainder only"
+    assert result.cache_write_1h_tokens == 5_000
+    assert result.cache_write_5m_tokens == 0
+    assert result.cache_read_tokens == 0
+    assert result.total_input_tokens == 5_040
+
+
+def test_anthropic_attributes_an_unbroken_creation_figure_to_the_requested_ttl() -> None:
+    response = SimpleNamespace(
+        content=[],
+        stop_reason="end_turn",
+        usage=SimpleNamespace(
+            input_tokens=40,
+            output_tokens=5,
+            cache_creation_input_tokens=5_000,
+            cache_read_input_tokens=0,
+        ),
+        _request_id="req-a",
+    )
+    adapter, _ = _anthropic_adapter(response)
+    result = adapter.complete(_opus(), MESSAGES, "persona", 64, cache_ttl=CacheTtl.ONE_HOUR)
+    assert result.cache_write_1h_tokens == 5_000 and result.cache_write_5m_tokens is None
+
+
+def test_anthropic_without_cache_figures_reports_none_not_zero() -> None:
+    adapter, _ = _anthropic_adapter(_anthropic_response())
+    result = adapter.complete(_opus(), MESSAGES, "persona", 64)
+    assert result.cache_read_tokens is None
+    assert result.cache_write_5m_tokens is None and result.cache_write_1h_tokens is None
+    assert result.total_input_tokens == 10
+
+
+def test_openai_accepts_the_ttl_and_sends_nothing_for_it() -> None:
+    adapter, fake = _openai_adapter(_openai_response())
+    result = adapter.complete(_gpt(), MESSAGES, "persona", 64, cache_ttl=CacheTtl.ONE_HOUR)
+    assert "cache_control" not in fake.kwargs and "prompt_cache_key" not in fake.kwargs
+    assert result.cache_read_tokens is None

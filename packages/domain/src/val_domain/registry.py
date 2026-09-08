@@ -101,7 +101,17 @@ REGISTRY: tuple[ModelConfig, ...] = (
         reasoning_effort=ReasoningEffort.HIGH,
         cost_per_mtok_in_usd=5.00,
         cost_per_mtok_out_usd=25.00,
-        caching=PricingFeature.NOT_VERIFIED,
+        # Ruling, 8 September 2026. Read from platform.claude.com/docs/en/about-claude/
+        # pricing on that date: 5m write $6.25 (1.25x), 1h write $10 (2x), cache
+        # hit $0.50 (0.1x); minimum cacheable prefix 512 tokens on Claude Opus 5
+        # (prompt-caching page, same date). Caches are isolated per organization
+        # and workspace; under the retention page, prompts and outputs are not
+        # stored — KV representations and hashes are held in memory for the TTL.
+        caching=PricingFeature.AVAILABLE,
+        cache_write_5m_per_mtok_in_usd=6.25,
+        cache_write_1h_per_mtok_in_usd=10.00,
+        cache_read_per_mtok_in_usd=0.50,
+        cache_minimum_prefix_tokens=512,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
         # Ruling, 7 September 2026: the provisionally approved sole partner-quality
@@ -150,7 +160,17 @@ REGISTRY: tuple[ModelConfig, ...] = (
         reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
         cost_per_mtok_in_usd=1.00,
         cost_per_mtok_out_usd=5.00,
-        caching=PricingFeature.NOT_VERIFIED,
+        # Ruling, 8 September 2026, same pages: 5m write $1.25, 1h write $2, hit
+        # $0.10; minimum cacheable prefix 4,096 tokens on Claude Haiku 4.5 —
+        # which no Layer 0 call on this route reaches (the classifier's and the
+        # strip's system prompts are a few hundred tokens), so nothing caches
+        # here in practice and nothing is reserved for it (the gateway requests
+        # caching only when the stable prefix meets the minimum).
+        caching=PricingFeature.AVAILABLE,
+        cache_write_5m_per_mtok_in_usd=1.25,
+        cache_write_1h_per_mtok_in_usd=2.00,
+        cache_read_per_mtok_in_usd=0.10,
+        cache_minimum_prefix_tokens=4096,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
         # Ruling, 7 September 2026: structured, schema-constrained internal work

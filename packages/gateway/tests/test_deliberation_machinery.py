@@ -44,6 +44,7 @@ from val_domain.deliberation import (
     Outcome,
 )
 from val_domain.gateway import (
+    CacheTtl,
     Classification,
     GatewayError,
     GatewayErrorKind,
@@ -141,6 +142,7 @@ class ScriptedAdapter:
         system: str | None,
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         observed = None
         if self.probe_engine is not None:

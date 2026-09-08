@@ -36,6 +36,7 @@ from sqlalchemy import Engine, text
 
 from val_api.app import create_app
 from val_domain.gateway import (
+    CacheTtl,
     CostCertainty,
     GatewayError,
     GatewayErrorKind,
@@ -72,6 +73,7 @@ class ScriptedAdapter:
         system: str | None,
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         self.calls += 1
         step = self.script.pop(0)

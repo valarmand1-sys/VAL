@@ -40,6 +40,7 @@ from openai.types.responses import (
 from openai.types.shared_params import Reasoning
 
 from val_domain.gateway import (
+    CacheTtl,
     GatewayError,
     GatewayErrorKind,
     Message,
@@ -83,7 +84,14 @@ class OpenAIAdapter:
         system: str | None,
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
+        # `cache_ttl` is accepted and not sent (8 September 2026): OpenAI's
+        # caching is automatic, has no client-side TTL, and this registry has
+        # not verified its cache rates — so no cache figure is reported here and
+        # every input token is priced at the base rate, which over-states rather
+        # than under-states what a cached OpenAI call cost.
+        del cache_ttl
         """Run one completion, or raise the normalized error."""
         turns: list[openai.types.responses.EasyInputMessageParam] = [
             {"role": "user" if m.role == "user" else "assistant", "content": m.content}

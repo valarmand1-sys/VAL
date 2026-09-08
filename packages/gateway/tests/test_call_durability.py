@@ -42,6 +42,7 @@ from sqlalchemy import Engine, text
 from test_persona import REPO_ROOT, clean_personas  # noqa: F401 - fixture reused
 
 from val_domain.gateway import (
+    CacheTtl,
     CallStatus,
     Classification,
     CostCertainty,
@@ -115,6 +116,7 @@ class _ProbingAdapter(StubAdapter):
         system: str | None,
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         with self._engine.connect() as connection:
             reserved = connection.execute(

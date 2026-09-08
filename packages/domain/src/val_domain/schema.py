@@ -974,6 +974,66 @@ class BudgetReservation(Base):
     )
 
 
+class ModelCallCacheUsage(Base):
+    """§2.2 — `model_call_cache_usage`, ruling of 8 September 2026.
+
+    The prompt-cache evidence for one call: the lifetime requested, the four
+    usage figures as the provider reported them, the outcome, and the four
+    billed components at the configuration's verified cache rates — computed
+    at call time and never recomputed. At most one row per `model_calls` row,
+    present exactly when caching was requested and usage was reported.
+    `model_calls` itself is unchanged. Append-only (`0015`).
+    """
+
+    __tablename__ = "model_call_cache_usage"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    model_call_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("model_calls.id", ondelete="NO ACTION"),
+        nullable=False,
+        unique=True,
+    )
+    requested_ttl: Mapped[str] = mapped_column(Text, nullable=False)
+    uncached_input_tokens: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    cache_write_5m_tokens: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    cache_write_1h_tokens: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    cache_read_tokens: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    outcome: Mapped[str] = mapped_column(Text, nullable=False)
+    cost_uncached: Mapped[Decimal] = mapped_column(Numeric(14, 6), nullable=False)
+    cost_cache_write: Mapped[Decimal] = mapped_column(Numeric(14, 6), nullable=False)
+    cost_cache_read: Mapped[Decimal] = mapped_column(Numeric(14, 6), nullable=False)
+    cost_output: Mapped[Decimal] = mapped_column(Numeric(14, 6), nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("requested_ttl in ('5m', '1h')", name="requested_ttl_documented"),
+        CheckConstraint(
+            "outcome in ('hit', 'created', 'hit_and_created', 'not_cached')",
+            name="outcome_named",
+        ),
+        CheckConstraint(
+            "uncached_input_tokens >= 0 and cache_write_5m_tokens >= 0 and "
+            "cache_write_1h_tokens >= 0 and cache_read_tokens >= 0",
+            name="token_counts_non_negative",
+        ),
+        CheckConstraint(
+            "(outcome = 'hit') = (cache_read_tokens > 0 and cache_write_5m_tokens = 0 "
+            "and cache_write_1h_tokens = 0)",
+            name="hit_means_read_only",
+        ),
+        CheckConstraint(
+            "(outcome = 'not_cached') = (cache_read_tokens = 0 and cache_write_5m_tokens = 0 "
+            "and cache_write_1h_tokens = 0)",
+            name="not_cached_means_nothing_cached",
+        ),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
@@ -982,6 +1042,7 @@ SPECIFIED_TABLES = frozenset(
         "messages",
         "personas",
         "model_calls",
+        "model_call_cache_usage",
         "execution_events",
         "deliberations",
         "blind_positions",

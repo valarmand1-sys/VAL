@@ -17,14 +17,22 @@ repeated as a trailing reminder. Two reasons:
    something a test has to keep watching. A persona appended into the message
    list could be duplicated by any later caller that appended again.
 
-**Stable-prefix-first ordering, deliberately, without enabling caching.**
-`01-architecture.md` §5.3 wants context assembled stable-prefix-first so cached
-segments hit. The persona is the most stable prefix Val has, and putting it in
-`system` puts it there. **Nothing here requests caching**, and the executive
-decision of 17 August 2026 forbids enabling any billing feature whose cost
-semantics are unqualified — a prompt-cache write is billed *above* the base input
-rate and would invalidate the `maximum_cost` bound. The ordering is free; the
-billing change is not, and is Layer 3's.
+**Stable-prefix-first ordering, deliberately — and, since 8 September 2026,
+cached.** `01-architecture.md` §5.3 wants context assembled stable-prefix-first
+so cached segments hit. The persona is the most stable prefix Val has, and
+putting it in `system` puts it there. Nothing *here* requests caching: the
+gateway does, per call, when the route's cache rates are verified and the
+prefix meets the model's minimum, and the Anthropic adapter marks the `system`
+text as the one breakpoint. The 17 August 2026 condition — that a cache write
+is billed above the base rate and would break the `maximum_cost` bound — was
+discharged by widening the bound (the reservation assumes a miss at the write
+rate), which is what that decision required of whoever enabled it.
+
+**What stays uncacheable, and why it is recorded rather than fixed.** The
+memory envelope below is the first message and varies per turn, so nothing
+after it — the same-conversation history — shares a byte-identical prefix
+between turns. Moving the envelope after the history would let the history
+cache incrementally, but it changes what Val is shown and is a ruling.
 
 **Persona is identity, not project knowledge.** It does not vary by project, and
 project content does not enter through it. A conversation in one project and a

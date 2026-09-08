@@ -253,7 +253,7 @@ A model configuration is a versioned record, not a model name in a settings file
 - Reasoning or sampling settings
 - **Data classifications it is eligible to receive** (§5.4)
 - **The capability profiles it is qualified to serve** (`partner`, `structured`) — declared by ruling, never inferred from price, name, or eligibility; a task requiring a profile the configuration does not declare is never routed to it (ruling, 7 September 2026, below)
-- Cost per input and output unit, and whether caching or batch pricing applies
+- Cost per input and output unit, and whether caching or batch pricing applies — **and, where caching is verified, the provider's cache-write and cache-read rates and minimum cacheable prefix, read from its pricing page** (ruling, 8 September 2026)
 - Known weaknesses
 - Fallback route **or an explicit NONE**, activation date, retirement state
 - **Admission state and adapter state** (§5.2.1)
@@ -318,6 +318,8 @@ The right shape is a gradient, not a local/cloud binary:
 **The architecture requires a provider-neutral gateway and multi-provider routing. It does not name the roster.** Which providers are live at any moment is controlled configuration, not architectural law — it is the Model Configuration Registry's answer, and it changes without amending this document. See §5.2.1.
 
 **Prompt caching and batch pricing are first-class, not optimizations.** Val's workload is unusually repetitive-context-heavy: persona, project canon, and Role knowledge are re-injected constantly. Caching is therefore a structural saving rather than a tuning exercise, and context assembly shall be ordered stable-prefix-first so cached segments actually hit. Non-urgent overnight work routes through batch APIs.
+
+> **Amendment — 8 September 2026, Lord Armand.** Prompt caching is enabled at Layer 0 on the partner route's stable prefix — the persona — under the accounting rules recorded in `04-layer-0.md` WP-0.4 (reservation at the write rate, settlement from the provider's usage figures, evidence per call). One structural limit is recorded rather than worked around: the memory envelope precedes the same-conversation history in every request and varies per turn, so the history prefix cannot cache incrementally under the present assembly order. Reordering the envelope after the history is a change to what Val sees and is a ruling, not an optimisation; it is reported in the economics report of this date and not made.
 
 ### 5.4 Data classification eligibility
 

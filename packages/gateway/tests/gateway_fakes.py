@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
 from val_domain.gateway import (
+    CacheTtl,
     Classification,
     ConversationProvenance,
     CostCertainty,
@@ -63,6 +64,7 @@ class StubAdapter:
         #: 3 September 2026: the schema constraint the adapter was handed, so a
         #: test can assert a machine-readable contract was actually enforced.
         self.sent_output_schema: Mapping[str, object] | None = None
+        self.sent_cache_ttl: CacheTtl | None = None
 
     def complete(
         self,
@@ -71,12 +73,14 @@ class StubAdapter:
         system: str | None,
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         self.calls += 1
         self.sent_messages = messages
         self.sent_system = system
         self.sent_max_output_tokens = max_output_tokens
         self.sent_output_schema = output_schema
+        self.sent_cache_ttl = cache_ttl
         if self._error is not None:
             raise self._error
         assert self._result is not None
@@ -188,6 +192,7 @@ def request(
     max_output_tokens: int = 4096,
     task_type: TaskType = TaskType.CLASSIFICATION,
     conversation: ConversationProvenance | None = None,
+    system: str | None = None,
 ) -> GatewayRequest:
     """A request for the routing, budget and recording tests.
 
@@ -211,6 +216,7 @@ def request(
         conversation=conversation,
         classification=classification,
         messages=(Message(role="user", content=content),),
+        system=system,
         max_output_tokens=max_output_tokens,
         # A resolved scope: these tests are about routing, budget, and recording,
         # and they assert the project reaches the row. The pair must agree — the

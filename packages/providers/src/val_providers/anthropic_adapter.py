@@ -36,7 +36,7 @@ from typing import Literal
 import anthropic
 from anthropic.types import JSONOutputFormatParam, OutputConfigParam
 
-from val_domain.gateway import Message, ModelConfig, ReasoningEffort, TerminalState
+from val_domain.gateway import CacheTtl, Message, ModelConfig, ReasoningEffort, TerminalState
 from val_providers.base import ProviderResult, normalize
 
 #: The provider-neutral levels this house configures, in the SDK's own literal
@@ -76,6 +76,7 @@ class AnthropicAdapter:
         system: str | None,
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         """Run one completion, or raise the normalized error."""
         turns: list[anthropic.types.MessageParam] = [
@@ -104,12 +105,31 @@ class AnthropicAdapter:
             output_config["format"] = JSONOutputFormatParam(
                 type="json_schema", schema=dict(output_schema)
             )
+        # Ruling, 8 September 2026: prompt caching on the stable prefix. The
+        # persona is the whole of `system` and the only byte-identical prefix
+        # every partner call shares, so the one breakpoint goes on it — as a
+        # single text block carrying `cache_control`. Nothing in `messages` is
+        # marked: the memory envelope varies per turn and precedes the history,
+        # so a breakpoint there would write entries nothing ever reads. The TTL
+        # is the caller's (configuration), and the provider's own minimum
+        # prefix decides whether anything is actually cached; the usage block
+        # is the ground truth either way.
+        system_param: str | list[anthropic.types.TextBlockParam] | anthropic.Omit
+        if system is None:
+            system_param = anthropic.omit
+        elif cache_ttl is None:
+            system_param = system
+        else:
+            cache_control: anthropic.types.CacheControlEphemeralParam = {"type": "ephemeral"}
+            if cache_ttl is CacheTtl.ONE_HOUR:
+                cache_control["ttl"] = "1h"
+            system_param = [{"type": "text", "text": system, "cache_control": cache_control}]
         try:
             response = self._client.messages.create(
                 model=config.model_identifier,
                 max_tokens=max_output_tokens,
                 messages=turns,
-                system=system if system is not None else anthropic.omit,
+                system=system_param,
                 output_config=output_config if output_config else anthropic.omit,
             )
         except Exception as error:
@@ -119,12 +139,31 @@ class AnthropicAdapter:
             block.text for block in response.content if isinstance(block, anthropic.types.TextBlock)
         )
         usage = getattr(response, "usage", None)
+        # The four usage figures, as documented: `input_tokens` is the uncached
+        # remainder after the last breakpoint; `cache_read_input_tokens` and
+        # `cache_creation_input_tokens` are the cached parts, the latter broken
+        # down by lifetime in `cache_creation`. Where the breakdown is absent
+        # the whole creation figure is attributed to the lifetime requested,
+        # because that is the rate the provider bills it at; where no caching
+        # was requested, absent figures are None and price as zero activity.
+        creation = getattr(usage, "cache_creation", None)
+        write_5m = getattr(creation, "ephemeral_5m_input_tokens", None)
+        write_1h = getattr(creation, "ephemeral_1h_input_tokens", None)
+        creation_total = getattr(usage, "cache_creation_input_tokens", None)
+        if creation_total is not None and write_5m is None and write_1h is None:
+            if cache_ttl is CacheTtl.ONE_HOUR:
+                write_1h = creation_total
+            else:
+                write_5m = creation_total
         return ProviderResult(
             text=text,
             terminal=_STOP_REASONS.get(response.stop_reason or "", TerminalState.UNKNOWN),
             tokens_in=getattr(usage, "input_tokens", None),
             tokens_out=getattr(usage, "output_tokens", None),
             provider_request_id=getattr(response, "_request_id", None),
+            cache_read_tokens=getattr(usage, "cache_read_input_tokens", None),
+            cache_write_5m_tokens=write_5m,
+            cache_write_1h_tokens=write_1h,
         )
 
 
