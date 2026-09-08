@@ -632,3 +632,33 @@ Point 5 stands at one enforced deliberation.
 
 **Measured figures after the repair, as asked:** a consequential turn on the partner route cost **$0.16** and took **62 s** wall, of which the blind call was 7.6 s and the response 50.3 s for 3,216 output tokens. An ordinary turn on the partner route (7 September, 12.12, unchanged by these corrections) cost about $0.04 at 7.5 s wall. Long output dominates wall clock; no latency optimisation was attempted, by ruling.
 
+## 13. Prompt caching on the partner route — 8 September 2026
+
+**Regression** (`packages/providers/tests/test_adapters.py`, `packages/gateway/tests/test_prompt_cache.py`, `packages/domain/tests/test_schema.py`):
+
+| # | Claim | Result |
+|---|---|---|
+| 13.1 | The Anthropic adapter marks the whole `system` text as the one breakpoint, with `ttl: "1h"` only for the hour lifetime; without a lifetime it sends the plain string | **PASS** |
+| 13.2 | The adapter reports the four usage figures; an unbroken creation figure is attributed to the requested lifetime; absent figures are `None`, never zero; total input is their sum | **PASS** |
+| 13.3 | The reservation bound at a lifetime is never below the uncached bound and prices input at the write rate (1.25× / 2×) | **PASS** |
+| 13.4 | Settlement prices uncached, writes, reads and output at the verified rates; a cold write costs more than uncached and a warm read far less; an unverified route prices cache figures at the base rate | **PASS** |
+| 13.5 | A partner call with a long system asks for the configured lifetime; the record carries the split; outcomes `hit` / `created` / `not_cached`; no lifetime configured → nothing requested; a prefix below the model's minimum → nothing requested; an unverified route → nothing requested | **PASS** |
+| 13.6 | The reservation is taken at the write-rate bound | **PASS** |
+| 13.7 | `model_call_cache_usage` is written in the call's transaction, `model_calls.tokens_in` is the total input, and the row refuses update (evidence guard) | **PASS**, real PostgreSQL |
+| 13.8 | `VAL_CACHE_TTL` parses `5m` / `1h` / unset / `off`; an undocumented value is a startup violation; the registry's partner route declares verified cache rates; rates travel only with verified caching | **PASS** |
+| 13.9 | Schema: `model_call_cache_usage` is specified, migrated, reversible on an empty store, and nothing else changed | **PASS** |
+
+**Live demonstration** — real Claude Opus 5 and Haiku 4.5, scratch store, real waits (`demonstrate_cache.py`, `cache_run2.json`; a first run was discarded because the test suites reset the scratch store under it). Figures: `VAL_Ordinary_Conversation_Economics_Report.md` §4. Summary:
+
+| # | Demonstration | Observed | Result |
+|---|---|---|---|
+| 13.10 | Cold "Hello.": persona written (5,819 tokens), `created` | $0.0448 turn | **PASS** |
+| 13.11 | 5-minute lifetime, no reuse before expiry: after a 5.5-minute wait the persona was written again | `created`, $0.0436 | **PASS** — expiry is real |
+| 13.12 | One reuse, multiple reuses: warm "Hello.", short question, paragraph all `hit` | $0.0133, $0.0143, $0.0269 | **PASS** |
+| 13.13 | 1-hour lifetime survives a 6-minute gap | `hit`, $0.0141 | **PASS** |
+| 13.14 | Consequential turn: blind call `created` its own entry (persona + schema text, 6,084); response `hit`; the whole chain durable (`enforced` blind row, `updated` / `held` deliberations) | $0.1150 (5m), $0.1503 (1h) | **PASS**, with the two-entry finding recorded |
+| 13.15 | Follow-up: the blind entry is reused (`hit`, 6,084 read, $0.003) | as stated | **PASS** |
+| 13.16 | **Finding:** the follow-up's two response calls were refused by the provider with zero output tokens, and an empty Val message was persisted each time | two zero-length `val` rows in the scratch store | **FINDING — for ruling** (economics report §7b) |
+
+**Deployment:** live store migrated to `0015` (`alembic -x deploy=live upgrade head`); `VAL_CACHE_TTL=1h` set in the installed service environment; service reloaded, health running with no warnings; CI green on 7b61530.
+
