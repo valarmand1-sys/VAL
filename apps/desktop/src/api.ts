@@ -241,6 +241,10 @@ export const api = {
   health: () => request<Health>("/health"),
   projects: (query: { archived?: boolean } = {}) =>
     request<ProjectView[]>(query.archived ? "/projects?archived=true" : "/projects"),
+  // Ruled 7 September 2026: the smallest proper creation path — a name. The
+  // service refuses a taken name in words (409), which surfaces as ApiRefusal.
+  createProject: (name: string) =>
+    request<ProjectView>("/projects", { method: "POST", body: JSON.stringify({ name }) }),
   conversations: (query: { project_id?: string; scope?: "none"; archived?: boolean } = {}) => {
     const parameters = new URLSearchParams();
     if (query.project_id) parameters.set("project_id", query.project_id);

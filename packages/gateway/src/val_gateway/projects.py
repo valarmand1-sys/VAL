@@ -20,6 +20,7 @@ which is the point: a model that "remembers" the last project discussed has no
 way to make that memory into scope.
 """
 
+import re
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -78,6 +79,58 @@ def load_catalogue(engine: Engine) -> ProjectCatalogue:
     with engine.connect() as connection:
         rows = connection.execute(_SELECT_PROJECTS).all()
     return ProjectCatalogue(_project(row) for row in rows)
+
+
+class ProjectCreationRefused(Exception):
+    """The requested project cannot be created as asked, and the message says why."""
+
+
+_INSERT_PROJECT = text(
+    "insert into projects (name, slug, description, status) "
+    "values (:name, :slug, '', 'active') "
+    "returning id, name, slug, status, archived_at"
+)
+
+
+def slug_for(name: str) -> str:
+    """The stable identifier derived from a name: lower-case words joined by hyphens.
+
+    Deterministic and mechanical — the same name always yields the same slug —
+    so nothing about identity is decided by anyone's judgment at creation time.
+    """
+    words = re.findall(r"[a-z0-9]+", name.casefold())
+    return "-".join(words)
+
+
+def create_project(engine: Engine, name: str) -> ProjectRecord:
+    """Create one active project by name — ruled 7 September 2026.
+
+    The smallest proper user-facing path: a name, a derived slug, status
+    `active`, an empty description. Two refusals, both stated in words: a name
+    that yields no slug (nothing to identify it by), and a name or slug already
+    held by an existing project, archived or not — an archived project still
+    resolves by name (§2.1 amendment, 31 August 2026), so a second project with
+    the same name would manufacture the ambiguity WP-0.6 exists to surface, and
+    the slug is unique in the store by constraint. No suffix is invented to
+    step around a collision: the user chooses a different name, knowingly.
+    """
+    cleaned = " ".join(name.split())
+    slug = slug_for(cleaned)
+    if not cleaned or not slug:
+        raise ProjectCreationRefused(
+            "a project needs a name with at least one letter or digit in it."
+        )
+    with engine.begin() as connection:
+        for existing in (_project(row) for row in connection.execute(_SELECT_PROJECTS).all()):
+            if existing.slug == slug or existing.name.casefold() == cleaned.casefold():
+                state = "archived" if existing.archived_at is not None else "active"
+                raise ProjectCreationRefused(
+                    f"a project named {existing.name!r} ({state}, slug {existing.slug!r}) "
+                    "already exists. Choose a different name; two projects answering to "
+                    "the same name would make every reference to it ambiguous."
+                )
+        row = connection.execute(_INSERT_PROJECT, {"name": cleaned, "slug": slug}).one()
+    return _project(row)
 
 
 def project_exists(engine: Engine, project_id: UUID) -> bool:

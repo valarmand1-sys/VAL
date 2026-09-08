@@ -463,6 +463,8 @@ Each states what exists when it is done and how that is verified.
 - Project switching, conversation history, and marking an exchange consequential are all reachable from the interface.
 - Nothing in the interface displays a state the database does not support (`00-charter.md` invariant 29).
 
+> **Amendment — 7 September 2026, Lord Armand. Project creation from the interface.** The operating briefing of this date found that the only live conversation was explicitly no-project, that every project in the store was an archived demonstration fixture, and that the interface could select projects but not create one — an operational hole next to "conducted through the interface, with no developer tooling." Ruled: the smallest proper user-facing creation path is built — **New project, name, create, select** — rather than inserting the first real project through developer tooling. The slug is derived mechanically from the name; status is `active`; the description is empty; a name or slug held by an existing project, archived or not, is refused in words rather than suffixed, because an archived project still resolves by name and a second would manufacture ambiguity. Nothing beyond creation and selection is authorized; this is not a project-management feature. The first real project is **Tony Spumoni**. Ambiguity evidence for the gate continues to rest on the August demonstration until it arises naturally; no project is created to manufacture it.
+
 <!-- scope-ruling: 2026-09-02 -->
 ### WP-0.11 — Budget-control hardening (warn-and-raise) — recorded 2 September 2026, not yet begun
 

@@ -203,6 +203,13 @@ export function App(): React.JSX.Element {
               </button>
             </li>
           </ul>
+          <NewProjectControl
+            onCreated={async (project) => {
+              setProjects(await api.projects(showArchived ? { archived: true } : {}));
+              await chooseScope({ kind: "project", project });
+            }}
+            onRefused={(message) => setNotice(message)}
+          />
           <h2>Conversations</h2>
           <ul>
             {conversations.map((conversation) => (
@@ -394,6 +401,59 @@ function MessageBlock(props: {
       {message.role === "user" && (
         <MarkConsequentialControl detail={detail} message={message} onRecorded={onRecorded} />
       )}
+    </div>
+  );
+}
+
+// Ruled 7 September 2026: the smallest proper project-creation path. A name,
+// create, select. The service derives the slug and refuses a taken name in
+// words; the refusal is shown as received, never reworded into a guess.
+function NewProjectControl(props: {
+  onCreated: (project: ProjectView) => Promise<void>;
+  onRefused: (message: string) => void;
+}): React.JSX.Element {
+  const { onCreated, onRefused } = props;
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const create = async () => {
+    if (name.trim() === "" || busy) return;
+    setBusy(true);
+    try {
+      const project = await api.createProject(name.trim());
+      setName("");
+      setOpen(false);
+      await onCreated(project);
+    } catch (failure) {
+      onRefused(describeFailure(failure));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button className="inline-action" onClick={() => setOpen(true)}>
+        New project
+      </button>
+    );
+  }
+  return (
+    <div className="new-project">
+      <input
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        placeholder="project name"
+        onKeyDown={(event) => {
+          if (event.key === "Enter") void create();
+        }}
+        autoFocus
+      />
+      <button onClick={() => void create()} disabled={busy || name.trim() === ""}>
+        Create
+      </button>
+      <button onClick={() => setOpen(false)}>Cancel</button>
     </div>
   );
 }

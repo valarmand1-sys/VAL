@@ -98,7 +98,7 @@ Three rulings modify how the points are read today, all recorded in the baseline
 - **Current state.** Implemented; operational evidence accumulating. 88 rows all time. This month the accounting view reports zero uncosted calls. Twenty rows all time record a provider failure whose cost the provider never stated; they are recorded as unknown cost and settled at the reserved maximum, which is the doctrine, not a gap. The dashboard-versus-table comparison for a day of real use has never been done; the evidence index lists it as NOT RUN.
 - **Old evidence.** Counts, including the failed classification calls of August and early September, which are costed honestly.
 - **Remains.** The day-of-real-use dashboard comparison.
-- **Natural or action.** Rows accumulate naturally; the comparison is a review pass: Joseph reads the provider console figure, Claude Code produces the table figure for the same day.
+- **Natural or action.** Rows accumulate naturally; the comparison is a review in which Joseph reads the provider console figure, Claude Code produces the table figure for the same day.
 - **In the final session.** Yes: every call in the session must have a row, and the session's calls are the natural sample.
 
 ### Point 7 — "And a verified restore from backup — restored to a scratch instance, row counts and referential integrity checked, capture tables continuous."

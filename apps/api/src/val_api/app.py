@@ -44,6 +44,7 @@ from val_api.contracts import (
     Health,
     ManualDeliberationRequest,
     MessageView,
+    ProjectCreateRequest,
     ProjectView,
     TurnAnswered,
     TurnClarification,
@@ -80,7 +81,12 @@ from val_gateway.persistence import (
     spend_by_task_type,
     uncosted_calls_this_month,
 )
-from val_gateway.projects import load_catalogue, project_listing
+from val_gateway.projects import (
+    ProjectCreationRefused,
+    create_project,
+    load_catalogue,
+    project_listing,
+)
 from val_policy.project_resolution import ProjectSignals
 
 
@@ -121,6 +127,21 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
         return [
             ProjectView.of(record) for record in project_listing(engine, include_archived=archived)
         ]
+
+    @app.post("/projects", status_code=201)
+    def new_project(request: ProjectCreateRequest) -> ProjectView:
+        """Create a project by name — ruled 7 September 2026.
+
+        A daily-use, project-aware interface in which the user cannot create a
+        project is an operational hole next to "conducted through the
+        interface, with no developer tooling." A name taken by an existing
+        project, archived or not, is refused in words (409): the user chooses
+        another name rather than the house inventing a suffix.
+        """
+        try:
+            return ProjectView.of(create_project(engine, request.name))
+        except ProjectCreationRefused as refused:
+            raise HTTPException(status_code=409, detail=str(refused)) from refused
 
     @app.get("/conversations")
     def conversation_listing(

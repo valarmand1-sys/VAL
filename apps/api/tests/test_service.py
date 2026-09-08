@@ -645,3 +645,35 @@ def test_the_detail_says_how_each_turn_was_classified(store: Engine) -> None:
     assert "no parseable verdict" in rows[2]["resolution"]
     user_messages = [m["id"] for m in detail["messages"] if m["role"] == "user"]
     assert [row["message_id"] for row in rows] == user_messages
+
+
+# =============================================================================
+# Project creation — ruled 7 September 2026
+# =============================================================================
+
+
+def test_a_project_is_created_by_name_and_a_conversation_is_attributed_to_it(
+    store: Engine,
+) -> None:
+    api = client(store, ScriptedAdapter(plain_script()))
+
+    created = api.post("/projects", json={"name": "Tony Spumoni"})
+    assert created.status_code == 201, created.text
+    project = created.json()
+    assert project["slug"] == "tony-spumoni" and project["status"] == "active"
+    assert project["archived"] is False
+    assert [p["name"] for p in api.get("/projects").json()].count("Tony Spumoni") == 1
+
+    turn = a_turn(api, "What time is the screening?", project="Tony Spumoni")
+    assert turn["kind"] == "answered"
+    assert turn["conversation"]["project_id"] == project["id"]
+
+
+def test_a_taken_project_name_is_refused_in_words(store: Engine) -> None:
+    api = client(store, ScriptedAdapter([]))
+    assert api.post("/projects", json={"name": "Tony Spumoni"}).status_code == 201
+    refused = api.post("/projects", json={"name": "tony spumoni"})
+    assert refused.status_code == 409
+    assert "already exists" in refused.json()["detail"]
+    empty = api.post("/projects", json={"name": "   "})
+    assert empty.status_code in (409, 422)

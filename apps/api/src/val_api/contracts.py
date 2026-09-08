@@ -36,6 +36,19 @@ from val_domain.project import ProjectRecord
 # =============================================================================
 
 
+class ProjectCreateRequest(BaseModel):
+    """Create a project by name — ruled 7 September 2026, the smallest proper path.
+
+    Name only. The slug is derived mechanically, the status is `active`, the
+    description is empty. Anything more is project management, which no
+    contract asks for.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str = Field(min_length=1, max_length=200)
+
+
 class ProjectView(BaseModel):
     model_config = ConfigDict(frozen=True)
 
