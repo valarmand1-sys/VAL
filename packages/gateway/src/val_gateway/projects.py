@@ -81,7 +81,7 @@ def load_catalogue(engine: Engine) -> ProjectCatalogue:
     return ProjectCatalogue(_project(row) for row in rows)
 
 
-class ProjectCreationRefused(Exception):
+class ProjectCreationRefusedError(Exception):
     """The requested project cannot be created as asked, and the message says why."""
 
 
@@ -117,14 +117,14 @@ def create_project(engine: Engine, name: str) -> ProjectRecord:
     cleaned = " ".join(name.split())
     slug = slug_for(cleaned)
     if not cleaned or not slug:
-        raise ProjectCreationRefused(
+        raise ProjectCreationRefusedError(
             "a project needs a name with at least one letter or digit in it."
         )
     with engine.begin() as connection:
         for existing in (_project(row) for row in connection.execute(_SELECT_PROJECTS).all()):
             if existing.slug == slug or existing.name.casefold() == cleaned.casefold():
                 state = "archived" if existing.archived_at is not None else "active"
-                raise ProjectCreationRefused(
+                raise ProjectCreationRefusedError(
                     f"a project named {existing.name!r} ({state}, slug {existing.slug!r}) "
                     "already exists. Choose a different name; two projects answering to "
                     "the same name would make every reference to it ambiguous."

@@ -82,7 +82,7 @@ from val_gateway.persistence import (
     uncosted_calls_this_month,
 )
 from val_gateway.projects import (
-    ProjectCreationRefused,
+    ProjectCreationRefusedError,
     create_project,
     load_catalogue,
     project_listing,
@@ -140,7 +140,7 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
         """
         try:
             return ProjectView.of(create_project(engine, request.name))
-        except ProjectCreationRefused as refused:
+        except ProjectCreationRefusedError as refused:
             raise HTTPException(status_code=409, detail=str(refused)) from refused
 
     @app.get("/conversations")

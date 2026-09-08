@@ -14,7 +14,7 @@ from sqlalchemy import Engine, text
 from test_persona import clean_personas  # noqa: F401 - fixture reused
 
 from val_gateway.projects import (
-    ProjectCreationRefused,
+    ProjectCreationRefusedError,
     create_project,
     load_catalogue,
     project_listing,
@@ -58,16 +58,16 @@ def test_surrounding_and_repeated_whitespace_is_normalised_in_the_name(store: En
 
 @pytest.mark.parametrize("name", ["", "   ", "***", "—"])
 def test_a_name_with_nothing_to_identify_it_by_is_refused(store: Engine, name: str) -> None:
-    with pytest.raises(ProjectCreationRefused, match="at least one letter or digit"):
+    with pytest.raises(ProjectCreationRefusedError, match="at least one letter or digit"):
         create_project(store, name)
     assert project_listing(store) == ()
 
 
 def test_a_name_already_held_is_refused_in_words(store: Engine) -> None:
     create_project(store, "Tony Spumoni")
-    with pytest.raises(ProjectCreationRefused, match="already exists"):
+    with pytest.raises(ProjectCreationRefusedError, match="already exists"):
         create_project(store, "tony spumoni")  # same name, different case
-    with pytest.raises(ProjectCreationRefused, match="already exists"):
+    with pytest.raises(ProjectCreationRefusedError, match="already exists"):
         create_project(store, "Tony  Spumoni!")  # same slug
     assert len(project_listing(store)) == 1
 
@@ -78,5 +78,5 @@ def test_an_archived_project_still_holds_its_name(store: Engine) -> None:
         connection.execute(
             text("update projects set archived_at = now() where id = :i"), {"i": created.id}
         )
-    with pytest.raises(ProjectCreationRefused, match="archived"):
+    with pytest.raises(ProjectCreationRefusedError, match="archived"):
         create_project(store, "Tony Spumoni")
