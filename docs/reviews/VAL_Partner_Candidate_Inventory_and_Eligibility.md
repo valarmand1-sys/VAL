@@ -46,7 +46,7 @@ Sources: `platform.claude.com/docs/en/about-claude/pricing`, `/docs/en/models/ov
 | Usable after admission | In use | Yes, by registry entry alone |
 | Sonnet 5 pricing note, verbatim from the pricing page | | "The $2/$10 per million input/output token pricing for Claude Sonnet 5, announced at launch as introductory pricing through August 31, 2026, is now the standard price. The previously scheduled increase to $3/$15 per million input/output tokens on September 1, 2026 will not occur." |
 
-Not candidates: Claude Fable 5.1 / Fable 5 / Mythos (Covered Models: 30-day retention required, ZDR unavailable, $10 / $50 — a new eligibility decision by the 18 August ruling, and outside the economic target); Claude Haiku 4.5 (structured only; retiring).
+Not candidates today: Claude Haiku 4.5 (structured only; retiring). **Claude Fable 5.1 is inventoried in `VAL_Console_and_Effort_Report.md` §2.2** at Lord Armand's direction (8 September): a Covered Model with 30-day retention, callable by this organisation, and not Protected-eligible here without a new ruling; Fable 5 and Mythos likewise.
 
 ### 2.2 OpenAI (admitted provider)
 

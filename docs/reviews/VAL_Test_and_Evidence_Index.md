@@ -676,7 +676,14 @@ Point 5 stands at one enforced deliberation.
 
 Deployed: CI green on 820d2f1; service restarted; health running with no warnings. Live-provider re-check of the refusal path was not possible on the day — the Anthropic account reported an exhausted credit balance during the effort probe (§15).
 
-## 15. Effort probe — 8 September 2026 — NOT RUN
+## 15. Effort probe — 8 September 2026 — economics and behaviour only
 
-`probe_effort.py` (scratch, adapter-direct, persona whole, 1-hour cache; six prompts × high / medium / low on Claude Opus 5) failed on its first call: the provider returned `400 invalid_request_error: "Your credit balance is too low to access the Anthropic API"`. No figures were produced. The probe is ready to run once the account is funded; until then every partner call on the live route fails the same way, honestly, with no fallback.
+`probe_effort.py` (scratch, adapter-direct, real persona whole, 1-hour cache; six identical synthetic prompts × Claude Opus 5 at `high` / `medium` / `low`, adaptive thinking on). First attempt failed on an exhausted credit balance; re-run after funding. All eighteen calls completed `end_turn`, no refusal, no truncation. Full table and findings: `VAL_Console_and_Effort_Report.md` §1. Measured, not documented: an effort change re-writes the persona's cache entry on this model. **Qualifies nothing.**
 
+## 16. xAI zero-data-retention guard — preparation, 8 September 2026
+
+`packages/providers/tests/test_xai_guard.py`: the header must affirm `true` (case-insensitive, absent is not true); an affirmed response is handed onward; a response without the header, or denying ZDR, is refused as `not_eligible` with its text withheld; the schema is sent strict and no cache key or lifetime is sent; **nothing registers the adapter** (no registry entry, no key variable). All **PASS**. xAI remains not admitted.
+
+## 17. Claude Fable 5.1 access check — 8 September 2026
+
+One call, public content only ("Hello.", 12 in / 13 out, `end_turn`), through this organisation's key: **succeeded**, establishing that the organisation is a standard-retention organisation (a Covered Model request from a ZDR organisation returns 400). Consequence recorded in `VAL_Console_and_Effort_Report.md` §2.2: Fable 5.1 prompts and completions would be retained by Anthropic for at least 30 days; not Protected-eligible in this organisation as it stands; not a qualification candidate for Protected work without a ruling.
