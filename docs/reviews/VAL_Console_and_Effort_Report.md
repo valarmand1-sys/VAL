@@ -171,3 +171,75 @@ Ruled 8 September: before freezing v1.3, prove on the real machinery that the co
 2. **Machinery.** Amend the strip contract so that `separable: false` requires a stated reason and is permitted only when the preference is grammatically inside the question — a WP-0.9 contract change on the structured route, with its own demonstration, and a candidate for the OP-4 successor work since the route is retiring.
 3. **Packet rule.** Treat contamination as void and re-run up to a bounded count without counting against the candidate. This masks a machinery weakness inside a quality exam and is listed only for completeness.
 
+## 9. Strip conformance — the frozen suite through four structured routes
+
+Ruled 8 September: build a bounded strip conformance suite with explicit ground truth, freeze it, run it repeatedly through the current Haiku strip configuration and at least one current structured configuration from an already-admitted provider, under the existing contract, and report every run. Suite v1 (fourteen cases, `docs/reviews/qualification/strip-conformance/v1/`) frozen at ed50662; the run — eight runs per case per route, 448 calls, adapter-direct, contract unchanged — is in `results-2026-09-08.md` and `.json` beside it.
+
+### 9.1 Results
+
+| Route | Conformant | False contamination (fail-closed) | Blocking | Median latency |
+|---|---|---|---|---|
+| **Haiku 4.5** — the registered strip route | **35 / 112** | 27 | **50** | 1.8 s |
+| Claude Sonnet 5 — admitted provider, current, unregistered probe | 91 / 112 | 0 | 21 | 4.1 s |
+| **`gpt-5-5-20260423`** — registered, admitted, medium | **90 / 112** | 0 | 22 | 5.4 s |
+| GPT-5.6 Terra — admitted provider, current, unregistered probe | 87 / 112 | 0 | 25 | 2.7 s |
+
+Per case (conformant / false-contamination / blocking of 8):
+
+| Case | Haiku | Sonnet 5 | gpt-5.5 | Terra |
+|---|---|---|---|---|
+| C1 trailing preference | 3/0/5 | 8/0/0 | 8/0/0 | 8/0/0 |
+| C2 preference + instruction | 0/0/8 | 8/0/0 | 8/0/0 | 8/0/0 |
+| C3 attributed prior + preference | 0/5/3 | 8/0/0 | 8/0/0 | 8/0/0 |
+| C4 attributed prior + preference | 3/5/0 | 8/0/0 | 8/0/0 | 8/0/0 |
+| C5 third-party + preference | 0/8/0 | 0/0/8 | 0/0/8 | 4/0/4 |
+| C6 prior commitment | 0/8/0 | 8/0/0 | 8/0/0 | 8/0/0 |
+| S1 trailing preference | 6/0/2 | 8/0/0 | 8/0/0 | 8/0/0 |
+| S2 preference before question | 8/0/0 | 8/0/0 | 8/0/0 | 8/0/0 |
+| S3 attributed prior + preference | 7/0/1 | 8/0/0 | 8/0/0 | 8/0/0 |
+| S4 third-party + preference | 0/0/8 | 0/0/8 | 0/0/8 | 0/0/8 |
+| S5 prior commitment | 0/1/7 | 8/0/0 | 8/0/0 | 8/0/0 |
+| S6 embedded clause | 0/0/8 | 4/0/4 | 2/0/6 | 3/0/5 |
+| S7 genuinely inseparable | 0/0/8 | 7/0/1 | **8/0/0** | 0/0/8 |
+| S8 no preference | 8/0/0 | 8/0/0 | 8/0/0 | 8/0/0 |
+
+### 9.2 What the blocking runs actually were
+
+Three distinct things, and they must not be added together:
+
+1. **Route failures under the contract (Haiku only).** On C1, C2, C3, S1, S3, S5 Haiku removed the commitment instruction together with the preference ("Choose one and defend it briefly.", "Decide and defend it.", "Pick one.", "Choose one.") — neutral decision content wrongly removed, 42 runs. On S6 it deleted the clause without its punctuation and left "the flashback, , or cut it?" (8 of 8). On **S7, the genuinely inseparable case, Haiku recorded `separable: true` with no spans on 8 of 8 runs.** Plus 27 false contaminations (C3, C4, C5, C6, S5), which is the unreliability the earlier finding reported. No other route removed instruction text, mangled S6 that way, or produced a single false contamination.
+2. **A contract reading the suite made, which three routes did not share (C5, S4, 40 runs across Sonnet, gpt-5.5, Terra).** The suite's ground truth withholds a third party's recommendation ("Casting says keep.", "The DP recommends night.") as "anyone else's view" under the blind-position rule; the strip contract as written asks only for "the author's preference, inclination, or preferred answer". Sonnet 5, gpt-5.5 and (half the time) Terra followed the contract literally and left the third-party sentence in; Haiku, when it separated at all, removed it. **This is a contract question for ruling, not a route failure**, and it was flagged as a reading for confirmation in the suite itself.
+3. **A span-boundary choice the suite fixed one way (S6).** The expected residue was "Do we keep the flashback, or cut it?" (span ending in ", "); Sonnet 5 and gpt-5.5 mostly chose the span ", which I think is the best scene we have," and produced "Do we keep the flashback or cut it?" — the same words, one comma fewer. Both are exact whole-clause deletions leaving a coherent question. The suite's exact-residue bar, as ruled, counts this as blocking; the finding is that **the suite's ground truth should accept either boundary for S6**, which is a suite correction for ruling, not a route finding. Terra also produced Haiku's mangled form on two runs.
+
+Set aside categories 2 and 3 (both for ruling) and the picture is:
+
+| Route | Substantive blocking failures | False contamination |
+|---|---|---|
+| Haiku 4.5 | instruction removal ×42 runs; S6 mangling ×8; **S7 inseparable recorded separable ×8** | 27 |
+| Claude Sonnet 5 | **S7 inseparable recorded separable ×1** | 0 |
+| `gpt-5-5-20260423` | **none in 112 runs** | 0 |
+| GPT-5.6 Terra | S7 inseparable recorded separable ×8; S6 mangling ×2 | 0 |
+
+### 9.3 The S7 finding is a live-use defect on the current route
+
+An inseparable message — "Why is the wide shot the right opening for episode three?" — recorded `separable: true` with an empty span list yields a derived question identical to the original, **and the orchestrator then records the blind position as `ordering = enforced`** with the preference fully present in the blind input. That is an independence violation wearing the enforced label, on the route in production, on 8 of 8 runs. It is not the fail-closed direction. It also fails on GPT-5.6 Terra. The mechanical fact behind it: the contract says "if the preference IS the question, say separable is false", but nothing checks the consistency of a reply that says *preference present, separable, nothing removed* — which cannot all be true.
+
+### 9.4 Route failure or contract failure — the distinction the ruling asked for
+
+- **Route failure, established:** the instruction removal, the S6 mangling, the false contaminations, and the S7 failure are Haiku's and (S7, S6 partly) Terra's; two other routes under the identical contract do not exhibit them. The strip contract is executable as written by a current structured configuration.
+- **Contract questions, established, for ruling:** whether third-party recommendations are withheld (C5, S4); whether either clause boundary is acceptable for an embedded clause (S6). Neither is a defect in any route.
+- **One bounded algorithmic gap, established:** the parser accepts *preference present ∧ separable ∧ nothing removed*. That combination is contradictory under the contract and should be refused as inseparable (contaminated) deterministically, whatever the route. This is a consistency guard in `parse_strip_outcome`, not a contract change — proposed, not applied.
+
+### 9.5 Returned for designation — nothing designated
+
+Under the ruling path, an already-admitted structured route that demonstrates reliable conformance under the existing contract is returned for designation as the strip route:
+
+- **`gpt-5-5-20260423`** — registered, admitted, OpenAI, effort medium: **112 of 112 runs free of substantive failure**, zero false contamination, S7 correct 8 of 8; its only non-conformant runs are the two contested categories. Median latency 5.4 s against Haiku's 1.8 s, and about four times Haiku's per-call price ($5 / $30 against $1 / $5 on roughly 900 input and 130 output tokens: ≈$0.008 against ≈$0.002 per strip). Caveat: OpenAI's catalogue no longer lists GPT-5.5 as current, though it is served and priced.
+- **Claude Sonnet 5** — admitted provider, current model, **not registered**: 111 of 112 free of substantive failure, zero false contamination, one S7 miss; median 4.1 s; ≈$0.003 per strip. Registration would be a registry change for ruling.
+
+Designation is Lord Armand's. Whichever is designated, the C1–C6 proof is then re-run on it as ruled; for `gpt-5-5-20260423` the C1–C4 and C6 rows above are already 8 of 8 as intended, with C5 waiting on the third-party ruling. The designation is for the **strip task only**; nothing here is evidence for classification or title.
+
+### 9.6 Bounded repair proposal, if the contract is amended (not applied)
+
+Even with a conformant route, two things are worth fixing deterministically rather than by trusting any model's `separable`: (1) the consistency guard in §9.4 — *present ∧ separable ∧ empty* is refused; (2) the derivation treats a span boundary that leaves an orphaned comma or double punctuation as an exact-match failure only if the resulting residue is not the same words as some other exact clause deletion — i.e. the house, not the model, normalises "flashback, , or" and "flashback or" to the punctuation-correct whole-clause deletion. Beyond those, the ruling's preferred direction — deterministic sentence or clause segmentation plus structured semantic labelling of each segment and exact-span deletion — would make the model's job "label these segments" rather than "copy these characters", and would have prevented every Haiku failure above except S7. That is a design for a separate ruling; it is not required to run the packet if a conformant route is designated.
+
