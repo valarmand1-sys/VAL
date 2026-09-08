@@ -58,6 +58,14 @@ class ProviderResult:
     cache_read_tokens: int | None = None
     cache_write_5m_tokens: int | None = None
     cache_write_1h_tokens: int | None = None
+    #: Ruling, 8 September 2026: the provider's own terminal fields, verbatim,
+    #: so a call that ended with no text can be reported by its observed cause
+    #: rather than by a guess. `stop_reason` is the provider's stop reason or
+    #: status string; `stop_details` is whatever structured detail rode with it
+    #: (a refusal category and explanation, an incomplete reason), rendered as
+    #: text. `None` when the provider gave none.
+    stop_reason: str | None = None
+    stop_details: str | None = None
 
     @property
     def total_input_tokens(self) -> int | None:

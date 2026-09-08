@@ -771,6 +771,8 @@ class Gateway:
             # WP-0.9: evidence that must name its call — blind_positions —
             # names the row this call actually wrote.
             model_call_id=call_id,
+            stop_reason=result.stop_reason,
+            stop_details=result.stop_details,
         )
 
     def _settle_unknown(

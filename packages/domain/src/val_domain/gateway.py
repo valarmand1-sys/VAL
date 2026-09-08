@@ -657,6 +657,10 @@ class GatewayResponse(BaseModel):
     cost_usd: float | None
     latency_ms: int
     provider_request_id: str | None
+    #: Ruling, 8 September 2026: the provider's own terminal fields, verbatim,
+    #: for reporting a call that ended with no text by its observed cause.
+    stop_reason: str | None = None
+    stop_details: str | None = None
     #: WP-0.9, 19 August 2026. The `model_calls` row this call wrote, so
     #: evidence that must name its call — a `blind_positions` row — can name
     #: it without a second query that might not find the same row. None only

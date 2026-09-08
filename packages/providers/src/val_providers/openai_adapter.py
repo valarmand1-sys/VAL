@@ -164,10 +164,18 @@ class OpenAIAdapter:
             terminal = TerminalState.UNKNOWN
 
         usage = response.usage
+        incomplete_reason = getattr(getattr(response, "incomplete_details", None), "reason", None)
         return ProviderResult(
             text=refusal if refusal is not None else (response.output_text or ""),
             terminal=terminal,
             tokens_in=usage.input_tokens if usage else None,
             tokens_out=usage.output_tokens if usage else None,
             provider_request_id=response.id,
+            # Ruling, 8 September 2026: the provider's own terminal fields.
+            stop_reason=response.status,
+            stop_details=(
+                f"incomplete_details.reason={incomplete_reason}"
+                if incomplete_reason
+                else ("refusal item present" if refusal is not None else None)
+            ),
         )

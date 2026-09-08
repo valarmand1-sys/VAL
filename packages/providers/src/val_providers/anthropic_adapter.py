@@ -155,6 +155,15 @@ class AnthropicAdapter:
                 write_1h = creation_total
             else:
                 write_5m = creation_total
+        # Ruling, 8 September 2026: the provider's terminal fields travel with
+        # the result. `stop_details` carries a refusal's category and
+        # explanation when the provider gives them; it is rendered as text and
+        # never interpreted here.
+        details = getattr(response, "stop_details", None)
+        rendered_details: str | None = None
+        if details is not None:
+            dump = getattr(details, "model_dump", None)
+            rendered_details = str(dump(exclude_none=True)) if callable(dump) else str(details)
         return ProviderResult(
             text=text,
             terminal=_STOP_REASONS.get(response.stop_reason or "", TerminalState.UNKNOWN),
@@ -164,6 +173,8 @@ class AnthropicAdapter:
             cache_read_tokens=getattr(usage, "cache_read_input_tokens", None),
             cache_write_5m_tokens=write_5m,
             cache_write_1h_tokens=write_1h,
+            stop_reason=response.stop_reason,
+            stop_details=rendered_details,
         )
 
 

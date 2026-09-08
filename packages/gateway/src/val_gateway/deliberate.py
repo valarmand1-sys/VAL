@@ -504,6 +504,10 @@ def send(
         response,
         spoken_text=prose if reconciliation is not None else None,
     )
+    if isinstance(turn, UnansweredTurn):
+        # Ruling, 8 September 2026: no valid assistant content — the blind
+        # evidence row stays, no deliberation is written, nothing is spoken.
+        return turn
 
     # 9. The deliberation, complete, from her explicit verdict — or not at all.
     deliberation = None

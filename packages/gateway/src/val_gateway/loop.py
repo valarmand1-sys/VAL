@@ -64,6 +64,7 @@ inventing exactly the machinery `02-partner-systems.md` reserves.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -88,6 +89,8 @@ from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage, recall
 from val_gateway.projects import ProjectSession
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.restricted import preflight, refusal_message
+
+_LOGGER = logging.getLogger("val.loop")
 
 
 @dataclass(frozen=True)
@@ -370,8 +373,19 @@ def settle_turn(
     response: GatewayResponse,
     *,
     spoken_text: str | None = None,
-) -> Turn | TruncatedTurn:
+) -> Turn | TruncatedTurn | UnansweredTurn:
     """Step 10: what happens to the text depends on how the call actually ended.
+
+    **Ruling, 8 September 2026: a result with no valid user-visible text never
+    becomes a Val message.** The 18 August doctrine below assumed a refusal
+    carries words; a provider refusal with zero output tokens was persisted as
+    an empty utterance — a false record, the same class as the classifier
+    failing silently to ordinary. Now: if the text to be spoken is empty, the
+    turn ends **unanswered**, the user message and the `model_calls` row stay,
+    the provider's own terminal fields are surfaced as the observed cause
+    outside Val's voice, and no assistant message is written. Where the
+    provider gave a recognised reason (a refusal, a cut-off), the cause names
+    it; where it gave none, the cause states only the observed fact.
 
     Closure pass, 18 August 2026. COMPLETE and REFUSED are both whole
     utterances (a deliberate refusal is Val's answer) and join the record.
@@ -387,6 +401,10 @@ def settle_turn(
     it. What she *said* is the prose; the verdict is machinery output, and the
     raw text stays inspectable on `response.text`.
     """
+    spoken = response.text if spoken_text is None else spoken_text
+    if not spoken.strip():
+        return _no_valid_content(opened, response)
+
     if response.terminal in (TerminalState.TRUNCATED, TerminalState.FILTERED):
         # TRUNCATED: the output cap cut it off. FILTERED — independent-review
         # correction, 18 August 2026: the provider's content filter cut it off,
@@ -406,7 +424,7 @@ def settle_turn(
         engine,
         opened.conversation.id,
         role=StoredRole.VAL,
-        content=response.text if spoken_text is None else spoken_text,
+        content=spoken,
     )
 
     return Turn(
@@ -416,6 +434,64 @@ def settle_turn(
         val_message=val_message,
         response=response,
         recalled=recalled,
+    )
+
+
+def _no_valid_content(opened: OpenedTurn, response: GatewayResponse) -> UnansweredTurn:
+    """The provider returned no valid assistant text: unanswered, with the observed cause.
+
+    Ruling, 8 September 2026. Nothing here invents an explanation. A refusal
+    the provider declared is reported as a refusal with whatever category or
+    detail it supplied; a cut-off is reported as the cut-off; a completed
+    call with nothing in it is reported as exactly that.
+    """
+    observed = f"stop_reason: {response.stop_reason or 'not reported'}"
+    if response.stop_details:
+        observed += f"; details: {response.stop_details}"
+    _LOGGER.warning(
+        "no valid assistant content from %s (terminal=%s; %s; output tokens=%s); the turn "
+        "ends unanswered and no Val message is written",
+        response.slug,
+        response.terminal.value,
+        observed,
+        response.tokens_out,
+    )
+    calls = () if response.model_call_id is None else (response.model_call_id,)
+    if response.terminal is TerminalState.REFUSED:
+        return UnansweredTurn(
+            conversation=opened.conversation,
+            scope=opened.scope,
+            user_message=opened.user_message,
+            error=GatewayError(
+                GatewayErrorKind.REFUSAL,
+                f"the provider refused to answer and returned no text ({observed}). "
+                "Nothing was written in Val's voice; the call is recorded.",
+                model_call_ids=calls,
+            ),
+        )
+    if response.terminal in (TerminalState.TRUNCATED, TerminalState.FILTERED):
+        return UnansweredTurn(
+            conversation=opened.conversation,
+            scope=opened.scope,
+            user_message=opened.user_message,
+            error=GatewayError(
+                GatewayErrorKind.INVALID_OUTPUT,
+                f"the provider ended the call {response.terminal.value} with no text "
+                f"({observed}). Nothing was written in Val's voice; the call is recorded.",
+                model_call_ids=calls,
+            ),
+        )
+    return UnansweredTurn(
+        conversation=opened.conversation,
+        scope=opened.scope,
+        user_message=opened.user_message,
+        error=GatewayError(
+            GatewayErrorKind.INVALID_OUTPUT,
+            f"the provider returned no valid assistant content ({observed}). No reason was "
+            "recognised, and none is invented; nothing was written in Val's voice, and the "
+            "call is recorded.",
+            model_call_ids=calls,
+        ),
     )
 
 
