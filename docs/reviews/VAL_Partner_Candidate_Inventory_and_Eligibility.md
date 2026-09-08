@@ -227,3 +227,18 @@ Prerequisites are a gate: passing them establishes eligibility to be tested, not
 3. **Google Vertex:** whether to pursue the abuse-monitoring exception and build the adapter, given the checklist.
 4. **Z.ai:** obtain the DPA before any further step, or leave excluded.
 5. **The packet:** approve as the standard, amend, or replace.
+
+---
+
+## 6. Addendum — 8 September 2026, after the eligibility ruling
+
+**Provider evidence bar (ruled).** For any fact the Protected-data rule requires, undocumented means not established. Acceptable proof: first-party public documentation; governing contractual terms or addenda; account-console evidence; or a durable, dated, authoritative written provider response covering the exact service, account, and feature. A generic sales or support assurance is insufficient; a conflict between documentation and a support answer stops for ruling.
+
+**xAI — caching under ZDR, re-checked.** `docs.x.ai/developers/advanced-api-usage/prompt-caching` and its best-practices page, read 8 September 2026: caching is automatic ("the xAI API performs prompt caching automatically"); "cache entries can be evicted at any time due to server load or restarts"; a cache is made reliable by routing to the same server with `x-grok-conv-id` or `prompt_cache_key`, and avoided by omitting the header — but the pages say nothing about whether cached state is persisted, where, or how ZDR applies to it, and the security FAQ does not mention caching. **Status: not established.** Under the evidence bar this needs a durable written provider response covering the exact team and the caching feature before Protected admission; the alternative the ruling allows — admission with caching avoided (no cache key, so no server affinity) — still rests on an undocumented claim that an un-keyed request holds no cache, and so also needs the written answer. The runtime guard (refuse unless `x-zero-data-retention: true`) is implementable now and would be part of the adapter.
+
+**Google Vertex — what the actual project must show.** Eligibility is conditional on evidence from the billing-enabled project Val would use, which does not yet exist. When it does, the admission ruling needs, from that project: (1) the abuse-monitoring exception status — the approval record from Google's form, or a Master Agreement; (2) the caching setting read back from the project (Google documents `GET` / disable / enable calls for the project-level in-memory cache; the current setting is recorded either way, since the documented in-memory 24-hour cache "does not violate zero data retention" and is not by itself a blocker); (3) request–response logging confirmed off; (4) session resumption never enabled and `store = false` on every request, enforced in the adapter; (5) grounding never requested. Items 1–2 are console and API evidence; 3–5 are adapter and configuration obligations, testable.
+
+**GLM — unchanged.** Not admitted; API data handling is not established. The consumer privacy policy expressly excludes API customers and does not count. Resolution needs the governing API terms or addendum, or an authoritative written provider confirmation covering the API arrangement.
+
+**Qualification is configuration-specific (ruled).** The unit qualified is the exact configuration — provider, exact model and version, API mode, reasoning or effort setting, and any other field materially affecting behaviour or economics — never the model name. The packet in `docs/reviews/qualification/VAL_Partner_Qualification_Packet.md` is amended accordingly, with effort as a configuration dimension.
+

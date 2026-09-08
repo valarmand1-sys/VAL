@@ -662,3 +662,21 @@ Point 5 stands at one enforced deliberation.
 
 **Deployment:** live store migrated to `0015` (`alembic -x deploy=live upgrade head`); `VAL_CACHE_TTL=1h` set in the installed service environment; service reloaded, health running with no warnings; CI green on 7b61530.
 
+## 14. A result with no valid assistant text — 8 September 2026
+
+`packages/gateway/tests/test_empty_response.py`, real PostgreSQL, scripted adapter through the real orchestrator:
+
+| # | Case | Result |
+|---|---|---|
+| 14.1 | Textual success is persisted as before | **PASS** |
+| 14.2 | Zero-output refusal: unanswered, kind `refusal`, cause carries `stop_reason: refusal` and the provider's detail (`reasoning_extraction` in the fixture), the call named; no Val message; the `model_calls` row stands as `refused` | **PASS** |
+| 14.3 | Zero output with a recognised terminal reason (`max_tokens`): unanswered, cause names the cut-off, no refusal wording invented | **PASS** |
+| 14.4 | Zero output with no recognised reason (`end_turn`, whitespace): unanswered, cause states only that no valid assistant content was returned; no Val message; the call stands as `complete` / `ok` | **PASS** |
+| 14.5 | Empty consequential response: unanswered, the blind row stays, no deliberation, no Val message | **PASS** |
+
+Deployed: CI green on 820d2f1; service restarted; health running with no warnings. Live-provider re-check of the refusal path was not possible on the day — the Anthropic account reported an exhausted credit balance during the effort probe (§15).
+
+## 15. Effort probe — 8 September 2026 — NOT RUN
+
+`probe_effort.py` (scratch, adapter-direct, persona whole, 1-hour cache; six prompts × high / medium / low on Claude Opus 5) failed on its first call: the provider returned `400 invalid_request_error: "Your credit balance is too low to access the Anthropic API"`. No figures were produced. The probe is ready to run once the account is funded; until then every partner call on the live route fails the same way, honestly, with no fallback.
+

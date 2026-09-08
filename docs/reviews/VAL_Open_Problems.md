@@ -80,3 +80,22 @@ they demonstrably fail. (Also stated in `CLAUDE.md`, Current work.)
 | **Responsible layer / WP** | The attachment-substrate work package (post-gate order item 2). |
 | **Closure condition** | An exact-composition assertion lands with the substrate: the assembled request contains exactly the enumerated parts and nothing else, so any later addition must name itself in the test. |
 | **Last reviewed** | 1 September 2026. |
+
+---
+
+## OP-4 — The structured route retires; a successor must be demonstrated before it does
+
+| Field | |
+|---|---|
+| **Problem ID** | OP-4 |
+| **Status** | **Open. Time-bounded.** Recorded 8 September 2026 at Lord Armand's direction. |
+| **Statement** | Classification, strip, and title all run on the `structured` profile, and today the only route that serves it in practice is `haiku-4-5-20251001` (Claude Haiku 4.5), whose retirement Anthropic states as "not sooner than October 15, 2026" (models overview, read 8 September 2026). The other structured route, `gpt-5-5-20260423`, is itself superseded in OpenAI's catalogue. Nothing else is demonstrated under the strict schemas the classifier, strip, and blind position use. |
+| **Affected invariants** | `04-layer-0.md` WP-0.9 (the classifier contract; unknown classification is never ordinary); `01-architecture.md` §5.2 (capability profiles); §5.5 standing rule (no silent step-down). |
+| **What is known** | Claude Sonnet 5 supports the same `output_config.format` structured outputs on the same adapter, at $2 / $10 and a 1,024-token cache minimum; GPT-5.6 supports strict JSON schema on the existing OpenAI adapter. Neither has answered a classification, strip, or blind call. Existing OpenAI fallback evidence (18 completed conversation calls on 18 August; one scratch classification on `gpt-5.5` on 7 September) contributes but does not substitute for demonstrating the replacement under the current schemas. |
+| **Current mitigation / detection** | The declared fallback chain (`haiku-4-5-20251001` → `gpt-5-5-20260423`) and the router's honest no-route failure; startup's stale-rate warnings. Detection: this entry, and the retirement date. |
+| **Why not being solved now** | The empty-response repair and the ordinary-conversation economics come first by ruling; this item is bounded by a date, not by them. |
+| **Review checkpoints** | **Before 15 October 2026**, and at any registry change touching the structured profile. Does not block the empty-response repair or the economics work. |
+| **Responsible layer / WP** | Layer 0 — the registry and WP-0.9's contract. No partner qualification is needed to serve the structured profile. |
+| **Closure condition** | A current configuration is registered, declared `structured`, and **demonstrated** under the same classifier, strip, and blind-position schemas in the scratch store (parseable verdicts, verbatim strip spans, complete blind positions within the ceiling), with measured cost per call, and designated by ruling as the structured route — before the retirement window. |
+| **Last reviewed** | 8 September 2026. |
+
