@@ -696,7 +696,7 @@ Ruled before freezing: run the real strip machinery on the corrected C3 and C4 a
 |---|---|---|---|
 | C1 | question, then a standalone trailing preference | 8 / 8 | 8 / 8 |
 | C2 | question, then a standalone preference and instruction | 8 / 8 | 8 / 8 |
-| C3 (corrected) | alternatives stated, then attributed prior, then preference, then question | 4 / 8 | 3 / 8 (one run stripped "I now think it should swell." as the preference and left the derived question otherwise intact) |
+| C3 (corrected) | alternatives stated, then attributed prior, then preference, then question | 4 / 8 | 3 / 8 (on one separable run the strip named "I now think it should swell." as the preference span in a form not found verbatim, so the derivation refused it — contaminated by the verbatim rule, correctly) |
 | C4 (corrected) | alternatives stated, then attributed prior, then preference, then question | 2 / 8 | 2 / 8 |
 | C5 | compact: question, "Casting says keep. I say recast.", instruction | 1 / 8 | 1 / 8 |
 | C6 | compact: question, "I've already told the designer …", instruction | 0 / 8 | 0 / 8 |
