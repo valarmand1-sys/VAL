@@ -110,13 +110,13 @@ _ELIGIBLE = (
 # The three queries below concatenate module constants only — no value from
 # outside this file reaches the SQL text; parameters travel as bind values.
 _QUEUE = text(
-    _ELIGIBLE + "   and not exists (select 1 from classification_labels l "
+    _ELIGIBLE + "   and not exists (select 1 from classification_labels l "  # noqa: S608 - constants only; values travel as bind parameters
     "                   where l.classification_id = k.id) "
     " order by k.created_at, k.id limit :limit"
 )
 
 _LABELLED = text(
-    _ELIGIBLE + "   and exists (select 1 from classification_labels l "
+    _ELIGIBLE + "   and exists (select 1 from classification_labels l "  # noqa: S608 - constants only; values travel as bind parameters
     "               where l.classification_id = k.id) "
     " order by k.created_at, k.id"
 )
