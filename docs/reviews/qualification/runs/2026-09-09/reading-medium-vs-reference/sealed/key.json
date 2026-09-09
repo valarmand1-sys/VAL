@@ -1,0 +1,125 @@
+{
+  "seed": 20260909,
+  "candidate": {
+    "provider": "anthropic",
+    "model": "claude-opus-5",
+    "slug": "opus-5",
+    "id": "4e38c060-3b9a-495d-bc54-73acd1530cd5",
+    "api_mode": "Messages API, synchronous; structured outputs on the blind call",
+    "effort": "medium",
+    "adaptive_thinking": "on",
+    "cache": "system breakpoint, 1h",
+    "partner_output_ceiling": 4096,
+    "persona_revision": "01a086b5-f4be-7ff1-b9f2-a94ca978f2ad"
+  },
+  "reference": {
+    "provider": "anthropic",
+    "model": "claude-opus-5",
+    "slug": "opus-5",
+    "id": "4e38c060-3b9a-495d-bc54-73acd1530cd5",
+    "api_mode": "Messages API, synchronous; structured outputs on the blind call",
+    "effort": "high",
+    "adaptive_thinking": "on",
+    "cache": "system breakpoint, 1h",
+    "partner_output_ceiling": 4096,
+    "persona_revision": "01a086ac-4656-7512-9015-f4ae8a556a58"
+  },
+  "map": {
+    "O1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O2": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O3": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O4": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O5": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O6": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O7": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O8": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O9": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O10": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O11": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O12": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C2": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C3": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "C4": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C5": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C6": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "T1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "T2": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "T3": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "A1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "A2": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "L1": {
+      "A": "reference",
+      "B": "candidate"
+    }
+  }
+}
