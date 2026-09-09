@@ -55,3 +55,7 @@ For every C prompt in every run, `blind_positions.model_call_id → model_calls.
 ## What is held
 
 Partner qualification of anything beyond these three, substantive Val use, and WP-0.11 remain held pending the reading and ruling. The v1.3 packet, corpus and runs are preserved unchanged as diagnostic evidence. Identities in the reading files stay sealed until the entries are complete.
+
+## Adjudication appended after the runs — I1 ruling, 9 September 2026
+
+See `RULING-2026-09-09-I1.md`. The as-run I1 scores above are preserved unaltered; an adjudicated result under the ruled word-count definition sits beside each in `run.json` (`mechanical_adjudicated`) and in the mechanical sheets. Under it High, Medium and Low are 18, 20 and 20 words, all pass, and **all three mechanically clear v1.4 pending human reading**. That is not partner qualification.
