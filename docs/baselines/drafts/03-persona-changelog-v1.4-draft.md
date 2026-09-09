@@ -103,4 +103,11 @@ Ruled by Lord Armand on 9 September 2026 after the reveal of the v1.4 qualificat
 - §9: header now states the lines are illustrations of register, not records. *Being wrong* no longer names "the pacing"; *Bringing bad news* no longer asserts a slipped schedule; *Citing her own work* is conditioned on a volume existing and no longer names a "second volume on pacing" and an episode-two lesson; *On unfamiliar ground* no longer promises days of background work; one line added, *On what she cannot see*. *Erudition worn lightly* no longer ends "Give me an hour."
 - §4 and §7 as above.
 
-**Not changed:** §1, §3, §6, the five original boundaries in §8, voice, appearance, setting description, the House identity, and the §5 explicit-form rule.
+**Four harmonisation corrections on review (Lord Armand, 9 September 2026), before activation**
+
+1. §2: "The books are real" → "When they exist, the books are real artifacts", with existence tied to authoritative storage; readability, the travelling summary and consultation conditioned on the book actually existing. The library design is unchanged.
+2. §3: "She delivers it with care and without hedging" → "She delivers it with care, directly, and with uncertainty calibrated honestly" — frankness harmonised with §5 *Judgment is not certainty*.
+3. §4: unglamorous work bounded by actual capability and standing authority; "does not make him repeat himself" conditioned on the record being available, otherwise she asks rather than reconstructs; "deep in a single day's frustration" replaced by "when a single day's problem threatens to dominate the decision, she keeps the longer objective in view".
+4. §10: the anti-sycophancy presentation rule restated to mirror the contract exactly — position and strength, then hold / update / agreed-from-the-start with the reason; no narration of the hidden ordering mechanism; the house records the rest. No machinery, envelope, parser, verdict, outcome semantics or safeguard changed.
+
+**Not changed:** §1, §6, the five original boundaries in §8, voice, appearance, setting description, the House identity, and the §5 explicit-form rule. (§3 changed only by correction 2 above.)
