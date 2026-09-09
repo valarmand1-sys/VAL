@@ -1,7 +1,7 @@
-# VAL — Partner Qualification Packet, v1.2 (corrections of 8 September applied; NOT frozen — see the strip finding, evidence index §18)
+# VAL — Partner Qualification Packet, v1.3 — FROZEN 9 September 2026
 
-**Date:** 8 September 2026 (v1.2: isolation of independent prompts; a genuinely synthetic corpus; O9 mandatory; the confidence rubric as internal consistency; a long-context transcript that requires the retained tail; corrections ruled the same day).
-**Status:** Proposed. **Nothing is executed under it until approved.** If changes are asked for, the document is revised and stops again for approval.
+**Date:** 9 September 2026. v1.3 = v1.2 with the two corrections of 8 September (C3 and C4 restated so both alternatives survive the strip; O11's criterion made exact) and nothing else. **Frozen** under the ruled procedure once the strip invariant was deployed (ba9a0ad), the point-5 row revalidated, strip conformance suite v2 frozen, two strip successors demonstrated and designated (`sonnet-5`, `gpt-5-5-20260423`), and C1–C6 proved on both designated routes (8 of 8 each on suite v2). Corpus: `docs/reviews/qualification/corpus/v1.3/`.
+**Status:** Frozen. **Authorised execution:** the `opus-5 / high` incumbent reference, `opus-5 / medium / adaptive`, and `opus-5 / low / adaptive`. Nothing else runs under it without a further ruling.
 **Governing rulings:** `01-architecture.md` §5.2 (capability profiles, 7 September; configuration-specific qualification and effort as a configuration dimension, 8 September); `01-architecture.md` §5.5 standing rule; the economics and qualification rulings of 8 September 2026.
 
 **What this packet is.** A finite, fixed, Val-specific body of evidence about one exact model configuration, produced through the real gateway in a scratch store, read by Lord Armand, and ruled on by him. It produces a per-prompt record and nothing else: no aggregate score, no ranking, no recommendation. **What it is not:** a benchmark, a comparison against the incumbent's quality, or an admission mechanism.
@@ -56,7 +56,7 @@ Everything else opens a new conversation in an empty project with nothing to rec
 
 ## 4. The corpus — fixed, versioned, synthetic
 
-Frozen as `docs/reviews/qualification/corpus/v1/` on approval; identical for every candidate. **Entirely fictional.** The production is *The Lantern Road*, a serial that does not exist: Mira, a courier; Aldous, a clockmaker; a harbour town; a pocket watch; a handcart. Nothing in the corpus names or derives from Lord Armand's live projects, and nothing in it is confidential — it may be sent to any provider he later admits for it.
+Frozen as `docs/reviews/qualification/corpus/v1.3/`; identical for every candidate. **Entirely fictional.** The production is *The Lantern Road*, a serial that does not exist: Mira, a courier; Aldous, a clockmaker; a harbour town; a pocket watch; a handcart. Nothing in the corpus names or derives from Lord Armand's live projects, and nothing in it is confidential — it may be sent to any provider he later admits for it.
 
 For each prompt: the verbatim text; **the property it tests**; **the exact yes/no criterion** the reader answers.
 

@@ -638,7 +638,21 @@ def test_classification_and_strip_route_to_the_cheapest_structured_route() -> No
         )
         assert required_profile(task) in chosen[0].capability_profiles
         assert chosen[0].cost_per_mtok_in_usd == min(entry.cost_per_mtok_in_usd for entry in chosen)
-        assert chosen[0].slug.startswith("haiku"), "registry state as of 7 September 2026"
+    # Registry state as of 9 September 2026: classification and title stay on
+    # Haiku; the strip is served by its designated routes, cheapest first.
+    leader = {
+        task: candidates(
+            active(),
+            Classification.PROTECTED,
+            always_ready,
+            always_affordable,
+            profile=required_profile(task),
+            cost_bound=total_bound,
+        )[0].slug
+        for task in (TaskType.CLASSIFICATION, TaskType.STRIP)
+    }
+    assert leader[TaskType.CLASSIFICATION].startswith("haiku")
+    assert leader[TaskType.STRIP] == "sonnet-5"
 
 
 def test_a_cheaper_structured_route_never_wins_a_partner_task() -> None:

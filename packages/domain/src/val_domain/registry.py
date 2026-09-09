@@ -216,9 +216,20 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cache_minimum_prefix_tokens=1024,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
+        # `STRIP` designated 9 September 2026 on the frozen conformance suite
+        # v2 through the real gateway with the strip invariant: 110 of 112
+        # conformant, zero blocking, zero false contamination on separable
+        # cases, zero invalid attempts; on 2 of 8 runs the genuinely
+        # inseparable case was returned as "no preference" (an ordinary turn,
+        # never an enforced row) — recorded as an operational finding.
         capability_profiles=frozenset({CapabilityProfile.STRIP}),
-        known_weaknesses=(),
-        fallback_slug=None,
+        known_weaknesses=(
+            "strip: on the frozen suite's inseparable case (S7) returned "
+            "preference_present=false on 2 of 8 runs (9 September 2026)",
+        ),
+        # The other designated strip route, re-checked independently when
+        # reached; chosen by total cost among the strip-eligible otherwise.
+        fallback_slug="gpt-5-5-20260423",
         admission=Admission.PROVISIONALLY_ADMITTED,
         adapter_status=AdapterStatus.IMPLEMENTED,
         activated_on=date(2026, 9, 9),
@@ -249,10 +260,13 @@ REGISTRY: tuple[ModelConfig, ...] = (
         eligible_classifications=_PROTECTED,
         # Ruling, 7 September 2026: structured, schema-constrained internal work
         # only. Not partner-qualified; qualification is a separate ruling.
-        capability_profiles=frozenset({CapabilityProfile.STRUCTURED, CapabilityProfile.STRIP}),
-        # 9 September 2026: `STRIP` is held here only until a demonstrated
-        # successor is designated (its conformance record — 35 of 112, 27
-        # false contaminations, 50 blocking — is the reason the floor exists).
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
+        # 9 September 2026: removed from strip eligibility on the designation
+        # of demonstrated successors (`sonnet-5`, `gpt-5-5-20260423`). Its
+        # conformance record on the frozen suite — 35 of 112, 27 false
+        # contaminations, 50 blocking, neutral instructions removed — is the
+        # reason the strip floor exists. Structured work (classification,
+        # titling) continues here until separately evaluated (OP-4).
         known_weaknesses=(),
         # Cross-provider, so an Anthropic-account outage degrades to OpenAI
         # rather than halting ("Val degrades rather than halts", 00-charter.md).
@@ -295,12 +309,7 @@ REGISTRY: tuple[ModelConfig, ...] = (
         eligible_classifications=_PROTECTED,
         # Ruling, 7 September 2026: structured, schema-constrained internal work
         # only. Not partner-qualified; qualification is a separate ruling.
-        capability_profiles=frozenset({CapabilityProfile.STRUCTURED, CapabilityProfile.STRIP}),
-        # `STRIP` declared 9 September 2026 to the extent the ruling requires:
-        # so the frozen strip conformance suite can be exercised through the
-        # real gateway pinned to this exact configuration. Designation for the
-        # strip task is Lord Armand's, on that suite's result; nothing here
-        # widens this entry beyond structured work and the strip.
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
         known_weaknesses=(),
         fallback_slug=None,
         admission=Admission.PROVISIONALLY_ADMITTED,
@@ -344,7 +353,11 @@ REGISTRY: tuple[ModelConfig, ...] = (
         eligible_classifications=_PROTECTED,
         # Ruling, 7 September 2026: structured, schema-constrained internal work
         # only. Not partner-qualified; qualification is a separate ruling.
-        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED, CapabilityProfile.STRIP}),
+        # `STRIP` designated 9 September 2026 on the frozen conformance suite
+        # v2 through the real gateway with the strip invariant: 112 of 112
+        # conformant, no false contamination, no invalid attempt. Strip only —
+        # nothing here widens this entry beyond structured work and the strip.
         known_weaknesses=(),
         # Explicit NONE, and the router honours it as none: this is the end of
         # the declared graph. A backward hop to Haiku could never run — Haiku

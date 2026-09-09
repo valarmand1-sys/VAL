@@ -719,3 +719,7 @@ Row `01a07ec5-5649-7dcf-977b-2129ad2c5ce6`: `stripped_content` = the author's in
 
 `docs/reviews/qualification/strip-conformance/v2/`: v1 plus only the ruled ground-truth corrections — C5 and S4 retain the third party's recommendation; S6 accepts either demonstrated clause boundary. v1 and its 448-call results are preserved unchanged. Rerun through the real gateway with the invariant, pinned to `sonnet-5` and `gpt-5-5-20260423` — recorded in §23 when complete.
 
+## 23. Suite v2 through the real gateway with the invariant — 9 September 2026 — designation
+
+`results-2026-09-09-*.json/.md` in the v2 directory. `gpt-5-5-20260423`: 112/112 conformant, 0 false contamination, 0 blocking, 0 invalid first attempts, 0 retries, median 5.5 s. `sonnet-5`: 110/112, 0 blocking, 0 false contamination on separable cases, 0 invalid attempts, 0 retries, median 4.5 s; S7 returned `no_preference` on 2 of 8 (never enforced). C1–C6: 8 of 8 as intended on both. **Both designated strip-eligible; Haiku 4.5 removed from strip eligibility.** Packet and corpus v1.3 frozen.
+
