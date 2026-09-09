@@ -1,0 +1,131 @@
+{
+  "seed": 20260913,
+  "candidate": {
+    "provider": "anthropic",
+    "model": "claude-opus-5",
+    "slug": "opus-5",
+    "id": "4e38c060-3b9a-495d-bc54-73acd1530cd5",
+    "api_mode": "Messages API, synchronous; structured outputs on the blind call",
+    "effort": "medium",
+    "adaptive_thinking": "on",
+    "cache": "system breakpoint, 1h",
+    "partner_output_ceiling": 4096,
+    "persona_revision": "01a0888d-663c-79ae-9718-1fccb94817fe",
+    "persona_semantic_version": "1.4",
+    "persona_source_sha256": "10c59951789b7167a0df70e2fe738e41ab2a5a760105983eefc970b6c6e0d9c0",
+    "persona_note": "scratch-store row seeded from docs/baselines/03-persona.md; identical by digest to the live revision 3 (id 01a08877-dbee-7652-937d-12c36ca4d15c)"
+  },
+  "reference": {
+    "provider": "anthropic",
+    "model": "claude-opus-5",
+    "slug": "opus-5",
+    "id": "4e38c060-3b9a-495d-bc54-73acd1530cd5",
+    "api_mode": "Messages API, synchronous; structured outputs on the blind call",
+    "effort": "high",
+    "adaptive_thinking": "on",
+    "cache": "system breakpoint, 1h",
+    "partner_output_ceiling": 4096,
+    "persona_revision": "01a08885-c4fd-7251-9a09-fb0b6f4aa11e",
+    "persona_semantic_version": "1.4",
+    "persona_source_sha256": "10c59951789b7167a0df70e2fe738e41ab2a5a760105983eefc970b6c6e0d9c0",
+    "persona_note": "scratch-store row seeded from docs/baselines/03-persona.md; identical by digest to the live revision 3 (id 01a08877-dbee-7652-937d-12c36ca4d15c)"
+  },
+  "map": {
+    "O1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O2": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O3": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O4": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O5": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O6": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "O7": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O8": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O9": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O10": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O11": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "O12": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "C1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C2": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "C3": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "C4": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C5": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "C6": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "T1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "T2": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "T3": {
+      "A": "reference",
+      "B": "candidate"
+    },
+    "A1": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "A2": {
+      "A": "candidate",
+      "B": "reference"
+    },
+    "L1": {
+      "A": "reference",
+      "B": "candidate"
+    }
+  }
+}
