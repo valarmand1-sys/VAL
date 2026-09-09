@@ -128,14 +128,15 @@ from val_policy.deliberation import (
     ClassifierVerdict,
     RemovedSpan,
     StripOutcome,
+    StripValidation,
     classifier_envelope,
-    derive_stripped_question,
     parse_blind_outcome,
     parse_classifier_verdict,
     parse_strip_outcome,
     reconciliation_envelope,
     same_text,
     split_reconciled,
+    validate_strip,
 )
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 
@@ -148,6 +149,11 @@ _LOGGER = logging.getLogger("val.deliberation")
 #: other oversized request, visibly.
 CLASSIFIER_MAX_OUTPUT_TOKENS = 256
 STRIP_MAX_OUTPUT_TOKENS = 4096
+#: Ruling, 9 September 2026: a strip result that contradicts itself or the
+#: message is *invalid* and may be retried exactly once on the same
+#: configuration; a valid "not separable" is never retried in search of
+#: separability; a second invalid result fails closed as contaminated.
+STRIP_ATTEMPTS = 2
 #: Ruling, 7 September 2026: the blind position's ceiling matches the response
 #: allowance. It is an output ceiling, not a request for a long position — the
 #: 1,024 that preceded it was calibrated when the cheapest route served the
@@ -225,6 +231,10 @@ class DeliberatedTurn:
     #: always present on a deliberated turn, since the turn cannot reach a
     #: response without an established classification on the record.
     classification: ClassificationRecord
+    #: Ruling, 9 September 2026: the validation state of every strip attempt,
+    #: in order (`enforceable`, `not_separable`, `no_preference`, `invalid`),
+    #: so an invalid first attempt and its bounded retry are visible.
+    strip_states: tuple[str, ...] = ()
 
 
 DeliberatedOutcome = DeliberatedTurn | UnansweredTurn | ClarificationNeeded
@@ -309,10 +319,16 @@ def send(
             classification=record,
         )
 
-    # 3. Strip. A failed or unparseable strip has not established separation,
-    #    which is recorded as contaminated — never as a clean blindness.
-    strip = _strip(gateway, content, opened.scope, classification)
-    if strip is not None and not strip.preference_present:
+    # 3. Strip. Ruling, 9 September 2026: the strip's structured result is
+    #    validated deterministically against the message before anything is
+    #    built from it. Only an `enforceable` validation — preference present,
+    #    separable, every span resolved exactly, at least one preference span,
+    #    the derivation actually changing the message — may produce
+    #    `ordering = enforced`. Everything else is contaminated (or, with no
+    #    preference at all, ordinary). An invalid result is retried once.
+    stripped = _strip(gateway, content, opened.scope, classification)
+    validation = stripped.validation
+    if validation.state == "no_preference":
         # §4.1: no preference present — steps collapse to one call. There is
         # no blindness to enforce and no stated view to reconcile with; the
         # exchange resolves later (his response arrives in a later turn) and
@@ -330,30 +346,35 @@ def send(
             deliberation=None,
             blind_payload=None,
             classification=record,
+            strip_states=stripped.states,
         )
 
     question, removed, ordering = content, "", Ordering.CONTAMINATED
-    if strip is not None and strip.separable:
+    withheld: tuple[RemovedSpan, ...] = ()
+    if validation.enforceable and validation.residue is not None:
         # Ruling, 3 September 2026: the blind question is DERIVED from the
-        # original message and the spans the strip named — mechanically, no
-        # semantic judgment — never taken from the strip's own "question",
-        # which real use showed can be a paraphrase. A span not found verbatim
-        # means separation was not established: contaminated, as for any
-        # failed strip.
-        derived = derive_stripped_question(content, strip.removed)
-        if derived is None:
+        # original message and the accepted spans — mechanically, no semantic
+        # judgment — never taken from the strip's own "question". The
+        # validation above is the proof that the derivation removed
+        # preference-bearing material; without it, no enforcement.
+        if stripped.outcome is not None and not same_text(
+            stripped.outcome.question, validation.residue
+        ):
             _LOGGER.warning(
-                "strip named %d span(s) that are not verbatim in the message; separation "
-                "not established, recording ordering=contaminated",
-                len(strip.removed),
+                "strip's own question was not the verbatim remainder (a paraphrase); "
+                "the derived remainder is used and the paraphrase is discarded"
             )
-        else:
-            if not same_text(strip.question, derived):
-                _LOGGER.warning(
-                    "strip's own question was not the verbatim remainder (a paraphrase); "
-                    "the derived remainder is used and the paraphrase is discarded"
-                )
-            question, removed, ordering = derived, strip.removed_text, Ordering.ENFORCED
+        question = validation.residue
+        removed = "\n".join(span.text for span in validation.spans)
+        withheld = validation.spans
+        ordering = Ordering.ENFORCED
+    elif validation.state == "invalid":
+        _LOGGER.warning(
+            "strip result invalid after %d attempt(s) (%s); separation not established, "
+            "recording ordering=contaminated",
+            len(stripped.states),
+            "; ".join(validation.reasons),
+        )
     # Otherwise: preference present but not separable — or the strip itself
     # failed. The position will be formed with the preference in view, and
     # the record says exactly that.
@@ -373,9 +394,7 @@ def send(
     blind_message = Message(
         role="user", content=f"{BLIND_POSITION_INSTRUCTION}\n\nThe question:\n{question}"
     )
-    blind_payload = _log_blind_payload(
-        config, persona.id, blind_message, withheld=() if strip is None else strip.removed
-    )
+    blind_payload = _log_blind_payload(config, persona.id, blind_message, withheld=withheld)
     blind_request = GatewayRequest(
         task_type=TaskType.BLIND_POSITION,
         classification=classification,
@@ -545,6 +564,7 @@ def send(
         deliberation=deliberation,
         blind_payload=blind_payload,
         classification=record,
+        strip_states=stripped.states,
     )
 
 
@@ -666,14 +686,39 @@ def _classify(
     )
 
 
-def _strip(
-    gateway: Gateway, content: str, scope: ProjectScope, classification: Classification
-) -> StripOutcome | None:
-    """One §4.1 strip call on the cheapest eligible route, or None.
+@dataclass(frozen=True)
+class StripAttempts:
+    """The strip's outcome after at most `STRIP_ATTEMPTS` calls.
 
-    None — a failed call or an unparseable reply — means separation was not
-    established, and the caller records `contaminated`: the honest reading,
-    since an unestablished separation is an unestablished blindness.
+    `validation` is the deterministic reading of the last result (ruling,
+    9 September 2026); `outcome` is that result as parsed, or None; `states`
+    records every attempt's validation state in order, so an invalid first
+    attempt followed by a valid retry is visible as such.
+    """
+
+    validation: StripValidation
+    outcome: StripOutcome | None
+    states: tuple[str, ...]
+
+
+def _strip(
+    gateway: Gateway,
+    content: str,
+    scope: ProjectScope,
+    classification: Classification,
+    *,
+    configuration: ModelConfig | None = None,
+) -> StripAttempts:
+    """The §4.1 strip on the cheapest eligible route — validated, bounded.
+
+    A failed call (the route could not answer) establishes no separation and
+    is contaminated without retry, as before. An **invalid** structured
+    result — unparseable, or contradicting itself or the message under
+    `validate_strip` — is retried exactly once on the same route; a second
+    invalid result is contaminated. A valid `not_separable` is final: it is
+    never retried in search of separability. `configuration`, when given,
+    pins the call to that exact configuration (the conformance harness); the
+    running application routes.
     """
     request = GatewayRequest(
         task_type=TaskType.STRIP,
@@ -688,16 +733,41 @@ def _strip(
         project_id=attribution_of(scope),
         project_attribution=attribution_state_of(scope),
     )
-    try:
-        response = gateway.complete(request)
-    except GatewayError as failure:
+    states: list[str] = []
+    outcome: StripOutcome | None = None
+    validation = StripValidation("invalid", None, (), ("no attempt was made",))
+    for attempt in range(1, STRIP_ATTEMPTS + 1):
+        try:
+            response = (
+                gateway.complete(request)
+                if configuration is None
+                else gateway.complete_with_configuration(request, configuration)
+            )
+        except GatewayError as failure:
+            _LOGGER.warning(
+                "strip call failed (%s); separation not established, recording "
+                "ordering=contaminated rather than an unearned blindness.",
+                failure.kind.value,
+            )
+            states.append("failed")
+            return StripAttempts(
+                StripValidation("invalid", None, (), (f"strip call failed: {failure.kind.value}",)),
+                None,
+                tuple(states),
+            )
+        outcome = parse_strip_outcome(response.text)
+        validation = validate_strip(content, outcome)
+        states.append(validation.state)
+        if validation.state != "invalid":
+            return StripAttempts(validation, outcome, tuple(states))
         _LOGGER.warning(
-            "strip call failed (%s); separation not established, recording "
-            "ordering=contaminated rather than an unearned blindness.",
-            failure.kind.value,
+            "strip attempt %d of %d returned an invalid structured result (%s)%s",
+            attempt,
+            STRIP_ATTEMPTS,
+            "; ".join(validation.reasons),
+            "; retrying once on the same route" if attempt < STRIP_ATTEMPTS else "; contaminated",
         )
-        return None
-    return parse_strip_outcome(response.text)
+    return StripAttempts(validation, outcome, tuple(states))
 
 
 def _blind_outcome_from(text: str, terminal: TerminalState) -> BlindOutcome | None:

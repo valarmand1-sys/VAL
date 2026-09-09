@@ -576,13 +576,17 @@ def test_a_paraphrased_strip_question_is_discarded_for_the_derived_remainder(
 def test_spans_not_verbatim_in_the_message_record_contaminated(store: Engine) -> None:
     script = full_script()
     script[1] = strip_says(question=QUESTION, removed="I would rather we opened wide.")
+    # Ruling, 9 September 2026: an invalid structured result is retried once
+    # on the same route; the retry here is the same invalid reply.
+    script.insert(2, script[1])
     adapter = ScriptedAdapter(script, probe_engine=store)
     outcome = deliberate(store, adapter)
 
     assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
     assert outcome.blind.ordering is Ordering.CONTAMINATED
     assert outcome.blind.stripped_content == ""
-    assert adapter.sent[2].messages[0].content.endswith(f"The question:\n{MIXED_MESSAGE}")
+    # sent[2] is the bounded strip retry (9 September 2026); the blind call follows.
+    assert adapter.sent[3].messages[0].content.endswith(f"The question:\n{MIXED_MESSAGE}")
 
 
 def test_the_strip_request_asks_for_spans(store: Engine) -> None:
@@ -896,6 +900,7 @@ def test_an_unparseable_strip_reply_records_contaminated(store: Engine) -> None:
         [
             classifier_says("consequential"),
             ok("I removed some words, probably."),
+            ok("I removed some words, probably."),  # the bounded retry, also unparseable
             blind_says("Open on the close-up."),
             reconciled("I hold, my lord.", "held", prior="Open on the close-up."),
         ]
@@ -1428,7 +1433,9 @@ def test_an_attributed_span_not_verbatim_in_the_message_fails_closed(store: Engi
             },
         ],
     )
-    adapter = ScriptedAdapter(_framed_script(strip))
+    framed = _framed_script(strip)
+    framed.insert(2, strip)  # the bounded retry (9 September 2026), same invalid reply
+    adapter = ScriptedAdapter(framed)
     outcome = deliberate(store, adapter, FRAMED)
 
     assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
@@ -1449,6 +1456,7 @@ def test_a_strip_reply_without_span_kinds_does_not_parse(store: Engine) -> None:
     )
     script = full_script()
     script[1] = reply
+    script.insert(2, reply)  # the bounded retry (9 September 2026), same invalid reply
     outcome = deliberate(store, ScriptedAdapter(script))
     assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
     assert outcome.blind.ordering is Ordering.CONTAMINATED, (

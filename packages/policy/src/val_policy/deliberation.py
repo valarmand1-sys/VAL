@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from typing import Literal
 
 from val_domain.deliberation import (
     ClassificationVerdict,
@@ -435,6 +436,98 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
         removed=tuple(spans),
         attributed_prior_present=attributed,
     )
+
+
+# -----------------------------------------------------------------------------
+# The strip invariant — ruling of 9 September 2026
+# -----------------------------------------------------------------------------
+#
+# **Ordering `enforced` requires deterministic proof that preference-bearing
+# material was actually removed.** A structured strip result is a model's
+# judgment; whether that judgment is *internally consistent with the evidence
+# needed to derive a blind input* is a question code can answer, and must,
+# before any blind row may carry `ordering = enforced`. The conformance run of
+# 8 September found the registered route recording a genuinely inseparable
+# message as `separable: true` with no spans — the orchestrator then derived a
+# "blind" question identical to the original and recorded enforcement. This is
+# the boundary between model judgment and machine-enforced evidence.
+
+#: What a validated strip result is: one of four states, and never a fifth.
+StripState = Literal["enforceable", "not_separable", "no_preference", "invalid"]
+
+
+@dataclass(frozen=True)
+class StripValidation:
+    """The deterministic reading of a strip result against the current message.
+
+    - `enforceable`: preference present, separable, every span resolved exactly
+      at its occurrence, at least one `preference` span, an `attributed_prior`
+      span present whenever the result declares one, and the derivation
+      actually changed the message. `residue` is the blind input and `spans`
+      the accepted spans — these are the only things a blind payload may be
+      built from.
+    - `not_separable`: a valid result saying the preference cannot be removed
+      (contaminated path; **never retried** in search of separability).
+    - `no_preference`: a valid result saying there is nothing to remove.
+    - `invalid`: the result contradicts itself or the message (`reasons` says
+      how). Eligible for exactly one bounded retry; never enforceable.
+    """
+
+    state: StripState
+    residue: str | None
+    spans: tuple[RemovedSpan, ...]
+    reasons: tuple[str, ...] = ()
+
+    @property
+    def enforceable(self) -> bool:
+        return self.state == "enforceable"
+
+
+def validate_strip(original: str, outcome: StripOutcome | None) -> StripValidation:
+    """Apply the invariants. Pure; no semantic judgment anywhere."""
+    if outcome is None:
+        return StripValidation("invalid", None, (), ("unparseable structured result",))
+    reasons: list[str] = []
+    preference_spans = tuple(s for s in outcome.removed if s.kind == "preference")
+    attributed_spans = tuple(s for s in outcome.removed if s.kind == "attributed_prior")
+
+    if not outcome.preference_present:
+        if outcome.removed:
+            reasons.append("preference_present=false yet the result names removal spans")
+        if outcome.attributed_prior_present and outcome.separable and not attributed_spans:
+            reasons.append(
+                "attributed_prior_present=true and separable=true without an attributed_prior span"
+            )
+        if reasons:
+            return StripValidation("invalid", None, (), tuple(reasons))
+        return StripValidation("no_preference", _collapse(original), ())
+
+    if not outcome.separable:
+        if outcome.removed:
+            reasons.append("separable=false yet the result names removal spans")
+            return StripValidation("invalid", None, (), tuple(reasons))
+        return StripValidation("not_separable", None, ())
+
+    # preference present and separable: the enforceable claim, which must be proved.
+    if not preference_spans:
+        reasons.append("preference_present=true and separable=true without a preference span")
+    if outcome.attributed_prior_present and not attributed_spans:
+        reasons.append("attributed_prior_present=true without an attributed_prior span")
+    if reasons:
+        return StripValidation("invalid", None, (), tuple(reasons))
+    residue = derive_stripped_question(original, outcome.removed)
+    if residue is None:
+        return StripValidation(
+            "invalid",
+            None,
+            (),
+            ("a named span does not resolve exactly against the current message",),
+        )
+    if same_text(residue, original):
+        return StripValidation(
+            "invalid", None, (), ("removing the named spans did not alter the message",)
+        )
+    return StripValidation("enforceable", residue, tuple(outcome.removed))
 
 
 # =============================================================================
