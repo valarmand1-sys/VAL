@@ -74,7 +74,7 @@ _REQUIRED_PROFILE: dict[TaskType, CapabilityProfile] = {
     TaskType.CONVERSATION: CapabilityProfile.PARTNER,
     TaskType.BLIND_POSITION: CapabilityProfile.PARTNER,
     TaskType.CLASSIFICATION: CapabilityProfile.STRUCTURED,
-    TaskType.STRIP: CapabilityProfile.STRUCTURED,
+    TaskType.STRIP: CapabilityProfile.STRIP,
     TaskType.TITLE: CapabilityProfile.STRUCTURED,
 }
 

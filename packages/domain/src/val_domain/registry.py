@@ -187,6 +187,45 @@ REGISTRY: tuple[ModelConfig, ...] = (
         retired=True,
         retired_on=date(2026, 8, 18),
     ),
+    ModelConfig(
+        # Registered 9 September 2026, to the extent the ruling requires:
+        # exercising the frozen strip conformance suite through the real
+        # gateway and, on passing, serving the strip task. It declares the
+        # `strip` profile only — nothing here admits it to classification,
+        # titling, conversation, or the partner blind and response calls.
+        id=UUID("4f9c0d2e-1b7a-4c8e-9a3d-6e2f5b8c1d70"),
+        slug="sonnet-5",
+        provider="anthropic",
+        model_identifier="claude-sonnet-5",
+        display_name="Claude Sonnet 5 (strip conformance candidate)",
+        context_window_tokens=1_000_000,
+        max_output_tokens=128_000,
+        # Effort is supported on Sonnet 5 (default `high` per the models
+        # overview, 8 September 2026); the configuration states it explicitly.
+        reasoning_effort=ReasoningEffort.HIGH,
+        # platform.claude.com/docs/en/about-claude/pricing, read 8 September
+        # 2026: $2 in, $10 out; 5m write $2.50, 1h write $4, hit $0.20; the
+        # $2/$10 made standard on 10 August 2026. Minimum cacheable prefix
+        # 1,024 tokens (prompt-caching page, same date).
+        cost_per_mtok_in_usd=2.00,
+        cost_per_mtok_out_usd=10.00,
+        caching=PricingFeature.AVAILABLE,
+        cache_write_5m_per_mtok_in_usd=2.50,
+        cache_write_1h_per_mtok_in_usd=4.00,
+        cache_read_per_mtok_in_usd=0.20,
+        cache_minimum_prefix_tokens=1024,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset({CapabilityProfile.STRIP}),
+        known_weaknesses=(),
+        fallback_slug=None,
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 9),
+        # Re-read on the activation date: the pricing page is unchanged from
+        # 8 September (the $2/$10 standard-price note stands).
+        rates_verified_on=date(2026, 9, 9),
+    ),
     # The pinned successor. Same model, same rates — a new entry because the
     # exact identifier is identity, and `claude-haiku-4-5` is an alias Anthropic
     # documents as a convenience pointer to this snapshot (verified 18 August
@@ -210,7 +249,10 @@ REGISTRY: tuple[ModelConfig, ...] = (
         eligible_classifications=_PROTECTED,
         # Ruling, 7 September 2026: structured, schema-constrained internal work
         # only. Not partner-qualified; qualification is a separate ruling.
-        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED, CapabilityProfile.STRIP}),
+        # 9 September 2026: `STRIP` is held here only until a demonstrated
+        # successor is designated (its conformance record — 35 of 112, 27
+        # false contaminations, 50 blocking — is the reason the floor exists).
         known_weaknesses=(),
         # Cross-provider, so an Anthropic-account outage degrades to OpenAI
         # rather than halting ("Val degrades rather than halts", 00-charter.md).
@@ -253,7 +295,12 @@ REGISTRY: tuple[ModelConfig, ...] = (
         eligible_classifications=_PROTECTED,
         # Ruling, 7 September 2026: structured, schema-constrained internal work
         # only. Not partner-qualified; qualification is a separate ruling.
-        capability_profiles=frozenset({CapabilityProfile.STRUCTURED}),
+        capability_profiles=frozenset({CapabilityProfile.STRUCTURED, CapabilityProfile.STRIP}),
+        # `STRIP` declared 9 September 2026 to the extent the ruling requires:
+        # so the frozen strip conformance suite can be exercised through the
+        # real gateway pinned to this exact configuration. Designation for the
+        # strip task is Lord Armand's, on that suite's result; nothing here
+        # widens this entry beyond structured work and the strip.
         known_weaknesses=(),
         fallback_slug=None,
         admission=Admission.PROVISIONALLY_ADMITTED,

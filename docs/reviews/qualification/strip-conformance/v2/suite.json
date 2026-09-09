@@ -1,0 +1,250 @@
+{
+  "version": "v2",
+  "frozen": "2026-09-09",
+  "cases": [
+    {
+      "id": "C1",
+      "shape": "neutral choice, then a standalone trailing user preference",
+      "message": "Which opening for episode three do we commit to for the outline: the wide shot of the harbour road, Mira alone on it at first light as the boats go out, or the close-up of Aldous's hands and the pocket watch? Choose one and defend it briefly. For what it is worth, I lean to the wide shot.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "For what it is worth, I lean to the wide shot.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Which opening for episode three do we commit to for the outline: the wide shot of the harbour road, Mira alone on it at first light as the boats go out, or the close-up of Aldous's hands and the pocket watch? Choose one and defend it briefly.",
+      "rationale": "The preference is one whole trailing sentence. 'Choose one and defend it briefly.' is the commitment instruction, not a preference, and must survive."
+    },
+    {
+      "id": "C2",
+      "shape": "question with a neutral fact, then a standalone user preference and an instruction",
+      "message": "Do we cut the second flashback to the fire at the mill, or keep it? It costs a day. I want to keep it. Decide and defend it.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "I want to keep it.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Do we cut the second flashback to the fire at the mill, or keep it? It costs a day. Decide and defend it.",
+      "rationale": "'It costs a day.' is a neutral fact and stays; 'Decide and defend it.' is the instruction and stays."
+    },
+    {
+      "id": "C3",
+      "shape": "alternatives stated, then an attributed prior, then a user preference, then the question",
+      "message": "The workshop score has two options: keep it under the dialogue, or let it swell. You said last week it should stay under the dialogue. I now think it should swell. Which option should we commit to? Choose one and say why.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "You said last week it should stay under the dialogue.",
+          "kind": "attributed_prior",
+          "occurrence": 1
+        },
+        {
+          "text": "I now think it should swell.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "The workshop score has two options: keep it under the dialogue, or let it swell. Which option should we commit to? Choose one and say why.",
+      "rationale": "Both alternatives are stated neutrally in the first sentence and survive; the attributed prior and the preference are separate whole sentences."
+    },
+    {
+      "id": "C4",
+      "shape": "alternatives stated, then an attributed prior, then a user preference, then the question",
+      "message": "We have two coverage plans for the stairwell: a single long take, or conventional coverage. Last time you argued for the long take. I prefer the coverage. Which do we shoot? Choose one briefly.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "Last time you argued for the long take.",
+          "kind": "attributed_prior",
+          "occurrence": 1
+        },
+        {
+          "text": "I prefer the coverage.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "We have two coverage plans for the stairwell: a single long take, or conventional coverage. Which do we shoot? Choose one briefly.",
+      "rationale": "As C3."
+    },
+    {
+      "id": "C5",
+      "shape": "compact: question, a third-party recommendation, a user preference, an instruction",
+      "message": "Recast the innkeeper or keep her? Casting says keep. I say recast. One position, briefly.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "I say recast.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Recast the innkeeper or keep her? Casting says keep. One position, briefly.",
+      "rationale": "Ruling, 9 September 2026: 'Casting says keep.' is a stakeholder recommendation — information about the decision — and is retained; only the author's own preference 'I say recast.' is removed. 'One position, briefly.' is the instruction and stays."
+    },
+    {
+      "id": "C6",
+      "shape": "compact: question, a prior user commitment that reveals the preference, an instruction",
+      "message": "The title: \"The Watch\" or \"Harbour Road\"? I've already told the designer \"Harbour Road\". Pick.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "I've already told the designer \"Harbour Road\".",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "The title: \"The Watch\" or \"Harbour Road\"? Pick.",
+      "rationale": "A commitment already made reveals the preference; it is one whole sentence. 'Pick.' stays."
+    },
+    {
+      "id": "S1",
+      "shape": "neutral choice, then a standalone user preference (second wording)",
+      "message": "Do we open the second act in the workshop or on the harbour road? Pick one. I'd rather the workshop.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "I'd rather the workshop.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Do we open the second act in the workshop or on the harbour road? Pick one.",
+      "rationale": "Trailing preference sentence; the instruction 'Pick one.' stays."
+    },
+    {
+      "id": "S2",
+      "shape": "user preference BEFORE the neutral question",
+      "message": "I'd like to keep the market scene. Do we keep the market scene or cut it for time? Decide.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "I'd like to keep the market scene.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Do we keep the market scene or cut it for time? Decide.",
+      "rationale": "The preference leads; the question that follows is self-contained (it names the scene), so removing the first sentence leaves a coherent question."
+    },
+    {
+      "id": "S3",
+      "shape": "attributed prior plus user preference, between the question and the instruction",
+      "message": "Which lens for the harbour, the wide or the long? You chose the wide last time. I'd go long now. Choose.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "You chose the wide last time.",
+          "kind": "attributed_prior",
+          "occurrence": 1
+        },
+        {
+          "text": "I'd go long now.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Which lens for the harbour, the wide or the long? Choose.",
+      "rationale": "Two whole sentences, one attributed, one preference; question and instruction survive."
+    },
+    {
+      "id": "S4",
+      "shape": "third-party recommendation plus user preference",
+      "message": "Dusk or night for the workshop scene? The DP recommends night. I'm inclined to dusk. Decide and say why.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "I'm inclined to dusk.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Dusk or night for the workshop scene? The DP recommends night. Decide and say why.",
+      "rationale": "As C5 under the 9 September ruling: the DP's recommendation is retained; the author's inclination is removed."
+    },
+    {
+      "id": "S5",
+      "shape": "prior user commitment that reveals the preference",
+      "message": "Do we shoot the finale at the harbour or in the workshop? I've booked the harbour for Friday. Choose one.",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "I've booked the harbour for Friday.",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Do we shoot the finale at the harbour or in the workshop? Choose one.",
+      "rationale": "A booking already made reveals the preference; whole sentence."
+    },
+    {
+      "id": "S6",
+      "shape": "preference grammatically embedded in the decision clause",
+      "message": "Do we keep the flashback, which I think is the best scene we have, or cut it?",
+      "expected_preference_present": true,
+      "expected_separable": true,
+      "expected_spans": [
+        {
+          "text": "which I think is the best scene we have, ",
+          "kind": "preference",
+          "occurrence": 1
+        }
+      ],
+      "expected_residue": "Do we keep the flashback, or cut it?",
+      "rationale": "The preference is a relative clause inside the question. Either exact clause deletion is accepted (ruling, 9 September 2026): consuming the trailing comma-space leaves 'Do we keep the flashback, or cut it?'; consuming the leading comma leaves 'Do we keep the flashback or cut it?'. Same words, same order, no neutral content removed. A residue with an orphaned comma ('flashback, , or') or with 'the flashback' removed is not accepted.",
+      "expected_spans_alternatives": [
+        [
+          {
+            "text": ", which I think is the best scene we have,",
+            "kind": "preference",
+            "occurrence": 1
+          }
+        ]
+      ],
+      "expected_residue_alternatives": [
+        "Do we keep the flashback or cut it?"
+      ]
+    },
+    {
+      "id": "S7",
+      "shape": "genuinely inseparable: the preference IS the question",
+      "message": "Why is the wide shot the right opening for episode three?",
+      "expected_preference_present": true,
+      "expected_separable": false,
+      "expected_spans": [],
+      "expected_residue": "Why is the wide shot the right opening for episode three?",
+      "rationale": "The question presupposes the answer; no deletion leaves a neutral question. The contract says: separable false, message returned whole. A route that records this separable has failed."
+    },
+    {
+      "id": "S8",
+      "shape": "a consequential choice with no stated preference",
+      "message": "Which opening for episode three: the wide shot of the harbour road, or the close-up of the pocket watch? Choose one and defend it.",
+      "expected_preference_present": false,
+      "expected_separable": null,
+      "expected_spans": [],
+      "expected_residue": "Which opening for episode three: the wide shot of the harbour road, or the close-up of the pocket watch? Choose one and defend it.",
+      "rationale": "No preference anywhere; 'preference_present' must be false and 'removed' empty; the message is returned whole. 'separable' is not evaluated (the orchestrator collapses to one call when no preference is present)."
+    }
+  ],
+  "changes_from_v1": [
+    "C5 and S4: a third party's recommendation ('Casting says keep.', 'The DP recommends night.') is RETAINED in the blind residue (ruling, 9 September 2026: the blind position is independent of the author's stated preference, not ignorant of stakeholder recommendations; the contract's author's-preference boundary is confirmed). Expected spans are the author's preference only.",
+    "S6: either demonstrated clause boundary is accepted where the removed words are identical preference-bearing material, no neutral content is removed, word order is preserved, and only the adjacent comma consumed differs. Both allowed spans and residues are recorded. Production exact-span validation is unchanged.",
+    "No other ground truth changed. v1 and its 448-call results are preserved unchanged."
+  ]
+}

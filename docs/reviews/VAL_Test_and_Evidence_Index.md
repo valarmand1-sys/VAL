@@ -707,3 +707,15 @@ Ruled before freezing: run the real strip machinery on the corrected C3 and C4 a
 
 Suite frozen at ed50662 (`docs/reviews/qualification/strip-conformance/v1/`); run of 448 calls recorded in full (`results-2026-09-08.md/.json`). Under the existing contract: Haiku 4.5 (the registered strip route) 35/112 conformant with 27 false contaminations and 50 blocking runs, including **the genuinely inseparable case recorded separable 8/8** — a live-use independence defect on the enforced path; `gpt-5-5-20260423` 90/112 with **no substantive failure in 112 runs** (all non-conformance in the two contested categories, third-party recommendation and the S6 clause boundary); Claude Sonnet 5 (unregistered probe) 91/112 with one S7 miss; GPT-5.6 Terra (unregistered probe) 87/112 with S7 wrong 8/8. Returned for designation; nothing designated; packet not frozen; nothing executed. `VAL_Console_and_Effort_Report.md` §9.
 
+## 20. The strip invariant — 9 September 2026
+
+`packages/policy/tests/test_strip_invariant.py` (pure) and `packages/gateway/tests/test_strip_invariant_orchestration.py` (real PostgreSQL, scripted adapter): a proved removal is enforceable; the S7 contradiction (present, separable, no spans) is invalid; `preference_present = false` with spans, `separable = false` with spans, a non-resolving span, a removal that does not alter the message, and a declared attributed prior without its span are all invalid; a valid "not separable" and a valid "no preference" are their own states and never enforceable. Through the orchestrator: an invalid result is retried exactly once on the same route and a valid not-separable retry is contaminated; two invalid results are contaminated with no third attempt; a valid not-separable is never retried; an invalid first attempt followed by a valid removal is enforced on the derived residue; the strip states ride on the outcome. All **PASS**. Deployed: CI green on ba9a0ad, service restarted.
+
+## 21. Point-5 evidence revalidated — 9 September 2026
+
+Row `01a07ec5-5649-7dcf-977b-2129ad2c5ce6`: `stripped_content` = the author's intent statement; the stored message minus that span = "Start by telling me what categories this should contain." = the question in the logged blind payload (`api.log`, `blind position payload`, configuration `haiku-4-5-20251001`); the payload carries none of the removed text. **Passes; preserved.** The 21:08 pair remains non-evidence.
+
+## 22. Strip conformance suite v2 — frozen 9 September 2026
+
+`docs/reviews/qualification/strip-conformance/v2/`: v1 plus only the ruled ground-truth corrections — C5 and S4 retain the third party's recommendation; S6 accepts either demonstrated clause boundary. v1 and its 448-call results are preserved unchanged. Rerun through the real gateway with the invariant, pinned to `sonnet-5` and `gpt-5-5-20260423` — recorded in §23 when complete.
+

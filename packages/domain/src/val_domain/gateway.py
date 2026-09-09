@@ -124,15 +124,23 @@ class CapabilityProfile(StrEnum):
     and a task names the profile it requires; cost ranks only routes that
     satisfy it and never lowers it.
 
-    Two profiles, no broader than the ruling requires. `STRUCTURED` is
-    internal schema-constrained work — classification, preference stripping,
-    titling. `PARTNER` is Val's partner cognition — every user-visible
-    response and the blind position on a consequential exchange. Neither is a
-    numeric ranking, and neither names a model.
+    Three profiles, no broader than the rulings require. `STRUCTURED` is
+    internal schema-constrained work — classification and titling. `STRIP`
+    (9 September 2026) is the §4.1 preference strip, a floor of its own
+    demonstrated on the frozen conformance suite. `PARTNER` is Val's partner
+    cognition — every user-visible response and the blind position on a
+    consequential exchange. None is a numeric ranking, and none names a model.
     """
 
     STRUCTURED = "structured"
     PARTNER = "partner"
+    #: Ruling, 9 September 2026. The §4.1 strip is its own floor: a route
+    #: serves it only after demonstrating the strip contract on the frozen
+    #: conformance suite — zero leakage into an enforced blind input, zero
+    #: neutral-content removal, no false contamination on clearly separable
+    #: input. Structured-task competence elsewhere (classification, title)
+    #: does not confer it, and holding it confers nothing else.
+    STRIP = "strip"
 
 
 class GatewayErrorKind(StrEnum):

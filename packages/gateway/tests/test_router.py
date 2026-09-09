@@ -588,8 +588,10 @@ STRUCTURED_ONLY = frozenset({CapabilityProfile.STRUCTURED})
 def test_conversation_and_blind_position_require_the_partner_profile() -> None:
     assert required_profile(TaskType.CONVERSATION) is CapabilityProfile.PARTNER
     assert required_profile(TaskType.BLIND_POSITION) is CapabilityProfile.PARTNER
-    for internal in (TaskType.CLASSIFICATION, TaskType.STRIP, TaskType.TITLE):
+    for internal in (TaskType.CLASSIFICATION, TaskType.TITLE):
         assert required_profile(internal) is CapabilityProfile.STRUCTURED
+    # Ruling, 9 September 2026: the strip is its own floor.
+    assert required_profile(TaskType.STRIP) is CapabilityProfile.STRIP
 
 
 def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_registry() -> None:
@@ -624,7 +626,7 @@ def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_regist
 
 
 def test_classification_and_strip_route_to_the_cheapest_structured_route() -> None:
-    """Internal work stays on the cheapest route that satisfies the structured floor."""
+    """Internal work stays on the cheapest route that satisfies its own floor."""
     for task in (TaskType.CLASSIFICATION, TaskType.STRIP):
         chosen = candidates(
             active(),
@@ -634,7 +636,7 @@ def test_classification_and_strip_route_to_the_cheapest_structured_route() -> No
             profile=required_profile(task),
             cost_bound=total_bound,
         )
-        assert CapabilityProfile.STRUCTURED in chosen[0].capability_profiles
+        assert required_profile(task) in chosen[0].capability_profiles
         assert chosen[0].cost_per_mtok_in_usd == min(entry.cost_per_mtok_in_usd for entry in chosen)
         assert chosen[0].slug.startswith("haiku"), "registry state as of 7 September 2026"
 

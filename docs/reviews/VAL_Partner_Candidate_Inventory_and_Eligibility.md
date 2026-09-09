@@ -18,7 +18,7 @@ The registry (`val_domain.registry`, five entries) holds `opus-5` (`claude-opus-
 |---|---|
 | `claude-opus-5` | Current. Anthropic's models overview lists Claude Opus 5 as the recommended starting model; retirement not sooner than 24 July 2027. |
 | `claude-haiku-4-5-20251001` | Current but the oldest entry in the lineup; retirement not sooner than 15 October 2026 — **thirty-seven days from this report**. Anthropic's minimum cacheable prefix on it is 4,096 tokens. |
-| `gpt-5.5-2026-04-23` | **Superseded.** OpenAI's models page no longer lists GPT-5.5 among current models; the pricing page still prices `gpt-5.5` ($5 / $0.50 cached / $30). The current family is GPT-5.6, three models. |
+| `gpt-5.5-2026-04-23` | **Current — corrected 9 September 2026.** An earlier line here called it superseded on the strength of a summary of the models index; OpenAI's own model page for GPT-5.5 (`developers.openai.com/api/docs/models/gpt-5.5`, read 9 September) presents it as "a flagship model for the most complex professional work", model ID `gpt-5.5`, default snapshot `gpt-5.5-2026-04-23`, $5 / $0.50 cached / $30, 1,050,000 context, 128K output, effort none–xhigh, structured outputs and prompt caching supported, no deprecation notice. The registered entry's `model_identifier` is exactly that snapshot, and the account's model list returns it. GPT-5.6 is the newer family alongside it, not a replacement that retires it. |
 | Claude Sonnet 5 | **Absent from the registry** although it is the provider's mid-tier partner-class model at $2 / $10, made permanent on 10 August 2026. |
 
 The registry is stale in the two places the ruling anticipated, and one it did not (the Haiku retirement date).
@@ -52,7 +52,7 @@ Not candidates today: Claude Haiku 4.5 (structured only; retiring). **Claude Fab
 
 Sources: `developers.openai.com/api/docs/pricing`, `/api/docs/models`, `/api/docs/models/gpt-5.6-sol`, `/api/docs/guides/prompt-caching`, `/api/docs/guides/your-data`.
 
-**Lead verification.** "Sol" and "Terra" are real and current: the GPT-5.6 family is `gpt-5.6-sol` (alias `gpt-5.6`), `gpt-5.6-terra`, and `gpt-5.6-luna`. The pricing page also lists `gpt-6-astra`, which the models page did not describe on the report date; it is recorded as present and unverified, not as a candidate. GPT-5.5 is priced but no longer listed as current.
+**Lead verification.** "Sol" and "Terra" are real and current: the GPT-5.6 family is `gpt-5.6-sol` (alias `gpt-5.6`), `gpt-5.6-terra`, and `gpt-5.6-luna`. The pricing page also lists `gpt-6-astra`, which the models page did not describe on the report date; it is recorded as present and unverified, not as a candidate. GPT-5.5 is current (corrected 9 September; see §1).
 
 | | GPT-5.6 Sol | GPT-5.6 Terra | GPT-5.6 Luna |
 |---|---|---|---|
