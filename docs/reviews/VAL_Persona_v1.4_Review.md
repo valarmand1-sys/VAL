@@ -1,6 +1,6 @@
-# Persona v1.4 — review package (draft; not activated)
+# Persona v1.4 — review package (approved and activated 9 September 2026)
 
-Prepared 9 September 2026 under Lord Armand's ruling after the v1.4 reveal. **Persona v1.3 remains active** (`personas` revision 2, digest `3ccc15f6028e…`); the governing `03-persona.md` stays at v1.3 until the completed v1.4 is approved, so the stored revision and the document stay matched. On approval: the draft replaces `03-persona.md`, the changelog draft becomes `03-persona-changelog.md`, `test_persona.py`'s seeded label moves to `1.4`, and the revision is created and activated with its row id and digest recorded.
+Prepared 9 September 2026 under Lord Armand's ruling after the v1.4 reveal. **Superseded on approval:** the diff below is the reviewed one (before the final §6 relocation, which is recorded in the changelog §14 and in the governing document). Persona v1.3 remained active until this revision was approved (`personas` revision 2, digest `3ccc15f6028e…`); the governing `03-persona.md` stays at v1.3 until the completed v1.4 is approved, so the stored revision and the document stay matched. On approval: the draft replaces `03-persona.md`, the changelog draft becomes `03-persona-changelog.md`, `test_persona.py`'s seeded label moves to `1.4`, and the revision is created and activated with its row id and digest recorded.
 
 **Four harmonisation corrections applied on review, 9 September 2026** (§2 books exist only per authoritative storage; §3 calibrated uncertainty; §4 care bounded by capability, record and the longer objective; §10 presentation rule mirroring the contract exactly) — listed in the changelog §14 and visible in the diff below.
 
