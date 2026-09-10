@@ -180,7 +180,7 @@ class FakeLedger:
         return [e for e in self.entries.values() if e.state == "settled"]
 
 
-def config(slug: str = "opus-5") -> ModelConfig:
+def config(slug: str = "opus-5-medium") -> ModelConfig:
     found = by_slug(slug)
     assert found is not None
     return found

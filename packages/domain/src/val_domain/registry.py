@@ -133,6 +133,71 @@ REGISTRY: tuple[ModelConfig, ...] = (
         adapter_status=AdapterStatus.IMPLEMENTED,
         activated_on=_ADMITTED_ON,
         rates_verified_on=_VERIFIED_ON,
+        # Ruling, 10 September 2026 (`01-architecture.md` §5.2, closing the
+        # qualification repair loop): the dormant incumbent. Formally NOT MET
+        # on packet v1.5 (three item-4 failures, one of them unsupported
+        # continuity; no zero-tolerance failure); not run under v1.6. Retired
+        # from routing so that partner traffic resolves deterministically to
+        # the configuration in operational service below — the same model at
+        # `high` and `medium` price identically, and two partner-eligible
+        # entries would tie on cost. Identity and history untouched: every
+        # `model_calls` row carrying this id still resolves to what it used.
+        # Returning it to service is a ruling, not an edit.
+        retired=True,
+        retired_on=date(2026, 9, 10),
+    ),
+    ModelConfig(
+        id=UUID("6c2e7a19-5d3b-4f8e-9a71-2b4c8d0e1f53"),
+        slug="opus-5-medium",
+        provider="anthropic",
+        model_identifier="claude-opus-5",
+        display_name="Claude Opus 5 (medium effort)",
+        context_window_tokens=1_000_000,
+        max_output_tokens=128_000,
+        # The exact configuration adjudicated on packet v1.6 (10 September
+        # 2026): `opus-5 / medium / adaptive`, persona v1.4 (`personas`
+        # revision 3), the record-state contract in place. Effort is part of
+        # the configuration's identity (ruling, 8 September 2026), so this is
+        # its own entry with its own id, never an edit of `opus-5`.
+        reasoning_effort=ReasoningEffort.MEDIUM,
+        # Same model, same published rates and cache rates as `opus-5` above
+        # (verified 18 August and 8 September 2026); effort does not change
+        # price. Re-affirmed against the same pages on registration.
+        cost_per_mtok_in_usd=5.00,
+        cost_per_mtok_out_usd=25.00,
+        caching=PricingFeature.AVAILABLE,
+        cache_write_5m_per_mtok_in_usd=6.25,
+        cache_write_1h_per_mtok_in_usd=10.00,
+        cache_read_per_mtok_in_usd=0.50,
+        cache_minimum_prefix_tokens=512,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset({CapabilityProfile.PARTNER, CapabilityProfile.STRUCTURED}),
+        # Observed on the v1.5 and v1.6 packets under persona v1.4 and in the
+        # record-state regression: when completing a drafted artifact (a note)
+        # it may insert an unsupported particular — a count the prompt did not
+        # supply. Not observed on non-drafting tasks (specificity probe, 12 of
+        # 12 asked for the missing fact). Open problem OP-5.
+        known_weaknesses=(
+            "drafted artifacts: may insert an unsupported particular (a count) while "
+            "completing the form of a sendable note — OP-5",
+        ),
+        fallback_slug="haiku-4-5-20251001",
+        # Formal qualification status: NOT MET (packet v1.6, 10 September 2026;
+        # O1 bounded quality, O4 one residual integrity defect). `QUALIFIED` is
+        # not set and nothing here implies it.
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        # Operational status, recorded separately and never collapsed with the
+        # line above.
+        owner_authorization=(
+            "OWNER-AUTHORISED OPERATIONAL EXCEPTION, Lord Armand, 10 September 2026: "
+            "authorised for substantive operational use with ONE known residual "
+            "integrity defect (v1.6 O4, unsupported count in a drafted artifact; "
+            "closure condition in OP-5). Formal qualification status NOT MET."
+        ),
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 10),
+        rates_verified_on=date(2026, 9, 10),
     ),
     # ------------------------------------------------------------------
     # RETIRED — independent-review correction, 18 August 2026.

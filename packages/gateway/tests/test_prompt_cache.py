@@ -31,7 +31,7 @@ from val_gateway.startup import CACHE_TTL_SETTING, configured_cache_ttl
 from val_policy.budget import maximum_cost
 from val_providers.base import ProviderResult
 
-OPUS = config("opus-5")
+OPUS = config("opus-5-medium")
 HAIKU = config("haiku-4-5-20251001")
 LONG_SYSTEM = "persona " * 3_000  # far above Opus 5's 512-token minimum
 SHORT_SYSTEM = "You classify one exchange."

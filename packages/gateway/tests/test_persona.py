@@ -715,7 +715,7 @@ def test_persona_content_cannot_widen_authority(clean_personas: Engine) -> None:
         "violations": startup_violations(list(registry_active())),
         "eligibility": {c.slug: sorted(c.eligible_classifications) for c in registry_active()},
         "admits": admits(199.99, 40.00),
-        "restricted": refusal_for(Classification.RESTRICTED, config("opus-5")),
+        "restricted": refusal_for(Classification.RESTRICTED, config("opus-5-medium")),
         "startup": check_startup(date(2026, 8, 17)),
     }
 
@@ -729,7 +729,7 @@ def test_persona_content_cannot_widen_authority(clean_personas: Engine) -> None:
         "violations": startup_violations(list(registry_active())),
         "eligibility": {c.slug: sorted(c.eligible_classifications) for c in registry_active()},
         "admits": admits(199.99, 40.00),
-        "restricted": refusal_for(Classification.RESTRICTED, config("opus-5")),
+        "restricted": refusal_for(Classification.RESTRICTED, config("opus-5-medium")),
         "startup": check_startup(date(2026, 8, 17)),
     }
     assert before == after, "persona content changed institutional state"

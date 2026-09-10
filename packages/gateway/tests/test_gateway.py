@@ -66,7 +66,7 @@ def test_a_successful_call_writes_one_row_with_cost_project_and_task_type() -> N
     assert row.project_id is not None
     assert row.task_type == "classification"
     assert row.status is CallStatus.OK
-    assert row.slug == "opus-5"
+    assert row.slug == "opus-5-medium"
     assert response.cost_usd == row.cost_usd
 
 
@@ -387,7 +387,7 @@ def test_slug_appears_in_every_recorded_row() -> None:
     adapter = StubAdapter(ProviderResult("x", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, _, _ = build(adapter)
     gateway.complete_with_configuration(request(), config())
-    assert rows[0].slug == "opus-5"
+    assert rows[0].slug == "opus-5-medium"
     assert isinstance(rows[0].model_config_id, UUID)
 
 

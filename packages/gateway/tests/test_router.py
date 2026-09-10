@@ -448,7 +448,7 @@ def test_provider_substitution_changes_no_identity_or_governance_state() -> None
         gateway.complete_with_configuration(pinned, config(slug))
         return rows[0]
 
-    first = ask(anthropic, "opus-5")
+    first = ask(anthropic, "opus-5-medium")
     second = ask(openai, "gpt-5-5-20260423")
 
     assert first.provider != second.provider  # type: ignore[attr-defined]
@@ -620,9 +620,11 @@ def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_regist
         "the premise: the cheapest structured route is not partner-qualified"
     )
     assert chosen[0].slug != cheapest_overall.slug
-    # Registry state as of 7 September 2026 — the provisionally approved sole
-    # partner route. A changed ruling changes this line, nothing in routing.
-    assert chosen[0].slug == "opus-5"
+    # Registry state as of 10 September 2026 — the configuration in operational
+    # service under the owner-authorised exception; `opus-5` (high) is the
+    # retired dormant incumbent. A changed ruling changes this line, nothing in
+    # routing.
+    assert chosen[0].slug == "opus-5-medium"
 
 
 def test_classification_and_strip_route_to_the_cheapest_structured_route() -> None:

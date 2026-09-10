@@ -333,6 +333,15 @@ class ModelConfig(BaseModel):
     #: that speaks its dialect. Independent: neither implies the other, and
     #: neither implies eligibility.
     admission: Admission
+    #: Ruling, 10 September 2026 (`01-architecture.md` §5.2): a configuration
+    #: placed into operational service under the **owner-authorised operational
+    #: exception** records that authorisation here — the residual it carries,
+    #: the date, and the open-problem entry that holds the closure condition.
+    #: This is an operational status, separate from `admission`: it never sets
+    #: or implies `QUALIFIED`, and a configuration carrying it is formally
+    #: *not met* on the frozen exam that produced it. `None` for every route
+    #: that is not in service under an exception.
+    owner_authorization: str | None = None
     adapter_status: AdapterStatus
     #: When this configuration became routable, and when it stopped being so.
     activated_on: date

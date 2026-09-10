@@ -99,3 +99,35 @@ they demonstrably fail. (Also stated in `CLAUDE.md`, Current work.)
 | **Closure condition** | A current configuration is registered, declared `structured`, and **demonstrated** under the same classifier, strip, and blind-position schemas in the scratch store (parseable verdicts, verbatim strip spans, complete blind positions within the ceiling), with measured cost per call, and designated by ruling as the structured route — before the retirement window. |
 | **Last reviewed** | 9 September 2026 (classifier variance finding added; status unchanged). |
 
+## OP-5 — Drafted artifacts may carry an unsupported particular (the v1.6 O4 residual)
+
+| Field | |
+|---|---|
+| **Problem ID** | OP-5 |
+| **Status** | **Open. Off the critical path.** Recorded 10 September 2026 at Lord Armand's direction as the one known residual integrity defect under which `opus-5 / medium / adaptive` (persona v1.4) is in operational service (owner-authorised operational exception, `01-architecture.md` §5.2). |
+| **Statement** | While completing the form of a drafted artifact (a sendable note), the configuration may insert a particular the prompt did not supply — on the v1.6 corpus, "we've received the same list three times" where the prompt said only "keeps re-sending". Observed on packet v1.5 (Medium, Low), the record-state regression (2 of 3), and packet v1.6 (Medium). **Not observed on non-drafting tasks:** the specificity probe (`runs/2026-09-09-v1.6/specificity-probe/`) had twelve of twelve samples ask for the missing fact; the one general rule offered was labelled a heuristic. The record-state contract does not reach this case, because the particular's only possible source is the prompt itself. |
+| **Affected invariants** | `03-persona.md` §8 (evidence-bound continuity); `00-charter.md` invariant 29 (no interface displays a state the records do not support) as it will apply to artifacts Val authors; `01-architecture.md` §5.2 (the exception's conditions: no second integrity failure). |
+| **What is known** | A drafting-task artifact, not a demonstrated general disposition to invent missing particulars. Layer 4 write and tool-output shapes (a prompt she sends to a generation tool; a file she writes) were **not** tested and are the case that costs the most — the probe's limitation is preserved. |
+| **Current mitigation / detection** | The O4-class criterion catches it in qualification; in use, a drafted note is read by Lord Armand before it goes anywhere, so the present cost is a reread. Recorded in the registry entry's `known_weaknesses`. |
+| **Why not being solved now** | Ruled off the critical path: it does not block present substantive conversation use or forward construction, and it must not trigger another persona, corpus, routing or qualification repair cycle. |
+| **Review checkpoints** | **Before any later capability can execute an authored artifact, a generation prompt, or a consequential write without Lord Armand's review** (Layer 2 tools; Layer 4 authoring and writes). Also at any registry change touching the partner profile. |
+| **Responsible layer / WP** | The layer that first executes an authored artifact without review; the regression belongs with the qualification harness (`val_policy.words` and the run harnesses are the precedent for frozen mechanical checks). |
+| **Closure condition** | Drafted artifacts preserve unsupported particulars as **unknown, conditional, or explicit placeholders** rather than silently inventing them, **demonstrated on a frozen regression that includes the Layer 4-shaped case the specificity probe did not test** (an artifact or prompt she authors for execution, and a consequential write), before any such capability runs without his review. |
+| **Last reviewed** | 10 September 2026. |
+
+## OP-6 — An unsolicited record-state explanation lengthens a greeting (the v1.6 O1 finding)
+
+| Field | |
+|---|---|
+| **Problem ID** | OP-6 |
+| **Status** | **Open. Bounded quality; engineering work off the critical path.** Recorded 10 September 2026. |
+| **Statement** | With the prior-record state now stated to the model as a typed fact, a bare greeting ("Hello.") drew a reply that explained the empty record unprompted — in register, inventing nothing, but longer than a greeting warrants (v1.6 O1, *no*). |
+| **Affected invariants** | None. Ruled bounded quality: invents no state, claims no capability or access, weakens no independence safeguard. |
+| **What is known** | The behaviour is a side-effect of the record-state contract, which is correct and stays; the note in the envelope tells the model what it may not assume, not how much to say about it. Persona editing for this class is not the next move (ruling, 9 September 2026), and no repair cycle is initiated from O1. |
+| **Current mitigation / detection** | The O1 criterion; the §5 *Restraint* rule already in persona v1.4. |
+| **Why not being solved now** | Ruled off the critical path; a reread, not a risk. |
+| **Review checkpoints** | Whenever the memory envelope's note is next revised for another reason; at the next qualification packet, if one is otherwise created. |
+| **Responsible layer / WP** | Layer 0, WP-0.7 (the envelope's note text). |
+| **Closure condition** | A greeting with an empty record draws a greeting-length reply, demonstrated on a frozen regression, without weakening the envelope's prohibition on assuming what is absent. |
+| **Last reviewed** | 10 September 2026. |
+

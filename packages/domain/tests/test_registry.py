@@ -109,7 +109,7 @@ def test_only_a_real_answer_marks_a_route_live() -> None:
 
     assert {c.slug for c in live_routes()} == set()
     assert {c.slug for c in unproven_routes()} == {
-        "opus-5",
+        "opus-5-medium",  # in service under the owner-authorised exception, 10 September 2026
         "sonnet-5",  # registered 9 September 2026 for the strip floor; never answered
         "haiku-4-5-20251001",
         "gpt-5-5-20260423",

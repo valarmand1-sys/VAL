@@ -518,6 +518,8 @@ Each states what exists when it is done and how that is verified.
 <!-- scope-ruling: 2026-09-02 -->
 ### WP-0.11 — Budget-control hardening (warn-and-raise) — recorded 2 September 2026, not yet begun
 
+> **Status, 10 September 2026, Lord Armand.** The qualification-dependent hold on this work package is released with the closure of the qualification repair loop (`01-architecture.md` §5.2, ruling of this date): `opus-5 / medium / adaptive` under persona v1.4 is in substantive operational service under the owner-authorised operational exception (formal status *not met*, one known residual integrity defect, OP-5). WP-0.11 proceeds in its recorded place under the existing roadmap; nothing in its scope changes.
+
 **Ruled by Lord Armand after both external reviewers converged. Its own work package, not Track C**: Track C's isolation rule is attachments and derived views only, and budget policy colliding with vision in practice does not pull it into the substrate. Layer 0, because the ceiling it hardens is Layer 0's (`01-architecture.md` §5.5 as ruled 2 September 2026).
 
 **What it blocks and what it does not.** It does **not** block the attachment migration or the internal vision implementation after the storage ruling; those proceed on their existing path. It **does** block Track C becoming an operational working-day capability, and it blocks visual conversations contributing evidence to the Layer 0 gate — otherwise "she cannot see" is traded for "she stops mid-session and the raise is a code edit," the same stall through a different door. **Not a development blocker. A live-use blocker.**
