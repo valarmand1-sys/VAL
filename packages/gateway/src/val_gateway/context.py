@@ -168,7 +168,9 @@ MEMORY_ENVELOPE_NOTE = (
     "nothing; 'not_run', 'unavailable' and 'not_applicable' mean it was not or "
     "could not be consulted. None of these states implies that anything exists "
     "elsewhere, and nothing absent from this request may be assumed, "
-    "reconstructed, or referred to as if remembered."
+    "reconstructed, or referred to as if remembered. current_time is the "
+    "present local date and time from the house's clock; use it rather than "
+    "inferring the hour."
 )
 
 #: Retained under its old name because tests and logs refer to it; it is now the
@@ -268,9 +270,24 @@ class PriorRecordState:
     retrieval_detail: str | None = None
     volumes_state: str = "not_applicable"
     volumes_count: int = 0
+    #: Ruling, 10 September 2026: the current local date and time, stated as a
+    #: fact from the gateway's clock rather than left for the model to infer.
+    #: Nothing supplied it before, so a greeting guessed the time of day.
+    current_local_time: str | None = None
+    current_timezone: str | None = None
 
     def as_document(self) -> dict[str, object]:
         return {
+            **(
+                {
+                    "current_time": {
+                        "local": self.current_local_time,
+                        "timezone": self.current_timezone,
+                    }
+                }
+                if self.current_local_time is not None
+                else {}
+            ),
             "same_conversation_history": {
                 "state": self.history_state,
                 "prior_messages": self.history_prior_messages,

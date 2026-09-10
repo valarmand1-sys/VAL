@@ -2608,3 +2608,38 @@ def test_recall_with_state_not_run_and_unavailable_are_distinct(store: Engine) -
             recall_with_state(store, scope=ExplicitNoProject(), query="lighthouse")
     finally:
         memory_module.recall = original
+
+
+def test_prior_record_state_carries_the_current_local_time_as_a_fact(
+    store: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Ruling, 10 September 2026: she has a clock. The envelope states the present
+    local date and time from the gateway, so the hour is never inferred."""
+    from datetime import datetime, timedelta, timezone
+
+    from val_gateway import loop as loop_module
+
+    fixed = datetime(2026, 9, 10, 10, 49, tzinfo=timezone(timedelta(hours=-5), "CDT"))
+    monkeypatch.setattr(loop_module, "local_now", lambda: fixed)
+
+    adapter = answering()
+    send(
+        store,
+        build_gateway(store, adapter),
+        "Hello Val",
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+    )
+    state = _state(adapter)
+    assert state["current_time"] == {
+        "local": "Thursday 10 September 2026, 10:49",
+        "timezone": "CDT (UTC-0500)",
+    }
+    assert "current_time is the present local date and time" in str(_envelope(adapter)["note"])
+    # Nothing else was added to the envelope.
+    assert set(state) == {
+        "current_time",
+        "same_conversation_history",
+        "retrieved_excerpts",
+        "project_volumes",
+    }

@@ -45,6 +45,12 @@ type Scope = { kind: "project"; project: ProjectView } | { kind: "none" } | { ki
 export function App(): React.JSX.Element {
   const [projects, setProjects] = useState<ProjectView[]>([]);
   const [scope, setScope] = useState<Scope>({ kind: "all" });
+  // Ruled 10 September 2026: a new conversation belongs to no project unless
+  // assigned deliberately. The sidebar scope filters the list; it never decides
+  // where a new conversation is created. Assignment is possible only before the
+  // first message — `conversations.project_id` is immutable once held
+  // (migration 0008), so after that the scope is fixed.
+  const [assignment, setAssignment] = useState<ProjectView | null>(null);
   const [conversations, setConversations] = useState<ConversationView[]>([]);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -147,10 +153,12 @@ export function App(): React.JSX.Element {
           ...(detail !== null ? { conversation_id: detail.conversation.id } : {}),
           ...(projectOverride !== undefined
             ? { project: projectOverride }
-            : scope.kind === "project" && detail === null
-              ? { project: scope.project.name }
+            : detail === null && assignment !== null
+              ? { project: assignment.name }
               : {}),
-          ...(scope.kind === "none" && detail === null ? { no_project: true } : {}),
+          ...(projectOverride === undefined && detail === null && assignment === null
+            ? { no_project: true }
+            : {}),
         });
         if (outcome.kind === "clarification") {
           setClarification(outcome);
@@ -241,6 +249,7 @@ export function App(): React.JSX.Element {
             onClick={() => {
               setView("conversation");
               setDetail(null);
+              setAssignment(null);
             }}
           >
             New conversation
@@ -282,13 +291,32 @@ export function App(): React.JSX.Element {
         {view === "review" ? (
           <ReviewPanel onRefused={(message) => setNotice(message)} />
         ) : detail === null ? (
-          <p className="empty">
-            {scope.kind === "project"
-              ? `A new conversation in ${scope.project.name}.`
-              : scope.kind === "none"
-                ? "A new conversation, explicitly outside every project."
-                : "Choose a conversation, or say something to start one."}
-          </p>
+          <div className="empty">
+            <p>
+              {assignment === null
+                ? "A new conversation, unassigned. Say something to start it, or assign it to a project first."
+                : `A new conversation in ${assignment.name}.`}
+            </p>
+            <label className="assignment">
+              Project for this conversation
+              <select
+                value={assignment?.id ?? ""}
+                onChange={(event) =>
+                  setAssignment(projects.find((project) => project.id === event.target.value) ?? null)
+                }
+              >
+                <option value="">No project</option>
+                {projects
+                  .filter((project) => !project.archived)
+                  .map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <p className="hint">Assignment is fixed by the first message; a conversation cannot be moved afterwards.</p>
+          </div>
         ) : (
           <Thread detail={detail} onRecorded={() => void openConversation(detail.conversation.id)} />
         )}

@@ -67,6 +67,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import Engine
@@ -315,6 +316,11 @@ def open_turn(
     return OpenedTurn(conversation=conversation, scope=scope, user_message=user_message)
 
 
+def local_now() -> datetime:
+    """The gateway's clock, in the machine's local zone. Replaced in tests."""
+    return datetime.now().astimezone()
+
+
 def assemble_turn(
     engine: Engine,
     opened: OpenedTurn,
@@ -340,7 +346,10 @@ def assemble_turn(
     #    in `history`.
     turns = conversation_messages(history)
     prior = sum(1 for record in history if record.role.value in ("user", "val")) - 1
+    now = local_now()
     state = PriorRecordState(
+        current_local_time=now.strftime("%A %-d %B %Y, %H:%M"),
+        current_timezone=now.strftime("%Z (UTC%z)"),
         history_state="available" if prior > 0 else "zero",
         history_prior_messages=max(prior, 0),
         history_retained_messages=max(len(turns) - 1, 0),
