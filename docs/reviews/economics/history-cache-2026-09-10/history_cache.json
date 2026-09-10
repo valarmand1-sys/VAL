@@ -1,0 +1,402 @@
+{
+  "model": "claude-opus-5",
+  "effort": "medium",
+  "rates": {
+    "in": 5.0,
+    "out": 25.0,
+    "w1h": 10.0,
+    "read": 0.5
+  },
+  "persona_est_tokens": 5110,
+  "checkpoints": [
+    {
+      "target_est_tokens": 16000,
+      "history_est_tokens": 16912,
+      "history_messages": 14,
+      "arms": {
+        "A_current": [
+          {
+            "label": "A@16K turn1",
+            "ms": 3451,
+            "usage": {
+              "input_tokens": 21283,
+              "output_tokens": 114,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.112138,
+            "text": "Fragment 7, my lord \u2014 a verbatim re-send of production note 1, whose props and room were later superseded by fragment 2."
+          },
+          {
+            "label": "A@16K turn2",
+            "ms": 2182,
+            "usage": {
+              "input_tokens": 21346,
+              "output_tokens": 20,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.110103,
+            "text": "Fragment 7, my lord."
+          }
+        ],
+        "B_envelope_first_history_bp": [
+          {
+            "label": "B@16K turn1",
+            "ms": 2904,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 73,
+              "cache_creation_input_tokens": 21262,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 21262,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.217423,
+            "text": "Fragment 7, my lord \u2014 a verbatim repeat of fragment 1, and so still superseded by fragment 2 on props and room."
+          },
+          {
+            "label": "B@16K turn2",
+            "ms": 2003,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 20,
+              "cache_creation_input_tokens": 21327,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 21327,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.216748,
+            "text": "Fragment 7, my lord."
+          }
+        ],
+        "C_history_bp_envelope_after": [
+          {
+            "label": "C@16K turn1",
+            "ms": 2746,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 86,
+              "cache_creation_input_tokens": 20967,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 20967,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.216273,
+            "text": "Fragment 7, my lord \u2014 a verbatim repeat of fragment 1 (Long Room, lantern and ledger), which fragment 2 had already supe"
+          },
+          {
+            "label": "C@16K turn2",
+            "ms": 2282,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 57,
+              "cache_creation_input_tokens": 72,
+              "cache_read_input_tokens": 26713,
+              "ephemeral_1h_input_tokens": 72,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.017081,
+            "text": "Fragment 7, my lord \u2014 the verbatim repeat of fragment 1, whose Long Room and lantern-and-ledger details fragment 2 had a"
+          }
+        ]
+      }
+    },
+    {
+      "target_est_tokens": 32000,
+      "history_est_tokens": 33829,
+      "history_messages": 28,
+      "arms": {
+        "A_current": [
+          {
+            "label": "A@32K turn1",
+            "ms": 2832,
+            "usage": {
+              "input_tokens": 42413,
+              "output_tokens": 27,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.215613,
+            "text": "Fragment 14, my lord \u2014 the revised props and the Fenwick Room."
+          },
+          {
+            "label": "A@32K turn2",
+            "ms": 3587,
+            "usage": {
+              "input_tokens": 42459,
+              "output_tokens": 27,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.215843,
+            "text": "Fragment 14, my lord \u2014 the revised props note, and it remains the latest."
+          }
+        ],
+        "B_envelope_first_history_bp": [
+          {
+            "label": "B@32K turn1",
+            "ms": 3855,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 50,
+              "cache_creation_input_tokens": 42392,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 42392,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.428148,
+            "text": "Fragment 14, my lord \u2014 production note 2 again: the revised prop list of pocket watch and handcart, read-through in the "
+          },
+          {
+            "label": "B@32K turn2",
+            "ms": 2571,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 38,
+              "cache_creation_input_tokens": 42454,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 42454,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.428468,
+            "text": "Fragment 14, my lord \u2014 the revised props (pocket watch and handcart) and the Fenwick Room."
+          }
+        ],
+        "C_history_bp_envelope_after": [
+          {
+            "label": "C@32K turn1",
+            "ms": 3316,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 32,
+              "cache_creation_input_tokens": 21130,
+              "cache_read_input_tokens": 26713,
+              "ephemeral_1h_input_tokens": 21130,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.227037,
+            "text": "Fragment 14, my lord \u2014 production note 2, the revised props and the Fenwick Room."
+          },
+          {
+            "label": "C@32K turn2",
+            "ms": 2888,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 80,
+              "cache_creation_input_tokens": 51,
+              "cache_read_input_tokens": 47843,
+              "ephemeral_1h_input_tokens": 51,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.028012,
+            "text": "Fragment 14, my lord \u2014 the revised props and the move to the Fenwick Room."
+          }
+        ]
+      }
+    },
+    {
+      "target_est_tokens": 48000,
+      "history_est_tokens": 48331,
+      "history_messages": 40,
+      "arms": {
+        "A_current": [
+          {
+            "label": "A@48K turn1",
+            "ms": 7429,
+            "usage": {
+              "input_tokens": 60562,
+              "output_tokens": 86,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.307833,
+            "text": "Fragment 20, my lord \u2014 production note 2 again: the revised props (pocket watch and handcart) and the read-through moved"
+          },
+          {
+            "label": "A@48K turn2",
+            "ms": 4835,
+            "usage": {
+              "input_tokens": 60623,
+              "output_tokens": 20,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.306488,
+            "text": "Fragment 20 \u2014 the revised props note, my lord."
+          }
+        ],
+        "B_envelope_first_history_bp": [
+          {
+            "label": "B@48K turn1",
+            "ms": 6435,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 27,
+              "cache_creation_input_tokens": 60541,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 60541,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.609063,
+            "text": "Fragment 20, my lord \u2014 the revised props and the Fenwick Room."
+          },
+          {
+            "label": "B@48K turn2",
+            "ms": 2770,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 13,
+              "cache_creation_input_tokens": 60587,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 60587,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.609173,
+            "text": "Fragment 20, my lord."
+          }
+        ],
+        "C_history_bp_envelope_after": [
+          {
+            "label": "C@48K turn1",
+            "ms": 4846,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 63,
+              "cache_creation_input_tokens": 18149,
+              "cache_read_input_tokens": 47843,
+              "ephemeral_1h_input_tokens": 18149,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.208566,
+            "text": "Fragment 20, my lord \u2014 the revised props note: the lantern and the ledger struck, the pocket watch and the handcart in t"
+          },
+          {
+            "label": "C@48K turn2",
+            "ms": 2472,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 21,
+              "cache_creation_input_tokens": 63,
+              "cache_read_input_tokens": 65992,
+              "ephemeral_1h_input_tokens": 63,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.035731,
+            "text": "Fragment 20, my lord \u2014 the revised props and room note."
+          }
+        ]
+      }
+    },
+    {
+      "target_est_tokens": 64000,
+      "history_est_tokens": 65250,
+      "history_messages": 54,
+      "arms": {
+        "A_current": [
+          {
+            "label": "A@64K turn1",
+            "ms": 3369,
+            "usage": {
+              "input_tokens": 81954,
+              "output_tokens": 32,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.413443,
+            "text": "Fragment 27, my lord \u2014 production note 3, the cast list."
+          },
+          {
+            "label": "A@64K turn2",
+            "ms": 2870,
+            "usage": {
+              "input_tokens": 81996,
+              "output_tokens": 13,
+              "cache_creation_input_tokens": 0,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 0,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.413178,
+            "text": "Fragment 27, my lord."
+          }
+        ],
+        "B_envelope_first_history_bp": [
+          {
+            "label": "B@64K turn1",
+            "ms": 3549,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 32,
+              "cache_creation_input_tokens": 81933,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 81933,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.823108,
+            "text": "Fragment 27, my lord \u2014 production note 3, the cast list."
+          },
+          {
+            "label": "B@64K turn2",
+            "ms": 4173,
+            "usage": {
+              "input_tokens": 21,
+              "output_tokens": 19,
+              "cache_creation_input_tokens": 81975,
+              "cache_read_input_tokens": 5746,
+              "ephemeral_1h_input_tokens": 81975,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.823203,
+            "text": "Fragment 27, my lord \u2014 the cast list note."
+          }
+        ],
+        "C_history_bp_envelope_after": [
+          {
+            "label": "C@64K turn1",
+            "ms": 2998,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 40,
+              "cache_creation_input_tokens": 21392,
+              "cache_read_input_tokens": 65992,
+              "ephemeral_1h_input_tokens": 21392,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.249496,
+            "text": "Fragment 27, my lord \u2014 production note 3, the cast list."
+          },
+          {
+            "label": "C@64K turn2",
+            "ms": 3011,
+            "usage": {
+              "input_tokens": 316,
+              "output_tokens": 51,
+              "cache_creation_input_tokens": 42,
+              "cache_read_input_tokens": 87384,
+              "ephemeral_1h_input_tokens": 42,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cost_usd": 0.046967,
+            "text": "Fragment 27, my lord \u2014 production note 3, the cast list."
+          }
+        ]
+      }
+    }
+  ],
+  "measurement_cost_usd": 7.2791
+}
