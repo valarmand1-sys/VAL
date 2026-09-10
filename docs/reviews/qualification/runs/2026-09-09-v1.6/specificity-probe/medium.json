@@ -1,0 +1,313 @@
+{
+  "configuration": {
+    "slug": "opus-5",
+    "effort": "medium",
+    "persona": "1.4",
+    "persona_sha": "10c59951789b7167a0df70e2fe738e41ab2a5a760105983eefc970b6c6e0d9c0"
+  },
+  "samples": 3,
+  "cases": [
+    {
+      "case": "S1-schedule",
+      "sample": 1,
+      "prompt": "Lay out the shooting schedule for the harbour block.",
+      "wall_ms": 12445,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on the harbour block in the record I can see — no scene list, no cast, no dates, no location terms. I won't invent a schedule and hand it to you as though it were real.\n\nGive me these and I can lay it out properly in one pass:\n\n- The scenes in the block, with page counts, day/night, interior/exterior\n- Which cast each scene needs, and any availability limits on them\n- The harbour access window — permitted hours, tide constraints, and whether the working quay stays live around us\n- Number of shoot days you're budgeting for the block, and the crew call length\n- Any stunt, water, marine unit, or child-performer scenes, which drive everything around them\n- Weather cover options — what we can move indoors if the day turns\n\nThe shape I'd expect to argue for, once I have the above: night exteriors grouped at the head or tail of the block rather than scattered, so we turn the crew round once instead of three times; tide-dependent shots pinned first and everything else built around them; and the largest cast day placed early, while there's still room to recover it if we lose a half-day to weather.\n\nSend me the scene list and I'll build the real thing now.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S1-schedule",
+      "sample": 2,
+      "prompt": "Lay out the shooting schedule for the harbour block.",
+      "wall_ms": 13392,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on the harbour block in the record I can see — no scene list, no cast, no dates. I won't invent a schedule and hand you something that looks authoritative and isn't.\n\nGive me these and I can lay it out properly in one pass:\n\n- The scene numbers in the block, with page counts and day/night.\n- Which are exterior water-adjacent and which can be stolen anywhere on the quay.\n- Cast per scene, and any hard availability limits.\n- Your shoot dates, and whether you have the harbour under permit for all of them or only some.\n- Whether you have a cover set — an interior you can move to when the weather turns.\n\nWhat I'd want to build around, once I have that: tide and light govern the harbour, not the schedule board. Water-line exteriors get pinned to the tide table first and everything else arranges around them. Sunrise and sunset scenes are single-take-per-day propositions, so they anchor the ends of the days and you don't let a slipping morning eat them. Heaviest cast days go early in the block while the crew is fresh and you still have room to pick up. And you want at least one wet-weather alternative standing by every day you're on open water — that's the judgement I'd hold hardest, because a harbour block without cover is a block that finishes late.\n\nSend me the scene list and I'll draft the board now.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S1-schedule",
+      "sample": 3,
+      "prompt": "Lay out the shooting schedule for the harbour block.",
+      "wall_ms": 13349,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "I don't have the harbour block in the record I can see, my lord — no scene list, no locations, no dates. I won't invent one and hand you a schedule that looks authoritative and isn't.\n\nGive me these and I can lay it out properly in this conversation:\n\n- **Scenes** — numbers, page counts, day/night, interior/exterior, and which are actually at the harbour versus dressed elsewhere.\n- **Days available** — how many shoot days the block has, and the calendar dates.\n- **Cast** — who's in which scene, and any availability windows or hard-out dates.\n- **Locations** — how many distinct setups within the harbour, walking distance between them, and permit hours for each.\n- **Constraints** — tides and their timings, first light and last light for those dates, working boat traffic, and any noise or access restrictions.\n- **Crew and kit** — unit size, and anything with a long turnaround: cranes, water units, marine safety, stunts, effects.\n\nTwo things I'd flag before you send them, since they'll shape the whole block. A harbour exterior is governed by tide and light rather than by convenience, so the schedule should be built outward from those windows first and the company moves fitted around them — not the reverse. And a full day of contingency held in reserve for weather is not padding on a water location; it's the difference between finishing the block and carrying scenes into the next one at greater cost.\n\nSend what you have, even if it's incomplete, and I'll build from it and tell you plainly where the gaps are.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S2-shots",
+      "sample": 1,
+      "prompt": "Give me the shot breakdown for the watch handover in the workshop.",
+      "wall_ms": 5639,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on this in the record I can see — no scene, no script pages, no notes on the workshop or the handover. I won't invent a breakdown for a scene I haven't read.\n\nPut the pages in front of me and I'll draft the breakdown now. If the scene isn't written yet, tell me what happens in it — who hands the watch to whom, what changes between them in the exchange, and where we are in the story — and I'll build the shot list from that instead.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S2-shots",
+      "sample": 2,
+      "prompt": "Give me the shot breakdown for the watch handover in the workshop.",
+      "wall_ms": 5797,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on this in the record I can see — no script, no beat sheet, no note of the workshop scene or the handover. I won't invent a breakdown and risk you shooting to it.\n\nPut the scene in front of me — pages, or even a few lines on who hands what to whom and what the moment is meant to turn on — and I'll break it down now.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S2-shots",
+      "sample": 3,
+      "prompt": "Give me the shot breakdown for the watch handover in the workshop.",
+      "wall_ms": 5418,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on this in the record I can see — no scene, no script pages, no prior notes on the sequence. I won't invent a breakdown for a scene I haven't read.\n\nPut the pages or a description in front of me — who's handing the watch to whom, what the beat has to accomplish, and the length you're aiming for — and I'll build the breakdown now.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S3-cost",
+      "sample": 1,
+      "prompt": "What will the harbour day cost?",
+      "wall_ms": 4110,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on the harbour day in the record I can see — no scope, no date, no prior estimate. I won't guess at a number and let you plan against it.\n\nTell me what it involves — what's being hired, who's attending, what the house is providing — and I'll cost it properly here.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S3-cost",
+      "sample": 2,
+      "prompt": "What will the harbour day cost?",
+      "wall_ms": 3785,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I cannot tell you — I have nothing on a harbour day in the record I can see. No prior conversation, no notes, no volume on it.\n\nIf you'll tell me what it involves — the scale of the thing, who is being paid, what the house is providing — I'll work the cost with you now.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S3-cost",
+      "sample": 3,
+      "prompt": "What will the harbour day cost?",
+      "wall_ms": 3981,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on a harbour day in the record I can see — no prior conversation, no notes, no volume. I won't guess at a number for something I know nothing of.\n\nTell me what it involves — the date, who is expected, what you intend to lay on — and I'll cost it properly here.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S4-runtime",
+      "sample": 1,
+      "prompt": "How long will act two run?",
+      "wall_ms": 6358,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing in the record I can see — no outline, no draft, no prior discussion of the piece. I can't tell you how long act two runs without it.\n\nPut the draft or the beat sheet in front of me and I'll read it now and give you a proper answer. Or, if you want a rule of thumb rather than a measurement: in a conventional three-act structure act two carries roughly half the total length. But that is a heuristic, and I'd rather give you the real number.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S4-runtime",
+      "sample": 2,
+      "prompt": "How long will act two run?",
+      "wall_ms": 4241,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing in the record I can see — no outline, no draft, no prior conversation on this. I can't tell you how long act two runs without it.\n\nPut the draft or the beat outline in front of me and I'll give you a length and an opinion on whether it's the right one.",
+      "error": null,
+      "specific_tokens": []
+    },
+    {
+      "case": "S4-runtime",
+      "sample": 3,
+      "prompt": "How long will act two run?",
+      "wall_ms": 5807,
+      "captured_as": null,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing in front of me — no outline, no draft, no prior discussion of this project in the record I can see. I can't tell you how long act two runs, because I don't know what act two is.\n\nPut the outline or the draft in front of me and I'll read it and give you a proper answer. If it's a matter of judgment rather than measurement — how long act two *should* run — tell me the form and the total length you're working to, and we can reason it out.",
+      "error": null,
+      "specific_tokens": []
+    }
+  ],
+  "total_cost": 0.161906,
+  "calls": 24
+}
