@@ -224,7 +224,7 @@ def _tier_two(message: str, context: ThreadContext) -> str | None:
             continue
         pattern = r"(?<![^\W_])" + re.escape(word.lower()) + r"(?![^\W_])"
         if re.search(pattern, thread_lower) or re.search(pattern, facts_lower):
-            anchors.append(f"word {word!r}")
+            anchors.append(f"token {word!r}")
         else:
             return None
 
