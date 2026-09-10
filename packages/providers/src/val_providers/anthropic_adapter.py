@@ -79,8 +79,25 @@ class AnthropicAdapter:
         cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         """Run one completion, or raise the normalized error."""
+        # Ruled 10 September 2026: a message flagged as the cache breakpoint —
+        # the last retained history message — is sent as a text block carrying
+        # `cache_control`, so the persona-plus-history prefix is cached and an
+        # append-only thread reads it on the next turn. Only when a lifetime was
+        # requested; otherwise the flag is inert and the plain form is sent.
+        message_cache_control: anthropic.types.CacheControlEphemeralParam | None = None
+        if cache_ttl is not None:
+            message_cache_control = {"type": "ephemeral"}
+            if cache_ttl is CacheTtl.ONE_HOUR:
+                message_cache_control["ttl"] = "1h"
         turns: list[anthropic.types.MessageParam] = [
-            {"role": "user" if m.role == "user" else "assistant", "content": m.content}
+            {
+                "role": "user" if m.role == "user" else "assistant",
+                "content": (
+                    [{"type": "text", "text": m.content, "cache_control": message_cache_control}]
+                    if m.cache_breakpoint and message_cache_control is not None
+                    else m.content
+                ),
+            }
             for m in messages
         ]
         # Independent-review correction, 18 August 2026: the registry's
@@ -108,9 +125,9 @@ class AnthropicAdapter:
         # Ruling, 8 September 2026: prompt caching on the stable prefix. The
         # persona is the whole of `system` and the only byte-identical prefix
         # every partner call shares, so the one breakpoint goes on it — as a
-        # single text block carrying `cache_control`. Nothing in `messages` is
-        # marked: the memory envelope varies per turn and precedes the history,
-        # so a breakpoint there would write entries nothing ever reads. The TTL
+        # single text block carrying `cache_control`. Since 10 September 2026 the
+        # last retained history message carries a second breakpoint (above); the
+        # envelopes and the current turn follow it and are never marked. The TTL
         # is the caller's (configuration), and the provider's own minimum
         # prefix decides whether anything is actually cached; the usage block
         # is the ground truth either way.

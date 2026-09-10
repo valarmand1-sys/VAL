@@ -82,14 +82,20 @@ from val_domain.gateway import (
     TerminalState,
     TurnReference,
 )
-from val_domain.project import AmbiguousProject, ProjectCandidate, ProjectScope
+from val_domain.project import AmbiguousProject, ExplicitNoProject, ProjectCandidate, ProjectScope
 from val_gateway import conversations
-from val_gateway.context import PriorRecordState, conversation_messages, recall_block
+from val_gateway.context import (
+    PriorRecordState,
+    recall_block,
+    record_state_block,
+    select_conversation,
+)
 from val_gateway.exchange import ClarificationNeeded, RestrictedContentRefusedError, resolve_scope
 from val_gateway.gateway import Gateway
-from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage, recall_with_state
+from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage, RecallOutcome, recall_with_state
 from val_gateway.projects import ProjectSession
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
+from val_policy.recall_gate import ThreadContext, gate_recall
 from val_policy.restricted import preflight, refusal_message
 
 _LOGGER = logging.getLogger("val.loop")
@@ -328,38 +334,60 @@ def assemble_turn(
     recall_limit: int = DEFAULT_LIMIT,
 ) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...]]:
     """Steps 4-7: history and recall, assembled into the outbound messages."""
-    # 4-6. Persona, this conversation's own history, and the project's.
+    # 4-6. This conversation's own history — never gated — then cross-conversation
+    #    recall, behind the deterministic necessity gate (ruled 10 September 2026).
     history = conversations.history(engine, opened.conversation.id)
-    outcome = recall_with_state(
-        engine,
-        scope=opened.scope,
-        query=opened.user_message.content,
-        exclude_conversation=opened.conversation.id,
-        limit=recall_limit,
+    turns, _selection = select_conversation(history)
+    prior, current = turns[:-1], turns[-1:]
+    now = local_now()
+    current_local_time = now.strftime("%A %-d %B %Y, %H:%M")
+    decision = gate_recall(
+        opened.user_message.content,
+        no_project=isinstance(opened.scope, ExplicitNoProject),
+        context=ThreadContext(
+            retained=tuple((m.role, m.content) for m in prior),
+            envelope_facts=(current_local_time, now.strftime("%H:%M")),
+        ),
     )
+    _LOGGER.info(
+        "recall gate: %s",
+        json.dumps({"run": decision.run, "reason": decision.reason, "detail": decision.detail}),
+    )
+    if decision.run:
+        outcome = recall_with_state(
+            engine,
+            scope=opened.scope,
+            query=opened.user_message.content,
+            exclude_conversation=opened.conversation.id,
+            limit=recall_limit,
+        )
+    else:
+        outcome = RecallOutcome(state="not_run", detail=decision.reason)
     recalled = outcome.items
 
-    # 7. Assemble. The envelope first — always, carrying the typed prior-record
-    #    state (ruling, 9 September 2026) and any retrieved excerpts — then the
-    #    conversation ending on the turn just persisted, which is why the
-    #    current message is not appended again: it is already the last thing
-    #    in `history`.
-    turns = conversation_messages(history)
-    prior = sum(1 for record in history if record.role.value in ("user", "val")) - 1
-    now = local_now()
+    # 7. Assemble, in the ruled order (10 September 2026): persona (system) →
+    #    retained history, its last message carrying the cache breakpoint →
+    #    recalled excerpts, if any → the record-state envelope → the current
+    #    turn. The current message is already the last thing in `history`.
+    prior_count = sum(1 for record in history if record.role.value in ("user", "val")) - 1
     state = PriorRecordState(
-        current_local_time=now.strftime("%A %-d %B %Y, %H:%M"),
+        current_local_time=current_local_time,
         current_timezone=now.strftime("%Z (UTC%z)"),
-        history_state="available" if prior > 0 else "zero",
-        history_prior_messages=max(prior, 0),
-        history_retained_messages=max(len(turns) - 1, 0),
+        history_state="available" if prior_count > 0 else "zero",
+        history_prior_messages=max(prior_count, 0),
+        history_retained_messages=len(prior),
         retrieval_state=outcome.state,
         retrieval_excerpts=len(recalled),
         retrieval_detail=outcome.detail,
     )
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
-    block = recall_block(recalled, state=state)
-    messages = (block, *turns) if block is not None else turns
+    excerpts = recall_block(recalled)
+    messages = (
+        *prior,
+        *((excerpts,) if excerpts is not None else ()),
+        record_state_block(state),
+        *current,
+    )
     return messages, recalled
 
 

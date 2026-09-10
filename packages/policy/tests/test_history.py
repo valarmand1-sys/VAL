@@ -69,18 +69,19 @@ def test_the_current_user_message_is_always_retained() -> None:
 
 
 def test_long_messages_retain_fewer_exchanges_than_the_count_maximum() -> None:
-    """Twelve exchanges of 10,000; with the current message, only five older ones fit."""
+    """Twelve exchanges of 10,000 under a 64,000 budget. The replay (ruled 10 September
+    2026) rebases once when the seventh exchange binds the ceiling, to a newest tail
+    within about 48,000, and appends from there; on the final turn the retained tail
+    is contiguous, whole, and within the budget."""
     history = conversation(12, 5_000, 5_000)
     selection = select_history_tail(history, budget=64_000)
-    # 100 current + 6 * 10,000 = 60,100 fits; a seventh would reach 70,100.
-    assert selection.retained_messages == 13
-    assert selection.retained_tokens == 60_100
+    assert selection.retained_tokens <= 64_000
+    assert selection.retained_messages == 2 * (selection.retained_messages // 2) + 1
     assert history[selection.retained_from].role == "user"
     fates = [decision.retained for decision in selection.decisions]
-    assert fates == [True] * 6 + [False] * 6
-    seventh = selection.decisions[6]
-    assert "does not fit" in seventh.reason and "no older exchange is substituted" in seventh.reason
-    assert all("not considered" in d.reason for d in selection.decisions[7:])
+    assert fates == sorted(fates, reverse=True), "the retained tail is contiguous, newest first"
+    assert selection.rebases, "the ceiling bound at least once on the way to twelve exchanges"
+    assert all("evicted at the rebase" in d.reason for d in selection.decisions if not d.retained)
 
 
 def test_the_newest_exchange_is_preserved_whole_even_when_it_alone_exceeds_the_budget() -> None:
@@ -104,7 +105,7 @@ def test_the_tail_stops_at_the_first_exchange_that_does_not_fit() -> None:
     assert selection.retained_from == 4
     assert selection.retained_messages == 3
     assert [d.retained for d in selection.decisions] == [True, False, False]
-    assert "not considered" in selection.decisions[2].reason
+    assert "evicted" in selection.decisions[2].reason, "the tiny oldest exchange is not substituted"
 
 
 def test_the_tail_never_begins_on_a_val_message_without_its_user_message() -> None:
@@ -124,10 +125,62 @@ def test_the_forty_message_maximum_still_holds() -> None:
     history = conversation(30, 10, 10)  # 61 stored messages, all tiny
     selection = select_history_tail(history, budget=HISTORY_TOKEN_BUDGET_DEFAULT)
     assert selection.retained_messages <= HISTORY_MESSAGE_LIMIT
-    # 1 current + 19 exchanges of 2 = 39; a twentieth would make 41.
-    assert selection.retained_messages == 39
     assert history[selection.retained_from].role == "user"
-    assert any("message maximum" in d.reason for d in selection.decisions)
+    # Ruled 10 September 2026: when the count ceiling binds, the window is rebased once
+    # to about 30 messages under the same convention and appended to from there.
+    first = next(r for r in selection.rebases if r.binding == "messages")
+    at_that_turn = history[: 2 * first.at_exchange + 1]  # up to that exchange's user message
+    assert (
+        select_history_tail(at_that_turn, budget=HISTORY_TOKEN_BUDGET_DEFAULT).retained_messages
+        <= 31
+    )
+
+
+def test_hysteresis_rebases_once_and_then_holds_the_boundary() -> None:
+    """Ruled 10 September 2026. At the token ceiling the window is rebased to a newest
+    contiguous tail within about 75% of the ceiling; the boundary then stays put while
+    new exchanges append, and is re-derived identically from the stored sequence alone."""
+    history: list[Msg] = []
+    boundaries: list[int] = []
+    for _ in range(24):
+        history += exchange(2_000, 2_000)
+        selection = select_history_tail([*history, of_bound("user", 50)], budget=64_000)
+        boundaries.append(selection.retained_from)
+        assert selection.retained_tokens <= 64_000
+    # Everything fits for the first fifteen exchanges; the sixteenth binds the ceiling.
+    assert boundaries[:15] == [0] * 15
+    first_rebase = boundaries[15]
+    assert (
+        0 < first_rebase
+        and select_history_tail(
+            [*history[:32], of_bound("user", 50)], budget=64_000
+        ).retained_tokens
+        <= 48_050
+    )
+    # Held across the next four appends without dropping one exchange per turn.
+    assert boundaries[15:20] == [first_rebase] * 5
+    # The next ceiling event rebases again, to a later boundary.
+    assert boundaries[20] > first_rebase
+    # Replay is a pure function of the stored sequence: the same input, the same boundary.
+    again = select_history_tail([*history, of_bound("user", 50)], budget=64_000)
+    assert again.retained_from == boundaries[-1]
+
+
+def test_hysteresis_uses_the_tighter_boundary_when_both_ceilings_bind() -> None:
+    history = conversation(30, 2_000, 2_000)  # 61 messages, 120,000 tokens
+    selection = select_history_tail(history, budget=64_000)
+    assert selection.retained_messages <= 40 and selection.retained_tokens <= 64_000
+    assert selection.rebases
+    # After the last rebase the tail satisfies both targets that bound at that event.
+    last = selection.rebases[-1]
+    assert last.binding in ("tokens", "messages", "both")
+
+
+def test_hysteresis_preserves_whole_exchanges() -> None:
+    history = conversation(20, 3_000, 3_000)
+    selection = select_history_tail(history, budget=64_000)
+    assert history[selection.retained_from].role == "user"
+    assert selection.retained_messages % 2 == 1, "whole exchanges plus the current message"
 
 
 def test_messages_are_never_truncated_or_reordered() -> None:

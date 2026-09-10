@@ -405,3 +405,43 @@ def test_openai_accepts_the_ttl_and_sends_nothing_for_it() -> None:
     result = adapter.complete(_gpt(), MESSAGES, "persona", 64, cache_ttl=CacheTtl.ONE_HOUR)
     assert "cache_control" not in fake.kwargs and "prompt_cache_key" not in fake.kwargs
     assert result.cache_read_tokens is None
+
+
+def test_anthropic_sends_a_flagged_history_message_as_the_second_breakpoint() -> None:
+    """Ruled 10 September 2026: the last retained history message carries a breakpoint so
+    the persona-plus-history prefix is cached; the envelopes and the current turn follow
+    it unmarked."""
+    from val_domain.gateway import Message
+
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    messages = (
+        Message(role="user", content="first"),
+        Message(role="assistant", content="reply", cache_breakpoint=True),
+        Message(role="user", content="VAL-STATE-V1 ..."),
+        Message(role="user", content="current"),
+    )
+    adapter.complete(_opus(), messages, "persona", 64, cache_ttl=CacheTtl.ONE_HOUR)
+    assert fake.kwargs["messages"] == [
+        {"role": "user", "content": "first"},
+        {
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "reply",
+                    "cache_control": {"type": "ephemeral", "ttl": "1h"},
+                }
+            ],
+        },
+        {"role": "user", "content": "VAL-STATE-V1 ..."},
+        {"role": "user", "content": "current"},
+    ]
+
+
+def test_anthropic_ignores_the_breakpoint_flag_when_no_cache_was_requested() -> None:
+    from val_domain.gateway import Message
+
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    messages = (Message(role="assistant", content="reply", cache_breakpoint=True),)
+    adapter.complete(_opus(), messages, "persona", 64, cache_ttl=None)
+    assert fake.kwargs["messages"] == [{"role": "assistant", "content": "reply"}]

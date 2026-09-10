@@ -20,9 +20,12 @@ part of the numeral.
     3.5               → 1
     harbour—workshop  → 2
 
-This module is pure and is the only word counter the qualification harness may
-use for a criterion stated in words. Nothing here is a routing, budget, or
-persona rule.
+This module is pure and is the repository's single lexical word counter: the
+qualification harness uses it for every criterion stated in words, and the
+recall gate (`val_policy.recall_gate`, ruled 10 September 2026) uses it for its
+length condition. Both rely on the definition above being the same function;
+neither may be given a private variant. The counting semantics here are the
+ruled definition and change only by ruling.
 """
 
 import re

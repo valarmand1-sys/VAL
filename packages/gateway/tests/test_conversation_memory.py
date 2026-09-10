@@ -70,6 +70,7 @@ from val_gateway import conversations as conv
 from val_gateway.context import (
     MAX_HISTORY_TURNS,
     MEMORY_ENVELOPE_MARKER,
+    STATE_ENVELOPE_MARKER,
     conversation_messages,
 )
 from val_gateway.conversations import ConversationNotFoundError
@@ -742,13 +743,9 @@ def test_history_reaches_the_provider_in_sequence_order(store: Engine) -> None:
     )
 
     assert isinstance(outcome, Turn)
-    # The always-present prior-record envelope (9 September 2026) rides first; the
-    # conversation itself follows it unchanged.
-    conversational = [
-        (m.role, m.content)
-        for m in adapter.sent_messages
-        if not m.content.startswith(MEMORY_ENVELOPE_MARKER)
-    ]
+    # The record-state envelope (9 September 2026; its own block after the history
+    # since 10 September) is not a turn; the conversation itself is sent unchanged.
+    conversational = [(m.role, m.content) for m in _non_envelope(adapter)]
     assert conversational == [
         ("user", "Turn one, from me."),
         ("assistant", "Turn two, from Val."),
@@ -816,8 +813,11 @@ def test_history_is_bounded_but_the_record_is_not(store: Engine) -> None:
         conversation_id=conversation.id,
     )
 
-    turns = [m for m in adapter.sent_messages if not m.content.startswith(MEMORY_ENVELOPE_MARKER)]
-    assert len(turns) == MAX_HISTORY_TURNS
+    turns = _non_envelope(adapter)
+    # Bounded by the forty-message ceiling; ruled 10 September 2026, a window that
+    # bound the ceiling is rebased once to a newest tail of about 30 and then appended
+    # to, so the count sits between the rebase target and the ceiling, never above it.
+    assert 30 <= len(turns) <= MAX_HISTORY_TURNS
     # The oldest are dropped and the newest kept — the current exchange is what
     # the user is in the middle of.
     assert adapter.sent_messages[-1].content == "the newest turn"
@@ -2427,15 +2427,18 @@ def test_recall_admits_whole_messages_within_the_token_budget_and_logs_the_decis
     assert "not considered" in decision["candidates"][3]["reason"]
 
 
-def test_recall_keeps_the_top_candidate_whole_when_it_alone_exceeds_the_budget(
+def test_recall_admits_nothing_when_the_top_candidate_alone_exceeds_the_budget(
     store: Engine,
 ) -> None:
-    from val_domain.project import ExplicitNoProject
-    from val_gateway.memory import recall
+    """Ruled 10 September 2026: the aggregate budget is a ceiling, never a per-message
+    allowance. The event is named, nothing is truncated, nothing is substituted."""
+    from val_gateway.memory import recall_with_state
 
-    _seed_no_project_messages(store, [90_000], "harbour")
-    recalled = recall(store, scope=ExplicitNoProject(), query="harbour", budget=16_000)
-    assert len(recalled) == 1 and len(recalled[0].content) == 90_000
+    seeded_conversation(store, ExplicitNoProject(), "N1", (StoredRole.USER, "harbour " * 15_000))
+    outcome = recall_with_state(store, scope=ExplicitNoProject(), query="harbour", budget=16_000)
+    assert outcome.state == "zero" and outcome.items == ()
+    assert outcome.detail == "top_candidate_exceeds_budget"
+    assert recall(store, scope=ExplicitNoProject(), query="harbour", budget=16_000) == ()
 
 
 def test_the_budget_is_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -2459,8 +2462,21 @@ def test_the_budget_is_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
 # empty, populated, zero-result, unavailable, and not-run states.
 
 
+def _state_block(adapter: StubAdapter) -> dict[str, object]:
+    block = next(m for m in adapter.sent_messages if m.content.startswith(STATE_ENVELOPE_MARKER))
+    return json.loads(block.content.split("\n", 1)[1])  # type: ignore[no-any-return]
+
+
 def _state(adapter: StubAdapter) -> dict[str, object]:
-    return _envelope(adapter)["prior_record_state"]  # type: ignore[return-value,index]
+    return _state_block(adapter)["prior_record_state"]  # type: ignore[return-value,index]
+
+
+def _non_envelope(adapter: StubAdapter) -> list[Message]:
+    return [
+        m
+        for m in adapter.sent_messages
+        if not m.content.startswith((MEMORY_ENVELOPE_MARKER, STATE_ENVELOPE_MARKER))
+    ]
 
 
 def test_prior_record_state_empty_first_turn_in_an_empty_project(store: Engine) -> None:
@@ -2473,9 +2489,12 @@ def test_prior_record_state_empty_first_turn_in_an_empty_project(store: Engine) 
         catalogue=catalogue(store),
         signals=ProjectSignals(explicit_selection="Project Alpha"),
     )
-    envelopes = [m for m in adapter.sent_messages if m.content.startswith(MEMORY_ENVELOPE_MARKER)]
-    assert len(envelopes) == 1, "the envelope is present even when nothing was recalled"
-    assert adapter.sent_messages[0] is envelopes[0], "the envelope comes first"
+    assert not any(m.content.startswith(MEMORY_ENVELOPE_MARKER) for m in adapter.sent_messages), (
+        "no excerpt envelope when nothing was recalled"
+    )
+    assert adapter.sent_messages[-2].content.startswith(STATE_ENVELOPE_MARKER), (
+        "the record-state envelope sits immediately before the current turn"
+    )
     state = _state(adapter)
     assert state["same_conversation_history"] == {
         "state": "zero",
@@ -2484,9 +2503,7 @@ def test_prior_record_state_empty_first_turn_in_an_empty_project(store: Engine) 
     }
     assert state["retrieved_excerpts"] == {"state": "zero", "count": 0}
     assert state["project_volumes"] == {"state": "not_applicable", "count": 0}
-    assert _envelope(adapter)["excerpt_count"] == 0
-    assert _envelope(adapter)["excerpts"] == []
-    assert "nothing absent from this request may be assumed" in str(_envelope(adapter)["note"])
+    assert "nothing absent from this request may be assumed" in str(_state_block(adapter)["note"])
 
 
 def test_prior_record_state_populated(store: Engine) -> None:
@@ -2570,18 +2587,12 @@ def _unavailable(fail: object) -> object:
     from val_gateway.memory import RecallOutcome
     from val_gateway.memory import recall_with_state as real
 
-    original = memory_module.recall
-    memory_module.recall = fail  # type: ignore[assignment]
+    original = memory_module.recall_selection
+    memory_module.recall_selection = fail  # type: ignore[assignment]
     try:
-        result = real(
-            memory_module.__dict__["_engine_for_test"]
-            if "_engine_for_test" in memory_module.__dict__
-            else None,  # type: ignore[arg-type]
-            scope=ExplicitNoProject(),
-            query="anything",
-        )
+        result = real(None, scope=ExplicitNoProject(), query="anything")  # type: ignore[arg-type]
     finally:
-        memory_module.recall = original
+        memory_module.recall_selection = original
     assert isinstance(result, RecallOutcome)
     return result
 
@@ -2592,6 +2603,7 @@ def test_recall_with_state_not_run_and_unavailable_are_distinct(store: Engine) -
 
     blank = recall_with_state(store, scope=ExplicitNoProject(), query="   ")
     assert blank.state == "not_run" and blank.items == ()
+    assert blank.detail == "under_specified_query"
 
     ran = recall_with_state(store, scope=ExplicitNoProject(), query="lighthouse")
     assert ran.state == "zero" and ran.items == ()
@@ -2601,13 +2613,13 @@ def test_recall_with_state_not_run_and_unavailable_are_distinct(store: Engine) -
     def leak(*args: object, **kwargs: object) -> object:
         raise CrossProjectLeakError(None, [])
 
-    original = memory_module.recall
-    memory_module.recall = leak  # type: ignore[assignment]
+    original = memory_module.recall_selection
+    memory_module.recall_selection = leak  # type: ignore[assignment]
     try:
         with pytest.raises(CrossProjectLeakError):
             recall_with_state(store, scope=ExplicitNoProject(), query="lighthouse")
     finally:
-        memory_module.recall = original
+        memory_module.recall_selection = original
 
 
 def test_prior_record_state_carries_the_current_local_time_as_a_fact(
@@ -2635,7 +2647,8 @@ def test_prior_record_state_carries_the_current_local_time_as_a_fact(
         "local": "Thursday 10 September 2026, 10:49",
         "timezone": "CDT (UTC-0500)",
     }
-    assert "current_time is the present local date and time" in str(_envelope(adapter)["note"])
+    assert state["retrieved_excerpts"] == {"state": "not_run", "count": 0, "detail": "tier_one"}
+    assert "current_time is the present local date and time" in str(_state_block(adapter)["note"])
     # Nothing else was added to the envelope.
     assert set(state) == {
         "current_time",
@@ -2643,3 +2656,168 @@ def test_prior_record_state_carries_the_current_local_time_as_a_fact(
         "retrieved_excerpts",
         "project_volumes",
     }
+
+
+# --- the recall gate, the clean room, and the outbound order (ruled 10 September 2026) --
+
+
+def _send_in_alpha(store: Engine, adapter: StubAdapter, content: str, **kw: object) -> object:
+    return send(
+        store,
+        build_gateway(store, adapter),
+        content,
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+        **kw,  # type: ignore[arg-type]
+    )
+
+
+def test_a_greeting_skips_cross_conversation_recall_through_tier_one(store: Engine) -> None:
+    """Negative case: recallable material exists in the project, and is not searched."""
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, "Hello Val, " + ALPHA_FACT))
+    adapter = answering()
+    _send_in_alpha(store, adapter, "Hello, Val!")
+    state = _state(adapter)
+    assert state["retrieved_excerpts"] == {"state": "not_run", "count": 0, "detail": "tier_one"}
+    assert ALPHA_FACT not in adapter.sent_text
+
+
+def test_the_captured_greeting_correction_skips_through_tier_two(store: Engine) -> None:
+    """Negative case: the quoted phrases are in Val's immediately preceding message."""
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, "morning greeted " + ALPHA_FACT))
+    first_reply = (
+        "Good evening, my lord. Welcome back. I have no conversation behind me this morning."
+    )
+    adapter = answering(first_reply)
+    first = _send_in_alpha(store, adapter, "Hello, Val!")
+    assert isinstance(first, Turn)
+    adapter = answering("Good morning, my lord. Corrected.")
+    send(
+        store,
+        build_gateway(store, adapter),
+        "It is 10:49 in the morning, Val. You greeted me with “Good evening,” then "
+        "immediately referred to “this morning.” Please correct that.",
+        catalogue=catalogue(store),
+        conversation_id=first.conversation.id,
+    )
+    state = _state(adapter)
+    assert state["retrieved_excerpts"] == {"state": "not_run", "count": 0, "detail": "tier_two"}
+    assert state["same_conversation_history"]["retained_in_this_request"] == 2
+    assert ALPHA_FACT not in adapter.sent_text
+
+
+def test_a_thread_local_command_does_not_trigger_cross_thread_retrieval(store: Engine) -> None:
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, "try again " + ALPHA_FACT))
+    adapter = answering("Here is a draft.")
+    first = _send_in_alpha(store, adapter, "Draft the note.")
+    assert isinstance(first, Turn)
+    adapter = answering("A second draft.")
+    send(
+        store,
+        build_gateway(store, adapter),
+        "try again",
+        catalogue=catalogue(store),
+        conversation_id=first.conversation.id,
+    )
+    state = _state(adapter)
+    assert state["retrieved_excerpts"]["state"] == "not_run"
+    assert state["retrieved_excerpts"]["detail"] == "tier_two"
+    assert state["same_conversation_history"]["retained_in_this_request"] == 2, (
+        "thread-local is not stateless: the thread is sent"
+    )
+
+
+def test_continue_where_we_left_off_in_a_fresh_project_conversation_recalls(
+    store: Engine,
+) -> None:
+    """Anti-overskip: short and lowercase is never sufficient for Tier One."""
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, "we left off at " + ALPHA_FACT))
+    adapter = answering()
+    _send_in_alpha(store, adapter, "continue where we left off")
+    state = _state(adapter)
+    assert state["retrieved_excerpts"]["state"] in ("returned", "zero")
+    assert state["retrieved_excerpts"].get("detail") not in ("tier_one", "tier_two")
+
+
+def test_an_explicit_cross_thread_request_in_a_project_still_retrieves(store: Engine) -> None:
+    """Positive control: a resolved project, a prior different conversation in it, the
+    target material present there — and it arrives."""
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, ALPHA_FACT))
+    adapter = answering()
+    _send_in_alpha(store, adapter, "What did we say about the lighthouse lens?")
+    state = _state(adapter)
+    assert state["retrieved_excerpts"]["state"] == "returned"
+    assert state["retrieved_excerpts"]["count"] >= 1
+    assert ALPHA_FACT in _envelope_contents(adapter)
+
+
+def test_a_genuinely_ambiguous_turn_recalls(store: Engine) -> None:
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, ALPHA_FACT))
+    adapter = answering()
+    _send_in_alpha(store, adapter, "The lens, then.")  # no form, no anchor: recall runs
+    assert _state(adapter)["retrieved_excerpts"]["state"] in ("returned", "zero")
+
+
+def test_explicit_no_project_scope_is_a_clean_room(store: Engine) -> None:
+    """Positive control for the clean room: the wording asks for history, other
+    no-project conversations hold it, and none of them is searched."""
+    seeded_conversation(
+        store, ExplicitNoProject(), "N1", (StoredRole.USER, "we said: " + NO_PROJECT_FACT)
+    )
+    adapter = answering()
+    send(
+        store,
+        build_gateway(store, adapter),
+        "What did we say about the lighthouse lens?",
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+    )
+    state = _state(adapter)
+    assert state["retrieved_excerpts"] == {
+        "state": "not_run",
+        "count": 0,
+        "detail": "no_project_scope",
+    }
+    assert NO_PROJECT_FACT not in adapter.sent_text
+    assert state["same_conversation_history"]["state"] == "zero"
+
+
+def test_the_outbound_order_is_history_then_recall_then_state_then_the_turn(
+    store: Engine,
+) -> None:
+    """Ruled 10 September 2026: persona → retained history (its last message carrying
+    the cache breakpoint) → recalled excerpts → record-state envelope → current turn."""
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, ALPHA_FACT))
+    adapter = answering("Noted.")
+    first = _send_in_alpha(store, adapter, "Open the log.")
+    assert isinstance(first, Turn)
+    adapter = answering()
+    send(
+        store,
+        build_gateway(store, adapter),
+        "What did we say about the lighthouse lens?",
+        catalogue=catalogue(store),
+        conversation_id=first.conversation.id,
+    )
+    sent = adapter.sent_messages
+    assert [m.content for m in sent[:2]] == ["Open the log.", "Noted."]
+    assert sent[1].cache_breakpoint is True, "the last retained history message is the breakpoint"
+    assert not sent[0].cache_breakpoint
+    assert sent[2].content.startswith(MEMORY_ENVELOPE_MARKER)
+    assert sent[3].content.startswith(STATE_ENVELOPE_MARKER)
+    assert sent[4].content == "What did we say about the lighthouse lens?"
+    assert not any(m.cache_breakpoint for m in sent[2:])
+    assert adapter.sent_system == DatabasePersonaLoader(store).active().content
+
+
+def test_a_first_turn_has_no_history_breakpoint(store: Engine) -> None:
+    adapter = answering()
+    _send_in_alpha(store, adapter, "What did we say about the lighthouse lens?")
+    assert not any(m.cache_breakpoint for m in adapter.sent_messages)

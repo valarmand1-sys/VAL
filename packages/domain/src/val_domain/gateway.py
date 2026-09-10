@@ -402,6 +402,12 @@ class Message(BaseModel):
 
     role: str = Field(pattern=r"^(user|assistant)$")
     content: str
+    #: Ruled 10 September 2026: the last retained same-conversation history
+    #: message carries the prompt-cache breakpoint, so the append-only history
+    #: prefix (persona + history) is cached and later turns read it. An adapter
+    #: that caches honours it when a lifetime was requested; one that does not
+    #: cache ignores it. Never set on the envelopes or the current turn.
+    cache_breakpoint: bool = False
 
 
 class TurnReference(BaseModel):

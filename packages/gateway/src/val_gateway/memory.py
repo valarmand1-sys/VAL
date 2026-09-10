@@ -72,6 +72,7 @@ from val_domain.project import ProjectScope, ResolvedProject
 from val_policy.recall import (
     RECALL_MESSAGE_LIMIT,
     RECALL_TOKEN_BUDGET_DEFAULT,
+    RecallSelection,
     select_within_budget,
 )
 
@@ -239,6 +240,26 @@ def recall(
     limit: int = DEFAULT_LIMIT,
     budget: int | None = None,
 ) -> tuple[RecalledMessage, ...]:
+    """`recall_selection`, returning the admitted messages alone."""
+    return recall_selection(
+        engine,
+        scope=scope,
+        query=query,
+        exclude_conversation=exclude_conversation,
+        limit=limit,
+        budget=budget,
+    )[0]
+
+
+def recall_selection(
+    engine: Engine,
+    *,
+    scope: ProjectScope,
+    query: str,
+    exclude_conversation: UUID | None = None,
+    limit: int = DEFAULT_LIMIT,
+    budget: int | None = None,
+) -> tuple[tuple[RecalledMessage, ...], RecallSelection | None]:
     """Prior conversation from this scope, most relevant first, within budget.
 
     Returns an empty tuple when nothing matches, when the query has no
@@ -257,7 +278,7 @@ def recall(
     is logged so the selection can be reconstructed.
     """
     if not query.strip():
-        return ()
+        return (), None
 
     statement = _IN_PROJECT if isinstance(scope, ResolvedProject) else _IN_NO_PROJECT
     parameters: dict[str, object] = {
@@ -322,7 +343,7 @@ def recall(
             }
         ),
     )
-    return tuple(recalled[position - 1] for position in selection.admitted_positions)
+    return tuple(recalled[position - 1] for position in selection.admitted_positions), selection
 
 
 # --- prior-record state (ruling, 9 September 2026) ---------------------------
@@ -352,6 +373,10 @@ class RecallOutcome:
     detail: str | None = None
 
 
+#: The deterministic `not_run` reasons, in precedence order (ruled 10 September 2026).
+NOT_RUN_REASONS = ("no_project_scope", "tier_one", "tier_two", "under_specified_query")
+
+
 def recall_with_state(
     engine: Engine,
     *,
@@ -361,15 +386,20 @@ def recall_with_state(
     limit: int = DEFAULT_LIMIT,
     budget: int | None = None,
 ) -> RecallOutcome:
-    """`recall`, with the outcome typed instead of flattened into a tuple.
+    """`recall_selection`, with the outcome typed instead of flattened into a tuple.
 
     A cross-project leak is not a retrieval failure: it is the one error this
-    module exists to raise, and it still raises.
+    module exists to raise, and it still raises. A query with nothing searchable
+    is ``not_run`` / ``under_specified_query``: retrieval was not attempted
+    because no usable query could be formed. A ranking whose top candidate alone
+    exceeded the aggregate budget is ``zero`` with the detail
+    ``top_candidate_exceeds_budget`` — retrieval ran and admitted nothing, and
+    the reason is stated rather than left as an unexplained zero.
     """
     if not query.strip():
-        return RecallOutcome(state="not_run", detail="the query had no searchable terms")
+        return RecallOutcome(state="not_run", detail="under_specified_query")
     try:
-        items = recall(
+        items, selection = recall_selection(
             engine,
             scope=scope,
             query=query,
@@ -385,4 +415,8 @@ def recall_with_state(
             type(error).__name__,
         )
         return RecallOutcome(state="unavailable", detail=type(error).__name__)
-    return RecallOutcome(state="returned" if items else "zero", items=items)
+    if items:
+        return RecallOutcome(state="returned", items=items)
+    if selection is not None and selection.top_candidate_exceeded:
+        return RecallOutcome(state="zero", detail="top_candidate_exceeds_budget")
+    return RecallOutcome(state="zero")

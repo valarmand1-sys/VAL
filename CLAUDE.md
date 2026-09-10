@@ -81,6 +81,8 @@ Three failures to watch for in your own work. Each looks like diligence.
 
 **Widening scope to make something feel complete.** A layer that seems thin is usually correct. Layer 0 in particular is small on purpose.
 
+**Universal because nobody asked.** A mechanism that adds provider spend, serial latency, or material context on *every* turn must justify running on every turn (`01-architecture.md` §5.5, the per-turn necessity rule, 10 September 2026). Cross-conversation recall ran on every turn for a week and cost real money before anyone asked whether a greeting needed a database search. Before making anything universal on the turn path, ask whether a deterministic applicability gate settles it; where the guarantee requires universality (identity, the restricted-content check, provenance, budget enforcement, capture), it stays universal; where it does not, gate it, fail toward doing the work when ambiguous, and record the gate's decision as a positive state. This governs whether optional work is *offered* or *run*, never authority or safety.
+
 ---
 
 ## When to stop and ask

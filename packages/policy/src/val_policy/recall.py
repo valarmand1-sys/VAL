@@ -6,9 +6,12 @@ admitted to the prompt. The rules, verbatim from the ruling:
 
 1. Rank candidates for relevance exactly as today. Message size must not
    affect relevance ranking.
-2. Always include the highest-ranked relevant message whole, even if that one
-   message exceeds the soft budget, subject only to the provider context
-   preflight that already protects the call.
+2. **Superseded 10 September 2026.** The highest-ranked candidate is admitted
+   whole only when it fits the aggregate budget. If it alone exceeds the
+   budget, nothing from that ranking is admitted, nothing is truncated, and no
+   lower-ranked candidate is substituted; the event is recorded as
+   ``top_candidate_exceeds_budget``. The budget is an aggregate ceiling across
+   all admitted excerpts, never a per-message allowance.
 3. Consider subsequent messages strictly in relevance order.
 4. Add a subsequent whole message only when it fits within the remaining
    soft budget.
@@ -77,6 +80,9 @@ class RecallSelection:
     decisions: tuple[RecallDecision, ...]
     budget: int
     admitted_tokens: int
+    #: Ruled 10 September 2026: set when the highest-ranked candidate alone
+    #: exceeded the aggregate budget, so nothing was admitted from this ranking.
+    top_candidate_exceeded: bool = False
 
 
 def select_within_budget(
@@ -87,6 +93,7 @@ def select_within_budget(
     admitted: list[int] = []
     spent = 0
     stopped = False
+    top_exceeded = False
     for position, candidate in enumerate(candidates[:limit], start=1):
         tokens = estimate_tokens(candidate.content)
         if stopped:
@@ -97,14 +104,25 @@ def select_within_budget(
             )
             continue
         if position == 1:
-            admitted.append(position)
-            spent += tokens
-            reason = (
-                "highest-ranked, admitted whole"
-                if tokens <= budget
-                else "highest-ranked, admitted whole although it alone exceeds the budget"
-            )
-            decisions.append(RecallDecision(position, tokens, True, reason))
+            if tokens <= budget:
+                admitted.append(position)
+                spent += tokens
+                decisions.append(
+                    RecallDecision(position, tokens, True, "highest-ranked, admitted whole")
+                )
+            else:
+                stopped = True
+                top_exceeded = True
+                decisions.append(
+                    RecallDecision(
+                        position,
+                        tokens,
+                        False,
+                        f"top_candidate_exceeds_budget: {tokens} exceeds the aggregate budget "
+                        f"of {budget}; nothing is admitted from this ranking, nothing is "
+                        "truncated, and no lower-ranked candidate is substituted",
+                    )
+                )
             continue
         if spent + tokens <= budget:
             admitted.append(position)
@@ -135,4 +153,5 @@ def select_within_budget(
         decisions=tuple(decisions),
         budget=budget,
         admitted_tokens=spent,
+        top_candidate_exceeded=top_exceeded,
     )

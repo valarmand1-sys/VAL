@@ -51,12 +51,25 @@ def test_long_messages_admit_fewer_than_six_in_rank_order() -> None:
     assert all("not considered" in d.reason for d in selection.decisions[3:])
 
 
-def test_the_top_ranked_message_is_admitted_whole_even_when_it_alone_exceeds_the_budget() -> None:
+def test_a_top_ranked_message_that_alone_exceeds_the_budget_admits_nothing() -> None:
+    """Ruled 10 September 2026: the budget is an aggregate ceiling, never a per-message
+    allowance. The former top-candidate bypass is superseded: nothing is admitted from
+    the ranking, nothing is truncated, no shorter lower-ranked candidate is substituted,
+    and the event is named."""
     selection = select_within_budget([of_tokens(20_000), of_tokens(100)], budget=16_000)
+    assert selection.admitted_positions == ()
+    assert selection.admitted_tokens == 0
+    assert selection.top_candidate_exceeded is True
+    assert selection.decisions[0].reason.startswith("top_candidate_exceeds_budget")
+    assert not selection.decisions[1].admitted, "the shorter candidate is not substituted"
+    assert "not considered" in selection.decisions[1].reason
+
+
+def test_a_top_ranked_message_within_the_budget_is_admitted_whole() -> None:
+    selection = select_within_budget([of_tokens(15_000), of_tokens(2_000)], budget=16_000)
     assert selection.admitted_positions == (1,)
-    assert selection.admitted_tokens == 20_000
-    assert "although it alone exceeds" in selection.decisions[0].reason
-    assert not selection.decisions[1].admitted, "nothing is added after the budget is spent"
+    assert selection.top_candidate_exceeded is False
+    assert "does not fit" in selection.decisions[1].reason
 
 
 def test_a_shorter_lower_ranked_candidate_is_never_substituted_for_one_that_did_not_fit() -> None:

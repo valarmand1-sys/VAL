@@ -73,6 +73,11 @@ TOKEN_SCAN_EXCLUDED = (
     # same reason: they quote the forbidden tokens while stating the rule about
     # them. The originals they copy are already excluded above.
     "docs/reviews/governing/",
+    # Captured economics evidence (ruling, 10 September 2026): raw provider
+    # usage and model answers recorded as measured. A word inside a captured
+    # answer is data, not a version specifier, and evidence is never edited to
+    # make a checker pass.
+    "docs/reviews/economics/",
 )
 LOCK_FILES = (
     "uv.lock",
