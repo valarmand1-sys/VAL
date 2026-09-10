@@ -90,6 +90,7 @@ Stop and ask rather than infer when:
 - Two requirements conflict and both cannot be satisfied.
 - The spec is silent and the choice **changes what Val does or how she behaves** — not merely how something is built.
 - The change adds recurring cost.
+- **Any activity you estimate will cost more than one dollar in provider calls** — a demonstration, probe, regression, conformance suite, qualification run, or anything else that calls a provider more than a handful of times. Put a cost figure in front of Lord Armand **before it runs**, not after (ruled 10 September 2026). This is not a request for permission to do work he already authorised; it is the number that makes his authorisation informed. No ruling of his is a blank cheque.
 - The change touches the persona in any way.
 - Something would widen a permission, an authority, or an eligibility.
 - An observed fact contradicts the specification.
