@@ -18,7 +18,9 @@ Three deterministic skip paths, in precedence order, each a positive state:
 - ``tier_two`` — the message's meaning depends on the current thread, and every
   referent it carries is mechanically grounded in context Val will actually
   receive on this call (the retained history and the record-state facts), with
-  at least one positive anchor established.
+  at least one positive anchor established. Every capitalised token outside the
+  safe vocabulary must be grounded; the only orthographic exemption is the
+  closed set "You" / "Please", and "It" solely at the head of ``It is <HH:MM>``.
 
 Everything else recalls. When applicability is uncertain the gate says so by
 letting retrieval run, never by guessing that it need not.
@@ -76,10 +78,17 @@ IMMEDIATE_THREAD_PHRASES: tuple[tuple[str, ...], ...] = (("the", "other"), ("tha
 #: Tier One's length condition, in ruled lexical words.
 TIER_ONE_MAX_WORDS = 15
 
+#: Tier Two's closed orthographic exemption (ruled 10 September 2026): the only
+#: capitalised tokens outside the safe vocabulary that need no grounding.
+TIER_TWO_ORTHOGRAPHIC_EXEMPTION: frozenset[str] = frozenset({"You", "Please"})
+
+#: The one syntactic form in which a sentence-initial "It" is nonreferential:
+#: the local-time assertion of the captured regression, ``It is <HH:MM>``.
+_TIME_ASSERTION = re.compile(r"It is \d{1,2}:\d{2}\b")
+
 _WORD = re.compile("[^\\W_]+(?:['\u2019][^\\W_]+)*", re.UNICODE)
 _QUOTED = re.compile('["\u201c]([^"\u201d]+)["\u201d]|\u2018([^\u2019]+)\u2019')
 _DIGIT = re.compile(r"\d")
-_SENTENCE_BREAK = re.compile(r"[.!?]")
 
 
 @dataclass(frozen=True)
@@ -194,26 +203,28 @@ def _tier_two(message: str, context: ThreadContext) -> str | None:
         else:
             return None
 
-    # Capitalised tokens outside quoted spans and outside the safe vocabulary must
-    # be grounded exactly (case-insensitive token identity) in the retained history
-    # or the envelope's facts. Sentence-initial capitalisation is orthography here,
-    # not a referent — Tier One keeps its stricter rule.
-    # A quoted span is replaced by a sentence break: what follows a quotation is
-    # sentence-initial for the capitalisation rule, exactly as after a full stop.
+    # Capitalised tokens outside quoted spans must be grounded exactly (case-
+    # insensitive token identity) in the retained history or the envelope's
+    # facts, or Tier Two fails toward recall. Ruled 10 September 2026: there is
+    # no general sentence-initial exemption — a sentence-initial proper noun can
+    # be a new external referent. The closed orthographic exemption is "You" and
+    # "Please", plus the safe vocabulary; sentence-initial "It" is exempt only
+    # when it begins the mechanically recognisable local-time assertion
+    # ``It is <HH:MM>``, and nowhere else. Nothing infers whether an unknown
+    # capitalised word is a proper noun.
     stripped = _QUOTED.sub(" . ", message)
     facts_lower = " ".join(context.envelope_facts).lower()
-    sentence_initial = {0}
-    for m in _SENTENCE_BREAK.finditer(stripped):
-        sentence_initial.add(m.end())
     for m in _WORD.finditer(stripped):
-        token = m.group(0)
-        if not token[0].isupper() or token.lower() in TIER_ONE_SAFE_VOCABULARY:
+        word = m.group(0)
+        if not word[0].isupper():
             continue
-        if any(stripped[i : m.start()].strip() == "" for i in sentence_initial if i <= m.start()):
+        if word.lower() in TIER_ONE_SAFE_VOCABULARY or word in TIER_TWO_ORTHOGRAPHIC_EXEMPTION:
             continue
-        pattern = r"(?<![^\W_])" + re.escape(token.lower()) + r"(?![^\W_])"
+        if word == "It" and _TIME_ASSERTION.match(stripped, m.start()):
+            continue
+        pattern = r"(?<![^\W_])" + re.escape(word.lower()) + r"(?![^\W_])"
         if re.search(pattern, thread_lower) or re.search(pattern, facts_lower):
-            anchors.append(f"token {token!r}")
+            anchors.append(f"word {word!r}")
         else:
             return None
 

@@ -133,8 +133,58 @@ def test_a_capitalised_token_not_grounded_in_the_thread_recalls() -> None:
 
 def test_a_capitalised_token_grounded_in_the_thread_is_an_anchor() -> None:
     thread = ThreadContext(retained=(("user", "Draft the note to Faye."), ("val", "Drafted.")))
-    decision = gate_recall("Send it to Faye.", no_project=False, context=thread)
+    decision = gate_recall("Please send it to Faye.", no_project=False, context=thread)
     assert decision.reason == "tier_two" and "token 'Faye'" in decision.detail
+
+
+# --- the corrected Tier Two reading (ruled 10 September 2026): no general
+# sentence-initial exemption -------------------------------------------------
+
+
+def test_the_captured_correction_beginning_it_is_still_qualifies() -> None:
+    decision = gate_recall(CORRECTION, no_project=False, context=THREAD)
+    assert decision.reason == "tier_two"
+
+
+def test_a_grounded_quote_followed_by_an_ungrounded_sentence_initial_name_recalls() -> None:
+    decision = gate_recall(
+        "“Good evening” was wrong. Tony needs a change.", no_project=False, context=THREAD
+    )
+    assert decision.run is True, (
+        "Tony is a new external referent; sentence position exempts nothing"
+    )
+
+
+def test_the_same_case_qualifies_when_the_name_is_in_retained_history() -> None:
+    thread = ThreadContext(
+        retained=(("user", "Hello, Val!"), ("val", PREVIOUS_VAL + " Tony is the lead."))
+    )
+    decision = gate_recall(
+        "“Good evening” was wrong. Tony needs a change.", no_project=False, context=thread
+    )
+    assert decision.reason == "tier_two" and "token 'Tony'" in decision.detail
+
+
+def test_a_sentence_initial_it_outside_the_time_form_recalls() -> None:
+    decision = gate_recall(
+        "“Good evening” was wrong. It needs revision.", no_project=False, context=THREAD
+    )
+    assert decision.run is True, "'It' is referential here; only the quote is grounded"
+
+
+def test_it_is_exempt_only_at_the_head_of_the_time_assertion() -> None:
+    thread = ThreadContext(
+        retained=(("user", "Hello"), ("val", "Good morning.")), envelope_facts=("11:03",)
+    )
+    assert gate_recall("It is 11:03 now.", no_project=False, context=thread).reason == "tier_two"
+    assert gate_recall("It is late now.", no_project=False, context=thread).run is True
+
+
+def test_you_and_please_are_the_closed_orthographic_exemption() -> None:
+    thread = ThreadContext(retained=(("user", "Draft it."), ("val", "Here is a draft.")))
+    assert gate_recall("Please try again.", no_project=False, context=thread).reason == "tier_two"
+    assert gate_recall("You try again.", no_project=False, context=thread).reason == "tier_two"
+    assert gate_recall("Kindly try again.", no_project=False, context=thread).run is True
 
 
 def test_an_envelope_fact_is_an_anchor() -> None:
