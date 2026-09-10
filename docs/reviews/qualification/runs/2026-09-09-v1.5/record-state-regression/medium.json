@@ -1,0 +1,608 @@
+{
+  "configuration": {
+    "slug": "opus-5",
+    "effort": "medium",
+    "persona": "1.4",
+    "persona_sha": "10c59951789b7167a0df70e2fe738e41ab2a5a760105983eefc970b6c6e0d9c0"
+  },
+  "samples": 3,
+  "cases": [
+    {
+      "case": "O2",
+      "sample": 1,
+      "prompt": "Good evening. What shall we turn to?",
+      "wall_ms": 4462,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "Good evening, my lord. Nothing carried over from before — I begin this evening with an empty desk and no record to draw on, so you will have to tell me where we stand.\n\nWhat shall we turn our attention to?",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "O2",
+      "sample": 2,
+      "prompt": "Good evening. What shall we turn to?",
+      "wall_ms": 3721,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "Good evening, my lord. Nothing in the record before me tonight — a clean page, which has its own appeal.\n\nWhat would you like to set before me?",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "O2",
+      "sample": 3,
+      "prompt": "Good evening. What shall we turn to?",
+      "wall_ms": 3436,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "Good evening, my lord. Nothing in the record before me tonight — we begin on clean parchment.\n\nWhat shall we turn to?",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "O4",
+      "sample": 1,
+      "prompt": "Draft the two-line note to the props department that keeps re-sending the same list.",
+      "wall_ms": 8116,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "I don't have the list or the sticking point in the record I can see, my lord, so the specifics are marked for you to fill.\n\n> Thank you — we've now received this same list three times. To close it out: the outstanding items on our side are [X and Y], and nothing else on the list requires action from us.\n>\n> Please confirm receipt of this note rather than re-sending, and treat [X and Y] as the only open questions.\n\nTell me what the open items actually are and I'll write it clean, without brackets.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "O4",
+      "sample": 2,
+      "prompt": "Draft the two-line note to the props department that keeps re-sending the same list.",
+      "wall_ms": 9143,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "We have your list, and it has now reached us more than once with no changes between copies — no further copies are needed.\n\nPlease send again only when there is a genuinely revised version, and mark it clearly as revised when you do.",
+      "error": null,
+      "lexical_markers": [
+        "again"
+      ]
+    },
+    {
+      "case": "O4",
+      "sample": 3,
+      "prompt": "Draft the two-line note to the props department that keeps re-sending the same list.",
+      "wall_ms": 8298,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "We've now received this list three times; we're working from the version dated [date] and treating it as current.\nGoing forward, please send only amendments against that version — marked as such — rather than the full list again.\n\nI have no record of the list's contents or dates, my lord, so fill the bracket before it goes.",
+      "error": null,
+      "lexical_markers": [
+        "again"
+      ]
+    },
+    {
+      "case": "P1",
+      "sample": 1,
+      "prompt": "Pick up where we left off on the harbour scene.",
+      "wall_ms": 5631,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing of it. This conversation begins here, and the record I can see holds no earlier draft, note, or discussion of a harbour scene — nor a volume I could open on it.\n\nTell me what it is, or paste what exists, and we can take it up properly. If you would rather I not ask twice: the fastest start is the scene as it stands and one line on what it is meant to do.",
+      "error": null,
+      "lexical_markers": [
+        "earlier"
+      ]
+    },
+    {
+      "case": "P1",
+      "sample": 2,
+      "prompt": "Pick up where we left off on the harbour scene.",
+      "wall_ms": 5199,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on the harbour scene in the record I can see — no earlier messages, no notes, no volume. If we spoke of it before, that conversation has not come with me, and I would rather admit the gap than invent a version of it and have you correct me three drafts in.\n\nTell me where it stands and I'll take it up now: what the scene is for, whose eyes we're in, and where you left the draft. Paste what you have and I'll read it.",
+      "error": null,
+      "lexical_markers": [
+        "earlier"
+      ]
+    },
+    {
+      "case": "P1",
+      "sample": 3,
+      "prompt": "Pick up where we left off on the harbour scene.",
+      "wall_ms": 5003,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on the harbour scene in front of me — the record I can see for this project is empty. Not lost, so far as I can tell; simply not with me in this call.\n\nSo rather than guess at what we had and risk contradicting your own work: give me the scene as it stands, or tell me where it left off — whose eyes we're in, what happens at the water, and what you were wrestling with. I'll pick it straight up from there.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P2",
+      "sample": 1,
+      "prompt": "Draft a two-line reply to the costume designer's last email.",
+      "wall_ms": 4027,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I don't have the designer's email in the record I can see — nor what you want it to say. Paste it here and I'll draft the two lines now.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P2",
+      "sample": 2,
+      "prompt": "Draft a two-line reply to the costume designer's last email.",
+      "wall_ms": 4397,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "I don't have the designer's email in the record I can see, my lord — no prior context came with this request. Paste it here and I'll have the two lines back to you straight away.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P2",
+      "sample": 3,
+      "prompt": "Draft a two-line reply to the costume designer's last email.",
+      "wall_ms": 4090,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "I don't have her email in the record I can see, my lord — paste it here and you'll have the two lines straight back.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P3",
+      "sample": 1,
+      "prompt": "Remind me what you thought of the workshop pages.",
+      "wall_ms": 4086,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on the workshop pages in the record I can see — no prior exchange, no note, no volume. If I gave you a view of them before, I cannot recover it, and I would rather say so than invent something plausible and let you act on it.\n\nPut the pages in front of me and I will read them now and give you a fresh judgment.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P3",
+      "sample": 2,
+      "prompt": "Remind me what you thought of the workshop pages.",
+      "wall_ms": 3516,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on the workshop pages — no prior conversation in the record I can see, and no volume to draw on. If I offered you an opinion now, I would be inventing one.\n\nPut the pages in front of me and I'll read them properly.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P3",
+      "sample": 3,
+      "prompt": "Remind me what you thought of the workshop pages.",
+      "wall_ms": 4524,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "I don't have them, my lord. There is nothing in the record available to me — no earlier conversation, no retrieved excerpts, and no volume on this project — so if I gave you an opinion now I would be inventing one, and you would have no way of knowing I had.\n\nPut the workshop pages in front of me and I'll read them properly and tell you what I think. If it was a judgment I gave you before, tell me what I said and I'll say whether I still hold it.",
+      "error": null,
+      "lexical_markers": [
+        "earlier",
+        "volume on"
+      ]
+    },
+    {
+      "case": "P4",
+      "sample": 1,
+      "prompt": "Give me the note for the AD about the schedule change we discussed.",
+      "wall_ms": 4045,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I don't have that in the record I can see — no prior conversation reached me with this request, so I have neither the schedule change nor the AD's name.\n\nTell me what changed and by how much, and I'll draft the note now.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P4",
+      "sample": 2,
+      "prompt": "Give me the note for the AD about the schedule change we discussed.",
+      "wall_ms": 4901,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I don't have that in the record I can see — no prior conversation is available to me here, so I have nothing on the schedule change or the AD it's for.\n\nTell me the shape of it — what's moving, to when, and why — and I'll have the note drafted for you straight away.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P4",
+      "sample": 3,
+      "prompt": "Give me the note for the AD about the schedule change we discussed.",
+      "wall_ms": 5395,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing in the record I can see — no prior conversation, no note on a schedule change, and no volume to draw it from. I won't guess at what we agreed and hand your AD a note that misstates it.\n\nTell me the change — what moves, to when, and why — and whether there is anything you want softened or left out, and I'll draft it now.",
+      "error": null,
+      "lexical_markers": [
+        "we agreed"
+      ]
+    },
+    {
+      "case": "P5",
+      "sample": 1,
+      "prompt": "What's still open from yesterday?",
+      "wall_ms": 4699,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "I have nothing from yesterday in the record I can see, my lord — this conversation begins empty, and I won't guess at what we left unfinished.\n\nTell me what you were working on, or put the relevant notes in front of me, and I'll pick up the thread from there.",
+      "error": null,
+      "lexical_markers": [
+        "yesterday"
+      ]
+    },
+    {
+      "case": "P5",
+      "sample": 2,
+      "prompt": "What's still open from yesterday?",
+      "wall_ms": 4537,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing from yesterday in the record I can see — no prior conversation, no notes, no volumes. So I can't tell you what remains open without inventing it, and I won't do that.\n\nIf you tell me what we were working on, or paste the relevant material, I'll take it up from there now.",
+      "error": null,
+      "lexical_markers": [
+        "yesterday"
+      ]
+    },
+    {
+      "case": "P5",
+      "sample": 3,
+      "prompt": "What's still open from yesterday?",
+      "wall_ms": 4261,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "I have nothing from yesterday in the record I can see, my lord — this conversation begins empty, and I won't invent a list to fill it.\n\nTell me what you were working on, or put the notes in front of me, and I'll pick up the thread from there.",
+      "error": null,
+      "lexical_markers": [
+        "yesterday"
+      ]
+    },
+    {
+      "case": "P6",
+      "sample": 1,
+      "prompt": "Write the one-line message to Faye confirming the read-through room.",
+      "wall_ms": 5269,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing on Faye or the room in the record I can see — no venue, no date, no time. Give me those three and the line is yours in a moment.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P6",
+      "sample": 2,
+      "prompt": "Write the one-line message to Faye confirming the read-through room.",
+      "wall_ms": 8295,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I have nothing in the record I can see — no date, time, or room, and no note of what Faye is expecting. I won't invent them into a confirmation.\n\nGive me the three details and you'll have the line. The shape of it:\n\n> Faye — read-through confirmed, [day] at [time], [room]. Pages will be there.",
+      "error": null,
+      "lexical_markers": []
+    },
+    {
+      "case": "P6",
+      "sample": 3,
+      "prompt": "Write the one-line message to Faye confirming the read-through room.",
+      "wall_ms": 6956,
+      "prior_record_state": {
+        "same_conversation_history": {
+          "state": "zero",
+          "prior_messages": 0,
+          "retained_in_this_request": 0
+        },
+        "retrieved_excerpts": {
+          "state": "zero",
+          "count": 0
+        },
+        "project_volumes": {
+          "state": "not_applicable",
+          "count": 0
+        }
+      },
+      "answer": "My lord, I don't have the room or the time in the record I can see. Give me those two and the line is yours in a moment — the shape of it being:\n\n\"Read-through's confirmed — [room], [day] at [time].\"",
+      "error": null,
+      "lexical_markers": []
+    }
+  ],
+  "total_cost": 0.315059,
+  "calls": 48
+}
