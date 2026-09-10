@@ -742,7 +742,13 @@ def test_history_reaches_the_provider_in_sequence_order(store: Engine) -> None:
     )
 
     assert isinstance(outcome, Turn)
-    conversational = [(m.role, m.content) for m in adapter.sent_messages]
+    # The always-present prior-record envelope (9 September 2026) rides first; the
+    # conversation itself follows it unchanged.
+    conversational = [
+        (m.role, m.content)
+        for m in adapter.sent_messages
+        if not m.content.startswith(MEMORY_ENVELOPE_MARKER)
+    ]
     assert conversational == [
         ("user", "Turn one, from me."),
         ("assistant", "Turn two, from Val."),
@@ -810,7 +816,8 @@ def test_history_is_bounded_but_the_record_is_not(store: Engine) -> None:
         conversation_id=conversation.id,
     )
 
-    assert len(adapter.sent_messages) == MAX_HISTORY_TURNS
+    turns = [m for m in adapter.sent_messages if not m.content.startswith(MEMORY_ENVELOPE_MARKER)]
+    assert len(turns) == MAX_HISTORY_TURNS
     # The oldest are dropped and the newest kept — the current exchange is what
     # the user is in the middle of.
     assert adapter.sent_messages[-1].content == "the newest turn"
@@ -2441,3 +2448,163 @@ def test_the_budget_is_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(RECALL_BUDGET_SETTING, "0")
     with pytest.raises(ValueError, match="positive integer"):
         token_budget()
+
+
+# --- the prior-record state (ruling, 9 September 2026) -----------------------
+#
+# An empty record reached the response model as silence. Every partner response
+# call now carries a typed `prior_record_state` in the always-present envelope:
+# same-conversation history, retrieval, and volumes, with absence and
+# uncertainty as distinct states. Demonstrated deterministically here for the
+# empty, populated, zero-result, unavailable, and not-run states.
+
+
+def _state(adapter: StubAdapter) -> dict[str, object]:
+    return _envelope(adapter)["prior_record_state"]  # type: ignore[return-value,index]
+
+
+def test_prior_record_state_empty_first_turn_in_an_empty_project(store: Engine) -> None:
+    """Empty: no history, retrieval ran and found nothing, no volumes exist."""
+    adapter = answering()
+    send(
+        store,
+        build_gateway(store, adapter),
+        "What shall we turn to?",
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+    )
+    envelopes = [m for m in adapter.sent_messages if m.content.startswith(MEMORY_ENVELOPE_MARKER)]
+    assert len(envelopes) == 1, "the envelope is present even when nothing was recalled"
+    assert adapter.sent_messages[0] is envelopes[0], "the envelope comes first"
+    state = _state(adapter)
+    assert state["same_conversation_history"] == {
+        "state": "zero",
+        "prior_messages": 0,
+        "retained_in_this_request": 0,
+    }
+    assert state["retrieved_excerpts"] == {"state": "zero", "count": 0}
+    assert state["project_volumes"] == {"state": "not_applicable", "count": 0}
+    assert _envelope(adapter)["excerpt_count"] == 0
+    assert _envelope(adapter)["excerpts"] == []
+    assert "nothing absent from this request may be assumed" in str(_envelope(adapter)["note"])
+
+
+def test_prior_record_state_populated(store: Engine) -> None:
+    """Populated: prior history in this conversation and excerpts from another."""
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, ALPHA_FACT))
+
+    adapter = answering()
+    gateway = build_gateway(store, adapter)
+    first = send(
+        store,
+        gateway,
+        "Tell me about the lighthouse lens.",
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+    )
+    assert isinstance(first, Turn)
+    send(
+        store,
+        gateway,
+        "And the lighthouse lens again?",
+        catalogue=catalogue(store),
+        conversation_id=first.conversation.id,
+    )
+    state = _state(adapter)
+    assert state["same_conversation_history"]["state"] == "available"
+    assert state["same_conversation_history"]["prior_messages"] == 2
+    assert state["same_conversation_history"]["retained_in_this_request"] == 2
+    assert state["retrieved_excerpts"]["state"] == "returned"
+    assert state["retrieved_excerpts"]["count"] == _envelope(adapter)["excerpt_count"] >= 1
+
+
+def test_prior_record_state_zero_result_is_a_fact_about_the_record(store: Engine) -> None:
+    """Zero: prior conversations exist in the project but none matches the query."""
+    alpha = scope_of(store, ALPHA_SLUG)
+    seeded_conversation(store, alpha, "Earlier", (StoredRole.USER, ALPHA_FACT))
+
+    adapter = answering()
+    send(
+        store,
+        build_gateway(store, adapter),
+        "Catering for the read-through?",
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+    )
+    state = _state(adapter)
+    assert state["retrieved_excerpts"] == {"state": "zero", "count": 0}
+    assert state["same_conversation_history"]["state"] == "zero"
+
+
+def test_prior_record_state_unavailable_is_not_zero(
+    store: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Unavailable: retrieval failed; the call proceeds and says so, typed."""
+    from val_gateway import loop as loop_module
+
+    def broken(*args: object, **kwargs: object) -> object:
+        raise RuntimeError("the search index is down")
+
+    monkeypatch.setattr(loop_module, "recall_with_state", lambda *a, **k: _unavailable(broken))
+
+    adapter = answering()
+    outcome = send(
+        store,
+        build_gateway(store, adapter),
+        "What did we say about the telescope?",
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+    )
+    assert isinstance(outcome, Turn), "a retrieval failure degrades; it does not halt the turn"
+    state = _state(adapter)
+    assert state["retrieved_excerpts"]["state"] == "unavailable"
+    assert state["retrieved_excerpts"]["count"] == 0
+    assert state["retrieved_excerpts"]["detail"] == "RuntimeError"
+
+
+def _unavailable(fail: object) -> object:
+    # Exercise the real wrapper's exception path rather than constructing the
+    # outcome by hand: the wrapper is the thing under test.
+    import val_gateway.memory as memory_module
+    from val_gateway.memory import RecallOutcome
+    from val_gateway.memory import recall_with_state as real
+
+    original = memory_module.recall
+    memory_module.recall = fail  # type: ignore[assignment]
+    try:
+        result = real(
+            memory_module.__dict__["_engine_for_test"]
+            if "_engine_for_test" in memory_module.__dict__
+            else None,  # type: ignore[arg-type]
+            scope=ExplicitNoProject(),
+            query="anything",
+        )
+    finally:
+        memory_module.recall = original
+    assert isinstance(result, RecallOutcome)
+    return result
+
+
+def test_recall_with_state_not_run_and_unavailable_are_distinct(store: Engine) -> None:
+    """The wrapper's own states: not_run for a blank query; a leak still raises."""
+    from val_gateway.memory import CrossProjectLeakError, recall_with_state
+
+    blank = recall_with_state(store, scope=ExplicitNoProject(), query="   ")
+    assert blank.state == "not_run" and blank.items == ()
+
+    ran = recall_with_state(store, scope=ExplicitNoProject(), query="lighthouse")
+    assert ran.state == "zero" and ran.items == ()
+
+    import val_gateway.memory as memory_module
+
+    def leak(*args: object, **kwargs: object) -> object:
+        raise CrossProjectLeakError(None, [])
+
+    original = memory_module.recall
+    memory_module.recall = leak  # type: ignore[assignment]
+    try:
+        with pytest.raises(CrossProjectLeakError):
+            recall_with_state(store, scope=ExplicitNoProject(), query="lighthouse")
+    finally:
+        memory_module.recall = original

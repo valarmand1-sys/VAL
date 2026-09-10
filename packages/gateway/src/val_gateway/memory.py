@@ -323,3 +323,66 @@ def recall(
         ),
     )
     return tuple(recalled[position - 1] for position in selection.admitted_positions)
+
+
+# --- prior-record state (ruling, 9 September 2026) ---------------------------
+
+
+@dataclass(frozen=True)
+class RecallOutcome:
+    """What retrieval actually did for this call, typed, never collapsed.
+
+    Ruled 9 September 2026 after the v1.5 qualification reveal: an empty record
+    reached the response model as silence, and silence does not distinguish
+    "nothing available" from "not supplied". The states are:
+
+    - ``returned`` — retrieval ran and admitted ``len(items)`` excerpts (> 0);
+    - ``zero`` — retrieval ran and found nothing to admit;
+    - ``not_run`` — retrieval was not attempted (the query had nothing searchable);
+    - ``unavailable`` — retrieval was attempted and failed; ``detail`` names the
+      failure class. The call proceeds without recall rather than halting
+      (`00-charter.md` invariant 25), and the envelope says so.
+
+    A ``zero`` is a fact about the record; the other three are facts about the
+    call. Only ``returned`` and ``zero`` may be read as "the record was consulted".
+    """
+
+    state: str
+    items: tuple[RecalledMessage, ...] = ()
+    detail: str | None = None
+
+
+def recall_with_state(
+    engine: Engine,
+    *,
+    scope: ProjectScope,
+    query: str,
+    exclude_conversation: UUID | None = None,
+    limit: int = DEFAULT_LIMIT,
+    budget: int | None = None,
+) -> RecallOutcome:
+    """`recall`, with the outcome typed instead of flattened into a tuple.
+
+    A cross-project leak is not a retrieval failure: it is the one error this
+    module exists to raise, and it still raises.
+    """
+    if not query.strip():
+        return RecallOutcome(state="not_run", detail="the query had no searchable terms")
+    try:
+        items = recall(
+            engine,
+            scope=scope,
+            query=query,
+            exclude_conversation=exclude_conversation,
+            limit=limit,
+            budget=budget,
+        )
+    except CrossProjectLeakError:
+        raise
+    except Exception as error:  # the store or the driver failing, normalised
+        _LOGGER.warning(
+            "recall unavailable for this call (%s); proceeding without retrieved material",
+            type(error).__name__,
+        )
+        return RecallOutcome(state="unavailable", detail=type(error).__name__)
+    return RecallOutcome(state="returned" if items else "zero", items=items)

@@ -64,6 +64,7 @@ inventing exactly the machinery `02-partner-systems.md` reserves.
 
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass
 from uuid import UUID
@@ -82,10 +83,10 @@ from val_domain.gateway import (
 )
 from val_domain.project import AmbiguousProject, ProjectCandidate, ProjectScope
 from val_gateway import conversations
-from val_gateway.context import conversation_messages, recall_block
+from val_gateway.context import PriorRecordState, conversation_messages, recall_block
 from val_gateway.exchange import ClarificationNeeded, RestrictedContentRefusedError, resolve_scope
 from val_gateway.gateway import Gateway
-from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage, recall
+from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage, recall_with_state
 from val_gateway.projects import ProjectSession
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.restricted import preflight, refusal_message
@@ -323,19 +324,32 @@ def assemble_turn(
     """Steps 4-7: history and recall, assembled into the outbound messages."""
     # 4-6. Persona, this conversation's own history, and the project's.
     history = conversations.history(engine, opened.conversation.id)
-    recalled = recall(
+    outcome = recall_with_state(
         engine,
         scope=opened.scope,
         query=opened.user_message.content,
         exclude_conversation=opened.conversation.id,
         limit=recall_limit,
     )
+    recalled = outcome.items
 
-    # 7. Assemble. The recall block first, then the conversation ending on the
-    #    turn just persisted — which is why the current message is not appended
-    #    again: it is already the last thing in `history`.
-    block = recall_block(recalled)
+    # 7. Assemble. The envelope first — always, carrying the typed prior-record
+    #    state (ruling, 9 September 2026) and any retrieved excerpts — then the
+    #    conversation ending on the turn just persisted, which is why the
+    #    current message is not appended again: it is already the last thing
+    #    in `history`.
     turns = conversation_messages(history)
+    prior = sum(1 for record in history if record.role.value in ("user", "val")) - 1
+    state = PriorRecordState(
+        history_state="available" if prior > 0 else "zero",
+        history_prior_messages=max(prior, 0),
+        history_retained_messages=max(len(turns) - 1, 0),
+        retrieval_state=outcome.state,
+        retrieval_excerpts=len(recalled),
+        retrieval_detail=outcome.detail,
+    )
+    _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
+    block = recall_block(recalled, state=state)
     messages = (block, *turns) if block is not None else turns
     return messages, recalled
 
