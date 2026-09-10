@@ -226,10 +226,10 @@ def select_history_tail(
                 reason = "within the retained tail"
             decisions.append(HistoryDecision(index, size, tokens, True, reason))
         else:
-            rebase = evicted_by.get(g)
+            event = evicted_by.get(g)
             where = (
-                f"evicted at the rebase on exchange {rebase.at_exchange} ({rebase.binding} ceiling)"
-                if rebase is not None
+                f"evicted at the rebase on exchange {event.at_exchange} ({event.binding} ceiling)"
+                if event is not None
                 else "before the retained tail"
             )
             decisions.append(HistoryDecision(index, size, tokens, False, where))
