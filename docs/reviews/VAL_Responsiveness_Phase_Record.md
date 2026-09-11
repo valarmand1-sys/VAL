@@ -29,7 +29,9 @@ Two live turns through `POST /turns/stream` from a byte-granular Python client o
 | **First delta at the client** (from request sent) | 5,352 ms | 2,245 ms |
 | **Total completion at the client** | 6,076 ms | 3,161 ms |
 | Deltas | 13 | 8 |
-| Streamed text equals settled text | yes | yes |
+| Streamed text equals settled text | claimed "yes" by the measuring client — see the correction below | as turn 1 |
+
+**Correction, later on 11 September 2026.** The Python client that took these two measurements decoded the event stream one byte at a time with decoding errors ignored, which dropped multi-byte characters (Val's dashes) from both the deltas and the settled JSON it compared; its equality check therefore compared two equally damaged strings, and turn 2's reply, which contains an em-dash, was recorded by it without the dash. The timing figures are unaffected (they do not depend on decoding). The equality claim for these turns is withdrawn as evidence from this client and rests instead on the deterministic tests (`test_turn_stream.py`, including the multi-byte case added on finding this) and on the corrected-client turn recorded in `VAL_Persona_v1.5_Verification.md` §5, where streamed text, settled event and persisted row were byte-equal (that reply had no multi-byte characters; the multi-byte case is the deterministic test's). The desktop's own decoder is a streaming `TextDecoder` and was never affected.
 
 Which of the three governing figures each vantage supplies:
 - **Time-to-first-token — produced.** 527 ms on the warm turn, 3,653 ms on the turn that paid the persona cache write (Opus 5 with a 6,000-token prefix to cache).

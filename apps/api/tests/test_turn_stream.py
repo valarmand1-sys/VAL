@@ -148,6 +148,42 @@ def test_an_ordinary_turn_streams_its_deltas_then_settles_to_the_plain_routes_ob
     ]
 
 
+def test_multibyte_characters_survive_the_frames_and_equal_the_persisted_text(
+    store: Engine,
+) -> None:
+    """Val's dashes and quotes are multi-byte; the frames carry them intact, and
+    a client that decodes the byte stream incrementally reassembles exactly the
+    persisted text. (A byte-at-a-time client that ignores decoding errors would
+    drop them — the defect found in the 11 September 2026 measuring script.)"""
+    reply = "Well enough, my lord — steady, and “ready” to work…"
+    adapter = StreamingScriptedAdapter(
+        [
+            classifier_says("not_consequential"),
+            Streamed(["Well enough, my lord —", " steady, and “ready” to work…"], ok(reply)),
+        ]
+    )
+    api = client(store, adapter)
+    with api.stream(
+        "POST", "/turns/stream", json={"content": "How are you?", "no_project": True}
+    ) as response:
+        raw = b"".join(response.iter_bytes())
+    # Decode incrementally, one byte at a time, as a correct streaming client would.
+    import codecs
+
+    decoder = codecs.getincrementaldecoder("utf-8")()
+    decoded = "".join(decoder.decode(bytes([b])) for b in raw) + decoder.decode(b"", final=True)
+    frames = [f for f in decoded.split("\n\n") if f.strip()]
+
+    def data_of(frame: str) -> dict:
+        return json.loads(next(line[6:] for line in frame.split("\n") if line.startswith("data: ")))
+
+    deltas = "".join(data_of(f)["text"] for f in frames if f.startswith("event: delta"))
+    settled = data_of(frames[-1])
+    assert deltas == reply == settled["val_message"]["content"]
+    detail = api.get(f"/conversations/{settled['conversation']['id']}").json()
+    assert detail["messages"][-1]["content"] == reply
+
+
 def test_the_settled_event_matches_the_plain_route_shape_exactly(store: Engine) -> None:
     streamed = client(
         store, StreamingScriptedAdapter([classifier_says("not_consequential"), ok("Yes.")])
