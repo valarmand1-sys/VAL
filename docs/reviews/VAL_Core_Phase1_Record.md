@@ -39,7 +39,18 @@ Time-to-first-token as observed at the gateway; nothing was rendered, so no user
 
 ## 5. The real end-to-end turn
 
-Recorded below on completion.
+After CI went green on `f370ec0` (run 34640496826) and the service was restarted on it (14:47, 11 September 2026; health `running`, no warnings), one real turn was sent to the live service through the desktop's own turn contract — the exact `POST /turns` body shape `apps/desktop/src/api.ts` sends (`content`, `no_project: true`) — in the unassigned scope, with content stating plainly that it was sent by the implementation engineer and not by Lord Armand. Cost stated before running: under $0.15.
+
+| Figure | Value |
+|---|---|
+| HTTP | 200, `kind: answered`, 4.34 s total at the client |
+| Classification | `haiku-4-5-20251001`, 1.43 s, not consequential (`captured_as` none), $0.00091 |
+| Response | `opus-5-medium`, 2.84 s, 6,300 in (persona cache written afresh: the one-hour lifetime had lapsed since 13:38) / 111 out, $0.063 |
+| Persisted | conversation `01a09203-0854-7bbd-be82-bfc01cb6fa40`; user message sequence 1 (229 chars), Val message `01a09203-193c-78de-aba8-9836fc367564` sequence 2 (115 chars) |
+| Recall gate | `no_project_scope`, not run; prior record state `zero`, as before |
+| Val's reply | "Acknowledged — Val Core Phase 1 restart received, persona loaded whole, and no prior record available to this call." |
+
+**What this proves and what it does not.** Every layer the refactor touched ran live in its non-streaming mode with the results the records show, identical in shape to the two turns of the morning: the same classification-then-response sequence, the same rows, the same cache behaviour. **The native desktop window was not driven** — I cannot operate it, and the API's origin allow-list admits only the Tauri origins, so a browser-served copy of the interface cannot reach the service. The desktop's client code path was exercised at its contract, not at its pixels. One turn by Lord Armand in the desktop itself is the remaining confirmation; the conversation above is an engineering verification turn and is not gate evidence.
 
 ## 6. Requirements carried forward (not implemented in Phase 1)
 
