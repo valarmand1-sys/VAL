@@ -94,4 +94,4 @@ The full-suite estimates were high because the short v2-shape cases cost about $
 
 **Final strip configuration:** the strip task routes to `sonnet-5-low` (cheapest strip-eligible: $2/$10 against GPT-5.5's $5/$30), with `gpt-5-5-20260423` as the independently re-checked fallback. Every strip attempt runs under the contract of 11 September: conduct directives retained, record evidence declared and grounded, completeness guard, no retry on truncation, no blind call without an enforceable payload.
 
-**Regression, CI, tag:** recorded below on completion.
+**Regression, CI, tag.** The existing regression suite ran unchanged: 1,116 tests locally (packages, API, infrastructure), plus ruff, mypy, the pin scan and the scope-ruling check. Commit `6216756`; CI run 34628970180 green (https://github.com/valarmand1-sys/VAL/actions/runs/34628970180). Tag **`strip-closed-2026-09-11`** on `6216756`, pushed. The service was restarted on that commit after the green run (12:42, 11 September 2026) and answered its health check with no warnings. **The strip work is closed.** Not begun, by the ruling's sequence: the Vale Core provider-neutral refactor; no avatar or voice work.
