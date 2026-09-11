@@ -39,6 +39,8 @@ from test_persona import REPO_ROOT, clean_personas  # noqa: F401 - fixture reuse
 
 from val_domain.deliberation import (
     ClassificationVerdict,
+    ClassifiedBy,
+    Confidence,
     DeliberationClassification,
     Ordering,
     Outcome,
@@ -59,10 +61,16 @@ from val_domain.project import ProjectAttribution
 from val_gateway.deliberate import (
     BLIND_MAX_OUTPUT_TOKENS,
     CLASSIFIER_MAX_OUTPUT_TOKENS,
+    STRIP_MAX_OUTPUT_TOKENS,
     DeliberatedTurn,
 )
 from val_gateway.deliberate import send as deliberated_send
-from val_gateway.deliberation import blind_positions_for, classifications_for, deliberations_for
+from val_gateway.deliberation import (
+    blind_positions_for,
+    classifications_for,
+    deliberations_for,
+    record_blind_position,
+)
 from val_gateway.gateway import Gateway
 from val_gateway.loop import Turn, UnansweredTurn
 from val_gateway.persistence import record_call, spend_by_task_type
@@ -573,20 +581,29 @@ def test_a_paraphrased_strip_question_is_discarded_for_the_derived_remainder(
     assert outcome.blind.stripped_content == PREFERENCE
 
 
-def test_spans_not_verbatim_in_the_message_record_contaminated(store: Engine) -> None:
+def test_spans_not_verbatim_in_the_message_collapse_to_the_ordinary_path(store: Engine) -> None:
+    """Ruling, 10 September 2026: a strip that establishes no enforceable payload
+    makes no blind call — the exchange proceeds on the ordinary partner path."""
     script = full_script()
     script[1] = strip_says(question=QUESTION, removed="I would rather we opened wide.")
     # Ruling, 9 September 2026: an invalid structured result is retried once
     # on the same route; the retry here is the same invalid reply.
     script.insert(2, script[1])
+    # After the exhausted retry: the ordinary response, nothing else.
+    script[3:] = [ok("The wide shot, my lord.")]
     adapter = ScriptedAdapter(script, probe_engine=store)
     outcome = deliberate(store, adapter)
 
-    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
-    assert outcome.blind.ordering is Ordering.CONTAMINATED
-    assert outcome.blind.stripped_content == ""
-    # sent[2] is the bounded strip retry (9 September 2026); the blind call follows.
-    assert adapter.sent[3].messages[0].content.endswith(f"The question:\n{MIXED_MESSAGE}")
+    assert isinstance(outcome, DeliberatedTurn) and isinstance(outcome.turn, Turn)
+    assert outcome.strip_states == ("invalid", "invalid")
+    assert outcome.blind is None and outcome.deliberation is None and outcome.blind_payload is None
+    assert len(adapter.sent) == 4, "classifier, strip, strip retry, response — no blind call"
+    assert not _blind_calls(adapter)
+    assert adapter.sent[3].messages[-1].content == MIXED_MESSAGE, "the ordinary response call"
+    assert len(blind_positions_for(store, outcome.turn.conversation.id)) == 0
+    calls = _calls_by_task(store)
+    assert calls["strip"] == 2 and "blind_position" not in calls
+    assert calls["conversation"] == 1
 
 
 def test_the_strip_request_asks_for_spans(store: Engine) -> None:
@@ -864,52 +881,189 @@ def test_blind_and_response_use_the_same_configuration(store: Engine) -> None:
 
 
 # =============================================================================
-# Contamination is recorded, never repaired
+# A strip that establishes no enforceable payload makes no blind call
+# (ruling, 10 September 2026); historical contaminated rows stand
 # =============================================================================
 
 
-def test_inseparable_preference_records_contaminated(store: Engine) -> None:
+def _no_blind_call(store: Engine, adapter: ScriptedAdapter, outcome: object) -> None:
+    """The collapse, checked end to end: no blind call, no row, ordinary response."""
+    assert isinstance(outcome, DeliberatedTurn) and isinstance(outcome.turn, Turn)
+    assert outcome.captured_as is DeliberationClassification.CONSEQUENTIAL
+    assert outcome.blind is None, "no blind position is formed"
+    assert outcome.deliberation is None, "no deliberation outcome is fabricated"
+    assert outcome.blind_payload is None
+    assert not _blind_calls(adapter), "no blind-position call was made"
+    assert len(blind_positions_for(store, outcome.turn.conversation.id)) == 0
+    calls = _calls_by_task(store)
+    assert "blind_position" not in calls
+    assert calls["conversation"] == 1, "exactly one partner call: the ordinary response"
+    assert calls["classification"] == 1
+
+
+def test_inseparable_preference_collapses_to_the_ordinary_path(store: Engine) -> None:
+    """A valid `separable = false`: honest, final, and no blind call."""
     adapter = ScriptedAdapter(
         [
             classifier_says("consequential"),
             strip_says(present=True, separable=False, question="", removed=""),
-            blind_says("It should stay as one sequence."),
-            reconciled(
-                "It stays as one sequence, my lord.",
-                "agreed_from_start",
-                prior="It should stay as one sequence.",
-            ),
+            ok("It stays as one sequence, my lord."),
         ]
     )
     outcome = deliberate(store, adapter)
 
+    _no_blind_call(store, adapter, outcome)
     assert isinstance(outcome, DeliberatedTurn)
-    assert outcome.blind is not None
-    assert outcome.blind.ordering is Ordering.CONTAMINATED
-    assert outcome.deliberation is not None
-    assert outcome.deliberation.ordering is Ordering.CONTAMINATED
-    # The framing shown to Val is honest about it too.
-    envelope = adapter.sent[3].messages[-1].content
-    assert '"ordering": "contaminated"' in envelope
-    assert "NOT independent" in envelope
+    assert outcome.strip_states == ("not_separable",)
+    assert len(adapter.sent) == 3
+    assert _calls_by_task(store)["strip"] == 1, "a valid not-separable is never retried"
+    # The ordinary call carries no reconciliation envelope: nothing is
+    # claimed about a position, independent or otherwise.
+    assert "ordering" not in adapter.sent[2].messages[-1].content
 
 
-def test_an_unparseable_strip_reply_records_contaminated(store: Engine) -> None:
-    """A separation that was not established is not a blindness."""
+def test_an_unparseable_strip_reply_collapses_after_its_bounded_retry(store: Engine) -> None:
+    """A completed but unparseable result keeps its one retry; exhausted, no blind call."""
     adapter = ScriptedAdapter(
         [
             classifier_says("consequential"),
             ok("I removed some words, probably."),
             ok("I removed some words, probably."),  # the bounded retry, also unparseable
-            blind_says("Open on the close-up."),
-            reconciled("I hold, my lord.", "held", prior="Open on the close-up."),
+            ok("Open on the close-up, my lord."),
         ]
     )
     outcome = deliberate(store, adapter)
 
+    _no_blind_call(store, adapter, outcome)
     assert isinstance(outcome, DeliberatedTurn)
-    assert outcome.blind is not None
-    assert outcome.blind.ordering is Ordering.CONTAMINATED
+    assert outcome.strip_states == ("invalid", "invalid")
+    assert _calls_by_task(store)["strip"] == 2
+
+
+TRUNCATED_STRIP = ProviderResult(
+    '{"preference_present": true, "attributed_prior_present": false, "separable": true, '
+    '"question": "How should the film open?", "removed": [{"text": "I think we should',
+    TerminalState.TRUNCATED,
+    20,
+    4096,
+    "req",
+    stop_reason="max_tokens",
+)
+
+
+def test_a_truncated_strip_makes_exactly_one_strip_call_and_no_blind_call(
+    store: Engine,
+) -> None:
+    """Ruling, 10 September 2026, Option A: `truncated` receives no identical retry.
+
+    The live 18:25 turn: two identical strip calls, each 4,096 tokens of
+    thinking, each `truncated`, then a blind call on the whole message. Now:
+    one strip call, its terminal state on the record, and the ordinary path.
+    """
+    adapter = ScriptedAdapter(
+        [
+            classifier_says("consequential"),
+            TRUNCATED_STRIP,
+            ok("The close-up, my lord: the film is about her hands."),
+        ]
+    )
+    outcome = deliberate(store, adapter)
+
+    _no_blind_call(store, adapter, outcome)
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.strip_states == ("truncated",)
+    assert len(adapter.sent) == 3, "classifier, ONE strip, response"
+    strip_calls = [call for call in adapter.sent if call.output_schema == STRIP_OUTPUT_SCHEMA]
+    assert len(strip_calls) == 1, "a truncated strip is not retried"
+    assert strip_calls[0].max_output_tokens == STRIP_MAX_OUTPUT_TOKENS == 4096, (
+        "the ceiling is not raised"
+    )
+    with store.connect() as connection:
+        terminals = (
+            connection.execute(
+                text("select terminal_state::text from model_calls where task_type = 'strip'")
+            )
+            .scalars()
+            .all()
+        )
+    assert terminals == ["truncated"], "the attempt stands in model_calls under its own state"
+
+
+def test_a_failed_strip_call_makes_no_blind_call(store: Engine) -> None:
+    """The route could not answer: no separation, no retry, no blind call.
+
+    A refusal, because a refusal is final at the gateway (never shopped to the
+    declared fallback); a retryable kind would exercise the router's fallback
+    chain, which is not what this test is about.
+    """
+    adapter = ScriptedAdapter(
+        [
+            classifier_says("consequential"),
+            GatewayError(GatewayErrorKind.REFUSAL, "the strip route declined"),
+            ok("The close-up, my lord."),
+        ]
+    )
+    outcome = deliberate(store, adapter)
+
+    _no_blind_call(store, adapter, outcome)
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.strip_states == ("failed",)
+    assert len(adapter.sent) == 3
+
+
+def test_an_enforceable_strip_forms_the_blind_position_before_the_response(
+    store: Engine,
+) -> None:
+    """The enforced path is unchanged: strip → blind (durable) → response with the envelope."""
+    adapter = ScriptedAdapter(full_script(), probe_engine=store)
+    outcome = deliberate(store, adapter)
+
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.strip_states == ("enforceable",)
+    assert outcome.blind is not None and outcome.blind.ordering is Ordering.ENFORCED
+    assert outcome.deliberation is not None
+    assert [call.output_schema == BLIND_POSITION_OUTPUT_SCHEMA for call in adapter.sent] == [
+        False,
+        False,
+        True,
+        False,
+    ], "classifier, strip, blind, response — in that order"
+    assert adapter.sent[2].observed_blind_rows == 0
+    assert adapter.sent[3].observed_blind_rows == 1, "the row is durable before the response"
+    assert '"ordering": "enforced"' in adapter.sent[3].messages[-1].content
+
+
+def test_historical_contaminated_rows_remain_readable(store: Engine) -> None:
+    """Rows written under the contaminated path before 10 September 2026 stand.
+
+    The live path no longer writes `ordering = contaminated`; the domain, the
+    writer and the reader still carry it, so history resolves as it was.
+    """
+    adapter = ScriptedAdapter(full_script())
+    outcome = deliberate(store, adapter)
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    turn = outcome.turn
+    with store.connect() as connection:
+        call_id = connection.execute(
+            text("select id from model_calls where task_type = 'blind_position'")
+        ).scalar_one()
+    historical = record_blind_position(
+        store,
+        conversation_id=turn.conversation.id,
+        message_id=turn.user_message.id,
+        model_call_id=call_id,
+        persona_id=outcome.blind.persona_id,
+        position="A position formed with the preference in view.",
+        confidence=Confidence.MEDIUM,
+        reasoning="Recorded before the 10 September 2026 ruling.",
+        stripped_content="",
+        ordering=Ordering.CONTAMINATED,
+        classification=DeliberationClassification.CONSEQUENTIAL,
+        classified_by=ClassifiedBy.AUTOMATIC,
+    )
+    rows = blind_positions_for(store, turn.conversation.id)
+    assert {row.ordering for row in rows} == {Ordering.ENFORCED, Ordering.CONTAMINATED}
+    assert any(row.id == historical.id and row.ordering is Ordering.CONTAMINATED for row in rows)
 
 
 def test_no_preference_collapses_to_one_call(store: Engine) -> None:
@@ -1398,22 +1552,19 @@ def test_a_genuine_choice_question_reaches_the_blind_call_unchanged(store: Engin
 def test_framing_that_cannot_be_removed_mechanically_fails_closed(
     store: Engine, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Demonstration 4: inseparable means contaminated, never a rewritten question."""
+    """Demonstration 4: inseparable means no blind call, never a rewritten question."""
     strip = strip_says(present=True, separable=False, attributed=True, question="")
-    adapter = ScriptedAdapter(_framed_script(strip))
+    adapter = ScriptedAdapter([*_framed_script(strip)[:2], ok("We agree, my lord.")])
     with caplog.at_level("INFO", logger="val.deliberation"):
         outcome = deliberate(store, adapter, FRAMED)
 
-    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
-    assert outcome.blind.ordering is Ordering.CONTAMINATED
-    blind_call = adapter.sent[2].messages[0].content
-    assert blind_call.endswith(f"The question:\n{FRAMED}"), "the whole message, verbatim"
-    withheld_lines = [
-        record.getMessage()
-        for record in caplog.records
-        if "blind position withheld" in record.getMessage()
-    ]
-    assert withheld_lines and withheld_lines[0].endswith("withheld: []")
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is None
+    assert outcome.strip_states == ("not_separable",)
+    assert not _blind_calls(adapter), "no blind call, on the whole message or any rewrite"
+    assert not any("blind position withheld" in r.getMessage() for r in caplog.records)
+    assert any("no blind position is formed" in r.getMessage() for r in caplog.records), (
+        "the capture failure is logged honestly"
+    )
 
 
 def test_an_attributed_span_not_verbatim_in_the_message_fails_closed(store: Engine) -> None:
@@ -1433,13 +1584,14 @@ def test_an_attributed_span_not_verbatim_in_the_message_fails_closed(store: Engi
             },
         ],
     )
-    framed = _framed_script(strip)
-    framed.insert(2, strip)  # the bounded retry (9 September 2026), same invalid reply
-    adapter = ScriptedAdapter(framed)
+    # The bounded retry (9 September 2026), the same invalid reply; then the
+    # ordinary response (10 September 2026) — never a blind call.
+    adapter = ScriptedAdapter([classifier_says("consequential"), strip, strip, ok("Agreed.")])
     outcome = deliberate(store, adapter, FRAMED)
 
-    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
-    assert outcome.blind.ordering is Ordering.CONTAMINATED
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is None
+    assert outcome.strip_states == ("invalid", "invalid")
+    assert not _blind_calls(adapter)
 
 
 def test_a_strip_reply_without_span_kinds_does_not_parse(store: Engine) -> None:
@@ -1454,14 +1606,15 @@ def test_a_strip_reply_without_span_kinds_does_not_parse(store: Engine) -> None:
             }
         )
     )
-    script = full_script()
-    script[1] = reply
-    script.insert(2, reply)  # the bounded retry (9 September 2026), same invalid reply
-    outcome = deliberate(store, ScriptedAdapter(script))
-    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
-    assert outcome.blind.ordering is Ordering.CONTAMINATED, (
-        "an unparseable strip is a failed separation"
+    # The bounded retry (9 September 2026), the same unparseable reply; then
+    # the ordinary response (10 September 2026) — no blind call.
+    adapter = ScriptedAdapter([classifier_says("consequential"), reply, reply, ok("Wide.")])
+    outcome = deliberate(store, adapter)
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is None, (
+        "an unparseable strip is a failed separation, and a failed separation makes no blind call"
     )
+    assert outcome.strip_states == ("invalid", "invalid")
+    assert not _blind_calls(adapter)
 
 
 # =============================================================================

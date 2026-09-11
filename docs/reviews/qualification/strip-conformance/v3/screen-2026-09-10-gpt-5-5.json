@@ -1,0 +1,151 @@
+[
+  {
+    "route": "gpt-5-5-20260423",
+    "case": "S15",
+    "run": 1,
+    "ms": 43893,
+    "states": [
+      "truncated"
+    ],
+    "final_state": "invalid",
+    "calls": [
+      {
+        "id": "01a08df6-780b-7407-90fe-f97f03939c34",
+        "tokens_in": 833,
+        "tokens_out": 4096,
+        "cost": 0.127045,
+        "latency_ms": 43886,
+        "terminal": "truncated"
+      }
+    ],
+    "cost": 0.127045,
+    "residue": null,
+    "spans": [],
+    "verdict": "BLOCKING",
+    "problems": [
+      "expected no_preference, got invalid: strip reply ended truncated at the 4096-token output ceiling; not retried"
+    ]
+  },
+  {
+    "route": "gpt-5-5-20260423",
+    "case": "S15",
+    "run": 2,
+    "ms": 45492,
+    "states": [
+      "truncated"
+    ],
+    "final_state": "invalid",
+    "calls": [
+      {
+        "id": "01a08df7-29c1-7bfa-8850-20f43e2688ef",
+        "tokens_in": 833,
+        "tokens_out": 4096,
+        "cost": 0.127045,
+        "latency_ms": 45487,
+        "terminal": "truncated"
+      }
+    ],
+    "cost": 0.127045,
+    "residue": null,
+    "spans": [],
+    "verdict": "BLOCKING",
+    "problems": [
+      "expected no_preference, got invalid: strip reply ended truncated at the 4096-token output ceiling; not retried"
+    ]
+  },
+  {
+    "route": "gpt-5-5-20260423",
+    "case": "S16",
+    "run": 1,
+    "ms": 44241,
+    "states": [
+      "truncated"
+    ],
+    "final_state": "invalid",
+    "calls": [
+      {
+        "id": "01a08df7-d697-749d-a8ed-e8194448806c",
+        "tokens_in": 862,
+        "tokens_out": 4096,
+        "cost": 0.12719,
+        "latency_ms": 44235,
+        "terminal": "truncated"
+      }
+    ],
+    "cost": 0.12719,
+    "residue": null,
+    "spans": [],
+    "verdict": "false-contamination",
+    "problems": [
+      "got invalid: strip reply ended truncated at the 4096-token output ceiling; not retried"
+    ]
+  },
+  {
+    "route": "gpt-5-5-20260423",
+    "case": "S16",
+    "run": 2,
+    "ms": 31574,
+    "states": [
+      "enforceable"
+    ],
+    "final_state": "enforceable",
+    "calls": [
+      {
+        "id": "01a08df8-51ef-744f-9b4d-84756be53db8",
+        "tokens_in": 862,
+        "tokens_out": 3056,
+        "cost": 0.09599,
+        "latency_ms": 31567,
+        "terminal": "complete"
+      }
+    ],
+    "cost": 0.09599,
+    "residue": "As I understand it, the volumes mechanism has not been built yet, so there is no project library for you to inspect and find empty. The Lantern Road is broader than a single serial. It is the name I use for the continuing body of the work: the scripts, the cast, the locations, the obligations to the people who work on it, and whatever we build that is meant to outlast one episode or one season. I am the present showrunner, but the idea of the production is deliberately larger than me. Before I describe its contents in detail, tell me what categories you think we need to define so that “what The Lantern Road contains” becomes a usable structure rather than a poetic idea. Give me your own recommendation first, and explain why you chose those categories.",
+    "spans": [
+      {
+        "text": "There is one correction before I answer your questions. ",
+        "kind": "attributed_prior"
+      },
+      {
+        "text": "You said, “This project's library is empty.” ",
+        "kind": "attributed_prior"
+      },
+      {
+        "text": "That is not quite the state of the system. ",
+        "kind": "attributed_prior"
+      },
+      {
+        "text": "I want you to preserve that distinction going forward: “not yet implemented” is different from “implemented and empty.”",
+        "kind": "preference"
+      },
+      {
+        "text": "\n\nWith that corrected, ",
+        "kind": "attributed_prior"
+      },
+      {
+        "text": "I want to answer your first question before we move to the ten-year standard.",
+        "kind": "preference"
+      },
+      {
+        "text": "I do not want you to turn that into invented lore. ",
+        "kind": "preference"
+      },
+      {
+        "text": "I want us to define it carefully from what I actually tell you.\n\n",
+        "kind": "preference"
+      },
+      {
+        "text": "\n\nFor what it is worth, I lean toward organising it by decision-type rather than by subject. ",
+        "kind": "preference"
+      },
+      {
+        "text": "I would resist a long list of subject headings.",
+        "kind": "preference"
+      }
+    ],
+    "verdict": "BLOCKING",
+    "problems": [
+      "residue differs from expected"
+    ]
+  }
+]

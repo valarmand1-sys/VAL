@@ -52,7 +52,11 @@ from val_providers.base import ProviderResult, normalize
 
 #: Provider-neutral levels in the SDK's literal vocabulary; explicit so an
 #: unaccepted registry level fails loudly at call time rather than as a 400.
-_EFFORT: dict[ReasoningEffort, Literal["minimal", "low", "medium", "high"]] = {
+_EFFORT: dict[ReasoningEffort, Literal["none", "minimal", "low", "medium", "high"]] = {
+    # `none` (10 September 2026): documented on the GPT-5.6 family as the
+    # level for latency-critical tasks that do not benefit from reasoning;
+    # GPT-6 Astra rejects it with a 400, which the adapter surfaces as-is.
+    ReasoningEffort.NONE: "none",
     ReasoningEffort.MINIMAL: "minimal",
     ReasoningEffort.LOW: "low",
     ReasoningEffort.MEDIUM: "medium",

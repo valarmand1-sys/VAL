@@ -54,6 +54,7 @@ from datetime import date
 from uuid import UUID
 
 from val_domain.gateway import (
+    Admission,
     CacheTtl,
     CallStatus,
     Classification,
@@ -502,6 +503,78 @@ class Gateway:
         self._refuse_unverified_persona(request)
 
         known = self._verify_named_configuration(config, request.classification, request.task_type)
+        return self._attempt(request, known, content_parts(request))
+
+    def evaluate_with_configuration(
+        self, request: GatewayRequest, config: ModelConfig
+    ) -> GatewayResponse:
+        """Run one call on a configuration registered for evaluation only.
+
+        Ruling, 10 September 2026. A candidate for a capability floor has to be
+        exercised through the real gateway — reservation, `model_calls` row,
+        settlement — before it can be designated, and it must not be routable
+        while it is being exercised. So a candidate is registered `NOT_ADMITTED`
+        with **no capability profile**: routing can never select it, and the
+        pinned path above refuses it for the floor. This door is the only way
+        to reach it, and it is narrower than the pinned path, not wider:
+
+        - the configuration must be the registry's own entry, not retired,
+          `NOT_ADMITTED`, and declaring no profile — an admitted configuration
+          is refused here, because a serving configuration is exercised
+          through routing or the pinned path, never through the evaluation door;
+        - the request must be schema-constrained structured work — an
+          `output_schema` is required, and the task is neither conversation
+          nor blind position, the two tasks in which Val speaks;
+        - eligibility by classification is checked exactly as for any call
+          (`refusal_for`, in `_attempt`), and the reservation is the ordinary one.
+
+        Evaluation is not admission: nothing here changes what the registry
+        says, and passing an evaluation confers no profile — designation is a
+        recorded ruling that edits the entry.
+        """
+        if request.task_type in (TaskType.CONVERSATION, TaskType.BLIND_POSITION):
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                f"{request.task_type.value} is a task in which Val speaks; a configuration "
+                "under evaluation never serves it (ruling, 10 September 2026)",
+            )
+        if request.output_schema is None:
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                "evaluation calls are schema-constrained structured work only; a request "
+                "without an output schema is refused",
+            )
+        self._refuse_masquerade(request)
+        self._refuse_restricted(request)
+        self._refuse_unverified_persona(request)
+        known = by_id(config.id)
+        if known is None or known != config:
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                f"configuration {config.slug!r} ({config.provider}/{config.model_identifier}) "
+                "is not the Model Configuration Registry's entry for its id; a configuration "
+                "assembled by a caller is not evaluated any more than it is routed to.",
+            )
+        if known.retired:
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                f"{known.slug} is retired and is not evaluated.",
+            )
+        if known.admission is not Admission.NOT_ADMITTED or known.capability_profiles:
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                f"{known.slug} is not an evaluation-only configuration (admission "
+                f"{known.admission.value}, profiles "
+                f"{sorted(profile.value for profile in known.capability_profiles)}); a "
+                "configuration admitted to serve is exercised through routing or the pinned "
+                "path, never through the evaluation door.",
+            )
+        if not is_eligible(known, request.classification):
+            raise GatewayError(
+                GatewayErrorKind.NO_ELIGIBLE_ROUTE,
+                f"{known.slug} is not declared eligible for {request.classification.value} "
+                "content; evaluation does not widen eligibility (00-charter.md invariant 17).",
+            )
         return self._attempt(request, known, content_parts(request))
 
     def _verify_named_configuration(

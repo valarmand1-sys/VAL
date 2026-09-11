@@ -127,6 +127,36 @@ def test_gpt_medium_reasoning_is_sent_explicitly() -> None:
     assert fake.kwargs["reasoning"] == {"effort": "medium"}
 
 
+def test_effort_none_is_sent_to_openai_exactly_as_documented() -> None:
+    """Ruling, 10 September 2026: the GPT-5.6 candidates declare `none`, and it is sent."""
+    for slug in ("gpt-5-6-terra", "gpt-5-6-luna"):
+        config = by_slug(slug)
+        assert config is not None
+        adapter, fake = _openai_adapter(_openai_response())
+
+        adapter.complete(config, MESSAGES, "system", 100)
+
+        assert fake.kwargs["reasoning"] == {"effort": "none"}, slug
+        assert fake.kwargs["model"] == config.model_identifier
+
+
+def test_the_anthropic_adapter_refuses_effort_none_rather_than_substituting() -> None:
+    """`none` is not an Anthropic level; the call is refused before any provider contact."""
+    from val_domain.gateway import GatewayError, GatewayErrorKind, ReasoningEffort
+
+    sonnet = by_slug("sonnet-5")
+    assert sonnet is not None
+    config = sonnet.model_copy(update={"reasoning_effort": ReasoningEffort.NONE})
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+
+    with pytest.raises(GatewayError) as caught:
+        adapter.complete(config, MESSAGES, "system", 100)
+
+    assert caught.value.kind is GatewayErrorKind.INVALID_REQUEST
+    assert "'none'" in str(caught.value)
+    assert fake.kwargs == {}, "the provider was never contacted"
+
+
 def test_a_not_applicable_openai_config_would_omit_reasoning() -> None:
     """The omission branch, proved with a synthetic NOT_APPLICABLE config."""
     config = by_slug("gpt-5-5-20260423")

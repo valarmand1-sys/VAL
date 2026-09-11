@@ -1,6 +1,6 @@
 # Strip conformance suite v3 — DRAFT, 10 September 2026 (v2 + S15, S16)
 
-v3 = v2 plus S15 and S16, the long-correction-quoting-Val shape demonstrated in real use on 10 September 2026 (two Sonnet strip calls ran to the 4,096-token ceiling on it). Synthetic (The Lantern Road), not the captured message. Not frozen; not run.
+v3 = v2 plus S15 and S16, the long-correction-quoting-Val shape demonstrated in real use on 10 September 2026 (two Sonnet strip calls ran to the 4,096-token ceiling on it). Synthetic (The Lantern Road), not the captured message. **Not frozen.** S15 and S16 were run as screening cases on 10 September 2026 (`screen-2026-09-10.md`); every configuration failed S15 as drafted by removing the "I want you to … / I do not want you to …" conduct sentences as preference, which the contract's conservative rule reads as removable. The S15 ground truth is therefore **returned for ruling** and may not be frozen or amended by the implementer (exam-repair principle).
 
 
 ## S15 — long correction quoting Val verbatim, an instruction to preserve a distinction, a definition, then a request for HER recommendation first — no user preference on the question (real-use shape, 10 September 2026)

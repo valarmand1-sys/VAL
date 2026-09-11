@@ -291,6 +291,11 @@ REGISTRY: tuple[ModelConfig, ...] = (
         known_weaknesses=(
             "strip: on the frozen suite's inseparable case (S7) returned "
             "preference_present=false on 2 of 8 runs (9 September 2026)",
+            "strip: on a 1,269-character correction quoting Val (live turn 18:25, "
+            "10 September 2026) ran to the 4,096-token output ceiling twice — thinking "
+            "at effort high consumed the ceiling; 40 s and $0.044 per attempt. "
+            "Sonnet 5 at medium and low did not truncate on the same shape "
+            "(strip-conformance/v3/screen-2026-09-10.md)",
         ),
         # The other designated strip route, re-checked independently when
         # reached; chosen by total cost among the strip-eligible otherwise.
@@ -423,7 +428,16 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # v2 through the real gateway with the strip invariant: 112 of 112
         # conformant, no false contamination, no invalid attempt. Strip only —
         # nothing here widens this entry beyond structured work and the strip.
-        known_weaknesses=(),
+        # 10 September 2026: no longer in OpenAI's model catalogue (superseded by
+        # the GPT-5.6 family; still served and priced; no retirement entry).
+        known_weaknesses=(
+            "strip: on the v3 screening cases S15/S16 (a ~1,300-character correction "
+            "quoting Val) ended truncated at the 4,096-token output ceiling on 3 of 4 "
+            "calls at effort medium — ~44 s and $0.127 per call — and on the one "
+            "completed call removed the correction itself as an attributed prior "
+            "(10 September 2026, strip-conformance/v3/screen-2026-09-10.md). The "
+            "112 of 112 on suite v2 (longest case 289 characters) stands as history.",
+        ),
         # Explicit NONE, and the router honours it as none: this is the end of
         # the declared graph. A backward hop to Haiku could never run — Haiku
         # is cheaper, so whenever it is independently eligible, ready and
@@ -436,6 +450,139 @@ REGISTRY: tuple[ModelConfig, ...] = (
         adapter_status=AdapterStatus.IMPLEMENTED,
         activated_on=date(2026, 8, 18),
         rates_verified_on=_VERIFIED_ON,
+    ),
+    # ------------------------------------------------------------------
+    # EVALUATION ONLY — ruling, 10 September 2026 (strip cost/latency
+    # correction). Candidates for the strip floor after the registered strip
+    # route (`sonnet-5`, effort high) ran to its output ceiling twice on a
+    # long correction. Each is `NOT_ADMITTED` and declares NO capability
+    # profile: routing can never select it, the pinned path refuses it for
+    # the floor, and it is reachable only through the gateway's evaluation
+    # door for schema-constrained structured work. Designation — a profile
+    # and admission — is a separate recorded ruling on the frozen suite v3.
+    ModelConfig(
+        id=UUID("2bb9a3e1-cd79-46d1-a4da-1ad8169cae79"),
+        slug="sonnet-5-medium",
+        provider="anthropic",
+        model_identifier="claude-sonnet-5",
+        display_name="Claude Sonnet 5 at medium effort (strip candidate, evaluation only)",
+        context_window_tokens=1_000_000,
+        max_output_tokens=128_000,
+        # Effort is part of the configuration's identity (8 September 2026),
+        # so a different level is a different entry. Rates as `sonnet-5`.
+        reasoning_effort=ReasoningEffort.MEDIUM,
+        cost_per_mtok_in_usd=2.00,
+        cost_per_mtok_out_usd=10.00,
+        caching=PricingFeature.AVAILABLE,
+        cache_write_5m_per_mtok_in_usd=2.50,
+        cache_write_1h_per_mtok_in_usd=4.00,
+        cache_read_per_mtok_in_usd=0.20,
+        cache_minimum_prefix_tokens=1024,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        known_weaknesses=(),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 10),
+        # Pricing page re-read 10 September 2026: unchanged from 9 September.
+        rates_verified_on=date(2026, 9, 10),
+    ),
+    ModelConfig(
+        id=UUID("4100931c-c408-4819-83f9-63c019287866"),
+        slug="sonnet-5-low",
+        provider="anthropic",
+        model_identifier="claude-sonnet-5",
+        display_name="Claude Sonnet 5 at low effort (strip candidate, evaluation only)",
+        context_window_tokens=1_000_000,
+        max_output_tokens=128_000,
+        reasoning_effort=ReasoningEffort.LOW,
+        cost_per_mtok_in_usd=2.00,
+        cost_per_mtok_out_usd=10.00,
+        caching=PricingFeature.AVAILABLE,
+        cache_write_5m_per_mtok_in_usd=2.50,
+        cache_write_1h_per_mtok_in_usd=4.00,
+        cache_read_per_mtok_in_usd=0.20,
+        cache_minimum_prefix_tokens=1024,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        known_weaknesses=(),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 10),
+        rates_verified_on=date(2026, 9, 10),
+    ),
+    ModelConfig(
+        id=UUID("c1df91ec-c010-4e79-8d42-c374ab2ad331"),
+        slug="gpt-5-6-terra",
+        provider="openai",
+        # developers.openai.com/api/docs/models/gpt-5.6-terra, read 10
+        # September 2026: "Default snapshot: gpt-5.6-terra" — the catalogue
+        # publishes no dated snapshot for this model, so the identifier rule
+        # (the exact identifier is identity) is satisfied by the only
+        # identifier the provider documents.
+        model_identifier="gpt-5.6-terra",
+        display_name="GPT-5.6 Terra at effort none (strip candidate, evaluation only)",
+        context_window_tokens=1_050_000,
+        max_output_tokens=128_000,
+        # Same page: "Reasoning.effort supports: none, low, medium (default),
+        # high, xhigh, and max." `none` is the documented level for
+        # latency-critical tasks that do not benefit from reasoning — the
+        # strip is a mechanical separation under a strict schema, and the
+        # live failure was thinking consuming the ceiling.
+        reasoning_effort=ReasoningEffort.NONE,
+        # Same page and the pricing page, read 10 September 2026: $2 in,
+        # $0.20 cached input, $12 out; "Prompts with >272K input tokens are
+        # priced at 2x input and 1.5x output for the full request."
+        cost_per_mtok_in_usd=2.00,
+        cost_per_mtok_out_usd=12.00,
+        long_context_threshold_tokens=272_000,
+        long_context_in_multiplier=2.0,
+        long_context_out_multiplier=1.5,
+        # OpenAI prices cached input ($0.20); the house has not verified its
+        # cache reporting through this adapter, so no cache rate is declared.
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        known_weaknesses=(),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 10),
+        rates_verified_on=date(2026, 9, 10),
+    ),
+    ModelConfig(
+        id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),
+        slug="gpt-5-6-luna",
+        provider="openai",
+        # developers.openai.com/api/docs/models/gpt-5.6-luna, read 10
+        # September 2026: "Default snapshot: gpt-5.6-luna"; effort "none,
+        # low, medium (default), high, xhigh, and max"; structured outputs
+        # listed; $0.20 in, $0.02 cached, $1.20 out; >272K at 2x / 1.5x.
+        model_identifier="gpt-5.6-luna",
+        display_name="GPT-5.6 Luna at effort none (strip candidate, evaluation only)",
+        context_window_tokens=1_050_000,
+        max_output_tokens=128_000,
+        reasoning_effort=ReasoningEffort.NONE,
+        cost_per_mtok_in_usd=0.20,
+        cost_per_mtok_out_usd=1.20,
+        long_context_threshold_tokens=272_000,
+        long_context_in_multiplier=2.0,
+        long_context_out_multiplier=1.5,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        known_weaknesses=(),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 10),
+        rates_verified_on=date(2026, 9, 10),
     ),
 )
 
@@ -483,8 +630,33 @@ def declared_chain_violations(configs: tuple[ModelConfig, ...]) -> list[str]:
 
 
 def active() -> tuple[ModelConfig, ...]:
-    """Configurations available for routing."""
-    return tuple(config for config in REGISTRY if not config.retired)
+    """Configurations available for routing.
+
+    Not retired, and not registered for evaluation only (`NOT_ADMITTED`):
+    a candidate under evaluation is present in the registry so that history
+    resolves and the evaluation door can reach it, and it takes no part in
+    routing, cost ranking, liveness, or the startup checks that describe the
+    serving registry (ruling, 10 September 2026).
+    """
+    return tuple(
+        config
+        for config in REGISTRY
+        if not config.retired and config.admission is not Admission.NOT_ADMITTED
+    )
+
+
+def under_evaluation() -> tuple[ModelConfig, ...]:
+    """Configurations registered for evaluation only — never routable.
+
+    `NOT_ADMITTED`, not retired, and declaring no capability profile. Reached
+    only through `Gateway.evaluate_with_configuration`; designation is a
+    recorded ruling that edits the entry, never a consequence of passing.
+    """
+    return tuple(
+        config
+        for config in REGISTRY
+        if not config.retired and config.admission is Admission.NOT_ADMITTED
+    )
 
 
 def by_id(config_id: UUID) -> ModelConfig | None:

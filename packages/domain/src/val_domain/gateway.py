@@ -236,9 +236,16 @@ class ReasoningEffort(StrEnum):
     is a recorded fact, not a missing value, and it is why this is an enum rather
     than an optional string that would leave "unset" and "unsupported"
     indistinguishable.
+
+    `NONE` (ruling, 10 September 2026) is OpenAI's documented lowest level —
+    `reasoning.effort = "none"`, "latency-critical tasks that do not benefit
+    from any reasoning" — a level the provider offers and the configuration
+    states. It is not an Anthropic level: the Anthropic adapter refuses a
+    configuration declaring it rather than substituting a level nobody chose.
     """
 
     NOT_APPLICABLE = "not_applicable"
+    NONE = "none"
     MINIMAL = "minimal"
     LOW = "low"
     MEDIUM = "medium"

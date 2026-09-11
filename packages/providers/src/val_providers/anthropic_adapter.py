@@ -36,7 +36,15 @@ from typing import Literal
 import anthropic
 from anthropic.types import JSONOutputFormatParam, OutputConfigParam
 
-from val_domain.gateway import CacheTtl, Message, ModelConfig, ReasoningEffort, TerminalState
+from val_domain.gateway import (
+    CacheTtl,
+    GatewayError,
+    GatewayErrorKind,
+    Message,
+    ModelConfig,
+    ReasoningEffort,
+    TerminalState,
+)
 from val_providers.base import ProviderResult, normalize
 
 #: The provider-neutral levels this house configures, in the SDK's own literal
@@ -117,7 +125,19 @@ class AnthropicAdapter:
         # like any other input. An empty config is omitted, as before.
         output_config: OutputConfigParam = {}
         if config.reasoning_effort is not ReasoningEffort.NOT_APPLICABLE:
-            output_config["effort"] = _EFFORT[config.reasoning_effort]
+            level = _EFFORT.get(config.reasoning_effort)
+            if level is None:
+                # A registry level Anthropic does not offer (`none`, `minimal`)
+                # is refused before any provider contact — never mapped to the
+                # nearest level, which would run a configuration nobody stated.
+                raise GatewayError(
+                    GatewayErrorKind.INVALID_REQUEST,
+                    f"{self.name}: {config.slug} declares reasoning effort "
+                    f"{config.reasoning_effort.value!r}, which is not an Anthropic effort "
+                    f"level ({', '.join(sorted(v for v in _EFFORT.values()))}); the "
+                    "configuration is refused rather than run at a substituted level",
+                )
+            output_config["effort"] = level
         if output_schema is not None:
             output_config["format"] = JSONOutputFormatParam(
                 type="json_schema", schema=dict(output_schema)

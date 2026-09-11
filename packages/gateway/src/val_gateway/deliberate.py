@@ -6,8 +6,10 @@ rulings of 19 August 2026. The order, per turn, each step gating the next:
     1. open the turn                 WP-0.7's shared phases (`loop.open_turn`)
     2. classify                      one small call, cheapest route, every turn
        (not captured — an ordinary WP-0.7 turn from here on)
-    3. strip                         cheapest route; failure records contaminated
-       (no preference present — steps collapse to one ordinary call)
+    3. strip                         strip route; only an enforceable payload
+                                     continues (no preference, or a strip
+                                     that cannot establish one — steps
+                                     collapse to one ordinary call)
     4. select the configuration      ONCE, for both remaining calls
     5. blind position                pinned; carries the persona; payload logged
     6. persist blind_positions row   evidence, durable BEFORE step 7 exists
@@ -23,8 +25,12 @@ rulings of 19 August 2026. The order, per turn, each step gating the next:
 **Ordering.** The blind call's payload is built from the stripped question
 only, and the exact payload is logged before transmission — the WP-0.9
 criterion is that inspection of that payload shows no preference-bearing
-content. Where separation fails, `ordering = contaminated` and nothing claims
-an independence that did not happen, including the framing shown to Val.
+content. Where separation fails, no blind call is made at all (ruling,
+10 September 2026): the strip's attempts stand in `model_calls` and on the
+outcome, no `blind_positions` row is written, and the turn takes the ordinary
+partner-response path. `ordering = contaminated` remains in the domain for the
+historical rows written before that ruling; nothing claims an independence
+that did not happen.
 
 **Same configuration.** Selected once (`Gateway.select_configuration`), then
 both calls run pinned, each still passing admission, eligibility, and budget
@@ -58,10 +64,11 @@ message is written, and every classification call that was made is on
 `model_calls`. Retroactive marking (§4.8) remains for a turn that ends this
 way, as for any other.
 
-The remaining fallbacks are honest ones. A strip failure is a failed
-separation and records `contaminated`. An unparseable blind position is no
-position: nothing is recorded, the turn proceeds ordinarily, and the
-`model_calls` row keeps the honest account of the call that was paid for. An
+The remaining fallbacks are honest ones. A strip failure — truncated, failed,
+invalid after its bounded retry, or inseparable — is a failed separation:
+recorded as such, no blind call, the ordinary path. An unparseable blind
+position is retried once and then ends the turn unanswered (8 September
+2026), and the `model_calls` rows keep the honest account of what was paid. An
 unparseable reconciliation verdict settles the turn but records no outcome —
 never a guessed one. Nothing on any path fabricates a record.
 """
@@ -149,10 +156,12 @@ _LOGGER = logging.getLogger("val.deliberation")
 #: other oversized request, visibly.
 CLASSIFIER_MAX_OUTPUT_TOKENS = 256
 STRIP_MAX_OUTPUT_TOKENS = 4096
-#: Ruling, 9 September 2026: a strip result that contradicts itself or the
-#: message is *invalid* and may be retried exactly once on the same
+#: Ruling, 9 September 2026: a completed strip result that contradicts itself
+#: or the message is *invalid* and may be retried exactly once on the same
 #: configuration; a valid "not separable" is never retried in search of
-#: separability; a second invalid result fails closed as contaminated.
+#: separability. Ruling, 10 September 2026: a reply that ended `truncated` is
+#: never retried, and no strip outcome short of `enforceable` produces a
+#: blind call — the exchange collapses to the ordinary path.
 STRIP_ATTEMPTS = 2
 #: Ruling, 7 September 2026: the blind position's ceiling matches the response
 #: allowance. It is an output ceiling, not a request for a long position — the
@@ -323,16 +332,37 @@ def send(
     #    validated deterministically against the message before anything is
     #    built from it. Only an `enforceable` validation — preference present,
     #    separable, every span resolved exactly, at least one preference span,
-    #    the derivation actually changing the message — may produce
-    #    `ordering = enforced`. Everything else is contaminated (or, with no
-    #    preference at all, ordinary). An invalid result is retried once.
+    #    the derivation actually changing the message — may produce a blind
+    #    call, and that call is `ordering = enforced`. Ruling, 10 September
+    #    2026: nothing else produces a blind call at all. A strip that cannot
+    #    establish an enforceable blind payload — truncated, failed, invalid
+    #    after its bounded retry, or a valid `separable = false` — records
+    #    the strip/capture failure honestly (every attempt's state on the
+    #    outcome, every call on model_calls) and collapses to the ordinary
+    #    partner-response path: no blind-position call, no `blind_positions`
+    #    row, no fabricated deliberation. A position formed with the
+    #    preference in view is the thing the machinery exists to avoid, and
+    #    paying a partner call to record one was spending on the failure
+    #    mode. Historical `contaminated` rows stand as what they were.
     stripped = _strip(gateway, content, opened.scope, classification)
     validation = stripped.validation
-    if validation.state == "no_preference":
-        # §4.1: no preference present — steps collapse to one call. There is
-        # no blindness to enforce and no stated view to reconcile with; the
-        # exchange resolves later (his response arrives in a later turn) and
-        # is recorded then, through the writer, against this capture.
+    if not validation.enforceable or validation.residue is None:
+        if validation.state == "no_preference":
+            # §4.1: no preference present — steps collapse to one call. There
+            # is no blindness to enforce and no stated view to reconcile
+            # with; the exchange resolves later (his response arrives in a
+            # later turn) and is recorded then, through the writer, against
+            # this capture.
+            pass
+        else:
+            _LOGGER.warning(
+                "strip could not establish an enforceable blind payload (attempts: %s; %s); "
+                "the capture failure is recorded and the turn proceeds on the ordinary "
+                "partner-response path — no blind position is formed and no blind_positions "
+                "row is written (ruling, 10 September 2026)",
+                ", ".join(stripped.states),
+                "; ".join(validation.reasons) or validation.state,
+            )
         outcome = _ordinary(
             engine, gateway, opened, classification, recall_limit, max_output_tokens
         )
@@ -349,35 +379,22 @@ def send(
             strip_states=stripped.states,
         )
 
-    question, removed, ordering = content, "", Ordering.CONTAMINATED
-    withheld: tuple[RemovedSpan, ...] = ()
-    if validation.enforceable and validation.residue is not None:
-        # Ruling, 3 September 2026: the blind question is DERIVED from the
-        # original message and the accepted spans — mechanically, no semantic
-        # judgment — never taken from the strip's own "question". The
-        # validation above is the proof that the derivation removed
-        # preference-bearing material; without it, no enforcement.
-        if stripped.outcome is not None and not same_text(
-            stripped.outcome.question, validation.residue
-        ):
-            _LOGGER.warning(
-                "strip's own question was not the verbatim remainder (a paraphrase); "
-                "the derived remainder is used and the paraphrase is discarded"
-            )
-        question = validation.residue
-        removed = "\n".join(span.text for span in validation.spans)
-        withheld = validation.spans
-        ordering = Ordering.ENFORCED
-    elif validation.state == "invalid":
+    # Ruling, 3 September 2026: the blind question is DERIVED from the
+    # original message and the accepted spans — mechanically, no semantic
+    # judgment — never taken from the strip's own "question". The validation
+    # above is the proof that the derivation removed preference-bearing
+    # material; without it, no enforcement — and now, no blind call.
+    if stripped.outcome is not None and not same_text(
+        stripped.outcome.question, validation.residue
+    ):
         _LOGGER.warning(
-            "strip result invalid after %d attempt(s) (%s); separation not established, "
-            "recording ordering=contaminated",
-            len(stripped.states),
-            "; ".join(validation.reasons),
+            "strip's own question was not the verbatim remainder (a paraphrase); "
+            "the derived remainder is used and the paraphrase is discarded"
         )
-    # Otherwise: preference present but not separable — or the strip itself
-    # failed. The position will be formed with the preference in view, and
-    # the record says exactly that.
+    question = validation.residue
+    removed = "\n".join(span.text for span in validation.spans)
+    withheld: tuple[RemovedSpan, ...] = validation.spans
+    ordering = Ordering.ENFORCED
 
     # 4. One configuration for both remaining calls (ruling, 19 August 2026).
     persona = DatabasePersonaLoader(engine).active()
@@ -708,17 +725,30 @@ def _strip(
     classification: Classification,
     *,
     configuration: ModelConfig | None = None,
+    evaluation: bool = False,
 ) -> StripAttempts:
     """The §4.1 strip on the cheapest eligible route — validated, bounded.
 
     A failed call (the route could not answer) establishes no separation and
-    is contaminated without retry, as before. An **invalid** structured
-    result — unparseable, or contradicting itself or the message under
-    `validate_strip` — is retried exactly once on the same route; a second
-    invalid result is contaminated. A valid `not_separable` is final: it is
-    never retried in search of separability. `configuration`, when given,
-    pins the call to that exact configuration (the conformance harness); the
-    running application routes.
+    is not retried, as before. A reply whose provider terminal state is
+    **`truncated`** is a determinate failure of the attempt, not a transient
+    one, and receives **no identical retry** (ruling, 10 September 2026: an
+    identical request against the same ceiling truncates identically, as the
+    live 18:25 turn showed — 4,096 tokens of thinking twice). A **completed**
+    reply whose structured result is invalid — unparseable, or contradicting
+    itself or the message under `validate_strip` — keeps its one bounded
+    retry on the same route (9 September 2026); a second invalid result is
+    exhausted. A valid `not_separable` is final: it is never retried in
+    search of separability. Whatever the attempts establish, the caller
+    builds a blind payload only from an `enforceable` validation; every
+    attempt's state is on the result.
+
+    `configuration`, when given, pins the call to that exact configuration
+    (the conformance harness); the running application routes. `evaluation`
+    is the harness's declaration that the pinned configuration is registered
+    for evaluation only and is to be reached through the gateway's evaluation
+    door, which is narrower than the pinned path; the running application
+    never passes it.
     """
     request = GatewayRequest(
         task_type=TaskType.STRIP,
@@ -738,20 +768,47 @@ def _strip(
     validation = StripValidation("invalid", None, (), ("no attempt was made",))
     for attempt in range(1, STRIP_ATTEMPTS + 1):
         try:
-            response = (
-                gateway.complete(request)
-                if configuration is None
-                else gateway.complete_with_configuration(request, configuration)
-            )
+            if configuration is None:
+                response = gateway.complete(request)
+            elif evaluation:
+                response = gateway.evaluate_with_configuration(request, configuration)
+            else:
+                response = gateway.complete_with_configuration(request, configuration)
         except GatewayError as failure:
             _LOGGER.warning(
-                "strip call failed (%s); separation not established, recording "
-                "ordering=contaminated rather than an unearned blindness.",
+                "strip call failed (%s); separation not established and no blindness "
+                "is claimed from it.",
                 failure.kind.value,
             )
             states.append("failed")
             return StripAttempts(
                 StripValidation("invalid", None, (), (f"strip call failed: {failure.kind.value}",)),
+                None,
+                tuple(states),
+            )
+        if response.terminal is TerminalState.TRUNCATED:
+            # Ruling, 10 September 2026 (Option A): the reply ended at the
+            # output ceiling. The terminal state is the provider's own and is
+            # already on the model_calls row; an identical retry against the
+            # same ceiling is not a second chance, it is the same failure
+            # bought twice. No retry, and the ceiling is not raised.
+            states.append("truncated")
+            _LOGGER.warning(
+                "strip attempt %d ended truncated at the %d-token output ceiling; "
+                "separation not established, and a truncated attempt is not retried",
+                attempt,
+                STRIP_MAX_OUTPUT_TOKENS,
+            )
+            return StripAttempts(
+                StripValidation(
+                    "invalid",
+                    None,
+                    (),
+                    (
+                        f"strip reply ended truncated at the {STRIP_MAX_OUTPUT_TOKENS}-token "
+                        "output ceiling; not retried",
+                    ),
+                ),
                 None,
                 tuple(states),
             )
@@ -765,7 +822,7 @@ def _strip(
             attempt,
             STRIP_ATTEMPTS,
             "; ".join(validation.reasons),
-            "; retrying once on the same route" if attempt < STRIP_ATTEMPTS else "; contaminated",
+            "; retrying once on the same route" if attempt < STRIP_ATTEMPTS else "; exhausted",
         )
     return StripAttempts(validation, outcome, tuple(states))
 

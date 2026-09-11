@@ -60,7 +60,11 @@ src = [
 ]
 # Qualification run directories preserve the harness exactly as it ran (packet §9: nothing in a
 # run directory is ever changed). They are evidence, not service code, and are not linted.
-extend-exclude = ["docs/reviews/qualification/runs", "docs/reviews/economics"]
+extend-exclude = [
+    "docs/reviews/qualification/runs",
+    "docs/reviews/qualification/strip-conformance",
+    "docs/reviews/economics",
+]
 
 [tool.ruff.lint]
 select = [

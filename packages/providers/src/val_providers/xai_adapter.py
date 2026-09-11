@@ -107,7 +107,15 @@ class XAIAdapter:
             "max_completion_tokens": max_output_tokens,
         }
         if config.reasoning_effort is not ReasoningEffort.NOT_APPLICABLE:
-            request["reasoning_effort"] = _EFFORT[config.reasoning_effort]
+            level = _EFFORT.get(config.reasoning_effort)
+            if level is None:
+                raise GatewayError(
+                    GatewayErrorKind.INVALID_REQUEST,
+                    f"{self.name}: {config.slug} declares reasoning effort "
+                    f"{config.reasoning_effort.value!r}, which this adapter does not map; "
+                    "refused rather than run at a substituted level",
+                )
+            request["reasoning_effort"] = level
         if output_schema is not None:
             request["response_format"] = {
                 "type": "json_schema",
