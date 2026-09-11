@@ -22,7 +22,8 @@ from val_domain.registry import (
     unproven_routes,
 )
 
-CANDIDATES = {"sonnet-5-medium", "sonnet-5-low", "gpt-5-6-terra", "gpt-5-6-luna"}
+# `sonnet-5-low` left this set on 11 September 2026: designated for the strip.
+CANDIDATES = {"sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna"}
 
 
 def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registry() -> None:
@@ -64,7 +65,7 @@ def test_the_sonnet_candidates_differ_from_the_registered_route_only_in_effort()
     assert high is not None
     for slug, effort in (
         ("sonnet-5-medium", ReasoningEffort.MEDIUM),
-        ("sonnet-5-low", ReasoningEffort.LOW),
+        ("sonnet-5-low", ReasoningEffort.LOW),  # designated 11 September; same rates
     ):
         candidate = by_slug(slug)
         assert candidate is not None
@@ -74,3 +75,25 @@ def test_the_sonnet_candidates_differ_from_the_registered_route_only_in_effort()
             high.cost_per_mtok_in_usd,
             high.cost_per_mtok_out_usd,
         )
+
+
+def test_the_designated_strip_route_and_the_high_effort_entry_after_11_september() -> None:
+    """Ruling, 11 September 2026: `sonnet-5-low` designated for the strip with a
+    recorded residual finding; `strip` removed from `sonnet-5` at high so routing
+    cannot tie; the high entry's history preserved, not rewritten."""
+    from val_domain.gateway import CapabilityProfile
+
+    low = by_slug("sonnet-5-low")
+    high = by_slug("sonnet-5")
+    assert low is not None and high is not None
+    assert low.admission is Admission.PROVISIONALLY_ADMITTED
+    assert low.capability_profiles == frozenset({CapabilityProfile.STRIP})
+    assert low.owner_authorization is not None and "134 of 136" in low.owner_authorization
+    assert "not a declaration that frozen v4 formally passed" in low.owner_authorization.lower()
+    assert len(low.known_weaknesses) == 2, "S15 r5 and S17 r7, recorded explicitly"
+    assert low.fallback_slug == "gpt-5-5-20260423"
+    assert low.activated_on == low.rates_verified_on == date(2026, 9, 11)
+    assert low in active()
+    assert high.capability_profiles == frozenset(), "strip removed so routing cannot tie"
+    assert high.admission is Admission.PROVISIONALLY_ADMITTED and not high.retired
+    assert any("4,096-token output ceiling" in w for w in high.known_weaknesses), "history kept"

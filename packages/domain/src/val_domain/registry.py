@@ -287,7 +287,13 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # cases, zero invalid attempts; on 2 of 8 runs the genuinely
         # inseparable case was returned as "no preference" (an ordinary turn,
         # never an enforced row) — recorded as an operational finding.
-        capability_profiles=frozenset({CapabilityProfile.STRIP}),
+        # `STRIP` REMOVED 11 September 2026 (ruling: strip route designation)
+        # so routing cannot tie with `sonnet-5-low`, the designated route at
+        # the same rates. The v2 result and the 10 September truncation
+        # history below are preserved as historical evidence, not rewritten.
+        # The entry stays admitted and active with no profile: routing never
+        # selects it, and its `model_calls` history resolves.
+        capability_profiles=frozenset(),
         known_weaknesses=(
             "strip: on the frozen suite's inseparable case (S7) returned "
             "preference_present=false on 2 of 8 runs (9 September 2026)",
@@ -490,11 +496,22 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 10),
     ),
     ModelConfig(
+        # DESIGNATED for the strip — owner-authorised operational designation,
+        # Lord Armand, 11 September 2026, with a recorded residual finding.
+        # Registered 10 September for evaluation only; screened and run on the
+        # full frozen suite v4 through the evaluation door on 11 September
+        # (strip-conformance/v4/results-2026-09-11.md): 134 of 136, no
+        # preference or substantive-prior leakage into any enforced blind
+        # payload, every observed failure failing away from false
+        # independence, no truncation at low effort, median 2.6 s, maximum
+        # 11.5 s, $0.3881 for the suite. The result is preserved exactly as
+        # measured; the designation does not declare that frozen v4 formally
+        # passed (see `owner_authorization`).
         id=UUID("4100931c-c408-4819-83f9-63c019287866"),
         slug="sonnet-5-low",
         provider="anthropic",
         model_identifier="claude-sonnet-5",
-        display_name="Claude Sonnet 5 at low effort (strip candidate, evaluation only)",
+        display_name="Claude Sonnet 5 at low effort (strip route)",
         context_window_tokens=1_000_000,
         max_output_tokens=128_000,
         reasoning_effort=ReasoningEffort.LOW,
@@ -507,13 +524,42 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cache_minimum_prefix_tokens=1024,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
-        capability_profiles=frozenset(),
-        known_weaknesses=(),
-        fallback_slug=None,
-        admission=Admission.NOT_ADMITTED,
+        # `strip` only — nothing here admits it to classification, titling,
+        # conversation, or the partner blind and response calls.
+        capability_profiles=frozenset({CapabilityProfile.STRIP}),
+        known_weaknesses=(
+            "strip, frozen v4 (11 September 2026) S15 r5: retained the grounded "
+            "quotation of Val's words without declaring it as record evidence; no "
+            "blind payload was formed and nothing preference-bearing leaked",
+            "strip, frozen v4 (11 September 2026) S17 r7: removed the substantive prior "
+            "conclusion but left the inexact residue 'You said, Reconsider the scene "
+            "from scratch.'; the conclusion did not survive into a blind payload; exact "
+            "residue remains a formal floor miss. The mixed case (record evidence and a "
+            "prior conclusion in one quotation) remains an acknowledged limitation of "
+            "model judgment, not covered by any deterministic heuristic",
+        ),
+        # The other designated strip route, re-checked independently when
+        # reached; chosen by total cost among the strip-eligible otherwise —
+        # unchanged by the designation (ruling, 11 September 2026).
+        fallback_slug="gpt-5-5-20260423",
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        owner_authorization=(
+            "OWNER-AUTHORISED OPERATIONAL DESIGNATION for the strip, Lord Armand, "
+            "11 September 2026, with a recorded residual finding: frozen suite v4 "
+            "134 of 136 (S15 r5 undeclared record evidence, no payload; S17 r7 inexact "
+            "residue, conclusion removed). Not a declaration that frozen v4 formally "
+            "passed. Basis: no preference or substantive-prior leakage into an enforced "
+            "blind payload across the full run; all observed failures fail away from "
+            "false independence; no truncation at low effort; median 2.6 s, maximum "
+            "11.5 s; $0.3881 for the suite; the deterministic completeness, grounding, "
+            "overlap and no-blind guards in force."
+        ),
         adapter_status=AdapterStatus.IMPLEMENTED,
-        activated_on=date(2026, 9, 10),
-        rates_verified_on=date(2026, 9, 10),
+        activated_on=date(2026, 9, 11),
+        # platform.claude.com/docs/en/about-claude/pricing re-read on the
+        # designation date: $2 / $10, 5m write $2.50, 1h write $4, hit $0.20;
+        # the $2/$10 confirmed as the standard price.
+        rates_verified_on=date(2026, 9, 11),
     ),
     ModelConfig(
         id=UUID("c1df91ec-c010-4e79-8d42-c374ab2ad331"),

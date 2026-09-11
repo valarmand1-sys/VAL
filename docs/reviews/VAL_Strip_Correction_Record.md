@@ -78,3 +78,20 @@ The full-suite estimates were high because the short v2-shape cases cost about $
 **Sequence.** The strip work is not closed and the state is not tagged; the full regression suite ran green locally (1,115) and in CI. The Vale Core refactor is not begun; no avatar or voice work.
 
 **CI and commit.** `bf3f487` — CI run 34626010882 green (https://github.com/valarmand1-sys/VAL/actions/runs/34626010882); the service was restarted on it after the green run (12:10, 11 September 2026) and answered its health check with no warnings. The amended contract is therefore live on the unchanged strip routes.
+
+## 7. Designation — 11 September 2026, approved
+
+**Ruled:** `sonnet-5-low` designated for `CapabilityProfile.STRIP` as an owner-authorised operational designation with a recorded residual finding — not a declaration that frozen v4 formally passed. The frozen v4 result is preserved exactly as measured: 134 of 136. The suite, floor, judge and historical results are untouched.
+
+**The residual finding, recorded on the entry (`known_weaknesses`) and in `owner_authorization`:**
+- S15 r5 retained the grounded quotation without declaring it as record evidence; no blind payload was formed and nothing preference-bearing leaked.
+- S17 r7 removed the substantive prior conclusion but left the inexact residue `You said, Reconsider the scene from scratch.`; the conclusion did not survive into a blind payload; exact residue remains a formal floor miss.
+- The mixed-case limitation remains an acknowledged limitation of model judgment; no deterministic heuristic covers it and the contract is not weakened.
+
+**Operational basis:** no preference or substantive-prior leakage into an enforced blind payload across the full v4 run; all observed failures fail away from false independence; no truncation at low effort; 134/136; median 2.6 s, maximum 11.5 s; $0.3881 for the suite; the deterministic completeness, grounding, overlap and no-blind guards remain in force.
+
+**Registry changes:** `sonnet-5-low` — `PROVISIONALLY_ADMITTED`, `{STRIP}`, fallback `gpt-5-5-20260423` (the existing fallback standing, unchanged; the chain terminates, so no mechanical constraint arose), `activated_on` and `rates_verified_on` 11 September 2026 (pricing page re-read: $2/$10, cache $2.50/$4/$0.20, unchanged). `sonnet-5` at `high` — `strip` removed, entry kept admitted with no profile, its v2 result and truncation history preserved verbatim. Nothing else rerun; the three remaining evaluation-only entries stay as they are.
+
+**Final strip configuration:** the strip task routes to `sonnet-5-low` (cheapest strip-eligible: $2/$10 against GPT-5.5's $5/$30), with `gpt-5-5-20260423` as the independently re-checked fallback. Every strip attempt runs under the contract of 11 September: conduct directives retained, record evidence declared and grounded, completeness guard, no retry on truncation, no blind call without an enforceable payload.
+
+**Regression, CI, tag:** recorded below on completion.

@@ -33,7 +33,8 @@ from val_policy.deliberation import STRIP_INSTRUCTION, STRIP_OUTPUT_SCHEMA
 from val_policy.routing import candidates, required_profile
 from val_providers.base import ProviderResult
 
-CANDIDATES = ("sonnet-5-medium", "sonnet-5-low", "gpt-5-6-terra", "gpt-5-6-luna")
+# `sonnet-5-low` left this set on 11 September 2026: designated for the strip.
+CANDIDATES = ("sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna")
 
 
 def strip_request(
