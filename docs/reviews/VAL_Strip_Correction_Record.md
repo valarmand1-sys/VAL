@@ -43,4 +43,5 @@ Unchanged for the strip: `sonnet-5` (effort `high`) with `gpt-5-5-20260423` as d
 
 ## 5. CI and commit
 
-Recorded in the evidence index §41 and below on push.
+- `e2fa535` — the implementation, tests, registry, evidence and documents above. CI run 34549263390 was **red on one job**: `apps/api/tests/test_service.py::test_a_contaminated_position_is_never_presented_as_independent`, which pinned the pre-ruling presentation of a contaminated blind row; the API suite had not been in the local run. No service restart on the red run.
+- The follow-up commit corrects that test to the ruling (an inseparable strip → answered turn, no blind position, no deliberation, no `blind_positions` row in the conversation detail; 34 API tests, 80 infrastructure tests pass locally). Its hash and CI run are recorded in the evidence index §41 once green; the service is restarted only then.

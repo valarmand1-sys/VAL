@@ -342,7 +342,11 @@ def test_a_pending_outcome_is_pending_everywhere(store: Engine) -> None:
     assert detail["deliberations"] == []
 
 
-def test_a_contaminated_position_is_never_presented_as_independent(store: Engine) -> None:
+def test_an_inseparable_preference_shows_no_position_at_all(store: Engine) -> None:
+    """Ruling, 10 September 2026: a strip that cannot establish an enforceable
+    blind payload makes no blind call and writes no row, so the surface shows
+    no position — not a contaminated one, none. Invariant 29: nothing is
+    displayed that the authoritative records do not support."""
     api = client(
         store,
         ScriptedAdapter(
@@ -359,23 +363,21 @@ def test_a_contaminated_position_is_never_presented_as_independent(store: Engine
                         }
                     )
                 ),
-                blind_says("It should stay as one sequence."),
-                reconciled(
-                    "It stays as one sequence, my lord.",
-                    "agreed_from_start",
-                    prior="It should stay as one sequence.",
-                ),
+                ok("It stays as one sequence, my lord."),
             ]
         ),
     )
     outcome = a_turn(api, MIXED)
 
-    blind = outcome["glimpse"]["blind"]
-    assert blind["ordering"] == "contaminated"
-    assert blind["independently_formed"] is False
-    deliberation = outcome["glimpse"]["deliberation"]
-    assert deliberation["ordering"] == "contaminated"
-    assert deliberation["independently_formed"] is False
+    assert outcome["kind"] == "answered"
+    assert outcome["glimpse"]["captured_as"] == "consequential"
+    assert outcome["glimpse"]["blind"] is None, "no blind position was formed"
+    assert outcome["glimpse"]["deliberation"] is None, "no outcome is fabricated"
+    assert outcome["val_message"]["content"] == "It stays as one sequence, my lord."
+
+    detail = api.get(f"/conversations/{outcome['conversation']['id']}").json()
+    assert detail["blind_positions"] == []
+    assert detail["deliberations"] == []
 
 
 def test_an_unanswered_turn_carries_no_val_message(store: Engine) -> None:
