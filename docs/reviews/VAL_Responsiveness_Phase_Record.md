@@ -32,9 +32,9 @@ Two live turns through `POST /turns/stream` from a byte-granular Python client o
 | Streamed text equals settled text | yes | yes |
 
 Which of the three governing figures each vantage supplies:
-- **Time-to-first-token: produced.** 527 ms on the warm turn, 3,653 ms on the turn that paid the persona cache write (Opus 5 with a 6,000-token prefix to cache).
-- **Time-to-first-generated-text-visible-in-the-native-UI: NOT produced by me.** The desktop now measures its own first-paint moment and displays it, but that is a script's view of the frame after render, in whichever window runs it; the governing figure is what Lord Armand sees in the native window, and it remains **OPEN** (§6).
-- **Total completion: produced at the provider (gateway latency), at the service (`api_total_ms`) and at the client (`client_total_ms`)**, kept distinct above; the user-visible completion is likewise his to observe.
+- **Time-to-first-token — produced.** 527 ms on the warm turn, 3,653 ms on the turn that paid the persona cache write (Opus 5 with a 6,000-token prefix to cache).
+- **Time-to-first-generated-text-visible-in-the-native-UI — NOT produced by me.** The desktop now measures its own first-paint moment and displays it, but that is a script's view of the frame after render, in whichever window runs it; the governing figure is what Lord Armand sees in the native window, and it remains **OPEN** (§6).
+- **Total completion — produced at the provider (gateway latency), at the service (`api_total_ms`) and at the client (`client_total_ms`)**, kept distinct above; the user-visible completion is likewise his to observe.
 
 **What the arithmetic says about the target.** On a warm turn the first delta reached the client 2.25 s after the request was sent: 1.67 s of serial classification, 0.53 s of provider time to first token, and about 50 ms of everything else (service, loopback, framing). Streaming has removed the wait for full generation (previously the whole 1.4–3 s partner call, or 8–22 s on the longer turns of the morning), but the approximately 1–2 s target for Val's first words cannot be met on ordinary turns while a 1.2–1.9 s classification call runs serially before the partner call — even an instantaneous first token would land at the top of the window. The first turn after an idle hour additionally pays the provider's cache write: 3.65 s to first token.
 
