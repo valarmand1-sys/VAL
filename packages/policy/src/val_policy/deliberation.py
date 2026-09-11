@@ -22,7 +22,7 @@ they are unambiguous; the inclusion test can therefore afford to be generous.
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -1059,3 +1059,79 @@ def _json_object(text: str) -> dict[str, object] | None:
     if not isinstance(parsed, dict):
         return None
     return parsed
+
+
+# =============================================================================
+# Val Core Phase 1 — streaming the response stage through the core's filter
+# =============================================================================
+
+
+class ReconciliationStream:
+    """Forward Val's prose as it streams; withhold the typed verdict block.
+
+    Ruling, 11 September 2026: once the final response stage begins, its
+    output may stream through Val Core — and the reconciliation verdict is
+    machinery output (`split_reconciled`), never presentation. This filter is
+    pure text policy: everything before the verdict marker is forwarded in
+    order as it arrives; from the marker on, nothing is. Because the marker
+    can arrive split across deltas, the longest suffix of what has been seen
+    that could still be the start of the marker is held back until the next
+    delta settles it, and released by `close()` if the reply ends without a
+    marker.
+
+    Known limit, stated: `split_reconciled` takes the prose to be everything
+    before the *last* marker line, so a reply whose prose merely mentions the
+    marker and then carries a real verdict would stream up to the mention and
+    persist through to the last marker. The persisted message governs; the
+    stream is presentation only.
+    """
+
+    def __init__(self, sink: Callable[[str], None]) -> None:
+        self._sink = sink
+        self._pending = ""
+        self._withholding = False
+
+    def feed(self, delta: str) -> None:
+        """Take one delta; forward whatever is now known to be prose."""
+        if self._withholding or not delta:
+            return
+        buffer = self._pending + delta
+        at = buffer.find(RECONCILIATION_VERDICT_MARKER)
+        if at != -1:
+            # The whitespace that separates prose from the verdict block is
+            # the block's, not the prose's — `split_reconciled` trims it too.
+            self._emit(buffer[:at].rstrip())
+            self._pending = ""
+            self._withholding = True
+            return
+        hold = _hold_length(buffer)
+        self._emit(buffer[: len(buffer) - hold])
+        self._pending = buffer[len(buffer) - hold :]
+
+    def close(self) -> None:
+        """The reply has ended: release anything held back for a marker that never came."""
+        if not self._withholding and self._pending:
+            self._emit(self._pending)
+        self._pending = ""
+
+    def _emit(self, text_value: str) -> None:
+        if text_value:
+            self._sink(text_value)
+
+
+def _hold_length(buffer: str) -> int:
+    """How many trailing characters of `buffer` must wait for the next delta.
+
+    Trailing whitespace is held, because it may be the separator before a
+    verdict block that has not arrived yet; and after it, the longest suffix
+    that could still begin the marker. Both are released by the next delta or
+    by `close()`, so nothing is lost — only deferred by one delta.
+    """
+    stripped = buffer.rstrip()
+    longest = min(len(stripped), len(RECONCILIATION_VERDICT_MARKER) - 1)
+    for size in range(longest, 0, -1):
+        if RECONCILIATION_VERDICT_MARKER.startswith(stripped[-size:]):
+            # The possible marker prefix, and the whitespace that separates
+            # it from the prose — both would be the block's if it is one.
+            return len(buffer) - len(stripped[:-size].rstrip())
+    return len(buffer) - len(stripped)

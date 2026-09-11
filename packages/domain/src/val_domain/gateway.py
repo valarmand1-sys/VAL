@@ -696,3 +696,10 @@ class GatewayResponse(BaseModel):
     #: it without a second query that might not find the same row. None only
     #: when the recorder declined to return an id (test fakes).
     model_call_id: UUID | None = None
+    #: Val Core Phase 1 (11 September 2026): milliseconds from the call's start
+    #: to the first generated-text delta, when the call was streamed and the
+    #: provider produced any text. None for a completed (non-streamed) call and
+    #: for a stream that produced no text. Time-to-first-token as observed at
+    #: the gateway — not yet what a user sees; that figure is measured at the
+    #: interface, separately, once streaming reaches it.
+    first_output_ms: int | None = None

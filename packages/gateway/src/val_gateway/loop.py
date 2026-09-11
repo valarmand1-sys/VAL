@@ -83,6 +83,7 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.project import AmbiguousProject, ExplicitNoProject, ProjectCandidate, ProjectScope
+from val_domain.provider import DeltaSink
 from val_gateway import conversations
 from val_gateway.context import (
     PriorRecordState,
@@ -198,6 +199,7 @@ def send(
     classification: Classification = Classification.PROTECTED,
     recall_limit: int = DEFAULT_LIMIT,
     max_output_tokens: int = 4096,
+    on_delta: DeltaSink | None = None,
 ) -> TurnOutcome:
     """Say one thing to Val, in a conversation that outlives this process.
 
@@ -205,6 +207,12 @@ def send(
     one. Continuing takes its scope from the stored row — `signals` and `session`
     are not consulted, because the conversation's own record is the authority on
     what it is about (WP-0.7 §18). Starting one resolves scope the WP-0.6 way.
+
+    `on_delta` (Val Core Phase 1, 11 September 2026) receives Val's generated
+    text as it is produced, through the gateway, when the route can stream.
+    Presentation only: the turn is settled from the completed response exactly
+    as without it — a truncated reply is still not spoken, and the persisted
+    message is the settled text, never the sum of the deltas.
     """
     opened = open_turn(
         engine,
@@ -240,6 +248,7 @@ def send(
                 conversation_id=opened.conversation.id, message_id=opened.user_message.id
             ),
             max_output_tokens=max_output_tokens,
+            on_delta=on_delta,
         )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)

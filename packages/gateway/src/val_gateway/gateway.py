@@ -74,6 +74,13 @@ from val_domain.project import (
     ProjectAttribution,
     ProjectScope,
 )
+from val_domain.provider import (
+    DeltaSink,
+    ProviderAdapter,
+    ProviderResult,
+    TextDelta,
+    supports_streaming,
+)
 from val_domain.registry import active, by_id, fallback_for, stale_rates
 from val_gateway.context import assemble
 from val_gateway.ledger import BudgetLedger, Refusal, Reservation
@@ -96,7 +103,6 @@ from val_policy.routing import (
     satisfies_profile,
 )
 from val_policy.tokens import estimate_tokens
-from val_providers.base import ProviderAdapter
 
 _LOGGER = logging.getLogger("val.gateway")
 
@@ -332,8 +338,17 @@ class Gateway:
         classification: Classification = Classification.PROTECTED,
         max_output_tokens: int = 4096,
         configuration: ModelConfig | None = None,
+        on_delta: DeltaSink | None = None,
     ) -> GatewayResponse:
         """Talk to Val. The persona is loaded, assembled whole, and attributed.
+
+        `on_delta` (Val Core Phase 1, 11 September 2026) is a sink owned by the
+        caller inside Val Core — the loop or the deliberation orchestrator —
+        that receives Val's generated text as the provider produces it, when
+        the route's adapter can stream. It is presentation only: the response
+        this method returns is settled, recorded and governed exactly as
+        without it, and nothing outside the core is ever handed the stream
+        directly.
 
         The one path an application uses for ordinary conversation, and the only
         one that guarantees the persona is present. **The persona is loaded per
@@ -377,7 +392,7 @@ class Gateway:
             max_output_tokens=max_output_tokens,
         )
         if configuration is None:
-            return self._execute(request)
+            return self._execute(request, on_delta=on_delta)
 
         # The pinned conversational path — WP-0.9's same-configuration rule
         # (ruling, 19 August 2026). Still `converse`: the persona was loaded
@@ -392,9 +407,11 @@ class Gateway:
         known = self._verify_named_configuration(
             configuration, request.classification, request.task_type
         )
-        return self._attempt(request, known, content_parts(request))
+        return self._attempt(request, known, content_parts(request), on_delta=on_delta)
 
-    def complete(self, request: GatewayRequest) -> GatewayResponse:
+    def complete(
+        self, request: GatewayRequest, *, on_delta: DeltaSink | None = None
+    ) -> GatewayResponse:
         """Route one piece of non-conversation model work, or fail truthfully.
 
         The caller names no provider and no model. It names what the content is
@@ -410,9 +427,11 @@ class Gateway:
         that claims to be Val.
         """
         self._refuse_masquerade(request)
-        return self._execute(request)
+        return self._execute(request, on_delta=on_delta)
 
-    def _execute(self, request: GatewayRequest) -> GatewayResponse:
+    def _execute(
+        self, request: GatewayRequest, *, on_delta: DeltaSink | None = None
+    ) -> GatewayResponse:
         """The one execution body behind both entrances.
 
         Private on purpose: `converse` builds conversation requests and comes
@@ -462,7 +481,7 @@ class Gateway:
         attempted: list[UUID] = []
         for config in order:
             try:
-                return self._attempt(request, config, parts)
+                return self._attempt(request, config, parts, on_delta=on_delta)
             except GatewayError as error:
                 last = error
                 attempted.extend(error.model_call_ids)
@@ -482,7 +501,11 @@ class Gateway:
         raise GatewayError(GatewayErrorKind.NO_ELIGIBLE_ROUTE, "no route was attempted")
 
     def complete_with_configuration(
-        self, request: GatewayRequest, config: ModelConfig
+        self,
+        request: GatewayRequest,
+        config: ModelConfig,
+        *,
+        on_delta: DeltaSink | None = None,
     ) -> GatewayResponse:
         """Run one call on a named configuration. Deliberate, not a bypass.
 
@@ -503,7 +526,7 @@ class Gateway:
         self._refuse_unverified_persona(request)
 
         known = self._verify_named_configuration(config, request.classification, request.task_type)
-        return self._attempt(request, known, content_parts(request))
+        return self._attempt(request, known, content_parts(request), on_delta=on_delta)
 
     def evaluate_with_configuration(
         self, request: GatewayRequest, config: ModelConfig
@@ -617,7 +640,12 @@ class Gateway:
     # --- one attempt on one configuration ------------------------------------
 
     def _attempt(
-        self, request: GatewayRequest, config: ModelConfig, parts: tuple[str, ...]
+        self,
+        request: GatewayRequest,
+        config: ModelConfig,
+        parts: tuple[str, ...],
+        *,
+        on_delta: DeltaSink | None = None,
     ) -> GatewayResponse:
         """Reserve, call, settle. Every exit leaves the reservation resolved."""
         refusal = refusal_for(request.classification, config)
@@ -659,7 +687,7 @@ class Gateway:
                 ceiling_message(claim.committed_usd, claim.max_cost_usd),
             )
 
-        return self._call_and_settle(request, config, adapter, claim, cache_ttl)
+        return self._call_and_settle(request, config, adapter, claim, cache_ttl, on_delta)
 
     def _cache_ttl_for(self, config: ModelConfig, request: GatewayRequest) -> CacheTtl | None:
         """Whether this call asks the provider to cache its stable prefix, and for how long.
@@ -689,18 +717,35 @@ class Gateway:
         adapter: ProviderAdapter,
         claim: Reservation,
         cache_ttl: CacheTtl | None = None,
+        on_delta: DeltaSink | None = None,
     ) -> GatewayResponse:
-        """Contact the provider with a reservation held, and always resolve it."""
+        """Contact the provider with a reservation held, and always resolve it.
+
+        Val Core Phase 1 (11 September 2026): when a sink is given and the
+        adapter declares streaming, the call runs as a stream — each text
+        delta is forwarded to the sink as it arrives, the moment of the first
+        delta is measured (`first_output_ms`), and the stream's terminal
+        `ProviderResult` is settled by exactly the code that settles a
+        completed call. Nothing downstream can tell the two apart except by
+        that one figure. A stream that ends without a terminal result is a
+        provider failure, settled as unknown like any other.
+        """
         started = time.monotonic()
+        first_output_ms: int | None = None
         try:
-            result = adapter.complete(
-                config,
-                request.messages,
-                request.system,
-                request.max_output_tokens,
-                output_schema=request.output_schema,
-                cache_ttl=cache_ttl,
-            )
+            if on_delta is not None and supports_streaming(adapter):
+                result, first_output_ms = self._stream(
+                    adapter, config, request, cache_ttl, on_delta, started
+                )
+            else:
+                result = adapter.complete(
+                    config,
+                    request.messages,
+                    request.system,
+                    request.max_output_tokens,
+                    output_schema=request.output_schema,
+                    cache_ttl=cache_ttl,
+                )
         except GatewayError as error:
             call_id = self._settle_unknown(request, config, claim, error, self._elapsed(started))
             # A fresh error naming exactly this attempt's call, never a
@@ -846,6 +891,55 @@ class Gateway:
             model_call_id=call_id,
             stop_reason=result.stop_reason,
             stop_details=result.stop_details,
+            first_output_ms=first_output_ms,
+        )
+
+    def _stream(
+        self,
+        adapter: ProviderAdapter,
+        config: ModelConfig,
+        request: GatewayRequest,
+        cache_ttl: CacheTtl | None,
+        on_delta: DeltaSink,
+        started: float,
+    ) -> tuple[ProviderResult, int | None]:
+        """Consume one streamed call, forwarding text deltas; return the terminal result.
+
+        The gateway is the only consumer of the adapter's events: it forwards
+        text to the Val Core-owned sink and keeps the terminal result for
+        settlement. The sink is called with generated text only, in order. If
+        the sink raises, the exception propagates as the caller's own failure
+        after the provider stream is closed — it is not a provider error and is
+        not normalized into one.
+        """
+        stream = adapter.stream(  # type: ignore[attr-defined]
+            config,
+            request.messages,
+            request.system,
+            request.max_output_tokens,
+            output_schema=request.output_schema,
+            cache_ttl=cache_ttl,
+        )
+        first_output_ms: int | None = None
+        for event in stream:
+            if isinstance(event, TextDelta):
+                if event.text:
+                    if first_output_ms is None:
+                        first_output_ms = self._elapsed(started)
+                    on_delta(event.text)
+                continue
+            if isinstance(event, ProviderResult):
+                return event, first_output_ms
+            raise GatewayError(
+                GatewayErrorKind.PROVIDER_ERROR,
+                f"{adapter.name}: the stream yielded an event of type "
+                f"{type(event).__name__}, which the provider-neutral contract does not "
+                "define; the call is treated as failed and settled as unknown",
+            )
+        raise GatewayError(
+            GatewayErrorKind.PROVIDER_ERROR,
+            f"{adapter.name}: the stream ended without a terminal result, so the call's "
+            "outcome, usage and cost are unknown; nothing from it is handed onward",
         )
 
     def _settle_unknown(

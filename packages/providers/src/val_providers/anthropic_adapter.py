@@ -27,11 +27,20 @@ would be priced and recorded as a known $0 (closure pass, 18 August 2026).
 The registry's `reasoning_effort` is carried on the request via the SDK's
 `output_config={"effort": ...}` (anthropic 0.122.0 type surface, matching the
 `effort` parameter in Anthropic's current docs). `NOT_APPLICABLE` sends nothing.
+
+## Two calling modes, one translation — Val Core Phase 1, 11 September 2026
+
+`complete` and `stream` build the identical SDK request (`_request`) and map
+the identical final message (`_result`). `stream` uses the SDK's
+`messages.stream` and yields the provider-neutral `TextDelta` for each text
+delta the SDK reports, then the final message mapped exactly as `complete`
+would map it — so the gateway settles both modes with one code path and the
+only observable difference is that text was available earlier.
 """
 
 import time
-from collections.abc import Mapping
-from typing import Literal
+from collections.abc import Iterator, Mapping
+from typing import Any, Literal
 
 import anthropic
 from anthropic.types import JSONOutputFormatParam, OutputConfigParam
@@ -45,7 +54,8 @@ from val_domain.gateway import (
     ReasoningEffort,
     TerminalState,
 )
-from val_providers.base import ProviderResult, normalize
+from val_domain.provider import ProviderEvent, ProviderResult, TextDelta
+from val_providers.base import normalize
 
 #: The provider-neutral levels this house configures, in the SDK's own literal
 #: vocabulary. An explicit mapping rather than `.value` so a registry level the
@@ -70,7 +80,7 @@ _STOP_REASONS: dict[str, TerminalState] = {
 
 
 class AnthropicAdapter:
-    """Anthropic, speaking the normalized contract."""
+    """Anthropic, speaking the normalized contract — completing or streaming."""
 
     name = "anthropic"
 
@@ -87,6 +97,57 @@ class AnthropicAdapter:
         cache_ttl: CacheTtl | None = None,
     ) -> ProviderResult:
         """Run one completion, or raise the normalized error."""
+        kwargs = self._request(
+            config, messages, system, max_output_tokens, output_schema, cache_ttl
+        )
+        try:
+            response = self._client.messages.create(**kwargs)
+        except Exception as error:
+            raise normalize(error, self.name) from error
+        return self._result(response, cache_ttl)
+
+    def stream(
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int,
+        output_schema: Mapping[str, object] | None = None,
+        cache_ttl: CacheTtl | None = None,
+    ) -> Iterator[ProviderEvent]:
+        """The same call as `complete`, answered as text deltas then the final result.
+
+        The SDK's `text_stream` yields only text-block deltas — never thinking
+        deltas, never tool traffic — which is exactly what `TextDelta` means.
+        The final message is the SDK's accumulated message, carrying the same
+        `stop_reason` and `usage` the non-streamed response carries, mapped by
+        the same function. A failure mid-stream is normalized like any other;
+        whatever deltas were already yielded are the gateway's to have
+        forwarded, and the gateway settles the call as unknown.
+        """
+        kwargs = self._request(
+            config, messages, system, max_output_tokens, output_schema, cache_ttl
+        )
+        try:
+            with self._client.messages.stream(**kwargs) as stream:
+                for text in stream.text_stream:
+                    if text:
+                        yield TextDelta(text)
+                final = stream.get_final_message()
+        except Exception as error:
+            raise normalize(error, self.name) from error
+        yield self._result(final, cache_ttl)
+
+    def _request(
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int,
+        output_schema: Mapping[str, object] | None,
+        cache_ttl: CacheTtl | None,
+    ) -> dict[str, Any]:
+        """The SDK request both calling modes send — built once, identically."""
         # Ruled 10 September 2026: a message flagged as the cache breakpoint —
         # the last retained history message — is sent as a text block carrying
         # `cache_control`, so the persona-plus-history prefix is cached and an
@@ -161,17 +222,18 @@ class AnthropicAdapter:
             if cache_ttl is CacheTtl.ONE_HOUR:
                 cache_control["ttl"] = "1h"
             system_param = [{"type": "text", "text": system, "cache_control": cache_control}]
-        try:
-            response = self._client.messages.create(
-                model=config.model_identifier,
-                max_tokens=max_output_tokens,
-                messages=turns,
-                system=system_param,
-                output_config=output_config if output_config else anthropic.omit,
-            )
-        except Exception as error:
-            raise normalize(error, self.name) from error
+        return {
+            "model": config.model_identifier,
+            "max_tokens": max_output_tokens,
+            "messages": turns,
+            "system": system_param,
+            "output_config": output_config if output_config else anthropic.omit,
+        }
 
+    def _result(
+        self, response: anthropic.types.Message, cache_ttl: CacheTtl | None
+    ) -> ProviderResult:
+        """The provider-neutral result from a final message — both modes, one mapping."""
         text = "".join(
             block.text for block in response.content if isinstance(block, anthropic.types.TextBlock)
         )

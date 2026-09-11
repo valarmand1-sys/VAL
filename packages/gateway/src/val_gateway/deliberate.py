@@ -106,6 +106,7 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
+from val_domain.provider import DeltaSink
 from val_gateway import conversations
 from val_gateway.deliberation import (
     record_blind_position,
@@ -136,6 +137,7 @@ from val_policy.deliberation import (
     STRIP_OUTPUT_SCHEMA,
     BlindOutcome,
     ClassifierVerdict,
+    ReconciliationStream,
     RemovedSpan,
     StripOutcome,
     StripValidation,
@@ -265,6 +267,7 @@ def send(
     classification: Classification = Classification.PROTECTED,
     recall_limit: int = DEFAULT_LIMIT,
     max_output_tokens: int = 4096,
+    on_delta: DeltaSink | None = None,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -317,7 +320,7 @@ def send(
         # A valid verdict of not-consequential, or a named hard exclusion: an
         # ordinary WP-0.7 turn from here on.
         outcome = _ordinary(
-            engine, gateway, opened, classification, recall_limit, max_output_tokens
+            engine, gateway, opened, classification, recall_limit, max_output_tokens, on_delta
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -375,7 +378,7 @@ def send(
                 "; ".join(validation.reasons) or validation.state,
             )
         outcome = _ordinary(
-            engine, gateway, opened, classification, recall_limit, max_output_tokens
+            engine, gateway, opened, classification, recall_limit, max_output_tokens, on_delta
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -525,6 +528,12 @@ def send(
             blind_outcome, contaminated=ordering is Ordering.CONTAMINATED
         ),
     )
+    # Val Core Phase 1 (11 September 2026): the response stage may stream, but
+    # only through the core's own filter — the typed reconciliation verdict is
+    # machinery output and is withheld from presentation; her prose is what
+    # streams. The blind call above never receives a sink: it is evidence, not
+    # presentation, and nothing of it is shown before it is recorded.
+    withholding = ReconciliationStream(on_delta) if on_delta is not None else None
     try:
         response = gateway.converse(
             (*messages, envelope),
@@ -535,7 +544,10 @@ def send(
             ),
             max_output_tokens=max_output_tokens,
             configuration=config,
+            on_delta=withholding.feed if withholding is not None else None,
         )
+        if withholding is not None:
+            withholding.close()
     except GatewayError as failure:
         # The evidence row stays: the position was formed and recorded, and
         # the exchange going unanswered does not unhappen it.
@@ -603,6 +615,7 @@ def _ordinary(
     classification: Classification,
     recall_limit: int,
     max_output_tokens: int,
+    on_delta: DeltaSink | None = None,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """The WP-0.7 turn, from an already-opened state."""
     messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
@@ -615,6 +628,7 @@ def _ordinary(
                 conversation_id=opened.conversation.id, message_id=opened.user_message.id
             ),
             max_output_tokens=max_output_tokens,
+            on_delta=on_delta,
         )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
