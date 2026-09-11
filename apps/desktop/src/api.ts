@@ -4,6 +4,8 @@
 // The desktop shell reaches the service over HTTP and imports no component
 // (components.toml).
 
+import { EventFrameParser } from "./sse";
+
 export const API_BASE = "http://127.0.0.1:8756";
 
 export interface ProjectView {
@@ -349,12 +351,16 @@ export const api = {
     return request<ConversationView[]>(`/conversations${suffix}`);
   },
   conversation: (id: string) => request<ConversationDetail>(`/conversations/${id}`),
-  turn: (body: {
-    content: string;
-    conversation_id?: string;
-    project?: string;
-    no_project?: boolean;
-  }) => request<TurnResponse>("/turns", { method: "POST", body: JSON.stringify(body) }),
+  turn: (body: TurnBody) =>
+    request<TurnResponse>("/turns", { method: "POST", body: JSON.stringify(body) }),
+  // The streamed turn — responsiveness phase, 11 September 2026. Val's text
+  // arrives as `delta` events as it is generated, every one having passed
+  // through Val Core; the final `settled` event is the identical object the
+  // plain route returns, plus timing measured at the gateway and the service.
+  // The client measures its own moments — when the first delta arrived here —
+  // and reports them beside the service's; the user-visible moment is measured
+  // by the interface after it has rendered.
+  turnStream: (body: TurnBody, handlers: StreamHandlers) => turnStream(body, handlers),
   recordEvent: (body: {
     conversation_id: string;
     message_id: string;
@@ -378,3 +384,80 @@ export const api = {
   costs: () => request<CostView>("/costs"),
   disagreement: () => request<{ last_disagreement_at: string | null }>("/signals/disagreement"),
 };
+
+export interface TurnBody {
+  content: string;
+  conversation_id?: string;
+  project?: string;
+  no_project?: boolean;
+}
+
+export interface TurnTiming {
+  gateway_first_output_ms: number | null;
+  gateway_latency_ms: number | null;
+  api_first_delta_ms: number | null;
+  api_total_ms: number;
+}
+
+export type TurnSettled = TurnResponse & { timing: TurnTiming };
+
+export interface StreamHandlers {
+  onDelta: (text: string) => void;
+}
+
+export interface StreamResult {
+  settled: TurnSettled;
+  // Client-side moments, milliseconds from the request being sent: the first
+  // delta's arrival and the settled event's arrival. Measured here, not at the
+  // service and not on screen.
+  client_first_delta_ms: number | null;
+  client_total_ms: number;
+}
+
+export class StreamRefused extends Error {
+  constructor(public readonly detail: string) {
+    super(detail);
+  }
+}
+
+async function turnStream(body: TurnBody, handlers: StreamHandlers): Promise<StreamResult> {
+  const started = performance.now();
+  let response: Response;
+  try {
+    response = await fetch(
+      `${API_BASE}/turns/stream`,
+      initFor({ method: "POST", body: JSON.stringify(body) }),
+    );
+  } catch (caught) {
+    throw new NoResponseError(caught);
+  }
+  if (!response.ok || response.body === null) {
+    const detail: unknown = await response.json().catch(() => response.statusText);
+    throw new ApiRefusal(response.status, detail);
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  const parser = new EventFrameParser();
+  let firstDelta: number | null = null;
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    for (const event of parser.feed(decoder.decode(value, { stream: true }))) {
+      if (event.event === "delta") {
+        if (firstDelta === null) firstDelta = performance.now() - started;
+        handlers.onDelta((event.data as { text: string }).text);
+      } else if (event.event === "settled") {
+        return {
+          settled: event.data as TurnSettled,
+          client_first_delta_ms: firstDelta === null ? null : Math.round(firstDelta),
+          client_total_ms: Math.round(performance.now() - started),
+        };
+      } else if (event.event === "refused") {
+        throw new StreamRefused((event.data as { detail: string }).detail);
+      } else if (event.event === "error") {
+        throw new Error((event.data as { detail: string }).detail);
+      }
+    }
+  }
+  throw new Error("the stream ended before the turn settled");
+}

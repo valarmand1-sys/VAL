@@ -27,6 +27,7 @@ from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from sqlalchemy import Engine
 
 from val_api.contracts import (
@@ -59,6 +60,7 @@ from val_api.contracts import (
     TurnTruncated,
     TurnUnanswered,
 )
+from val_api.streaming import turn_event_stream
 from val_domain.deliberation import ClassifiedBy
 from val_domain.gateway import GatewayError
 from val_gateway import conversations
@@ -72,6 +74,7 @@ from val_gateway.classification_review import (
     review_queue,
 )
 from val_gateway.conversations import ConversationNotFoundError
+from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import (
     IncoherentDeliberationError,
@@ -226,6 +229,11 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
             # quiet (WP-0.7 §15). 403: the request was understood and refused.
             raise HTTPException(status_code=403, detail=str(refusal)) from refusal
 
+        return render_turn(outcome)
+
+    def render_turn(outcome: DeliberatedOutcome) -> TurnResponse:
+        """The plain route's response from a deliberated outcome — shared with the
+        streamed route, so the settled event is exactly what `POST /turns` returns."""
         if isinstance(outcome, ClarificationNeeded):
             return TurnClarification(
                 question=outcome.question,
@@ -269,6 +277,23 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
             user_message=MessageView.of(settled.user_message),
             val_message=MessageView.of(settled.val_message),
             glimpse=glimpse,
+        )
+
+    @app.post("/turns/stream")
+    def turn_stream(request: TurnRequest) -> StreamingResponse:
+        """The same turn as `POST /turns`, with Val's text delivered as it is produced.
+
+        Responsiveness phase, 11 September 2026. Server-sent events: `delta`
+        frames carry generated text forwarded through Val Core; the final
+        `settled` frame carries the identical object the plain route returns,
+        plus timing measured at the gateway and here. A Restricted refusal and
+        any other failure arrive as events, since the status line has already
+        been sent (`val_api.streaming`).
+        """
+        return StreamingResponse(
+            turn_event_stream(engine, gateway, request, render_turn),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )
 
     # --- recording: the two in-flow writers ------------------------------------

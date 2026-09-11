@@ -27,8 +27,9 @@ import type {
   ReviewConclusion,
   ReviewProgressView,
   TurnClarification,
+  TurnTiming,
 } from "./api";
-import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST } from "./api";
+import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST, StreamRefused } from "./api";
 import {
   AGREEMENT_WORDS,
   CONCLUSION_WORDS,
@@ -39,18 +40,48 @@ import {
   progressLine,
   resolutionOf,
 } from "./presentation";
+import { enterProject, initialEntry, newChatEntry, newConversationLine, turnScopeFields } from "./scope";
+import type { Entry } from "./scope";
 
-type Scope = { kind: "project"; project: ProjectView } | { kind: "none" } | { kind: "all" };
+// The sidebar's listing filter: everything, or one project. Ruled 11 September
+// 2026: "No project" is not a scope a person chooses — unassigned conversations
+// are simply part of everything.
+type Scope = { kind: "project"; project: ProjectView } | { kind: "all" };
+
+// One turn in flight, shown as Val's words arrive through the service — the
+// responsiveness phase, 11 September 2026. Presentation of generation in
+// progress: the settled, persisted message replaces it when the turn ends.
+interface Streaming {
+  userContent: string;
+  text: string;
+  startedAt: number;
+  firstVisibleMs: number | null;
+}
+
+// The last turn's timing, from three vantage points kept distinct: the gateway
+// (time to the first generated-text delta from the provider), this client (the
+// first delta's arrival), and the interface (the first words painted). The
+// last is the one that governs, and it is measured after the paint that
+// followed the first delta's render, not when the delta arrived.
+interface LastTiming {
+  timing: TurnTiming;
+  clientFirstDeltaMs: number | null;
+  clientTotalMs: number;
+  firstVisibleMs: number | null;
+}
 
 export function App(): React.JSX.Element {
   const [projects, setProjects] = useState<ProjectView[]>([]);
   const [scope, setScope] = useState<Scope>({ kind: "all" });
-  // Ruled 10 September 2026: a new conversation belongs to no project unless
-  // assigned deliberately. The sidebar scope filters the list; it never decides
-  // where a new conversation is created. Assignment is possible only before the
-  // first message — `conversations.project_id` is immutable once held
-  // (migration 0008), so after that the scope is fixed.
-  const [assignment, setAssignment] = useState<ProjectView | null>(null);
+  // Ruled 10 and 11 September 2026: a new conversation is unassigned unless a
+  // project was entered intentionally. Opening Val starts unassigned; New chat
+  // starts unassigned and leaves any entered project; entering a project (the
+  // sidebar) starts a conversation there. `conversations.project_id` is
+  // immutable once held (migration 0008), so a continued conversation keeps
+  // its own record's attribution regardless of what is entered here.
+  const [entry, setEntry] = useState<Entry>(initialEntry());
+  const [streaming, setStreaming] = useState<Streaming | null>(null);
+  const [lastTiming, setLastTiming] = useState<LastTiming | null>(null);
   const [conversations, setConversations] = useState<ConversationView[]>([]);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -75,8 +106,6 @@ export function App(): React.JSX.Element {
       const archived = showArchived ? { archived: true } : {};
       if (at.kind === "project") {
         setConversations(await api.conversations({ project_id: at.project.id, ...archived }));
-      } else if (at.kind === "none") {
-        setConversations(await api.conversations({ scope: "none", ...archived }));
       } else {
         setConversations(await api.conversations(archived));
       }
@@ -131,9 +160,12 @@ export function App(): React.JSX.Element {
     setClarification(null);
   }, []);
 
+  // Entering a project, or leaving to everything. Entering is the one intentional
+  // act that makes the next new conversation project-scoped.
   const chooseScope = useCallback(
     async (next: Scope) => {
       setScope(next);
+      setEntry(next.kind === "project" ? enterProject(next.project) : newChatEntry());
       setDetail(null);
       setClarification(null);
       await refreshConversations(next);
@@ -141,25 +173,58 @@ export function App(): React.JSX.Element {
     [refreshConversations],
   );
 
+  const newChat = useCallback(() => {
+    setView("conversation");
+    setDetail(null);
+    setClarification(null);
+    setScope({ kind: "all" });
+    setEntry(newChatEntry());
+    void refreshConversations({ kind: "all" });
+  }, [refreshConversations]);
+
+  // The governing moment: the first of Val's words painted. Recorded on the
+  // animation frame after the render that first showed streamed text — the
+  // nearest a script can stand to the screen; Lord Armand's own observation
+  // remains the acceptance measurement.
+  useEffect(() => {
+    if (streaming === null || streaming.firstVisibleMs !== null || streaming.text === "") return;
+    const startedAt = streaming.startedAt;
+    const frame = requestAnimationFrame(() => {
+      setStreaming((current) =>
+        current !== null && current.firstVisibleMs === null
+          ? { ...current, firstVisibleMs: Math.round(performance.now() - startedAt) }
+          : current,
+      );
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [streaming]);
+
   const send = useCallback(
     async (content: string, projectOverride?: string) => {
       if (content.trim() === "" || busy) return;
       setBusy(true);
       setNotice(null);
       setClarification(null);
+      const startedAt = performance.now();
+      setStreaming({ userContent: content, text: "", startedAt, firstVisibleMs: null });
+      let firstVisible: number | null = null;
       try {
-        const outcome = await api.turn({
-          content,
-          ...(detail !== null ? { conversation_id: detail.conversation.id } : {}),
-          ...(projectOverride !== undefined
+        const scopeFields =
+          projectOverride !== undefined
             ? { project: projectOverride }
-            : detail === null && assignment !== null
-              ? { project: assignment.name }
-              : {}),
-          ...(projectOverride === undefined && detail === null && assignment === null
-            ? { no_project: true }
-            : {}),
-        });
+            : turnScopeFields(entry, detail?.conversation ?? null);
+        const result = await api.turnStream(
+          { content, ...scopeFields },
+          {
+            onDelta: (text) =>
+              setStreaming((current) => {
+                if (current === null) return current;
+                if (current.firstVisibleMs !== null) firstVisible = current.firstVisibleMs;
+                return { ...current, text: current.text + text };
+              }),
+          },
+        );
+        const outcome = result.settled;
         if (outcome.kind === "clarification") {
           setClarification(outcome);
           setPendingContent(content);
@@ -174,16 +239,27 @@ export function App(): React.JSX.Element {
             "The reply was cut off and is shown as evidence only — it is not her message. Ask again for a full answer.",
           );
         }
+        setStreaming((current) => {
+          firstVisible = current?.firstVisibleMs ?? firstVisible;
+          return current;
+        });
+        setLastTiming({
+          timing: outcome.timing,
+          clientFirstDeltaMs: result.client_first_delta_ms,
+          clientTotalMs: result.client_total_ms,
+          firstVisibleMs: firstVisible,
+        });
         await openConversation(outcome.conversation.id);
         await refreshConversations(scope);
         await refreshSignals();
       } catch (failure) {
-        setNotice(describeFailure(failure));
+        setNotice(failure instanceof StreamRefused ? failure.detail : describeFailure(failure));
       } finally {
+        setStreaming(null);
         setBusy(false);
       }
     },
-    [busy, detail, scope, openConversation, refreshConversations, refreshSignals],
+    [busy, detail, entry, scope, openConversation, refreshConversations, refreshSignals],
   );
 
   return (
@@ -214,14 +290,6 @@ export function App(): React.JSX.Element {
                 </button>
               </li>
             ))}
-            <li>
-              <button
-                className={scope.kind === "none" ? "selected" : ""}
-                onClick={() => void chooseScope({ kind: "none" })}
-              >
-                No project
-              </button>
-            </li>
           </ul>
           <NewProjectControl
             onCreated={async (project) => {
@@ -244,16 +312,22 @@ export function App(): React.JSX.Element {
               </li>
             ))}
           </ul>
-          <button
-            className="new-conversation"
-            onClick={() => {
-              setView("conversation");
-              setDetail(null);
-              setAssignment(null);
-            }}
-          >
-            New conversation
+          <button className="new-conversation" onClick={newChat}>
+            New chat
           </button>
+          {scope.kind === "project" && (
+            <button
+              className="new-conversation"
+              onClick={() => {
+                setView("conversation");
+                setDetail(null);
+                setClarification(null);
+                setEntry(enterProject(scope.project));
+              }}
+            >
+              New conversation in {scope.project.name}
+            </button>
+          )}
           <button
             className={view === "review" ? "new-conversation selected" : "new-conversation"}
             onClick={() => setView(view === "review" ? "conversation" : "review")}
@@ -290,35 +364,19 @@ export function App(): React.JSX.Element {
 
         {view === "review" ? (
           <ReviewPanel onRefused={(message) => setNotice(message)} />
+        ) : streaming !== null ? (
+          <StreamingThread detail={detail} streaming={streaming} />
         ) : detail === null ? (
           <div className="empty">
-            <p>
-              {assignment === null
-                ? "A new conversation, unassigned. Say something to start it, or assign it to a project first."
-                : `A new conversation in ${assignment.name}.`}
-            </p>
-            <label className="assignment">
-              Project for this conversation
-              <select
-                value={assignment?.id ?? ""}
-                onChange={(event) =>
-                  setAssignment(projects.find((project) => project.id === event.target.value) ?? null)
-                }
-              >
-                <option value="">No project</option>
-                {projects
-                  .filter((project) => !project.archived)
-                  .map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <p className="hint">Assignment is fixed by the first message; a conversation cannot be moved afterwards.</p>
+            <p>{newConversationLine(entry)}</p>
           </div>
         ) : (
           <Thread detail={detail} onRecorded={() => void openConversation(detail.conversation.id)} />
+        )}
+        {lastTiming !== null && streaming === null && (
+          <p className="timing" title="first words visible: measured on the frame painted after the first delta rendered; gateway: the provider's first generated text as the gateway saw it; complete: the settled turn's arrival at this client">
+            {timingLine(lastTiming)}
+          </p>
         )}
 
         {clarification !== null && (
@@ -366,6 +424,57 @@ export function App(): React.JSX.Element {
           </span>
         </footer>
       </main>
+    </div>
+  );
+}
+
+// Words for the last turn's timing, each figure named by where it was measured.
+export function timingLine(last: LastTiming): string {
+  const parts: string[] = [];
+  parts.push(
+    last.firstVisibleMs === null
+      ? "first words visible: not measured (no streamed text)"
+      : `first words visible after ${(last.firstVisibleMs / 1000).toFixed(2)} s`,
+  );
+  if (last.timing.gateway_first_output_ms !== null) {
+    parts.push(`gateway first token ${(last.timing.gateway_first_output_ms / 1000).toFixed(2)} s`);
+  }
+  if (last.clientFirstDeltaMs !== null) {
+    parts.push(`first delta at client ${(last.clientFirstDeltaMs / 1000).toFixed(2)} s`);
+  }
+  parts.push(`complete after ${(last.clientTotalMs / 1000).toFixed(2)} s`);
+  return `Last turn — ${parts.join(" · ")}`;
+}
+
+// The thread while a turn is in flight: the prior messages, his message, and
+// Val's words as they arrive. Marked as in progress until the settled message
+// replaces it; nothing here is presented as persisted.
+function StreamingThread(props: {
+  detail: ConversationDetail | null;
+  streaming: Streaming;
+}): React.JSX.Element {
+  const { detail, streaming } = props;
+  return (
+    <div className="messages">
+      {detail !== null && <h2>{detail.conversation.title}</h2>}
+      {detail?.messages.map((message) => (
+        <div key={message.id} className={`message ${message.role}`}>
+          <div className="speaker">{message.role === "user" ? "Lord Armand" : "Val"}</div>
+          <div className="content">{message.content}</div>
+        </div>
+      ))}
+      <div className="message user">
+        <div className="speaker">Lord Armand</div>
+        <div className="content">{streaming.userContent}</div>
+      </div>
+      <div className="message val streaming" aria-live="polite">
+        <div className="speaker">Val</div>
+        {streaming.text === "" ? (
+          <div className="content pending" aria-label="Val is composing">…</div>
+        ) : (
+          <div className="content">{streaming.text}</div>
+        )}
+      </div>
     </div>
   );
 }

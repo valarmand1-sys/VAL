@@ -304,3 +304,17 @@ body {
   color: #a33;
   font-weight: 600;
 }
+
+/* The responsiveness phase, 11 September 2026: a turn in flight. */
+.message.streaming .content.pending {
+  opacity: 0.5;
+}
+.message.streaming .content {
+  border-left: 2px solid #b8a36a;
+  padding-left: 0.5rem;
+}
+.timing {
+  color: #6b6b6b;
+  font-size: 0.8rem;
+  margin: 0.25rem 1rem;
+}
