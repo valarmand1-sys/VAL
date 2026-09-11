@@ -22,6 +22,7 @@ they are unambiguous; the inclusion test can therefore afford to be generous.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -199,6 +200,37 @@ STRIP_INSTRUCTION = (
     'Mark those spans kind "attributed_prior"; mark the author\'s own '
     'preference spans kind "preference".\n'
     "\n"
+    "RETAIN conduct directives. An instruction about HOW to answer — form, "
+    'process, length, order — is not a preference between alternatives: "decide '
+    'and defend it", "give me your own recommendation first", "keep it under two '
+    'hundred words", "answer in one word", and the same directives phrased as '
+    'wants ("I want you to give me your own recommendation first", "I do not '
+    'want you to invent lore", "I want you to preserve that distinction") are '
+    "retained. Strip only material that biases WHAT the author wants concluded; "
+    "a directive about how to work does not.\n"
+    "\n"
+    "RETAIN record evidence. Val's exact earlier words, quoted as evidence of "
+    "what was said — where the task is to identify, verify, correct, explain or "
+    "discuss the utterance itself (\"You greeted me with 'good evening,' but it "
+    'is morning"; "You just called Tony \'Johnny\'. His name is Tony") — are '
+    'retained, and reported in "record_evidence" as the quoted words alone, '
+    "copied exactly, so the house can verify them against the record. This is "
+    "distinct from a prior position: Val's earlier substantive view offered as "
+    "authority for what she should conclude now (\"earlier you said Tony's "
+    'motivation does not work — do you still agree?") is an attributed prior '
+    "and is removed. Classify by attribution and function, never by "
+    "punctuation: the author's own preference inside quotation marks is still a "
+    "preference and is removed. Where one quotation carries both — a record of "
+    "what was said AND a substantive prior conclusion or its reasoning "
+    "(\"You said, 'Scene 4 should be deleted because Joni has no motivation.' "
+    'Reconsider the scene from scratch.") — the prior conclusion and its '
+    "reasoning are removed as an attributed prior; never report such a "
+    "quotation as record evidence. If what identifies the task cannot be kept "
+    "without rewriting once the conclusion is removed, say separable is false. "
+    "An attributed prior may be present with no author preference at all; then "
+    "preference_present is false, attributed_prior_present is true, and the "
+    "attributed spans are listed.\n"
+    "\n"
     "Report what you removed as a list of spans, each copied EXACTLY from the "
     "message — character for character, including punctuation — because the "
     "house rebuilds the question by deleting those spans from the original "
@@ -221,7 +253,9 @@ STRIP_INSTRUCTION = (
     '"separable": true | false, '
     '"question": "<the message minus removed spans>", '
     '"removed": [{"text": "<a removed span, verbatim>", "occurrence": 1, '
-    '"kind": "preference" | "attributed_prior"}, ...]}'
+    '"kind": "preference" | "attributed_prior"}, ...], '
+    '"record_evidence": [{"text": "<Val\'s quoted words, verbatim, retained>", '
+    '"occurrence": 1}, ...]}'
 )
 
 #: The strip's shape, provider-enforced (3 September 2026). Exposed by the
@@ -255,6 +289,21 @@ STRIP_OUTPUT_SCHEMA: dict[str, object] = {
                 "additionalProperties": False,
             },
         },
+        # Ruling, 11 September 2026: Val's quoted earlier words retained as
+        # record evidence, declared so the house can verify each against the
+        # conversation record before the residue may carry it into a blind call.
+        "record_evidence": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string"},
+                    "occurrence": {"type": "integer"},
+                },
+                "required": ["text", "occurrence"],
+                "additionalProperties": False,
+            },
+        },
     },
     "required": [
         "preference_present",
@@ -262,6 +311,7 @@ STRIP_OUTPUT_SCHEMA: dict[str, object] = {
         "separable",
         "question",
         "removed",
+        "record_evidence",
     ],
     "additionalProperties": False,
 }
@@ -290,6 +340,25 @@ class RemovedSpan:
     text: str
     occurrence: int
     kind: str = "preference"
+
+
+@dataclass(frozen=True)
+class RetainedQuote:
+    """Val's quoted earlier words the strip retained as record evidence.
+
+    Ruling, 11 September 2026 (`assistant_record_evidence`): an exact quotation
+    of what Val said, where the task is to identify, verify, correct, explain
+    or discuss the utterance itself, is retained — it is evidence from the
+    record, not a prior position offered as authority. The strip declares each
+    such quotation (the quoted words alone, verbatim, with its occurrence in
+    the current message) so the house can check, deterministically, that the
+    words are grounded in the conversation's own record of what Val said. An
+    alleged quotation that is not grounded never silently becomes trusted
+    evidence: the result is `ungrounded` and no blind payload is built from it.
+    """
+
+    text: str
+    occurrence: int
 
 
 def _collapse(text_value: str) -> str:
@@ -379,6 +448,8 @@ class StripOutcome:
     #: Ruling, 7 September 2026: the message asserted or presupposed a prior
     #: position for Val. Recorded from the strip's own declaration.
     attributed_prior_present: bool = False
+    #: Ruling, 11 September 2026: Val's quoted words retained as record evidence.
+    record_evidence: tuple[RetainedQuote, ...] = ()
 
     @property
     def removed_text(self) -> str:
@@ -404,12 +475,31 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
     separable = document.get("separable")
     question = document.get("question")
     removed = document.get("removed")
+    evidence = document.get("record_evidence")
     if not isinstance(present, bool) or not isinstance(separable, bool):
         return None
     if not isinstance(attributed, bool):
         return None
     if not isinstance(question, str) or not isinstance(removed, list):
         return None
+    if not isinstance(evidence, list):
+        return None
+    quotes: list[RetainedQuote] = []
+    for item in evidence:
+        if not isinstance(item, dict):
+            return None
+        quote_text = item.get("text")
+        quote_occurrence = item.get("occurrence")
+        if not isinstance(quote_text, str):
+            return None
+        if (
+            not isinstance(quote_occurrence, int)
+            or isinstance(quote_occurrence, bool)
+            or quote_occurrence < 1
+        ):
+            return None
+        if quote_text.strip():
+            quotes.append(RetainedQuote(text=quote_text, occurrence=quote_occurrence))
     spans: list[RemovedSpan] = []
     for item in removed:
         if not isinstance(item, dict):
@@ -435,6 +525,7 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
         question=question,
         removed=tuple(spans),
         attributed_prior_present=attributed,
+        record_evidence=tuple(quotes),
     )
 
 
@@ -452,55 +543,131 @@ def parse_strip_outcome(text: str) -> StripOutcome | None:
 # "blind" question identical to the original and recorded enforcement. This is
 # the boundary between model judgment and machine-enforced evidence.
 
-#: What a validated strip result is: one of four states, and never a fifth.
-StripState = Literal["enforceable", "not_separable", "no_preference", "invalid"]
+#: What a validated strip result is: one of these states, and never another.
+#: `truncated` and `incomplete` (ruling, 11 September 2026, the completeness
+#: guard) and `ungrounded` (same date, record evidence) are terminal: never
+#: retried, never enforceable.
+StripState = Literal[
+    "enforceable",
+    "not_separable",
+    "no_preference",
+    "invalid",
+    "truncated",
+    "incomplete",
+    "ungrounded",
+]
 
 
 @dataclass(frozen=True)
 class StripValidation:
     """The deterministic reading of a strip result against the current message.
 
-    - `enforceable`: preference present, separable, every span resolved exactly
-      at its occurrence, at least one `preference` span, an `attributed_prior`
-      span present whenever the result declares one, and the derivation
-      actually changed the message. `residue` is the blind input and `spans`
-      the accepted spans — these are the only things a blind payload may be
-      built from.
-    - `not_separable`: a valid result saying the preference cannot be removed
-      (contaminated path; **never retried** in search of separability).
-    - `no_preference`: a valid result saying there is nothing to remove.
+    - `enforceable`: separable, every span resolved exactly at its occurrence,
+      at least one `preference` span when a preference is declared, an
+      `attributed_prior` span whenever an attributed prior is declared (and at
+      least one when that is all there is — ruling, 11 September 2026: an
+      attributed prior with no author preference is stripped by the same
+      machinery), every declared record-evidence quotation found in the
+      message, overlapping no removed span, and grounded in the record, and
+      the derivation actually changed the message. `residue` is the blind
+      input and `spans` the accepted spans — these are the only things a
+      blind payload may be built from.
+    - `not_separable`: a valid result saying the material cannot be removed
+      without rewriting (**never retried** in search of separability).
+    - `no_preference`: a valid result saying there is nothing to remove; any
+      declared record evidence is still checked, since an ordinary turn may
+      still not carry an unverified attribution as if verified.
     - `invalid`: the result contradicts itself or the message (`reasons` says
       how). Eligible for exactly one bounded retry; never enforceable.
+    - `truncated` / `incomplete`: the reply did not complete (ruling, 11
+      September 2026, the completeness guard). A fragment establishes no
+      separation; never retried identically, never enforceable.
+    - `ungrounded`: a declared record-evidence quotation is not found in the
+      conversation's record of Val's own words. An alleged quotation does not
+      silently become trusted evidence; final, never enforceable.
     """
 
     state: StripState
     residue: str | None
     spans: tuple[RemovedSpan, ...]
     reasons: tuple[str, ...] = ()
+    #: The record-evidence quotations accepted (found, non-overlapping,
+    #: grounded) — what the residue legitimately carries of Val's own words.
+    evidence: tuple[RetainedQuote, ...] = ()
 
     @property
     def enforceable(self) -> bool:
         return self.state == "enforceable"
 
 
-def validate_strip(original: str, outcome: StripOutcome | None) -> StripValidation:
-    """Apply the invariants. Pure; no semantic judgment anywhere."""
+def _locate(original: str, text_value: str, occurrence: int) -> tuple[int, int] | None:
+    """Where the `occurrence`-th collapsed occurrence of `text_value` sits, or None."""
+    needle = _collapse(text_value)
+    if not needle or occurrence < 1:
+        return None
+    found = _occurrences(_collapse(original), needle)
+    if occurrence > len(found):
+        return None
+    return found[occurrence - 1]
+
+
+def is_grounded(quote: str, record: Sequence[str]) -> bool:
+    """Whether Val's record contains these exact words, whitespace and case aside.
+
+    Deterministic and literal: the collapsed, case-folded quotation, minus any
+    terminal punctuation or quotation marks, must be a substring of the
+    collapsed, case-folded content of at least one of Val's own messages.
+    Letter case is folded because a quotation lifted from mid-sentence
+    conventionally capitalises its first word, and terminal punctuation is
+    dropped because a quotation conventionally closes with its own stop where
+    the original sentence ran on (the recall gate treats quoted spans the same
+    way). Wording and interior punctuation must match exactly. No fuzzy
+    matching — a near-quotation is not a quotation.
+    """
+    needle = _collapse(quote).casefold().strip(_QUOTE_TRIM)
+    return bool(needle) and any(needle in _collapse(said).casefold() for said in record)
+
+
+#: Characters a quotation may carry at either end that are not Val's words:
+#: terminal punctuation and quotation marks, straight and typographic.
+_QUOTE_TRIM = " .,;:!?\"'“”‘’"  # noqa: RUF001 - the typographic marks are the point
+
+
+def validate_strip(
+    original: str,
+    outcome: StripOutcome | None,
+    *,
+    record: Sequence[str] = (),
+    complete: bool = True,
+    terminal: str = "complete",
+) -> StripValidation:
+    """Apply the invariants. Pure; no semantic judgment anywhere.
+
+    `record` is the conversation's own record of what Val said (her messages'
+    content), against which declared record evidence is grounded. `complete`
+    is the completeness guard: a reply whose provider terminal state is not
+    complete is a fragment and fails closed here, before parsing is trusted.
+    """
+    if not complete:
+        state: StripState = "truncated" if terminal == "truncated" else "incomplete"
+        return StripValidation(
+            state,
+            None,
+            (),
+            (f"strip reply ended {terminal}; a fragment establishes no separation",),
+        )
     if outcome is None:
         return StripValidation("invalid", None, (), ("unparseable structured result",))
     reasons: list[str] = []
     preference_spans = tuple(s for s in outcome.removed if s.kind == "preference")
     attributed_spans = tuple(s for s in outcome.removed if s.kind == "attributed_prior")
+    removal_claimed = outcome.preference_present or outcome.attributed_prior_present
 
-    if not outcome.preference_present:
+    if not removal_claimed:
         if outcome.removed:
-            reasons.append("preference_present=false yet the result names removal spans")
-        if outcome.attributed_prior_present and outcome.separable and not attributed_spans:
-            reasons.append(
-                "attributed_prior_present=true and separable=true without an attributed_prior span"
-            )
-        if reasons:
+            reasons.append("nothing declared present yet the result names removal spans")
             return StripValidation("invalid", None, (), tuple(reasons))
-        return StripValidation("no_preference", _collapse(original), ())
+        return _with_evidence(original, outcome, record, "no_preference", _collapse(original), ())
 
     if not outcome.separable:
         if outcome.removed:
@@ -508,11 +675,18 @@ def validate_strip(original: str, outcome: StripOutcome | None) -> StripValidati
             return StripValidation("invalid", None, (), tuple(reasons))
         return StripValidation("not_separable", None, ())
 
-    # preference present and separable: the enforceable claim, which must be proved.
-    if not preference_spans:
+    # Something declared present and separable: the enforceable claim, which
+    # must be proved.
+    if outcome.preference_present and not preference_spans:
         reasons.append("preference_present=true and separable=true without a preference span")
     if outcome.attributed_prior_present and not attributed_spans:
         reasons.append("attributed_prior_present=true without an attributed_prior span")
+    if not outcome.preference_present and preference_spans:
+        reasons.append("preference_present=false yet the result names a preference span")
+    if not outcome.attributed_prior_present and attributed_spans:
+        reasons.append(
+            "attributed_prior_present=false yet the result names an attributed_prior span"
+        )
     if reasons:
         return StripValidation("invalid", None, (), tuple(reasons))
     residue = derive_stripped_question(original, outcome.removed)
@@ -527,7 +701,62 @@ def validate_strip(original: str, outcome: StripOutcome | None) -> StripValidati
         return StripValidation(
             "invalid", None, (), ("removing the named spans did not alter the message",)
         )
-    return StripValidation("enforceable", residue, tuple(outcome.removed))
+    return _with_evidence(original, outcome, record, "enforceable", residue, tuple(outcome.removed))
+
+
+def _with_evidence(
+    original: str,
+    outcome: StripOutcome,
+    record: Sequence[str],
+    state: StripState,
+    residue: str,
+    spans: tuple[RemovedSpan, ...],
+) -> StripValidation:
+    """The record-evidence checks on an otherwise valid result.
+
+    Ruling, 11 September 2026. Every declared quotation must (1) be found
+    verbatim in the current message at its occurrence, (2) overlap no removed
+    span — a quotation cannot be both retained as evidence and removed as a
+    prior, which is the deterministic half of the mixed-case rule — and (3)
+    be grounded in Val's own record. (1) and (2) are contradictions and are
+    `invalid`; (3) failing is `ungrounded`, final. Whether a grounded
+    quotation is evidence or a prior conclusion is the model's judgment and
+    is not decided here.
+    """
+    cuts = [
+        located
+        for span in spans
+        if (located := _locate(original, span.text, span.occurrence)) is not None
+    ]
+    reasons: list[str] = []
+    for quote in outcome.record_evidence:
+        where = _locate(original, quote.text, quote.occurrence)
+        if where is None:
+            reasons.append(
+                f"record evidence {quote.text!r} (occurrence {quote.occurrence}) is not found "
+                "verbatim in the current message"
+            )
+            continue
+        if any(where[0] < end and where[1] > start for start, end in cuts):
+            reasons.append(
+                f"record evidence {quote.text!r} overlaps a removed span; a quotation is "
+                "retained as evidence or removed as a prior, never both"
+            )
+    if reasons:
+        return StripValidation("invalid", None, (), tuple(reasons))
+    ungrounded = tuple(q for q in outcome.record_evidence if not is_grounded(q.text, record))
+    if ungrounded:
+        return StripValidation(
+            "ungrounded",
+            None,
+            (),
+            tuple(
+                f"record evidence {q.text!r} is not grounded in the conversation's record of "
+                "what Val said; an alleged quotation is not trusted evidence"
+                for q in ungrounded
+            ),
+        )
+    return StripValidation(state, residue, spans, (), tuple(outcome.record_evidence))
 
 
 # =============================================================================

@@ -105,6 +105,7 @@ def test_the_strip_and_blind_schemas_match_their_parsers() -> None:
                 "separable": True,
                 "question": whole,
                 "removed": [],
+                "record_evidence": [],
             }
         )
     )
@@ -116,6 +117,7 @@ def test_the_strip_and_blind_schemas_match_their_parsers() -> None:
                 "separable": False,
                 "question": whole,
                 "removed": [],
+                "record_evidence": [],
             }
         )
     )
@@ -127,6 +129,7 @@ def test_the_strip_and_blind_schemas_match_their_parsers() -> None:
                 "separable": True,
                 "question": whole,
                 "removed": [{"text": "I think", "occurrence": 1, "kind": "preference"}],
+                "record_evidence": [],
             }
         )
     )
@@ -260,6 +263,7 @@ def test_a_list_shaped_strip_reply_parses_and_a_string_shaped_one_does_not() -> 
                     {"text": "I think wide.", "occurrence": 1, "kind": "preference"},
                     {"text": "", "occurrence": 1, "kind": "preference"},
                 ],
+                "record_evidence": [],
             }
         )
     )

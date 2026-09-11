@@ -77,11 +77,13 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass
 from uuid import UUID
 
 from sqlalchemy import Engine
 
+from val_domain.conversation import StoredRole
 from val_domain.deliberation import (
     BlindPositionRecord,
     ClassificationRecord,
@@ -104,6 +106,7 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
+from val_gateway import conversations
 from val_gateway.deliberation import (
     record_blind_position,
     record_classification,
@@ -344,7 +347,15 @@ def send(
     #    preference in view is the thing the machinery exists to avoid, and
     #    paying a partner call to record one was spending on the failure
     #    mode. Historical `contaminated` rows stand as what they were.
-    stripped = _strip(gateway, content, opened.scope, classification)
+    #    Ruling, 11 September 2026: the record against which declared record
+    #    evidence is grounded is the conversation's own — every message Val
+    #    has spoken in it, from the authoritative store, never a claim.
+    spoken_by_val = tuple(
+        message.content
+        for message in conversations.history(engine, opened.conversation.id)
+        if message.role is StoredRole.VAL
+    )
+    stripped = _strip(gateway, content, opened.scope, classification, record=spoken_by_val)
     validation = stripped.validation
     if not validation.enforceable or validation.residue is None:
         if validation.state == "no_preference":
@@ -726,8 +737,13 @@ def _strip(
     *,
     configuration: ModelConfig | None = None,
     evaluation: bool = False,
+    record: Sequence[str] = (),
 ) -> StripAttempts:
     """The §4.1 strip on the cheapest eligible route — validated, bounded.
+
+    `record` is the conversation's own record of what Val said — the content
+    of her messages — against which any record evidence the strip declares
+    is grounded (ruling, 11 September 2026). Empty when there is no record.
 
     A failed call (the route could not answer) establishes no separation and
     is not retried, as before. A reply whose provider terminal state is
@@ -786,35 +802,41 @@ def _strip(
                 None,
                 tuple(states),
             )
-        if response.terminal is TerminalState.TRUNCATED:
-            # Ruling, 10 September 2026 (Option A): the reply ended at the
-            # output ceiling. The terminal state is the provider's own and is
-            # already on the model_calls row; an identical retry against the
-            # same ceiling is not a second chance, it is the same failure
-            # bought twice. No retry, and the ceiling is not raised.
-            states.append("truncated")
+        complete = response.terminal is TerminalState.COMPLETE
+        # Ruling, 10 September 2026 (Option A) and 11 September 2026 (the
+        # completeness guard, stated in the contract): a reply that did not
+        # complete is a fragment. The terminal state is the provider's own and
+        # is already on the model_calls row; an identical retry against the
+        # same ceiling is the same failure bought twice. The guard lives in
+        # `validate_strip`, so the contract fails closed before any parse of
+        # the fragment is trusted; nothing from it enters a blind payload.
+        outcome = parse_strip_outcome(response.text) if complete else None
+        validation = validate_strip(
+            content,
+            outcome,
+            record=record,
+            complete=complete,
+            terminal=response.terminal.value,
+        )
+        states.append(validation.state)
+        if not complete:
             _LOGGER.warning(
-                "strip attempt %d ended truncated at the %d-token output ceiling; "
-                "separation not established, and a truncated attempt is not retried",
+                "strip attempt %d ended %s (output ceiling %d tokens); separation not "
+                "established, and an incomplete attempt is not retried",
                 attempt,
+                response.terminal.value,
                 STRIP_MAX_OUTPUT_TOKENS,
             )
-            return StripAttempts(
-                StripValidation(
-                    "invalid",
-                    None,
-                    (),
-                    (
-                        f"strip reply ended truncated at the {STRIP_MAX_OUTPUT_TOKENS}-token "
-                        "output ceiling; not retried",
-                    ),
-                ),
-                None,
-                tuple(states),
+            return StripAttempts(validation, None, tuple(states))
+        if validation.state == "ungrounded":
+            _LOGGER.warning(
+                "strip attempt %d declared record evidence the conversation's record does "
+                "not contain (%s); an alleged quotation is not trusted evidence, and the "
+                "result is final",
+                attempt,
+                "; ".join(validation.reasons),
             )
-        outcome = parse_strip_outcome(response.text)
-        validation = validate_strip(content, outcome)
-        states.append(validation.state)
+            return StripAttempts(validation, outcome, tuple(states))
         if validation.state != "invalid":
             return StripAttempts(validation, outcome, tuple(states))
         _LOGGER.warning(

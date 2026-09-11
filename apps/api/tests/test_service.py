@@ -168,6 +168,7 @@ def strip_separates() -> ProviderResult:
                 "separable": True,
                 "question": QUESTION,
                 "removed": [{"text": PREFERENCE, "occurrence": 1, "kind": "preference"}],
+                "record_evidence": [],
             }
         )
     )
@@ -360,6 +361,7 @@ def test_an_inseparable_preference_shows_no_position_at_all(store: Engine) -> No
                             "separable": False,
                             "question": "",
                             "removed": [],
+                            "record_evidence": [],
                         }
                     )
                 ),

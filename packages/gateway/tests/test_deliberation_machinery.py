@@ -193,6 +193,7 @@ def strip_says(
     occurrence: int = 1,
     spans: list[dict[str, object]] | None = None,
     attributed: bool = False,
+    evidence: list[dict[str, object]] | None = None,
 ) -> ProviderResult:
     """A strip reply. `spans` overrides the single `removed` span when given."""
     if spans is None:
@@ -202,6 +203,7 @@ def strip_says(
     return ok(
         json.dumps(
             {
+                "record_evidence": evidence or [],
                 "preference_present": present,
                 "attributed_prior_present": attributed,
                 "separable": separable,
@@ -1603,6 +1605,7 @@ def test_a_strip_reply_without_span_kinds_does_not_parse(store: Engine) -> None:
                 "separable": True,
                 "question": QUESTION,
                 "removed": [{"text": PREFERENCE, "occurrence": 1}],
+                "record_evidence": [],
             }
         )
     )
