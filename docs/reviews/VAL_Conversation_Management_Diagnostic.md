@@ -81,7 +81,7 @@ Rules, stated as contract:
 1. The original `messages` row is never touched. A revision or retraction is a new row here.
 2. **Current text** of a user message = the `content` of its highest-numbered `revision` row, unless a higher-numbered `retraction` row exists, in which case the message is **retracted**; with no rows, the original. A revision after a retraction reinstates the message with the new text — so "undo" is one more appended fact, never a delete.
 3. `messages.sequence` stays gapless: a revision consumes no message sequence number. `after_sequence` places the fact in the conversation's order without a shared counter.
-4. **A turn's view of history is defined by its own sequence.** The turn whose user message has `sequence = s` sees, for every earlier user message, the current text **as of `after_sequence < s`** — revisions and retractions recorded after that turn's message was appended are invisible to it, by construction and regardless of concurrency. Assembly reads "as of s", not "latest".
+4. **A turn's view of history is defined by its own sequence.** The turn whose user message has `sequence = s` sees, for every earlier user message, the current text **as of `after_sequence < s`** — revisions and retractions recorded after that turn's message was appended are invisible to it, by construction and regardless of concurrency. Assembly reads "as of s", not "most recent".
 5. A Val message is never revised or retracted; nothing here references a `val` row.
 
 ### 3.4 The eight questions, answered on this model
@@ -89,10 +89,10 @@ Rules, stated as contract:
 | Question | Answer |
 |---|---|
 | What did Lord Armand originally send? | `messages.content` for that id — unchanged, forever. |
-| What did he later correct it to? | The `revision` rows for that id, in `revision_number` order; the latest is the current wording. |
-| Which is current for ordinary conversational use? | The latest fact (rule 2). |
+| What did he later correct it to? | The `revision` rows for that id, in `revision_number` order; the most recent is the current wording. |
+| Which is current for ordinary conversational use? | The most recent fact (rule 2). |
 | Which exact text did a particular call, classification or deliberation receive? | The call is anchored on the user message that opened its turn, sequence `s`. For every history message it received the text as of `after_sequence < s` (rule 4); for its own anchoring message it received the original — a turn's own message cannot have been revised before the turn existed. Deterministic from the rows, no timestamps. |
-| Which version should current-thread assembly use after the correction? | The current text (rule 2), read as of the new turn's own sequence (rule 4) — which is the latest, since the new turn is newest. |
+| Which version should current-thread assembly use after the correction? | The current text (rule 2), read as of the new turn's own sequence (rule 4) — which is the most recent, since the new turn is newest. |
 | Which should automatic recall retrieve? | The current text, marked corrected (§6). |
 | Which should House Recall retrieve? | The current text, marked corrected, with the original date of the utterance **and** the correction date, never presenting the corrected text as what was originally said (§6). |
 | Can Val recover the original if explicitly asked? | The original is on the record and in the interface's history view. Whether it enters Val's *context* on request is a separate small behaviour (a gated history-inspection path, §6.4) and is not implied by this model. |
@@ -154,7 +154,7 @@ The requirement: a retracted message stops cluttering the live conversation and 
 | Val's answer to a revised message | Returned as today, marked "answered an earlier wording of the preceding message" | Same |
 | Val's answer to a retracted message | Excluded with it | Excluded with it |
 
-**Mechanics.** Both recall statements are written out in full for auditability; they would gain a lateral join to the latest `message_revisions` fact per message (or a `messages_current` view stating the rule once, in the `model_calls_accounted` manner), rank on the current text, and exclude retracted rows in the `WHERE`. The full-text index exists on `messages.content`; a matching GIN index on `message_revisions.content` keeps a revised message findable by its corrected words. The `CrossProjectLeakError` second check and every isolation test stay as they are: revision changes *which text* a row contributes, never *which scope* it is in.
+**Mechanics.** Both recall statements are written out in full for auditability; they would gain a lateral join to the most recent `message_revisions` fact per message (or a `messages_current` view stating the rule once, in the `model_calls_accounted` manner), rank on the current text, and exclude retracted rows in the `WHERE`. The full-text index exists on `messages.content`; a matching GIN index on `message_revisions.content` keeps a revised message findable by its corrected words. The `CrossProjectLeakError` second check and every isolation test stay as they are: revision changes *which text* a row contributes, never *which scope* it is in.
 
 **Val's own history inspection (6.4).** "What did I originally say before I corrected it?" is an explicit historical question, not recall. It could be served by a small deterministic gate in the House Recall family that admits the original wording as an excerpt marked "superseded on <date>". Not designed here; noted so the ruling can say whether Val may ever see a retracted or superseded wording in context.
 
@@ -244,7 +244,7 @@ Filing as **presentation scoping with no evidentiary meaning** — exactly the `
 
 ### Recommendation and the ruling required
 
-**Recommend D (filing as presentation) plus C (linked continuation)**: a sidecar `conversation_filings` (append-only, latest wins, so re-filing is a new fact) and `continued_from` on continuation. Do not implement B unless Lord Armand rules that a conversation may span scopes, which reverses forward-only.
+**Recommend D (filing as presentation) plus C (linked continuation)**: a sidecar `conversation_filings` (append-only, most recent wins, so re-filing is a new fact) and `continued_from` on continuation. Do not implement B unless Lord Armand rules that a conversation may span scopes, which reverses forward-only.
 
 **The ruling this needs, stated plainly:** does recall follow origin, current filing, or both? The recommendation is *origin*, keeping every isolation guarantee as tested and leaving House Recall as the explicit cross-scope path. If he rules that filing a conversation under B should make it *B work for Val* — automatic recall of B material, attribution of new calls to B — then only Option B delivers that truthfully, and it must be ruled as the reversal it is.
 
@@ -324,7 +324,7 @@ Both are conversation-management interface work, which Lord Armand's standing in
 **Deterministic tests required** (new files; none of the existing ones edited):
 
 - `message_revisions` rows are immutable and undeletable; the writer refuses a `val` message, a message from another conversation, and (under §9.1) a deliberated message.
-- Current text follows the latest fact; retract then revise reinstates; `messages.sequence` stays gapless across revisions (the existing concurrency test's property, asserted again with revisions interleaved).
+- Current text follows the most recent fact; retract then revise reinstates; `messages.sequence` stays gapless across revisions (the existing concurrency test's property, asserted again with revisions interleaved).
 - **As-of exactness**: a call at turn `s` receives the text as of `after_sequence < s`; a revision recorded after the turn is invisible to it; reconstructing the request for an earlier turn after a revision yields the original bytes (the 11 September reconstruction technique, made a test).
 - Assembly omits a retracted message and its immediate answer, keeps downstream turns, and the envelope states the withdrawn positions and the corrected-after-answer positions.
 - Both recall paths rank the current text, mark corrected excerpts with both dates, and exclude retracted messages in the query — with the exclusion asserted on the returned rows, not only on the SQL (the `CrossProjectLeakError` habit).
