@@ -93,10 +93,16 @@ from val_gateway.context import (
 )
 from val_gateway.exchange import ClarificationNeeded, RestrictedContentRefusedError, resolve_scope
 from val_gateway.gateway import Gateway
-from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage, RecallOutcome, recall_with_state
+from val_gateway.memory import (
+    DEFAULT_LIMIT,
+    RecalledMessage,
+    RecallOutcome,
+    house_recall_with_state,
+    recall_with_state,
+)
 from val_gateway.projects import ProjectSession
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
-from val_policy.recall_gate import ThreadContext, gate_recall
+from val_policy.recall_gate import ThreadContext, gate_house_recall, gate_recall
 from val_policy.restricted import preflight, refusal_message
 
 _LOGGER = logging.getLogger("val.loop")
@@ -350,13 +356,14 @@ def assemble_turn(
     prior, current = turns[:-1], turns[-1:]
     now = local_now()
     current_local_time = now.strftime("%A %-d %B %Y, %H:%M")
+    context = ThreadContext(
+        retained=tuple((m.role, m.content) for m in prior),
+        envelope_facts=(current_local_time, now.strftime("%H:%M")),
+    )
     decision = gate_recall(
         opened.user_message.content,
         no_project=isinstance(opened.scope, ExplicitNoProject),
-        context=ThreadContext(
-            retained=tuple((m.role, m.content) for m in prior),
-            envelope_facts=(current_local_time, now.strftime("%H:%M")),
-        ),
+        context=context,
     )
     _LOGGER.info(
         "recall gate: %s",
@@ -374,6 +381,34 @@ def assemble_turn(
         outcome = RecallOutcome(state="not_run", detail=decision.reason)
     recalled = outcome.items
 
+    # House Recall (ruling, 12 September 2026): the explicitly triggered
+    # cross-conversation path, gated independently, never altering the
+    # automatic decision above. Runs only on an explicit reference to earlier
+    # conversation; searches everything except this conversation; excerpts
+    # already admitted by automatic recall are not admitted twice.
+    house_decision = gate_house_recall(opened.user_message.content, context)
+    _LOGGER.info(
+        "house recall gate: %s",
+        json.dumps(
+            {
+                "run": house_decision.run,
+                "reason": house_decision.reason,
+                "detail": house_decision.detail,
+            }
+        ),
+    )
+    if house_decision.run:
+        house = house_recall_with_state(
+            engine,
+            query=opened.user_message.content,
+            exclude_conversation=opened.conversation.id,
+            exclude_message_ids=frozenset(item.message_id for item in recalled),
+            limit=recall_limit,
+        )
+    else:
+        house = RecallOutcome(state="not_run", detail=house_decision.reason)
+    recalled = (*recalled, *house.items)
+
     # 7. Assemble, in the ruled order (10 September 2026): persona (system) →
     #    retained history, its last message carrying the cache breakpoint →
     #    recalled excerpts, if any → the record-state envelope → the current
@@ -386,8 +421,11 @@ def assemble_turn(
         history_prior_messages=max(prior_count, 0),
         history_retained_messages=len(prior),
         retrieval_state=outcome.state,
-        retrieval_excerpts=len(recalled),
+        retrieval_excerpts=len(outcome.items),
         retrieval_detail=outcome.detail,
+        house_recall_state=house.state,
+        house_recall_count=len(house.items),
+        house_recall_detail=house.detail,
     )
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
     excerpts = recall_block(recalled)

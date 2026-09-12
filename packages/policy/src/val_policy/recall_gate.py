@@ -270,3 +270,124 @@ def gate_recall(message: str, *, no_project: bool, context: ThreadContext) -> Ga
     if tier_two is not None:
         return GateDecision(False, "tier_two", tier_two)
     return GateDecision(True, None, "no deterministic skip applies; recall runs")
+
+
+# =============================================================================
+# House Recall — the explicitly triggered cross-conversation path
+# (ruling, 12 September 2026)
+# =============================================================================
+#
+# A second gate, independent of `gate_recall`, which it never alters. Automatic
+# recall stays project-scoped and an unassigned conversation stays a clean room
+# for it; House Recall is the one authorised exception: it runs only when the
+# message contains an explicit cross-conversation reference from the closed,
+# version-controlled inventory below, and never when that reference is
+# demonstrably satisfied by the retained thread. No provider call, no
+# semantics beyond token sequences; ambiguity is a non-match, and a non-match
+# is *not run*.
+
+#: Explicit references to earlier conversation, as token sequences. Every
+#: variant is spelled out; nothing is inflected or inferred.
+HOUSE_RECALL_PHRASES: tuple[tuple[str, ...], ...] = (
+    ("we", "discussed"), ("we", "have", "discussed"), ("we've", "discussed"),
+    ("we", "talked", "about"), ("we", "have", "talked"), ("we've", "talked"),
+    ("we", "decided"), ("we", "have", "decided"), ("we've", "decided"),
+    ("we", "settled"), ("we", "have", "settled"), ("we've", "settled"),
+    ("we", "agreed"), ("we", "have", "agreed"), ("we've", "agreed"),
+    ("remember", "when"), ("do", "you", "remember"), ("what", "do", "you", "remember"),
+    ("what", "did", "we"),
+    ("in", "another", "project"), ("from", "another", "project"),
+    ("from", "a", "different", "project"), ("from", "the", "other", "project"),
+    ("across", "my", "projects"), ("across", "your", "projects"), ("across", "our", "projects"),
+    ("across", "my", "conversations"), ("across", "your", "conversations"),
+    ("across", "our", "conversations"),
+)  # fmt: skip
+
+#: "you said / told me / mentioned" is a cross-conversation reference only with
+#: a temporal marker somewhere in the message; alone it may be about this thread.
+HOUSE_RECALL_ATTRIBUTION_PHRASES: tuple[tuple[str, ...], ...] = (
+    ("you", "said"), ("you", "told", "me"), ("you", "mentioned"),
+)  # fmt: skip
+HOUSE_RECALL_TEMPORAL_TOKENS: frozenset[str] = frozenset(
+    {"earlier", "before", "previously", "last", "once", "yesterday"}
+)
+
+#: "<earlier|previous|prior|past|other> conversation(s)".
+HOUSE_RECALL_CONVERSATION_ADJECTIVES: frozenset[str] = frozenset(
+    {"earlier", "previous", "prior", "past", "other"}
+)
+HOUSE_RECALL_CONVERSATION_NOUNS: frozenset[str] = frozenset({"conversation", "conversations"})
+
+#: An explicit request to search earlier conversations: a search verb and the
+#: noun anywhere in the message.
+HOUSE_RECALL_SEARCH_TOKENS: frozenset[str] = frozenset({"search", "searching"})
+
+
+@dataclass(frozen=True)
+class HouseGateDecision:
+    """Whether House Recall runs, and the positive reason either way."""
+
+    run: bool
+    #: ``no_cross_conversation_reference`` | ``tier_one`` | ``thread_grounded``
+    #: when ``run`` is False; None when it runs.
+    reason: str | None
+    #: What established the decision, for the log and the record.
+    detail: str
+
+
+def _phrase_in(tokens: list[str], phrase: tuple[str, ...]) -> bool:
+    n = len(phrase)
+    return any(tuple(tokens[i : i + n]) == phrase for i in range(len(tokens) - n + 1))
+
+
+def _house_matches(tokens: list[str]) -> tuple[str, ...]:
+    """Every inventory form present, in a stable order. Empty means no match."""
+    found: list[str] = []
+    for phrase in HOUSE_RECALL_PHRASES:
+        if _phrase_in(tokens, phrase):
+            found.append(" ".join(phrase))
+    if any(t in HOUSE_RECALL_TEMPORAL_TOKENS for t in tokens):
+        for phrase in HOUSE_RECALL_ATTRIBUTION_PHRASES:
+            if _phrase_in(tokens, phrase):
+                found.append(" ".join(phrase) + " (with a temporal marker)")
+    for i in range(len(tokens) - 1):
+        if (
+            tokens[i] in HOUSE_RECALL_CONVERSATION_ADJECTIVES
+            and tokens[i + 1] in HOUSE_RECALL_CONVERSATION_NOUNS
+        ):
+            found.append(f"{tokens[i]} {tokens[i + 1]}")
+    if any(t in HOUSE_RECALL_SEARCH_TOKENS for t in tokens) and any(
+        t in HOUSE_RECALL_CONVERSATION_NOUNS for t in tokens
+    ):
+        found.append("search … conversations")
+    return tuple(found)
+
+
+def gate_house_recall(message: str, context: ThreadContext) -> HouseGateDecision:
+    """Decide whether the explicitly triggered House Recall runs for this turn.
+
+    Runs only on an inventory match; never on a Tier One form; and not when
+    every quoted span in the message is found verbatim in the retained thread,
+    because a reference the thread already satisfies is thread-local. This
+    function never consults, and never alters, `gate_recall`.
+    """
+    tokens = [t.lower() for t in _tokens(message)]
+    matched = _house_matches(tokens)
+    if not matched:
+        return HouseGateDecision(
+            False, "no_cross_conversation_reference", "no inventory form is present"
+        )
+    if _tier_one(message) is not None:
+        return HouseGateDecision(False, "tier_one", "a Tier One closed form")
+    spans = _quoted_spans(message)
+    if spans and context.retained:
+        thread_lower = context.text.lower()
+        if all(span.lower() in thread_lower for span in spans):
+            return HouseGateDecision(
+                False,
+                "thread_grounded",
+                "every quoted span occurs verbatim in the retained thread",
+            )
+    return HouseGateDecision(
+        True, None, "explicit cross-conversation reference: " + ", ".join(matched)
+    )

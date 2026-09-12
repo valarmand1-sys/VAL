@@ -63,6 +63,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import Engine, text
@@ -162,6 +163,30 @@ _IN_NO_PROJECT = text(
 )
 
 
+#: House Recall (ruling, 12 September 2026): every stored conversation except
+#: the current one, across projects and the unassigned pool, joined to
+#: `projects` for the source name. No scope predicate, deliberately — this is
+#: the one authorised cross-project path, and it is reachable only through
+#: `house_recall_with_state`, which only `gate_house_recall` opens.
+_ACROSS_HOUSE = text(
+    "select m.id, m.conversation_id, m.role, m.content, m.sequence, m.created_at, "
+    "       c.project_id, c.title, p.name as project_name, "
+    "       ts_rank(to_tsvector('english', m.content), "
+    "               replace(plainto_tsquery('english', :query)::text, "
+    "                       '&', '|')::tsquery) as rank "
+    "  from messages m "
+    "  join conversations c on c.id = m.conversation_id "
+    "  left join projects p on p.id = c.project_id "
+    " where m.conversation_id is distinct from :exclude "
+    "   and m.role in ('user', 'val') "
+    "   and to_tsvector('english', m.content) "
+    "       @@ replace(plainto_tsquery('english', :query)::text, "
+    "                  '&', '|')::tsquery "
+    " order by rank desc, m.created_at desc, m.id "
+    " limit :limit"
+)
+
+
 @dataclass(frozen=True)
 class RecalledMessage:
     """One retrieved message, with enough provenance to be checked.
@@ -184,6 +209,23 @@ class RecalledMessage:
     content: str
     sequence: int
     rank: float
+    #: House Recall provenance (ruling, 12 September 2026), additive: the source
+    #: project's name (None for an unassigned conversation), the message's stored
+    #: timestamp, and which path retrieved it — ``project_recall`` (the automatic,
+    #: scoped path) or ``house_recall`` (the explicitly triggered cross-conversation
+    #: path). Ordinary recall leaves the defaults.
+    project_name: str | None = None
+    created_at: datetime | None = None
+    retrieval_path: str = "project_recall"
+
+    @property
+    def source_scope(self) -> str:
+        """Where this came from, in the envelope's words: a named project or unassigned."""
+        if self.project_id is None:
+            return "unassigned"
+        return (
+            f"project: {self.project_name}" if self.project_name else f"project: {self.project_id}"
+        )
 
 
 class CrossProjectLeakError(Exception):
@@ -418,5 +460,89 @@ def recall_with_state(
     if items:
         return RecallOutcome(state="returned", items=items)
     if selection is not None and selection.top_candidate_exceeded:
+        return RecallOutcome(state="zero", detail="top_candidate_exceeds_budget")
+    return RecallOutcome(state="zero")
+
+
+def house_recall_with_state(
+    engine: Engine,
+    *,
+    query: str,
+    exclude_conversation: UUID | None = None,
+    exclude_message_ids: frozenset[UUID] = frozenset(),
+    limit: int = DEFAULT_LIMIT,
+    budget: int | None = None,
+) -> RecallOutcome:
+    """House Recall: relevant prior conversation from anywhere in the House's record.
+
+    Ruling, 12 September 2026. The explicitly triggered path beside automatic
+    recall: it searches every stored conversation except the current one,
+    across projects and the unassigned pool, with the same ranking, limit and
+    aggregate budget as automatic recall, and returns excerpts that carry their
+    provenance — source project or unassigned, conversation, message, sequence,
+    role, timestamp — marked ``retrieval_path = "house_recall"``. Messages
+    already admitted by automatic recall (`exclude_message_ids`) are not
+    admitted twice. It reads; it never writes, and it never touches the current
+    conversation's attribution. The same state vocabulary as `RecallOutcome`.
+    """
+    if not query.strip():
+        return RecallOutcome(state="not_run", detail="under_specified_query")
+    try:
+        with engine.connect() as connection:
+            rows = connection.execute(
+                _ACROSS_HOUSE,
+                {"query": query, "exclude": exclude_conversation, "limit": limit},
+            ).all()
+    except Exception as error:  # the store or the driver failing, normalised
+        _LOGGER.warning(
+            "house recall unavailable for this call (%s); proceeding without it",
+            type(error).__name__,
+        )
+        return RecallOutcome(state="unavailable", detail=type(error).__name__)
+    candidates = tuple(
+        RecalledMessage(
+            message_id=row.id,
+            conversation_id=row.conversation_id,
+            conversation_title=row.title,
+            project_id=row.project_id,
+            role=StoredRole(row.role),
+            content=row.content,
+            sequence=row.sequence,
+            rank=float(row.rank),
+            project_name=row.project_name,
+            created_at=row.created_at,
+            retrieval_path="house_recall",
+        )
+        for row in rows
+        if row.id not in exclude_message_ids
+    )
+    if not candidates:
+        return RecallOutcome(state="zero")
+    selection = select_within_budget(
+        candidates, budget=token_budget() if budget is None else budget, limit=limit
+    )
+    _LOGGER.info(
+        "house recall selection: %s",
+        json.dumps(
+            {
+                "budget": selection.budget,
+                "admitted_tokens": selection.admitted_tokens,
+                "candidates": [
+                    {
+                        "rank_position": decision.rank_position,
+                        "message_id": str(candidates[decision.rank_position - 1].message_id),
+                        "source_scope": candidates[decision.rank_position - 1].source_scope,
+                        "admitted": decision.admitted,
+                        "reason": decision.reason,
+                    }
+                    for decision in selection.decisions
+                ],
+            }
+        ),
+    )
+    admitted = tuple(candidates[d.rank_position - 1] for d in selection.decisions if d.admitted)
+    if admitted:
+        return RecallOutcome(state="returned", items=admitted)
+    if selection.top_candidate_exceeded:
         return RecallOutcome(state="zero", detail="top_candidate_exceeds_budget")
     return RecallOutcome(state="zero")

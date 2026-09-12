@@ -2649,11 +2649,13 @@ def test_prior_record_state_carries_the_current_local_time_as_a_fact(
     }
     assert state["retrieved_excerpts"] == {"state": "not_run", "count": 0, "detail": "tier_one"}
     assert "current_time is the present local date and time" in str(_state_block(adapter)["note"])
-    # Nothing else was added to the envelope.
+    # Nothing else was added to the envelope — `house_recall` being the additive
+    # sibling field approved on 12 September 2026 (04-layer-0.md WP-0.7 amendment).
     assert set(state) == {
         "current_time",
         "same_conversation_history",
         "retrieved_excerpts",
+        "house_recall",
         "project_volumes",
     }
 
@@ -2766,7 +2768,14 @@ def test_a_genuinely_ambiguous_turn_recalls(store: Engine) -> None:
 
 def test_explicit_no_project_scope_is_a_clean_room(store: Engine) -> None:
     """Positive control for the clean room: the wording asks for history, other
-    no-project conversations hold it, and none of them is searched."""
+    no-project conversations hold it, and none of them is searched *automatically*.
+
+    Amended 12 September 2026 with the ruling that made the clean room a guarantee
+    about automatic recall: this wording ("what did we say") is an explicit
+    cross-conversation reference, so House Recall — the one authorised exception —
+    now runs beside the untouched automatic path, and anything it returns arrives
+    only as a `house_recall` excerpt with its provenance. The automatic path's
+    assertions are unchanged."""
     seeded_conversation(
         store, ExplicitNoProject(), "N1", (StoredRole.USER, "we said: " + NO_PROJECT_FACT)
     )
@@ -2784,7 +2793,11 @@ def test_explicit_no_project_scope_is_a_clean_room(store: Engine) -> None:
         "count": 0,
         "detail": "no_project_scope",
     }
-    assert NO_PROJECT_FACT not in adapter.sent_text
+    envelope = _envelope(adapter)
+    assert all(item["retrieval_path"] == "house_recall" for item in envelope["excerpts"]), (
+        "nothing reaches the payload through the automatic path"
+    )
+    assert state["house_recall"]["state"] == "returned"
     assert state["same_conversation_history"]["state"] == "zero"
 
 
