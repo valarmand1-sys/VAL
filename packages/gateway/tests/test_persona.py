@@ -172,7 +172,7 @@ def test_a_clean_seed_creates_revision_one_and_activates_it(clean_personas: Engi
     outcome = seed(clean_personas, REPO_ROOT)
     assert outcome.action == "created"
     assert outcome.persona.version == 1
-    assert outcome.persona.semantic_version == "1.5"
+    assert outcome.persona.semantic_version == "1.6"
     assert outcome.persona.activated_at is not None
     assert DatabasePersonaLoader(clean_personas).active().id == outcome.persona.id
 
@@ -220,7 +220,7 @@ def test_the_semantic_version_is_stored_and_is_the_authored_one(
 ) -> None:
     """Test 5. The executive decision of 17 August, in the record."""
     persona = seed(clean_personas, REPO_ROOT).persona
-    assert persona.semantic_version == "1.5"
+    assert persona.semantic_version == "1.6"
     assert persona.semantic_version == read_source(REPO_ROOT).semantic_version
 
 
@@ -230,7 +230,7 @@ def test_persistence_revision_and_semantic_version_are_independent(
     """Test 6. Revision 1 holds authored v1.2, and neither number is the other."""
     persona = seed(clean_personas, REPO_ROOT).persona
     assert persona.version == 1
-    assert persona.semantic_version == "1.5"
+    assert persona.semantic_version == "1.6"
     assert str(persona.version) != persona.semantic_version
 
     # A second revision of the *same* authored version moves one scale, not both.
@@ -391,7 +391,7 @@ def test_a_new_revision_leaves_the_old_content_untouched(clean_personas: Engine)
     reloaded_first = DatabasePersonaLoader(clean_personas).by_id(first.id)
     assert reloaded_first is not None
     assert reloaded_first.content == content_a, "revision 1's content changed"
-    assert reloaded_first.semantic_version == "1.5"
+    assert reloaded_first.semantic_version == "1.6"
     assert reloaded_first.version == 1
 
     assert second.version == 2
@@ -918,7 +918,7 @@ def test_a_model_call_records_the_persona_revision_used(clean_personas: Engine) 
         ).one()
     assert row.persona_id == active.id
     assert row.version == 1
-    assert row.semantic_version == "1.5"
+    assert row.semantic_version == "1.6"
 
 
 def test_a_transmitted_call_that_errors_still_records_its_persona(
