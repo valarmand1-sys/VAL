@@ -128,3 +128,5 @@ Approved by Lord Armand on 11 September 2026, after the diagnostic of the two na
 **Not changed:** identity, House Armand role, authority relationship, anti-sycophancy behaviour and its architecture, willingness to disagree, address, bearing, warmth, the remaining §5 rules, §6–§10. No routing, effort, classification, streaming, response cap, request assembly, record-state, clock or project behaviour changed with this revision.
 
 **Verification:** the full regression suite, then a focused live verification of four ordinary prompts (a time-aware greeting; "How are you feeling today?"; a question she lacks the record for; one difficult analytical prompt from the existing qualification corpus) — recorded in `docs/reviews/VAL_Persona_v1.5_Verification.md`. Not a qualification cycle; not owner-judgment evidence.
+
+**Accepted by Lord Armand, 11 September 2026 (late),** after personal review of the restored §4 of the verification record including the complete O9 response: the correction is closed; revision 4 remains active; no further persona change or qualification cycle. (Evidence index §47.)
