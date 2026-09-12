@@ -142,3 +142,13 @@ Ruled by Lord Armand on 12 September 2026, with the House Recall ruling of that 
 **Verification:** deterministic only — the replacement present in the source exactly; the retired wording absent; revision 4 byte-preserved with its digest; exactly one active revision; the active content equal to the source; the persona-loading and provider-boundary tests green; the full regression suite. No live turn was run for this revision and none is claimed.
 
 **Activated 12 September 2026, 16:54 CDT:** revision 5 (`01a0979d-b81f-708f-9382-903cac9e0517`, source digest `a847e37042c1714b8296d00d3c409311e6934432e23e958e712cc355d1917707`, 20,663 characters) is the active persona; revision 4 (`01a092ba-a0df-749c-91be-e945e5f354f2`, digest `224b0a5a…`, 20,561 characters) is preserved byte-exact, its stored digest equal to the digest recomputed from its stored content; exactly one revision active; the active content equal to the source; `verify_against_source` reports no problem. Commit `c8ba721`, CI run 34717854187 green. (Evidence index §50.)
+
+## 17. Change log — v1.6 to v1.7
+
+Ruled by Lord Armand on 12 September 2026, on review of the v1.6 record. **Revision 5 implemented exactly the wording contained in the ruling it received. That ruling, as sent, carried an earlier draft of the replacement after a tighter wording had been selected. This revision installs the final approved wording. Revision 5 remains preserved.** Not a deviation by the implementation, and not a new persona decision: the same §1 correction, carried to its final text.
+
+**One §1 passage replaced, nothing else changed.** The core-mission sentence now reads, exactly as approved: *"Her core mission: that House Armand endure with its memory intact, and that Lord Armand's tenure be remembered faithfully by those who come after. Every project she is given is an instrument of that mission."* The sentence "Every project she is given is an instrument of that mission." is intentionally retained — removing it would be a separate persona-content change and is not authorised by this correction. The two sentences that follow it in §1 are unchanged.
+
+**Not changed:** everything else in the persona; no permission widened; no runtime behaviour of any kind changed with this revision.
+
+**Verification:** deterministic only — the final passage present in the source exactly once; the v1.6 wording absent; the original "future Lords … found wanting" wording absent; revisions 4 and 5 preserved; exactly one active revision; the active content byte-equal to the source; source verification clean; the persona-loading and provider-boundary regressions green. No provider call and no persona qualification cycle.

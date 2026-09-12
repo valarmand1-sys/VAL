@@ -152,7 +152,15 @@ I asked three questions and have no answers to them in the record: whether her s
 
 ## 7. Isolation of automatic recall, unchanged
 
-No isolation test was modified: the Project A / Project B automatic-recall tests in `test_conversation_memory.py` and the clean-room test stand, and `test_house_recall.py` adds "Project A automatic recall cannot receive Project B material" beside the House Recall reach test. The two pre-existing tests amended under the ruling (the record-state key-set pin, which now includes `house_recall`; the clean-room test, which now asserts automatic recall `not_run` and that any excerpt present is `house_recall`) were amended because the ruling changed the contract they pinned; their diff was reported with the implementation and is in commit `56610c3`.
+No Project A / Project B automatic-recall isolation test was modified: those tests in `test_conversation_memory.py` stand as written, and `test_house_recall.py` adds "Project A automatic recall cannot receive Project B material" beside the House Recall reach test. The clean-room test was amended only where the approved House Recall ruling changed its contract, so that it continues to assert automatic recall remains `not_run` while any cross-conversation excerpt present must have arrived through `house_recall`. The record-state key-set pin was likewise amended to admit the additive `house_recall` field. Both amendments are in commit `56610c3` and their diff was reported with the implementation.
+
+*(Wording corrected 12 September 2026 on Lord Armand's review: the paragraph had opened "No isolation test was modified" and then recorded the clean-room amendment; the opening now states the evidence precisely. No test was changed for this correction and the implementation record is not rewritten.)*
+
+---
+
+## 9. Owner acceptance — 12 September 2026
+
+House Recall is accepted by Lord Armand on review of this record. No fourth provider turn is required: the live verification, combined with the deterministic cross-project tests, is sufficient — explicit House Recall ran from an unassigned conversation; automatic recall remained `not_run/no_project_scope`; a normal project greeting did not invoke it; an explicit earlier-conversation reference from a project invoked it beside ordinary project recall; provenance remained attributable to exact stored messages; conversation attribution did not change; Val corrected a false premise about a prior "decision" and distinguished her recommendation from an owner ruling; project-to-other-project reach is demonstrated deterministically, the live store holding no genuine content that could satisfy that exact live scenario without manufacturing evidence. The $0.04 cost-estimate overrun and the single 3 September / 9 September misdating remain recorded residual observations; no provider call and no correction cycle is opened from either.
 
 ---
 
