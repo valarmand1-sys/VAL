@@ -78,6 +78,8 @@ The reason for standing it up this early is that the cost gradient (§5.3) is fi
 >
 > Everything else stays behind the gate: message revision/retraction, attachment ingestion, documents, image vision, and anything touching persistence, recall, routing, evidence semantics, or egress.
 >
+> *12 September 2026, Lord Armand:* conversation management — rename, archive, append-only message revision and retraction, conversation Remove/reinstate, and explicit scope transition — is authorised before the gate, narrowly; recorded in `04-layer-0.md` (§2.1 and §5 amendments of that date). Nothing else here moves.
+>
 > **Requirement, same date: invariant 29 applies to avatar state.** Every frame the avatar shows is a claim about what Val is doing. An idle or thinking loop displayed while something has actually failed is the same defect as an error banner asserting a cause it has not established — a confident assertion the system has not made true. Presence degrades honestly, and **the avatar must not depict a state the system cannot confirm**: a state loop is driven by confirmed backend state, never by optimism, and where the system cannot confirm what is happening, the avatar shows that — not a guess. This extends invariant 28 (animation is presentation only, §8) from "never implies success" to "never depicts the unestablished."
 
 Failure behavior: §8.3.

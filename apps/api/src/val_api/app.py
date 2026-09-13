@@ -51,6 +51,7 @@ from val_api.contracts import (
     ProjectCreateRequest,
     ProjectView,
     QueuedExchangeView,
+    RenameRequest,
     ReviewProgressView,
     ReviewRequest,
     TurnAnswered,
@@ -73,7 +74,7 @@ from val_gateway.classification_review import (
     record_review,
     review_queue,
 )
-from val_gateway.conversations import ConversationNotFoundError
+from val_gateway.conversations import ConversationNotFoundError, TitleRefusedError
 from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import (
@@ -204,6 +205,38 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
                 ExecutionEventView.of(row) for row in events_for(engine, conversation_id)
             ],
         )
+
+    # --- conversation management (ruling, 12 September 2026) -------------------
+
+    @app.post("/conversations/{conversation_id}/title")
+    def rename_conversation(conversation_id: UUID, request: RenameRequest) -> ConversationView:
+        """Rename: the mutable title, presentation-class. No evidence identity changes."""
+        try:
+            return ConversationView.of(conversations.rename(engine, conversation_id, request.title))
+        except ConversationNotFoundError as missing:
+            raise HTTPException(status_code=404, detail=str(missing)) from missing
+        except TitleRefusedError as refused:
+            raise HTTPException(status_code=422, detail=str(refused)) from refused
+
+    @app.post("/conversations/{conversation_id}/archive")
+    def archive_conversation(conversation_id: UUID) -> ConversationView:
+        """Archive: hidden from the default listing, and nothing else."""
+        try:
+            return ConversationView.of(
+                conversations.set_archived(engine, conversation_id, archived=True)
+            )
+        except ConversationNotFoundError as missing:
+            raise HTTPException(status_code=404, detail=str(missing)) from missing
+
+    @app.post("/conversations/{conversation_id}/unarchive")
+    def unarchive_conversation(conversation_id: UUID) -> ConversationView:
+        """Unarchive: back in the default listing."""
+        try:
+            return ConversationView.of(
+                conversations.set_archived(engine, conversation_id, archived=False)
+            )
+        except ConversationNotFoundError as missing:
+            raise HTTPException(status_code=404, detail=str(missing)) from missing
 
     # --- the turn -------------------------------------------------------------
 

@@ -371,7 +371,15 @@ export function App(): React.JSX.Element {
             <p>{newConversationLine(entry)}</p>
           </div>
         ) : (
-          <Thread detail={detail} onRecorded={() => void openConversation(detail.conversation.id)} />
+          <Thread
+            detail={detail}
+            onRecorded={() => void openConversation(detail.conversation.id)}
+            onConversationChanged={async () => {
+              await openConversation(detail.conversation.id);
+              await refreshConversations(scope);
+            }}
+            onRefused={(message) => setNotice(message)}
+          />
         )}
         {lastTiming !== null && streaming === null && (
           <p className="timing" title="first words visible: measured on the frame painted after the first delta rendered; gateway: the provider's first generated text as the gateway saw it; complete: the settled turn's arrival at this client">
@@ -482,11 +490,17 @@ function StreamingThread(props: {
 function Thread(props: {
   detail: ConversationDetail;
   onRecorded: () => void;
+  onConversationChanged: () => Promise<void>;
+  onRefused: (message: string) => void;
 }): React.JSX.Element {
-  const { detail, onRecorded } = props;
+  const { detail, onRecorded, onConversationChanged, onRefused } = props;
   return (
     <div className="messages">
-      <h2>{detail.conversation.title}</h2>
+      <ConversationHeader
+        conversation={detail.conversation}
+        onChanged={onConversationChanged}
+        onRefused={onRefused}
+      />
       {detail.messages.map((message) => (
         <MessageBlock key={message.id} message={message} detail={detail} onRecorded={onRecorded} />
       ))}
@@ -564,6 +578,104 @@ function MessageBlock(props: {
       {message.role === "user" && (
         <MarkConsequentialControl detail={detail} message={message} onRecorded={onRecorded} />
       )}
+    </div>
+  );
+}
+
+// Conversation management — ruling, 12 September 2026. Rename sets the
+// presentation-class title. Archive hides the conversation from the default
+// sidebar listing and nothing else: it still resumes, recalls and keeps every
+// record; "Show archived" recovers it.
+function ConversationHeader(props: {
+  conversation: ConversationView;
+  onChanged: () => Promise<void>;
+  onRefused: (message: string) => void;
+}): React.JSX.Element {
+  const { conversation, onChanged, onRefused } = props;
+  const [renaming, setRenaming] = useState(false);
+  const [title, setTitle] = useState(conversation.title);
+  const [busy, setBusy] = useState(false);
+
+  const act = async (run: () => Promise<unknown>) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await run();
+      await onChanged();
+    } catch (failure) {
+      onRefused(describeFailure(failure));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="conversation-header">
+      {renaming ? (
+        <div className="rename">
+          <input
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter")
+                void act(async () => {
+                  await api.renameConversation(conversation.id, title);
+                  setRenaming(false);
+                });
+              if (event.key === "Escape") setRenaming(false);
+            }}
+            autoFocus
+          />
+          <button
+            disabled={busy || title.trim() === ""}
+            onClick={() =>
+              void act(async () => {
+                await api.renameConversation(conversation.id, title);
+                setRenaming(false);
+              })
+            }
+          >
+            Save
+          </button>
+          <button onClick={() => setRenaming(false)}>Cancel</button>
+        </div>
+      ) : (
+        <h2>
+          {conversation.title}
+          {conversation.archived && <span className="archived-tag"> (archived)</span>}
+        </h2>
+      )}
+      <div className="conversation-actions">
+        {!renaming && (
+          <button
+            className="inline-action"
+            onClick={() => {
+              setTitle(conversation.title);
+              setRenaming(true);
+            }}
+          >
+            Rename
+          </button>
+        )}
+        <button
+          className="inline-action"
+          disabled={busy}
+          title={
+            conversation.archived
+              ? "Show this conversation in the sidebar again."
+              : "Hide from the sidebar. Val still remembers it; nothing is removed."
+          }
+          onClick={() =>
+            void act(() =>
+              conversation.archived
+                ? api.unarchiveConversation(conversation.id)
+                : api.archiveConversation(conversation.id),
+            )
+          }
+        >
+          {conversation.archived ? "Unarchive" : "Archive"}
+        </button>
+      </div>
     </div>
   );
 }

@@ -49,6 +49,14 @@ from val_gateway.classification_review import (
 # =============================================================================
 
 
+class RenameRequest(BaseModel):
+    """Set a conversation's title — ruling, 12 September 2026. Presentation only."""
+
+    model_config = ConfigDict(frozen=True)
+
+    title: str
+
+
 class ProjectCreateRequest(BaseModel):
     """Create a project by name — ruled 7 September 2026, the smallest proper path.
 

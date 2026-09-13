@@ -351,6 +351,18 @@ export const api = {
     return request<ConversationView[]>(`/conversations${suffix}`);
   },
   conversation: (id: string) => request<ConversationDetail>(`/conversations/${id}`),
+  // Conversation management — ruling, 12 September 2026. Rename sets the
+  // presentation-class title; archive hides from the default listing and
+  // changes nothing else.
+  renameConversation: (id: string, title: string) =>
+    request<ConversationView>(`/conversations/${id}/title`, {
+      method: "POST",
+      body: JSON.stringify({ title }),
+    }),
+  archiveConversation: (id: string) =>
+    request<ConversationView>(`/conversations/${id}/archive`, { method: "POST" }),
+  unarchiveConversation: (id: string) =>
+    request<ConversationView>(`/conversations/${id}/unarchive`, { method: "POST" }),
   turn: (body: TurnBody) =>
     request<TurnResponse>("/turns", { method: "POST", body: JSON.stringify(body) }),
   // The streamed turn — responsiveness phase, 11 September 2026. Val's text

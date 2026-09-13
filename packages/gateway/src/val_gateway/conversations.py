@@ -264,6 +264,70 @@ def append(
     return _message(row)
 
 
+# --- rename and archive: presentation-class writers (ruling, 12 September 2026) ---
+
+#: The longest title a person may set. A label, not a summary; the refusal is
+#: stated rather than the title silently shortened.
+MAX_TITLE_LENGTH = 200
+
+_RENAME = text(
+    "update conversations set title = :title where id = :id "
+    "returning id, project_id, title, started_at, last_message_at, archived_at"
+)
+
+#: Archiving an archived conversation keeps its first instant; unarchiving clears it.
+_SET_ARCHIVED = text(
+    "update conversations "
+    "   set archived_at = case when :archived then coalesce(archived_at, now()) else null end "
+    " where id = :id "
+    "returning id, project_id, title, started_at, last_message_at, archived_at"
+)
+
+
+class TitleRefusedError(ValueError):
+    """A title that cannot be a conversation's label — empty, or too long to be one."""
+
+
+def rename(engine: Engine, conversation_id: UUID, title: str) -> ConversationRecord:
+    """Set a conversation's title — ruling, 12 September 2026.
+
+    `title` is presentation-class metadata (migration `0008`: "retitling a
+    conversation changes a label; rescoping it changes what the record means").
+    No evidence identity depends on it; every anchor is by id. No title history
+    is kept, by ruling: a later reconstruction may show the current title beside
+    an older excerpt, and that imprecision is accepted.
+    """
+    cleaned = title.strip()
+    if not cleaned:
+        raise TitleRefusedError("a conversation title cannot be empty")
+    if len(cleaned) > MAX_TITLE_LENGTH:
+        raise TitleRefusedError(
+            f"a conversation title is a label of at most {MAX_TITLE_LENGTH} characters; "
+            f"this one has {len(cleaned)}. Nothing was shortened on your behalf."
+        )
+    with engine.begin() as connection:
+        row = connection.execute(_RENAME, {"id": conversation_id, "title": cleaned}).one_or_none()
+    if row is None:
+        raise ConversationNotFoundError(conversation_id)
+    return _record(row)
+
+
+def set_archived(engine: Engine, conversation_id: UUID, *, archived: bool) -> ConversationRecord:
+    """Archive or unarchive a conversation — ruling, 12 September 2026.
+
+    Archive means exactly: hidden from the default sidebar listing (§2.1
+    amendment, 31 August 2026). It changes no attribution, recall, resumption,
+    evidence, judgment or cost; the archived listing recovers it.
+    """
+    with engine.begin() as connection:
+        row = connection.execute(
+            _SET_ARCHIVED, {"id": conversation_id, "archived": archived}
+        ).one_or_none()
+    if row is None:
+        raise ConversationNotFoundError(conversation_id)
+    return _record(row)
+
+
 def history(engine: Engine, conversation_id: UUID) -> tuple[MessageRecord, ...]:
     """Every message in this conversation, in `sequence` order.
 

@@ -318,3 +318,28 @@ body {
   font-size: 0.8rem;
   margin: 0.25rem 1rem;
 }
+
+/* Conversation management — ruling, 12 September 2026. */
+.conversation-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.conversation-header h2 {
+  margin-right: auto;
+}
+.conversation-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.conversation-header .rename {
+  display: flex;
+  gap: 0.4rem;
+  flex: 1;
+}
+.conversation-header .rename input {
+  flex: 1;
+}
