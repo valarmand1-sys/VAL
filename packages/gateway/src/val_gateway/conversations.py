@@ -18,10 +18,13 @@ it is why a NULL `conversations.project_id` can be read as *explicitly no
 project* without a companion attribution column: the only writer refuses to
 create one otherwise.
 
-**Scope is then immutable.** Migration `0008` enforces it in the database. A
-project switch starts a new conversation; the old one keeps its own history,
-because the messages in it were said inside that scope and the `model_calls`
-rows attributed to it say so.
+**Origin scope is then immutable.** Migration `0008` enforces it in the
+database. A project switch stated inside a turn starts a new conversation; the
+old one keeps its own history, because the messages in it were said inside that
+scope and the `model_calls` rows attributed to it say so. *Amended 12 September
+2026:* an explicit Move (`move`) appends a scope transition instead — the origin
+stays, earlier messages keep the scope they were written in, and the effective
+scope governs from that point on (`val_effective_project_id`, migration `0018`).
 
 ## Sequence, and why it is not a PostgreSQL sequence
 
@@ -70,6 +73,7 @@ from val_domain.conversation import (
     MessageRecord,
     MessageRevisionRecord,
     RevisionKind,
+    ScopeTransitionRecord,
     StoredRole,
     WorkingThread,
     working_thread,
@@ -80,12 +84,16 @@ from val_gateway.projects import load_project
 _INSERT_CONVERSATION = text(
     "insert into conversations (project_id, title) values (:project_id, :title) "
     "returning id, project_id, title, started_at, last_message_at, archived_at, "
-    "          val_conversation_removed_at(id) as removed_at"
+    "          val_conversation_removed_at(id) as removed_at, "
+    "          val_effective_project_id(id, 9223372036854775807) as effective_project_id, "
+    "          val_scope_transitions(id) as scope_transitions"
 )
 
 _SELECT_CONVERSATION = text(
     "select id, project_id, title, started_at, last_message_at, archived_at, "
-    "       val_conversation_removed_at(id) as removed_at "
+    "       val_conversation_removed_at(id) as removed_at, "
+    "       val_effective_project_id(id, 9223372036854775807) as effective_project_id, "
+    "       val_scope_transitions(id) as scope_transitions "
     "from conversations where id = :id"
 )
 
@@ -159,6 +167,8 @@ def _record(row: object) -> ConversationRecord:
         last_message_at=row.last_message_at,  # type: ignore[attr-defined]
         archived_at=row.archived_at,  # type: ignore[attr-defined]
         removed_at=row.removed_at,  # type: ignore[attr-defined]
+        effective_project_id=row.effective_project_id,  # type: ignore[attr-defined]
+        scope_transitions=row.scope_transitions,  # type: ignore[attr-defined]
     )
 
 
@@ -212,7 +222,9 @@ def listing(
         raise ValueError("a conversation is in a project or explicitly in none, never both")
     columns = (
         "select id, project_id, title, started_at, last_message_at, archived_at, "
-        "val_conversation_removed_at(id) as removed_at from conversations"
+        "val_conversation_removed_at(id) as removed_at, "
+        "val_effective_project_id(id, 9223372036854775807) as effective_project_id, "
+        "val_scope_transitions(id) as scope_transitions from conversations"
     )
     order = "order by last_message_at desc, id desc"
     clauses = [] if include_archived else ["archived_at is null"]
@@ -220,10 +232,13 @@ def listing(
     # listing too; the listing that includes removed rows recovers it.
     if not include_removed:
         clauses.append("val_conversation_removed_at(id) is null")
+    # Ruling, 12 September 2026: a conversation is listed under its current
+    # effective scope — where an explicit move put it — never under its origin
+    # alone.
     if project_id is not None:
-        clauses.append("project_id = :p")
+        clauses.append("val_effective_project_id(id, 9223372036854775807) = :p")
     elif explicit_none:
-        clauses.append("project_id is null")
+        clauses.append("val_effective_project_id(id, 9223372036854775807) is null")
     where = f"where {' and '.join(clauses)} " if clauses else ""
     statement = text(f"{columns} {where}{order}")
     with engine.connect() as connection:
@@ -259,9 +274,10 @@ def resume(engine: Engine, conversation_id: UUID) -> tuple[ConversationRecord, P
     conversation = load(engine, conversation_id)
     if conversation.removed_at is not None:
         raise ConversationRemovedError(conversation_id)
-    project = (
-        None if conversation.project_id is None else load_project(engine, conversation.project_id)
-    )
+    # Ruling, 12 September 2026: the scope that governs the next turn is the
+    # conversation's current effective scope — its origin unless explicitly moved.
+    current = conversation.current_project_id
+    project = None if current is None else load_project(engine, current)
     return conversation, conversation.scope(project)
 
 
@@ -307,7 +323,9 @@ MAX_TITLE_LENGTH = 200
 _RENAME = text(
     "update conversations set title = :title where id = :id "
     "returning id, project_id, title, started_at, last_message_at, archived_at, "
-    "          val_conversation_removed_at(id) as removed_at"
+    "          val_conversation_removed_at(id) as removed_at, "
+    "          val_effective_project_id(id, 9223372036854775807) as effective_project_id, "
+    "          val_scope_transitions(id) as scope_transitions"
 )
 
 #: Archiving an archived conversation keeps its first instant; unarchiving clears it.
@@ -316,7 +334,9 @@ _SET_ARCHIVED = text(
     "   set archived_at = case when :archived then coalesce(archived_at, now()) else null end "
     " where id = :id "
     "returning id, project_id, title, started_at, last_message_at, archived_at, "
-    "          val_conversation_removed_at(id) as removed_at"
+    "          val_conversation_removed_at(id) as removed_at, "
+    "          val_effective_project_id(id, 9223372036854775807) as effective_project_id, "
+    "          val_scope_transitions(id) as scope_transitions"
 )
 
 
@@ -487,3 +507,111 @@ def reinstate(
 ) -> ConversationRecord:
     """Return a removed conversation to active use — another appended fact."""
     return _record_removal(engine, conversation_id, kind="reinstated", note=note)
+
+
+# --- explicit scope transitions (ruling, 12 September 2026) ----------------------
+
+#: Who records a move. Only Lord Armand moves a conversation.
+TRANSITION_AUTHOR = "Lord Armand"
+
+_TRANSITION_STATE = text(
+    "select coalesce((select max(sequence) from messages where conversation_id = :id), 0) "
+    "         as highest, "
+    "       coalesce((select max(transition_number) from conversation_scope_transitions "
+    "                  where conversation_id = :id), 0) as transitions, "
+    "       val_effective_project_id(:id, 9223372036854775807) as current_scope, "
+    "       val_conversation_removed_at(:id) as removed_at"
+)
+
+_PROJECT_EXISTS = text("select exists (select 1 from projects where id = :p)")
+
+_INSERT_TRANSITION = text(
+    "insert into conversation_scope_transitions "
+    "  (conversation_id, transition_number, after_sequence, from_project_id, to_project_id, "
+    "   authored_by, note) "
+    "values (:id, :number, :after, :from_project, :to_project, :author, :note)"
+)
+
+_SELECT_TRANSITIONS = text(
+    "select id, conversation_id, transition_number, after_sequence, from_project_id, "
+    "       to_project_id, authored_by, note, created_at "
+    "  from conversation_scope_transitions where conversation_id = :id "
+    " order by transition_number"
+)
+
+
+class ScopeTransitionRefusedError(Exception):
+    """The move was not recorded; `reason` says why."""
+
+    def __init__(self, reason: str, detail: str) -> None:
+        self.reason = reason
+        super().__init__(detail)
+
+
+def move(
+    engine: Engine,
+    conversation_id: UUID,
+    *,
+    to_project_id: UUID | None,
+    note: str | None = None,
+) -> ConversationRecord:
+    """Move a conversation to a project, or out of every project — an appended fact.
+
+    `conversations.project_id` is never updated: it stays the origin. The
+    transition records the effective scope from this point on, numbered under the
+    conversation row lock so its place in the conversation's order is exact.
+    Earlier messages and calls keep the scope they occurred in; the next turn,
+    its classification, deliberation, events and calls are attributed to the new
+    one. No provider call.
+    """
+    with engine.begin() as connection:
+        locked = connection.execute(_LOCK_CONVERSATION, {"id": conversation_id}).one_or_none()
+        if locked is None:
+            raise ConversationNotFoundError(conversation_id)
+        state = connection.execute(_TRANSITION_STATE, {"id": conversation_id}).one()
+        if state.removed_at is not None:
+            raise ScopeTransitionRefusedError(
+                "removed", "this conversation has been removed; reinstate it before moving it"
+            )
+        if (
+            to_project_id is not None
+            and not connection.execute(_PROJECT_EXISTS, {"p": to_project_id}).scalar_one()
+        ):
+            raise ScopeTransitionRefusedError("unknown_project", f"no project {to_project_id}")
+        if state.current_scope == to_project_id:
+            raise ScopeTransitionRefusedError(
+                "unchanged", "the conversation is already there; nothing was moved"
+            )
+        connection.execute(
+            _INSERT_TRANSITION,
+            {
+                "id": conversation_id,
+                "number": state.transitions + 1,
+                "after": state.highest,
+                "from_project": state.current_scope,
+                "to_project": to_project_id,
+                "author": TRANSITION_AUTHOR,
+                "note": note.strip() if note is not None and note.strip() else None,
+            },
+        )
+    return load(engine, conversation_id)
+
+
+def scope_transitions(engine: Engine, conversation_id: UUID) -> tuple[ScopeTransitionRecord, ...]:
+    """Every explicit move of one conversation, in order."""
+    with engine.connect() as connection:
+        rows = connection.execute(_SELECT_TRANSITIONS, {"id": conversation_id}).all()
+    return tuple(
+        ScopeTransitionRecord(
+            id=row.id,
+            conversation_id=row.conversation_id,
+            transition_number=row.transition_number,
+            after_sequence=row.after_sequence,
+            from_project_id=row.from_project_id,
+            to_project_id=row.to_project_id,
+            authored_by=row.authored_by,
+            note=row.note,
+            created_at=row.created_at,
+        )
+        for row in rows
+    )

@@ -271,6 +271,25 @@ def working_thread(
     return WorkingThread(messages=tuple(working))
 
 
+@dataclass(frozen=True)
+class ScopeTransitionRecord:
+    """One explicit move of a conversation (ruling, 12 September 2026).
+
+    Messages with sequence greater than `after_sequence` — until the next
+    transition — were written in `to_project_id`; NULL means explicitly no project.
+    """
+
+    id: UUID
+    conversation_id: UUID
+    transition_number: int
+    after_sequence: int
+    from_project_id: UUID | None
+    to_project_id: UUID | None
+    authored_by: str
+    note: str | None
+    created_at: datetime
+
+
 class InconsistentConversationError(Exception):
     """A conversation names a project that could not be resolved.
 
@@ -294,7 +313,7 @@ class InconsistentConversationError(Exception):
 class ConversationRecord:
     """One conversation as the authoritative store holds it.
 
-    `project_id` is the scope and is immutable after creation — enforced by
+    `project_id` is the origin scope and is immutable after creation — enforced by
     database trigger, not by convention (migration `0008`). A project switch
     starts a new conversation; it never rewrites this one. That is WP-0.6's
     forward-only doctrine applied to the conversation itself: *"corrections
@@ -315,11 +334,22 @@ class ConversationRecord:
     #: column. A removed conversation is excluded from recall and cannot resume;
     #: nothing in it is touched.
     removed_at: datetime | None = None
+    #: Ruling, 12 September 2026: `project_id` is the immutable **origin**
+    #: scope. After an explicit move, `effective_project_id` is the scope that
+    #: governs the next turn, derived from `conversation_scope_transitions`;
+    #: `scope_transitions` counts the moves. With none, the origin governs.
+    effective_project_id: UUID | None = None
+    scope_transitions: int = 0
+
+    @property
+    def current_project_id(self) -> UUID | None:
+        """The scope that governs this conversation's next turn."""
+        return self.effective_project_id if self.scope_transitions else self.project_id
 
     @property
     def is_explicit_no_project(self) -> bool:
-        """Whether this conversation was deliberately started outside any project."""
-        return self.project_id is None
+        """Whether this conversation is now outside any project."""
+        return self.current_project_id is None
 
     def scope(self, project: ProjectRecord | None) -> ProjectScope:
         """This conversation's scope, as a WP-0.6 `ProjectScope`.
@@ -334,8 +364,9 @@ class ConversationRecord:
         explicit-none. Silently treating a dangling reference as *"no project"*
         would turn a broken row into a decision nobody made.
         """
-        if self.project_id is None:
+        current = self.current_project_id
+        if current is None:
             return ExplicitNoProject(via=ResolutionSource.CONVERSATION)
-        if project is None or project.id != self.project_id:
-            raise InconsistentConversationError(self.id, self.project_id)
+        if project is None or project.id != current:
+            raise InconsistentConversationError(self.id, current)
         return ResolvedProject(project=project, via=ResolutionSource.CONVERSATION)

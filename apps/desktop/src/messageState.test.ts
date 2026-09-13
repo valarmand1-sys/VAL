@@ -2,8 +2,16 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { MessageView, RevisionView } from "./api";
-import { answerStateLine, canEdit, canRemove, isLive, userStateLine } from "./messageState";
+import type { MessageView, ProjectView, RevisionView } from "./api";
+import {
+  answerStateLine,
+  canEdit,
+  canRemove,
+  isLive,
+  moveConfirmation,
+  transitionLine,
+  userStateLine,
+} from "./messageState";
 
 function fact(overrides: Partial<RevisionView> = {}): RevisionView {
   return {
@@ -76,5 +84,35 @@ describe("revision state words", () => {
     expect(canRemove(message({ role: "val" }))).toBe(false);
     expect(canEdit(message({ state: "withdrawn" }))).toBe(false);
     expect(canRemove(message({ state: "withdrawn" }))).toBe(false);
+  });
+});
+
+describe("scope transition words", () => {
+  const projects: ProjectView[] = [
+    { id: "p-a", name: "Project Alpha", slug: "project-alpha", status: "active", archived: false },
+    { id: "p-b", name: "Project Beta", slug: "project-beta", status: "active", archived: false },
+  ];
+
+  it("names both ends of a move, including no project", () => {
+    const line = transitionLine(
+      {
+        id: "t-1",
+        transition_number: 1,
+        after_sequence: 2,
+        from_project_id: "p-a",
+        to_project_id: null,
+        note: null,
+        authored_by: "Lord Armand",
+        created_at: "2026-09-12T18:00:00Z",
+      },
+      projects,
+    );
+    expect(line).toMatch(/^Moved from Project Alpha to no project · /);
+    expect(line).toContain("written before the move");
+  });
+
+  it("never claims the move rewrote earlier messages", () => {
+    expect(moveConfirmation("Project Beta")).toContain("Earlier messages keep the scope");
+    expect(moveConfirmation("Project Beta")).toContain("nothing is rewritten");
   });
 });

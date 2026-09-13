@@ -46,9 +46,8 @@ from val_domain.gateway import ConversationProvenance, GatewayRequest
 _COHERENCE = text(
     "select m.role      as message_role, "
     "       m.conversation_id as message_conversation, "
-    "       c.project_id as conversation_project "
+    "       val_effective_project_id(m.conversation_id, m.sequence) as conversation_project "
     "  from messages m "
-    "  join conversations c on c.id = m.conversation_id "
     " where m.id = :message_id"
 )
 
@@ -75,8 +74,10 @@ def verify(engine: Engine, provenance: ConversationProvenance, project_id: UUID 
     2. it is a **user** message — the triggering turn, not Val's reply, which
        does not exist when the call is made;
     3. it belongs to the conversation named;
-    4. the conversation's scope is the scope this call is being attributed to,
-       with `NULL` meaning explicitly no project on both sides.
+    4. the conversation's scope **at that message** is the scope this call is
+       being attributed to, with `NULL` meaning explicitly no project on both
+       sides — the origin, or the effective scope an explicit move established
+       before the message was written (ruling, 12 September 2026).
 
     `project_id` is taken as the request holds it — the already-resolved value —
     rather than as a `ProjectScope`, so this module has no opinion about
@@ -120,10 +121,11 @@ def verify(engine: Engine, provenance: ConversationProvenance, project_id: UUID 
         stored = row.conversation_project or "no project"
         asked = project_id or "no project"
         raise IncoherentProvenanceError(
-            f"conversation {provenance.conversation_id} is scoped to {stored}, but this "
-            f"call is attributed to {asked}. Conversation scope is immutable (migration "
-            "`0008`) and switching project starts a new conversation, so these can only "
-            "disagree because the wrong one was supplied."
+            f"conversation {provenance.conversation_id} is scoped to {stored} at this "
+            f"message, but this call is attributed to {asked}. A message's scope is fixed "
+            "when it is written — the origin, or the scope an explicit move established "
+            "before it (ruling, 12 September 2026) — so these can only disagree because "
+            "the wrong one was supplied."
         )
 
     with engine.connect() as connection:

@@ -28,6 +28,7 @@ from val_domain.conversation import (
     ConversationRecord,
     MessageRecord,
     MessageRevisionRecord,
+    ScopeTransitionRecord,
     StoredRole,
     WorkingMessage,
 )
@@ -61,6 +62,48 @@ class RemovalRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     note: str | None = None
+
+
+class MoveRequest(BaseModel):
+    """Move a conversation — ruling, 12 September 2026. Exactly one destination.
+
+    `project_id` names a project; `no_project: true` moves it out of every
+    project. Stating both, or neither, is refused rather than guessed.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    project_id: UUID | None = None
+    no_project: bool = False
+    note: str | None = None
+
+
+class ScopeTransitionView(BaseModel):
+    """One explicit move, from the record. NULL means explicitly no project."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    transition_number: int
+    after_sequence: int
+    from_project_id: UUID | None
+    to_project_id: UUID | None
+    note: str | None
+    authored_by: str
+    created_at: datetime
+
+    @classmethod
+    def of(cls, record: ScopeTransitionRecord) -> ScopeTransitionView:
+        return cls(
+            id=record.id,
+            transition_number=record.transition_number,
+            after_sequence=record.after_sequence,
+            from_project_id=record.from_project_id,
+            to_project_id=record.to_project_id,
+            note=record.note,
+            authored_by=record.authored_by,
+            created_at=record.created_at,
+        )
 
 
 class RenameRequest(BaseModel):
@@ -119,12 +162,18 @@ class ConversationView(BaseModel):
     #: Ruling, 12 September 2026: removed from active use — no recall, no new
     #: turns, nothing destroyed. Reinstating reverses it.
     removed: bool = False
+    #: Ruling, 12 September 2026: `project_id` is the scope that governs the
+    #: next turn — where an explicit move put the conversation, else where it
+    #: began. `origin_project_id` is where it began, immutable. They differ only
+    #: after a move; NULL on either means explicitly no project.
+    origin_project_id: UUID | None = None
 
     @classmethod
     def of(cls, record: ConversationRecord) -> ConversationView:
         return cls(
             id=record.id,
-            project_id=record.project_id,
+            project_id=record.current_project_id,
+            origin_project_id=record.project_id,
             title=record.title,
             started_at=record.started_at,
             last_message_at=record.last_message_at,
@@ -403,6 +452,10 @@ class ConversationDetail(BaseModel):
 
     conversation: ConversationView
     messages: list[MessageView]
+    #: Ruling, 12 September 2026: every explicit move, in order. A message with
+    #: sequence above a move's `after_sequence` (until the next) was written in
+    #: that move's destination.
+    scope_transitions: list[ScopeTransitionView] = Field(default_factory=list)
     #: Ruling, 3 September 2026: how each turn was classified, from the
     #: evidence record, so the answer is readable here and not only in SQL.
     classifications: list[ClassificationView]

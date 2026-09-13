@@ -129,7 +129,12 @@ from val_policy.recall import (
 #: messages) the scan is negligible, and an index over the derivation is a
 #: later decision if volume ever makes it one. `val_conversation_removed_at`
 #: (`0017`) excludes a conversation Lord Armand removed from active use, also
-#: inside the query.
+#: inside the query. And every message is scoped by **the scope it was written
+#: in** — `val_effective_project_id(conversation, sequence)` (`0018`): the origin,
+#: or the scope an explicit move established before it. A conversation moved into
+#: Project B contributes its post-move messages to B and its pre-move messages to
+#: wherever they were written, so a move never carries unrelated Project A
+#: material into B's recall.
 #:
 #: `conversation_id is distinct from :exclude` keeps the current conversation
 #: out: its history is assembled in full and in order by the caller, so a message
@@ -137,13 +142,15 @@ from val_policy.recall import (
 _IN_PROJECT = text(
     "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
     "       mc.state, mc.state_recorded_at, mc.answered_state, "
-    "       c.project_id, c.title, "
+    "       scope.project_id, c.title, "
     "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
     "                       '&', '|')::tsquery) as rank "
     "  from messages_current mc "
     "  join conversations c on c.id = mc.conversation_id "
-    " where c.project_id = :project_id "
+    "  cross join lateral (select val_effective_project_id(mc.conversation_id, mc.sequence) "
+    "                             as project_id) scope "
+    " where scope.project_id = :project_id "
     "   and mc.conversation_id is distinct from :exclude "
     "   and mc.role in ('user', 'val') "
     "   and mc.live "
@@ -163,13 +170,15 @@ _IN_PROJECT = text(
 _IN_NO_PROJECT = text(
     "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
     "       mc.state, mc.state_recorded_at, mc.answered_state, "
-    "       c.project_id, c.title, "
+    "       scope.project_id, c.title, "
     "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
     "                       '&', '|')::tsquery) as rank "
     "  from messages_current mc "
     "  join conversations c on c.id = mc.conversation_id "
-    " where c.project_id is null "
+    "  cross join lateral (select val_effective_project_id(mc.conversation_id, mc.sequence) "
+    "                             as project_id) scope "
+    " where scope.project_id is null "
     "   and mc.conversation_id is distinct from :exclude "
     "   and mc.role in ('user', 'val') "
     "   and mc.live "
@@ -190,13 +199,15 @@ _IN_NO_PROJECT = text(
 _ACROSS_HOUSE = text(
     "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
     "       mc.state, mc.state_recorded_at, mc.answered_state, "
-    "       c.project_id, c.title, p.name as project_name, "
+    "       scope.project_id, c.title, p.name as project_name, "
     "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
     "                       '&', '|')::tsquery) as rank "
     "  from messages_current mc "
     "  join conversations c on c.id = mc.conversation_id "
-    "  left join projects p on p.id = c.project_id "
+    "  cross join lateral (select val_effective_project_id(mc.conversation_id, mc.sequence) "
+    "                             as project_id) scope "
+    "  left join projects p on p.id = scope.project_id "
     " where mc.conversation_id is distinct from :exclude "
     "   and mc.role in ('user', 'val') "
     "   and mc.live "

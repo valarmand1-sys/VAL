@@ -54,10 +54,13 @@ from val_domain.execution import (
     ReasonSource,
 )
 
+#: The anchoring message's conversation and the scope that message was written in —
+#: the origin, or the effective scope an explicit move established before it
+#: (ruling, 12 September 2026). Evidence about a turn carries that turn's scope.
 _ANCHOR = text(
-    "select m.conversation_id as message_conversation, c.project_id "
+    "select m.conversation_id as message_conversation, "
+    "       val_effective_project_id(m.conversation_id, m.sequence) as project_id "
     "  from messages m "
-    "  join conversations c on c.id = m.conversation_id "
     " where m.id = :message_id"
 )
 

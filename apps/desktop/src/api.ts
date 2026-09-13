@@ -29,6 +29,22 @@ export interface ConversationView {
   // Removed from active use (ruling, 12 September 2026): no recall, no new
   // turns, nothing destroyed. Optional because absence means not removed.
   removed?: boolean;
+  // Where the conversation began (ruling, 12 September 2026). `project_id` is
+  // where it is now; they differ only after an explicit move.
+  origin_project_id?: string | null;
+}
+
+// One explicit move, from the record. Messages after `after_sequence` (until the
+// next move) were written in `to_project_id`; null means no project.
+export interface ScopeTransitionView {
+  id: string;
+  transition_number: number;
+  after_sequence: number;
+  from_project_id: string | null;
+  to_project_id: string | null;
+  note: string | null;
+  authored_by: string;
+  created_at: string;
 }
 
 export type MessageState = "current" | "corrected" | "withdrawn";
@@ -206,6 +222,7 @@ export interface ReviewProgressView {
 export interface ConversationDetail {
   conversation: ConversationView;
   messages: MessageView[];
+  scope_transitions?: ScopeTransitionView[];
   classifications: ClassificationView[];
   blind_positions: BlindPositionView[];
   deliberations: DeliberationView[];
@@ -397,6 +414,13 @@ export const api = {
     request<ConversationView>(`/conversations/${id}/remove`, { method: "POST", body: "{}" }),
   reinstateConversation: (id: string) =>
     request<ConversationView>(`/conversations/${id}/reinstate`, { method: "POST", body: "{}" }),
+  // Move: an appended scope transition. Exactly one destination — a project,
+  // or no project. The conversation's origin is never rewritten.
+  moveConversation: (id: string, destination: { project_id: string } | { no_project: true }) =>
+    request<ConversationView>(`/conversations/${id}/scope`, {
+      method: "POST",
+      body: JSON.stringify(destination),
+    }),
   // Message revision and retraction — appended facts, never edits. Neither
   // makes a provider call.
   reviseMessage: (id: string, content: string, note?: string) =>

@@ -1126,12 +1126,66 @@ class ConversationRemoval(Base):
     )
 
 
+class ConversationScopeTransition(Base):
+    """§2.1 amendment, 12 September 2026 — `conversation_scope_transitions`.
+
+    An explicit move of an existing conversation, as an appended fact.
+    `conversations.project_id` stays the immutable origin; the newest
+    transition with `after_sequence < q` gives the scope a message at sequence
+    *q* was written in (`val_effective_project_id`). NULL on either project
+    column means explicitly no project. A coherence trigger refuses a skipped
+    number, a stale `after_sequence`, a `from_project_id` that is not the
+    effective scope, and a move of a removed conversation. Append-only (`0018`).
+    """
+
+    __tablename__ = "conversation_scope_transitions"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    transition_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    after_sequence: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    from_project_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
+    )
+    to_project_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
+    )
+    authored_by: Mapped[str] = mapped_column(Text, nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("transition_number > 0", name="transition_number_positive"),
+        CheckConstraint("after_sequence >= 0", name="after_sequence_not_negative"),
+        CheckConstraint(
+            "from_project_id IS DISTINCT FROM to_project_id", name="a_move_changes_scope"
+        ),
+        CheckConstraint("length(btrim(authored_by)) > 0", name="authored_by_named"),
+        # Explicit names: the conventional ones exceed PostgreSQL's 63-character limit.
+        UniqueConstraint(
+            "conversation_id",
+            "transition_number",
+            name="uq_scope_transitions_conversation_number",
+        ),
+        Index("ix_scope_transitions_conversation_after", "conversation_id", "after_sequence"),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
         "conversations",
         "conversation_removals",
+        "conversation_scope_transitions",
         "messages",
         "message_revisions",
         "personas",

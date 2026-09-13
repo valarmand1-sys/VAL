@@ -237,6 +237,19 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "authored_by",
         "note",
     ),
+    # §2.1 amendment, 12 September 2026: explicit scope transitions; the origin
+    # stays in conversations.project_id.
+    "conversation_scope_transitions": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "transition_number",
+        "after_sequence",
+        "from_project_id",
+        "to_project_id",
+        "authored_by",
+        "note",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -306,6 +319,10 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("message_revisions", "content"),
         ("message_revisions", "note"),
         ("conversation_removals", "note"),
+        # NULL on either side of a move means explicitly no project.
+        ("conversation_scope_transitions", "from_project_id"),
+        ("conversation_scope_transitions", "to_project_id"),
+        ("conversation_scope_transitions", "note"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.

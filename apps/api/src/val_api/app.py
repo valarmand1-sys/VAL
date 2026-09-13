@@ -48,6 +48,7 @@ from val_api.contracts import (
     LabelRequest,
     ManualDeliberationRequest,
     MessageView,
+    MoveRequest,
     ProjectCreateRequest,
     ProjectView,
     QueuedExchangeView,
@@ -58,6 +59,7 @@ from val_api.contracts import (
     ReviewRequest,
     RevisionRequest,
     RevisionView,
+    ScopeTransitionView,
     TurnAnswered,
     TurnClarification,
     TurnRequest,
@@ -82,6 +84,7 @@ from val_gateway.conversations import (
     ConversationNotFoundError,
     ConversationRemovedError,
     RemovalRefusedError,
+    ScopeTransitionRefusedError,
     TitleRefusedError,
 )
 from val_gateway.deliberate import DeliberatedOutcome
@@ -220,6 +223,10 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
         }
         return ConversationDetail(
             conversation=ConversationView.of(record),
+            scope_transitions=[
+                ScopeTransitionView.of(transition)
+                for transition in conversations.scope_transitions(engine, conversation_id)
+            ],
             messages=[
                 MessageView.of_working(message, deliberated=message.record.id in deliberated)
                 for message in conversations.working(engine, conversation_id).messages
@@ -265,6 +272,32 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
             )
         except ConversationNotFoundError as missing:
             raise HTTPException(status_code=404, detail=str(missing)) from missing
+
+    @app.post("/conversations/{conversation_id}/scope")
+    def move_conversation(conversation_id: UUID, request: MoveRequest) -> ConversationView:
+        """Move: an appended scope transition. The origin is never rewritten.
+
+        Earlier messages and calls keep the scope they occurred in; the next
+        turn, and everything recorded about it, belongs to the destination.
+        """
+        if (request.project_id is None) == (not request.no_project):
+            raise HTTPException(
+                status_code=422,
+                detail="name exactly one destination: a project_id, or no_project: true",
+            )
+        try:
+            return ConversationView.of(
+                conversations.move(
+                    engine, conversation_id, to_project_id=request.project_id, note=request.note
+                )
+            )
+        except ConversationNotFoundError as missing:
+            raise HTTPException(status_code=404, detail=str(missing)) from missing
+        except ScopeTransitionRefusedError as refused:
+            status = 404 if refused.reason == "unknown_project" else 409
+            raise HTTPException(
+                status_code=status, detail={"reason": refused.reason, "message": str(refused)}
+            ) from refused
 
     @app.post("/conversations/{conversation_id}/remove")
     def remove_conversation(conversation_id: UUID, request: RemovalRequest) -> ConversationView:

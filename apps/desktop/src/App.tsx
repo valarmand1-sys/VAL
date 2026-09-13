@@ -11,7 +11,7 @@
 // live on the messages they are about, in the flow of working, because the
 // two accumulation criteria die if either requires leaving the conversation.
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 
 import type {
   Confidence,
@@ -46,9 +46,11 @@ import {
   canRemove,
   EDIT_EXPLANATION,
   isLive,
+  moveConfirmation,
   REMOVE_CONVERSATION_CONFIRMATION,
   REMOVE_MESSAGE_CONFIRMATION,
   REMOVED_CONVERSATION_NOTICE,
+  transitionLine,
   userStateLine,
 } from "./messageState";
 import { enterProject, initialEntry, newChatEntry, newConversationLine, turnScopeFields } from "./scope";
@@ -386,6 +388,7 @@ export function App(): React.JSX.Element {
         ) : (
           <Thread
             detail={detail}
+            projects={projects}
             onRecorded={() => void openConversation(detail.conversation.id)}
             onConversationChanged={async () => {
               await openConversation(detail.conversation.id);
@@ -509,26 +512,44 @@ function StreamingThread(props: {
 
 function Thread(props: {
   detail: ConversationDetail;
+  projects: ProjectView[];
   onRecorded: () => void;
   onConversationChanged: () => Promise<void>;
   onRefused: (message: string) => void;
 }): React.JSX.Element {
-  const { detail, onRecorded, onConversationChanged, onRefused } = props;
+  const { detail, projects, onRecorded, onConversationChanged, onRefused } = props;
+  const transitions = detail.scope_transitions ?? [];
   return (
     <div className="messages">
       <ConversationHeader
         conversation={detail.conversation}
+        projects={projects}
         onChanged={onConversationChanged}
         onRefused={onRefused}
       />
+      {transitions
+        .filter((transition) => transition.after_sequence === 0)
+        .map((transition) => (
+          <div key={transition.id} className="scope-transition">
+            {transitionLine(transition, projects)}
+          </div>
+        ))}
       {detail.messages.map((message) => (
-        <MessageBlock
-          key={message.id}
-          message={message}
-          detail={detail}
-          onRecorded={onRecorded}
-          onRefused={onRefused}
-        />
+        <Fragment key={message.id}>
+          <MessageBlock
+            message={message}
+            detail={detail}
+            onRecorded={onRecorded}
+            onRefused={onRefused}
+          />
+          {transitions
+            .filter((transition) => transition.after_sequence === message.sequence)
+            .map((transition) => (
+              <div key={transition.id} className="scope-transition">
+                {transitionLine(transition, projects)}
+              </div>
+            ))}
+        </Fragment>
       ))}
     </div>
   );
@@ -749,10 +770,11 @@ function MessageBlock(props: {
 // record; "Show archived" recovers it.
 function ConversationHeader(props: {
   conversation: ConversationView;
+  projects: ProjectView[];
   onChanged: () => Promise<void>;
   onRefused: (message: string) => void;
 }): React.JSX.Element {
-  const { conversation, onChanged, onRefused } = props;
+  const { conversation, projects, onChanged, onRefused } = props;
   const [renaming, setRenaming] = useState(false);
   const [title, setTitle] = useState(conversation.title);
   const [busy, setBusy] = useState(false);
@@ -855,6 +877,38 @@ function ConversationHeader(props: {
         >
           {conversation.removed === true ? "Reinstate" : "Remove"}
         </button>
+        {conversation.removed !== true && (
+          <select
+            className="move"
+            value=""
+            disabled={busy}
+            aria-label="Move this conversation"
+            onChange={(event) => {
+              const target = event.target.value;
+              if (target === "") return;
+              const destination =
+                target === "none"
+                  ? { name: "no project", body: { no_project: true as const } }
+                  : {
+                      name: projects.find((project) => project.id === target)?.name ?? "that project",
+                      body: { project_id: target },
+                    };
+              if (window.confirm(moveConfirmation(destination.name))) {
+                void act(() => api.moveConversation(conversation.id, destination.body));
+              }
+            }}
+          >
+            <option value="">Move to…</option>
+            {projects
+              .filter((project) => project.id !== conversation.project_id)
+              .map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            {conversation.project_id !== null && <option value="none">No project</option>}
+          </select>
+        )}
       </div>
     </div>
   );

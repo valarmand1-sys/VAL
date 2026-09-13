@@ -6,7 +6,7 @@
 // was originally said; Val's answer is never presented as answering wording she
 // did not receive; a withdrawn message is never presented as gone.
 
-import type { MessageView } from "./api";
+import type { MessageView, ProjectView, ScopeTransitionView } from "./api";
 
 export const REMOVE_MESSAGE_CONFIRMATION =
   "Remove this message and Val's reply from the conversation? Both stay in the House " +
@@ -70,3 +70,25 @@ export const REMOVE_CONVERSATION_CONFIRMATION =
 export const REMOVED_CONVERSATION_NOTICE =
   "This conversation has been removed from active use. It is preserved whole; " +
   "reinstate it to continue.";
+
+function scopeName(projectId: string | null, projects: ProjectView[]): string {
+  if (projectId === null) return "no project";
+  return projects.find((project) => project.id === projectId)?.name ?? "a project not listed";
+}
+
+/** The marker shown in the thread where an explicit move took effect. */
+export function transitionLine(transition: ScopeTransitionView, projects: ProjectView[]): string {
+  return (
+    `Moved from ${scopeName(transition.from_project_id, projects)} to ` +
+    `${scopeName(transition.to_project_id, projects)} · ${when(transition.created_at)}. ` +
+    "Messages above were written before the move."
+  );
+}
+
+export function moveConfirmation(destination: string): string {
+  return (
+    `Move this conversation to ${destination}? From now on it belongs there, and Val will ` +
+    "draw on that scope's material for new messages. Earlier messages keep the scope they " +
+    "were written in, and the move is recorded; nothing is rewritten."
+  );
+}
