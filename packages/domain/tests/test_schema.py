@@ -250,6 +250,24 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "authored_by",
         "note",
     ),
+    # WP-0.7 amendment, 13 September 2026: the House Recall sources a Val answer
+    # was grounded in — provenance only, no content.
+    "answer_recall_sources": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "answer_message_id",
+        "model_call_id",
+        "retrieval_path",
+        "rank_position",
+        "source_message_id",
+        "source_conversation_id",
+        "source_sequence",
+        "source_revision_number",
+        "source_project_id",
+        "source_sent_at",
+        "source_conversation_title",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -323,6 +341,9 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("conversation_scope_transitions", "from_project_id"),
         ("conversation_scope_transitions", "to_project_id"),
         ("conversation_scope_transitions", "note"),
+        # NULL revision: the source's original wording; NULL project: unassigned.
+        ("answer_recall_sources", "source_revision_number"),
+        ("answer_recall_sources", "source_project_id"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.

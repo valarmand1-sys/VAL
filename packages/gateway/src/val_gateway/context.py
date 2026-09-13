@@ -84,6 +84,7 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
+from val_gateway.grounding import GroundedAnswer
 from val_gateway.memory import RecalledMessage
 from val_gateway.persona import ActivePersona
 from val_policy.history import HISTORY_TOKEN_BUDGET_DEFAULT, HistorySelection, select_history_tail
@@ -203,6 +204,18 @@ REVISION_FACTS_NOTE = (
     "not supplied. withdrawn_exchanges: Lord Armand withdrew an exchange from this "
     "conversation at that point; its contents are not supplied, it is not live "
     "intent, and nothing in it may be assumed or referred to as if remembered."
+)
+
+#: What the grounding facts mean (ruling, 13 September 2026). Emitted only when
+#: such a fact exists.
+GROUNDING_NOTE = (
+    "grounded_answers: your answers at these positions were given with retrieved House "
+    "records supplied as support on that turn, from the sources identified here. Their "
+    "content is not supplied now: this establishes that those answers drew on the "
+    "record when they were given, not what the record says, and quoting or re-examining "
+    "it needs it retrieved again. status_now says whether a source has since been "
+    "corrected, withdrawn, or its conversation removed; a withdrawn or removed source is "
+    "not live intent."
 )
 
 #: Retained under its old name because tests and logs refer to it; it is now the
@@ -352,11 +365,45 @@ class PriorRecordState:
     #: messages precede where it stood.
     corrected_after_answer: tuple[tuple[int, int], ...] = ()
     withdrawn_after_positions: tuple[int, ...] = ()
+    #: Grounding continuity (ruling, 13 September 2026), additive and present
+    #: only when non-empty: retained Val answers that House Recall supported when
+    #: they were given, with their sources' provenance and status now — never
+    #: the sources' content.
+    grounded_answers: tuple[GroundedAnswer, ...] = ()
 
     def _revision_facts(self) -> dict[str, object]:
+        facts: dict[str, object] = {}
+        if self.grounded_answers:
+            facts["grounding_note"] = GROUNDING_NOTE
+            facts["grounded_answers"] = [
+                {
+                    "answer_position": answer.answer_position,
+                    "support": "house_recall",
+                    "sources": [
+                        {
+                            "message_id": str(source.message_id),
+                            "conversation_id": str(source.conversation_id),
+                            "conversation_title": source.conversation_title,
+                            "sequence": source.sequence,
+                            "speaker": source.speaker,
+                            "sent_at": source.sent_at.isoformat(),
+                            "source_scope": source.source_scope,
+                            "wording": (
+                                "original"
+                                if source.revision_number is None
+                                else f"correction {source.revision_number}"
+                            ),
+                            "retrieval_path": "house_recall",
+                            "status_now": source.status_now,
+                        }
+                        for source in answer.sources
+                    ],
+                }
+                for answer in self.grounded_answers
+            ]
         if not self.corrected_after_answer and not self.withdrawn_after_positions:
-            return {}
-        facts: dict[str, object] = {"revision_note": REVISION_FACTS_NOTE}
+            return facts
+        facts["revision_note"] = REVISION_FACTS_NOTE
         if self.corrected_after_answer:
             facts["corrected_after_answer"] = [
                 {"message_position": message, "answer_position": answer}

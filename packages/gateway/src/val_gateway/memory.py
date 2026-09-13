@@ -141,7 +141,7 @@ from val_policy.recall import (
 #: arriving through both paths would be injected twice.
 _IN_PROJECT = text(
     "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
-    "       mc.state, mc.state_recorded_at, mc.answered_state, "
+    "       mc.state, mc.state_recorded_at, mc.answered_state, mc.newest_revision_number, "
     "       scope.project_id, c.title, "
     "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
@@ -169,7 +169,7 @@ _IN_PROJECT = text(
 #: query cannot ask what you asked".
 _IN_NO_PROJECT = text(
     "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
-    "       mc.state, mc.state_recorded_at, mc.answered_state, "
+    "       mc.state, mc.state_recorded_at, mc.answered_state, mc.newest_revision_number, "
     "       scope.project_id, c.title, "
     "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
@@ -198,7 +198,7 @@ _IN_NO_PROJECT = text(
 #: `house_recall_with_state`, which only `gate_house_recall` opens.
 _ACROSS_HOUSE = text(
     "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
-    "       mc.state, mc.state_recorded_at, mc.answered_state, "
+    "       mc.state, mc.state_recorded_at, mc.answered_state, mc.newest_revision_number, "
     "       scope.project_id, c.title, p.name as project_name, "
     "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
@@ -259,6 +259,9 @@ class RecalledMessage:
     wording_recorded_at: datetime | None = None
     sent_at: datetime | None = None
     answered_state: str | None = None
+    #: Grounding provenance (ruling, 13 September 2026): the revision fact whose
+    #: wording this excerpt carried — None for the original message.
+    revision_number: int | None = None
 
     @property
     def source_scope(self) -> str:
@@ -390,6 +393,7 @@ def recall_selection(
             wording_recorded_at=row.state_recorded_at,
             sent_at=row.created_at,
             answered_state=row.answered_state,
+            revision_number=row.newest_revision_number,
         )
         for row in rows
     )
@@ -562,6 +566,7 @@ def house_recall_with_state(
             wording_recorded_at=row.state_recorded_at,
             sent_at=row.created_at,
             answered_state=row.answered_state,
+            revision_number=row.newest_revision_number,
         )
         for row in rows
         if row.id not in exclude_message_ids

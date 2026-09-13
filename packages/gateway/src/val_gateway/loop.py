@@ -99,6 +99,7 @@ from val_gateway.context import (
 )
 from val_gateway.exchange import ClarificationNeeded, RestrictedContentRefusedError, resolve_scope
 from val_gateway.gateway import Gateway
+from val_gateway.grounding import grounded_answers, record_answer_sources
 from val_gateway.memory import (
     DEFAULT_LIMIT,
     RecalledMessage,
@@ -372,6 +373,9 @@ def assemble_turn(
     turns, selection = select_conversation(history)
     prior, current = turns[:-1], turns[-1:]
     corrected_after_answer, withdrawn_after = revision_facts(thread, selection.retained_from)
+    # Ruling, 13 September 2026: which retained Val answers were grounded in House
+    # Recall when given, and in which sources — provenance only, no content.
+    grounded = grounded_answers(engine, thread, selection.retained_from)
     now = local_now()
     current_local_time = now.strftime("%A %-d %B %Y, %H:%M")
     context = ThreadContext(
@@ -446,6 +450,7 @@ def assemble_turn(
         house_recall_detail=house.detail,
         corrected_after_answer=corrected_after_answer,
         withdrawn_after_positions=withdrawn_after,
+        grounded_answers=grounded,
     )
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
     excerpts = recall_block(recalled)
@@ -590,6 +595,16 @@ def settle_turn(
         opened.conversation.id,
         role=StoredRole.VAL,
         content=spoken,
+    )
+    # Ruling, 13 September 2026: bind the answer to the House Recall sources its
+    # call received — provenance only, never content — so a later turn can know
+    # it was grounded. Written after the message, failing toward no provenance.
+    record_answer_sources(
+        engine,
+        conversation_id=opened.conversation.id,
+        answer_message_id=val_message.id,
+        model_call_id=response.model_call_id,
+        recalled=recalled,
     )
 
     return Turn(

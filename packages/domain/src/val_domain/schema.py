@@ -1179,11 +1179,70 @@ class ConversationScopeTransition(Base):
     )
 
 
+class AnswerRecallSource(Base):
+    """WP-0.7 amendment, 13 September 2026 — `answer_recall_sources`.
+
+    One House Recall source admitted to the response call that produced a Val
+    answer: which answer, which call, which source message, and exactly which
+    wording of it (`source_revision_number`, NULL for the original). Provenance
+    only — no excerpt content. Append-only (`0019`); a coherence trigger refuses
+    an answer that is not Val's, a source in the answer's own conversation, and a
+    revision number that is not a revision of the source.
+    """
+
+    __tablename__ = "answer_recall_sources"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="NO ACTION"), nullable=False
+    )
+    answer_message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    model_call_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=False
+    )
+    retrieval_path: Mapped[str] = mapped_column(Text, nullable=False)
+    rank_position: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    source_conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="NO ACTION"), nullable=False
+    )
+    source_sequence: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    source_revision_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    source_project_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("projects.id", ondelete="NO ACTION"), nullable=True
+    )
+    source_sent_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    source_conversation_title: Mapped[str] = mapped_column(Text, nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("retrieval_path = 'house_recall'", name="retrieval_path_ruled"),
+        CheckConstraint("rank_position > 0", name="rank_position_positive"),
+        CheckConstraint(
+            "source_revision_number IS NULL OR source_revision_number > 0",
+            name="source_revision_number_positive",
+        ),
+        UniqueConstraint(
+            "answer_message_id", "source_message_id", name="uq_answer_recall_sources_answer_source"
+        ),
+        Index("ix_answer_recall_sources_answer_message_id", "answer_message_id"),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
         "conversations",
+        "answer_recall_sources",
         "conversation_removals",
         "conversation_scope_transitions",
         "messages",
