@@ -74,6 +74,8 @@ The last row is shown only because the ruling asked for the comparison. It requi
 
 Recommendation: option 3 if counting egress is acceptable under the existing Protected-eligibility premise, otherwise option 1. The current estimator-based admission is unchanged until ruled, so the budget remains a target and not a ceiling.
 
+*Ruled later the same day:* byte-only — a conservative 16,000-byte limit over the exact serialized recall envelope, shared by automatic recall and House Recall, with no provider counting. Implemented as recorded in `04-layer-0.md` (WP-0.7 amendment of 13 September 2026) and `VAL_Test_and_Evidence_Index.md` §55; the paragraphs above are kept as the record of what was returned.
+
 ## 5. Correction 4 — timing labelled by clock origin, with instrumentation
 
 - **Service:** the settled timing gains `api_response_started_ms`, measured from the service's receipt of the request to the start of the final response call.

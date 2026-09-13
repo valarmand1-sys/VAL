@@ -16,6 +16,12 @@ counts slightly high and the estimate errs toward admitting less. It is the
 same estimator for every provider: the tokenizers in use differ by a few
 percent on prose, well inside that margin.
 
+*Amended 13 September 2026:* recall no longer uses this estimator. On the
+13 September envelope carrying a screenplay-formatted excerpt it estimated
+12,204 tokens where the provider's count was about 20,500, and recall admission
+is now a 16,000-byte limit over the exact serialized recall envelope
+(`val_policy.recall`). The history budget still uses it.
+
 This estimator is for the soft budgets only. The context-window preflight and
 the reservation keep the byte upper bound, because a ceiling needs a bound and
 a target needs an estimate.

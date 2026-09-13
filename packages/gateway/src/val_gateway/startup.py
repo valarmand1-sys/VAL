@@ -28,6 +28,11 @@ from val_domain.gateway import CacheTtl, CapabilityProfile
 from val_domain.registry import active
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
+from val_gateway.memory import (
+    RECALL_ENVELOPE_SETTING,
+    RETIRED_RECALL_BUDGET_SETTING,
+    envelope_byte_limit,
+)
 from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_gateway.provenance import verifier
@@ -79,6 +84,29 @@ def configured_cache_ttl() -> tuple[CacheTtl | None, str | None]:
             f"{CACHE_TTL_SETTING}={raw!r} is not a documented cache lifetime "
             f"({documented}, or unset/off for none)."
         )
+
+
+def recall_envelope_problems() -> list[str]:
+    """Reasons the recall envelope configuration must stop startup (ruling, 13 September 2026).
+
+    The retired `VAL_RECALL_TOKEN_BUDGET` named a limit in estimated tokens. It
+    is neither read nor translated: a deployment still setting it is refused, so
+    a number chosen in one unit can never silently govern a limit in another.
+    `VAL_RECALL_ENVELOPE_BYTES`, when set, must be a positive integer.
+    """
+    problems: list[str] = []
+    if os.environ.get(RETIRED_RECALL_BUDGET_SETTING, "").strip():
+        problems.append(
+            f"{RETIRED_RECALL_BUDGET_SETTING} is retired (ruling, 13 September 2026): recall "
+            "admission is now a limit in UTF-8 bytes over the serialized recall envelope. "
+            f"Remove it, and set {RECALL_ENVELOPE_SETTING} only if a limit other than the "
+            "default 16000 bytes is intended."
+        )
+    try:
+        envelope_byte_limit()
+    except ValueError as error:
+        problems.append(str(error))
+    return problems
 
 
 def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], list[str]]:
@@ -133,6 +161,8 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     # prefix. The lifetime is configuration — unset means no caching is
     # requested, and an unrecognised value stops startup rather than silently
     # running uncached at a cost nobody chose.
+    violations.extend(recall_envelope_problems())
+
     cache_ttl, cache_problem = configured_cache_ttl()
     if cache_problem is not None:
         violations.append(cache_problem)

@@ -1391,7 +1391,10 @@ def test_the_budget_ceiling_sees_the_assembled_payload_including_memory(store: E
     enough that the difference cannot be noise.
     """
     alpha, _ = _seed_both_projects(store)
-    bulky = "The lighthouse lens colour was discussed at length. " * 400
+    # 250 repetitions (13,000 characters), not the former 400: the recall envelope
+    # is bounded at 16,000 serialized bytes since the ruling of 13 September 2026,
+    # and 20,800 characters would no longer be admitted at all.
+    bulky = "The lighthouse lens colour was discussed at length. " * 250
     seeded_conversation(store, alpha, "A long earlier conversation", (StoredRole.USER, bulky))
 
     question = "Remind me about the lighthouse lens colour."
@@ -2398,23 +2401,28 @@ def _seed_no_project_messages(engine: Engine, sizes: list[int], marker: str) -> 
     return ids
 
 
-def test_recall_admits_whole_messages_within_the_token_budget_and_logs_the_decision(
+def test_recall_admits_whole_messages_within_the_envelope_limit_and_logs_the_decision(
     store: Engine, caplog: pytest.LogCaptureFixture
 ) -> None:
+    """Amended 13 September 2026 (ruling: a 16,000-byte limit over the serialized
+    envelope replaces the estimated-token budget). Formerly six 21,600-character
+    messages under a 16,000-token budget admitted two; the same shape is now six
+    5,000-character messages, of which two fit in 16,000 serialized bytes."""
     from val_domain.project import ExplicitNoProject
-    from val_gateway.memory import recall
+    from val_gateway.memory import recall, recall_envelope_bytes
 
-    # Six candidates of about 6,000 estimated tokens each (3.6 chars/token).
-    _seed_no_project_messages(store, [21_600] * 6, "harbour")
+    _seed_no_project_messages(store, [5_000] * 6, "harbour")
     with caplog.at_level("INFO", logger="val.recall"):
-        recalled = recall(store, scope=ExplicitNoProject(), query="harbour", budget=16_000)
+        recalled = recall(store, scope=ExplicitNoProject(), query="harbour", byte_limit=16_000)
 
     assert len(recalled) == 2, "two whole messages fit; the third would not, so selection stops"
-    assert all(len(item.content) == 21_600 for item in recalled), "never truncated"
+    assert all(len(item.content) == 5_000 for item in recalled), "never truncated"
+    assert recall_envelope_bytes(recalled) <= 16_000
     lines = [r.getMessage() for r in caplog.records if "recall selection" in r.getMessage()]
     assert len(lines) == 1
     decision = json.loads(lines[0].split("recall selection: ", 1)[1])
-    assert decision["budget"] == 16_000
+    assert decision["limit_bytes"] == 16_000
+    assert decision["envelope_bytes"] == recall_envelope_bytes(recalled)
     assert [c["admitted"] for c in decision["candidates"]] == [
         True,
         True,
@@ -2423,6 +2431,7 @@ def test_recall_admits_whole_messages_within_the_token_budget_and_logs_the_decis
         False,
         False,
     ]
+    assert decision["candidates"][2]["envelope_bytes"] > 16_000
     assert "does not fit" in decision["candidates"][2]["reason"]
     assert "not considered" in decision["candidates"][3]["reason"]
 
@@ -2430,27 +2439,32 @@ def test_recall_admits_whole_messages_within_the_token_budget_and_logs_the_decis
 def test_recall_admits_nothing_when_the_top_candidate_alone_exceeds_the_budget(
     store: Engine,
 ) -> None:
-    """Ruled 10 September 2026: the aggregate budget is a ceiling, never a per-message
+    """Ruled 10 September 2026: the aggregate bound is a ceiling, never a per-message
     allowance. The event is named, nothing is truncated, nothing is substituted."""
     from val_gateway.memory import recall_with_state
 
     seeded_conversation(store, ExplicitNoProject(), "N1", (StoredRole.USER, "harbour " * 15_000))
-    outcome = recall_with_state(store, scope=ExplicitNoProject(), query="harbour", budget=16_000)
+    outcome = recall_with_state(
+        store, scope=ExplicitNoProject(), query="harbour", byte_limit=16_000
+    )
     assert outcome.state == "zero" and outcome.items == ()
     assert outcome.detail == "top_candidate_exceeds_budget"
-    assert recall(store, scope=ExplicitNoProject(), query="harbour", budget=16_000) == ()
+    assert recall(store, scope=ExplicitNoProject(), query="harbour", byte_limit=16_000) == ()
 
 
-def test_the_budget_is_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
-    from val_gateway.memory import RECALL_BUDGET_SETTING, token_budget
+def test_the_envelope_limit_is_configuration_in_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Amended 13 September 2026: the setting is named for its unit, bytes."""
+    from val_gateway.memory import RECALL_ENVELOPE_SETTING, envelope_byte_limit
 
-    monkeypatch.delenv(RECALL_BUDGET_SETTING, raising=False)
-    assert token_budget() == 16_000
-    monkeypatch.setenv(RECALL_BUDGET_SETTING, "8000")
-    assert token_budget() == 8_000
-    monkeypatch.setenv(RECALL_BUDGET_SETTING, "0")
-    with pytest.raises(ValueError, match="positive integer"):
-        token_budget()
+    assert RECALL_ENVELOPE_SETTING == "VAL_RECALL_ENVELOPE_BYTES"
+    monkeypatch.delenv(RECALL_ENVELOPE_SETTING, raising=False)
+    assert envelope_byte_limit() == 16_000
+    monkeypatch.setenv(RECALL_ENVELOPE_SETTING, "8000")
+    assert envelope_byte_limit() == 8_000
+    for bad in ("0", "-1", "sixteen thousand"):
+        monkeypatch.setenv(RECALL_ENVELOPE_SETTING, bad)
+        with pytest.raises(ValueError, match="positive integer"):
+            envelope_byte_limit()
 
 
 # --- the prior-record state (ruling, 9 September 2026) -----------------------

@@ -62,6 +62,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
@@ -71,10 +72,10 @@ from sqlalchemy import Engine, text
 from val_domain.conversation import StoredRole
 from val_domain.project import ProjectScope, ResolvedProject
 from val_policy.recall import (
+    RECALL_ENVELOPE_BYTES_DEFAULT,
     RECALL_MESSAGE_LIMIT,
-    RECALL_TOKEN_BUDGET_DEFAULT,
     RecallSelection,
-    select_within_budget,
+    select_within_envelope,
 )
 
 #: ## Why the query matches *any* term rather than all of them
@@ -300,22 +301,70 @@ class CrossProjectLeakError(Exception):
 #: project restriction, so it can never be spent on another project's material.
 DEFAULT_LIMIT = RECALL_MESSAGE_LIMIT
 
-#: Ruling, 7 September 2026: a soft token budget alongside the count. Read from
-#: the environment so it is configuration, not a buried literal.
-RECALL_BUDGET_SETTING = "VAL_RECALL_TOKEN_BUDGET"
+#: Ruling, 13 September 2026: recall admission is bounded by the UTF-8 byte
+#: length of the exact serialized recall envelope. Read from the environment so
+#: it is configuration, not a buried literal; the name carries the unit.
+RECALL_ENVELOPE_SETTING = "VAL_RECALL_ENVELOPE_BYTES"
+
+#: The retired estimated-token setting. It is not read and not translated: a
+#: deployment that still sets it is refused at startup (`val_gateway.startup`),
+#: so a value chosen in tokens can never silently govern a limit in bytes.
+RETIRED_RECALL_BUDGET_SETTING = "VAL_RECALL_TOKEN_BUDGET"
 
 _LOGGER = logging.getLogger("val.recall")
 
 
-def token_budget() -> int:
-    """The soft recall budget in estimated tokens: `VAL_RECALL_TOKEN_BUDGET`, else 16,000."""
-    raw = os.environ.get(RECALL_BUDGET_SETTING, "").strip()
+def envelope_byte_limit() -> int:
+    """The recall envelope limit in bytes: `VAL_RECALL_ENVELOPE_BYTES`, else 16,000."""
+    raw = os.environ.get(RECALL_ENVELOPE_SETTING, "").strip()
     if not raw:
-        return RECALL_TOKEN_BUDGET_DEFAULT
-    value = int(raw)
+        return RECALL_ENVELOPE_BYTES_DEFAULT
+    try:
+        value = int(raw)
+    except ValueError:
+        value = 0
     if value <= 0:
-        raise ValueError(f"{RECALL_BUDGET_SETTING} must be a positive integer, not {raw!r}")
+        raise ValueError(f"{RECALL_ENVELOPE_SETTING} must be a positive integer, not {raw!r}")
     return value
+
+
+def recall_envelope_bytes(items: Sequence[RecalledMessage]) -> int:
+    """UTF-8 bytes of the envelope that would carry exactly `items`, as transmitted.
+
+    Measured with `val_gateway.context.recall_block` itself — the serializer
+    that produces the envelope sent to the provider — so the bound governs the
+    bytes that leave the house, markers, provenance, JSON escaping and all.
+    """
+    # Imported here because `context` imports this module.
+    from val_gateway.context import recall_block
+
+    block = recall_block(tuple(items))
+    return 0 if block is None else len(block.content.encode("utf-8"))
+
+
+def _decision_log(
+    candidates: Sequence[RecalledMessage], selection: RecallSelection
+) -> list[dict[str, object]]:
+    """Each candidate's rank, size, admission and reason, for the selection log."""
+    logged: list[dict[str, object]] = []
+    for decision in selection.decisions:
+        item = candidates[decision.rank_position - 1]
+        logged.append(
+            {
+                "rank_position": decision.rank_position,
+                "message_id": str(item.message_id),
+                "conversation_id": str(item.conversation_id),
+                "source_scope": item.source_scope,
+                "sequence": item.sequence,
+                "rank": item.rank,
+                "characters": len(item.content),
+                "content_bytes": len(item.content.encode("utf-8")),
+                "envelope_bytes": decision.envelope_bytes,
+                "admitted": decision.admitted,
+                "reason": decision.reason,
+            }
+        )
+    return logged
 
 
 def recall(
@@ -325,7 +374,7 @@ def recall(
     query: str,
     exclude_conversation: UUID | None = None,
     limit: int = DEFAULT_LIMIT,
-    budget: int | None = None,
+    byte_limit: int | None = None,
 ) -> tuple[RecalledMessage, ...]:
     """`recall_selection`, returning the admitted messages alone."""
     return recall_selection(
@@ -334,7 +383,7 @@ def recall(
         query=query,
         exclude_conversation=exclude_conversation,
         limit=limit,
-        budget=budget,
+        byte_limit=byte_limit,
     )[0]
 
 
@@ -345,9 +394,9 @@ def recall_selection(
     query: str,
     exclude_conversation: UUID | None = None,
     limit: int = DEFAULT_LIMIT,
-    budget: int | None = None,
+    byte_limit: int | None = None,
 ) -> tuple[tuple[RecalledMessage, ...], RecallSelection | None]:
-    """Prior conversation from this scope, most relevant first, within budget.
+    """Prior conversation from this scope, most relevant first, within the envelope limit.
 
     Returns an empty tuple when nothing matches, when the query has no
     searchable terms, or when the scope has no prior conversation. Empty is an
@@ -358,11 +407,11 @@ def recall_selection(
     messages are assembled in full and in order by the caller, and a message that
     arrived through both paths would appear twice in the prompt.
 
-    Ruling, 7 September 2026: the ranked candidates then pass the hybrid
-    count-and-token bound of `val_policy.recall` — the top candidate always,
-    whole; each next candidate in rank order only if it fits the remaining
-    budget; stop at the first that does not; never truncate. Every decision
-    is logged so the selection can be reconstructed.
+    Rulings of 7, 10 and 13 September 2026: the ranked candidates then pass the
+    count-and-size bound of `val_policy.recall` — each candidate in rank order,
+    whole, only if the serialized envelope with it added stays within
+    `byte_limit` bytes; stop at the first that does not; never truncate. Every
+    decision is logged so the selection can be reconstructed.
     """
     if not query.strip():
         return (), None
@@ -407,31 +456,19 @@ def recall_selection(
     if trespassers:
         raise CrossProjectLeakError(expected, trespassers)
 
-    selection = select_within_budget(
-        recalled, budget=token_budget() if budget is None else budget, limit=limit
+    selection = select_within_envelope(
+        recalled,
+        limit_bytes=envelope_byte_limit() if byte_limit is None else byte_limit,
+        measure=recall_envelope_bytes,
+        limit=limit,
     )
     _LOGGER.info(
         "recall selection: %s",
         json.dumps(
             {
-                "budget": selection.budget,
-                "admitted_tokens": selection.admitted_tokens,
-                "candidates": [
-                    {
-                        "rank_position": decision.rank_position,
-                        "message_id": str(recalled[decision.rank_position - 1].message_id),
-                        "conversation_id": str(
-                            recalled[decision.rank_position - 1].conversation_id
-                        ),
-                        "sequence": recalled[decision.rank_position - 1].sequence,
-                        "rank": recalled[decision.rank_position - 1].rank,
-                        "characters": len(recalled[decision.rank_position - 1].content),
-                        "estimated_tokens": decision.estimated_tokens,
-                        "admitted": decision.admitted,
-                        "reason": decision.reason,
-                    }
-                    for decision in selection.decisions
-                ],
+                "limit_bytes": selection.limit_bytes,
+                "envelope_bytes": selection.envelope_bytes,
+                "candidates": _decision_log(recalled, selection),
             }
         ),
     )
@@ -476,7 +513,7 @@ def recall_with_state(
     query: str,
     exclude_conversation: UUID | None = None,
     limit: int = DEFAULT_LIMIT,
-    budget: int | None = None,
+    byte_limit: int | None = None,
 ) -> RecallOutcome:
     """`recall_selection`, with the outcome typed instead of flattened into a tuple.
 
@@ -484,7 +521,7 @@ def recall_with_state(
     module exists to raise, and it still raises. A query with nothing searchable
     is ``not_run`` / ``under_specified_query``: retrieval was not attempted
     because no usable query could be formed. A ranking whose top candidate alone
-    exceeded the aggregate budget is ``zero`` with the detail
+    did not fit the recall envelope limit is ``zero`` with the detail
     ``top_candidate_exceeds_budget`` — retrieval ran and admitted nothing, and
     the reason is stated rather than left as an unexplained zero.
     """
@@ -497,7 +534,7 @@ def recall_with_state(
             query=query,
             exclude_conversation=exclude_conversation,
             limit=limit,
-            budget=budget,
+            byte_limit=byte_limit,
         )
     except CrossProjectLeakError:
         raise
@@ -520,20 +557,27 @@ def house_recall_with_state(
     query: str,
     exclude_conversation: UUID | None = None,
     exclude_message_ids: frozenset[UUID] = frozenset(),
+    admitted_before: tuple[RecalledMessage, ...] = (),
     limit: int = DEFAULT_LIMIT,
-    budget: int | None = None,
+    byte_limit: int | None = None,
 ) -> RecallOutcome:
     """House Recall: relevant prior conversation from anywhere in the House's record.
 
     Ruling, 12 September 2026. The explicitly triggered path beside automatic
     recall: it searches every stored conversation except the current one,
     across projects and the unassigned pool, with the same ranking, limit and
-    aggregate budget as automatic recall, and returns excerpts that carry their
+    aggregate recall bound as automatic recall, and returns excerpts that carry their
     provenance — source project or unassigned, conversation, message, sequence,
     role, timestamp — marked ``retrieval_path = "house_recall"``. Messages
     already admitted by automatic recall (`exclude_message_ids`) are not
     admitted twice. It reads; it never writes, and it never touches the current
     conversation's attribution. The same state vocabulary as `RecallOutcome`.
+
+    Ruling, 13 September 2026: admission is the same byte bound over the same
+    serialized envelope as automatic recall. Both paths' excerpts travel in one
+    envelope, so the excerpts automatic recall already admitted
+    (`admitted_before`) count against the limit and House Recall admits only
+    what still fits after them.
     """
     if not query.strip():
         return RecallOutcome(state="not_run", detail="under_specified_query")
@@ -573,25 +617,21 @@ def house_recall_with_state(
     )
     if not candidates:
         return RecallOutcome(state="zero")
-    selection = select_within_budget(
-        candidates, budget=token_budget() if budget is None else budget, limit=limit
+    selection = select_within_envelope(
+        candidates,
+        limit_bytes=envelope_byte_limit() if byte_limit is None else byte_limit,
+        measure=recall_envelope_bytes,
+        admitted_before=admitted_before,
+        limit=limit,
     )
     _LOGGER.info(
         "house recall selection: %s",
         json.dumps(
             {
-                "budget": selection.budget,
-                "admitted_tokens": selection.admitted_tokens,
-                "candidates": [
-                    {
-                        "rank_position": decision.rank_position,
-                        "message_id": str(candidates[decision.rank_position - 1].message_id),
-                        "source_scope": candidates[decision.rank_position - 1].source_scope,
-                        "admitted": decision.admitted,
-                        "reason": decision.reason,
-                    }
-                    for decision in selection.decisions
-                ],
+                "limit_bytes": selection.limit_bytes,
+                "envelope_bytes": selection.envelope_bytes,
+                "admitted_before": len(admitted_before),
+                "candidates": _decision_log(candidates, selection),
             }
         ),
     )

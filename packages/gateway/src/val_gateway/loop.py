@@ -407,7 +407,8 @@ def assemble_turn(
     # cross-conversation path, gated independently, never altering the
     # automatic decision above. Runs only on an explicit reference to earlier
     # conversation; searches everything except this conversation; excerpts
-    # already admitted by automatic recall are not admitted twice.
+    # already admitted by automatic recall are not admitted twice, and they
+    # count against the one envelope's byte limit (ruling, 13 September 2026).
     house_decision = gate_house_recall(opened.user_message.content, context)
     _LOGGER.info(
         "house recall gate: %s",
@@ -425,6 +426,7 @@ def assemble_turn(
             query=opened.user_message.content,
             exclude_conversation=opened.conversation.id,
             exclude_message_ids=frozenset(item.message_id for item in recalled),
+            admitted_before=recalled,
             limit=recall_limit,
         )
     else:

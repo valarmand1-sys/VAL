@@ -371,7 +371,10 @@ def test_the_budget_reservation_includes_house_recall_material(store: Engine) ->
     from test_conversation_memory import _only_reservation
 
     beta = scope_of(store, BETA_SLUG)
-    bulky = "The lighthouse lens colour was discussed at length. " * 400
+    # 250 repetitions (13,000 characters), not the former 400: the recall envelope
+    # is bounded at 16,000 serialized bytes since the ruling of 13 September 2026,
+    # and 20,800 characters would no longer be admitted at all.
+    bulky = "The lighthouse lens colour was discussed at length. " * 250
     seeded_conversation(store, beta, "A long Beta conversation", (StoredRole.USER, bulky))
     question = "What did we decide about the lighthouse lens colour in earlier conversations?"
 
