@@ -193,6 +193,18 @@ STATE_ENVELOPE_NOTE = (
     "never this one."
 )
 
+#: The record-state facts about corrections and withdrawals (ruling, 12 September
+#: 2026). Emitted only when such a fact exists, so every other request is unchanged.
+REVISION_FACTS_NOTE = (
+    "Positions count this conversation's messages in this request from 1, oldest "
+    "first. corrected_after_answer: Lord Armand corrected the message at "
+    "message_position after you answered it; it is shown in its corrected wording, "
+    "and your answer at answer_position responded to the earlier wording, which is "
+    "not supplied. withdrawn_exchanges: Lord Armand withdrew an exchange from this "
+    "conversation at that point; its contents are not supplied, it is not live "
+    "intent, and nothing in it may be assumed or referred to as if remembered."
+)
+
 #: Retained under its old name because tests and logs refer to it; it is now the
 #: marker line rather than a prose header.
 RECALL_HEADER = MEMORY_ENVELOPE_MARKER
@@ -331,6 +343,30 @@ class PriorRecordState:
     house_recall_state: str = "not_run"
     house_recall_count: int = 0
     house_recall_detail: str | None = "no_cross_conversation_reference"
+    #: Revision and retraction (ruling, 12 September 2026), additive and present
+    #: in the document only when non-empty. Positions count this conversation's
+    #: retained messages in this request from 1, oldest first.
+    #: `corrected_after_answer`: (message position, answer position) for a message
+    #: Lord Armand corrected after Val answered it. `withdrawn_after_positions`:
+    #: for each withdrawn exchange inside the retained span, how many retained
+    #: messages precede where it stood.
+    corrected_after_answer: tuple[tuple[int, int], ...] = ()
+    withdrawn_after_positions: tuple[int, ...] = ()
+
+    def _revision_facts(self) -> dict[str, object]:
+        if not self.corrected_after_answer and not self.withdrawn_after_positions:
+            return {}
+        facts: dict[str, object] = {"revision_note": REVISION_FACTS_NOTE}
+        if self.corrected_after_answer:
+            facts["corrected_after_answer"] = [
+                {"message_position": message, "answer_position": answer}
+                for message, answer in self.corrected_after_answer
+            ]
+        if self.withdrawn_after_positions:
+            facts["withdrawn_exchanges"] = [
+                {"after_position": position} for position in self.withdrawn_after_positions
+            ]
+        return facts
 
     def as_document(self) -> dict[str, object]:
         return {
@@ -348,6 +384,7 @@ class PriorRecordState:
                 "state": self.history_state,
                 "prior_messages": self.history_prior_messages,
                 "retained_in_this_request": self.history_retained_messages,
+                **self._revision_facts(),
             },
             "retrieved_excerpts": {
                 "state": self.retrieval_state,
@@ -361,6 +398,35 @@ class PriorRecordState:
             },
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
         }
+
+
+#: What a corrected excerpt says about itself (ruling, 12 September 2026).
+CORRECTED_WORDING_NOTE = (
+    "Lord Armand corrected this message after sending it. This is the corrected "
+    "wording, recorded at wording_recorded_at; what he sent at sent_at was worded "
+    "differently and is not supplied."
+)
+
+#: What Val's excerpt says when the message she answered was later corrected.
+ANSWERED_EARLIER_WORDING_NOTE = (
+    "This answered an earlier wording of Lord Armand's preceding message, which he later corrected."
+)
+
+
+def _revision_provenance(item: RecalledMessage) -> dict[str, object]:
+    """The extra keys for an excerpt whose wording, or whose question, was corrected."""
+    if item.wording_state == "corrected":
+        return {
+            "wording_state": "corrected",
+            "sent_at": None if item.sent_at is None else item.sent_at.isoformat(),
+            "wording_recorded_at": (
+                None if item.wording_recorded_at is None else item.wording_recorded_at.isoformat()
+            ),
+            "wording_note": CORRECTED_WORDING_NOTE,
+        }
+    if item.answered_state == "corrected":
+        return {"answer_note": ANSWERED_EARLIER_WORDING_NOTE}
+    return {}
 
 
 def recall_block(recalled: tuple[RecalledMessage, ...]) -> Message | None:
@@ -403,6 +469,9 @@ def recall_block(recalled: tuple[RecalledMessage, ...]) -> Message | None:
                 "retrieval_path": item.retrieval_path,
                 "source_scope": item.source_scope,
                 "created_at": None if item.created_at is None else item.created_at.isoformat(),
+                # Revision provenance (ruling, 12 September 2026): present only on
+                # an excerpt it describes, so every other excerpt is unchanged.
+                **_revision_provenance(item),
                 "content": item.content,
             }
             for item in recalled

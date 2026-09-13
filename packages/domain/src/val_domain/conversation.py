@@ -45,7 +45,7 @@ there is nothing to disambiguate. See `VAL_Open_Decisions.md` item 9.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
@@ -111,6 +111,164 @@ class MessageRecord:
     def as_provider_message(self) -> Message:
         """This turn as the provider will see it. Content is passed unchanged."""
         return Message(role=provider_role(self.role), content=self.content)
+
+
+# --- revision and retraction as appended facts (ruling, 12 September 2026) -----
+
+
+class RevisionKind(StrEnum):
+    """`message_revisions.kind`."""
+
+    #: A corrected wording of the message.
+    REVISION = "revision"
+    #: The message withdrawn from the working conversation.
+    RETRACTION = "retraction"
+
+
+class MessageState(StrEnum):
+    """What the record says a user message currently is, as of some point."""
+
+    CURRENT = "current"
+    CORRECTED = "corrected"
+    WITHDRAWN = "withdrawn"
+
+
+@dataclass(frozen=True)
+class MessageRevisionRecord:
+    """One appended fact about one of Lord Armand's messages.
+
+    `after_sequence` is the conversation's highest message sequence when the
+    fact was recorded, read under the conversation row lock. It is the whole of
+    the as-of rule: the turn whose message has sequence *s* sees this fact
+    exactly when `after_sequence < s`.
+    """
+
+    id: UUID
+    conversation_id: UUID
+    message_id: UUID
+    revision_number: int
+    after_sequence: int
+    kind: RevisionKind
+    content: str | None
+    authored_by: str
+    note: str | None
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class WorkingMessage:
+    """A stored message as it stands at one point in the conversation's order.
+
+    `record` is the stored row, untouched — its `content` is what was said.
+    `content` is the wording in force at that point. For a Val message,
+    `answered_state` is the state of the user message she immediately answered
+    (None when the message before hers was not a user message), because her
+    words stay attached to the wording she actually received.
+    """
+
+    record: MessageRecord
+    content: str
+    state: MessageState
+    answered_state: MessageState | None = None
+    revisions: tuple[MessageRevisionRecord, ...] = ()
+
+    @property
+    def live(self) -> bool:
+        """Whether this message belongs to the working conversation: not withdrawn,
+        and not Val's immediate answer to a withdrawn message."""
+        return (
+            self.state is not MessageState.WITHDRAWN
+            and self.answered_state is not MessageState.WITHDRAWN
+        )
+
+    def working_record(self) -> MessageRecord:
+        """The stored record with the wording in force — for assembly only.
+
+        Identity, role, sequence and timestamp stay the stored row's; only the
+        wording is the current one. Never persisted, never presented as what
+        was originally said.
+        """
+        if self.content == self.record.content:
+            return self.record
+        return replace(self.record, content=self.content)
+
+
+@dataclass(frozen=True)
+class WorkingThread:
+    """A conversation as it stands at one point in its own order."""
+
+    messages: tuple[WorkingMessage, ...]
+
+    def live(self) -> tuple[WorkingMessage, ...]:
+        """The working conversation: withdrawn exchanges left out."""
+        return tuple(message for message in self.messages if message.live)
+
+    def live_records(self) -> tuple[MessageRecord, ...]:
+        """The working conversation as records carrying the wording in force."""
+        return tuple(message.working_record() for message in self.live())
+
+
+def working_thread(
+    history: tuple[MessageRecord, ...],
+    facts: tuple[MessageRevisionRecord, ...],
+    *,
+    as_of_sequence: int | None = None,
+) -> WorkingThread:
+    """The conversation as it stood for the turn at `as_of_sequence`.
+
+    **The as-of rule (ruling, 12 September 2026).** With `as_of_sequence = s`,
+    only messages with `sequence <= s` exist, and only facts with
+    `after_sequence < s` apply — a fact recorded after the turn's own message was
+    appended is invisible to that turn, however the two raced, because both
+    were numbered under the same conversation row lock. No timestamp is read.
+    With `as_of_sequence = None` every message and every fact applies: the
+    conversation as it stands now.
+
+    For each user message the newest applicable fact decides: none → current;
+    a revision → corrected, with its wording; a retraction → withdrawn. A
+    revision after a retraction reinstates the message with the new wording.
+    """
+    visible = (
+        history
+        if as_of_sequence is None
+        else tuple(record for record in history if record.sequence <= as_of_sequence)
+    )
+    applicable: dict[UUID, list[MessageRevisionRecord]] = {}
+    for fact in sorted(facts, key=lambda item: (item.message_id, item.revision_number)):
+        if as_of_sequence is not None and fact.after_sequence >= as_of_sequence:
+            continue
+        applicable.setdefault(fact.message_id, []).append(fact)
+
+    working: list[WorkingMessage] = []
+    previous: WorkingMessage | None = None
+    for record in visible:
+        own = tuple(applicable.get(record.id, ()))
+        content = record.content
+        state = MessageState.CURRENT
+        if record.role is StoredRole.USER and own:
+            newest = own[-1]
+            if newest.kind is RevisionKind.REVISION and newest.content is not None:
+                content, state = newest.content, MessageState.CORRECTED
+            elif newest.kind is RevisionKind.RETRACTION:
+                state = MessageState.WITHDRAWN
+        answered_state = (
+            previous.state
+            if record.role is StoredRole.VAL
+            and previous is not None
+            and previous.record.role is StoredRole.USER
+            else None
+        )
+        message = WorkingMessage(
+            record=record,
+            content=content,
+            state=state,
+            answered_state=answered_state,
+            revisions=own,
+        )
+        working.append(message)
+        if record.role in (StoredRole.USER, StoredRole.VAL):
+            previous = message
+    return WorkingThread(messages=tuple(working))
 
 
 class InconsistentConversationError(Exception):

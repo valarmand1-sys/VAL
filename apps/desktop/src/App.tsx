@@ -40,6 +40,15 @@ import {
   progressLine,
   resolutionOf,
 } from "./presentation";
+import {
+  answerStateLine,
+  canEdit,
+  canRemove,
+  EDIT_EXPLANATION,
+  isLive,
+  REMOVE_MESSAGE_CONFIRMATION,
+  userStateLine,
+} from "./messageState";
 import { enterProject, initialEntry, newChatEntry, newConversationLine, turnScopeFields } from "./scope";
 import type { Entry } from "./scope";
 
@@ -466,9 +475,13 @@ function StreamingThread(props: {
     <div className="messages">
       {detail !== null && <h2>{detail.conversation.title}</h2>}
       {detail?.messages.map((message) => (
-        <div key={message.id} className={`message ${message.role}`}>
+        <div key={message.id} className={`message ${message.role} ${isLive(message) ? "" : "withdrawn collapsed"}`}>
           <div className="speaker">{message.role === "user" ? "Lord Armand" : "Val"}</div>
-          <div className="content">{message.content}</div>
+          {isLive(message) ? (
+            <div className="content">{message.content}</div>
+          ) : (
+            <div className="state-line">{userStateLine(message) ?? answerStateLine(message)}</div>
+          )}
         </div>
       ))}
       <div className="message user">
@@ -502,7 +515,13 @@ function Thread(props: {
         onRefused={onRefused}
       />
       {detail.messages.map((message) => (
-        <MessageBlock key={message.id} message={message} detail={detail} onRecorded={onRecorded} />
+        <MessageBlock
+          key={message.id}
+          message={message}
+          detail={detail}
+          onRecorded={onRecorded}
+          onRefused={onRefused}
+        />
       ))}
     </div>
   );
@@ -512,17 +531,115 @@ function MessageBlock(props: {
   message: MessageView;
   detail: ConversationDetail;
   onRecorded: () => void;
+  onRefused: (message: string) => void;
 }): React.JSX.Element {
-  const { message, detail, onRecorded } = props;
+  const { message, detail, onRecorded, onRefused } = props;
   const blind = detail.blind_positions.filter((b) => b.message_id === message.id);
   const manual = detail.deliberations.filter(
     (d) => d.message_id === message.id && d.blind_position_id === null,
   );
   const events = detail.execution_events.filter((e) => e.message_id === message.id);
+  const live = isLive(message);
+  // Withdrawn exchanges are collapsed and inspectable (ruling, 12 September 2026).
+  const [expanded, setExpanded] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(message.content);
+  const [explainRefusal, setExplainRefusal] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const stateLine = userStateLine(message);
+  const answerLine = answerStateLine(message);
+
+  const act = async (run: () => Promise<unknown>) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await run();
+      onRecorded();
+    } catch (failure) {
+      onRefused(describeFailure(failure));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!live && !expanded) {
+    return (
+      <div className={`message ${message.role} withdrawn collapsed`}>
+        <div className="speaker">{message.role === "user" ? "Lord Armand" : "Val"}</div>
+        <div className="state-line">
+          {stateLine ?? answerLine}{" "}
+          <button className="inline-action" onClick={() => setExpanded(true)}>
+            Show
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`message ${message.role}`}>
+    <div className={`message ${message.role} ${live ? "" : "withdrawn"}`}>
       <div className="speaker">{message.role === "user" ? "Lord Armand" : "Val"}</div>
-      <div className="content">{message.content}</div>
+      {stateLine !== null && (
+        <div className="state-line">
+          {stateLine}
+          {message.state === "corrected" && (message.original_content ?? null) !== null && (
+            <>
+              {" "}
+              <button className="inline-action" onClick={() => setShowOriginal(!showOriginal)}>
+                {showOriginal ? "Hide original" : "View original"}
+              </button>
+            </>
+          )}
+          {!live && (
+            <>
+              {" "}
+              <button className="inline-action" onClick={() => setExpanded(false)}>
+                Hide
+              </button>
+            </>
+          )}
+        </div>
+      )}
+      {answerLine !== null && (
+        <div className="state-line">
+          {answerLine}
+          {!live && (
+            <>
+              {" "}
+              <button className="inline-action" onClick={() => setExpanded(false)}>
+                Hide
+              </button>
+            </>
+          )}
+        </div>
+      )}
+      {showOriginal && (message.original_content ?? null) !== null && (
+        <div className="original">
+          <div className="note">Originally sent {new Date(message.created_at).toLocaleString()}:</div>
+          <div className="content">{message.original_content}</div>
+        </div>
+      )}
+      {editing ? (
+        <div className="edit">
+          <p className="note">{EDIT_EXPLANATION}</p>
+          <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={3} autoFocus />
+          <button
+            disabled={busy || draft.trim() === "" || draft === message.content}
+            onClick={() =>
+              void act(async () => {
+                await api.reviseMessage(message.id, draft);
+                setEditing(false);
+              })
+            }
+          >
+            Save correction
+          </button>
+          <button onClick={() => setEditing(false)}>Cancel</button>
+        </div>
+      ) : (
+        <div className="content">{message.content}</div>
+      )}
 
       {blind.map((position) => {
         const resolution = resolutionOf(position, detail.deliberations);
@@ -572,11 +689,48 @@ function MessageBlock(props: {
         </div>
       ))}
 
-      {message.role === "val" && (
+      {live && message.role === "val" && (
         <JudgeControl detail={detail} message={message} onRecorded={onRecorded} />
       )}
-      {message.role === "user" && (
+      {live && message.role === "user" && (
         <MarkConsequentialControl detail={detail} message={message} onRecorded={onRecorded} />
+      )}
+      {message.role === "user" && live && !editing && (
+        <div className="message-actions">
+          {canEdit(message) ? (
+            <button
+              className="inline-action"
+              onClick={() => {
+                setDraft(message.content);
+                setEditing(true);
+              }}
+            >
+              Edit
+            </button>
+          ) : (
+            (message.revision_refusal ?? null) !== null && (
+              <button className="inline-action" onClick={() => setExplainRefusal(!explainRefusal)}>
+                Why can't this be edited?
+              </button>
+            )
+          )}
+          {canRemove(message) && (
+            <button
+              className="inline-action"
+              disabled={busy}
+              onClick={() => {
+                if (window.confirm(REMOVE_MESSAGE_CONFIRMATION)) {
+                  void act(() => api.retractMessage(message.id));
+                }
+              }}
+            >
+              Remove
+            </button>
+          )}
+          {explainRefusal && (message.revision_refusal ?? null) !== null && (
+            <div className="note">{message.revision_refusal}</div>
+          )}
+        </div>
       )}
     </div>
   );

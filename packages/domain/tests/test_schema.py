@@ -213,6 +213,20 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "tuning_change",
         "tuning_verification",
     ),
+    # §2.1 amendment, 12 September 2026: revision and retraction of Lord
+    # Armand's own messages, as appended facts.
+    "message_revisions": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "message_id",
+        "revision_number",
+        "after_sequence",
+        "kind",
+        "content",
+        "authored_by",
+        "note",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -278,6 +292,9 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("budget_reservations", "cost_certainty"),
         ("budget_reservations", "model_call_id"),
         ("budget_reservations", "resolution"),
+        # 12 September 2026: a retraction carries no wording; a note is never required.
+        ("message_revisions", "content"),
+        ("message_revisions", "note"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.
@@ -312,6 +329,8 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
     "deliberation_outcome": ("updated", "held", "overridden", "agreed_from_start"),
     "deliberation_classification": ("consequential", "uncertain"),
     "deliberation_classified_by": ("automatic", "user", "val"),
+    # Amendment, 12 September 2026
+    "message_revision_kind": ("revision", "retraction"),
     # Amendments, 15 August 2026
     "execution_event_reaction": (
         "negative",
@@ -340,7 +359,13 @@ BOOKKEEPING = {"alembic_version"}
 #: Views §2 names. The table checks filter on `BASE TABLE`, so a view would
 #: otherwise be invisible to them — which is exactly how an unnamed one would
 #: slip in. Named here so it cannot.
-SPECIFIED_VIEWS: frozenset[str] = frozenset({"model_calls_accounted"})
+SPECIFIED_VIEWS: frozenset[str] = frozenset(
+    {
+        "model_calls_accounted",
+        # 12 September 2026: current message state derived from `message_revisions`.
+        "messages_current",
+    }
+)
 
 
 def _views(connection: Connection) -> set[str]:

@@ -52,8 +52,11 @@ from val_api.contracts import (
     ProjectView,
     QueuedExchangeView,
     RenameRequest,
+    RetractionRequest,
     ReviewProgressView,
     ReviewRequest,
+    RevisionRequest,
+    RevisionView,
     TurnAnswered,
     TurnClarification,
     TurnRequest,
@@ -62,7 +65,7 @@ from val_api.contracts import (
     TurnUnanswered,
 )
 from val_api.streaming import turn_event_stream
-from val_domain.deliberation import ClassifiedBy
+from val_domain.deliberation import ClassifiedBy, Ordering
 from val_domain.gateway import GatewayError
 from val_gateway import conversations
 from val_gateway.classification_review import (
@@ -106,7 +109,16 @@ from val_gateway.projects import (
     load_catalogue,
     project_listing,
 )
+from val_gateway.revisions import RevisionRefusedError, retract, revise
 from val_policy.project_resolution import ProjectSignals
+
+
+def _revision_http_error(refused: RevisionRefusedError) -> HTTPException:
+    """A refused revision or retraction, with the writer's words and a fitting status."""
+    status = {"not_found": 404, "restricted": 403, "empty": 422}.get(refused.reason, 409)
+    return HTTPException(
+        status_code=status, detail={"reason": refused.reason, "message": str(refused)}
+    )
 
 
 def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = None) -> FastAPI:
@@ -186,21 +198,25 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
             record = conversations.load(engine, conversation_id)
         except ConversationNotFoundError as missing:
             raise HTTPException(status_code=404, detail=str(missing)) from missing
+        blinds = blind_positions_for(engine, conversation_id)
+        recorded = deliberations_for(engine, conversation_id)
+        # Ruling, 12 September 2026: a message anchoring an enforced blind
+        # position or any deliberation cannot be rewritten. The writer refuses
+        # regardless; this lets the interface say so before being asked.
+        deliberated = {b.message_id for b in blinds if b.ordering is Ordering.ENFORCED} | {
+            d.message_id for d in recorded
+        }
         return ConversationDetail(
             conversation=ConversationView.of(record),
             messages=[
-                MessageView.of(message)
-                for message in conversations.history(engine, conversation_id)
+                MessageView.of_working(message, deliberated=message.record.id in deliberated)
+                for message in conversations.working(engine, conversation_id).messages
             ],
             classifications=[
                 ClassificationView.of(row) for row in classifications_for(engine, conversation_id)
             ],
-            blind_positions=[
-                BlindPositionView.of(row) for row in blind_positions_for(engine, conversation_id)
-            ],
-            deliberations=[
-                DeliberationView.of(row) for row in deliberations_for(engine, conversation_id)
-            ],
+            blind_positions=[BlindPositionView.of(row) for row in blinds],
+            deliberations=[DeliberationView.of(row) for row in recorded],
             execution_events=[
                 ExecutionEventView.of(row) for row in events_for(engine, conversation_id)
             ],
@@ -237,6 +253,31 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
             )
         except ConversationNotFoundError as missing:
             raise HTTPException(status_code=404, detail=str(missing)) from missing
+
+    @app.post("/messages/{message_id}/revisions", status_code=201)
+    def revise_message(message_id: UUID, request: RevisionRequest) -> RevisionView:
+        """Correct one of Lord Armand's messages: an appended fact, never an edit.
+
+        No provider call and no regeneration. Later turns see the corrected
+        wording in the message's position; every earlier call keeps what it
+        received.
+        """
+        try:
+            return RevisionView.of(revise(engine, message_id, request.content, note=request.note))
+        except RevisionRefusedError as refused:
+            raise _revision_http_error(refused) from refused
+
+    @app.post("/messages/{message_id}/retraction", status_code=201)
+    def retract_message(message_id: UUID, request: RetractionRequest) -> RevisionView:
+        """Remove one of Lord Armand's messages, and Val's reply, from the conversation.
+
+        Both stay in the record, marked withdrawn, with every classification,
+        deliberation, judgment and cost attached to them.
+        """
+        try:
+            return RevisionView.of(retract(engine, message_id, note=request.note))
+        except RevisionRefusedError as refused:
+            raise _revision_http_error(refused) from refused
 
     # --- the turn -------------------------------------------------------------
 

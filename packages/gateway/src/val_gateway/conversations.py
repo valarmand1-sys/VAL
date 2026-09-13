@@ -65,7 +65,15 @@ from uuid import UUID
 
 from sqlalchemy import Engine, text
 
-from val_domain.conversation import ConversationRecord, MessageRecord, StoredRole
+from val_domain.conversation import (
+    ConversationRecord,
+    MessageRecord,
+    MessageRevisionRecord,
+    RevisionKind,
+    StoredRole,
+    WorkingThread,
+    working_thread,
+)
 from val_domain.project import ProjectScope, attribution_of
 from val_gateway.projects import load_project
 
@@ -337,3 +345,49 @@ def history(engine: Engine, conversation_id: UUID) -> tuple[MessageRecord, ...]:
     with engine.connect() as connection:
         rows = connection.execute(_SELECT_HISTORY, {"id": conversation_id}).all()
     return tuple(_message(row) for row in rows)
+
+
+# --- the working conversation (ruling, 12 September 2026) ----------------------
+
+_SELECT_FACTS = text(
+    "select id, conversation_id, message_id, revision_number, after_sequence, kind, "
+    "       content, authored_by, note, created_at "
+    "  from message_revisions where conversation_id = :id "
+    " order by message_id, revision_number"
+)
+
+
+def revision_record(row: object) -> MessageRevisionRecord:
+    """One `message_revisions` row as its domain record."""
+    return MessageRevisionRecord(
+        id=row.id,  # type: ignore[attr-defined]
+        conversation_id=row.conversation_id,  # type: ignore[attr-defined]
+        message_id=row.message_id,  # type: ignore[attr-defined]
+        revision_number=row.revision_number,  # type: ignore[attr-defined]
+        after_sequence=row.after_sequence,  # type: ignore[attr-defined]
+        kind=RevisionKind(row.kind),  # type: ignore[attr-defined]
+        content=row.content,  # type: ignore[attr-defined]
+        authored_by=row.authored_by,  # type: ignore[attr-defined]
+        note=row.note,  # type: ignore[attr-defined]
+        created_at=row.created_at,  # type: ignore[attr-defined]
+    )
+
+
+def working(
+    engine: Engine, conversation_id: UUID, *, as_of_sequence: int | None = None
+) -> WorkingThread:
+    """The conversation as it stood for the turn at `as_of_sequence` — or now.
+
+    Reads the stored messages and the appended revision facts in one
+    repeatable-read snapshot and applies `val_domain.conversation.working_thread`
+    — the as-of rule stated once. The stored rows are returned untouched inside
+    each `WorkingMessage`; only assembly uses the wording in force.
+    """
+    with engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
+        history_rows = connection.execute(_SELECT_HISTORY, {"id": conversation_id}).all()
+        fact_rows = connection.execute(_SELECT_FACTS, {"id": conversation_id}).all()
+    return working_thread(
+        tuple(_message(row) for row in history_rows),
+        tuple(revision_record(row) for row in fact_rows),
+        as_of_sequence=as_of_sequence,
+    )

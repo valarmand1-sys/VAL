@@ -114,28 +114,41 @@ from val_policy.recall import (
 #: `where`, so ranking only ever sees rows already inside the scope. `limit`
 #: applies to that restricted set.
 #:
-#: `m.role in ('user', 'val')` excludes stored `system` rows — application
+#: `role in ('user', 'val')` excludes stored `system` rows — application
 #: bookkeeping is not conversation, and recalling it would put the house's own
 #: notes into Val's mouth.
 #:
-#: `m.conversation_id is distinct from :exclude` keeps the current conversation
+#: **Revision and retraction (ruling, 12 September 2026).** All three
+#: statements read `messages_current`, the one derivation of current message
+#: state (`0016`): they rank and match on the wording in force, so a corrected
+#: message is found by what Lord Armand corrected it to and not by what he first
+#: wrote; and `mc.live` excludes a withdrawn message and Val's immediate answer
+#: to it **inside the query**, never afterwards. The GIN index on
+#: `messages.content` no longer serves the match predicate directly, because the
+#: predicate is over the current wording; at the House's volume (hundreds of
+#: messages) the scan is negligible, and an index over the derivation is a
+#: later decision if volume ever makes it one.
+#:
+#: `conversation_id is distinct from :exclude` keeps the current conversation
 #: out: its history is assembled in full and in order by the caller, so a message
 #: arriving through both paths would be injected twice.
 _IN_PROJECT = text(
-    "select m.id, m.conversation_id, m.role, m.content, m.sequence, "
+    "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
+    "       mc.state, mc.state_recorded_at, mc.answered_state, "
     "       c.project_id, c.title, "
-    "       ts_rank(to_tsvector('english', m.content), "
+    "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
     "                       '&', '|')::tsquery) as rank "
-    "  from messages m "
-    "  join conversations c on c.id = m.conversation_id "
+    "  from messages_current mc "
+    "  join conversations c on c.id = mc.conversation_id "
     " where c.project_id = :project_id "
-    "   and m.conversation_id is distinct from :exclude "
-    "   and m.role in ('user', 'val') "
-    "   and to_tsvector('english', m.content) "
+    "   and mc.conversation_id is distinct from :exclude "
+    "   and mc.role in ('user', 'val') "
+    "   and mc.live "
+    "   and to_tsvector('english', mc.content) "
     "       @@ replace(plainto_tsquery('english', :query)::text, "
     "                  '&', '|')::tsquery "
-    " order by rank desc, m.created_at desc, m.id "
+    " order by rank desc, mc.created_at desc, mc.id "
     " limit :limit"
 )
 
@@ -145,20 +158,22 @@ _IN_PROJECT = text(
 #: closed, but silently, and looking like "no history exists" rather than "this
 #: query cannot ask what you asked".
 _IN_NO_PROJECT = text(
-    "select m.id, m.conversation_id, m.role, m.content, m.sequence, "
+    "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
+    "       mc.state, mc.state_recorded_at, mc.answered_state, "
     "       c.project_id, c.title, "
-    "       ts_rank(to_tsvector('english', m.content), "
+    "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
     "                       '&', '|')::tsquery) as rank "
-    "  from messages m "
-    "  join conversations c on c.id = m.conversation_id "
+    "  from messages_current mc "
+    "  join conversations c on c.id = mc.conversation_id "
     " where c.project_id is null "
-    "   and m.conversation_id is distinct from :exclude "
-    "   and m.role in ('user', 'val') "
-    "   and to_tsvector('english', m.content) "
+    "   and mc.conversation_id is distinct from :exclude "
+    "   and mc.role in ('user', 'val') "
+    "   and mc.live "
+    "   and to_tsvector('english', mc.content) "
     "       @@ replace(plainto_tsquery('english', :query)::text, "
     "                  '&', '|')::tsquery "
-    " order by rank desc, m.created_at desc, m.id "
+    " order by rank desc, mc.created_at desc, mc.id "
     " limit :limit"
 )
 
@@ -169,20 +184,22 @@ _IN_NO_PROJECT = text(
 #: the one authorised cross-project path, and it is reachable only through
 #: `house_recall_with_state`, which only `gate_house_recall` opens.
 _ACROSS_HOUSE = text(
-    "select m.id, m.conversation_id, m.role, m.content, m.sequence, m.created_at, "
+    "select mc.id, mc.conversation_id, mc.role, mc.content, mc.sequence, mc.created_at, "
+    "       mc.state, mc.state_recorded_at, mc.answered_state, "
     "       c.project_id, c.title, p.name as project_name, "
-    "       ts_rank(to_tsvector('english', m.content), "
+    "       ts_rank(to_tsvector('english', mc.content), "
     "               replace(plainto_tsquery('english', :query)::text, "
     "                       '&', '|')::tsquery) as rank "
-    "  from messages m "
-    "  join conversations c on c.id = m.conversation_id "
+    "  from messages_current mc "
+    "  join conversations c on c.id = mc.conversation_id "
     "  left join projects p on p.id = c.project_id "
-    " where m.conversation_id is distinct from :exclude "
-    "   and m.role in ('user', 'val') "
-    "   and to_tsvector('english', m.content) "
+    " where mc.conversation_id is distinct from :exclude "
+    "   and mc.role in ('user', 'val') "
+    "   and mc.live "
+    "   and to_tsvector('english', mc.content) "
     "       @@ replace(plainto_tsquery('english', :query)::text, "
     "                  '&', '|')::tsquery "
-    " order by rank desc, m.created_at desc, m.id "
+    " order by rank desc, mc.created_at desc, mc.id "
     " limit :limit"
 )
 
@@ -217,6 +234,15 @@ class RecalledMessage:
     project_name: str | None = None
     created_at: datetime | None = None
     retrieval_path: str = "project_recall"
+    #: Revision provenance (ruling, 12 September 2026), additive. For a user
+    #: message Lord Armand corrected: ``corrected``, when the correction was
+    #: recorded, and when the message was first sent — so an excerpt never
+    #: presents corrected wording as what was said at the time. For a Val
+    #: message, the state of the user message she immediately answered.
+    wording_state: str = "current"
+    wording_recorded_at: datetime | None = None
+    sent_at: datetime | None = None
+    answered_state: str | None = None
 
     @property
     def source_scope(self) -> str:
@@ -344,6 +370,10 @@ def recall_selection(
             content=row.content,
             sequence=row.sequence,
             rank=float(row.rank),
+            wording_state=row.state,
+            wording_recorded_at=row.state_recorded_at,
+            sent_at=row.created_at,
+            answered_state=row.answered_state,
         )
         for row in rows
     )
@@ -512,6 +542,10 @@ def house_recall_with_state(
             project_name=row.project_name,
             created_at=row.created_at,
             retrieval_path="house_recall",
+            wording_state=row.state,
+            wording_recorded_at=row.state_recorded_at,
+            sent_at=row.created_at,
+            answered_state=row.answered_state,
         )
         for row in rows
         if row.id not in exclude_message_ids

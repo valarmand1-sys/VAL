@@ -28,12 +28,38 @@ export interface ConversationView {
   archived: boolean;
 }
 
+export type MessageState = "current" | "corrected" | "withdrawn";
+
+// One appended revision or retraction fact — ruling, 12 September 2026.
+export interface RevisionView {
+  id: string;
+  message_id: string;
+  revision_number: number;
+  kind: "revision" | "retraction";
+  content: string | null;
+  note: string | null;
+  authored_by: string;
+  created_at: string;
+}
+
+// In a conversation detail, `content` is the wording in force. `original_content`
+// is what Lord Armand first sent, present when it differs; `answered_state` is,
+// for Val's message, the state of the message she answered — her words stay
+// attached to the wording she received; `revision_refusal` explains a message
+// that cannot be rewritten. The service always sends them; they are optional
+// here because their absence means exactly the defaults (current, no original,
+// no facts), which is what a message with no revision history is.
 export interface MessageView {
   id: string;
   role: "user" | "val" | "system";
   content: string;
   sequence: number;
   created_at: string;
+  state?: MessageState;
+  original_content?: string | null;
+  answered_state?: MessageState | null;
+  revisions?: RevisionView[];
+  revision_refusal?: string | null;
 }
 
 export type Ordering = "enforced" | "contaminated";
@@ -358,6 +384,18 @@ export const api = {
     request<ConversationView>(`/conversations/${id}/title`, {
       method: "POST",
       body: JSON.stringify({ title }),
+    }),
+  // Message revision and retraction — appended facts, never edits. Neither
+  // makes a provider call.
+  reviseMessage: (id: string, content: string, note?: string) =>
+    request<RevisionView>(`/messages/${id}/revisions`, {
+      method: "POST",
+      body: JSON.stringify(note === undefined ? { content } : { content, note }),
+    }),
+  retractMessage: (id: string, note?: string) =>
+    request<RevisionView>(`/messages/${id}/retraction`, {
+      method: "POST",
+      body: JSON.stringify(note === undefined ? {} : { note }),
     }),
   archiveConversation: (id: string) =>
     request<ConversationView>(`/conversations/${id}/archive`, { method: "POST" }),

@@ -162,6 +162,8 @@ ReviewConclusion = Enum(
     name="review_conclusion",
 )
 TuningState = Enum("tuning_required", "tuning_verified", name="tuning_state")
+# Ruling, 12 September 2026: a fact about one of Lord Armand's messages.
+MessageRevisionKind = Enum("revision", "retraction", name="message_revision_kind")
 
 
 # Primary keys are time-ordered UUIDs. PostgreSQL 18's `uuidv7()` sorts by
@@ -1034,12 +1036,66 @@ class ModelCallCacheUsage(Base):
     )
 
 
+class MessageRevision(Base):
+    """§2.1 amendment, 12 September 2026 — `message_revisions`.
+
+    A revision or retraction of one of Lord Armand's own messages, as an
+    appended fact: the `messages` row is never touched. `after_sequence` is the
+    conversation's highest message sequence when the fact was recorded, read
+    under the conversation row lock, so the turn whose message has sequence *s*
+    sees exactly the facts with `after_sequence < s`. A coherence trigger
+    refuses a Val message, a mismatched conversation, a stale `after_sequence`,
+    a skipped `revision_number`, and a revision of a deliberated message.
+    Append-only (`0016`); `messages_current` derives current state from it.
+    """
+
+    __tablename__ = "message_revisions"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    revision_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    after_sequence: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    kind: Mapped[str] = mapped_column(MessageRevisionKind, nullable=False)
+    content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    authored_by: Mapped[str] = mapped_column(Text, nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("revision_number > 0", name="revision_number_positive"),
+        CheckConstraint("after_sequence > 0", name="after_sequence_positive"),
+        CheckConstraint("(kind = 'revision') = (content IS NOT NULL)", name="content_iff_revision"),
+        CheckConstraint(
+            "content IS NULL OR length(btrim(content)) > 0", name="revision_says_something"
+        ),
+        CheckConstraint("length(btrim(authored_by)) > 0", name="authored_by_named"),
+        UniqueConstraint("message_id", "revision_number"),
+        Index(
+            "ix_message_revisions_conversation_id_after_sequence",
+            "conversation_id",
+            "after_sequence",
+        ),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
         "conversations",
         "messages",
+        "message_revisions",
         "personas",
         "model_calls",
         "model_call_cache_usage",

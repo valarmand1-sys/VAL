@@ -72,7 +72,13 @@ from uuid import UUID
 
 from sqlalchemy import Engine
 
-from val_domain.conversation import ConversationRecord, MessageRecord, StoredRole
+from val_domain.conversation import (
+    ConversationRecord,
+    MessageRecord,
+    MessageState,
+    StoredRole,
+    WorkingThread,
+)
 from val_domain.gateway import (
     Classification,
     GatewayError,
@@ -351,9 +357,21 @@ def assemble_turn(
     """Steps 4-7: history and recall, assembled into the outbound messages."""
     # 4-6. This conversation's own history — never gated — then cross-conversation
     #    recall, behind the deterministic necessity gate (ruled 10 September 2026).
-    history = conversations.history(engine, opened.conversation.id)
-    turns, _selection = select_conversation(history)
+    #
+    #    Ruling, 12 September 2026: the history is the working conversation **as
+    #    of this turn's own sequence** — messages up to and including this turn's
+    #    message, and only the revision facts recorded before it
+    #    (`after_sequence < s`). Corrected messages carry their wording in force;
+    #    a withdrawn message and Val's immediate answer to it are left out. A
+    #    fact recorded after this turn was opened cannot reach it, and a later
+    #    reconstruction of this turn yields exactly what it received.
+    thread = conversations.working(
+        engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
+    )
+    history = thread.live_records()
+    turns, selection = select_conversation(history)
     prior, current = turns[:-1], turns[-1:]
+    corrected_after_answer, withdrawn_after = revision_facts(thread, selection.retained_from)
     now = local_now()
     current_local_time = now.strftime("%A %-d %B %Y, %H:%M")
     context = ThreadContext(
@@ -426,6 +444,8 @@ def assemble_turn(
         house_recall_state=house.state,
         house_recall_count=len(house.items),
         house_recall_detail=house.detail,
+        corrected_after_answer=corrected_after_answer,
+        withdrawn_after_positions=withdrawn_after,
     )
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
     excerpts = recall_block(recalled)
@@ -436,6 +456,53 @@ def assemble_turn(
         *current,
     )
     return messages, recalled
+
+
+def revision_facts(
+    thread: WorkingThread, retained_from: int
+) -> tuple[tuple[tuple[int, int], ...], tuple[int, ...]]:
+    """The record-state facts about corrections and withdrawals for one request.
+
+    Ruling, 12 September 2026. Positions count the retained prior messages of
+    this request from 1, oldest first — the same messages, in the same order,
+    that precede the envelope. A message corrected after Val answered it is
+    named with her answer's position; a withdrawn exchange that stood inside the
+    retained span — after the last live message not retained — is named by how
+    many retained messages precede where it was.
+    Facts outside the retained span describe nothing in this request and are
+    not stated.
+    """
+    conversational = tuple(
+        message
+        for message in thread.live()
+        if message.record.role in (StoredRole.USER, StoredRole.VAL)
+    )
+    retained = conversational[retained_from:]
+    prior = retained[:-1]
+    corrected: list[tuple[int, int]] = []
+    for index, message in enumerate(prior[:-1]):
+        answer = prior[index + 1]
+        if (
+            message.state is MessageState.CORRECTED
+            and answer.record.role is StoredRole.VAL
+            and answer.answered_state is MessageState.CORRECTED
+        ):
+            corrected.append((index + 1, index + 2))
+    withdrawn: list[int] = []
+    if retained:
+        # The retained span begins just after the last live message that was not
+        # retained (or at the start of the conversation when all were).
+        boundary = conversational[retained_from - 1].record.sequence if retained_from > 0 else 0
+        for message in thread.messages:
+            if (
+                message.record.role is StoredRole.USER
+                and message.state is MessageState.WITHDRAWN
+                and message.record.sequence > boundary
+            ):
+                withdrawn.append(
+                    sum(1 for kept in prior if kept.record.sequence < message.record.sequence)
+                )
+    return tuple(corrected), tuple(withdrawn)
 
 
 def unanswered_or_raise(opened: OpenedTurn, failure: GatewayError) -> UnansweredTurn:

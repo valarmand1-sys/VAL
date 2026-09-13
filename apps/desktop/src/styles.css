@@ -343,3 +343,33 @@ body {
 .conversation-header .rename input {
   flex: 1;
 }
+
+/* Message revision and retraction — ruling, 12 September 2026. */
+.message .state-line {
+  font-size: 0.85em;
+  opacity: 0.75;
+  margin-bottom: 0.3rem;
+}
+.message.withdrawn {
+  opacity: 0.6;
+}
+.message.withdrawn.collapsed .state-line {
+  margin-bottom: 0;
+}
+.message .original {
+  border-left: 2px solid currentColor;
+  padding-left: 0.6rem;
+  margin: 0.3rem 0 0.5rem;
+  opacity: 0.8;
+}
+.message .edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.message-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}

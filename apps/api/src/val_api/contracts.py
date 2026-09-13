@@ -24,7 +24,13 @@ from val_domain.classification_review import (
     ReviewConclusion,
     TuningState,
 )
-from val_domain.conversation import ConversationRecord, MessageRecord
+from val_domain.conversation import (
+    ConversationRecord,
+    MessageRecord,
+    MessageRevisionRecord,
+    StoredRole,
+    WorkingMessage,
+)
 from val_domain.deliberation import (
     BlindPositionRecord,
     ClassificationRecord,
@@ -115,7 +121,53 @@ class ConversationView(BaseModel):
         )
 
 
+class RevisionView(BaseModel):
+    """One appended revision or retraction fact — ruling, 12 September 2026."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    message_id: UUID
+    revision_number: int
+    kind: str
+    content: str | None
+    note: str | None
+    authored_by: str
+    created_at: datetime
+
+    @classmethod
+    def of(cls, record: MessageRevisionRecord) -> RevisionView:
+        return cls(
+            id=record.id,
+            message_id=record.message_id,
+            revision_number=record.revision_number,
+            kind=record.kind.value,
+            content=record.content,
+            note=record.note,
+            authored_by=record.authored_by,
+            created_at=record.created_at,
+        )
+
+
+#: What the detail says when a message cannot be rewritten (ruling, 12 September 2026).
+DELIBERATED_REVISION_REFUSAL = (
+    "This message is part of a recorded decision exchange and cannot be rewritten. "
+    "Send a correction as a new message, or remove the exchange from the conversation."
+)
+
+
 class MessageView(BaseModel):
+    """One message. In a conversation detail, `content` is the wording in force.
+
+    Ruling, 12 September 2026, additive: `state` is `current`, `corrected` or
+    `withdrawn`; `original_content` is what Lord Armand first sent, present when
+    the wording in force differs; `answered_state` is, for a Val message, the
+    state of the message she immediately answered — her words stay attached to
+    the wording she received; `revisions` lists the appended facts;
+    `revision_refusal` says why a message cannot be rewritten. A message outside
+    a detail (a turn's own messages) carries the defaults, which are true of it.
+    """
+
     model_config = ConfigDict(frozen=True)
 
     id: UUID
@@ -123,6 +175,11 @@ class MessageView(BaseModel):
     content: str
     sequence: int
     created_at: datetime
+    state: str = "current"
+    original_content: str | None = None
+    answered_state: str | None = None
+    revisions: list[RevisionView] = Field(default_factory=list)
+    revision_refusal: str | None = None
 
     @classmethod
     def of(cls, record: MessageRecord) -> MessageView:
@@ -133,6 +190,43 @@ class MessageView(BaseModel):
             sequence=record.sequence,
             created_at=record.created_at,
         )
+
+    @classmethod
+    def of_working(cls, message: WorkingMessage, *, deliberated: bool) -> MessageView:
+        record = message.record
+        return cls(
+            id=record.id,
+            role=record.role.value,
+            content=message.content,
+            sequence=record.sequence,
+            created_at=record.created_at,
+            state=message.state.value,
+            original_content=record.content if message.content != record.content else None,
+            answered_state=None if message.answered_state is None else message.answered_state.value,
+            revisions=[RevisionView.of(fact) for fact in message.revisions],
+            revision_refusal=(
+                DELIBERATED_REVISION_REFUSAL
+                if deliberated and record.role is StoredRole.USER
+                else None
+            ),
+        )
+
+
+class RevisionRequest(BaseModel):
+    """A corrected wording for one of Lord Armand's messages. The note is optional."""
+
+    model_config = ConfigDict(frozen=True)
+
+    content: str
+    note: str | None = None
+
+
+class RetractionRequest(BaseModel):
+    """Remove one of Lord Armand's messages from the conversation. The note is optional."""
+
+    model_config = ConfigDict(frozen=True)
+
+    note: str | None = None
 
 
 class BlindPositionView(BaseModel):
