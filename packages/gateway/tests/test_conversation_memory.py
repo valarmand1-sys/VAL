@@ -2664,13 +2664,15 @@ def test_prior_record_state_carries_the_current_local_time_as_a_fact(
     assert state["retrieved_excerpts"] == {"state": "not_run", "count": 0, "detail": "tier_one"}
     assert "current_time is the present local date and time" in str(_state_block(adapter)["note"])
     # Nothing else was added to the envelope — `house_recall` being the additive
-    # sibling field approved on 12 September 2026 (04-layer-0.md WP-0.7 amendment).
+    # sibling field approved on 12 September 2026 (04-layer-0.md WP-0.7 amendment),
+    # and `capability_state` the additive field ruled on 13 September 2026.
     assert set(state) == {
         "current_time",
         "same_conversation_history",
         "retrieved_excerpts",
         "house_recall",
         "project_volumes",
+        "capability_state",
     }
 
 

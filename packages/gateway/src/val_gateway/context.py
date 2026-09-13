@@ -72,7 +72,9 @@ conversation for the same reason.
 import json
 import logging
 import os
+from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from val_domain.conversation import MessageRecord, StoredRole
 from val_domain.gateway import (
@@ -190,9 +192,22 @@ STATE_ENVELOPE_NOTE = (
     "anything exists elsewhere, and nothing absent from this request may be "
     "assumed, reconstructed, or referred to as if remembered. current_time is the "
     "present local date and time from the house's clock; use it rather than "
-    "inferring the hour. The current turn is the last message in this request, "
-    "never this one."
+    "inferring the hour. capability_state states, for each operation it names, "
+    "whether that operation can actually be performed on this call in the current "
+    "build: 'unavailable' means it cannot be performed, begun, or promised here, "
+    "and says nothing about whether it will ever exist. The current turn is the "
+    "last message in this request, never this one."
 )
+
+#: Operational capability, as system truth (ruling, 13 September 2026). Val's
+#: persona describes her as keeper of the house's books; that is identity, not a
+#: mechanism, and on 13 September she promised to "start the book" although no
+#: book mechanism exists. This names only the user-facing operations whose
+#: availability bears on her conduct — today, books alone — and their state in
+#: this build: ``available`` or ``unavailable``. It is a constant of the build,
+#: never provider-generated or inferred, and never a roadmap: a mechanism that
+#: is not built is ``unavailable``, with nothing said about when it might be.
+CAPABILITY_STATE: Mapping[str, str] = MappingProxyType({"books": "unavailable"})
 
 #: The record-state facts about corrections and withdrawals (ruling, 12 September
 #: 2026). Emitted only when such a fact exists, so every other request is unchanged.
@@ -337,6 +352,9 @@ class PriorRecordState:
       what is available to this call, not what the design will one day hold.
     - `current_local_time` / `current_timezone`: the house's clock, stated
       (ruled 10 September 2026).
+    - `capability_state` (ruled 13 September 2026): `CAPABILITY_STATE`, the
+      build's operational truth about the operations it names — not a field of
+      this dataclass, because it does not vary per call.
     """
 
     history_state: str
@@ -444,6 +462,7 @@ class PriorRecordState:
                 **({"detail": self.house_recall_detail} if self.house_recall_detail else {}),
             },
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
+            "capability_state": dict(CAPABILITY_STATE),
         }
 
 
