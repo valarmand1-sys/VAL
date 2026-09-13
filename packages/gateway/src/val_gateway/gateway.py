@@ -703,6 +703,18 @@ class Gateway:
         """
         if self._cache_ttl is None or request.system is None:
             return None
+        # Ruling, 13 September 2026: a blind-position call never asks for a
+        # cache. Its breakpoint already sat at the end of the persona, but the
+        # provider renders the structured-output format's own system text inside
+        # that prefix, so the prefix is always longer than the persona prefix the
+        # response route caches (265 tokens on every blind call on record, under
+        # two persona revisions) and can never read it. Blind calls are days
+        # apart, so the one-hour write it paid for was never read either. The
+        # request, persona, route, effort and schema are unchanged; only the
+        # cache-control metadata is not sent, and the reservation is taken at
+        # the base input rate instead of the write rate.
+        if request.task_type is TaskType.BLIND_POSITION:
+            return None
         if config.caching is not PricingFeature.AVAILABLE:
             return None
         minimum = config.cache_minimum_prefix_tokens or 0
