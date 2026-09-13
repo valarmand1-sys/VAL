@@ -647,6 +647,10 @@ class TurnRequest(BaseModel):
     no_project: bool = False
     title: str | None = None
     max_output_tokens: int = Field(default=4096, gt=0)
+    #: Ruling, 13 September 2026: on the streamed route, also send `stage`
+    #: events as the house begins each stage of the turn. Opt-in, so the stream
+    #: a client did not ask to change is unchanged. Ignored by `POST /turns`.
+    progress: bool = False
 
 
 class DeliberationGlimpse(BaseModel):

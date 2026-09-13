@@ -11,6 +11,10 @@ Responsiveness phase, 11 September 2026. The desktop asks for a turn on
                                                        a removed conversation (its
                                                        409; 12 September 2026)
     event: error      data: {"detail": "…"}          — an unexpected failure
+    event: stage      data: {"stage": "…", "api_ms": n} — only when the request
+                                                       asked for `progress`: the
+                                                       house began a stage
+                                                       (13 September 2026)
 
 **Every delta comes through Val Core.** The generator here owns the sink it
 hands to `deliberate.send`; the gateway forwards the provider's text to that
@@ -45,7 +49,7 @@ from sqlalchemy import Engine
 
 from val_api.contracts import TurnRequest
 from val_gateway.conversations import ConversationRemovedError
-from val_gateway.deliberate import DeliberatedOutcome
+from val_gateway.deliberate import DeliberatedOutcome, TurnStage
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.exchange import RestrictedContentRefusedError
 from val_gateway.gateway import Gateway
@@ -65,6 +69,12 @@ def sse(event: str, data: object) -> bytes:
 @dataclass(frozen=True)
 class _Delta:
     text: str
+
+
+@dataclass(frozen=True)
+class _Stage:
+    stage: TurnStage
+    at: float
 
 
 @dataclass(frozen=True)
@@ -89,7 +99,7 @@ def turn_event_stream(
     settled payload is identical in shape and content to `POST /turns`.
     """
     started = time.monotonic()
-    events: queue.Queue[_Delta | _Done | _Failed] = queue.Queue()
+    events: queue.Queue[_Delta | _Stage | _Done | _Failed] = queue.Queue()
 
     def run() -> None:
         try:
@@ -106,6 +116,7 @@ def turn_event_stream(
                 title=request.title,
                 max_output_tokens=request.max_output_tokens,
                 on_delta=lambda text: events.put(_Delta(text)),
+                on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
             )
         except BaseException as error:
             events.put(_Failed(error))
@@ -115,8 +126,16 @@ def turn_event_stream(
     threading.Thread(target=run, name="val-turn-stream", daemon=True).start()
 
     first_delta_ms: int | None = None
+    response_started_ms: int | None = None
     while True:
         item = events.get()
+        if isinstance(item, _Stage):
+            at_ms = int((item.at - started) * 1000)
+            if item.stage is TurnStage.PREPARING_RESPONSE and response_started_ms is None:
+                response_started_ms = at_ms
+            if request.progress:
+                yield sse("stage", {"stage": item.stage.value, "api_ms": at_ms})
+            continue
         if isinstance(item, _Delta):
             if first_delta_ms is None:
                 first_delta_ms = int((time.monotonic() - started) * 1000)
@@ -131,13 +150,16 @@ def turn_event_stream(
             return
         outcome = item.outcome
         payload = render(outcome).model_dump(mode="json")
-        payload["timing"] = _timing(outcome, first_delta_ms, started)
+        payload["timing"] = _timing(outcome, first_delta_ms, started, response_started_ms)
         yield sse("settled", payload)
         return
 
 
 def _timing(
-    outcome: DeliberatedOutcome, first_delta_ms: int | None, started: float
+    outcome: DeliberatedOutcome,
+    first_delta_ms: int | None,
+    started: float,
+    response_started_ms: int | None = None,
 ) -> dict[str, int | None]:
     gateway_first: int | None = None
     gateway_latency: int | None = None
@@ -150,4 +172,9 @@ def _timing(
         "gateway_latency_ms": gateway_latency,
         "api_first_delta_ms": first_delta_ms,
         "api_total_ms": int((time.monotonic() - started) * 1000),
+        # Ruling, 13 September 2026: when the final response call began, from
+        # the same origin as `api_first_delta_ms` — the work before Val began
+        # answering. `gateway_first_output_ms` is measured from that call's own
+        # start and must never be read on this origin.
+        "api_response_started_ms": response_started_ms,
     }

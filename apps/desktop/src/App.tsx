@@ -11,7 +11,7 @@
 // live on the messages they are about, in the flow of working, because the
 // two accumulation criteria die if either requires leaving the conversation.
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 import type {
   Confidence,
@@ -27,7 +27,6 @@ import type {
   ReviewConclusion,
   ReviewProgressView,
   TurnClarification,
-  TurnTiming,
 } from "./api";
 import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST, StreamRefused } from "./api";
 import {
@@ -54,6 +53,8 @@ import {
   userStateLine,
 } from "./messageState";
 import { enterProject, initialEntry, newChatEntry, newConversationLine, turnScopeFields } from "./scope";
+import { newTurnClock, PROGRESS_NOTE, STAGE_WORDS, timingLines } from "./timing";
+import type { TurnClock, TurnStage, TurnTimingReport } from "./timing";
 import type { Entry } from "./scope";
 
 // The sidebar's listing filter: everything, or one project. Ruled 11 September
@@ -64,23 +65,16 @@ type Scope = { kind: "project"; project: ProjectView } | { kind: "all" };
 // One turn in flight, shown as Val's words arrive through the service — the
 // responsiveness phase, 11 September 2026. Presentation of generation in
 // progress: the settled, persisted message replaces it when the turn ends.
+// `stage` is the house's backend-confirmed progress (13 September 2026), shown
+// only until Val's first words arrive.
 interface Streaming {
   userContent: string;
   text: string;
-  startedAt: number;
-  firstVisibleMs: number | null;
+  stage: TurnStage | null;
 }
 
-// The last turn's timing, from three vantage points kept distinct: the gateway
-// (time to the first generated-text delta from the provider), this client (the
-// first delta's arrival), and the interface (the first words painted). The
-// last is the one that governs, and it is measured after the paint that
-// followed the first delta's render, not when the delta arrived.
-interface LastTiming {
-  timing: TurnTiming;
-  clientFirstDeltaMs: number | null;
-  clientTotalMs: number;
-  firstVisibleMs: number | null;
+function windowVisible(): boolean {
+  return typeof document === "undefined" || document.visibilityState === "visible";
 }
 
 export function App(): React.JSX.Element {
@@ -94,7 +88,10 @@ export function App(): React.JSX.Element {
   // its own record's attribution regardless of what is entered here.
   const [entry, setEntry] = useState<Entry>(initialEntry());
   const [streaming, setStreaming] = useState<Streaming | null>(null);
-  const [lastTiming, setLastTiming] = useState<LastTiming | null>(null);
+  const [lastTiming, setLastTiming] = useState<TurnTimingReport | null>(null);
+  // The in-flight turn's moments, all from Send (13 September 2026). A ref, not
+  // state: recording a moment must not itself cause a render.
+  const turnClock = useRef<{ startedAt: number; clock: TurnClock } | null>(null);
   const [conversations, setConversations] = useState<ConversationView[]>([]);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -196,21 +193,32 @@ export function App(): React.JSX.Element {
     void refreshConversations({ kind: "all" });
   }, [refreshConversations]);
 
-  // The governing moment: the first of Val's words painted. Recorded on the
-  // animation frame after the render that first showed streamed text — the
-  // nearest a script can stand to the screen; Lord Armand's own observation
-  // remains the acceptance measurement.
+  // The first render and the confirmed first paint of Val's words, with the
+  // window's visibility at each (13 September 2026). The effect runs after the
+  // render committed the text; the second animation frame runs after the frame
+  // that painted it. WebKit suspends animation frames for a window that is not
+  // visible, so a hidden window delays the paint figure — which is why
+  // visibility is recorded beside it rather than assumed.
   useEffect(() => {
-    if (streaming === null || streaming.firstVisibleMs !== null || streaming.text === "") return;
-    const startedAt = streaming.startedAt;
-    const frame = requestAnimationFrame(() => {
-      setStreaming((current) =>
-        current !== null && current.firstVisibleMs === null
-          ? { ...current, firstVisibleMs: Math.round(performance.now() - startedAt) }
-          : current,
-      );
+    const current = turnClock.current;
+    if (streaming === null || streaming.text === "" || current === null) return;
+    const { clock, startedAt } = current;
+    if (clock.firstRenderMs !== null) return;
+    clock.firstRenderMs = Math.round(performance.now() - startedAt);
+    clock.firstRenderVisible = windowVisible();
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        if (clock.firstPaintMs === null) {
+          clock.firstPaintMs = Math.round(performance.now() - startedAt);
+          clock.firstPaintVisible = windowVisible();
+        }
+      });
     });
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
   }, [streaming]);
 
   const send = useCallback(
@@ -220,24 +228,38 @@ export function App(): React.JSX.Element {
       setNotice(null);
       setClarification(null);
       const startedAt = performance.now();
-      setStreaming({ userContent: content, text: "", startedAt, firstVisibleMs: null });
-      let firstVisible: number | null = null;
+      const clock = newTurnClock();
+      turnClock.current = { startedAt, clock };
+      const since = () => Math.round(performance.now() - startedAt);
+      const onVisibility = () => clock.visibilityChanges.push({ atMs: since(), visible: windowVisible() });
+      document.addEventListener("visibilitychange", onVisibility);
+      setStreaming({ userContent: content, text: "", stage: null });
       try {
         const scopeFields =
           projectOverride !== undefined
             ? { project: projectOverride }
             : turnScopeFields(entry, detail?.conversation ?? null);
         const result = await api.turnStream(
-          { content, ...scopeFields },
+          { content, ...scopeFields, progress: true },
           {
-            onDelta: (text) =>
-              setStreaming((current) => {
-                if (current === null) return current;
-                if (current.firstVisibleMs !== null) firstVisible = current.firstVisibleMs;
-                return { ...current, text: current.text + text };
-              }),
+            onDelta: (text) => {
+              if (clock.firstDeltaMs === null) {
+                clock.firstDeltaMs = since();
+                clock.firstDeltaVisible = windowVisible();
+              }
+              setStreaming((current) =>
+                current === null ? current : { ...current, text: current.text + text },
+              );
+            },
+            onStage: (stage) => {
+              if (stage === "preparing_response" && clock.responseStartedMs === null) {
+                clock.responseStartedMs = since();
+              }
+              setStreaming((current) => (current === null ? current : { ...current, stage }));
+            },
           },
         );
+        const completeMs = since();
         const outcome = result.settled;
         if (outcome.kind === "clarification") {
           setClarification(outcome);
@@ -253,22 +275,24 @@ export function App(): React.JSX.Element {
             "The reply was cut off and is shown as evidence only — it is not her message. Ask again for a full answer.",
           );
         }
-        setStreaming((current) => {
-          firstVisible = current?.firstVisibleMs ?? firstVisible;
-          return current;
-        });
-        setLastTiming({
-          timing: outcome.timing,
-          clientFirstDeltaMs: result.client_first_delta_ms,
-          clientTotalMs: result.client_total_ms,
-          firstVisibleMs: firstVisible,
-        });
+        const report: TurnTimingReport = {
+          clock: { ...clock, visibilityChanges: [...clock.visibilityChanges] },
+          completeMs,
+          responseCallFirstTokenMs: outcome.timing.gateway_first_output_ms,
+          serviceResponseStartedMs: outcome.timing.api_response_started_ms ?? null,
+        };
+        setLastTiming(report);
+        // Evidence for the undiagnosed delta-to-paint question: the whole record,
+        // in the developer console. Not persisted anywhere.
+        console.info("val.turn.timing", JSON.stringify({ ...report, service: outcome.timing }));
         await openConversation(outcome.conversation.id);
         await refreshConversations(scope);
         await refreshSignals();
       } catch (failure) {
         setNotice(failure instanceof StreamRefused ? failure.detail : describeFailure(failure));
       } finally {
+        document.removeEventListener("visibilitychange", onVisibility);
+        turnClock.current = null;
         setStreaming(null);
         setBusy(false);
       }
@@ -397,11 +421,7 @@ export function App(): React.JSX.Element {
             onRefused={(message) => setNotice(message)}
           />
         )}
-        {lastTiming !== null && streaming === null && (
-          <p className="timing" title="first words visible: measured on the frame painted after the first delta rendered; gateway: the provider's first generated text as the gateway saw it; complete: the settled turn's arrival at this client">
-            {timingLine(lastTiming)}
-          </p>
-        )}
+        {lastTiming !== null && streaming === null && <TimingPanel report={lastTiming} />}
 
         {clarification !== null && (
           <div className="clarification">
@@ -455,22 +475,21 @@ export function App(): React.JSX.Element {
   );
 }
 
-// Words for the last turn's timing, each figure named by where it was measured.
-export function timingLine(last: LastTiming): string {
-  const parts: string[] = [];
-  parts.push(
-    last.firstVisibleMs === null
-      ? "first words visible: not measured (no streamed text)"
-      : `first words visible after ${(last.firstVisibleMs / 1000).toFixed(2)} s`,
+// The last turn's timing, each figure labelled by where its clock started
+// (13 September 2026): everything from Send on one line; the response call's
+// own first-token time on another, never beside them as if comparable.
+function TimingPanel(props: { report: TurnTimingReport }): React.JSX.Element {
+  const lines = timingLines(props.report);
+  return (
+    <div
+      className="timing"
+      title="From Send: measured in this window from the moment the message was sent. Response call alone: measured by the gateway from the start of the final response call, after all work before it."
+    >
+      <p>{lines.fromSend}</p>
+      {lines.responseCall !== null && <p>{lines.responseCall}</p>}
+      {lines.visibility !== null && <p>{lines.visibility}</p>}
+    </div>
   );
-  if (last.timing.gateway_first_output_ms !== null) {
-    parts.push(`gateway first token ${(last.timing.gateway_first_output_ms / 1000).toFixed(2)} s`);
-  }
-  if (last.clientFirstDeltaMs !== null) {
-    parts.push(`first delta at client ${(last.clientFirstDeltaMs / 1000).toFixed(2)} s`);
-  }
-  parts.push(`complete after ${(last.clientTotalMs / 1000).toFixed(2)} s`);
-  return `Last turn — ${parts.join(" · ")}`;
 }
 
 // The thread while a turn is in flight: the prior messages, his message, and
@@ -501,7 +520,13 @@ function StreamingThread(props: {
       <div className="message val streaming" aria-live="polite">
         <div className="speaker">Val</div>
         {streaming.text === "" ? (
-          <div className="content pending" aria-label="Val is composing">…</div>
+          streaming.stage === null ? (
+            <div className="content pending" aria-label="Val is composing">…</div>
+          ) : (
+            <div className="content pending stage" title={PROGRESS_NOTE}>
+              {STAGE_WORDS[streaming.stage]}
+            </div>
+          )
         ) : (
           <div className="content">{streaming.text}</div>
         )}

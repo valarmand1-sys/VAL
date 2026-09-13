@@ -5,6 +5,7 @@
 // (components.toml).
 
 import { EventFrameParser } from "./sse";
+import type { TurnStage } from "./timing";
 
 export const API_BASE = "http://127.0.0.1:8756";
 
@@ -476,6 +477,8 @@ export interface TurnBody {
   conversation_id?: string;
   project?: string;
   no_project?: boolean;
+  // Ask the stream for stage events (13 September 2026). Presentation only.
+  progress?: boolean;
 }
 
 export interface TurnTiming {
@@ -483,12 +486,18 @@ export interface TurnTiming {
   gateway_latency_ms: number | null;
   api_first_delta_ms: number | null;
   api_total_ms: number;
+  // When the final response call began, from the service's receipt of the
+  // request (13 September 2026). `gateway_first_output_ms` is measured from
+  // that call's own start and never shares this origin.
+  api_response_started_ms?: number | null;
 }
 
 export type TurnSettled = TurnResponse & { timing: TurnTiming };
 
 export interface StreamHandlers {
   onDelta: (text: string) => void;
+  // A stage the house has begun (13 September 2026), when the body asked for progress.
+  onStage?: (stage: TurnStage) => void;
 }
 
 export interface StreamResult {
@@ -538,6 +547,8 @@ async function turnStream(body: TurnBody, handlers: StreamHandlers): Promise<Str
           client_first_delta_ms: firstDelta === null ? null : Math.round(firstDelta),
           client_total_ms: Math.round(performance.now() - started),
         };
+      } else if (event.event === "stage") {
+        handlers.onStage?.((event.data as { stage: TurnStage }).stage);
       } else if (event.event === "refused") {
         throw new StreamRefused((event.data as { detail: string }).detail);
       } else if (event.event === "error") {

@@ -77,8 +77,9 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy import Engine
@@ -254,6 +255,33 @@ class DeliberatedTurn:
 DeliberatedOutcome = DeliberatedTurn | UnansweredTurn | ClarificationNeeded
 
 
+class TurnStage(StrEnum):
+    """What the house is doing on a turn, for presentation only — ruling, 13 September 2026.
+
+    Emitted at the moment the backend can truthfully establish each stage, never
+    stored as conversation, never Val's words, and carrying no content: no
+    classification label, no stripped preference, no position. Progress makes a
+    necessary wait legible; it does not count toward the 1-2 second
+    generated-text requirement.
+    """
+
+    #: The message is persisted and the turn has begun.
+    UNDERSTANDING = "understanding"
+    #: The enforced blind-position call is about to be made.
+    FORMING_VIEW = "forming_view"
+    #: The final response call is about to be made.
+    PREPARING_RESPONSE = "preparing_response"
+
+
+#: Receives each stage as it begins. Presentation only.
+StageSink = Callable[[TurnStage], None]
+
+
+def _stage(on_stage: StageSink | None, stage: TurnStage) -> None:
+    if on_stage is not None:
+        on_stage(stage)
+
+
 def send(
     engine: Engine,
     gateway: Gateway,
@@ -268,6 +296,7 @@ def send(
     recall_limit: int = DEFAULT_LIMIT,
     max_output_tokens: int = 4096,
     on_delta: DeltaSink | None = None,
+    on_stage: StageSink | None = None,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -287,6 +316,7 @@ def send(
     )
     if isinstance(opened, ClarificationNeeded):
         return opened
+    _stage(on_stage, TurnStage.UNDERSTANDING)
 
     # 2. Classify, before any position is formed (§4.8: the classification runs
     #    first, because it decides whether the blind call happens at all).
@@ -320,7 +350,14 @@ def send(
         # A valid verdict of not-consequential, or a named hard exclusion: an
         # ordinary WP-0.7 turn from here on.
         outcome = _ordinary(
-            engine, gateway, opened, classification, recall_limit, max_output_tokens, on_delta
+            engine,
+            gateway,
+            opened,
+            classification,
+            recall_limit,
+            max_output_tokens,
+            on_delta,
+            on_stage,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -378,7 +415,14 @@ def send(
                 "; ".join(validation.reasons) or validation.state,
             )
         outcome = _ordinary(
-            engine, gateway, opened, classification, recall_limit, max_output_tokens, on_delta
+            engine,
+            gateway,
+            opened,
+            classification,
+            recall_limit,
+            max_output_tokens,
+            on_delta,
+            on_stage,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -445,6 +489,7 @@ def send(
     blind_response: GatewayResponse | None = None
     blind_calls: list[UUID] = []
     reasons: list[str] = []
+    _stage(on_stage, TurnStage.FORMING_VIEW)
     for attempt in range(1, BLIND_ATTEMPTS + 1):
         try:
             blind_response = gateway.complete_with_configuration(blind_request, config)
@@ -534,6 +579,7 @@ def send(
     # streams. The blind call above never receives a sink: it is evidence, not
     # presentation, and nothing of it is shown before it is recorded.
     withholding = ReconciliationStream(on_delta) if on_delta is not None else None
+    _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     try:
         response = gateway.converse(
             (*messages, envelope),
@@ -616,9 +662,11 @@ def _ordinary(
     recall_limit: int,
     max_output_tokens: int,
     on_delta: DeltaSink | None = None,
+    on_stage: StageSink | None = None,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """The WP-0.7 turn, from an already-opened state."""
     messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
+    _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     try:
         response = gateway.converse(
             messages,

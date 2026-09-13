@@ -386,3 +386,12 @@ body {
 .conversation-actions select.move {
   font-size: 0.85em;
 }
+
+/* Stage progress and origin-labelled timing — ruling, 13 September 2026. */
+.message .content.pending.stage {
+  font-style: italic;
+  opacity: 0.7;
+}
+.timing p {
+  margin: 0.1rem 0;
+}
