@@ -43,7 +43,7 @@ they demonstrably fail. (Also stated in `CLAUDE.md`, Current work.)
 | **Review checkpoints** | **Message revision/retraction** (claims about what was said) · **Attachment substrate and image vision** (claims about what she received and perceived) · **Layer 4** (claims of execution and completion). |
 | **Responsible layer / WP** | The post-gate core-loop packages above, then Layer 4. |
 | **Closure condition** | A remedy exists, demonstrated, that is honest about what the records can actually support — not closed because its first remedy failed. |
-| **Last reviewed** | 1 September 2026 (schema migration; substance unchanged). |
+| **Last reviewed** | 13 September 2026, at the message revision/retraction checkpoint: narrowed, not solved — what was said, what it was corrected to, and what any past call received are now deterministic from `messages`, `message_revisions` and the as-of rule (`VAL_Conversation_Management_Record.md` §8); outbound claims are still unexamined. |
 
 ---
 
