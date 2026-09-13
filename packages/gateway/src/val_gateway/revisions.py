@@ -15,6 +15,7 @@ conversation's order — `after_sequence` — is exact.
   rewritten; it may be retracted, or corrected by a new message;
 - a revision with no wording, or one that changes nothing;
 - a retraction of a message already withdrawn;
+- any message in a conversation that has been removed;
 - wording the Restricted preflight refuses — a correction will enter later
   assembly and recall, so it is checked before it becomes history, exactly as
   a sent message is.
@@ -45,6 +46,8 @@ AUTHOR = "Lord Armand"
 _MESSAGE = text("select id, conversation_id, role, content from messages where id = :id")
 
 _LOCK_CONVERSATION = text("select id from conversations where id = :id for update")
+
+_REMOVED = text("select val_conversation_removed_at(:id)")
 
 _HIGHEST_SEQUENCE = text("select max(sequence) from messages where conversation_id = :id")
 
@@ -102,7 +105,14 @@ def _anchor(connection: Connection, message_id: UUID) -> _Anchor:
     # The conversation row lock, the same one `conversations.append` takes: no
     # message can be appended between reading the highest sequence and inserting.
     connection.execute(_LOCK_CONVERSATION, {"id": row.conversation_id})
-    # Stage 3 of the same ruling adds the removed-conversation refusal here.
+    # A removed conversation is out of active use: its messages take no new facts
+    # until it is reinstated (ruling, 12 September 2026).
+    if connection.execute(_REMOVED, {"id": row.conversation_id}).scalar_one() is not None:
+        raise RevisionRefusedError(
+            "removed",
+            "this conversation has been removed; reinstate it before correcting or "
+            "withdrawing its messages",
+        )
     highest = connection.execute(_HIGHEST_SEQUENCE, {"id": row.conversation_id}).scalar_one()
     facts = tuple(
         revision_record(fact) for fact in connection.execute(_FACTS, {"id": message_id}).all()

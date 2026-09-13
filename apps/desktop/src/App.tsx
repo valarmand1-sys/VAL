@@ -46,7 +46,9 @@ import {
   canRemove,
   EDIT_EXPLANATION,
   isLive,
+  REMOVE_CONVERSATION_CONFIRMATION,
   REMOVE_MESSAGE_CONFIRMATION,
+  REMOVED_CONVERSATION_NOTICE,
   userStateLine,
 } from "./messageState";
 import { enterProject, initialEntry, newChatEntry, newConversationLine, turnScopeFields } from "./scope";
@@ -112,7 +114,8 @@ export function App(): React.JSX.Element {
 
   const refreshConversations = useCallback(
     async (at: Scope) => {
-      const archived = showArchived ? { archived: true } : {};
+      // The same toggle recovers archived and removed conversations (12 September 2026).
+      const archived = showArchived ? { archived: true, removed: true } : {};
       if (at.kind === "project") {
         setConversations(await api.conversations({ project_id: at.project.id, ...archived }));
       } else {
@@ -317,6 +320,7 @@ export function App(): React.JSX.Element {
                 >
                   {conversation.title}
                   {conversation.archived && <span className="archived-tag"> (archived)</span>}
+                  {conversation.removed === true && <span className="archived-tag"> (removed)</span>}
                 </button>
               </li>
             ))}
@@ -349,7 +353,7 @@ export function App(): React.JSX.Element {
               checked={showArchived}
               onChange={(event) => setShowArchived(event.target.checked)}
             />
-            Show archived
+            Show archived and removed
           </label>
         </nav>
       </aside>
@@ -407,6 +411,9 @@ export function App(): React.JSX.Element {
           </div>
         )}
 
+        {detail?.conversation.removed === true && streaming === null && (
+          <div className="notice">{REMOVED_CONVERSATION_NOTICE}</div>
+        )}
         <form
           className="composer"
           onSubmit={(event) => {
@@ -420,7 +427,7 @@ export function App(): React.JSX.Element {
             placeholder="Say something to Val…"
             rows={3}
           />
-          <button type="submit" disabled={busy}>
+          <button type="submit" disabled={busy || detail?.conversation.removed === true}>
             {busy ? "…" : "Send"}
           </button>
         </form>
@@ -797,6 +804,7 @@ function ConversationHeader(props: {
         <h2>
           {conversation.title}
           {conversation.archived && <span className="archived-tag"> (archived)</span>}
+          {conversation.removed === true && <span className="archived-tag"> (removed)</span>}
         </h2>
       )}
       <div className="conversation-actions">
@@ -828,6 +836,24 @@ function ConversationHeader(props: {
           }
         >
           {conversation.archived ? "Unarchive" : "Archive"}
+        </button>
+        <button
+          className="inline-action"
+          disabled={busy}
+          title={
+            conversation.removed === true
+              ? "Return this conversation to active use."
+              : "Withdraw from active use. Nothing is deleted."
+          }
+          onClick={() => {
+            if (conversation.removed === true) {
+              void act(() => api.reinstateConversation(conversation.id));
+            } else if (window.confirm(REMOVE_CONVERSATION_CONFIRMATION)) {
+              void act(() => api.removeConversation(conversation.id));
+            }
+          }}
+        >
+          {conversation.removed === true ? "Reinstate" : "Remove"}
         </button>
       </div>
     </div>

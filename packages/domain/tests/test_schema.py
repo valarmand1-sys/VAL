@@ -227,6 +227,16 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "authored_by",
         "note",
     ),
+    # §2.1 amendment, 12 September 2026: conversation Remove/Reinstate facts.
+    "conversation_removals": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "event_number",
+        "kind",
+        "authored_by",
+        "note",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -295,6 +305,7 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # 12 September 2026: a retraction carries no wording; a note is never required.
         ("message_revisions", "content"),
         ("message_revisions", "note"),
+        ("conversation_removals", "note"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.
@@ -331,6 +342,7 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
     "deliberation_classified_by": ("automatic", "user", "val"),
     # Amendment, 12 September 2026
     "message_revision_kind": ("revision", "retraction"),
+    "conversation_removal_kind": ("removed", "reinstated"),
     # Amendments, 15 August 2026
     "execution_event_reaction": (
         "negative",

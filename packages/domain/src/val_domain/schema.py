@@ -164,6 +164,7 @@ ReviewConclusion = Enum(
 TuningState = Enum("tuning_required", "tuning_verified", name="tuning_state")
 # Ruling, 12 September 2026: a fact about one of Lord Armand's messages.
 MessageRevisionKind = Enum("revision", "retraction", name="message_revision_kind")
+ConversationRemovalKind = Enum("removed", "reinstated", name="conversation_removal_kind")
 
 
 # Primary keys are time-ordered UUIDs. PostgreSQL 18's `uuidv7()` sorts by
@@ -1089,11 +1090,48 @@ class MessageRevision(Base):
     )
 
 
+class ConversationRemoval(Base):
+    """§2.1 amendment, 12 September 2026 — `conversation_removals`.
+
+    Remove and Reinstate as appended facts. A removed conversation is excluded
+    from both recall paths and cannot be resumed; nothing in it is touched.
+    `event_number` is the next number under the conversation row lock; a
+    coherence trigger refuses a skipped number, a double removal and a
+    reinstatement of a live conversation. Append-only (`0017`);
+    `val_conversation_removed_at` derives the state.
+    """
+
+    __tablename__ = "conversation_removals"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    event_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[str] = mapped_column(ConversationRemovalKind, nullable=False)
+    authored_by: Mapped[str] = mapped_column(Text, nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("event_number > 0", name="event_number_positive"),
+        CheckConstraint("length(btrim(authored_by)) > 0", name="authored_by_named"),
+        UniqueConstraint("conversation_id", "event_number"),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
         "conversations",
+        "conversation_removals",
         "messages",
         "message_revisions",
         "personas",

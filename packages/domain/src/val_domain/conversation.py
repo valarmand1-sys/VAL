@@ -310,6 +310,11 @@ class ConversationRecord:
     #: Presentation scoping only, never evidentiary (§2.1 amendment, 31 August
     #: 2026). An archived conversation still resumes and still recalls.
     archived_at: datetime | None = None
+    #: Ruling, 12 September 2026: when the conversation was removed from active
+    #: use, if it currently is — derived from `conversation_removals`, never a
+    #: column. A removed conversation is excluded from recall and cannot resume;
+    #: nothing in it is touched.
+    removed_at: datetime | None = None
 
     @property
     def is_explicit_no_project(self) -> bool:

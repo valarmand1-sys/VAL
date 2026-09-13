@@ -51,6 +51,7 @@ from val_api.contracts import (
     ProjectCreateRequest,
     ProjectView,
     QueuedExchangeView,
+    RemovalRequest,
     RenameRequest,
     RetractionRequest,
     ReviewProgressView,
@@ -77,7 +78,12 @@ from val_gateway.classification_review import (
     record_review,
     review_queue,
 )
-from val_gateway.conversations import ConversationNotFoundError, TitleRefusedError
+from val_gateway.conversations import (
+    ConversationNotFoundError,
+    ConversationRemovedError,
+    RemovalRefusedError,
+    TitleRefusedError,
+)
 from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import (
@@ -176,19 +182,25 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
 
     @app.get("/conversations")
     def conversation_listing(
-        project_id: UUID | None = None, scope: str | None = None, archived: bool = False
+        project_id: UUID | None = None,
+        scope: str | None = None,
+        archived: bool = False,
+        removed: bool = False,
     ) -> list[ConversationView]:
         """All conversations, one project's, or the explicitly-no-project ones.
 
         `archived=true` includes archived rows; the flag is presentation
         scoping and carries no evidentiary meaning (§2.1 amendment, 31 August
         2026). Everything outside these two listings is archive-blind.
+        `removed=true` includes conversations removed from active use (ruling,
+        12 September 2026), which the default listing leaves out.
         """
         records = conversations.listing(
             engine,
             project_id=project_id,
             explicit_none=scope == "none",
             include_archived=archived,
+            include_removed=removed,
         )
         return [ConversationView.of(record) for record in records]
 
@@ -254,6 +266,34 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
         except ConversationNotFoundError as missing:
             raise HTTPException(status_code=404, detail=str(missing)) from missing
 
+    @app.post("/conversations/{conversation_id}/remove")
+    def remove_conversation(conversation_id: UUID, request: RemovalRequest) -> ConversationView:
+        """Remove: out of active use — no recall, no new turns — and nothing destroyed."""
+        try:
+            return ConversationView.of(
+                conversations.remove(engine, conversation_id, note=request.note)
+            )
+        except ConversationNotFoundError as missing:
+            raise HTTPException(status_code=404, detail=str(missing)) from missing
+        except RemovalRefusedError as refused:
+            raise HTTPException(
+                status_code=409, detail={"reason": refused.reason, "message": str(refused)}
+            ) from refused
+
+    @app.post("/conversations/{conversation_id}/reinstate")
+    def reinstate_conversation(conversation_id: UUID, request: RemovalRequest) -> ConversationView:
+        """Reinstate: back in active use, by another appended fact."""
+        try:
+            return ConversationView.of(
+                conversations.reinstate(engine, conversation_id, note=request.note)
+            )
+        except ConversationNotFoundError as missing:
+            raise HTTPException(status_code=404, detail=str(missing)) from missing
+        except RemovalRefusedError as refused:
+            raise HTTPException(
+                status_code=409, detail={"reason": refused.reason, "message": str(refused)}
+            ) from refused
+
     @app.post("/messages/{message_id}/revisions", status_code=201)
     def revise_message(message_id: UUID, request: RevisionRequest) -> RevisionView:
         """Correct one of Lord Armand's messages: an appended fact, never an edit.
@@ -302,6 +342,9 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
             # A refusal to transmit is not a transport error and must never be
             # quiet (WP-0.7 §15). 403: the request was understood and refused.
             raise HTTPException(status_code=403, detail=str(refusal)) from refusal
+        except ConversationRemovedError as removed:
+            # Ruling, 12 September 2026: refused before anything is written.
+            raise HTTPException(status_code=409, detail=str(removed)) from removed
 
         return render_turn(outcome)
 

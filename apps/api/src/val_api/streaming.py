@@ -7,7 +7,9 @@ Responsiveness phase, 11 September 2026. The desktop asks for a turn on
     event: settled    data: {…TurnResponse…, "timing": {…}}   — the same object
                                                            `POST /turns` returns
     event: refused    data: {"detail": "…"}          — a Restricted refusal (the
-                                                       403 of the plain route)
+                                                       403 of the plain route), or
+                                                       a removed conversation (its
+                                                       409; 12 September 2026)
     event: error      data: {"detail": "…"}          — an unexpected failure
 
 **Every delta comes through Val Core.** The generator here owns the sink it
@@ -42,6 +44,7 @@ from pydantic import BaseModel
 from sqlalchemy import Engine
 
 from val_api.contracts import TurnRequest
+from val_gateway.conversations import ConversationRemovedError
 from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.exchange import RestrictedContentRefusedError
@@ -120,7 +123,7 @@ def turn_event_stream(
             yield sse("delta", {"text": item.text})
             continue
         if isinstance(item, _Failed):
-            if isinstance(item.error, RestrictedContentRefusedError):
+            if isinstance(item.error, RestrictedContentRefusedError | ConversationRemovedError):
                 yield sse("refused", {"detail": str(item.error)})
             else:
                 _LOGGER.exception("streamed turn failed", exc_info=item.error)

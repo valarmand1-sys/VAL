@@ -61,3 +61,12 @@ export function canEdit(message: MessageView): boolean {
 export function canRemove(message: MessageView): boolean {
   return message.role === "user" && message.state !== "withdrawn";
 }
+
+export const REMOVE_CONVERSATION_CONFIRMATION =
+  "Remove this conversation from active use? It leaves the sidebar, Val will not recall " +
+  "it, and it cannot take new messages until you reinstate it. Nothing in it is " +
+  "deleted: every message, record and cost stays in the House record.";
+
+export const REMOVED_CONVERSATION_NOTICE =
+  "This conversation has been removed from active use. It is preserved whole; " +
+  "reinstate it to continue.";

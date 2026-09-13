@@ -79,11 +79,13 @@ from val_gateway.projects import load_project
 
 _INSERT_CONVERSATION = text(
     "insert into conversations (project_id, title) values (:project_id, :title) "
-    "returning id, project_id, title, started_at, last_message_at, archived_at"
+    "returning id, project_id, title, started_at, last_message_at, archived_at, "
+    "          val_conversation_removed_at(id) as removed_at"
 )
 
 _SELECT_CONVERSATION = text(
-    "select id, project_id, title, started_at, last_message_at, archived_at "
+    "select id, project_id, title, started_at, last_message_at, archived_at, "
+    "       val_conversation_removed_at(id) as removed_at "
     "from conversations where id = :id"
 )
 
@@ -133,6 +135,21 @@ class ConversationNotFoundError(Exception):
         )
 
 
+class ConversationRemovedError(Exception):
+    """A removed conversation cannot be resumed for new turns (ruling, 12 September 2026).
+
+    Refused before anything is written: no message is appended and no provider
+    is contacted. Reinstating the conversation — another appended fact — reopens it.
+    """
+
+    def __init__(self, conversation_id: UUID) -> None:
+        self.conversation_id = conversation_id
+        super().__init__(
+            f"conversation {conversation_id} has been removed from active use and cannot "
+            "take new turns. It is preserved whole; reinstate it to continue."
+        )
+
+
 def _record(row: object) -> ConversationRecord:
     return ConversationRecord(
         id=row.id,  # type: ignore[attr-defined]
@@ -141,6 +158,7 @@ def _record(row: object) -> ConversationRecord:
         started_at=row.started_at,  # type: ignore[attr-defined]
         last_message_at=row.last_message_at,  # type: ignore[attr-defined]
         archived_at=row.archived_at,  # type: ignore[attr-defined]
+        removed_at=row.removed_at,  # type: ignore[attr-defined]
     )
 
 
@@ -175,6 +193,7 @@ def listing(
     project_id: UUID | None = None,
     explicit_none: bool = False,
     include_archived: bool = False,
+    include_removed: bool = False,
 ) -> tuple[ConversationRecord, ...]:
     """Conversations, most recently active first — WP-0.10's history view.
 
@@ -192,10 +211,15 @@ def listing(
     if project_id is not None and explicit_none:
         raise ValueError("a conversation is in a project or explicitly in none, never both")
     columns = (
-        "select id, project_id, title, started_at, last_message_at, archived_at from conversations"
+        "select id, project_id, title, started_at, last_message_at, archived_at, "
+        "val_conversation_removed_at(id) as removed_at from conversations"
     )
     order = "order by last_message_at desc, id desc"
     clauses = [] if include_archived else ["archived_at is null"]
+    # Ruling, 12 September 2026: a removed conversation leaves the default
+    # listing too; the listing that includes removed rows recovers it.
+    if not include_removed:
+        clauses.append("val_conversation_removed_at(id) is null")
     if project_id is not None:
         clauses.append("project_id = :p")
     elif explicit_none:
@@ -233,6 +257,8 @@ def resume(engine: Engine, conversation_id: UUID) -> tuple[ConversationRecord, P
     project.
     """
     conversation = load(engine, conversation_id)
+    if conversation.removed_at is not None:
+        raise ConversationRemovedError(conversation_id)
     project = (
         None if conversation.project_id is None else load_project(engine, conversation.project_id)
     )
@@ -280,7 +306,8 @@ MAX_TITLE_LENGTH = 200
 
 _RENAME = text(
     "update conversations set title = :title where id = :id "
-    "returning id, project_id, title, started_at, last_message_at, archived_at"
+    "returning id, project_id, title, started_at, last_message_at, archived_at, "
+    "          val_conversation_removed_at(id) as removed_at"
 )
 
 #: Archiving an archived conversation keeps its first instant; unarchiving clears it.
@@ -288,7 +315,8 @@ _SET_ARCHIVED = text(
     "update conversations "
     "   set archived_at = case when :archived then coalesce(archived_at, now()) else null end "
     " where id = :id "
-    "returning id, project_id, title, started_at, last_message_at, archived_at"
+    "returning id, project_id, title, started_at, last_message_at, archived_at, "
+    "          val_conversation_removed_at(id) as removed_at"
 )
 
 
@@ -391,3 +419,71 @@ def working(
         tuple(revision_record(row) for row in fact_rows),
         as_of_sequence=as_of_sequence,
     )
+
+
+# --- Remove and Reinstate (ruling, 12 September 2026) ----------------------------
+
+#: Who records removal facts.
+REMOVAL_AUTHOR = "Lord Armand"
+
+_NEWEST_REMOVAL = text(
+    "select event_number, kind from conversation_removals where conversation_id = :id "
+    "order by event_number desc limit 1"
+)
+
+_INSERT_REMOVAL = text(
+    "insert into conversation_removals (conversation_id, event_number, kind, authored_by, note) "
+    "values (:id, :number, :kind, :author, :note)"
+)
+
+
+class RemovalRefusedError(Exception):
+    """The removal fact was not recorded; `reason` says why."""
+
+    def __init__(self, reason: str, detail: str) -> None:
+        self.reason = reason
+        super().__init__(detail)
+
+
+def _record_removal(
+    engine: Engine, conversation_id: UUID, *, kind: str, note: str | None
+) -> ConversationRecord:
+    with engine.begin() as connection:
+        locked = connection.execute(_LOCK_CONVERSATION, {"id": conversation_id}).one_or_none()
+        if locked is None:
+            raise ConversationNotFoundError(conversation_id)
+        newest = connection.execute(_NEWEST_REMOVAL, {"id": conversation_id}).one_or_none()
+        removed = newest is not None and newest.kind == "removed"
+        if kind == "removed" and removed:
+            raise RemovalRefusedError("already_removed", "this conversation is already removed")
+        if kind == "reinstated" and not removed:
+            raise RemovalRefusedError(
+                "not_removed", "this conversation is not removed; there is nothing to reinstate"
+            )
+        connection.execute(
+            _INSERT_REMOVAL,
+            {
+                "id": conversation_id,
+                "number": 1 if newest is None else newest.event_number + 1,
+                "kind": kind,
+                "author": REMOVAL_AUTHOR,
+                "note": note.strip() if note is not None and note.strip() else None,
+            },
+        )
+    return load(engine, conversation_id)
+
+
+def remove(engine: Engine, conversation_id: UUID, *, note: str | None = None) -> ConversationRecord:
+    """Remove a conversation from active use — an appended fact, never a deletion.
+
+    Excluded from automatic recall and House Recall, and refused for new turns,
+    until reinstated. Every message, evidence row, judgment and cost stays.
+    """
+    return _record_removal(engine, conversation_id, kind="removed", note=note)
+
+
+def reinstate(
+    engine: Engine, conversation_id: UUID, *, note: str | None = None
+) -> ConversationRecord:
+    """Return a removed conversation to active use — another appended fact."""
+    return _record_removal(engine, conversation_id, kind="reinstated", note=note)

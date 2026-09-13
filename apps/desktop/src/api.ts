@@ -26,6 +26,9 @@ export interface ConversationView {
   last_message_at: string;
   // Same rule as ProjectView.archived: display scoping, no evidentiary meaning.
   archived: boolean;
+  // Removed from active use (ruling, 12 September 2026): no recall, no new
+  // turns, nothing destroyed. Optional because absence means not removed.
+  removed?: boolean;
 }
 
 export type MessageState = "current" | "corrected" | "withdrawn";
@@ -368,11 +371,14 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  conversations: (query: { project_id?: string; scope?: "none"; archived?: boolean } = {}) => {
+  conversations: (
+    query: { project_id?: string; scope?: "none"; archived?: boolean; removed?: boolean } = {},
+  ) => {
     const parameters = new URLSearchParams();
     if (query.project_id) parameters.set("project_id", query.project_id);
     if (query.scope) parameters.set("scope", query.scope);
     if (query.archived) parameters.set("archived", "true");
+    if (query.removed) parameters.set("removed", "true");
     const suffix = parameters.size > 0 ? `?${parameters.toString()}` : "";
     return request<ConversationView[]>(`/conversations${suffix}`);
   },
@@ -385,6 +391,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ title }),
     }),
+  // Remove withdraws a conversation from active use — no recall, no new turns —
+  // and destroys nothing; Reinstate is another appended fact.
+  removeConversation: (id: string) =>
+    request<ConversationView>(`/conversations/${id}/remove`, { method: "POST", body: "{}" }),
+  reinstateConversation: (id: string) =>
+    request<ConversationView>(`/conversations/${id}/reinstate`, { method: "POST", body: "{}" }),
   // Message revision and retraction — appended facts, never edits. Neither
   // makes a provider call.
   reviseMessage: (id: string, content: string, note?: string) =>

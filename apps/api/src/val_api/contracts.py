@@ -55,6 +55,14 @@ from val_gateway.classification_review import (
 # =============================================================================
 
 
+class RemovalRequest(BaseModel):
+    """Remove or reinstate a conversation — ruling, 12 September 2026. The note is optional."""
+
+    model_config = ConfigDict(frozen=True)
+
+    note: str | None = None
+
+
 class RenameRequest(BaseModel):
     """Set a conversation's title — ruling, 12 September 2026. Presentation only."""
 
@@ -108,6 +116,9 @@ class ConversationView(BaseModel):
     last_message_at: datetime
     #: Same rule as on ProjectView: display scoping, no evidentiary meaning.
     archived: bool = False
+    #: Ruling, 12 September 2026: removed from active use — no recall, no new
+    #: turns, nothing destroyed. Reinstating reverses it.
+    removed: bool = False
 
     @classmethod
     def of(cls, record: ConversationRecord) -> ConversationView:
@@ -118,6 +129,7 @@ class ConversationView(BaseModel):
             started_at=record.started_at,
             last_message_at=record.last_message_at,
             archived=record.archived_at is not None,
+            removed=record.removed_at is not None,
         )
 
 

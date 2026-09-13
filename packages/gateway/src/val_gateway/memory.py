@@ -127,7 +127,9 @@ from val_policy.recall import (
 #: `messages.content` no longer serves the match predicate directly, because the
 #: predicate is over the current wording; at the House's volume (hundreds of
 #: messages) the scan is negligible, and an index over the derivation is a
-#: later decision if volume ever makes it one.
+#: later decision if volume ever makes it one. `val_conversation_removed_at`
+#: (`0017`) excludes a conversation Lord Armand removed from active use, also
+#: inside the query.
 #:
 #: `conversation_id is distinct from :exclude` keeps the current conversation
 #: out: its history is assembled in full and in order by the caller, so a message
@@ -145,6 +147,7 @@ _IN_PROJECT = text(
     "   and mc.conversation_id is distinct from :exclude "
     "   and mc.role in ('user', 'val') "
     "   and mc.live "
+    "   and val_conversation_removed_at(c.id) is null "
     "   and to_tsvector('english', mc.content) "
     "       @@ replace(plainto_tsquery('english', :query)::text, "
     "                  '&', '|')::tsquery "
@@ -170,6 +173,7 @@ _IN_NO_PROJECT = text(
     "   and mc.conversation_id is distinct from :exclude "
     "   and mc.role in ('user', 'val') "
     "   and mc.live "
+    "   and val_conversation_removed_at(c.id) is null "
     "   and to_tsvector('english', mc.content) "
     "       @@ replace(plainto_tsquery('english', :query)::text, "
     "                  '&', '|')::tsquery "
@@ -196,6 +200,7 @@ _ACROSS_HOUSE = text(
     " where mc.conversation_id is distinct from :exclude "
     "   and mc.role in ('user', 'val') "
     "   and mc.live "
+    "   and val_conversation_removed_at(c.id) is null "
     "   and to_tsvector('english', mc.content) "
     "       @@ replace(plainto_tsquery('english', :query)::text, "
     "                  '&', '|')::tsquery "
