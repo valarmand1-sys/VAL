@@ -38,7 +38,7 @@ Cumulative-spend check before turn 2: $0.027972 settled + $0.214589 conservative
 
 - **Reads: 4,821 tokens.** Of the 5,321 tokens the cold call wrote, **4,821 (90.6%) were reused** on the warm turn.
 - **Where the match ends.** The cold request was persona (instructions) → state envelope → primer; the warm request was persona → primer → Val's answer → new state envelope → problem. The first input item differs, so the matching prefix is the instructions block. The persona v1.8 text is therefore **≈ 4,821 tokens on OpenAI's tokenizer** (against ≈ 6,995 derived on the incumbent's). The instrumentation establishes this by arithmetic on the reported figures, not by a provider-stated boundary.
-- **Newly written: 541 tokens** — the two history messages, the new state envelope and the problem (the implicit breakpoint at the end of the latest user message).
+- **Newly written: 541 tokens** — the two history messages, the new state envelope and the problem (the implicit breakpoint at the end of the newest user message).
 - **Ordinary uncached input: 3 tokens** on both calls (below OpenAI's rounding of the breakpoint).
 - **Dollar value:** reads $0.001928; new writes $0.002705; uncached $0.000012 — warm input $0.004645. Priced as a fresh cold write the same 5,365 tokens would have been $0.026825: **saving $0.022180 (83%)** on the input side.
 - **What survives:** the stable persona prefix survives the change of conversation shape; nothing after it does, because nothing after it is byte-identical. On an append-only thread, later turns would also read the history prefix written by the previous turn.
