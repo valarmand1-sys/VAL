@@ -92,6 +92,24 @@ _EFFORT: dict[ReasoningEffort, Literal["none", "minimal", "low", "medium", "high
 _TERMINAL_EVENTS = frozenset({"response.completed", "response.incomplete", "response.failed"})
 
 
+def logical_cache_boundary(messages: tuple[Message, ...]) -> int | None:
+    """The index of the message Val Core flagged as the last retained history message, or None."""
+    flagged = [index for index, m in enumerate(messages) if m.cache_breakpoint]
+    return flagged[-1] if flagged else None
+
+
+def physical_cache_boundary(messages: tuple[Message, ...]) -> int | None:
+    """Where OpenAI's explicit breakpoint may legally go: the most recent user message at or
+    before the logical boundary, or None when no such message exists."""
+    logical = logical_cache_boundary(messages)
+    if logical is None:
+        return None
+    for index in range(logical, -1, -1):
+        if messages[index].role == "user":
+            return index
+    return None
+
+
 def _refusal_text(response: object) -> str | None:
     """The refusal content, if any output item carries one."""
     for item in getattr(response, "output", None) or []:
@@ -185,37 +203,44 @@ class OpenAIAdapter:
         # and nothing is requested here; what the provider reports is recorded
         # as it arrives (module docstring).
         del cache_ttl
-        # Ruling, 14 September 2026 (Stage B finding): the record-state envelope
-        # changes every turn and sits between the retained history and the
-        # current message, so the provider's single implicit breakpoint — at the
-        # newest user message — never falls at the end of the reusable history,
-        # and every turn of a thread re-wrote its whole history at the write
-        # rate. The message Val Core flags as the last retained history message
-        # (`Message.cache_breakpoint`, set by context assembly on the partner
-        # conversation path only) is therefore sent as one `input_text` block
-        # carrying an explicit breakpoint, so the next turn can read persona +
-        # retained history whatever the envelope after it says. The implicit
-        # breakpoint is kept (`prompt_cache_options.mode` is not set); the text,
-        # order and every other message are exactly as before, and a request
-        # with no flagged message — classification, strip, the blind position,
-        # a first turn — is byte-identical to what it was.
+        # Ruling, 14 September 2026 (Stage B finding, corrected after the stopped
+        # proof of the same day): the record-state envelope changes every turn and
+        # sits between the retained history and the current message, so the
+        # provider's single implicit breakpoint — at the newest user message —
+        # never falls at the end of the reusable history, and every turn of a
+        # thread re-wrote its whole history at the write rate. Val Core flags the
+        # last retained history message (`Message.cache_breakpoint`, set by
+        # context assembly on the partner conversation path only); that is the
+        # LOGICAL boundary and it is not moved. The PHYSICAL OpenAI boundary is
+        # the most recent place this provider legally permits at or before it: the
+        # service accepts `prompt_cache_breakpoint` on `input_text` blocks of
+        # user items only, and rejects `input_text` on an assistant item (live
+        # proof, 14 September 2026: HTTP 400 "Supported values are:
+        # 'output_text' and 'refusal'"); `output_text` carries no breakpoint in
+        # the pinned client. So a flag on an assistant message is translated to
+        # the nearest preceding user message, which receives exactly one marker;
+        # the assistant message keeps its ordinary string representation, text
+        # and position; nothing is duplicated, removed or reordered; with no
+        # preceding user message the request goes without an explicit marker
+        # and the implicit breakpoint alone applies (`prompt_cache_options` is
+        # never set). A request with no flagged message — classification, strip,
+        # the blind position, a first turn — is byte-identical to what it was.
         turns: list[openai.types.responses.EasyInputMessageParam] = [
-            {
-                "role": "user" if m.role == "user" else "assistant",
-                "content": (
-                    [
-                        {
-                            "type": "input_text",
-                            "text": m.content,
-                            "prompt_cache_breakpoint": {"mode": "explicit"},
-                        }
-                    ]
-                    if m.cache_breakpoint
-                    else m.content
-                ),
-            }
+            {"role": "user" if m.role == "user" else "assistant", "content": m.content}
             for m in messages
         ]
+        boundary = physical_cache_boundary(messages)
+        if boundary is not None:
+            turns[boundary] = {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": messages[boundary].content,
+                        "prompt_cache_breakpoint": {"mode": "explicit"},
+                    }
+                ],
+            }
         # 3 September 2026: a schema constraint rides on the Responses API's
         # `text.format` as a strict `json_schema`, the provider's structured
         # output mechanism — the reply is then guaranteed to conform. Strict
