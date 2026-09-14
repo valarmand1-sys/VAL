@@ -1,0 +1,219 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0a19a-c498-797f-99fc-5d5cc13ef894",
+  "sha256": "1608715f6cba71059c69d132918838019ffb73c0f11d833b50d2a8156ed9873e"
+ },
+ "authorised_usd": 0.45,
+ "turn1": {
+  "kind": "DeliberatedTurn",
+  "started_at": 1789417669.8283572,
+  "streamed_text": "Good afternoon, my lord. The house\u2019s clock reads 3:27 p.m. CDT.",
+  "error": null
+ },
+ "spent_after_turn1": 0.027972,
+ "turn2_admission": {
+  "spent_after_turn1": 0.027972,
+  "remaining_conservative_max": 0.214589,
+  "sum": 0.242561,
+  "admitted": true
+ },
+ "turn2": {
+  "kind": "DeliberatedTurn",
+  "started_at": 1789417675.481528,
+  "seconds_after_turn1_start": 5.7,
+  "streamed_text": "Valid execution orders:\n\n1. **E \u2192 A \u2192 B \u2192 C \u2192 D**\n2. **E \u2192 A \u2192 C \u2192 B \u2192 D**\n3. **E \u2192 C \u2192 A \u2192 B \u2192 D**\n\n**Why no others are possible:**  \nE must precede both A and C, so E is first. D must follow both B and C, so D is last. Among A, B, and C, the only remaining constraint is that A precedes B, yielding exactly the three orders above.",
+  "error": null
+ },
+ "comparison": {
+  "expected": [
+   "E A B C D",
+   "E A C B D",
+   "E C A B D"
+  ],
+  "found_in_answer": [
+   "E A B C D",
+   "E A C B D",
+   "E C A B D"
+  ],
+  "all_expected_present": true,
+  "omitted": [],
+  "extra": []
+ },
+ "spent_total": 0.038028,
+ "over_authorisation": false,
+ "store": {
+  "calls": [
+   {
+    "id": "01a0a19a-cc3e-758e-85ae-f574e0c82a19",
+    "task_type": "classification",
+    "model_config_id": "7c1c3c85-4c2b-49a2-9c46-1d1b41b0a5aa",
+    "provider": "anthropic",
+    "model_identifier": "claude-haiku-4-5-20251001",
+    "tokens_in": 735,
+    "tokens_out": 28,
+    "cost": "0.000875",
+    "latency_ms": 1890,
+    "status": "ok",
+    "terminal_state": "complete",
+    "persona_id": null,
+    "provider_request_id": "req_011Cf3xm8etNH2NJqSHAiSrg",
+    "created_at": "2026-09-14 15:27:51.741638-05",
+    "streamed": false,
+    "first_text_ms": null,
+    "text_output_chars": 80,
+    "reasoning_present": false,
+    "reasoning_output_tokens": null,
+    "provider_cached_input_tokens": 0,
+    "provider_cache_write_tokens": 0,
+    "exchange_message_id": "01a0a19a-c4cc-74ec-8aad-341d843666fe"
+   },
+   {
+    "id": "01a0a19a-dacd-7ba4-9695-28d71b55d64d",
+    "task_type": "conversation",
+    "model_config_id": "e9c6ec70-9f3a-4ac6-a571-499609678ccc",
+    "provider": "openai",
+    "model_identifier": "gpt-5.6-sol",
+    "tokens_in": 5324,
+    "tokens_out": 24,
+    "cost": "0.027097",
+    "latency_ms": 3701,
+    "status": "ok",
+    "terminal_state": "complete",
+    "persona_id": "01a0a19a-c498-797f-99fc-5d5cc13ef894",
+    "provider_request_id": "resp_0b93c3b65331acb0006aa858c9c1a087d191a2d079989a70b2",
+    "created_at": "2026-09-14 15:27:55.4688-05",
+    "streamed": true,
+    "first_text_ms": 3228,
+    "text_output_chars": 63,
+    "reasoning_present": false,
+    "reasoning_output_tokens": 0,
+    "provider_cached_input_tokens": 0,
+    "provider_cache_write_tokens": 5321,
+    "exchange_message_id": "01a0a19a-c4cc-74ec-8aad-341d843666fe"
+   },
+   {
+    "id": "01a0a19a-de80-7625-869f-fe5142791f57",
+    "task_type": "classification",
+    "model_config_id": "7c1c3c85-4c2b-49a2-9c46-1d1b41b0a5aa",
+    "provider": "anthropic",
+    "model_identifier": "claude-haiku-4-5-20251001",
+    "tokens_in": 776,
+    "tokens_out": 27,
+    "cost": "0.000911",
+    "latency_ms": 926,
+    "status": "ok",
+    "terminal_state": "complete",
+    "persona_id": null,
+    "provider_request_id": "req_011Cf3xmXAUNVte1aCKDjgWk",
+    "created_at": "2026-09-14 15:27:56.415715-05",
+    "streamed": false,
+    "first_text_ms": null,
+    "text_output_chars": 79,
+    "reasoning_present": false,
+    "reasoning_output_tokens": null,
+    "provider_cached_input_tokens": 0,
+    "provider_cache_write_tokens": 0,
+    "exchange_message_id": "01a0a19a-dadb-7f07-aee3-60589962cee8"
+   },
+   {
+    "id": "01a0a19a-f122-78e0-9b62-c3ee1f6425dc",
+    "task_type": "conversation",
+    "model_config_id": "e9c6ec70-9f3a-4ac6-a571-499609678ccc",
+    "provider": "openai",
+    "model_identifier": "gpt-5.6-sol",
+    "tokens_in": 5365,
+    "tokens_out": 225,
+    "cost": "0.009145",
+    "latency_ms": 4749,
+    "status": "ok",
+    "terminal_state": "complete",
+    "persona_id": "01a0a19a-c498-797f-99fc-5d5cc13ef894",
+    "provider_request_id": "resp_042ba896f72dc3a4006aa858ccd0c087d18ebb0b2bc5b69496",
+    "created_at": "2026-09-14 15:28:01.185789-05",
+    "streamed": true,
+    "first_text_ms": 3525,
+    "text_output_chars": 332,
+    "reasoning_present": true,
+    "reasoning_output_tokens": 115,
+    "provider_cached_input_tokens": 4821,
+    "provider_cache_write_tokens": 541,
+    "exchange_message_id": "01a0a19a-dadb-7f07-aee3-60589962cee8"
+   }
+  ],
+  "reservations": [
+   {
+    "task_type": "classification",
+    "slug": "haiku-4-5-20251001",
+    "state": "settled",
+    "max_cost": "0.002978",
+    "settled_cost": "0.000875",
+    "cost_certainty": "known",
+    "exchange_message_id": "01a0a19a-c4cc-74ec-8aad-341d843666fe"
+   },
+   {
+    "task_type": "conversation",
+    "slug": "gpt-5-6-sol-medium",
+    "state": "settled",
+    "max_cost": "0.206520",
+    "settled_cost": "0.027097",
+    "cost_certainty": "known",
+    "exchange_message_id": "01a0a19a-c4cc-74ec-8aad-341d843666fe"
+   },
+   {
+    "task_type": "classification",
+    "slug": "haiku-4-5-20251001",
+    "state": "settled",
+    "max_cost": "0.003125",
+    "settled_cost": "0.000911",
+    "cost_certainty": "known",
+    "exchange_message_id": "01a0a19a-dadb-7f07-aee3-60589962cee8"
+   },
+   {
+    "task_type": "conversation",
+    "slug": "gpt-5-6-sol-medium",
+    "state": "settled",
+    "max_cost": "0.207255",
+    "settled_cost": "0.009145",
+    "cost_certainty": "known",
+    "exchange_message_id": "01a0a19a-dadb-7f07-aee3-60589962cee8"
+   }
+  ],
+  "classifications": [
+   {
+    "message_id": "01a0a19a-c4cc-74ec-8aad-341d843666fe",
+    "verdict": "not_consequential",
+    "hard_exclusion": "retrieval_lookup_or_search",
+    "attempts": 1
+   },
+   {
+    "message_id": "01a0a19a-dadb-7f07-aee3-60589962cee8",
+    "verdict": "not_consequential",
+    "hard_exclusion": "execution_of_decided_task",
+    "attempts": 1
+   }
+  ],
+  "messages": [
+   {
+    "role": "user",
+    "sequence": 1,
+    "content": "Good morning, Val. Please tell me the current time by the house's clock in one brief sentence."
+   },
+   {
+    "role": "user",
+    "sequence": 1,
+    "content": "Five deployment jobs, A, B, C, D, and E, must each run exactly once. B must run after A. D must run after both B and C. E must run before C. A must run after E. Give every valid execution order and briefly explain why no others are possible."
+   },
+   {
+    "role": "val",
+    "sequence": 2,
+    "content": "Good afternoon, my lord. The house\u2019s clock reads 3:27 p.m. CDT."
+   },
+   {
+    "role": "val",
+    "sequence": 2,
+    "content": "Valid execution orders:\n\n1. **E \u2192 A \u2192 B \u2192 C \u2192 D**\n2. **E \u2192 A \u2192 C \u2192 B \u2192 D**\n3. **E \u2192 C \u2192 A \u2192 B \u2192 D**\n\n**Why no others are possible:**  \nE must precede both A and C, so E is first. D must follow both B and C, so D is last. Among A, B, and C, the only remaining constraint is that A precedes B, yielding exactly the three orders above."
+   }
+  ]
+ }
+}

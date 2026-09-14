@@ -88,6 +88,8 @@ Options, for ruling before those stages:
 
 ## 5. The measurement protocol (after A1, and after §3 and §6 are ruled)
 
+*COLD and WARM were measured on 14 September 2026 (`qualification/runs/2026-09-14-sol-pair/`): cold 5,324 in (5,321 written), $0.027097, first text 3,228 ms; warm 5,365 in (4,821 read = 90.6% of the cold write — the persona prefix — 541 written), 225 out of which 115 reasoning, $0.009145, first text 3,525 ms; the five-job ordering answered correctly and completely. ORDINARY is covered by those turns; CONSEQUENTIAL is not yet run (the candidate blind call awaits authorisation, expected inside Stage B).*
+
 Every stage runs on Val's real request shape through Val Core, on the scratch store, with the new instrumentation.
 
 **Recorded per call:**
