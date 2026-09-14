@@ -858,3 +858,16 @@ Ruling recorded as the `04-layer-0.md` WP-0.7 amendment of 13 September 2026 ("R
 
 Ruling recorded as the `04-layer-0.md` WP-0.7 amendment of 13 September 2026 ("The record-state envelope states operational capability; recall priority recorded, not changed") and `03-persona-changelog.md` §18, on four genuine-use findings from the House Armand conversation of that date. **Runtime** (`2a65cb5`, CI 34791258911): `val_gateway.context.CAPABILITY_STATE = {"books": "unavailable"}`, a read-only constant of the build, emitted as the additive `capability_state` key of the `VAL-STATE-V1` record-state document on every partner response call, its meaning in the envelope note; no registry, planner, discovery or roadmap; no provider involved. **Persona** v1.8, revision 7 (`01a09d3b-1870-753d-b0b9-b21728e7e0a8`, digest `1608715f…`), activated after green CI; revisions 1–6 byte-preserved; one active. **Tests:** `packages/gateway/tests/test_persona_capability_honesty.py` — the state names books unavailable and nothing else; it is in every record-state document with the other keys unchanged; the assembled request carries it immediately before the current turn; it is a read-only constant needing no call, and no further capability structure exists; reversing exactly the recorded changes reproduces v1.7 byte for byte; the ruled principles are present; the core mission and House-first sentence are unchanged; a v1.7 revision stays preserved and only v1.8 is active. Amended pins: the record-state key set in `test_conversation_memory.py` (additive `capability_state`) and the persona version label in `test_persona.py` (1.7 → 1.8), as with v1.6 and v1.7. 1,297 Python tests (1,255 on the configured paths plus 42 provider tests) and 41 desktop tests. **Recall priority:** recorded as an observation only; no change. Books not implemented; no provider call; no live persona turn.
 
+## 57. Cognition cost and latency — first bounded diagnostic — 13 September 2026
+
+`docs/reviews/diagnostics/2026-09-13-cognition-cost-and-latency.md`; doctrine entry "Complexity and consequentialness are separate axes" beside the per-turn necessity rule in `01-architecture.md` §5.2 rulings (documentation only). Diagnostic and contract-defining only — no provider call, no routing, classifier, persona or behaviour change.
+
+- **Hardmarch exchange** ($0.255322): the final response is 73.1% (persona write ≈37.5% of that call, history write ≈18.1%, uncached ≈4.7%, output 39.7%). The cold state added ≈$0.106, and the persona is ≈41% of the exchange.
+- **Trigger:** confirmed as the integrity machinery on its designed case. The classifier found a creative-direction choice; the strip withheld an attributed prior and a preference.
+- **Genuine use:** all 17 genuine turns made one conversation call; 4 also made a blind call, one of which would not run under the current strip rule.
+- **Persona:** 5,746 tokens at v1.4 to ≈6,995 at v1.8 (derived), ≈$6/month at observed volume.
+- **Caching:** one-hour caching saves 1.6% on genuine use, and 5 minutes would cost more.
+- **Proposed, not implemented:** a blind instruction bound (≈$0.008 per blind call).
+- **Envelope seam:** `TurnReference` on reservations.
+- **Ranked next pass:** exchange identity and timing capture; the envelope disabled by default; the blind bound; the OpenAI measurement protocol.
+
