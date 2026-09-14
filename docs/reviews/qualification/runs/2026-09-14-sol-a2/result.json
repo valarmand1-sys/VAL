@@ -1,0 +1,99 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0a066-5481-78af-b5a5-f135f9a491c1",
+  "sha256": "1608715f6cba71059c69d132918838019ffb73c0f11d833b50d2a8156ed9873e"
+ },
+ "prompt": "Good morning, Val. What is the time by the house's clock, and how are you today?",
+ "outcome": "DeliberatedTurn",
+ "deltas": 30,
+ "streamed_text": "Good morning, my lord. It is 9:50 a.m. I don\u2019t experience feelings, but I\u2019m here and ready to help.",
+ "classification": [
+  {
+   "verdict": "not_consequential",
+   "hard_exclusion": "retrieval_lookup_or_search",
+   "attempts": 1
+  }
+ ],
+ "messages": [
+  {
+   "role": "user",
+   "sequence": 1,
+   "content": "Good morning, Val. What is the time by the house's clock, and how are you today?"
+  },
+  {
+   "role": "val",
+   "sequence": 2,
+   "content": "Good morning, my lord. It is 9:50 a.m. I don\u2019t experience feelings, but I\u2019m here and ready to help."
+  }
+ ],
+ "calls": [
+  {
+   "id": "01a0a066-58a9-7ce3-b03b-125db8e4e1bc",
+   "task_type": "classification",
+   "model_config_id": "7c1c3c85-4c2b-49a2-9c46-1d1b41b0a5aa",
+   "provider": "anthropic",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 735,
+   "tokens_out": 28,
+   "cost": "0.000875",
+   "latency_ms": 1018,
+   "status": "ok",
+   "terminal_state": "complete",
+   "persona_id": null,
+   "provider_request_id": "req_011Cf3X53xqK5BHvnPRCys49",
+   "streamed": false,
+   "first_text_ms": null,
+   "text_output_chars": 80,
+   "reasoning_present": false,
+   "reasoning_output_tokens": null,
+   "provider_cached_input_tokens": 0,
+   "provider_cache_write_tokens": 0,
+   "exchange_message_id": "01a0a066-54a2-75b0-9369-096b46dc36f4"
+  },
+  {
+   "id": "01a0a066-6bf5-7bb0-8477-a011397df256",
+   "task_type": "conversation",
+   "model_config_id": "e9c6ec70-9f3a-4ac6-a571-499609678ccc",
+   "provider": "openai",
+   "model_identifier": "gpt-5.6-sol",
+   "tokens_in": 5324,
+   "tokens_out": 34,
+   "cost": "0.027297",
+   "latency_ms": 4915,
+   "status": "ok",
+   "terminal_state": "complete",
+   "persona_id": "01a0a066-5481-78af-b5a5-f135f9a491c1",
+   "provider_request_id": "resp_04617892aa31f501006aa809d271b487d1b7cd61ddf1baf1cc",
+   "streamed": true,
+   "first_text_ms": 2903,
+   "text_output_chars": 99,
+   "reasoning_present": false,
+   "reasoning_output_tokens": 0,
+   "provider_cached_input_tokens": 0,
+   "provider_cache_write_tokens": 5321,
+   "exchange_message_id": "01a0a066-54a2-75b0-9369-096b46dc36f4"
+  }
+ ],
+ "reservations": [
+  {
+   "task_type": "classification",
+   "slug": "haiku-4-5-20251001",
+   "state": "settled",
+   "max_cost": "0.002964",
+   "settled_cost": "0.000875",
+   "cost_certainty": "known"
+  },
+  {
+   "task_type": "conversation",
+   "slug": "gpt-5-6-sol-medium",
+   "state": "settled",
+   "max_cost": "0.206450",
+   "settled_cost": "0.027297",
+   "cost_certainty": "known"
+  }
+ ],
+ "spent": 0.028172,
+ "cap": 0.23,
+ "over_cap": false
+}

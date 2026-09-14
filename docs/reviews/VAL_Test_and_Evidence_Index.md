@@ -912,3 +912,7 @@ Rulings recorded in `04-layer-0.md` (WP-0.4 amendment, 14 September 2026) and `0
 - **Counts:** 1,378 Python tests (1,325 on the configured paths plus 53 provider tests); 41 desktop tests.
 - Sol remains `NOT_ADMITTED`, no capability profile, no fallback. A2 not run; Stage B not begun.
 
+## 60. Stage A2 — the first candidate-lane exchange on GPT-5.6 Sol — 14 September 2026
+
+`qualification/runs/2026-09-14-sol-a2/` (README and `result.json`). Owner-authorised for one ordinary exchange (maximum $0.23). Through `candidate_gateway_for_scratch_store` on `val_test`, persona v1.8 asserted; a harness-level guard would have refused any candidate blind call and was never reached: the classifier (Haiku, normal route) returned `not_consequential` / `retrieval_lookup_or_search`. **Sol's response call:** 5,324 input tokens — 3 uncached, **5,321 written** to OpenAI's cache, 0 read; 34 output; **0 reasoning tokens**, no reasoning item; 99 visible characters; first generated text at the Core boundary **2,903 ms**; total **4,915 ms**; settled **$0.027297** (write premium $0.004641 over base pricing); reserved $0.206450; recorded under Sol's own id with the active persona, streamed, measured, settled. **Exchange $0.028172.** Governance intact: classification on its normal route, Sol only for the response, record and capability state in the request, Core-owned streaming, no fallback, no admission or routing change. Not established: warm reuse, reasoning on substantive turns, quality. Sol remains `NOT_ADMITTED`; Stage B not begun.
+
