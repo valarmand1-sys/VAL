@@ -185,8 +185,35 @@ class OpenAIAdapter:
         # and nothing is requested here; what the provider reports is recorded
         # as it arrives (module docstring).
         del cache_ttl
+        # Ruling, 14 September 2026 (Stage B finding): the record-state envelope
+        # changes every turn and sits between the retained history and the
+        # current message, so the provider's single implicit breakpoint — at the
+        # newest user message — never falls at the end of the reusable history,
+        # and every turn of a thread re-wrote its whole history at the write
+        # rate. The message Val Core flags as the last retained history message
+        # (`Message.cache_breakpoint`, set by context assembly on the partner
+        # conversation path only) is therefore sent as one `input_text` block
+        # carrying an explicit breakpoint, so the next turn can read persona +
+        # retained history whatever the envelope after it says. The implicit
+        # breakpoint is kept (`prompt_cache_options.mode` is not set); the text,
+        # order and every other message are exactly as before, and a request
+        # with no flagged message — classification, strip, the blind position,
+        # a first turn — is byte-identical to what it was.
         turns: list[openai.types.responses.EasyInputMessageParam] = [
-            {"role": "user" if m.role == "user" else "assistant", "content": m.content}
+            {
+                "role": "user" if m.role == "user" else "assistant",
+                "content": (
+                    [
+                        {
+                            "type": "input_text",
+                            "text": m.content,
+                            "prompt_cache_breakpoint": {"mode": "explicit"},
+                        }
+                    ]
+                    if m.cache_breakpoint
+                    else m.content
+                ),
+            }
             for m in messages
         ]
         # 3 September 2026: a schema constraint rides on the Responses API's

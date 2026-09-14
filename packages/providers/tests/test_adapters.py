@@ -475,3 +475,24 @@ def test_anthropic_ignores_the_breakpoint_flag_when_no_cache_was_requested() -> 
     messages = (Message(role="assistant", content="reply", cache_breakpoint=True),)
     adapter.complete(_opus(), messages, "persona", 64, cache_ttl=None)
     assert fake.kwargs["messages"] == [{"role": "assistant", "content": "reply"}]
+
+
+def test_anthropic_history_breakpoint_behaviour_is_unchanged_by_the_openai_correction() -> None:
+    """14 September 2026: the OpenAI explicit breakpoint touches no Anthropic code path."""
+    from val_domain.gateway import Message
+
+    adapter, fake = _anthropic_adapter(_anthropic_response())
+    messages = (
+        Message(role="user", content="first"),
+        Message(role="assistant", content="reply", cache_breakpoint=True),
+        Message(role="user", content="now"),
+    )
+    adapter.complete(_opus(), messages, "persona", 64, cache_ttl=CacheTtl.ONE_HOUR)
+    assert fake.kwargs["messages"][1]["content"][0]["cache_control"] == {
+        "type": "ephemeral",
+        "ttl": "1h",
+    }
+    adapter.complete(_opus(), messages, "persona", 64)
+    assert fake.kwargs["messages"][1] == {"role": "assistant", "content": "reply"}, (
+        "without a requested lifetime the flag stays inert on Anthropic, as before"
+    )
