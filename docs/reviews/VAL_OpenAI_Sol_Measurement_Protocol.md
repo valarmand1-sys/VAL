@@ -193,6 +193,8 @@ The harness prompt asks for two or three sentences on beginning a fictional foun
 
 ## 7. Stage B — the frozen corpus for later qualification
 
+*Stage B was authorised and run on 14 September 2026 (`qualification/runs/2026-09-14-sol-stageb/`): 87 calls, $1.578013 of $4.00; formally NOT MET on two lines — I6 (one paragraph on a three-paragraph instruction, the candidate's own) and L1 (the packet's §4.5 premise no longer holds under the 10 September hysteresis rule; the incumbent would fail it identically today — returned for ruling); zero-tolerance properties all clean; partner spend −41 % and partner latency median −30 % against the Opus v1.6 run. Sol remains `NOT_ADMITTED`.*
+
 - **Packet and corpus:** `docs/reviews/qualification/VAL_Partner_Qualification_Packet_v1.6.md` (frozen 9 September 2026; errata `…_v1.6_ERRATA.md`) and `docs/reviews/qualification/corpus/v1.6/corpus.json` (`"version": "v1.6"`).
 - **Scale:** 36 prompts per run.
 - **Scoring:** packet §§4–7, unchanged.
