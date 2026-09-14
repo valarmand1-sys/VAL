@@ -871,3 +871,33 @@ Ruling recorded as the `04-layer-0.md` WP-0.7 amendment of 13 September 2026 ("T
 - **Envelope seam:** `TurnReference` on reservations.
 - **Ranked next pass:** exchange identity and timing capture; the envelope disabled by default; the blind bound; the OpenAI measurement protocol.
 
+## 58. Cognition-cost implementation pass A, and the GPT-5.6 Sol preparation — 13 September 2026
+
+Rulings recorded as the `04-layer-0.md` WP-0.4 amendment of 13 September 2026 ("Exchange identity, per-call measurement, a disabled exchange envelope, and a bounded blind instruction"). Protocol, A1 plan and the A2 stop: `docs/reviews/VAL_OpenAI_Sol_Measurement_Protocol.md`. **No provider call.**
+
+- **Migration `0020_exchange_measurements`:**
+  - exchange columns on `budget_reservations`, with the identity guard widened;
+  - append-only `model_call_measurements`;
+  - no `model_calls` column.
+- **Gateway:** exchange identity on every exchange request and reservation; a measurement row on every recorded call, including failures.
+- **Ledger:** the exchange envelope (`ExchangeEnvelopeRefusal`, `EXCHANGE_ENVELOPE_EXCEEDED`, not retryable), disabled unless `VAL_EXCHANGE_ENVELOPE_USD` is set.
+- **Blind instruction:** bounded.
+- **OpenAI adapter:** streaming on the shared request and result mapping; cached input, cache writes and reasoning recorded as reported.
+- **Anthropic adapter:** thinking presence recorded.
+- **Registry:** `gpt-5-6-sol-medium` (`gpt-5.6-sol`, medium, $4/$20, `NOT_ADMITTED`, no profile).
+- **Tests:**
+  - `test_exchange_envelope.py`: isolation between exchanges, serial settlement, retries, maximum arithmetic, refusal without contact or reroute, disabled default, identity guard, setting parse.
+  - `test_exchange_measurements.py`: four calls of a consequential streamed exchange named and measured; the blind call receives no preference; ordinary exchange; classification retry; enabled envelope ends the turn uncontacted; failure measured.
+  - `test_blind_instruction_bound.py`.
+  - `test_openai_stream.py`.
+  - `test_sol_candidate.py`.
+- **Amended pins:**
+  - `test_boundary_reexport.py`: OpenAI now streams, as ruled.
+  - `test_registry_evaluation.py`, `test_evaluation_door.py`: Sol added to the unroutable candidate set.
+  - `test_schema.py` transcription: additive.
+  - ledger fakes in `gateway_fakes.py`, `test_service.py`, `test_blind_position_cache.py`: accept the exchange argument.
+- **Counts:** 1,344 Python tests (1,291 on the configured paths plus 53 provider tests); 41 desktop tests.
+- **Open for ruling:**
+  - OpenAI automatic-cache pricing in the registry and the bound (GPT-5.6 writes at 1.25× are priced at base today, under-stated by exactly 0.25× base per recorded written token);
+  - the partner-candidate execution door required for A2 (no lawful mechanism exists).
+

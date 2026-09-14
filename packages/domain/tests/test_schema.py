@@ -108,6 +108,9 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "cost_certainty",
         "model_call_id",
         "resolution",
+        # 13 September 2026 (0020): the exchange the reservation belongs to.
+        "exchange_conversation_id",
+        "exchange_message_id",
     ),
     "execution_events": (
         "id",
@@ -191,6 +194,22 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "cost_cache_write",
         "cost_cache_read",
         "cost_output",
+    ),
+    # §2.2 model_call_measurements — ruling, 13 September 2026: per-call
+    # measurement sidecar; model_calls itself is unchanged.
+    "model_call_measurements": (
+        "id",
+        "created_at",
+        "model_call_id",
+        "exchange_conversation_id",
+        "exchange_message_id",
+        "streamed",
+        "first_text_ms",
+        "text_output_chars",
+        "reasoning_present",
+        "reasoning_output_tokens",
+        "provider_cached_input_tokens",
+        "provider_cache_write_tokens",
     ),
     # §2.2 classification_labels / classification_reviews — ruling, 7 September
     # 2026: the blind hand-label and the adjudication appended after the reveal.
@@ -333,6 +352,19 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("budget_reservations", "cost_certainty"),
         ("budget_reservations", "model_call_id"),
         ("budget_reservations", "resolution"),
+        # 13 September 2026 (0020): NULL is work belonging to no user exchange,
+        # or a reservation written before exchange identity existed.
+        ("budget_reservations", "exchange_conversation_id"),
+        ("budget_reservations", "exchange_message_id"),
+        # Measurement a provider or a call mode does not expose is NULL, never zero.
+        ("model_call_measurements", "exchange_conversation_id"),
+        ("model_call_measurements", "exchange_message_id"),
+        ("model_call_measurements", "first_text_ms"),
+        ("model_call_measurements", "text_output_chars"),
+        ("model_call_measurements", "reasoning_present"),
+        ("model_call_measurements", "reasoning_output_tokens"),
+        ("model_call_measurements", "provider_cached_input_tokens"),
+        ("model_call_measurements", "provider_cache_write_tokens"),
         # 12 September 2026: a retraction carries no wording; a note is never required.
         ("message_revisions", "content"),
         ("message_revisions", "note"),

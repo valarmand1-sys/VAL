@@ -24,19 +24,23 @@ from val_domain.registry import (
 
 # `sonnet-5-low` left this set on 11 September 2026: designated for the strip.
 CANDIDATES = {"sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna"}
+# 13 September 2026: the first OpenAI partner candidate, registered for
+# measurement only — not admitted, no profile, never a route.
+PARTNER_CANDIDATES = {"gpt-5-6-sol-medium"}
 
 
 def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registry() -> None:
-    assert {config.slug for config in under_evaluation()} == CANDIDATES
-    assert not {config.slug for config in active()} & CANDIDATES
-    assert not {config.slug for config in unproven_routes()} & CANDIDATES
+    assert {config.slug for config in under_evaluation()} == CANDIDATES | PARTNER_CANDIDATES
+    assert not {config.slug for config in active()} & (CANDIDATES | PARTNER_CANDIDATES)
+    assert not {config.slug for config in unproven_routes()} & (CANDIDATES | PARTNER_CANDIDATES)
     assert cheapest().slug not in CANDIDATES, "Luna is the cheapest entry and is not a route"
     for config in under_evaluation():
         assert config.admission is Admission.NOT_ADMITTED
         assert config.capability_profiles == frozenset()
         assert config.fallback_slug is None
         assert by_id(config.id) is config and by_slug(config.slug) is config
-        assert config.activated_on == config.rates_verified_on == date(2026, 9, 10)
+        registered = date(2026, 9, 13) if config.slug in PARTNER_CANDIDATES else date(2026, 9, 10)
+        assert config.activated_on == config.rates_verified_on == registered
 
 
 def test_active_and_under_evaluation_partition_the_unretired_registry() -> None:

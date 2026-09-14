@@ -324,7 +324,12 @@ def send(
     #    2026) — before any strip or response call, and whether or not a
     #    verdict was established — so the record can say how this turn was
     #    classified, and why, from the classifier's own declared reason.
-    classified = _classify(gateway, content, opened.scope, classification)
+    # Ruling, 13 September 2026: every call this exchange causes names it, so
+    # its reservations can be summed against it and its measurements joined.
+    exchange = TurnReference(
+        conversation_id=opened.conversation.id, message_id=opened.user_message.id
+    )
+    classified = _classify(gateway, content, opened.scope, classification, exchange=exchange)
     verdict = classified.verdict
     record = record_classification(
         engine,
@@ -395,7 +400,9 @@ def send(
         for message in conversations.history(engine, opened.conversation.id)
         if message.role is StoredRole.VAL
     )
-    stripped = _strip(gateway, content, opened.scope, classification, record=spoken_by_val)
+    stripped = _strip(
+        gateway, content, opened.scope, classification, record=spoken_by_val, exchange=exchange
+    )
     validation = stripped.validation
     if not validation.enforceable or validation.residue is None:
         if validation.state == "no_preference":
@@ -484,6 +491,7 @@ def send(
         output_schema=BLIND_POSITION_OUTPUT_SCHEMA,
         project_id=attribution_of(opened.scope),
         project_attribution=attribution_state_of(opened.scope),
+        exchange=exchange,
     )
     blind_outcome: BlindOutcome | None = None
     blind_response: GatewayResponse | None = None
@@ -684,7 +692,12 @@ def _ordinary(
 
 
 def _classify(
-    gateway: Gateway, content: str, scope: ProjectScope, classification: Classification
+    gateway: Gateway,
+    content: str,
+    scope: ProjectScope,
+    classification: Classification,
+    *,
+    exchange: TurnReference | None = None,
 ) -> ClassificationAttempts:
     """The §4.8 classification on the cheapest eligible route, bounded.
 
@@ -710,6 +723,7 @@ def _classify(
         output_schema=CLASSIFIER_OUTPUT_SCHEMA,
         project_id=attribution_of(scope),
         project_attribution=attribution_state_of(scope),
+        exchange=exchange,
     )
     reasons: list[str] = []
     calls: list[UUID] = []
@@ -800,6 +814,7 @@ def _strip(
     configuration: ModelConfig | None = None,
     evaluation: bool = False,
     record: Sequence[str] = (),
+    exchange: TurnReference | None = None,
 ) -> StripAttempts:
     """The §4.1 strip on the cheapest eligible route — validated, bounded.
 
@@ -840,6 +855,7 @@ def _strip(
         output_schema=STRIP_OUTPUT_SCHEMA,
         project_id=attribution_of(scope),
         project_attribution=attribution_state_of(scope),
+        exchange=exchange,
     )
     states: list[str] = []
     outcome: StripOutcome | None = None

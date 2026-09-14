@@ -34,7 +34,10 @@ from val_policy.routing import candidates, required_profile
 from val_providers.base import ProviderResult
 
 # `sonnet-5-low` left this set on 11 September 2026: designated for the strip.
-CANDIDATES = ("sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna")
+# 13 September 2026: `gpt-5-6-sol-medium` joined as the first OpenAI partner
+# candidate, registered for measurement only and held to the same never-routable
+# properties.
+CANDIDATES = ("sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna", "gpt-5-6-sol-medium")
 
 
 def strip_request(

@@ -112,6 +112,17 @@ _INSERT_CACHE_USAGE = text(
 )
 
 
+_INSERT_MEASUREMENT = text(
+    "insert into model_call_measurements "
+    "(model_call_id, exchange_conversation_id, exchange_message_id, streamed, first_text_ms, "
+    " text_output_chars, reasoning_present, reasoning_output_tokens, "
+    " provider_cached_input_tokens, provider_cache_write_tokens) "
+    "values (:model_call_id, :exchange_conversation_id, :exchange_message_id, :streamed, "
+    " :first_text_ms, :text_output_chars, :reasoning_present, :reasoning_output_tokens, "
+    " :provider_cached_input_tokens, :provider_cache_write_tokens)"
+)
+
+
 def record_call(engine: Engine, record: CallRecord) -> UUID:
     """Write one `model_calls` row and return its id.
 
@@ -172,6 +183,29 @@ def record_call(engine: Engine, record: CallRecord) -> UUID:
                     "cost_cache_write": Decimal(str(usage.cost_cache_write_usd)),
                     "cost_cache_read": Decimal(str(usage.cost_cache_read_usd)),
                     "cost_output": Decimal(str(usage.cost_output_usd)),
+                },
+            )
+        # Ruling, 13 September 2026: the per-call measurement, in the same
+        # transaction, for every call the gateway measured.
+        measured = record.measurement
+        if measured is not None:
+            connection.execute(
+                _INSERT_MEASUREMENT,
+                {
+                    "model_call_id": new_id,
+                    "exchange_conversation_id": (
+                        None if measured.exchange is None else measured.exchange.conversation_id
+                    ),
+                    "exchange_message_id": (
+                        None if measured.exchange is None else measured.exchange.message_id
+                    ),
+                    "streamed": measured.streamed,
+                    "first_text_ms": measured.first_text_ms,
+                    "text_output_chars": measured.text_output_chars,
+                    "reasoning_present": measured.reasoning_present,
+                    "reasoning_output_tokens": measured.reasoning_output_tokens,
+                    "provider_cached_input_tokens": measured.provider_cached_input_tokens,
+                    "provider_cache_write_tokens": measured.provider_cache_write_tokens,
                 },
             )
     return new_id

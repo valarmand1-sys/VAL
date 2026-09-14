@@ -28,5 +28,6 @@ def test_every_registered_provider_adapter_speaks_the_boundary() -> None:
     for adapter_type in (AnthropicAdapter, OpenAIAdapter):
         assert callable(getattr(adapter_type, "complete", None)), adapter_type
     assert boundary.supports_streaming(AnthropicAdapter.__new__(AnthropicAdapter))
-    # OpenAI streaming is the second-provider step, not Phase 1: declared absent, not assumed.
-    assert not boundary.supports_streaming(OpenAIAdapter.__new__(OpenAIAdapter))
+    # Amended 13 September 2026: the ruling of that date implemented OpenAI
+    # streaming (the second-provider step this line used to record as absent).
+    assert boundary.supports_streaming(OpenAIAdapter.__new__(OpenAIAdapter))

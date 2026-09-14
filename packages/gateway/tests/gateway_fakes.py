@@ -28,6 +28,7 @@ from val_domain.gateway import (
     Message,
     ModelConfig,
     TaskType,
+    TurnReference,
 )
 from val_domain.project import ProjectAttribution
 from val_domain.registry import by_slug
@@ -107,6 +108,8 @@ class LedgerEntry:
 
     id: UUID
     max_cost_usd: float
+    #: The exchange the reservation named (ruling, 13 September 2026).
+    exchange: TurnReference | None = None
     state: str = "reserved"
     settled_cost_usd: float | None = None
     certainty: CostCertainty | None = None
@@ -142,11 +145,12 @@ class FakeLedger:
         max_cost_usd: float,
         task_type: TaskType,
         project_id: UUID | None,
+        exchange: TurnReference | None = None,
     ) -> Reservation | Refusal:
         committed = self.committed_usd()
         if not admits(committed, max_cost_usd):
             return Refusal(committed_usd=committed, max_cost_usd=max_cost_usd)
-        entry = LedgerEntry(id=uuid4(), max_cost_usd=max_cost_usd)
+        entry = LedgerEntry(id=uuid4(), max_cost_usd=max_cost_usd, exchange=exchange)
         self.entries[entry.id] = entry
         return Reservation(id=entry.id, max_cost_usd=max_cost_usd, committed_before_usd=committed)
 

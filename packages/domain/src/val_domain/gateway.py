@@ -165,6 +165,11 @@ class GatewayErrorKind(StrEnum):
     #: affordable. Truthful unavailability — never a reason to downgrade the
     #: content's classification or to reach for an unadmitted route.
     NO_ELIGIBLE_ROUTE = "no_eligible_route"
+    #: Ruling, 13 September 2026: admitting the next call would take one user
+    #: exchange past its configured spending envelope. Not retryable on another
+    #: route — a cheaper configuration is never substituted to fit the envelope —
+    #: and proceeding requires Lord Armand's authorisation.
+    EXCHANGE_ENVELOPE_EXCEEDED = "exchange_envelope_exceeded"
 
 
 class Admission(StrEnum):
@@ -549,6 +554,27 @@ class GatewayRequest(BaseModel):
     #: rather than dropping it — a constraint silently not applied would be the
     #: same defect through a different door.
     output_schema: dict[str, object] | None = None
+    #: Ruling, 13 September 2026: the user exchange this call belongs to — the
+    #: conversation and the persisted user message that caused the work — on
+    #: every task type an exchange runs (classification, strip, blind position,
+    #: the response). Unlike `conversation`, it attributes nothing on
+    #: `model_calls`: it is carried to the reservation and the measurement
+    #: sidecar only, so machinery keeps its no-provenance record while the
+    #: exchange's total cost becomes reconstructable. A conversation call's
+    #: exchange is its provenance; an explicit one must agree with it.
+    exchange: TurnReference | None = None
+
+    @property
+    def exchange_reference(self) -> TurnReference | None:
+        """The exchange this call belongs to: explicit, or a conversation's own turn."""
+        if self.exchange is not None:
+            return self.exchange
+        if self.conversation is not None:
+            return TurnReference(
+                conversation_id=self.conversation.conversation_id,
+                message_id=self.conversation.message_id,
+            )
+        return None
 
     @property
     def conversation_id(self) -> UUID | None:
@@ -614,6 +640,23 @@ class GatewayRequest(BaseModel):
                 "would record model_calls attribution for a conversation that never "
                 "made the call (current-version closure, independent-review "
                 "correction, 18 August 2026)."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _exchange_agrees_with_provenance(self) -> GatewayRequest:
+        """A conversation call's exchange is the turn its provenance names."""
+        if (
+            self.exchange is not None
+            and self.conversation is not None
+            and (
+                self.exchange.conversation_id != self.conversation.conversation_id
+                or self.exchange.message_id != self.conversation.message_id
+            )
+        ):
+            raise ValueError(
+                "the exchange named on a conversation call must be the turn its provenance "
+                "names; one call cannot belong to two exchanges"
             )
         return self
 

@@ -83,12 +83,13 @@ from val_domain.provider import (
 )
 from val_domain.registry import active, by_id, fallback_for, stale_rates
 from val_gateway.context import assemble
-from val_gateway.ledger import BudgetLedger, Refusal, Reservation
+from val_gateway.ledger import BudgetLedger, ExchangeEnvelopeRefusal, Refusal, Reservation
 from val_gateway.persona import PersonaLoader, PersonaProblem, PersonaUnavailableError
 from val_policy.budget import (
     admits,
     ceiling_message,
     effective_rates,
+    exchange_envelope_message,
     limit_overrun,
     maximum_cost,
     no_affordable_route_message,
@@ -163,6 +164,30 @@ class CacheUsage:
     cost_output_usd: float
 
 
+@dataclass(frozen=True)
+class CallMeasurement:
+    """Per-call measurement — the `model_call_measurements` row (ruling, 13 September 2026).
+
+    Written for every recorded call. Every field is what this call observably
+    did or what its provider reported; a figure the provider or the call mode
+    does not expose is `None`, never zero and never inferred.
+    """
+
+    exchange: TurnReference | None
+    streamed: bool
+    #: Milliseconds from the start of the provider call to the first non-empty
+    #: generated-text delta the gateway forwarded; None when not streamed or no
+    #: text arrived.
+    first_text_ms: int | None
+    #: Characters of generated text returned (never thinking); None when no
+    #: response arrived.
+    text_output_chars: int | None
+    reasoning_present: bool | None
+    reasoning_output_tokens: int | None
+    provider_cached_input_tokens: int | None
+    provider_cache_write_tokens: int | None
+
+
 class CallRecord:
     """One `model_calls` row, assembled by the gateway and handed to the writer.
 
@@ -193,9 +218,11 @@ class CallRecord:
         provider_request_id: str | None,
         status: CallStatus,
         cache_usage: CacheUsage | None = None,
+        measurement: CallMeasurement | None = None,
     ) -> None:
         self.model_config_id = model_config_id
         self.cache_usage = cache_usage
+        self.measurement = measurement
         self.slug = slug
         self.provider = provider
         self.model_identifier = model_identifier
@@ -213,6 +240,18 @@ class CallRecord:
         self.latency_ms = latency_ms
         self.provider_request_id = provider_request_id
         self.status = status
+
+
+def _reported_cache_writes(result: ProviderResult) -> int | None:
+    """Every prompt-cache write the provider reported, whatever its lifetime, or None."""
+    figures = (
+        result.cache_write_5m_tokens,
+        result.cache_write_1h_tokens,
+        result.reported_cache_write_tokens,
+    )
+    if all(figure is None for figure in figures):
+        return None
+    return sum(figure or 0 for figure in figures)
 
 
 def cost_components(
@@ -678,13 +717,29 @@ class Gateway:
         # writes the whole prefix at the write premium, never a hit.
         cache_ttl = self._cache_ttl_for(config, request)
         authorised = maximum_cost(config, parts, request.max_output_tokens, cache_ttl)
-        claim = self._ledger.reserve(config, authorised, request.task_type, request.project_id)
+        claim = self._ledger.reserve(
+            config,
+            authorised,
+            request.task_type,
+            request.project_id,
+            exchange=request.exchange_reference,
+        )
         if isinstance(claim, Refusal):
             # The ceiling stopped this call before the provider was contacted.
             # Nothing was sent, so nothing is recorded (accounting state NOT_SENT).
             raise GatewayError(
                 GatewayErrorKind.BUDGET_EXCEEDED,
                 ceiling_message(claim.committed_usd, claim.max_cost_usd),
+            )
+        if isinstance(claim, ExchangeEnvelopeRefusal):
+            # Ruling, 13 September 2026: the exchange envelope stopped this call
+            # before the provider was contacted. Not retryable — no cheaper
+            # route is tried to fit the envelope — and nothing is recorded.
+            raise GatewayError(
+                GatewayErrorKind.EXCHANGE_ENVELOPE_EXCEEDED,
+                exchange_envelope_message(
+                    claim.exchange_committed_usd, claim.max_cost_usd, claim.envelope_usd
+                ),
             )
 
         return self._call_and_settle(request, config, adapter, claim, cache_ttl, on_delta)
@@ -744,8 +799,9 @@ class Gateway:
         """
         started = time.monotonic()
         first_output_ms: int | None = None
+        streamed = on_delta is not None and supports_streaming(adapter)
         try:
-            if on_delta is not None and supports_streaming(adapter):
+            if streamed and on_delta is not None:
                 result, first_output_ms = self._stream(
                     adapter, config, request, cache_ttl, on_delta, started
                 )
@@ -759,7 +815,9 @@ class Gateway:
                     cache_ttl=cache_ttl,
                 )
         except GatewayError as error:
-            call_id = self._settle_unknown(request, config, claim, error, self._elapsed(started))
+            call_id = self._settle_unknown(
+                request, config, claim, error, self._elapsed(started), streamed=streamed
+            )
             # A fresh error naming exactly this attempt's call, never a
             # mutation of the adapter's own exception object: an adapter (or a
             # scripted one in tests) may raise the same instance twice, and
@@ -871,6 +929,16 @@ class Gateway:
                 provider_request_id=result.provider_request_id,
                 status=status,
                 cache_usage=cache_usage,
+                measurement=CallMeasurement(
+                    exchange=request.exchange_reference,
+                    streamed=streamed,
+                    first_text_ms=first_output_ms,
+                    text_output_chars=len(result.text),
+                    reasoning_present=result.reasoning_present,
+                    reasoning_output_tokens=result.reasoning_tokens,
+                    provider_cached_input_tokens=result.cache_read_tokens,
+                    provider_cache_write_tokens=_reported_cache_writes(result),
+                ),
             )
         )
         # Known cost settles at the real figure, returning the unspent
@@ -961,6 +1029,8 @@ class Gateway:
         claim: Reservation,
         error: GatewayError,
         latency_ms: int,
+        *,
+        streamed: bool = False,
     ) -> UUID | None:
         """A provider failure whose cost cannot be established.
 
@@ -1001,6 +1071,16 @@ class Gateway:
                 latency_ms=latency_ms,
                 provider_request_id=None,
                 status=CallStatus.ERROR,
+                measurement=CallMeasurement(
+                    exchange=request.exchange_reference,
+                    streamed=streamed,
+                    first_text_ms=None,
+                    text_output_chars=None,
+                    reasoning_present=None,
+                    reasoning_output_tokens=None,
+                    provider_cached_input_tokens=None,
+                    provider_cache_write_tokens=None,
+                ),
             )
         )
         self._ledger.settle(claim.id, None, CostCertainty.UNKNOWN, call_id)

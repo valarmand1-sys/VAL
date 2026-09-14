@@ -63,8 +63,8 @@ from uuid import UUID
 
 from sqlalchemy import Connection, Engine, text
 
-from val_domain.gateway import CostCertainty, ModelConfig, TaskType
-from val_policy.budget import admits
+from val_domain.gateway import CostCertainty, ModelConfig, TaskType, TurnReference
+from val_policy.budget import admits, admits_exchange
 
 #: The advisory-lock key every budget admission serialises on. Arbitrary, fixed,
 #: and shared by every process: two processes choosing different keys would each
@@ -105,6 +105,22 @@ class Refusal:
     max_cost_usd: float
 
 
+@dataclass(frozen=True)
+class ExchangeEnvelopeRefusal:
+    """An admission refused because the user exchange would exceed its envelope.
+
+    Ruling, 13 September 2026. Distinct from `Refusal` on purpose: a monthly
+    ceiling refusal may let routing try a cheaper eligible route, but an
+    exchange envelope never does — the next call is not made, and proceeding
+    needs Lord Armand's authorisation.
+    """
+
+    exchange: TurnReference
+    exchange_committed_usd: float
+    max_cost_usd: float
+    envelope_usd: float
+
+
 class BudgetLedger(Protocol):
     """What the gateway needs of a ledger, and nothing more.
 
@@ -125,8 +141,14 @@ class BudgetLedger(Protocol):
         max_cost_usd: float,
         task_type: TaskType,
         project_id: UUID | None,
-    ) -> Reservation | Refusal:
-        """Claim headroom for one call, atomically, or refuse."""
+        exchange: TurnReference | None = None,
+    ) -> Reservation | Refusal | ExchangeEnvelopeRefusal:
+        """Claim headroom for one call, atomically, or refuse.
+
+        `exchange` is the user exchange the call belongs to (ruling, 13
+        September 2026), recorded on the reservation and, when an exchange
+        envelope is configured, admitted against it.
+        """
         ...
 
     def settle(
@@ -174,11 +196,25 @@ _INSERT_RESERVATION = text(
     """
     insert into budget_reservations
       (state, model_config_id, slug, provider, model_identifier, task_type,
-       project_id, max_cost)
+       project_id, max_cost, exchange_conversation_id, exchange_message_id)
     values
       ('reserved', :model_config_id, :slug, :provider, :model_identifier, :task_type,
-       :project_id, :max_cost)
+       :project_id, :max_cost, :exchange_conversation_id, :exchange_message_id)
     returning id
+    """
+)
+
+#: What one exchange has already claimed, by the same rule as the month's sum:
+#: settled at settled cost, outstanding or expired at maximum, released at nothing.
+_EXCHANGE_COMMITTED = text(
+    """
+    select coalesce(sum(case
+      when state in ('reserved', 'expired') then max_cost
+      when state = 'settled' then settled_cost
+      else 0
+    end), 0)
+      from budget_reservations
+     where exchange_message_id = :message_id and state <> 'released'
     """
 )
 
@@ -241,8 +277,11 @@ _OVERRUNS = text(
 class DatabaseLedger:
     """The real ledger. PostgreSQL is the authority; this only asks it."""
 
-    def __init__(self, engine: Engine) -> None:
+    def __init__(self, engine: Engine, exchange_envelope_usd: float | None = None) -> None:
         self._engine = engine
+        #: Ruling, 13 September 2026: the most one user exchange may commit, or
+        #: None — the default — for no exchange envelope at all.
+        self._exchange_envelope_usd = exchange_envelope_usd
 
     def committed_usd(self) -> float:
         """Settled spend, outstanding reservations, expired holds, legacy rows."""
@@ -255,7 +294,8 @@ class DatabaseLedger:
         max_cost_usd: float,
         task_type: TaskType,
         project_id: UUID | None,
-    ) -> Reservation | Refusal:
+        exchange: TurnReference | None = None,
+    ) -> Reservation | Refusal | ExchangeEnvelopeRefusal:
         """Admit or refuse one call, atomically.
 
         The advisory lock, the sum, the decision, and the insert are one
@@ -268,6 +308,23 @@ class DatabaseLedger:
             committed = float(connection.execute(_COMMITTED).scalar_one())
             if not admits(committed, max_cost_usd):
                 return Refusal(committed_usd=committed, max_cost_usd=max_cost_usd)
+            # Ruling, 13 September 2026: the exchange envelope, under the same
+            # lock, so two calls of one exchange cannot both fit a stale sum.
+            # Earlier calls of a serial exchange are already settled at their
+            # actual cost; anything outstanding counts at its maximum.
+            if exchange is not None and self._exchange_envelope_usd is not None:
+                spent = float(
+                    connection.execute(
+                        _EXCHANGE_COMMITTED, {"message_id": exchange.message_id}
+                    ).scalar_one()
+                )
+                if not admits_exchange(spent, max_cost_usd, self._exchange_envelope_usd):
+                    return ExchangeEnvelopeRefusal(
+                        exchange=exchange,
+                        exchange_committed_usd=spent,
+                        max_cost_usd=max_cost_usd,
+                        envelope_usd=self._exchange_envelope_usd,
+                    )
 
             reservation_id = connection.execute(
                 _INSERT_RESERVATION,
@@ -279,6 +336,10 @@ class DatabaseLedger:
                     "task_type": task_type.value,
                     "project_id": project_id,
                     "max_cost": Decimal(str(round(max_cost_usd, 6))),
+                    "exchange_conversation_id": (
+                        None if exchange is None else exchange.conversation_id
+                    ),
+                    "exchange_message_id": None if exchange is None else exchange.message_id,
                 },
             ).scalar_one()
 

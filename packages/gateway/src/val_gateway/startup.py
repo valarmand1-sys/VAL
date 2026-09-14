@@ -86,6 +86,29 @@ def configured_cache_ttl() -> tuple[CacheTtl | None, str | None]:
         )
 
 
+#: Ruling, 13 September 2026: the most one user exchange may commit, in USD.
+#: Unset — the default — means no exchange envelope. No threshold is chosen here.
+EXCHANGE_ENVELOPE_SETTING = "VAL_EXCHANGE_ENVELOPE_USD"
+
+
+def configured_exchange_envelope() -> tuple[float | None, str | None]:
+    """`VAL_EXCHANGE_ENVELOPE_USD` as a positive amount, `(None, None)` when unset,
+    or a startup violation when set to anything else."""
+    raw = os.environ.get(EXCHANGE_ENVELOPE_SETTING, "").strip()
+    if not raw:
+        return None, None
+    try:
+        value = float(raw)
+    except ValueError:
+        value = 0.0
+    if not value > 0 or value != value or value == float("inf"):
+        return None, (
+            f"{EXCHANGE_ENVELOPE_SETTING}={raw!r} is not a positive amount in USD; unset it "
+            "for no exchange envelope."
+        )
+    return value, None
+
+
 def recall_envelope_problems() -> list[str]:
     """Reasons the recall envelope configuration must stop startup (ruling, 13 September 2026).
 
@@ -162,6 +185,9 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     # requested, and an unrecognised value stops startup rather than silently
     # running uncached at a cost nobody chose.
     violations.extend(recall_envelope_problems())
+    exchange_envelope, envelope_problem = configured_exchange_envelope()
+    if envelope_problem is not None:
+        violations.append(envelope_problem)
 
     cache_ttl, cache_problem = configured_cache_ttl()
     if cache_problem is not None:
@@ -176,7 +202,7 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     if violations:
         raise StartupRefusedError(violations)
 
-    ledger = DatabaseLedger(engine)
+    ledger = DatabaseLedger(engine, exchange_envelope_usd=exchange_envelope)
     warnings.extend(ledger.expire_stale())
     warnings.extend(ledger.overruns())
 

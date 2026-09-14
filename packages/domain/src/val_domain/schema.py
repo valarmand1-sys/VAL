@@ -955,6 +955,17 @@ class BudgetReservation(Base):
     #: laziness: a release with no stated reason is the shape a silent budget
     #: leak takes.
     resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+    #: Ruling, 13 September 2026 (`0020`): the user exchange this reservation
+    #: belongs to — the conversation and the persisted user message — so every
+    #: call an exchange caused can be summed against it. Both or neither; NULL
+    #: for work that belongs to no exchange and for rows written before 0020.
+    #: Identity: pinned by the reservation guard like the columns above.
+    exchange_conversation_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="NO ACTION"), nullable=True
+    )
+    exchange_message_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=True
+    )
 
     __table_args__ = (
         CheckConstraint("max_cost >= 0", name="max_cost_non_negative"),
@@ -973,7 +984,12 @@ class BudgetReservation(Base):
             "state = 'reserved' OR resolution IS NOT NULL",
             name="resolved_states_say_why",
         ),
+        CheckConstraint(
+            "(exchange_conversation_id IS NULL) = (exchange_message_id IS NULL)",
+            name="exchange_both_or_neither",
+        ),
         Index("ix_budget_reservations_state_created_at", "state", "created_at"),
+        Index("ix_budget_reservations_exchange_message_id", "exchange_message_id"),
     )
 
 
@@ -1034,6 +1050,66 @@ class ModelCallCacheUsage(Base):
             "and cache_write_1h_tokens = 0)",
             name="not_cached_means_nothing_cached",
         ),
+    )
+
+
+class ModelCallMeasurement(Base):
+    """§2.2 — `model_call_measurements`, ruling of 13 September 2026 (`0020`).
+
+    Per-call measurement the provider comparison needs exactly rather than by
+    inference: the exchange the call belongs to, whether it streamed, time to
+    the first generated-text delta at the Val Core boundary, generated-text
+    characters, and — only where the provider exposes them — reasoning presence,
+    reasoning tokens, and prompt-cache reads and writes as reported. At most one
+    row per `model_calls` row, written in the same transaction. `model_calls`
+    itself is unchanged. Append-only.
+    """
+
+    __tablename__ = "model_call_measurements"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    model_call_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("model_calls.id", ondelete="NO ACTION"),
+        nullable=False,
+        unique=True,
+    )
+    exchange_conversation_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="NO ACTION"), nullable=True
+    )
+    exchange_message_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=True
+    )
+    streamed: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    first_text_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    text_output_chars: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasoning_present: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    reasoning_output_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    provider_cached_input_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    provider_cache_write_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint(
+            "(exchange_conversation_id IS NULL) = (exchange_message_id IS NULL)",
+            name="exchange_both_or_neither",
+        ),
+        CheckConstraint(
+            "first_text_ms IS NULL OR (streamed AND first_text_ms >= 0)",
+            name="first_text_only_when_streamed",
+        ),
+        CheckConstraint(
+            "(text_output_chars IS NULL OR text_output_chars >= 0) AND "
+            "(reasoning_output_tokens IS NULL OR reasoning_output_tokens >= 0) AND "
+            "(provider_cached_input_tokens IS NULL OR provider_cached_input_tokens >= 0) AND "
+            "(provider_cache_write_tokens IS NULL OR provider_cache_write_tokens >= 0)",
+            name="measurements_non_negative",
+        ),
+        Index("ix_model_call_measurements_exchange_message_id", "exchange_message_id"),
     )
 
 
@@ -1250,6 +1326,7 @@ SPECIFIED_TABLES = frozenset(
         "personas",
         "model_calls",
         "model_call_cache_usage",
+        "model_call_measurements",
         "execution_events",
         "deliberations",
         "blind_positions",

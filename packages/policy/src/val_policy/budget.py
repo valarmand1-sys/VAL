@@ -259,6 +259,35 @@ def admits(committed_usd: float, maximum_cost_usd: float) -> bool:
     return committed_usd + maximum_cost_usd <= CLOUD_CEILING_USD
 
 
+def admits_exchange(
+    exchange_committed_usd: float, maximum_cost_usd: float, envelope_usd: float | None
+) -> bool:
+    """Whether one more call fits inside its user exchange's spending envelope.
+
+    Ruling, 13 September 2026. `exchange_committed_usd` is what the exchange has
+    already claimed — settled calls at their settled cost, outstanding or expired
+    reservations at their maximum — and `maximum_cost_usd` is the proposed
+    call's bound, never an expected actual. `None` is the disabled envelope,
+    the default: nothing is refused on the exchange's account.
+    """
+    if envelope_usd is None:
+        return True
+    return exchange_committed_usd + maximum_cost_usd <= envelope_usd
+
+
+def exchange_envelope_message(
+    exchange_committed_usd: float, maximum_cost_usd: float, envelope_usd: float
+) -> str:
+    """What Val says when the exchange envelope has stopped the next call."""
+    return (
+        f"I have not made that call, my lord. This exchange has already committed "
+        f"${exchange_committed_usd:.4f}, the next call is authorised to consume up to "
+        f"${maximum_cost_usd:.4f}, and together they exceed the ${envelope_usd:.4f} "
+        "envelope set for a single exchange. I will not substitute a cheaper "
+        "configuration to fit it; going on needs your authorisation."
+    )
+
+
 def ceiling_message(committed_usd: float, maximum_cost_usd: float) -> str:
     """What Val says, plainly, when the ceiling has stopped this call.
 

@@ -79,6 +79,17 @@ class ProviderResult:
     #: text. `None` when the provider gave none.
     stop_reason: str | None = None
     stop_details: str | None = None
+    #: Ruling, 13 September 2026: measurement the provider comparison needs.
+    #: `reasoning_present` — whether the response carried reasoning or thinking
+    #: output, where the provider's response exposes that fact; `None` where it
+    #: does not. `reasoning_tokens` — reasoning tokens the provider reported
+    #: inside `tokens_out`; `None` unless the provider reports the split, never
+    #: inferred. `reported_cache_write_tokens` — prompt-cache writes the
+    #: provider reported that carry none of the lifetimes priced above (a
+    #: provider's automatic caching); evidence only, already inside `tokens_in`.
+    reasoning_present: bool | None = None
+    reasoning_tokens: int | None = None
+    reported_cache_write_tokens: int | None = None
 
     @property
     def total_input_tokens(self) -> int | None:

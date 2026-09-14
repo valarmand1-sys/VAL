@@ -97,6 +97,7 @@ class OpenLedger:
         max_cost_usd: float,
         task_type: TaskType,
         project_id: UUID | None,
+        exchange: object = None,
     ) -> Reservation | Refusal:
         claim = uuid4()
         self.entries[claim] = max_cost_usd
@@ -128,6 +129,7 @@ class RefusingLedger(OpenLedger):
         max_cost_usd: float,
         task_type: TaskType,
         project_id: UUID | None,
+        exchange: object = None,
     ) -> Reservation | Refusal:
         return Refusal(committed_usd=1_000_000.0, max_cost_usd=max_cost_usd)
 

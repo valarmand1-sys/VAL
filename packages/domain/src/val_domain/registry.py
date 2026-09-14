@@ -602,6 +602,56 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 10),
     ),
     ModelConfig(
+        id=UUID("e9c6ec70-9f3a-4ac6-a571-499609678ccc"),
+        slug="gpt-5-6-sol-medium",
+        provider="openai",
+        # Ruling, 13 September 2026: the first OpenAI partner candidate,
+        # registered for measurement and later qualification ONLY. It is
+        # NOT_ADMITTED and declares no capability profile, so routing can never
+        # select it, the pinned path refuses it for the partner floor, and no
+        # production turn can reach it. Registering it admits nothing;
+        # qualification and admission are separate recorded rulings.
+        # developers.openai.com/api/docs/models/gpt-5.6-sol, read 13 September
+        # 2026: "Model ID: gpt-5.6-sol", the only snapshot; the `gpt-5.6` alias
+        # routes to it. The exact identifier is identity.
+        model_identifier="gpt-5.6-sol",
+        display_name="GPT-5.6 Sol at effort medium (partner candidate, not admitted)",
+        # Same page: "1,050,000 context window", "128,000 max output tokens"
+        # (maximum input 922,000).
+        context_window_tokens=1_050_000,
+        max_output_tokens=128_000,
+        # Same page: "Reasoning.effort supports: none, low, medium (default),
+        # high, xhigh, and max." Medium is the candidate configuration ruled.
+        reasoning_effort=ReasoningEffort.MEDIUM,
+        # developers.openai.com/api/docs/pricing and the model page, read 13
+        # September 2026: $4.00 input, $0.40 cached input, $5.00 cache writes
+        # ("billed at 1.25x the uncached input token rate"), $20.00 output;
+        # "Prompts with >272K input tokens are priced at 2x input and 1.5x
+        # output". Reasoning tokens are billed as output tokens
+        # (developers.openai.com/api/docs/guides/reasoning).
+        cost_per_mtok_in_usd=4.00,
+        cost_per_mtok_out_usd=20.00,
+        long_context_threshold_tokens=272_000,
+        long_context_in_multiplier=2.0,
+        long_context_out_multiplier=1.5,
+        # Deliberately NOT_VERIFIED although the rates above were read: GPT-5.6
+        # caching is automatic, writes carry a 1.25x premium on a 30-minute
+        # minimum lifetime, and neither the registry's cache fields (5m / 1h)
+        # nor the reservation bound express that yet. Until that is ruled,
+        # cached reads are priced at the base rate (over-stated) and writes are
+        # recorded as evidence in `model_call_measurements`.
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        known_weaknesses=(),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 13),
+        rates_verified_on=date(2026, 9, 13),
+    ),
+    ModelConfig(
         id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),
         slug="gpt-5-6-luna",
         provider="openai",

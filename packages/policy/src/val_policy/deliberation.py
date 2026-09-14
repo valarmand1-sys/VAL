@@ -765,9 +765,12 @@ def _with_evidence(
 
 BLIND_POSITION_INSTRUCTION = (
     "State your own position on the question you are given, before knowing "
-    "anyone else's view. Commit: name the option you would choose and why, "
-    "briefly. State your confidence honestly — 'high' is a position you would "
-    "push back hard on; 'low' is a mild preference that could go either way. "
+    "anyone else's view. Commit: name the option you would choose, in at most two "
+    "sentences, and give only the material reasons for it — at most about 120 "
+    "words of reasoning. Do not restate the question, draft the work itself, or "
+    "add caveats that would not change the position. State your confidence "
+    "honestly — 'high' is a position you would push back hard on; 'low' is a "
+    "mild preference that could go either way. "
     "These are different claims, and collapsing them makes every stated "
     "confidence worthless.\n"
     "\n"

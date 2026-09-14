@@ -274,7 +274,19 @@ class AnthropicAdapter:
             cache_write_1h_tokens=write_1h,
             stop_reason=response.stop_reason,
             stop_details=rendered_details,
+            # Ruling, 13 September 2026: whether the final message carried
+            # thinking. Anthropic reports thinking inside `output_tokens` and
+            # does not split it out, so no reasoning token figure is given.
+            reasoning_present=_carries_thinking(response),
         )
+
+
+def _carries_thinking(response: object) -> bool | None:
+    """Whether the message's content includes a thinking or redacted-thinking block."""
+    content = getattr(response, "content", None)
+    if content is None:
+        return None
+    return any(getattr(block, "type", "") in ("thinking", "redacted_thinking") for block in content)
 
 
 def measure(start: float) -> int:

@@ -58,10 +58,15 @@ class RecordingLedger(OpenLedger):
     reserved: list[tuple[TaskType, str, float]] = field(default_factory=list)
 
     def reserve(
-        self, config: ModelConfig, max_cost_usd: float, task_type: TaskType, project_id: UUID | None
+        self,
+        config: ModelConfig,
+        max_cost_usd: float,
+        task_type: TaskType,
+        project_id: UUID | None,
+        exchange: object = None,
     ) -> object:
         self.reserved.append((task_type, config.slug, max_cost_usd))
-        return super().reserve(config, max_cost_usd, task_type, project_id)
+        return super().reserve(config, max_cost_usd, task_type, project_id, exchange)
 
 
 def test_the_blind_call_requests_no_cache_and_everything_else_is_unchanged(store: Engine) -> None:
