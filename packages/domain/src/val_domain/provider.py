@@ -84,12 +84,13 @@ class ProviderResult:
     #: output, where the provider's response exposes that fact; `None` where it
     #: does not. `reasoning_tokens` — reasoning tokens the provider reported
     #: inside `tokens_out`; `None` unless the provider reports the split, never
-    #: inferred. `reported_cache_write_tokens` — prompt-cache writes the
-    #: provider reported that carry none of the lifetimes priced above (a
-    #: provider's automatic caching); evidence only, already inside `tokens_in`.
+    #: inferred. `cache_write_auto_tokens` (ruling, 14 September 2026) — the
+    #: prompt-cache writes an automatically caching provider reported, priced at
+    #: the route's verified automatic write rate; disjoint from `tokens_in` and
+    #: from `cache_read_tokens`, so no token is billed twice.
     reasoning_present: bool | None = None
     reasoning_tokens: int | None = None
-    reported_cache_write_tokens: int | None = None
+    cache_write_auto_tokens: int | None = None
 
     @property
     def total_input_tokens(self) -> int | None:
@@ -101,6 +102,7 @@ class ProviderResult:
             + (self.cache_read_tokens or 0)
             + (self.cache_write_5m_tokens or 0)
             + (self.cache_write_1h_tokens or 0)
+            + (self.cache_write_auto_tokens or 0)
         )
 
 

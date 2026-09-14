@@ -134,9 +134,9 @@ def test_usage_maps_cached_input_writes_and_reasoning_as_reported() -> None:
         None,
         100,
     )
-    assert result.tokens_in == 976 and result.cache_read_tokens == 1_024
-    assert result.total_input_tokens == 2_000, "the whole input, uncached plus cached"
-    assert result.reported_cache_write_tokens == 512
+    assert result.tokens_in == 464 and result.cache_read_tokens == 1_024
+    assert result.cache_write_auto_tokens == 512
+    assert result.total_input_tokens == 2_000, "uncached + read + written, disjoint"
     assert result.reasoning_tokens == 220 and result.reasoning_present is True
     assert result.cache_write_5m_tokens is None and result.cache_write_1h_tokens is None
 
@@ -150,7 +150,7 @@ def test_absent_usage_details_are_none_never_zero() -> None:
         100,
     )
     assert result.tokens_in == 10 and result.cache_read_tokens is None
-    assert result.reasoning_tokens is None and result.reported_cache_write_tokens is None
+    assert result.reasoning_tokens is None and result.cache_write_auto_tokens is None
     assert result.reasoning_present is False, "an output list with no reasoning item"
 
 

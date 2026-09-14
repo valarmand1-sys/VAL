@@ -247,7 +247,7 @@ def _reported_cache_writes(result: ProviderResult) -> int | None:
     figures = (
         result.cache_write_5m_tokens,
         result.cache_write_1h_tokens,
-        result.reported_cache_write_tokens,
+        result.cache_write_auto_tokens,
     )
     if all(figure is None for figure in figures):
         return None
@@ -262,9 +262,16 @@ def cost_components(
     cache_read: int = 0,
     cache_write_5m: int = 0,
     cache_write_1h: int = 0,
+    cache_write_auto: int = 0,
 ) -> tuple[float, float, float, float]:
     """The four billed components of a completed call, in USD: uncached input,
     cache writes, cache reads, output — at the rates that actually applied.
+
+    Ruling, 14 September 2026: `cache_write_auto` is what an automatically
+    caching provider reported writing, priced at the route's verified automatic
+    write rate — never also as uncached input, because the adapter reports the
+    three input figures disjointly. Unverified, it is priced at base like any
+    other cache figure on an unverified route.
 
     Uses `effective_rates`, the same function the pre-call bound prices with —
     closure pass, 18 August 2026 — so a call whose input crossed a provider's
@@ -278,10 +285,13 @@ def cost_components(
     carries no verified cache rate is priced at the base input rate — never
     cheaper than base on an unverified number.
     """
-    total_in = tokens_in + cache_read + cache_write_5m + cache_write_1h
+    total_in = tokens_in + cache_read + cache_write_5m + cache_write_1h + cache_write_auto
     rate_in, rate_out = effective_rates(config, total_in)
     multiplier = rate_in / config.cost_per_mtok_in_usd
     read_rate = (config.cache_read_per_mtok_in_usd or config.cost_per_mtok_in_usd) * multiplier
+    write_auto_rate = (
+        config.cache_write_auto_per_mtok_in_usd or config.cost_per_mtok_in_usd
+    ) * multiplier
     write_5m_rate = (
         config.cache_write_5m_per_mtok_in_usd or config.cost_per_mtok_in_usd
     ) * multiplier
@@ -290,7 +300,12 @@ def cost_components(
     ) * multiplier
     return (
         tokens_in * rate_in / 1_000_000,
-        (cache_write_5m * write_5m_rate + cache_write_1h * write_1h_rate) / 1_000_000,
+        (
+            cache_write_5m * write_5m_rate
+            + cache_write_1h * write_1h_rate
+            + cache_write_auto * write_auto_rate
+        )
+        / 1_000_000,
         cache_read * read_rate / 1_000_000,
         tokens_out * rate_out / 1_000_000,
     )
@@ -304,6 +319,7 @@ def compute_cost(
     cache_read: int = 0,
     cache_write_5m: int = 0,
     cache_write_1h: int = 0,
+    cache_write_auto: int = 0,
 ) -> float:
     """The settled cost of a completed call: the sum of `cost_components`."""
     return round(
@@ -315,6 +331,7 @@ def compute_cost(
                 cache_read=cache_read,
                 cache_write_5m=cache_write_5m,
                 cache_write_1h=cache_write_1h,
+                cache_write_auto=cache_write_auto,
             )
         ),
         6,
@@ -772,6 +789,11 @@ class Gateway:
             return None
         if config.caching is not PricingFeature.AVAILABLE:
             return None
+        # Ruling, 14 September 2026: a provider that caches automatically is
+        # asked for no lifetime — it decides for itself, and what it reports is
+        # priced at its verified rates and recorded in the measurement row.
+        if config.caches_automatically:
+            return None
         minimum = config.cache_minimum_prefix_tokens or 0
         if estimate_tokens(request.system) < minimum:
             return None
@@ -846,6 +868,7 @@ class Gateway:
             read = result.cache_read_tokens or 0
             write_5m = result.cache_write_5m_tokens or 0
             write_1h = result.cache_write_1h_tokens or 0
+            write_auto = result.cache_write_auto_tokens or 0
             parts_usd = cost_components(
                 config,
                 result.tokens_in,
@@ -853,8 +876,18 @@ class Gateway:
                 cache_read=read,
                 cache_write_5m=write_5m,
                 cache_write_1h=write_1h,
+                cache_write_auto=write_auto,
             )
             cost = round(sum(parts_usd), 6)
+            if cache_ttl is None and (read or write_auto):
+                _LOGGER.info(
+                    "automatic prompt cache on %s: uncached=%d write=%d read=%d; cost $%.6f",
+                    config.slug,
+                    result.tokens_in,
+                    write_auto,
+                    read,
+                    cost,
+                )
             if cache_ttl is not None:
                 if read and (write_5m or write_1h):
                     outcome = "hit_and_created"

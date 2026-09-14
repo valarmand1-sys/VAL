@@ -214,10 +214,16 @@ def maximum_cost(
     tokens_in = upper_bound_input_tokens(parts, config)
     tokens_out = upper_bound_output_tokens(max_output_tokens, config)
     rate_in, rate_out = effective_rates(config, tokens_in)
-    if cache_ttl is not None:
-        # The long-context multiplier stacks on cache rates as it does on the
-        # base rate (the provider's pricing page: multipliers stack).
-        multiplier = rate_in / config.cost_per_mtok_in_usd
+    # The long-context multiplier stacks on cache rates as it does on the base
+    # rate (the provider's pricing page: multipliers stack).
+    multiplier = rate_in / config.cost_per_mtok_in_usd
+    if config.caches_automatically and config.cache_write_auto_per_mtok_in_usd is not None:
+        # Ruling, 14 September 2026: a provider that caches on its own may
+        # write every cache-eligible input token on a cold call, and this house
+        # cannot ask it not to. The legitimate expensive state is therefore the
+        # whole input written at the automatic write rate; nothing assumes a hit.
+        rate_in = max(rate_in, config.cache_write_auto_per_mtok_in_usd * multiplier)
+    elif cache_ttl is not None:
         rate_in = max(rate_in, config.cache_write_rate(cache_ttl) * multiplier)
     return (tokens_in * rate_in + tokens_out * rate_out) / 1_000_000
 

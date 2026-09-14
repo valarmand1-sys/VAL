@@ -51,6 +51,7 @@ from val_domain.gateway import (
     Classification,
     ModelConfig,
     PricingFeature,
+    QualificationTarget,
     ReasoningEffort,
 )
 
@@ -634,16 +635,24 @@ REGISTRY: tuple[ModelConfig, ...] = (
         long_context_threshold_tokens=272_000,
         long_context_in_multiplier=2.0,
         long_context_out_multiplier=1.5,
-        # Deliberately NOT_VERIFIED although the rates above were read: GPT-5.6
-        # caching is automatic, writes carry a 1.25x premium on a 30-minute
-        # minimum lifetime, and neither the registry's cache fields (5m / 1h)
-        # nor the reservation bound express that yet. Until that is ruled,
-        # cached reads are priced at the base rate (over-stated) and writes are
-        # recorded as evidence in `model_call_measurements`.
-        caching=PricingFeature.NOT_VERIFIED,
+        # Ruling, 14 September 2026: automatic caching verified. The pricing
+        # page and developers.openai.com/api/docs/guides/prompt-caching, read 13
+        # September 2026: cache writes $5.00 ("1.25x the uncached input token
+        # rate"), cached input $0.40 (0.1x), "the minimum cacheable prompt
+        # length is 1,024 tokens for GPT-5.6 and later", automatic, 30-minute
+        # minimum lifetime. No lifetime is requested; the provider's reported
+        # reads and writes settle at these rates, and the cold bound prices the
+        # whole input at the write rate.
+        caching=PricingFeature.AVAILABLE,
+        cache_write_auto_per_mtok_in_usd=5.00,
+        cache_read_per_mtok_in_usd=0.40,
+        cache_minimum_prefix_tokens=1_024,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
         capability_profiles=frozenset(),
+        # Ruling, 14 September 2026: a candidate for the partner floor, reachable
+        # only through the candidate lane on a scratch store. Not a profile.
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
         known_weaknesses=(),
         fallback_slug=None,
         admission=Admission.NOT_ADMITTED,

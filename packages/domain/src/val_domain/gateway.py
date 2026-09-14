@@ -6,7 +6,7 @@ Nothing here knows how any provider spells its request; that knowledge lives in
 """
 
 from datetime import date
-from enum import StrEnum
+from enum import Enum, StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -172,6 +172,23 @@ class GatewayErrorKind(StrEnum):
     EXCHANGE_ENVELOPE_EXCEEDED = "exchange_envelope_exceeded"
 
 
+class QualificationTarget(Enum):
+    """A floor a NOT_ADMITTED candidate is being qualified for — ruling, 14 September 2026.
+
+    **Not a capability profile, and never convertible into one.** A plain
+    `Enum`, deliberately not a `StrEnum`: `CapabilityProfile.PARTNER` is the
+    string "partner", and a string-valued twin would compare and hash equal to
+    it, so a qualification target could satisfy `satisfies_profile` by
+    accident. This type compares equal to nothing but itself. It is consulted
+    by exactly one door, the candidate lane (`val_gateway.candidate`), and by
+    nothing in routing, fallback, admission or the pinned production paths.
+    Passing qualification confers nothing; admission is a separate ruling that
+    edits the entry.
+    """
+
+    PARTNER = "partner"
+
+
 class Admission(StrEnum):
     """How far a configuration has got through `01-architecture.md` §5.2.1.
 
@@ -324,6 +341,14 @@ class ModelConfig(BaseModel):
     cache_write_1h_per_mtok_in_usd: float | None = Field(default=None, gt=0)
     cache_read_per_mtok_in_usd: float | None = Field(default=None, gt=0)
     cache_minimum_prefix_tokens: int | None = Field(default=None, gt=0)
+    #: Ruling, 14 September 2026. A provider that caches **automatically** —
+    #: no lifetime requested by this house, the provider deciding what it
+    #: writes and reporting reads and writes in its usage — carries its one
+    #: verified write rate here instead of the per-lifetime rates above. The
+    #: two shapes are exclusive: an entry declares the requested-lifetime pair
+    #: or the automatic rate, never both, and each with the read rate and the
+    #: minimum prefix. Anthropic's semantics are untouched by this field.
+    cache_write_auto_per_mtok_in_usd: float | None = Field(default=None, gt=0)
     batch_pricing: PricingFeature = PricingFeature.NOT_VERIFIED
     eligible_classifications: frozenset[Classification]
     #: Ruling, 7 September 2026. The capability profiles this configuration
@@ -345,6 +370,11 @@ class ModelConfig(BaseModel):
     #: that speaks its dialect. Independent: neither implies the other, and
     #: neither implies eligibility.
     admission: Admission
+    #: Ruling, 14 September 2026: the floors this configuration is a candidate
+    #: for. Only a `NOT_ADMITTED` entry declaring no capability profile may
+    #: carry one (the validator below), and it is read by the candidate lane
+    #: alone. Empty on every serving route.
+    qualification_targets: frozenset[QualificationTarget] = frozenset()
     #: Ruling, 10 September 2026 (`01-architecture.md` §5.2): a configuration
     #: placed into operational service under the **owner-authorised operational
     #: exception** records that authorisation here — the residual it carries,
@@ -375,25 +405,52 @@ class ModelConfig(BaseModel):
     retired: bool = False
 
     @model_validator(mode="after")
+    def _qualification_targets_only_on_candidates(self) -> ModelConfig:
+        """A qualification target rides only on an unadmitted, profile-less entry."""
+        if self.qualification_targets and (
+            self.admission is not Admission.NOT_ADMITTED or self.capability_profiles
+        ):
+            raise ValueError(
+                f"{self.slug}: qualification targets belong to a NOT_ADMITTED candidate "
+                "declaring no capability profile; a serving configuration is not a candidate "
+                "and a candidate serves nothing (ruling, 14 September 2026)"
+            )
+        return self
+
+    @model_validator(mode="after")
     def _cache_rates_iff_available(self) -> ModelConfig:
         """Cache rates travel with verified caching, and only with it."""
-        rates = (
-            self.cache_write_5m_per_mtok_in_usd,
-            self.cache_write_1h_per_mtok_in_usd,
-            self.cache_read_per_mtok_in_usd,
-            self.cache_minimum_prefix_tokens,
-        )
-        if self.caching is PricingFeature.AVAILABLE and any(rate is None for rate in rates):
-            raise ValueError(
-                f"{self.slug}: caching is AVAILABLE but the cache rates or minimum prefix are "
-                "missing; a route is cached only on rates read from the provider's pricing"
-            )
+        requested = (self.cache_write_5m_per_mtok_in_usd, self.cache_write_1h_per_mtok_in_usd)
+        automatic = self.cache_write_auto_per_mtok_in_usd
+        common = (self.cache_read_per_mtok_in_usd, self.cache_minimum_prefix_tokens)
+        rates = (*requested, automatic, *common)
+        if self.caching is PricingFeature.AVAILABLE:
+            requested_complete = all(rate is not None for rate in requested)
+            requested_absent = all(rate is None for rate in requested)
+            if any(rate is None for rate in common) or not (
+                (requested_complete and automatic is None)
+                or (requested_absent and automatic is not None)
+            ):
+                raise ValueError(
+                    f"{self.slug}: caching is AVAILABLE but the cache rates or minimum prefix "
+                    "are missing or mixed; a route is cached only on rates read from the "
+                    "provider's pricing, as either the requested-lifetime pair or the one "
+                    "automatic write rate, with the read rate and the minimum prefix"
+                )
         if self.caching is not PricingFeature.AVAILABLE and any(rate is not None for rate in rates):
             raise ValueError(
                 f"{self.slug}: cache rates are declared but caching is {self.caching.value}; "
                 "rates on an unverified route are a guess wearing a number"
             )
         return self
+
+    @property
+    def caches_automatically(self) -> bool:
+        """Whether the provider caches this route on its own, at a verified write rate."""
+        return (
+            self.caching is PricingFeature.AVAILABLE
+            and self.cache_write_auto_per_mtok_in_usd is not None
+        )
 
     def cache_write_rate(self, ttl: CacheTtl) -> float:
         """The per-mtok cache-write rate for this TTL. Only on a verified route."""

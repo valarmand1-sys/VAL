@@ -36,20 +36,17 @@ the function `complete` uses. A stream that ends without a terminal event, or
 reports an `error` event, raises the normalized provider error; the gateway
 settles such a call as unknown. No OpenAI type leaves this module.
 
-## Usage, caching and reasoning, as reported — ruling, 13 September 2026
+## Usage, caching and reasoning, as reported — rulings, 13 and 14 September 2026
 
-`usage.input_tokens` is the whole input. Where the response reports
-`input_tokens_details.cached_tokens`, those tokens are the cache-read figure and
-`tokens_in` is the remainder; this registry declares no verified OpenAI cache
-rate, so the gateway prices them at the base input rate, which over-states a
-read. `cache_write_tokens` are reported as evidence (`reported_cache_write_tokens`)
-and stay inside `tokens_in` at the base rate: OpenAI documents GPT-5.6 cache
-writes at 1.25x the uncached input rate, so a GPT-5.6 call that writes is
-under-priced by a quarter of its written tokens' base cost — exactly
-quantifiable from the recorded figure — until OpenAI cache pricing is ruled into
-the registry and the bound. `output_tokens_details.reasoning_tokens` is recorded
-as the reasoning figure, and the presence of a `reasoning` output item as the
-reasoning fact.
+`usage.input_tokens` is the whole input. `input_tokens_details.cached_tokens`
+is the cache-read figure and `cache_write_tokens` the automatic cache-write
+figure (`cache_write_auto_tokens`); `tokens_in` is the remainder — input minus
+reads minus writes — so the three are disjoint and the gateway prices each at
+the route's verified rate (base, read, automatic write), never a token twice.
+On a route whose caching is not verified the gateway prices reads and writes at
+base, which over-states a read and under-states a GPT-5.6 write by a quarter.
+`output_tokens_details.reasoning_tokens` is recorded as the reasoning figure,
+and the presence of a `reasoning` output item as the reasoning fact.
 
 Missing usage becomes `None`, never zero. The previous `usage.input_tokens if
 usage else 0` fabricated a known $0 for exactly the calls whose cost was not
@@ -263,9 +260,10 @@ class OpenAIAdapter:
         input_details = getattr(usage, "input_tokens_details", None)
         output_details = getattr(usage, "output_tokens_details", None)
         cached = getattr(input_details, "cached_tokens", None)
+        written = getattr(input_details, "cache_write_tokens", None)
         tokens_in = getattr(usage, "input_tokens", None) if usage else None
-        if tokens_in is not None and cached:
-            tokens_in -= cached
+        if tokens_in is not None:
+            tokens_in = max(tokens_in - (cached or 0) - (written or 0), 0)
         incomplete_reason = getattr(getattr(response, "incomplete_details", None), "reason", None)
         output_items = getattr(response, "output", None)
         return ProviderResult(
@@ -288,5 +286,5 @@ class OpenAIAdapter:
                 else any(getattr(item, "type", "") == "reasoning" for item in output_items)
             ),
             reasoning_tokens=getattr(output_details, "reasoning_tokens", None),
-            reported_cache_write_tokens=getattr(input_details, "cache_write_tokens", None),
+            cache_write_auto_tokens=written,
         )

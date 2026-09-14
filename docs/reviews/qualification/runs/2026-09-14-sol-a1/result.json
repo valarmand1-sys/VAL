@@ -1,0 +1,168 @@
+{
+ "configuration": "gpt-5-6-sol-medium",
+ "model": "gpt-5.6-sol",
+ "calls": [
+  {
+   "call": 1,
+   "path": "OpenAIAdapter.stream",
+   "deltas": [
+    "ready"
+   ],
+   "first_text_ms": 2595,
+   "latency_ms": 2935,
+   "event_types": [
+    "TextDelta",
+    "ProviderResult"
+   ],
+   "usage": {
+    "terminal": "complete",
+    "stop_reason": "completed",
+    "stop_details": null,
+    "tokens_in_uncached": 14,
+    "cache_read": 0,
+    "cache_write_reported": 0,
+    "tokens_out": 5,
+    "reasoning_tokens": 0,
+    "reasoning_present": false,
+    "provider_request_id": "resp_0319a68bdd91e719006aa800a2004087d1a0c0247f8fe9642d",
+    "text": "ready"
+   },
+   "cost_at_registry_rates": 0.000156
+  },
+  {
+   "call": 2,
+   "path": "Gateway.evaluate_with_configuration",
+   "max_output_tokens": 1024,
+   "terminal": "complete",
+   "stop_reason": "completed",
+   "stop_details": null,
+   "text": "{\"word\":\"ready\"}",
+   "tokens_in_total": 38,
+   "tokens_out": 15,
+   "cost_usd": 0.000452,
+   "latency_ms": 2560,
+   "model_call_id": "01a0a042-88a0-72ac-8fff-646dbd3c81eb",
+   "model_calls_rows": [
+    {
+     "id": "01a0a042-88a0-72ac-8fff-646dbd3c81eb",
+     "model_config_id": "e9c6ec70-9f3a-4ac6-a571-499609678ccc",
+     "task_type": "title",
+     "status": "ok",
+     "terminal_state": "complete",
+     "tokens_in": 38,
+     "tokens_out": 15,
+     "cost": "0.000452",
+     "cost_certainty": "known",
+     "latency_ms": 2560,
+     "provider_request_id": "resp_08768267bf13a6d6006aa800a3aa8887d18ea98dc3cf836993"
+    }
+   ],
+   "measurements": [
+    {
+     "model_call_id": "01a0a042-88a0-72ac-8fff-646dbd3c81eb",
+     "streamed": false,
+     "first_text_ms": null,
+     "text_output_chars": 16,
+     "reasoning_present": false,
+     "reasoning_output_tokens": 0,
+     "provider_cached_input_tokens": 0,
+     "provider_cache_write_tokens": 0,
+     "exchange_message_id": null
+    }
+   ],
+   "reservations": [
+    {
+     "state": "settled",
+     "slug": "gpt-5-6-sol-medium",
+     "max_cost": "0.020648",
+     "settled_cost": "0.000452",
+     "cost_certainty": "known"
+    }
+   ]
+  },
+  {
+   "call": 3,
+   "path": "Gateway.evaluate_with_configuration",
+   "max_output_tokens": 16,
+   "terminal": "complete",
+   "stop_reason": "completed",
+   "stop_details": null,
+   "text": "{\"word\":\"ready\"}",
+   "tokens_in_total": 38,
+   "tokens_out": 15,
+   "cost_usd": 0.000452,
+   "latency_ms": 2265,
+   "model_call_id": "01a0a042-9182-795b-8bcd-9f1325003ca9",
+   "model_calls_rows": [
+    {
+     "id": "01a0a042-88a0-72ac-8fff-646dbd3c81eb",
+     "model_config_id": "e9c6ec70-9f3a-4ac6-a571-499609678ccc",
+     "task_type": "title",
+     "status": "ok",
+     "terminal_state": "complete",
+     "tokens_in": 38,
+     "tokens_out": 15,
+     "cost": "0.000452",
+     "cost_certainty": "known",
+     "latency_ms": 2560,
+     "provider_request_id": "resp_08768267bf13a6d6006aa800a3aa8887d18ea98dc3cf836993"
+    },
+    {
+     "id": "01a0a042-9182-795b-8bcd-9f1325003ca9",
+     "model_config_id": "e9c6ec70-9f3a-4ac6-a571-499609678ccc",
+     "task_type": "title",
+     "status": "ok",
+     "terminal_state": "complete",
+     "tokens_in": 38,
+     "tokens_out": 15,
+     "cost": "0.000452",
+     "cost_certainty": "known",
+     "latency_ms": 2265,
+     "provider_request_id": "resp_0c5115c14ce55920006aa800a63c1887d189e869b412824e0e"
+    }
+   ],
+   "measurements": [
+    {
+     "model_call_id": "01a0a042-88a0-72ac-8fff-646dbd3c81eb",
+     "streamed": false,
+     "first_text_ms": null,
+     "text_output_chars": 16,
+     "reasoning_present": false,
+     "reasoning_output_tokens": 0,
+     "provider_cached_input_tokens": 0,
+     "provider_cache_write_tokens": 0,
+     "exchange_message_id": null
+    },
+    {
+     "model_call_id": "01a0a042-9182-795b-8bcd-9f1325003ca9",
+     "streamed": false,
+     "first_text_ms": null,
+     "text_output_chars": 16,
+     "reasoning_present": false,
+     "reasoning_output_tokens": 0,
+     "provider_cached_input_tokens": 0,
+     "provider_cache_write_tokens": 0,
+     "exchange_message_id": null
+    }
+   ],
+   "reservations": [
+    {
+     "state": "settled",
+     "slug": "gpt-5-6-sol-medium",
+     "max_cost": "0.020648",
+     "settled_cost": "0.000452",
+     "cost_certainty": "known"
+    },
+    {
+     "state": "settled",
+     "slug": "gpt-5-6-sol-medium",
+     "max_cost": "0.000488",
+     "settled_cost": "0.000452",
+     "cost_certainty": "known"
+    }
+   ]
+  }
+ ],
+ "store_spend_calls_2_3": 0.000904,
+ "total_including_call_1": 0.00106
+}

@@ -36,7 +36,9 @@ Written before any OpenAI call, on Lord Armand's instruction of 13 September 202
 - **Registry:** `gpt-5-6-sol-medium` added — `gpt-5.6-sol`, effort medium, $4 / $20, long context above 272K at 2× / 1.5×, Protected-eligible, `NOT_ADMITTED`, no profile, no fallback, caching deliberately `NOT_VERIFIED`.
 - **Instrumentation, provider-neutral:** exchange identity on every reservation, and `model_call_measurements` per call (evidence index §58).
 
-## 3. An accounting gap to rule before COLD/WARM measurement
+## 3. An accounting gap — RULED AND CLOSED 14 September 2026
+
+*Option 1 below was ruled and implemented on 14 September 2026 (`04-layer-0.md` WP-0.4 amendment of that date): `ModelConfig.cache_write_auto_per_mtok_in_usd`, disjoint uncached / read / written figures from the adapter, settlement at $4 / $0.40 / $5 per million, and the cold bound at the write rate. The paragraphs below are kept as the record of the gap.*
 
 GPT-5.6 caching is automatic and bills writes at **1.25×** base, on a 30-minute minimum lifetime.
 - **The registry cannot express it:** its cache fields are Anthropic's 5-minute and 1-hour write rates, and `maximum_cost` widens the bound only when this house requests a cache lifetime.
@@ -49,7 +51,9 @@ Options, for ruling before those stages:
 1. **(Recommended)** Rule OpenAI automatic-cache pricing into the registry and the bound. The smallest form is a verified automatic-cache write rate and a read rate on the entry, with `maximum_cost` bounding every input token at the write rate on configurations whose provider caches automatically. Settlement then prices reported writes and reads at verified rates.
 2. Disable caching on measured OpenAI calls (`prompt_cache_options.mode = "explicit"` with no breakpoints, supported for GPT-5.6). This keeps the current doctrine exact, but the WARM stage then measures nothing.
 
-## 4. Stage A1 — adapter preflight (awaiting authorisation)
+## 4. Stage A1 — adapter preflight — RUN 14 September 2026
+
+*Authorised and run on 14 September 2026: all three calls completed on `gpt-5.6-sol` for $0.001060 against $0.05 authorised; call 3 did not truncate (15 output tokens under a 16-token ceiling). Record: `qualification/runs/2026-09-14-sol-a1/README.md`. The plan below is kept as written.*
 
 **Purpose:** prove account and model access, request construction, streaming, the normalized result, terminal-state handling, usage mapping, accounting and persistence. **Not** partner qualification, and **not** closure of the Phase 1 two-provider gate.
 
@@ -115,7 +119,19 @@ Every stage runs on Val's real request shape through Val Core, on the scratch st
 - reasoning tokens as a share of output;
 - whether the structured blind request shares any prefix with the response.
 
-## 6. Stage A2 — STOP AND REPORT: no lawful partner-candidate execution door exists
+## 6. Stage A2 — the candidate lane, RULED AND BUILT 14 September 2026; the call NOT yet authorised
+
+*The stop below was ruled on 14 September 2026 and the mechanism authorised, with structural requirements: a distinct qualification type (not a capability profile), a structurally separate gateway construction, every ordinary Val check in force, scratch-store enforcement, and truthful recording. Built as `val_gateway.candidate` (`QualificationTarget`, `CandidateGateway`, `candidate_gateway_for_scratch_store`) with `deliberate.send(candidate=...)`; the design differs from the proposal below in that the harness-only construction is a **separate type built by a refusing factory**, not a boolean on `Gateway`, and the marker is a **distinct `Enum`**, never string-equal to a profile. The A2 harness is written (`qualification/runs/2026-09-14-sol-a2/harness_a2.py`) and has not been run. The original stop-and-report package follows as the record.*
+
+**A2 cost under the built mechanism (14 September 2026), one exchange on a fresh scratch store.** The reservation bounds now price Sol's whole input at the $5 automatic write rate, so the bounds are higher than the 13 September figures; expected actuals are little changed:
+
+| Path | Expected | Conservative maximum (sum of reservation bounds) |
+|---|---|---|
+| ordinary (classification → response) | ≈ $0.09 — persona and envelopes ≈ 8,500 tokens written cold at $5/M ≈ $0.043; output including reasoning ≈ 1,500 at $20/M ≈ $0.03; classification ≈ $0.001 | ≈ $0.23 — response bound $0.2235 (input by bytes at $5/M plus 4,096 output at $20/M) plus classification $0.003 |
+| consequential (classification → strip → blind → response) | ≈ $0.15 — as above plus the blind call's separate cold prefix ≈ 7,300 written ≈ $0.037 and ≈ 600 output ≈ $0.012, plus strip ≈ $0.01 | ≈ $0.49 — response $0.2235, blind $0.1999, strip ≈ $0.06, classification $0.003 |
+
+The harness prompt asks for two or three sentences on beginning a fictional founding account; the classifier may find creative direction in it, so the consequential column is the honest maximum.
+
 
 **The contracts that prevent it:**
 - **Pinned conversation path.** `Gateway.converse(configuration=...)` and `complete_with_configuration` both pass through `_verify_named_configuration` (`gateway.py`). It refuses a configuration that is not admitted, or does not satisfy the profile the task requires. `CONVERSATION` and `BLIND_POSITION` require `PARTNER` (`val_policy.routing`).

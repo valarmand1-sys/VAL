@@ -109,6 +109,7 @@ from val_domain.gateway import (
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
 from val_domain.provider import DeltaSink
 from val_gateway import conversations
+from val_gateway.candidate import CandidateGateway
 from val_gateway.deliberation import (
     record_blind_position,
     record_classification,
@@ -297,6 +298,7 @@ def send(
     max_output_tokens: int = 4096,
     on_delta: DeltaSink | None = None,
     on_stage: StageSink | None = None,
+    candidate: ModelConfig | None = None,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -304,7 +306,18 @@ def send(
     shared, not duplicated. What this adds is everything between persisting
     the message and calling the provider: classification on every exchange,
     and the strip / blind / reconcile structure on the captured ones.
+
+    `candidate` (ruling, 14 September 2026) pins the partner-class calls — the
+    blind position and the response, and nothing else — to a registered
+    candidate through a `CandidateGateway`; a plain gateway refuses it before
+    anything is persisted. Classification and strip route as always.
     """
+    if candidate is not None and not isinstance(gateway, CandidateGateway):
+        raise GatewayError(
+            GatewayErrorKind.INVALID_REQUEST,
+            f"a candidate ({candidate.slug}) is exercised only through a CandidateGateway "
+            "built for a scratch store; this gateway is the ordinary one.",
+        )
     opened = open_turn(
         engine,
         content,
@@ -363,6 +376,7 @@ def send(
             max_output_tokens,
             on_delta,
             on_stage,
+            candidate=candidate,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -430,6 +444,7 @@ def send(
             max_output_tokens,
             on_delta,
             on_stage,
+            candidate=candidate,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -466,8 +481,12 @@ def send(
     messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
     sizing = (*(message.content for message in messages), persona.content)
     try:
-        config = gateway.select_configuration(
-            classification, sizing, max_output_tokens, task_type=TaskType.CONVERSATION
+        config = (
+            candidate
+            if candidate is not None
+            else gateway.select_configuration(
+                classification, sizing, max_output_tokens, task_type=TaskType.CONVERSATION
+            )
         )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
@@ -500,7 +519,10 @@ def send(
     _stage(on_stage, TurnStage.FORMING_VIEW)
     for attempt in range(1, BLIND_ATTEMPTS + 1):
         try:
-            blind_response = gateway.complete_with_configuration(blind_request, config)
+            if candidate is not None and isinstance(gateway, CandidateGateway):
+                blind_response = gateway.complete_candidate(blind_request, config)
+            else:
+                blind_response = gateway.complete_with_configuration(blind_request, config)
         except GatewayError as failure:
             # The pinned route could not answer. No fallback — the turn is
             # unanswered rather than deliberated on a silently different route.
@@ -589,17 +611,30 @@ def send(
     withholding = ReconciliationStream(on_delta) if on_delta is not None else None
     _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     try:
-        response = gateway.converse(
-            (*messages, envelope),
-            scope=opened.scope,
-            classification=classification,
-            turn=TurnReference(
-                conversation_id=opened.conversation.id, message_id=opened.user_message.id
-            ),
-            max_output_tokens=max_output_tokens,
-            configuration=config,
-            on_delta=withholding.feed if withholding is not None else None,
-        )
+        if candidate is not None and isinstance(gateway, CandidateGateway):
+            response = gateway.converse_candidate(
+                (*messages, envelope),
+                scope=opened.scope,
+                classification=classification,
+                turn=TurnReference(
+                    conversation_id=opened.conversation.id, message_id=opened.user_message.id
+                ),
+                configuration=config,
+                max_output_tokens=max_output_tokens,
+                on_delta=withholding.feed if withholding is not None else None,
+            )
+        else:
+            response = gateway.converse(
+                (*messages, envelope),
+                scope=opened.scope,
+                classification=classification,
+                turn=TurnReference(
+                    conversation_id=opened.conversation.id, message_id=opened.user_message.id
+                ),
+                max_output_tokens=max_output_tokens,
+                configuration=config,
+                on_delta=withholding.feed if withholding is not None else None,
+            )
         if withholding is not None:
             withholding.close()
     except GatewayError as failure:
@@ -671,21 +706,32 @@ def _ordinary(
     max_output_tokens: int,
     on_delta: DeltaSink | None = None,
     on_stage: StageSink | None = None,
+    candidate: ModelConfig | None = None,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """The WP-0.7 turn, from an already-opened state."""
     messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
     _stage(on_stage, TurnStage.PREPARING_RESPONSE)
+    turn = TurnReference(conversation_id=opened.conversation.id, message_id=opened.user_message.id)
     try:
-        response = gateway.converse(
-            messages,
-            scope=opened.scope,
-            classification=classification,
-            turn=TurnReference(
-                conversation_id=opened.conversation.id, message_id=opened.user_message.id
-            ),
-            max_output_tokens=max_output_tokens,
-            on_delta=on_delta,
-        )
+        if candidate is not None and isinstance(gateway, CandidateGateway):
+            response = gateway.converse_candidate(
+                messages,
+                scope=opened.scope,
+                classification=classification,
+                turn=turn,
+                configuration=candidate,
+                max_output_tokens=max_output_tokens,
+                on_delta=on_delta,
+            )
+        else:
+            response = gateway.converse(
+                messages,
+                scope=opened.scope,
+                classification=classification,
+                turn=turn,
+                max_output_tokens=max_output_tokens,
+                on_delta=on_delta,
+            )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
     return settle_turn(engine, opened, recalled, response)
