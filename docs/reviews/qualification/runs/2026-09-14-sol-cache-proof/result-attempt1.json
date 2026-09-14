@@ -1,0 +1,73 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0a234-8ea0-7c35-82b1-dc96558b97d0",
+  "sha256": "1608715f6cba71059c69d132918838019ffb73c0f11d833b50d2a8156ed9873e"
+ },
+ "cap": 0.2,
+ "turns": [
+  {
+   "label": "T1 primer (fixed neutral payload)",
+   "kind": "DeliberatedTurn",
+   "seconds_after_start": 0.0,
+   "answer": "The reference note for *The Lantern Road* is acknowledged.",
+   "captured_as": null
+  }
+ ],
+ "stopped": "cap: {\"settled\": 0.039923, \"next_max\": 0.16216, \"task\": \"conversation\"}",
+ "calls": [
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 2746,
+   "tokens_out": 25,
+   "cost": "0.002871",
+   "latency_ms": 1736,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 78,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.009583"
+  },
+  {
+   "task_type": "conversation",
+   "model_identifier": "gpt-5.6-sol",
+   "tokens_in": 7172,
+   "tokens_out": 16,
+   "cost": "0.036177",
+   "latency_ms": 2444,
+   "terminal_state": "complete",
+   "first_text_ms": 1933,
+   "text_output_chars": 58,
+   "reasoning_output_tokens": 0,
+   "read": 0,
+   "written": 7169,
+   "reserved_max": "0.161425"
+  },
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 735,
+   "tokens_out": 28,
+   "cost": "0.000875",
+   "latency_ms": 724,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 80,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.002952"
+  }
+ ],
+ "spent": 0.039923,
+ "transmitted": [
+  {
+   "items": 2,
+   "marked": [],
+   "prompt_cache_options": "absent"
+  }
+ ]
+}

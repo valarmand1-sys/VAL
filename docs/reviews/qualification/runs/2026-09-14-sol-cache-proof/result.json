@@ -1,0 +1,106 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0a235-aaae-79a4-a115-c37d8d6e2a96",
+  "sha256": "1608715f6cba71059c69d132918838019ffb73c0f11d833b50d2a8156ed9873e"
+ },
+ "cap": 0.157206,
+ "turns": [
+  {
+   "label": "T1 primer (fixed neutral payload)",
+   "kind": "DeliberatedTurn",
+   "seconds_after_start": 0.0,
+   "answer": "The reference note is received.",
+   "captured_as": null
+  },
+  {
+   "label": "T2 short",
+   "kind": "UnansweredTurn",
+   "seconds_after_start": 5.9,
+   "answer": "",
+   "error": "invalid_request: openai: BadRequestError: Error code: 400 - {'error': {'message': \"Invalid value: 'input_text'. Supported values are: 'output_text' and 'refusal'.\", 'type': 'invalid_request_error', 'param': 'input[1].content[0]', 'code': 'invalid_value'}}"
+  }
+ ],
+ "stopped": "T2 short: not an ordinary answered turn",
+ "calls": [
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 2746,
+   "tokens_out": 25,
+   "cost": "0.002871",
+   "latency_ms": 1206,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 78,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.009583"
+  },
+  {
+   "task_type": "conversation",
+   "model_identifier": "gpt-5.6-sol",
+   "tokens_in": 7172,
+   "tokens_out": 90,
+   "cost": "0.015480",
+   "latency_ms": 4684,
+   "terminal_state": "complete",
+   "first_text_ms": 4338,
+   "text_output_chars": 31,
+   "reasoning_output_tokens": 78,
+   "read": 4821,
+   "written": 2348,
+   "reserved_max": "0.161425"
+  },
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 735,
+   "tokens_out": 28,
+   "cost": "0.000875",
+   "latency_ms": 669,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 80,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.002952"
+  },
+  {
+   "task_type": "conversation",
+   "model_identifier": "gpt-5.6-sol",
+   "tokens_in": null,
+   "tokens_out": null,
+   "cost": null,
+   "latency_ms": 208,
+   "terminal_state": "failed",
+   "first_text_ms": null,
+   "text_output_chars": null,
+   "reasoning_output_tokens": null,
+   "read": null,
+   "written": null,
+   "reserved_max": "0.162025"
+  }
+ ],
+ "spent": 0.019226,
+ "transmitted": [
+  {
+   "items": 2,
+   "marked": [],
+   "prompt_cache_options": "absent"
+  },
+  {
+   "items": 4,
+   "marked": [
+    [
+     1,
+     "assistant",
+     31
+    ]
+   ],
+   "prompt_cache_options": "absent"
+  }
+ ]
+}

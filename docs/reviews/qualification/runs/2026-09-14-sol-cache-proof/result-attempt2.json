@@ -1,0 +1,29 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0a235-5338-77b8-a8a0-96bfd70bb8e4",
+  "sha256": "1608715f6cba71059c69d132918838019ffb73c0f11d833b50d2a8156ed9873e"
+ },
+ "cap": 0.16007700000000002,
+ "turns": [],
+ "stopped": "cap: {\"settled\": 0.002871, \"next_worst_case\": 0.161425, \"ledger_bound\": 0.161425, \"task\": \"conversation\", \"cap\": 0.16007700000000002}",
+ "calls": [
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 2746,
+   "tokens_out": 25,
+   "cost": "0.002871",
+   "latency_ms": 1243,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 78,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.009583"
+  }
+ ],
+ "spent": 0.002871,
+ "transmitted": []
+}
