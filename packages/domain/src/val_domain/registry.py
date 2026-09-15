@@ -688,9 +688,12 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # $4.00 / $0.40 cached / $5.00 cache writes / $20.00; long context
         # $8.00 / $0.80 / $10.00 / $30.00 above 272K — the same figures.
         rates_verified_on=date(2026, 9, 14),
-        # Every answer on record from this route so far was on the scratch store
-        # (Stage A1/A2, the pair, Stage B, the cache proofs). A live-store answer
-        # marks it live; the first will be the owner's desktop turn.
+        # The owner's production desktop turn of 14 September 2026, 19:16 CDT —
+        # live-store `model_calls` row under this id, provider request
+        # `resp_0ed0c118…`, $0.004860, streamed, persona v1.8 attributed: the
+        # first real answer on this route in production, and the final proof of
+        # the migration of ordinary partner cognition to it.
+        last_live_call_on=date(2026, 9, 14),
     ),
     ModelConfig(
         id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),

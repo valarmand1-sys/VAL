@@ -107,10 +107,11 @@ def test_only_a_real_answer_marks_a_route_live() -> None:
     """
     from val_domain.registry import by_slug, live_routes, unproven_routes
 
-    assert {c.slug for c in live_routes()} == set()
+    # 14 September 2026, 19:16 CDT: the owner's production desktop turn was the
+    # first live-store answer on `gpt-5-6-sol-medium` — the one route now live.
+    assert {c.slug for c in live_routes()} == {"gpt-5-6-sol-medium"}
     assert {c.slug for c in unproven_routes()} == {
         "opus-5-medium",  # in service under the owner-authorised exception, 10 September 2026
-        "gpt-5-6-sol-medium",  # admitted 14 September 2026; no live-store answer yet
         "sonnet-5",  # registered 9 September 2026 for the strip floor; strip removed 11 September
         "sonnet-5-low",  # designated for the strip 11 September 2026; never answered live
         "haiku-4-5-20251001",
