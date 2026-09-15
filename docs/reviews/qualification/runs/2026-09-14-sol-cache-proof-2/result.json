@@ -1,0 +1,258 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0a251-e8a6-7b0a-b838-4d070cafb7f8",
+  "sha256": "1608715f6cba71059c69d132918838019ffb73c0f11d833b50d2a8156ed9873e"
+ },
+ "authorised_usd": 0.2,
+ "sol_call_max_usd": 0.04736,
+ "turns": [
+  {
+   "label": "T1 primer (fixed neutral payload)",
+   "kind": "DeliberatedTurn",
+   "seconds_after_start": 0.0,
+   "answer": "I\u2019ve noted this reference for the present conversation.",
+   "captured_as": null
+  },
+  {
+   "label": "T2 short",
+   "kind": "DeliberatedTurn",
+   "seconds_after_start": 4.7,
+   "answer": "Crate 3 is used to count spare lantern glass.",
+   "captured_as": null
+  },
+  {
+   "label": "T3 short",
+   "kind": "DeliberatedTurn",
+   "seconds_after_start": 10.2,
+   "answer": "The handcart is checked at the harbour gate.",
+   "captured_as": null
+  }
+ ],
+ "calls": [
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 2746,
+   "tokens_out": 25,
+   "cost": "0.002871",
+   "latency_ms": 1382,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 78,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.009583"
+  },
+  {
+   "task_type": "conversation",
+   "model_identifier": "gpt-5.6-sol",
+   "tokens_in": 7172,
+   "tokens_out": 58,
+   "cost": "0.037017",
+   "latency_ms": 3223,
+   "terminal_state": "complete",
+   "first_text_ms": 2709,
+   "text_output_chars": 55,
+   "reasoning_output_tokens": 42,
+   "read": 0,
+   "written": 7169,
+   "reserved_max": "0.161425"
+  },
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 735,
+   "tokens_out": 28,
+   "cost": "0.000875",
+   "latency_ms": 800,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 80,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.002952"
+  },
+  {
+   "task_type": "conversation",
+   "model_identifier": "gpt-5.6-sol",
+   "tokens_in": 7211,
+   "tokens_out": 60,
+   "cost": "0.015075",
+   "latency_ms": 4649,
+   "terminal_state": "complete",
+   "first_text_ms": 4211,
+   "text_output_chars": 45,
+   "reasoning_output_tokens": 42,
+   "read": 4821,
+   "written": 2387,
+   "reserved_max": "0.162155"
+  },
+  {
+   "task_type": "classification",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "tokens_in": 730,
+   "tokens_out": 28,
+   "cost": "0.000870",
+   "latency_ms": 626,
+   "terminal_state": "complete",
+   "first_text_ms": null,
+   "text_output_chars": 80,
+   "reasoning_output_tokens": null,
+   "read": 0,
+   "written": 0,
+   "reserved_max": "0.002949"
+  },
+  {
+   "task_type": "conversation",
+   "model_identifier": "gpt-5.6-sol",
+   "tokens_in": 7248,
+   "tokens_out": 14,
+   "cost": "0.005725",
+   "latency_ms": 2229,
+   "terminal_state": "complete",
+   "first_text_ms": 1762,
+   "text_output_chars": 44,
+   "reasoning_output_tokens": 0,
+   "read": 6694,
+   "written": 551,
+   "reserved_max": "0.162785"
+  }
+ ],
+ "spent": 0.062433,
+ "logical": [
+  {
+   "logical_boundary": null,
+   "physical_boundary": null,
+   "roles": [
+    "user",
+    "user"
+   ]
+  },
+  {
+   "logical_boundary": 1,
+   "physical_boundary": 0,
+   "roles": [
+    "user",
+    "assistant",
+    "user",
+    "user"
+   ]
+  },
+  {
+   "logical_boundary": 3,
+   "physical_boundary": 2,
+   "roles": [
+    "user",
+    "assistant",
+    "user",
+    "assistant",
+    "user",
+    "user"
+   ]
+  }
+ ],
+ "transmitted": [
+  {
+   "items": [
+    {
+     "index": 0,
+     "role": "user",
+     "block": "string",
+     "marked": false,
+     "chars": 2014
+    },
+    {
+     "index": 1,
+     "role": "user",
+     "block": "string",
+     "marked": false,
+     "chars": 6659
+    }
+   ],
+   "implicit_mode": true
+  },
+  {
+   "items": [
+    {
+     "index": 0,
+     "role": "user",
+     "block": "input_text",
+     "marked": true,
+     "chars": 6659
+    },
+    {
+     "index": 1,
+     "role": "assistant",
+     "block": "string",
+     "marked": false,
+     "chars": 55
+    },
+    {
+     "index": 2,
+     "role": "user",
+     "block": "string",
+     "marked": false,
+     "chars": 2019
+    },
+    {
+     "index": 3,
+     "role": "user",
+     "block": "string",
+     "marked": false,
+     "chars": 68
+    }
+   ],
+   "implicit_mode": true
+  },
+  {
+   "items": [
+    {
+     "index": 0,
+     "role": "user",
+     "block": "string",
+     "marked": false,
+     "chars": 6659
+    },
+    {
+     "index": 1,
+     "role": "assistant",
+     "block": "string",
+     "marked": false,
+     "chars": 55
+    },
+    {
+     "index": 2,
+     "role": "user",
+     "block": "input_text",
+     "marked": true,
+     "chars": 68
+    },
+    {
+     "index": 3,
+     "role": "assistant",
+     "block": "string",
+     "marked": false,
+     "chars": 45
+    },
+    {
+     "index": 4,
+     "role": "user",
+     "block": "string",
+     "marked": false,
+     "chars": 2019
+    },
+    {
+     "index": 5,
+     "role": "user",
+     "block": "string",
+     "marked": false,
+     "chars": 65
+    }
+   ],
+   "implicit_mode": true
+  }
+ ]
+}

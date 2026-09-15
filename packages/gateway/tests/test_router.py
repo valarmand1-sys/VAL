@@ -620,11 +620,12 @@ def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_regist
         "the premise: the cheapest structured route is not partner-qualified"
     )
     assert chosen[0].slug != cheapest_overall.slug
-    # Registry state as of 10 September 2026 — the configuration in operational
-    # service under the owner-authorised exception; `opus-5` (high) is the
-    # retired dormant incumbent. A changed ruling changes this line, nothing in
-    # routing.
-    assert chosen[0].slug == "opus-5-medium"
+    # Registry state as of 14 September 2026 — `gpt-5-6-sol-medium`, admitted to
+    # the partner profile by owner ruling of that date, is the cheapest partner
+    # route; `opus-5-medium` (10 September 2026) remains registered under its
+    # existing state. A changed ruling changes this line, nothing in routing.
+    assert chosen[0].slug == "gpt-5-6-sol-medium"
+    assert "opus-5-medium" in {entry.slug for entry in chosen}
 
 
 def test_classification_and_strip_route_to_the_cheapest_structured_route() -> None:

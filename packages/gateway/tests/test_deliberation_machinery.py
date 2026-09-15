@@ -809,18 +809,25 @@ def test_a_pinned_configuration_is_never_silently_reselected(store: Engine) -> N
     Same discipline as OP-2's "enforced only by absence": a stated limit,
     not a claimed proof.
     """
+    # 14 September 2026: the partner route is `gpt-5-6-sol-medium` on openai (A);
+    # classification and strip still run on anthropic's structured routes, and
+    # the incumbent `opus-5-medium` on anthropic is the route the router would
+    # choose once A's adapter is gone (B). The two-adapter counterfactual is the
+    # same; only the providers behind A and B have swapped.
     adapters: dict[str, ScriptedAdapter] = {}
     adapter_a = ScriptedAdapter(
+        [blind_says("Open on the close-up.")],
+        after_last_call=lambda: adapters.pop("openai"),
+    )
+    adapter_b = ScriptedAdapter(
         [
             classifier_says("consequential"),
             strip_says(question=QUESTION, removed=PREFERENCE),
-            blind_says("Open on the close-up."),
-        ],
-        after_last_call=lambda: adapters.pop("anthropic"),
+            reconciled("B must never be asked to say this.", "held"),
+        ]
     )
-    adapter_b = ScriptedAdapter([reconciled("B must never be asked to say this.", "held")])
-    adapters["anthropic"] = adapter_a
-    adapters["openai"] = adapter_b
+    adapters["openai"] = adapter_a
+    adapters["anthropic"] = adapter_b
 
     gateway = Gateway(
         adapters=adapters,  # type: ignore[arg-type]
@@ -842,7 +849,10 @@ def test_a_pinned_configuration_is_never_silently_reselected(store: Engine) -> N
         "with the pinned configuration unusable, the turn must fail — a routed "
         "answer here means the router silently reselected"
     )
-    assert adapter_b.sent == [], "the route the router would now choose was never contacted"
+    assert [call.config_slug for call in adapter_b.sent] == [
+        "haiku-4-5-20251001",
+        "sonnet-5-low",
+    ], "anthropic answered classification and strip only; its partner route was never contacted"
     with store.connect() as connection:
         conversation_calls = connection.execute(
             text("select count(*) from model_calls where task_type = 'conversation'")

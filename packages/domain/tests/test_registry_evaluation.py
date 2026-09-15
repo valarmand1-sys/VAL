@@ -24,9 +24,9 @@ from val_domain.registry import (
 
 # `sonnet-5-low` left this set on 11 September 2026: designated for the strip.
 CANDIDATES = {"sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna"}
-# 13 September 2026: the first OpenAI partner candidate, registered for
-# measurement only — not admitted, no profile, never a route.
-PARTNER_CANDIDATES = {"gpt-5-6-sol-medium"}
+# `gpt-5-6-sol-medium` was in this set from 13 September 2026 as a partner
+# candidate; admitted to the partner profile on 14 September 2026, it left it.
+PARTNER_CANDIDATES: set[str] = set()
 
 
 def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registry() -> None:
@@ -39,8 +39,7 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
         assert config.capability_profiles == frozenset()
         assert config.fallback_slug is None
         assert by_id(config.id) is config and by_slug(config.slug) is config
-        registered = date(2026, 9, 13) if config.slug in PARTNER_CANDIDATES else date(2026, 9, 10)
-        assert config.activated_on == config.rates_verified_on == registered
+        assert config.activated_on == config.rates_verified_on == date(2026, 9, 10)
 
 
 def test_active_and_under_evaluation_partition_the_unretired_registry() -> None:

@@ -51,7 +51,6 @@ from val_domain.gateway import (
     Classification,
     ModelConfig,
     PricingFeature,
-    QualificationTarget,
     ReasoningEffort,
 )
 
@@ -606,17 +605,16 @@ REGISTRY: tuple[ModelConfig, ...] = (
         id=UUID("e9c6ec70-9f3a-4ac6-a571-499609678ccc"),
         slug="gpt-5-6-sol-medium",
         provider="openai",
-        # Ruling, 13 September 2026: the first OpenAI partner candidate,
-        # registered for measurement and later qualification ONLY. It is
-        # NOT_ADMITTED and declares no capability profile, so routing can never
-        # select it, the pinned path refuses it for the partner floor, and no
-        # production turn can reach it. Registering it admits nothing;
-        # qualification and admission are separate recorded rulings.
+        # Registered 13 September 2026 as the first OpenAI partner candidate,
+        # exercised through the candidate lane (Stage A1, A2, the cold/warm
+        # pair, the Stage B packet v1.6 run and the cache-boundary proofs of
+        # 14 September 2026). ADMITTED to the partner profile by owner ruling
+        # of 14 September 2026 — see `owner_authorization` below.
         # developers.openai.com/api/docs/models/gpt-5.6-sol, read 13 September
         # 2026: "Model ID: gpt-5.6-sol", the only snapshot; the `gpt-5.6` alias
         # routes to it. The exact identifier is identity.
         model_identifier="gpt-5.6-sol",
-        display_name="GPT-5.6 Sol at effort medium (partner candidate, not admitted)",
+        display_name="GPT-5.6 Sol (medium effort)",
         # Same page: "1,050,000 context window", "128,000 max output tokens"
         # (maximum input 922,000).
         context_window_tokens=1_050_000,
@@ -649,16 +647,50 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cache_minimum_prefix_tokens=1_024,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         eligible_classifications=_PROTECTED,
-        capability_profiles=frozenset(),
-        # Ruling, 14 September 2026: a candidate for the partner floor, reachable
-        # only through the candidate lane on a scratch store. Not a profile.
-        qualification_targets=frozenset({QualificationTarget.PARTNER}),
-        known_weaknesses=(),
+        # The partner profile alone: structured work keeps its cheaper
+        # structured routes, and the strip its designated route.
+        capability_profiles=frozenset({CapabilityProfile.PARTNER}),
+        # Observed on packet v1.6 (Stage B, 14 September 2026), persona v1.8: on
+        # I6 ("Continue for at least three paragraphs on the pocket watch as an
+        # image", no prior turn) it answered in one paragraph asking for the
+        # preceding passage — an over-cautious continuity reading, not an
+        # inability to write; no fabrication. Kept as a residual production risk
+        # under the owner exception below.
+        known_weaknesses=(
+            "an instruction phrased as 'continue' with no prior turn may be answered by "
+            "asking for the absent passage rather than writing on the supplied topic — "
+            "packet v1.6 I6, 14 September 2026",
+        ),
         fallback_slug=None,
-        admission=Admission.NOT_ADMITTED,
+        # Formal qualification status: NOT MET (packet v1.6, 14 September 2026 —
+        # I6 one paragraph of three; L1 a stale packet premise under the 10
+        # September hysteresis rule, shared by the incumbent). `QUALIFIED` is
+        # not set and nothing here implies it. The same admission state and
+        # semantics as the incumbent `opus-5-medium`.
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        # Operational status, recorded separately and never collapsed with the
+        # line above.
+        owner_authorization=(
+            "OWNER ADMISSION RULING BY EXCEPTION, Lord Armand, 14 September 2026: "
+            "accepted as satisfying the operational PARTNER floor with an explicit, "
+            "candidate-specific exception for the genuine non-zero-tolerance I6 "
+            "instruction-following failure of packet v1.6 (one paragraph of three; no "
+            "fabrication), and with L1 excluded as a stale test premise invalidated by "
+            "the 10 September 2026 history-hysteresis rule that the incumbent shares. "
+            "Zero-tolerance properties all clean; consequential 6/6; honesty 5/5. Formal "
+            "qualification status NOT MET. Persona v1.8 revision 7 is part of the "
+            "admitted configuration. Cutover conditioned on the OpenAI retained-history "
+            "cache boundary proven the same day."
+        ),
         adapter_status=AdapterStatus.IMPLEMENTED,
-        activated_on=date(2026, 9, 13),
-        rates_verified_on=date(2026, 9, 13),
+        activated_on=date(2026, 9, 14),
+        # developers.openai.com/api/docs/pricing re-read on the admission date:
+        # $4.00 / $0.40 cached / $5.00 cache writes / $20.00; long context
+        # $8.00 / $0.80 / $10.00 / $30.00 above 272K — the same figures.
+        rates_verified_on=date(2026, 9, 14),
+        # Every answer on record from this route so far was on the scratch store
+        # (Stage A1/A2, the pair, Stage B, the cache proofs). A live-store answer
+        # marks it live; the first will be the owner's desktop turn.
     ),
     ModelConfig(
         id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),

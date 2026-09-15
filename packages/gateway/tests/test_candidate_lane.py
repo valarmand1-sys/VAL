@@ -6,6 +6,13 @@ deliberation path with every ordinary check in force, recorded under its own
 identity. Nothing here makes it routable, and nothing here reaches it from
 production. Real PostgreSQL for the turn-level tests; scripted adapters; no
 provider.
+
+Since Sol's admission on 14 September 2026 the registry holds no partner
+candidate, so these tests exercise the lane on a synthetic one: an unadmitted,
+profile-less copy of Sol under a fresh id, supplied through the lane's own
+registry lookup (`val_gateway.candidate.by_id`, and the gateway's, patched for
+the test). The lane's refusal of the real, admitted Sol is in
+`test_sol_production_route.py`.
 """
 
 from __future__ import annotations
@@ -13,7 +20,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import Engine, create_engine, text
@@ -57,13 +64,43 @@ from val_policy.routing import candidates, required_profile, satisfies_profile
 
 __all__ = ["clean_personas", "store"]
 
-SOL = "gpt-5-6-sol-medium"
+SOL = "test-partner-candidate"
+CANDIDATE_ID = UUID("7d1a0c4e-2f4b-4c1e-9a5c-1d2e3f4a5b6c")
 
 
 def sol() -> ModelConfig:
-    config = by_slug(SOL)
-    assert config is not None
-    return config
+    """The synthetic partner candidate (the name is kept so the tests read as written)."""
+    base = by_slug("gpt-5-6-sol-medium")
+    assert base is not None
+    return base.model_copy(
+        update={
+            "id": CANDIDATE_ID,
+            "slug": SOL,
+            "display_name": "synthetic partner candidate (tests only)",
+            "admission": Admission.NOT_ADMITTED,
+            "capability_profiles": frozenset(),
+            "qualification_targets": frozenset({QualificationTarget.PARTNER}),
+            "owner_authorization": None,
+            "known_weaknesses": (),
+        }
+    )
+
+
+@pytest.fixture(autouse=True)
+def _registry_holds_the_synthetic_candidate(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The lane and the gateway look the candidate up by id in the registry."""
+    from val_domain import registry as registry_module
+    from val_gateway import candidate as candidate_module
+    from val_gateway import gateway as gateway_module
+
+    candidate = sol()
+    real_by_id = registry_module.by_id
+
+    def by_id(config_id: UUID) -> ModelConfig | None:
+        return candidate if config_id == CANDIDATE_ID else real_by_id(config_id)
+
+    monkeypatch.setattr(candidate_module, "by_id", by_id)
+    monkeypatch.setattr(gateway_module, "by_id", by_id)
 
 
 # --- scripted providers --------------------------------------------------------------
@@ -179,12 +216,11 @@ def test_qualification_metadata_satisfies_no_production_requirement() -> None:
 def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> None:
     config = sol()
     assert config not in active()
-    assert config in under_evaluation()
     assert config.admission is Admission.NOT_ADMITTED and config.fallback_slug is None
     assert all(other.fallback_slug != SOL for other in REGISTRY)
     for profile in CapabilityProfile:
         chosen = candidates(
-            REGISTRY,
+            (*REGISTRY, config),  # even offered alongside the whole registry
             Classification.PROTECTED,
             lambda c: True,
             lambda c: True,
@@ -192,6 +228,9 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
             cost_bound=lambda c: c.cost_per_mtok_in_usd,
         )
         assert SOL not in {c.slug for c in chosen}, profile
+    assert all(entry.qualification_targets == frozenset() for entry in under_evaluation()), (
+        "the registry itself holds no partner candidate since Sol's admission"
+    )
 
 
 def test_the_registry_refuses_a_target_on_an_admitted_or_profiled_entry() -> None:
@@ -206,6 +245,8 @@ def test_the_registry_refuses_a_target_on_an_admitted_or_profiled_entry() -> Non
                 "capability_profiles": {CapabilityProfile.STRUCTURED},
             }
         )
+    admitted_sol = by_slug("gpt-5-6-sol-medium")
+    assert admitted_sol is not None and admitted_sol.qualification_targets == frozenset()
 
 
 def test_no_serving_route_carries_a_qualification_target() -> None:

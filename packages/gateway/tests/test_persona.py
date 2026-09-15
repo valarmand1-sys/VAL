@@ -594,13 +594,18 @@ def test_no_partner_route_ready_fails_honestly_naming_the_floor(clean_personas: 
     route on the other provider is ready and is not tried."""
     seed(clean_personas, REPO_ROOT)
     active = DatabasePersonaLoader(clean_personas).active()
+    # Since 14 September 2026 both configured providers carry a partner route, so
+    # the "structured provider without a partner route" of the original test no
+    # longer exists; the counterfactual is a gateway whose only ready adapter
+    # belongs to a provider with no active partner route at all.
     partner_providers = {
         entry.provider
         for entry in registry_active()
         if CapabilityProfile.PARTNER in entry.capability_profiles
     }
     structured_provider = next(
-        entry.provider for entry in registry_active() if entry.provider not in partner_providers
+        (entry.provider for entry in registry_active() if entry.provider not in partner_providers),
+        "google",
     )
     adapter = StubAdapter(ProviderResult("must not run", TerminalState.COMPLETE, 1, 1, "r"))
     gateway = Gateway(
