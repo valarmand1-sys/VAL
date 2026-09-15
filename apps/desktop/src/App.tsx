@@ -942,7 +942,7 @@ function ConversationHeader(props: {
 // Ruled 7 September 2026: the classification review queue — the fifty. The
 // same doctrine as the blind position, applied to Lord Armand: the queue item
 // carries no verdict, and the verdict appears only after his label is stored.
-function ReviewPanel(props: { onRefused: (message: string) => void }): React.JSX.Element {
+export function ReviewPanel(props: { onRefused: (message: string) => void }): React.JSX.Element {
   const { onRefused } = props;
   const [queue, setQueue] = useState<QueuedExchangeView[]>([]);
   const [progress, setProgress] = useState<ReviewProgressView | null>(null);

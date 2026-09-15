@@ -278,8 +278,16 @@ body {
 }
 
 /* Classification review — ruling, 7 September 2026. */
+/* The review is the thread's scrolling region, as .messages is for a
+   conversation: the thread is a fixed-height column that clips overflow, so
+   without this the tail of a tall review — and the composer after it — sat
+   below the window edge (defect found in owner review, 14 September 2026). */
 .review {
   max-width: 48rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 1rem;
 }
 .review-card {
   border: 1px solid #ccc;

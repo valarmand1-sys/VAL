@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
@@ -14,5 +15,10 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+  },
+  test: {
+    // Vitest stubs every stylesheet to an empty string unless told otherwise;
+    // the review-scroll tests need the real cascade applied to rendered nodes.
+    css: { include: [/styles\.css$/] },
   },
 });
