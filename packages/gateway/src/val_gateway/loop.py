@@ -108,6 +108,7 @@ from val_gateway.memory import (
     recall_with_state,
 )
 from val_gateway.projects import ProjectSession
+from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.recall_gate import ThreadContext, gate_house_recall, gate_recall
 from val_policy.restricted import preflight, refusal_message
@@ -211,7 +212,7 @@ def send(
     title: str | None = None,
     classification: Classification = Classification.PROTECTED,
     recall_limit: int = DEFAULT_LIMIT,
-    max_output_tokens: int = 4096,
+    max_output_tokens: int = CONVERSATION_MAX_OUTPUT_TOKENS,
     on_delta: DeltaSink | None = None,
 ) -> TurnOutcome:
     """Say one thing to Val, in a conversation that outlives this process.

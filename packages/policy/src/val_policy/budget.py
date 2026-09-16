@@ -89,6 +89,17 @@ def raw_input_bound(parts: Iterable[str]) -> int:
     return bytes_total + FRAMING_TOKENS_PER_MESSAGE * len(materialised)
 
 
+#: Ruling, 15 September 2026: the default output ceiling of the final PARTNER
+#: conversation call. On a reasoning route the ceiling bounds reasoning and
+#: visible output together — a 4,096 ceiling let a genuine House Armand turn
+#: spend 2,521 tokens reasoning and cut the visible answer at about 1,575,
+#: `incomplete_details.reason = max_output_tokens`, no persisted message. The
+#: blind-position, strip and classifier ceilings are separate and unchanged; a
+#: truncated final response is still never persisted as Val's message and is
+#: never retried automatically.
+CONVERSATION_MAX_OUTPUT_TOKENS = 6_144
+
+
 def upper_bound_output_tokens(requested_max_output_tokens: int, config: ModelConfig) -> int:
     """The most output tokens this call can possibly be billed as.
 

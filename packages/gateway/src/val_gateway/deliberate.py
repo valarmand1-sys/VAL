@@ -130,6 +130,7 @@ from val_gateway.loop import (
 from val_gateway.memory import DEFAULT_LIMIT
 from val_gateway.persona import DatabasePersonaLoader
 from val_gateway.projects import ProjectSession
+from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.deliberation import (
     BLIND_POSITION_INSTRUCTION,
     BLIND_POSITION_OUTPUT_SCHEMA,
@@ -295,7 +296,7 @@ def send(
     title: str | None = None,
     classification: Classification = Classification.PROTECTED,
     recall_limit: int = DEFAULT_LIMIT,
-    max_output_tokens: int = 4096,
+    max_output_tokens: int = CONVERSATION_MAX_OUTPUT_TOKENS,
     on_delta: DeltaSink | None = None,
     on_stage: StageSink | None = None,
     candidate: ModelConfig | None = None,

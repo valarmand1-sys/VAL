@@ -67,7 +67,9 @@ def _sol() -> object:
 def _sent(messages: tuple[Message, ...], **kwargs: object) -> list[dict[str, object]]:
     adapter, client = _adapter()
     adapter.complete(_sol(), messages, "persona", 100, **kwargs)  # type: ignore[arg-type]
-    assert "prompt_cache_options" not in client.kwargs, "implicit caching is kept"
+    assert client.kwargs["prompt_cache_options"] == {"mode": "implicit", "ttl": "30m"}, (
+        "implicit caching is kept (pin moved 15 September 2026: the mode is now stated)"
+    )
     return list(client.kwargs["input"])  # type: ignore[arg-type]
 
 

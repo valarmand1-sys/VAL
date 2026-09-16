@@ -431,9 +431,16 @@ def test_anthropic_without_cache_figures_reports_none_not_zero() -> None:
 
 
 def test_openai_accepts_the_ttl_and_sends_nothing_for_it() -> None:
+    """The requested Anthropic-style lifetime is not translated into anything. Pin moved
+    15 September 2026: the request now always carries the route's own stable
+    `prompt_cache_key` and the 30-minute `prompt_cache_options` — neither derives from
+    the requested TTL, and the request is identical with or without it."""
     adapter, fake = _openai_adapter(_openai_response())
     result = adapter.complete(_gpt(), MESSAGES, "persona", 64, cache_ttl=CacheTtl.ONE_HOUR)
-    assert "cache_control" not in fake.kwargs and "prompt_cache_key" not in fake.kwargs
+    assert "cache_control" not in fake.kwargs
+    with_ttl = dict(fake.kwargs)
+    adapter.complete(_gpt(), MESSAGES, "persona", 64)
+    assert fake.kwargs == with_ttl, "the requested lifetime changes nothing that is sent"
     assert result.cache_read_tokens is None
 
 

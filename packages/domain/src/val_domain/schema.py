@@ -45,7 +45,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, TIMESTAMP
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -1092,6 +1092,13 @@ class ModelCallMeasurement(Base):
     reasoning_output_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     provider_cached_input_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     provider_cache_write_tokens: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    # Ruling, 15 September 2026 (`0021`): the prompt-cache key the request
+    # carried and the provider's cache diagnostics, verbatim — what was asked of
+    # the cache, what it echoed, the read/write split, and any miss reason or
+    # reusable/missed counts a provider returns. NULL where the provider or the
+    # call mode exposes neither; never inferred.
+    prompt_cache_key: Mapped[str | None] = mapped_column(Text, nullable=True)
+    cache_diagnostics: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
 
     __table_args__ = (
         CheckConstraint(

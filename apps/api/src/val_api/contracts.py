@@ -50,6 +50,7 @@ from val_gateway.classification_review import (
     QueuedExchange,
     ReviewProgress,
 )
+from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 
 # =============================================================================
 # Reads: projections of records, nothing else
@@ -646,7 +647,10 @@ class TurnRequest(BaseModel):
     project: str | None = None
     no_project: bool = False
     title: str | None = None
-    max_output_tokens: int = Field(default=4096, gt=0)
+    #: Ruling, 15 September 2026: the final conversation call's default ceiling
+    #: is the policy's, 6,144 total output tokens (reasoning and visible text
+    #: share it on a reasoning route). A client may still state its own.
+    max_output_tokens: int = Field(default=CONVERSATION_MAX_OUTPUT_TOKENS, gt=0)
     #: Ruling, 13 September 2026: on the streamed route, also send `stage`
     #: events as the house begins each stage of the turn. Opt-in, so the stream
     #: a client did not ask to change is unchanged. Ignored by `POST /turns`.

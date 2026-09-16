@@ -53,6 +53,7 @@ usage else 0` fabricated a known $0 for exactly the calls whose cost was not
 known, which is the defect the WP-0.4 cost doctrine exists to prevent.
 """
 
+import hashlib
 from collections.abc import Iterator, Mapping
 from typing import Any, Literal
 
@@ -110,6 +111,85 @@ def physical_cache_boundary(messages: tuple[Message, ...]) -> int | None:
     return None
 
 
+#: Ruling, 15 September 2026: the cache bucketing every OpenAI request states.
+#: Implicit mode keeps the provider's automatic breakpoint alongside any
+#: explicit marker; `30m` is the minimum lifetime, and the only value the
+#: pinned client (3.1.0) offers.
+PROMPT_CACHE_MODE = "implicit"
+PROMPT_CACHE_TTL = "30m"
+
+
+def prompt_cache_key_for(config: ModelConfig, system: str | None) -> str:
+    """The stable prompt-cache key for a request: the configuration and its system prompt.
+
+    The key groups requests that share a prefix so the provider routes them
+    together. The persona is the shared prefix of every partner and blind call,
+    so the key is a digest of the system prompt under the configuration's slug
+    — never message text, never anything that changes turn to turn. A changed
+    persona is a new prefix and, correctly, a new key.
+    """
+    digest = "no-system" if system is None else hashlib.sha256(system.encode()).hexdigest()[:16]
+    return f"val:{config.slug}:{digest}"
+
+
+def _cache_request(kwargs: Mapping[str, object]) -> dict[str, object]:
+    """The cache-related fields of a request, as sent."""
+    return {
+        "prompt_cache_key": kwargs.get("prompt_cache_key"),
+        "prompt_cache_options": dict(kwargs.get("prompt_cache_options") or {}),  # type: ignore[call-overload]
+    }
+
+
+def _optional_str(value: object) -> str | None:
+    return None if value is None else str(value)
+
+
+def _plain(value: object) -> object:
+    """A JSON-serialisable rendering of a provider object, verbatim in content."""
+    if value is None or isinstance(value, str | int | float | bool):
+        return value
+    dump = getattr(value, "model_dump", None)
+    if callable(dump):
+        return dump()
+    if isinstance(value, Mapping):
+        return {str(key): _plain(item) for key, item in value.items()}
+    if isinstance(value, list | tuple):
+        return [_plain(item) for item in value]
+    if hasattr(value, "__dict__"):
+        return {key: _plain(item) for key, item in vars(value).items()}
+    return str(value)
+
+
+def _cache_diagnostics(
+    response: object,
+    requested: Mapping[str, object] | None,
+    cached: int | None,
+    written: int | None,
+) -> dict[str, object] | None:
+    """What was asked of the prompt cache and what the provider said about it.
+
+    Ruling, 15 September 2026. The pinned client echoes the key and the options
+    it applied and reports the read/write split; it exposes no miss reason and
+    no reusable/missed counts. Should a response carry a
+    `prompt_cache_diagnostics` object, it is recorded verbatim under that name
+    so the next genuine miss is diagnosable without a client change. Nothing
+    here is inferred: an absent echo is recorded as `None`.
+    """
+    if requested is None:
+        return None
+    reported: dict[str, object] = {
+        "prompt_cache_key": _plain(getattr(response, "prompt_cache_key", None)),
+        "prompt_cache_options": _plain(getattr(response, "prompt_cache_options", None)),
+        "prompt_cache_retention": _plain(getattr(response, "prompt_cache_retention", None)),
+        "cached_tokens": cached,
+        "cache_write_tokens": written,
+    }
+    extra = getattr(response, "prompt_cache_diagnostics", None)
+    if extra is not None:
+        reported["prompt_cache_diagnostics"] = _plain(extra)
+    return {"requested": dict(requested), "reported": reported}
+
+
 def _refusal_text(response: object) -> str | None:
     """The refusal content, if any output item carries one."""
     for item in getattr(response, "output", None) or []:
@@ -144,7 +224,7 @@ class OpenAIAdapter:
             response = self._client.responses.create(**kwargs)
         except Exception as error:
             raise normalize(error, self.name) from error
-        return self._result(response)
+        return self._result(response, _cache_request(kwargs))
 
     def stream(
         self,
@@ -186,7 +266,7 @@ class OpenAIAdapter:
                 f"{self.name}: the stream ended without a terminal response event, so the "
                 "call's outcome, usage and cost are unknown",
             )
-        yield self._result(final)
+        yield self._result(final, _cache_request(kwargs))
 
     def _request(
         self,
@@ -222,9 +302,19 @@ class OpenAIAdapter:
         # the assistant message keeps its ordinary string representation, text
         # and position; nothing is duplicated, removed or reordered; with no
         # preceding user message the request goes without an explicit marker
-        # and the implicit breakpoint alone applies (`prompt_cache_options` is
-        # never set). A request with no flagged message — classification, strip,
-        # the blind position, a first turn — is byte-identical to what it was.
+        # and the implicit breakpoint alone applies. A request with no flagged
+        # message — classification, strip, the blind position, a first turn —
+        # carries the same items it always did.
+        #
+        # Ruling, 15 September 2026 (five production Sol calls with zero cache
+        # reads, three of them inside the documented lifetime): every request
+        # states its cache bucketing rather than leaving it to provider
+        # defaults. `prompt_cache_key` is a stable key per configuration and
+        # system prompt — no per-turn text, so every call sharing the persona
+        # shares the bucket — and `prompt_cache_options` names implicit mode
+        # (the implicit breakpoint stays enabled; explicit markers add to it,
+        # never replace it) with the 30-minute minimum lifetime, the only
+        # value the pinned client offers. Neither changes the items sent.
         turns: list[openai.types.responses.EasyInputMessageParam] = [
             {"role": "user" if m.role == "user" else "assistant", "content": m.content}
             for m in messages
@@ -261,6 +351,8 @@ class OpenAIAdapter:
             "input": list(turns),
             "max_output_tokens": max_output_tokens,
             "instructions": system,
+            "prompt_cache_key": prompt_cache_key_for(config, system),
+            "prompt_cache_options": {"mode": PROMPT_CACHE_MODE, "ttl": PROMPT_CACHE_TTL},
             "text": text_config,
             # Independent-review correction, 18 August 2026: the registry's
             # declared effort is SENT, not assumed. GPT-5.5 documents
@@ -274,7 +366,9 @@ class OpenAIAdapter:
             ),
         }
 
-    def _result(self, response: object) -> ProviderResult:
+    def _result(
+        self, response: object, requested_cache: Mapping[str, object] | None = None
+    ) -> ProviderResult:
         """The provider-neutral result from a final response — both modes, one mapping."""
         status = getattr(response, "status", None)
         response_id = getattr(response, "id", None)
@@ -339,4 +433,10 @@ class OpenAIAdapter:
             ),
             reasoning_tokens=getattr(output_details, "reasoning_tokens", None),
             cache_write_auto_tokens=written,
+            prompt_cache_key=(
+                None
+                if requested_cache is None
+                else _optional_str(requested_cache.get("prompt_cache_key"))
+            ),
+            cache_diagnostics=_cache_diagnostics(response, requested_cache, cached, written),
         )

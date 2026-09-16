@@ -48,7 +48,7 @@ guarantee `04-layer-0.md` §1.1 claims.
 
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import date
 from uuid import UUID
@@ -186,6 +186,10 @@ class CallMeasurement:
     reasoning_output_tokens: int | None
     provider_cached_input_tokens: int | None
     provider_cache_write_tokens: int | None
+    #: Ruling, 15 September 2026: the prompt-cache key sent and the provider's
+    #: cache diagnostics, verbatim; None where the provider exposes neither.
+    prompt_cache_key: str | None = None
+    cache_diagnostics: Mapping[str, object] | None = None
 
 
 class CallRecord:
@@ -971,6 +975,8 @@ class Gateway:
                     reasoning_output_tokens=result.reasoning_tokens,
                     provider_cached_input_tokens=result.cache_read_tokens,
                     provider_cache_write_tokens=_reported_cache_writes(result),
+                    prompt_cache_key=result.prompt_cache_key,
+                    cache_diagnostics=result.cache_diagnostics,
                 ),
             )
         )

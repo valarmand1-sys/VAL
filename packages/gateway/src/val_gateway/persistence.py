@@ -40,6 +40,7 @@ those five come back as confirmed free calls; migration
 `0004_supersede_zero_costs` explains the rule in full.
 """
 
+import json
 from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID
@@ -116,10 +117,12 @@ _INSERT_MEASUREMENT = text(
     "insert into model_call_measurements "
     "(model_call_id, exchange_conversation_id, exchange_message_id, streamed, first_text_ms, "
     " text_output_chars, reasoning_present, reasoning_output_tokens, "
-    " provider_cached_input_tokens, provider_cache_write_tokens) "
+    " provider_cached_input_tokens, provider_cache_write_tokens, "
+    " prompt_cache_key, cache_diagnostics) "
     "values (:model_call_id, :exchange_conversation_id, :exchange_message_id, :streamed, "
     " :first_text_ms, :text_output_chars, :reasoning_present, :reasoning_output_tokens, "
-    " :provider_cached_input_tokens, :provider_cache_write_tokens)"
+    " :provider_cached_input_tokens, :provider_cache_write_tokens, "
+    " :prompt_cache_key, cast(:cache_diagnostics as jsonb))"
 )
 
 
@@ -206,6 +209,12 @@ def record_call(engine: Engine, record: CallRecord) -> UUID:
                     "reasoning_output_tokens": measured.reasoning_output_tokens,
                     "provider_cached_input_tokens": measured.provider_cached_input_tokens,
                     "provider_cache_write_tokens": measured.provider_cache_write_tokens,
+                    "prompt_cache_key": measured.prompt_cache_key,
+                    "cache_diagnostics": (
+                        None
+                        if measured.cache_diagnostics is None
+                        else json.dumps(measured.cache_diagnostics, sort_keys=True)
+                    ),
                 },
             )
     return new_id

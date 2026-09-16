@@ -91,6 +91,16 @@ class ProviderResult:
     reasoning_present: bool | None = None
     reasoning_tokens: int | None = None
     cache_write_auto_tokens: int | None = None
+    #: Ruling, 15 September 2026: prompt-cache diagnostics, so the next genuine
+    #: miss is diagnosable from the record. `prompt_cache_key` — the stable
+    #: routing key the adapter sent, where the provider supports one; `None`
+    #: otherwise. `cache_diagnostics` — what was requested of the cache and
+    #: what the provider reported back about it (its echo of the key and
+    #: options, the read/write split, and any miss reason or reusable/missed
+    #: counts a provider returns), verbatim, JSON-serialisable; `None` where
+    #: the provider exposes nothing of the kind. Never inferred.
+    prompt_cache_key: str | None = None
+    cache_diagnostics: Mapping[str, object] | None = None
 
     @property
     def total_input_tokens(self) -> int | None:

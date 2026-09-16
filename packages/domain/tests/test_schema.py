@@ -210,6 +210,10 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "reasoning_output_tokens",
         "provider_cached_input_tokens",
         "provider_cache_write_tokens",
+        # 15 September 2026 (0021): the cache key sent and the provider's cache
+        # diagnostics, verbatim.
+        "prompt_cache_key",
+        "cache_diagnostics",
     ),
     # §2.2 classification_labels / classification_reviews — ruling, 7 September
     # 2026: the blind hand-label and the adjudication appended after the reveal.
@@ -365,6 +369,8 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("model_call_measurements", "reasoning_output_tokens"),
         ("model_call_measurements", "provider_cached_input_tokens"),
         ("model_call_measurements", "provider_cache_write_tokens"),
+        ("model_call_measurements", "prompt_cache_key"),
+        ("model_call_measurements", "cache_diagnostics"),
         # 12 September 2026: a retraction carries no wording; a note is never required.
         ("message_revisions", "content"),
         ("message_revisions", "note"),
