@@ -39,6 +39,8 @@ from val_gateway.provenance import verifier
 from val_policy.routing import is_admitted, satisfies_profile
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
+from val_providers.lmstudio_adapter import DEFAULT_BASE_URL as LMSTUDIO_DEFAULT_BASE_URL
+from val_providers.lmstudio_adapter import LMStudioAdapter
 from val_providers.openai_adapter import OpenAIAdapter
 
 #: Where each provider's key is read from. A provider absent from this mapping
@@ -47,6 +49,12 @@ KEY_VARIABLES = {
     "anthropic": "VAL_ANTHROPIC_API_KEY",
     "openai": "VAL_OPENAI_API_KEY",
     "google": "VAL_GOOGLE_API_KEY",
+    # Ruling, 16 September 2026: the local LM Studio server's own API token.
+    # Required whenever an adapter for `lmstudio` is constructed — the
+    # candidate/evaluation harnesses — and not by the production service while
+    # no `lmstudio` route is admitted, because `start()` builds adapters for
+    # `active()` providers only and an evaluation-only entry is not active.
+    "lmstudio": "VAL_LMSTUDIO_API_TOKEN",
 }
 
 
@@ -68,6 +76,16 @@ class Startup:
 
 #: The prompt-cache lifetime the gateway requests on cacheable calls.
 CACHE_TTL_SETTING = "VAL_CACHE_TTL"
+
+#: Ruling, 16 September 2026: where the local LM Studio server listens. Read
+#: only when the `lmstudio` adapter is built; the adapter refuses any host
+#: that is not this machine.
+LMSTUDIO_BASE_URL_SETTING = "VAL_LMSTUDIO_BASE_URL"
+
+
+def configured_lmstudio_base_url() -> str:
+    raw = os.environ.get(LMSTUDIO_BASE_URL_SETTING, "").strip()
+    return raw or LMSTUDIO_DEFAULT_BASE_URL
 
 
 def configured_cache_ttl() -> tuple[CacheTtl | None, str | None]:
@@ -154,6 +172,14 @@ def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], lis
             adapters[provider] = AnthropicAdapter(key)
         elif provider == "openai":
             adapters[provider] = OpenAIAdapter(key)
+        elif provider == "lmstudio":
+            # The adapter fails closed on a non-loopback host; that refusal is
+            # a startup problem, stated, never a running service with a remote
+            # server wearing the local provider's name.
+            try:
+                adapters[provider] = LMStudioAdapter(configured_lmstudio_base_url(), key)
+            except ValueError as refused:
+                problems.append(str(refused))
         else:
             # Gemini is eligible only on verified paid billing, and the verifier
             # fails closed (01-architecture.md §5.4). Reached only if a Gemini

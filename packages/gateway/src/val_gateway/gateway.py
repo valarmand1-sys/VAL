@@ -64,6 +64,7 @@ from val_domain.gateway import (
     GatewayRequest,
     GatewayResponse,
     Message,
+    Metering,
     ModelConfig,
     PricingFeature,
     TaskType,
@@ -190,6 +191,18 @@ class CallMeasurement:
     #: cache diagnostics, verbatim; None where the provider exposes neither.
     prompt_cache_key: str | None = None
     cache_diagnostics: Mapping[str, object] | None = None
+    #: Ruling, 16 September 2026: the model the provider's response named, and
+    #: the runtime's own account of the call, with the entry's hosting axis.
+    provider_reported_model: str | None = None
+    runtime_diagnostics: Mapping[str, object] | None = None
+
+
+def _runtime_diagnostics(
+    config: ModelConfig, reported: Mapping[str, object] | None
+) -> dict[str, object]:
+    """The runtime facts recorded on every call: the hosting axis, plus whatever
+    the adapter reported verbatim."""
+    return {"hosting": config.hosting.value, **({} if reported is None else dict(reported))}
 
 
 class CallRecord:
@@ -291,7 +304,10 @@ def cost_components(
     """
     total_in = tokens_in + cache_read + cache_write_5m + cache_write_1h + cache_write_auto
     rate_in, rate_out = effective_rates(config, total_in)
-    multiplier = rate_in / config.cost_per_mtok_in_usd
+    # Ruling, 16 September 2026: an unmetered local route has a zero base rate
+    # and, by its validator, no cache pricing; every component below is zero
+    # and there is no multiplier to derive.
+    multiplier = 1.0 if config.cost_per_mtok_in_usd == 0 else rate_in / config.cost_per_mtok_in_usd
     read_rate = (config.cache_read_per_mtok_in_usd or config.cost_per_mtok_in_usd) * multiplier
     write_auto_rate = (
         config.cache_write_auto_per_mtok_in_usd or config.cost_per_mtok_in_usd
@@ -925,6 +941,18 @@ class Gateway:
                     read,
                     cost,
                 )
+        # Ruling, 16 September 2026: a LOCAL_NO_METERED_COST route has no
+        # metered provider/API charge, so its monetary cost is a *known* $0
+        # whether or not the runtime reported token usage — token telemetry
+        # (NULL when unreported) and monetary certainty are separate facts. A
+        # metered route with missing usage stays UNKNOWN exactly as before.
+        if config.metering is Metering.LOCAL_NO_METERED_COST:
+            cost = 0.0
+            _LOGGER.info(
+                "unmetered local route %s: provider/API cost $0 known; tokens %s",
+                config.slug,
+                "reported" if result.tokens_in is not None else "not reported",
+            )
         certainty = CostCertainty.KNOWN if cost is not None else CostCertainty.UNKNOWN
 
         # **The terminal state decides the row's status and whether the text is
@@ -977,6 +1005,8 @@ class Gateway:
                     provider_cache_write_tokens=_reported_cache_writes(result),
                     prompt_cache_key=result.prompt_cache_key,
                     cache_diagnostics=result.cache_diagnostics,
+                    provider_reported_model=result.provider_reported_model,
+                    runtime_diagnostics=_runtime_diagnostics(config, result.runtime_diagnostics),
                 ),
             )
         )
@@ -1096,8 +1126,15 @@ class Gateway:
                 model_identifier=config.model_identifier,
                 tokens_in=None,
                 tokens_out=None,
-                cost_usd=None,
-                cost_certainty=CostCertainty.UNKNOWN,
+                # Ruling, 16 September 2026: an unmetered local route's monetary
+                # cost is a known $0 even for a failed attempt; a metered route's
+                # failed attempt stays UNKNOWN, settled at its full maximum.
+                cost_usd=0.0 if config.metering is Metering.LOCAL_NO_METERED_COST else None,
+                cost_certainty=(
+                    CostCertainty.KNOWN
+                    if config.metering is Metering.LOCAL_NO_METERED_COST
+                    else CostCertainty.UNKNOWN
+                ),
                 # No response object exists, so no provider terminal state does
                 # either; `failed` records that truthfully rather than guessing.
                 terminal_state="failed",
@@ -1119,6 +1156,7 @@ class Gateway:
                     reasoning_output_tokens=None,
                     provider_cached_input_tokens=None,
                     provider_cache_write_tokens=None,
+                    runtime_diagnostics=_runtime_diagnostics(config, None),
                 ),
             )
         )

@@ -118,11 +118,12 @@ _INSERT_MEASUREMENT = text(
     "(model_call_id, exchange_conversation_id, exchange_message_id, streamed, first_text_ms, "
     " text_output_chars, reasoning_present, reasoning_output_tokens, "
     " provider_cached_input_tokens, provider_cache_write_tokens, "
-    " prompt_cache_key, cache_diagnostics) "
+    " prompt_cache_key, cache_diagnostics, provider_reported_model, runtime_diagnostics) "
     "values (:model_call_id, :exchange_conversation_id, :exchange_message_id, :streamed, "
     " :first_text_ms, :text_output_chars, :reasoning_present, :reasoning_output_tokens, "
     " :provider_cached_input_tokens, :provider_cache_write_tokens, "
-    " :prompt_cache_key, cast(:cache_diagnostics as jsonb))"
+    " :prompt_cache_key, cast(:cache_diagnostics as jsonb), :provider_reported_model, "
+    " cast(:runtime_diagnostics as jsonb))"
 )
 
 
@@ -214,6 +215,12 @@ def record_call(engine: Engine, record: CallRecord) -> UUID:
                         None
                         if measured.cache_diagnostics is None
                         else json.dumps(measured.cache_diagnostics, sort_keys=True)
+                    ),
+                    "provider_reported_model": measured.provider_reported_model,
+                    "runtime_diagnostics": (
+                        None
+                        if measured.runtime_diagnostics is None
+                        else json.dumps(measured.runtime_diagnostics, sort_keys=True)
                     ),
                 },
             )

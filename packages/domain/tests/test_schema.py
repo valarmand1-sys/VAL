@@ -214,6 +214,10 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         # diagnostics, verbatim.
         "prompt_cache_key",
         "cache_diagnostics",
+        # 16 September 2026 (0022): the model the provider's response named, and
+        # the runtime's account of the call with the hosting axis.
+        "provider_reported_model",
+        "runtime_diagnostics",
     ),
     # §2.2 classification_labels / classification_reviews — ruling, 7 September
     # 2026: the blind hand-label and the adjudication appended after the reveal.
@@ -371,6 +375,8 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("model_call_measurements", "provider_cache_write_tokens"),
         ("model_call_measurements", "prompt_cache_key"),
         ("model_call_measurements", "cache_diagnostics"),
+        ("model_call_measurements", "provider_reported_model"),
+        ("model_call_measurements", "runtime_diagnostics"),
         # 12 September 2026: a retraction carries no wording; a note is never required.
         ("message_revisions", "content"),
         ("message_revisions", "note"),

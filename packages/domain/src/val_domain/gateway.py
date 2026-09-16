@@ -234,6 +234,37 @@ class CacheTtl(StrEnum):
     ONE_HOUR = "1h"
 
 
+class Hosting(StrEnum):
+    """Where a configuration's inference runs — ruling, 16 September 2026.
+
+    `CLOUD`: an external model provider; content leaves the house and every
+    egress rule applies. `LOCAL`: inference on this machine, reached only over
+    the loopback interface; the request is not sent to an external provider.
+    Local does not bypass policy — classification, eligibility, budget, persona
+    and provenance run exactly as for a cloud route — and Restricted eligibility
+    is a separate ruling that has not been made.
+    """
+
+    CLOUD = "cloud"
+    LOCAL = "local"
+
+
+class Metering(StrEnum):
+    """How a configuration's provider/API inference is charged — ruling, 16 September 2026.
+
+    `METERED`: the provider bills per token at the entry's verified rates, and
+    a zero rate is a defect. `LOCAL_NO_METERED_COST`: no metered provider/API
+    charge exists — local inference on the house's own hardware — so the rates
+    are declared zero, the monetary reservation bound is zero, and every call
+    settles at a *known* $0 whether or not the runtime reported token usage.
+    Token telemetry and monetary certainty are separate facts. Indirect local
+    costs (electricity, hardware) are not estimated here.
+    """
+
+    METERED = "metered"
+    LOCAL_NO_METERED_COST = "local_no_metered_cost"
+
+
 class PricingFeature(StrEnum):
     """Whether caching or batch pricing applies to a configuration (§5.2).
 
@@ -317,8 +348,14 @@ class ModelConfig(BaseModel):
     #: rather than filled in with an invented number.
     reasoning_effort: ReasoningEffort
     temperature: float | None = None
-    cost_per_mtok_in_usd: float = Field(gt=0)
-    cost_per_mtok_out_usd: float = Field(gt=0)
+    #: Ruling, 16 September 2026: zero is legal only under
+    #: `Metering.LOCAL_NO_METERED_COST` (validated below); a metered route with a
+    #: zero rate is refused at construction.
+    cost_per_mtok_in_usd: float = Field(ge=0)
+    cost_per_mtok_out_usd: float = Field(ge=0)
+    #: Ruling, 16 September 2026: the hosting axis and the metering basis.
+    hosting: Hosting = Hosting.CLOUD
+    metering: Metering = Metering.METERED
     #: Closure pass, 18 August 2026. Some providers re-price a call whose input
     #: crosses a threshold — GPT-5.5 bills 2x input and 1.5x output for the full
     #: session above 272K input tokens (developers.openai.com, verified 18
@@ -442,6 +479,30 @@ class ModelConfig(BaseModel):
                 f"{self.slug}: cache rates are declared but caching is {self.caching.value}; "
                 "rates on an unverified route are a guess wearing a number"
             )
+        return self
+
+    @model_validator(mode="after")
+    def _rates_match_metering(self) -> ModelConfig:
+        """Zero rates only on a declared unmetered local route; never elsewhere."""
+        zero = self.cost_per_mtok_in_usd == 0 or self.cost_per_mtok_out_usd == 0
+        if self.metering is Metering.METERED and zero:
+            raise ValueError(
+                f"{self.slug}: a metered configuration declares a zero rate; a zero on a "
+                "metered provider is a fabricated cost, not a price (ruling, 16 September 2026)"
+            )
+        if self.metering is Metering.LOCAL_NO_METERED_COST:
+            if self.cost_per_mtok_in_usd != 0 or self.cost_per_mtok_out_usd != 0:
+                raise ValueError(
+                    f"{self.slug}: LOCAL_NO_METERED_COST declares no metered charge, so both "
+                    "rates are exactly zero"
+                )
+            if self.hosting is not Hosting.LOCAL:
+                raise ValueError(
+                    f"{self.slug}: LOCAL_NO_METERED_COST is legal only on a LOCAL hosting entry; "
+                    "an unmetered cloud route is not a thing this registry may describe"
+                )
+            if self.caching is PricingFeature.AVAILABLE:
+                raise ValueError(f"{self.slug}: an unmetered route carries no cache pricing")
         return self
 
     @property

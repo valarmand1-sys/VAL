@@ -228,9 +228,12 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
             cost_bound=lambda c: c.cost_per_mtok_in_usd,
         )
         assert SOL not in {c.slug for c in chosen}, profile
-    assert all(entry.qualification_targets == frozenset() for entry in under_evaluation()), (
-        "the registry itself holds no partner candidate since Sol's admission"
-    )
+    # Pin moved 16 September 2026: the registry holds exactly one candidate carrying a
+    # target — the local LM Studio entry, NOT_ADMITTED with no profile — and no other.
+    with_targets = [entry for entry in under_evaluation() if entry.qualification_targets]
+    assert [entry.slug for entry in with_targets] == ["gpt-oss-20b-mxfp4-mlx-lmstudio"]
+    assert with_targets[0].admission is Admission.NOT_ADMITTED
+    assert with_targets[0].capability_profiles == frozenset()
 
 
 def test_the_registry_refuses_a_target_on_an_admitted_or_profiled_entry() -> None:

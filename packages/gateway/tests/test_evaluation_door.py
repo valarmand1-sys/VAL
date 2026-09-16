@@ -36,7 +36,13 @@ from val_providers.base import ProviderResult
 # `sonnet-5-low` left this set on 11 September 2026: designated for the strip.
 # `gpt-5-6-sol-medium` sat here from 13 September 2026 as a partner candidate and
 # left on its admission of 14 September 2026 (`test_sol_production_route.py`).
-CANDIDATES = ("sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna")
+CANDIDATES = (
+    "sonnet-5-medium",
+    "gpt-5-6-terra",
+    "gpt-5-6-luna",
+    # 16 September 2026: the first local candidate, evaluation only, target PARTNER.
+    "gpt-oss-20b-mxfp4-mlx-lmstudio",
+)
 
 
 def strip_request(

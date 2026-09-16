@@ -8,7 +8,15 @@ from datetime import date
 
 import pytest
 
-from val_domain.gateway import AdapterStatus, Admission, Classification, ModelConfig, PricingFeature
+from val_domain.gateway import (
+    AdapterStatus,
+    Admission,
+    Classification,
+    Hosting,
+    Metering,
+    ModelConfig,
+    PricingFeature,
+)
 from val_domain.registry import (
     REGISTRY,
     active,
@@ -51,8 +59,15 @@ def test_no_route_claims_restricted_eligibility() -> None:
 
 
 def test_every_rate_is_positive() -> None:
-    """A zero rate would silently record every call as free."""
+    """A zero rate would silently record every call as free. Pin moved 16 September
+    2026: a zero rate is legal only under a declared `LOCAL_NO_METERED_COST` metering
+    on a LOCAL hosting entry, where it is a fact rather than a fabrication; every
+    metered entry still declares positive rates."""
     for config in REGISTRY:
+        if config.metering is Metering.LOCAL_NO_METERED_COST:
+            assert config.hosting is Hosting.LOCAL
+            assert config.cost_per_mtok_in_usd == 0 and config.cost_per_mtok_out_usd == 0
+            continue
         assert config.cost_per_mtok_in_usd > 0
         assert config.cost_per_mtok_out_usd > 0
 
@@ -145,7 +160,11 @@ def test_every_entry_declares_the_full_configuration_contract() -> None:
         assert config.context_window_tokens > 0 and config.max_output_tokens > 0
         assert config.reasoning_effort is not None
         assert config.eligible_classifications
-        assert config.cost_per_mtok_in_usd > 0 and config.cost_per_mtok_out_usd > 0
+        if config.metering is Metering.METERED:
+            assert config.cost_per_mtok_in_usd > 0 and config.cost_per_mtok_out_usd > 0
+        else:
+            assert config.cost_per_mtok_in_usd == 0 and config.cost_per_mtok_out_usd == 0
+        assert config.hosting is not None and config.metering is not None
         assert config.caching is not None and config.batch_pricing is not None
         assert isinstance(config.known_weaknesses, tuple)
         assert config.admission is not None

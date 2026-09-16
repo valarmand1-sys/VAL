@@ -26,7 +26,9 @@ from val_domain.registry import (
 CANDIDATES = {"sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna"}
 # `gpt-5-6-sol-medium` was in this set from 13 September 2026 as a partner
 # candidate; admitted to the partner profile on 14 September 2026, it left it.
-PARTNER_CANDIDATES: set[str] = set()
+# `gpt-oss-20b-mxfp4-mlx-lmstudio` joined it on 16 September 2026: the first
+# local candidate, registered for evaluation only, target PARTNER, no profile.
+PARTNER_CANDIDATES: set[str] = {"gpt-oss-20b-mxfp4-mlx-lmstudio"}
 
 
 def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registry() -> None:
@@ -39,7 +41,9 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
         assert config.capability_profiles == frozenset()
         assert config.fallback_slug is None
         assert by_id(config.id) is config and by_slug(config.slug) is config
-        assert config.activated_on == config.rates_verified_on == date(2026, 9, 10)
+        # 16 September 2026: the local candidate carries its own registration date.
+        expected = date(2026, 9, 16) if config.provider == "lmstudio" else date(2026, 9, 10)
+        assert config.activated_on == config.rates_verified_on == expected
 
 
 def test_active_and_under_evaluation_partition_the_unretired_registry() -> None:

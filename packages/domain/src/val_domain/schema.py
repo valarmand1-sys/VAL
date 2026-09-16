@@ -460,7 +460,12 @@ class ModelCall(Base):
         # exists to make unwritable.
         CheckConstraint(
             "cost_certainty <> 'known' OR "
-            "(cost IS NOT NULL AND tokens_in IS NOT NULL AND tokens_out IS NOT NULL)",
+            "(cost IS NOT NULL AND tokens_in IS NOT NULL AND tokens_out IS NOT NULL) OR "
+            # Ruling, 16 September 2026 (`0022`): an unmetered LOCAL provider's
+            # monetary cost is a known $0 whether or not the runtime reported
+            # tokens; the provider is named so every metered provider keeps the
+            # original guard against a fabricated zero.
+            "(cost = 0 AND provider = 'lmstudio')",
             name="known_cost_is_recorded",
         ),
         CheckConstraint(
@@ -1099,6 +1104,14 @@ class ModelCallMeasurement(Base):
     # call mode exposes neither; never inferred.
     prompt_cache_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     cache_diagnostics: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
+    # Ruling, 16 September 2026 (`0022`): the model identifier the provider's
+    # own response named (an adapter refuses a mismatch, so on a recorded call
+    # it equals the requested identifier or is NULL where the provider names
+    # none), and the runtime's account of the call with the entry's hosting
+    # axis — a local server's loaded model, context length and timing figures,
+    # verbatim. NULL where nothing was exposed; never inferred.
+    provider_reported_model: Mapped[str | None] = mapped_column(Text, nullable=True)
+    runtime_diagnostics: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
 
     __table_args__ = (
         CheckConstraint(

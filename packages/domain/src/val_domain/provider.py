@@ -101,6 +101,15 @@ class ProviderResult:
     #: the provider exposes nothing of the kind. Never inferred.
     prompt_cache_key: str | None = None
     cache_diagnostics: Mapping[str, object] | None = None
+    #: Ruling, 16 September 2026: runtime provenance. `provider_reported_model`
+    #: — the model identifier the provider's response itself named; an adapter
+    #: that finds it differing from the requested identifier refuses rather
+    #: than attributing the answer. `runtime_diagnostics` — what the runtime
+    #: reported about itself and the call (a local server's loaded model,
+    #: context length, its own timing figures), verbatim and JSON-serialisable;
+    #: `None` where nothing of the kind is exposed. Never inferred.
+    provider_reported_model: str | None = None
+    runtime_diagnostics: Mapping[str, object] | None = None
 
     @property
     def total_input_tokens(self) -> int | None:

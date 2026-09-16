@@ -97,13 +97,21 @@ def test_deviation_standing_with_cloud_only_registry_is_green(tmp_path: Path) ->
     assert check_strip_deviation(layer0, registry) == []
 
 
-def test_a_local_route_expires_the_deviation(tmp_path: Path) -> None:
-    """The rule that must not become permanent by accident, as a red check."""
+def test_an_admitted_local_route_expires_the_deviation(tmp_path: Path) -> None:
+    """The rule that must not become permanent by accident, as a red check. Pin moved
+    16 September 2026: the condition is a local route *admitted to routing*."""
     layer0, registry = _deviation_tree(tmp_path, marker=True, registry=LOCAL_REGISTRY)
-    problems = check_strip_deviation(layer0, registry)
+    problems = check_strip_deviation(layer0, registry, admitted=frozenset({"mlx-local"}))
     assert len(problems) == 1
     assert "has expired" in problems[0]
     assert "mlx-local" in problems[0]
+
+
+def test_an_evaluation_only_local_entry_does_not_expire_the_deviation(tmp_path: Path) -> None:
+    """Ruling, 16 September 2026: a NOT_ADMITTED local candidate is not a route the strip
+    could move to; the deviation stands with it in the registry."""
+    layer0, registry = _deviation_tree(tmp_path, marker=True, registry=LOCAL_REGISTRY)
+    assert check_strip_deviation(layer0, registry, admitted=frozenset({"anthropic"})) == []
 
 
 def test_removing_the_deviation_without_the_local_route_is_red(tmp_path: Path) -> None:
@@ -117,7 +125,19 @@ def test_removing_the_deviation_without_the_local_route_is_red(tmp_path: Path) -
 def test_deviation_gone_and_local_route_present_is_green(tmp_path: Path) -> None:
     """The intended end state: the section moved when its condition expired."""
     layer0, registry = _deviation_tree(tmp_path, marker=False, registry=LOCAL_REGISTRY)
-    assert check_strip_deviation(layer0, registry) == []
+    assert check_strip_deviation(layer0, registry, admitted=frozenset({"mlx-local"})) == []
+
+
+def test_the_real_registry_holds_a_non_cloud_entry_that_is_not_admitted() -> None:
+    """The first local candidate is in the registry text and not among the routable
+    providers, so the real tree's deviation stands by the ruled condition."""
+    from check_scope_ruling import CLOUD_PROVIDERS, _admitted_providers
+
+    root = Path(__file__).resolve().parents[3]
+    text = (root / "packages" / "domain" / "src" / "val_domain" / "registry.py").read_text()
+    assert 'provider="lmstudio"' in text
+    assert "lmstudio" not in CLOUD_PROVIDERS
+    assert "lmstudio" not in _admitted_providers()
 
 
 def test_the_real_tree_deviation_is_currently_consistent() -> None:

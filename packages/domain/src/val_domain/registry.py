@@ -49,8 +49,11 @@ from val_domain.gateway import (
     Admission,
     CapabilityProfile,
     Classification,
+    Hosting,
+    Metering,
     ModelConfig,
     PricingFeature,
+    QualificationTarget,
     ReasoningEffort,
 )
 
@@ -694,6 +697,60 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # first real answer on this route in production, and the final proof of
         # the migration of ordinary partner cognition to it.
         last_live_call_on=date(2026, 9, 14),
+    ),
+    ModelConfig(
+        id=UUID("aac13204-3b27-477d-8bc4-ced543f61ae3"),
+        slug="gpt-oss-20b-mxfp4-mlx-lmstudio",
+        # Ruling, 16 September 2026: the first local cognition provider,
+        # registered FOR EVALUATION ONLY. LM Studio serving `openai/gpt-oss-20b`
+        # (MXFP4 quantization, Apple MLX runtime, about 12.10 GB on disk) on the
+        # loopback interface of the house's own Mac (M4 Pro, 48 GB). The exact
+        # model, quantization and runtime are identity, as effort is for cloud
+        # entries: a different quantization or runtime is a different entry.
+        provider="lmstudio",
+        # The model id LM Studio's `/v1/models` returns; the adapter refuses a
+        # response naming any other model.
+        model_identifier="openai/gpt-oss-20b",
+        display_name="GPT-OSS 20B (MXFP4, Apple MLX, LM Studio — local, evaluation only)",
+        # The model's architectural context is 131,072 tokens (OpenAI's gpt-oss
+        # model card). The *loaded* context is a per-load LM Studio setting the
+        # adapter reads from the server and records on every call; the house
+        # preflight bounds requests by this figure, and the adapter refuses a
+        # reply whose reported prompt filled the loaded window.
+        context_window_tokens=131_072,
+        # The house's own output bound for this route (no provider cap is
+        # published); above the 6,144 conversation ceiling with room to spare.
+        max_output_tokens=16_384,
+        # gpt-oss reasoning levels are low / medium / high; medium is the
+        # model's default and the configuration evaluated.
+        reasoning_effort=ReasoningEffort.MEDIUM,
+        # Ruling, 16 September 2026: LOCAL_NO_METERED_COST — no metered
+        # provider/API charge exists; both rates are exactly zero, the monetary
+        # reservation is zero, and every call settles at a known $0. Indirect
+        # local costs are not estimated.
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        # Ruled 16 September 2026: exactly the incumbent partner route's
+        # non-Restricted classifications, no more; Restricted is a separate
+        # ruling not made.
+        eligible_classifications=_PROTECTED,
+        # No profile: nothing in production routing can select this entry.
+        capability_profiles=frozenset(),
+        # The candidate lane's door only. A target is not a profile, satisfies
+        # no production requirement, admits nothing and is no evidence.
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 16),
+        # "Rates" here is the fact that there are none: verified on the
+        # registration date against LM Studio's local server, which bills
+        # nothing.
+        rates_verified_on=date(2026, 9, 16),
     ),
     ModelConfig(
         id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),

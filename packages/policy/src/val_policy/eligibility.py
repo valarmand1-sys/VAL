@@ -11,7 +11,7 @@ by Lord Armand, applied to `01-architecture.md` §5.4 first and reflected here
 second — never the other way around.
 """
 
-from val_domain.gateway import Classification, GatewayErrorKind, ModelConfig
+from val_domain.gateway import Classification, GatewayErrorKind, Hosting, ModelConfig
 from val_domain.registry import declared_chain_violations
 
 #: Providers ruled Protected-eligible on 15 August 2026, with the grounds
@@ -24,7 +24,16 @@ from val_domain.registry import declared_chain_violations
 #: is how the strip-routing deviation's expiry (04-layer-0.md §4) tells a
 #: local route from a new cloud one, and an unlisted cloud provider fires a
 #: false red demanding the deviation move.
-RULED_PROVIDERS = frozenset({"anthropic", "openai", "google"})
+RULED_PROVIDERS = frozenset({"anthropic", "openai", "google", "lmstudio"})
+#: Providers ruled LOCAL (16 September 2026): inference on this machine over
+#: the loopback interface, the request never sent to an external provider.
+#: An entry naming a local provider must declare `hosting = LOCAL`, and an
+#: entry declaring LOCAL must name a local provider — the two facts are one
+#: fact, and a cloud entry wearing the local axis (or the reverse) is refused
+#: at startup. Local is not a policy bypass: every rule below still applies,
+#: and Restricted eligibility for local inference is a separate ruling that
+#: has not been made.
+LOCAL_PROVIDERS = frozenset({"lmstudio"})
 
 #: Excluded pending verification, not permanently: unverifiable terms as of
 #: July 2026. A US-hosted SOC 2 / ZDR route or self-hosting can qualify later on
@@ -69,6 +78,11 @@ def startup_violations(configs: list[ModelConfig]) -> list[str]:
             )
             continue
 
+        if (config.provider in LOCAL_PROVIDERS) != (config.hosting is Hosting.LOCAL):
+            violations.append(
+                f"{name}: provider and hosting axis disagree — a local provider declares "
+                f"hosting=local and only a local provider may (ruling, 16 September 2026)"
+            )
         if Classification.PROTECTED not in config.eligible_classifications:
             violations.append(
                 f"{name}: not declared Protected-eligible. At Layer 0 every "
@@ -78,9 +92,10 @@ def startup_violations(configs: list[ModelConfig]) -> list[str]:
 
         if Classification.RESTRICTED in config.eligible_classifications:
             violations.append(
-                f"{name}: declares Restricted eligibility, but Restricted content "
-                "routes to local inference only, which does not exist until "
-                "Layer 1 (01-architecture.md §5.4)"
+                f"{name}: declares Restricted eligibility. Restricted content routes to "
+                "local inference only, and whether an on-device route may receive it "
+                "is a separate ruling not yet made (01-architecture.md §5.4, amended "
+                "16 September 2026)"
             )
 
         if config.provider == "google" and not config.billing_verified:
@@ -108,8 +123,10 @@ def refusal_for(
     if classification is Classification.RESTRICTED:
         return (
             GatewayErrorKind.RESTRICTED_CONTENT,
-            "Restricted content routes to local inference only, which does not "
-            "exist until Layer 1. It is refused, not reclassified (04-layer-0.md §1.1).",
+            "Restricted content routes to local inference only. An on-device provider "
+            "is registered for evaluation (16 September 2026), but its Restricted "
+            "eligibility is a separate ruling not yet made; the content is refused, not "
+            "reclassified (04-layer-0.md §1.1).",
         )
     if classification not in config.eligible_classifications:
         return (

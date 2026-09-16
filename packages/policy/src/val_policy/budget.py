@@ -226,8 +226,11 @@ def maximum_cost(
     tokens_out = upper_bound_output_tokens(max_output_tokens, config)
     rate_in, rate_out = effective_rates(config, tokens_in)
     # The long-context multiplier stacks on cache rates as it does on the base
-    # rate (the provider's pricing page: multipliers stack).
-    multiplier = rate_in / config.cost_per_mtok_in_usd
+    # rate (the provider's pricing page: multipliers stack). Ruling, 16
+    # September 2026: an unmetered local route has a zero base rate and, by
+    # its validator, no cache pricing, so there is no multiplier to derive and
+    # the bound is exactly zero — the ledger still reserves it, at $0.
+    multiplier = 1.0 if config.cost_per_mtok_in_usd == 0 else rate_in / config.cost_per_mtok_in_usd
     if config.caches_automatically and config.cache_write_auto_per_mtok_in_usd is not None:
         # Ruling, 14 September 2026: a provider that caches on its own may
         # write every cache-eligible input token on a cold call, and this house

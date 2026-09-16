@@ -84,12 +84,21 @@ CLOUD_PROVIDERS = frozenset({"anthropic", "openai", "google"})
 _PROVIDER = re.compile(r'provider="([a-z0-9_-]+)"')
 
 
+def _admitted_providers() -> frozenset[str]:
+    """Providers of the registry's routable entries — the registry is the authority."""
+    from val_domain.registry import active
+
+    return frozenset(config.provider for config in active())
+
+
 def markers_in(text: str) -> list[str]:
     """Every scope-ruling date in one document, as written."""
     return MARKER.findall(text)
 
 
-def check_strip_deviation(layer0_md: Path, registry_py: Path) -> list[str]:
+def check_strip_deviation(
+    layer0_md: Path, registry_py: Path, admitted: frozenset[str] | None = None
+) -> list[str]:
     """The strip-routing deviation expires when a local route exists — enforced.
 
     Marker present + no local route: the deviation stands, correctly.
@@ -101,10 +110,17 @@ def check_strip_deviation(layer0_md: Path, registry_py: Path) -> list[str]:
     """
     problems: list[str] = []
     deviation_stands = DEVIATION_MARKER in layer0_md.read_text(encoding="utf-8")
+    # Ruling, 16 September 2026: the deviation expires when a local route is
+    # *in service* — admitted to routing — not when a local entry merely exists.
+    # An entry registered NOT_ADMITTED for evaluation only (the first LM Studio
+    # candidate) is not a route the strip could move to. The text scan still
+    # finds every non-cloud provider string; `admitted` — by default the
+    # providers of the registry's routable entries — says which of them is a
+    # route at all.
+    in_text = set(_PROVIDER.findall(registry_py.read_text(encoding="utf-8")))
+    routable = admitted if admitted is not None else _admitted_providers()
     non_cloud = sorted(
-        provider
-        for provider in set(_PROVIDER.findall(registry_py.read_text(encoding="utf-8")))
-        if provider not in CLOUD_PROVIDERS
+        provider for provider in in_text if provider not in CLOUD_PROVIDERS and provider in routable
     )
 
     if deviation_stands and non_cloud:
