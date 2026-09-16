@@ -50,6 +50,7 @@ from collections.abc import Iterator, Mapping
 from typing import Any, Literal
 from urllib.parse import urlparse
 
+import httpx
 import openai
 
 from val_domain.gateway import (
@@ -160,6 +161,10 @@ class LMStudioAdapter:
         self._client = openai.OpenAI(
             base_url=self._base_url, api_key=token, timeout=timeout_seconds, max_retries=0
         )
+        # The native listing lives beside the OpenAI-compatible surface, not
+        # under it, so it is fetched with the transport library directly; the
+        # header is built once and never rendered anywhere.
+        self._native_headers = {"Authorization": f"Bearer {token}"}
         self._native_models: dict[str, Mapping[str, object]] = {}
         if read_native_models:
             self._native_models = self._read_native_models()
@@ -170,7 +175,9 @@ class LMStudioAdapter:
         """LM Studio's own listing, keyed by model id; empty if the server has none."""
         root = self._base_url[: -len("/v1")] if self._base_url.endswith("/v1") else self._base_url
         try:
-            response = self._client.get(root + NATIVE_MODELS_PATH, cast_to=dict)
+            reply = httpx.get(root + NATIVE_MODELS_PATH, headers=self._native_headers, timeout=5.0)
+            reply.raise_for_status()
+            response = reply.json()
         except Exception as error:
             _LOGGER.info(
                 "%s: native model listing unavailable: %s", self.name, type(error).__name__

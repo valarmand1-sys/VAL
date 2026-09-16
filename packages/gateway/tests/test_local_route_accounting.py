@@ -58,10 +58,40 @@ from val_policy.project_resolution import ProjectSignals
 LOCAL = "gpt-oss-20b-mxfp4-mlx-lmstudio"
 
 
+_REGISTERED: ModelConfig | None = by_slug(LOCAL)
+assert _REGISTERED is not None
+#: The entry as the tests below exercise it. The registered entry is bound to the
+#: context LM Studio's just-in-time reload gives the model (8,192 on 16 September
+#: 2026), at which the house preflight refuses a persona-bearing turn before any
+#: call — pinned by `test_the_registered_window_refuses_a_val_shaped_turn_locally`.
+#: The accounting tests prove settlement and provenance, not the window, so the
+#: `wide_window` fixture hands them the same entry at the model's architectural
+#: context, installed in the registry lookups exactly as `test_candidate_lane`
+#: installs its synthetic candidate.
+_ACTIVE: ModelConfig = _REGISTERED
+
+
 def local() -> ModelConfig:
-    config = by_slug(LOCAL)
-    assert config is not None
-    return config
+    return _ACTIVE
+
+
+@pytest.fixture
+def wide_window(monkeypatch: pytest.MonkeyPatch) -> ModelConfig:
+    global _ACTIVE
+    from val_gateway import candidate as candidate_module
+    from val_gateway import gateway as gateway_module
+
+    wide = _REGISTERED.model_copy(update={"context_window_tokens": 131_072})
+    original = candidate_module.by_id
+
+    def by_id(identifier: object) -> ModelConfig | None:
+        return wide if identifier == wide.id else original(identifier)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(candidate_module, "by_id", by_id)
+    monkeypatch.setattr(gateway_module, "by_id", by_id)
+    _ACTIVE = wide
+    yield wide
+    _ACTIVE = _REGISTERED
 
 
 @dataclass
@@ -163,6 +193,7 @@ def _converse(engine: Engine, adapter: Recording) -> object:
 
 def test_a_local_call_settles_at_a_known_zero_with_tokens_and_provenance(
     store: Engine,  # noqa: F811 - pytest fixture injection
+    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording([local_answer()])
     response = _converse(store, adapter)
@@ -187,6 +218,7 @@ def test_a_local_call_settles_at_a_known_zero_with_tokens_and_provenance(
 
 def test_missing_usage_keeps_the_known_zero_and_records_tokens_as_unknown(
     store: Engine,  # noqa: F811 - pytest fixture injection
+    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording([local_answer(usage=False)])
     _converse(store, adapter)
@@ -200,6 +232,7 @@ def test_missing_usage_keeps_the_known_zero_and_records_tokens_as_unknown(
 
 def test_a_failed_local_attempt_is_a_known_zero_and_still_a_row(
     store: Engine,  # noqa: F811 - pytest fixture injection
+    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording(
         [GatewayError(GatewayErrorKind.PROVIDER_ERROR, "lmstudio: cannot reach the local server")]
@@ -288,6 +321,7 @@ def test_the_lane_admits_the_local_entry_only_through_its_qualification_target(
 
 def test_one_consequential_exchange_on_the_zero_route_makes_at_most_four_calls(
     store: Engine,  # noqa: F811 - pytest fixture injection
+    wide_window: ModelConfig,
 ) -> None:
     """Classification, strip, blind position, response — the orchestration's fixed
     sequence, each step bounded in code; no step loops, and money never enters it."""
@@ -317,6 +351,7 @@ def test_one_consequential_exchange_on_the_zero_route_makes_at_most_four_calls(
 
 def test_a_truncated_local_response_is_not_retried_on_the_zero_route(
     store: Engine,  # noqa: F811 - pytest fixture injection
+    wide_window: ModelConfig,
 ) -> None:
     steps = script()[:3]
     steps.append(
@@ -351,6 +386,7 @@ def test_a_truncated_local_response_is_not_retried_on_the_zero_route(
 
 def test_an_ordinary_exchange_on_the_zero_route_makes_at_most_two_calls(
     store: Engine,  # noqa: F811 - pytest fixture injection
+    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording(
         [
@@ -368,3 +404,31 @@ def test_an_ordinary_exchange_on_the_zero_route_makes_at_most_two_calls(
     )
     assert isinstance(outcome, DeliberatedTurn)
     assert adapter.calls == 2, "classification, then one response — nothing else can run"
+
+
+# --- the registered window fails closed -----------------------------------------------
+
+
+def test_the_registered_window_refuses_a_val_shaped_turn_locally(
+    store: Engine,  # noqa: F811 - pytest fixture injection
+) -> None:
+    """At the context LM Studio's JIT reload gives the model (8,192), the persona-bearing
+    request's byte bound cannot fit beside the 6,144 ceiling: refused before any call —
+    nothing transmitted, nothing reserved, no row. The window is the registry's, never the
+    server's to truncate around."""
+    assert _REGISTERED.context_window_tokens == 8_192
+    adapter = Recording([local_answer()])
+    gateway = lane(store, adapter)
+    turn = a_turn(store)
+    with pytest.raises(GatewayError) as refused:
+        gateway.converse_candidate(
+            (Message(role="user", content="Hello."),),
+            scope=ExplicitNoProject(),
+            classification=Classification.PROTECTED,
+            turn=turn,
+            configuration=_REGISTERED,
+            max_output_tokens=6_144,
+        )
+    assert refused.value.kind is GatewayErrorKind.INVALID_REQUEST
+    assert "cannot fit" in refused.value.detail and "nothing was routed" in refused.value.detail
+    assert adapter.calls == 0 and _rows(store) == []

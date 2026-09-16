@@ -504,14 +504,32 @@ def test_a_context_overflow_rejection_by_the_server_is_surfaced_not_retried() ->
 # --- the native listing ---------------------------------------------------------------
 
 
-def test_the_native_listing_is_read_once_and_its_absence_is_tolerated() -> None:
-    listing = {"data": [{"id": "openai/gpt-oss-20b", "loaded_context_length": 8_192}]}
-    adapter, client = _adapter(_Completions(_completion()), native=listing)
+def test_the_native_listing_is_read_with_the_token_and_its_absence_is_tolerated(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, dict[str, str]]] = []
+
+    def fake_get(url: str, *, headers: dict[str, str], timeout: float) -> object:
+        calls.append((url, headers))
+        return httpx.Response(
+            200,
+            json={"data": [{"id": "openai/gpt-oss-20b", "loaded_context_length": 8_192}]},
+            request=httpx.Request("GET", url),
+        )
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+    adapter, _ = _adapter(_Completions(_completion()))
     adapter._native_models = adapter._read_native_models()
-    assert client.get_calls == ["http://127.0.0.1:1234/api/v0/models"]
-    assert adapter.loaded_context_length("openai/gpt-oss-20b") == 8_192
-    adapter, _ = _adapter(
-        _Completions(_completion()), native=openai.APIConnectionError(request=_request())
+    assert calls[0][0] == "http://127.0.0.1:1234/api/v0/models"
+    assert calls[0][1] == {"Authorization": f"Bearer {SENTINEL}"}, (
+        "the token, to the local server only"
     )
-    assert adapter._read_native_models() == {}
+    assert adapter.loaded_context_length("openai/gpt-oss-20b") == 8_192
+
+    def refused(url: str, *, headers: dict[str, str], timeout: float) -> object:
+        raise httpx.ConnectError("refused", request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(httpx, "get", refused)
+    adapter._native_models = adapter._read_native_models()
+    assert adapter._native_models == {}
     assert adapter.loaded_context_length("openai/gpt-oss-20b") is None

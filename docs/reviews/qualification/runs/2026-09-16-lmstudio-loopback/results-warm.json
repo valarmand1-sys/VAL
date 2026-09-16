@@ -1,0 +1,96 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0ac08-8deb-7128-a7e3-6898a860b678"
+ },
+ "configuration": {
+  "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio",
+  "id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+  "model": "openai/gpt-oss-20b"
+ },
+ "runtime_facts_at_start": {
+  "runtime": "LM Studio",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "requested_model": "openai/gpt-oss-20b",
+  "state": "loaded",
+  "arch": "gpt_oss",
+  "quantization": "MXFP4",
+  "compatibility_type": "mlx",
+  "max_context_length": 131072,
+  "loaded_context_length": 8192,
+  "publisher": "openai"
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "label": "warm T1",
+   "loaded_state_before": "loaded",
+   "estimated_prompt_tokens_local": 6939,
+   "messages_sent": 3,
+   "outcome": "Turn",
+   "visible_chars": 1515,
+   "answer_head": "Good evening, my lord.  \nA house\u2019s written record ought to capture every formal decision that alters the house\u2019s trajectory: the who, what, when, why, and how.  It should note the issuing authority, the conditions under which the choice was made, any alternatives considered, and the expected impact.  When a decision is later revisited, that record gives the house an objective basis to assess wheth",
+   "timing_s": {
+    "core_call_total": 18.82,
+    "prefill_to_first_chunk": 7.379,
+    "first_visible_content": 14.013,
+    "generation_after_first_chunk": 11.419
+   }
+  },
+  {
+   "turn": 2,
+   "label": "warm T2",
+   "loaded_state_before": "loaded",
+   "estimated_prompt_tokens_local": 7413,
+   "messages_sent": 5,
+   "outcome": "GatewayError",
+   "error": "invalid_request: gpt-oss-20b-mxfp4-mlx-lmstudio's context window is 32,768 tokens; this request's input bound (26,819) plus its requested output (6,144) cannot fit. Refused locally \u2014 nothing was routed, reserved, or transmitted.",
+   "timing_s": {
+    "core_call_total": 0.013,
+    "prefill_to_first_chunk": 7.379,
+    "first_visible_content": 14.013,
+    "generation_after_first_chunk": 11.419
+   }
+  }
+ ],
+ "calls": [
+  {
+   "task_type": "conversation",
+   "provider": "lmstudio",
+   "model_identifier": "openai/gpt-oss-20b",
+   "model_config_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+   "tokens_in": 5417,
+   "tokens_out": 712,
+   "cost": "0.000000",
+   "cost_certainty": "known",
+   "latency_ms": 18798,
+   "terminal_state": "complete",
+   "status": "ok",
+   "persona_id": "01a0ac08-8deb-7128-a7e3-6898a860b678",
+   "streamed": true,
+   "first_text_ms": 14013,
+   "text_output_chars": 1515,
+   "reasoning_present": true,
+   "reasoning_output_tokens": 399,
+   "provider_reported_model": "openai/gpt-oss-20b",
+   "runtime_diagnostics": {
+    "arch": "gpt_oss",
+    "state": "loaded",
+    "hosting": "local",
+    "runtime": "LM Studio",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "publisher": "openai",
+    "quantization": "MXFP4",
+    "finish_reason": "stop",
+    "reported_model": "openai/gpt-oss-20b",
+    "requested_model": "openai/gpt-oss-20b",
+    "compatibility_type": "mlx",
+    "max_context_length": 131072,
+    "loaded_context_length": 8192
+   },
+   "reserved_max": "0.000000",
+   "settled_cost": "0.000000"
+  }
+ ],
+ "val_messages": 1
+}

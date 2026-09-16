@@ -713,11 +713,17 @@ REGISTRY: tuple[ModelConfig, ...] = (
         model_identifier="openai/gpt-oss-20b",
         display_name="GPT-OSS 20B (MXFP4, Apple MLX, LM Studio — local, evaluation only)",
         # The model's architectural context is 131,072 tokens (OpenAI's gpt-oss
-        # model card). The *loaded* context is a per-load LM Studio setting the
-        # adapter reads from the server and records on every call; the house
-        # preflight bounds requests by this figure, and the adapter refuses a
-        # reply whose reported prompt filled the loaded window.
-        context_window_tokens=131_072,
+        # model card). The figure here is the context LM Studio's just-in-time
+        # loading gives the model on every reload — its per-model DEFAULT, 8,192,
+        # observed on the server's own listing after a reload on 16 September
+        # 2026 — not the 32,768 a manual load carried that day: the house
+        # preflight bounds requests by this figure and must fail closed before
+        # the server could truncate, so it is the smallest window the route can
+        # be found at. Raising the model's default context in LM Studio is the
+        # owner's act; the registry then moves by amendment. The adapter also
+        # records the loaded context on every call and refuses a reply whose
+        # reported prompt filled the loaded window.
+        context_window_tokens=8_192,
         # The house's own output bound for this route (no provider cap is
         # published); above the 6,144 conversation ceiling with room to spare.
         max_output_tokens=16_384,
