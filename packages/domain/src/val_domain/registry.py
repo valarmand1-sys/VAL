@@ -713,17 +713,17 @@ REGISTRY: tuple[ModelConfig, ...] = (
         model_identifier="openai/gpt-oss-20b",
         display_name="GPT-OSS 20B (MXFP4, Apple MLX, LM Studio — local, evaluation only)",
         # The model's architectural context is 131,072 tokens (OpenAI's gpt-oss
-        # model card). The figure here is the context LM Studio's just-in-time
-        # loading gives the model on every reload — its per-model DEFAULT, 8,192,
-        # observed on the server's own listing after a reload on 16 September
-        # 2026 — not the 32,768 a manual load carried that day: the house
-        # preflight bounds requests by this figure and must fail closed before
-        # the server could truncate, so it is the smallest window the route can
-        # be found at. Raising the model's default context in LM Studio is the
-        # owner's act; the registry then moves by amendment. The adapter also
-        # records the loaded context on every call and refuses a reply whose
-        # reported prompt filled the loaded window.
-        context_window_tokens=8_192,
+        # model card). The figure here is the context of the single canonical
+        # instance the owner keeps loaded — 32,768, verified on the server's own
+        # listing (`loaded_context_length`) and `lms ps` on 16 September 2026 and
+        # ruled the live runtime state. The house preflight bounds requests by
+        # this figure and must fail closed before the server could truncate.
+        # Known hazard, recorded: LM Studio's just-in-time reload restores the
+        # model's per-model DEFAULT context (8,192 on that date), so an unload
+        # and reload changes the window under this entry; the adapter records
+        # the loaded context on every call and refuses a reply whose reported
+        # prompt filled it. A different load is a registry amendment.
+        context_window_tokens=32_768,
         # The house's own output bound for this route (no provider cap is
         # published); above the 6,144 conversation ceiling with room to spare.
         max_output_tokens=16_384,

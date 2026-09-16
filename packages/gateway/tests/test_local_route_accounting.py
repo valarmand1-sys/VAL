@@ -49,7 +49,7 @@ from val_gateway import conversations, deliberate
 from val_gateway.candidate import CandidateGateway, candidate_gateway_for_scratch_store
 from val_gateway.deliberate import DeliberatedTurn
 from val_gateway.ledger import DatabaseLedger
-from val_gateway.loop import TruncatedTurn
+from val_gateway.loop import TruncatedTurn, UnansweredTurn
 from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader
 from val_gateway.provenance import verifier
@@ -60,14 +60,13 @@ LOCAL = "gpt-oss-20b-mxfp4-mlx-lmstudio"
 
 _REGISTERED: ModelConfig | None = by_slug(LOCAL)
 assert _REGISTERED is not None
-#: The entry as the tests below exercise it. The registered entry is bound to the
-#: context LM Studio's just-in-time reload gives the model (8,192 on 16 September
-#: 2026), at which the house preflight refuses a persona-bearing turn before any
-#: call — pinned by `test_the_registered_window_refuses_a_val_shaped_turn_locally`.
-#: The accounting tests prove settlement and provenance, not the window, so the
-#: `wide_window` fixture hands them the same entry at the model's architectural
-#: context, installed in the registry lookups exactly as `test_candidate_lane`
-#: installs its synthetic candidate.
+#: The entry as a test exercises it: the registered entry (32,768, the verified
+#: live runtime state of 16 September 2026) unless a test takes `wide_window`,
+#: which installs the same entry at the model's architectural context in the
+#: registry lookups exactly as `test_candidate_lane` installs its synthetic
+#: candidate. The orchestration-bound tests take it because they prove call
+#: counts, not the window: at 32,768 the house byte bound refuses the
+#: consequential response call itself — pinned below as evidence.
 _ACTIVE: ModelConfig = _REGISTERED
 
 
@@ -193,7 +192,6 @@ def _converse(engine: Engine, adapter: Recording) -> object:
 
 def test_a_local_call_settles_at_a_known_zero_with_tokens_and_provenance(
     store: Engine,  # noqa: F811 - pytest fixture injection
-    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording([local_answer()])
     response = _converse(store, adapter)
@@ -218,7 +216,6 @@ def test_a_local_call_settles_at_a_known_zero_with_tokens_and_provenance(
 
 def test_missing_usage_keeps_the_known_zero_and_records_tokens_as_unknown(
     store: Engine,  # noqa: F811 - pytest fixture injection
-    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording([local_answer(usage=False)])
     _converse(store, adapter)
@@ -232,7 +229,6 @@ def test_missing_usage_keeps_the_known_zero_and_records_tokens_as_unknown(
 
 def test_a_failed_local_attempt_is_a_known_zero_and_still_a_row(
     store: Engine,  # noqa: F811 - pytest fixture injection
-    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording(
         [GatewayError(GatewayErrorKind.PROVIDER_ERROR, "lmstudio: cannot reach the local server")]
@@ -386,7 +382,6 @@ def test_a_truncated_local_response_is_not_retried_on_the_zero_route(
 
 def test_an_ordinary_exchange_on_the_zero_route_makes_at_most_two_calls(
     store: Engine,  # noqa: F811 - pytest fixture injection
-    wide_window: ModelConfig,
 ) -> None:
     adapter = Recording(
         [
@@ -409,26 +404,61 @@ def test_an_ordinary_exchange_on_the_zero_route_makes_at_most_two_calls(
 # --- the registered window fails closed -----------------------------------------------
 
 
-def test_the_registered_window_refuses_a_val_shaped_turn_locally(
+def test_the_registered_window_refuses_an_oversized_turn_locally(
     store: Engine,  # noqa: F811 - pytest fixture injection
 ) -> None:
-    """At the context LM Studio's JIT reload gives the model (8,192), the persona-bearing
-    request's byte bound cannot fit beside the 6,144 ceiling: refused before any call —
-    nothing transmitted, nothing reserved, no row. The window is the registry's, never the
-    server's to truncate around."""
-    assert _REGISTERED.context_window_tokens == 8_192
+    """At the registered 32,768 window a request whose byte bound cannot fit beside the
+    6,144 ceiling is refused before any call — nothing transmitted, nothing reserved, no
+    row. The window is the registry's, never the server's to truncate around."""
+    assert _REGISTERED.context_window_tokens == 32_768
     adapter = Recording([local_answer()])
     gateway = lane(store, adapter)
     turn = a_turn(store)
     with pytest.raises(GatewayError) as refused:
         gateway.converse_candidate(
-            (Message(role="user", content="Hello."),),
+            (Message(role="user", content="x" * 40_000),),
             scope=ExplicitNoProject(),
             classification=Classification.PROTECTED,
             turn=turn,
-            configuration=_REGISTERED,
+            configuration=local(),
             max_output_tokens=6_144,
         )
     assert refused.value.kind is GatewayErrorKind.INVALID_REQUEST
     assert "cannot fit" in refused.value.detail and "nothing was routed" in refused.value.detail
     assert adapter.calls == 0 and _rows(store) == []
+
+
+def test_at_the_registered_window_the_consequential_response_call_is_refused_by_the_byte_bound(
+    store: Engine,  # noqa: F811 - pytest fixture injection
+) -> None:
+    """Evidence for the preflight ruling, 16 September 2026: at 32,768 the response call of
+    a consequential exchange — persona, envelopes and the reconciliation framing, bounded
+    in bytes — cannot fit beside the 6,144 ceiling. Classification, strip and the blind
+    call ran; the response was refused locally, no fourth call left the machine, no local
+    row was written for it, and the turn ended unanswered. The guard is not weakened here;
+    the bound's fit for local windows is the owner's ruling."""
+    assert _REGISTERED.context_window_tokens == 32_768
+    steps = script()
+    steps[2] = ok(
+        '{"position": "Open on the close-up.", "confidence": "medium", "reasoning": "Hands."}'
+    )
+    adapter = Recording(steps)
+    outcome = deliberate.send(
+        store,
+        lane(store, adapter),
+        MIXED,
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+        candidate=_REGISTERED,
+    )
+    assert isinstance(outcome, UnansweredTurn)
+    assert "cannot fit" in str(outcome.error) and "nothing was routed" in str(outcome.error)
+    assert adapter.calls == 3, "classification, strip, blind — the response never left"
+    assert [slug for slug, _, _ in adapter.sent][2] == LOCAL, "the blind call fit and ran locally"
+    with store.connect() as connection:
+        assert (
+            connection.execute(
+                text("select count(*) from messages where role = 'val'")
+            ).scalar_one()
+            == 0
+        )
