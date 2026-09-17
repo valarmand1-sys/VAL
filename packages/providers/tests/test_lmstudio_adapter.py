@@ -203,13 +203,17 @@ def test_the_request_is_the_core_prompt_whole_with_no_tools_and_no_cloud_fields(
     adapter.complete(local(), HISTORY, PERSONA, 6_144)
     sent = client.chat.completions.kwargs
     assert sent["model"] == "openai/gpt-oss-20b"
+    # Pin moved under the owner ruling of 17 September 2026 (local wire
+    # canonicalization): the two adjacent user messages Core assembles — the
+    # record-state envelope and the current turn — travel as ONE user message
+    # joined by exactly one blank line, the same canonical form the exact
+    # preflight measures. Text unchanged, order unchanged, nothing dropped.
     assert sent["messages"] == [
         {"role": "system", "content": PERSONA},
         {"role": "user", "content": "first question"},
         {"role": "assistant", "content": "first answer"},
-        {"role": "user", "content": "VAL-STATE-V1\n{...}"},
-        {"role": "user", "content": "the current question"},
-    ], "every item, in order, text unchanged — nothing shortened, dropped or marked"
+        {"role": "user", "content": "VAL-STATE-V1\n{...}\n\nthe current question"},
+    ], "every item, in order, text unchanged — adjacent same-role items joined once"
     assert sent["max_tokens"] == 6_144
     assert sent["reasoning_effort"] == "medium", "the registry's declared effort is sent"
     for forbidden in (
@@ -369,8 +373,14 @@ def test_a_prompt_within_the_loaded_context_is_settled_and_the_prompt_was_sent_w
     result = adapter.complete(local(), long_history, PERSONA, 6_144)
     assert result.terminal is TerminalState.COMPLETE
     sent = client.chat.completions.kwargs["messages"]
-    assert sent[-1]["content"] == "x" * 20_000, "nothing shortened to make the call succeed"
-    assert len(sent) == len(long_history) + 1
+    # Pin moved under the ruling of 17 September 2026: the long turn shares one
+    # canonical user message with the envelope that precedes it; it is sent whole.
+    assert sent[-1]["content"].endswith("\n\n" + "x" * 20_000), "nothing shortened"
+    assert sent[-1]["content"].count("x" * 20_000) == 1
+    # Five Core messages plus the persona travel as four wire items: the envelope,
+    # the current question and the long turn — three adjacent user messages —
+    # share one canonical user message (ruling, 17 September 2026).
+    assert len(sent) == len(long_history) + 1 - 2
 
 
 # --- streaming: content deltas only, reasoning interleaved anywhere ------------------

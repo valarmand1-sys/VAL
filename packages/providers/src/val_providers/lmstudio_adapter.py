@@ -100,15 +100,51 @@ _EFFORT: dict[ReasoningEffort, Literal["low", "medium", "high"]] = {
 }
 
 
+#: The one deterministic separator the local wire canonicalization inserts between
+#: the contents of consecutive same-role messages (owner ruling, 17 September 2026):
+#: a blank line — the join LM Studio's chat-completions ingress was observed to
+#: apply when it merged such a pair itself (the Qwen3.8-27B seam, evidence index §72).
+WIRE_SEPARATOR = "\n\n"
+
+
+def canonicalize_turns(turns: list[dict[str, str]]) -> list[dict[str, str]]:
+    """One canonical local wire representation: consecutive same-role messages become
+    one message of that role, contents joined by `WIRE_SEPARATOR`, in order.
+
+    Why (owner ruling, 17 September 2026): Val Core structurally assembles the
+    record-state envelope and the current user turn as two adjacent user
+    messages. LM Studio's SDK `Chat` merges such a pair into one message with two
+    content parts; its chat-completions ingress merges it into one string with a
+    blank line; a Jinja template concatenates parts with nothing — so the exact
+    preflight and the inference request rendered different prompts (5,560 vs
+    5,561 on Qwen3.8-27B). Canonicalizing here, before BOTH branches, leaves the
+    runtime nothing to merge on either path: divergence is removed by
+    construction, not by calibration. Role-based, model-independent, never
+    across roles, order and text otherwise unchanged; idempotent. Core's own
+    message structure is untouched — this is the local adapter's wire form.
+    """
+    canonical: list[dict[str, str]] = []
+    for turn in turns:
+        if canonical and canonical[-1]["role"] == turn["role"]:
+            canonical[-1] = {
+                "role": turn["role"],
+                "content": canonical[-1]["content"] + WIRE_SEPARATOR + turn["content"],
+            }
+        else:
+            canonical.append({"role": turn["role"], "content": turn["content"]})
+    return canonical
+
+
 def _chat_turns(messages: tuple[Message, ...], system: str | None) -> list[dict[str, str]]:
-    """The chat-completion items, in order, text unchanged — the one construction both
-    the inference request and the context measurement use."""
+    """The chat-completion items, in order — the one construction both the inference
+    request and the context measurement use, already in the canonical local wire
+    form (`canonicalize_turns`), so the two branches cannot diverge."""
     turns: list[dict[str, str]] = []
     if system is not None:
         turns.append({"role": "system", "content": system})
     for m in messages:
         turns.append({"role": "user" if m.role == "user" else "assistant", "content": m.content})
-    return turns
+    return canonicalize_turns(turns)
 
 
 def is_loopback(base_url: str) -> bool:

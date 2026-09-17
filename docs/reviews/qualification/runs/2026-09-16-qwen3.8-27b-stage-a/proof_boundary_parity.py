@@ -26,7 +26,7 @@ The model is verified resident at the expected loaded context first (exit 3
 otherwise). Nothing is loaded or unloaded here. Hidden reasoning text is never
 read, stored or printed. Cloud spend $0.
 
-Usage: proof_boundary_parity.py OUT.json CANDIDATE_SLUG [EXPECTED_LOADED_CONTEXT]
+Usage: proof_boundary_parity.py OUT.json CANDIDATE_SLUG [EXPECTED_LOADED_CONTEXT [MAX_TURNS]]
 """
 
 import json
@@ -52,6 +52,7 @@ URL = "postgresql+psycopg://localhost:5433/val_test"
 SLUG = sys.argv[2]
 EXPECTED = int(sys.argv[3]) if len(sys.argv) > 3 else 32_768
 EXPECTED_CONTEXT_IS_AUTOFIT = EXPECTED != 32_768
+MAX_TURNS = int(sys.argv[4]) if len(sys.argv) > 4 else 2
 
 import lmstudio  # version provenance only
 
@@ -195,7 +196,7 @@ def _rows():  # type: ignore[no-untyped-def]
 out: dict[str, object] = {"provenance": provenance, "turns": [], "stop": None}
 catalogue = load_catalogue(engine)
 conversation_id = None
-for index, content in enumerate(TURNS, start=1):
+for index, content in enumerate(TURNS[:MAX_TURNS], start=1):
     opened = open_turn(engine, content, catalogue=catalogue,
                        signals=None if conversation_id else ProjectSignals(explicit_no_project=True),
                        conversation_id=conversation_id)
