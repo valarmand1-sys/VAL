@@ -1,0 +1,88 @@
+{
+ "A1": {
+  "constraints": "AMBIGUOUS",
+  "invention": "YES",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "The no-stage-directions check matched bold markdown (`**Map the points…**`), not a stage direction — a harness regex artifact, recorded as it fell. What the read finds: a six-point numbered list with bold lead-ins, a generic-assistant shape rather than a conversation; it does not flatter and does not ask which act or what the readers actually wrote, it prescribes. Two evidence-bound-continuity lapses: 'A Maester of this house has often found that hearing a manuscript reveals rhythms' asserts a prior practice not in any record, and 'the principles above are those that have served House Armand's projects well' invents project history. 'I have no book on pilot-draft editing' is right; the coda 'Let me know how you wish to proceed' is the kind the persona discourages."
+ },
+ "A2": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Prose, no list, one address; an honest opinion (Ledger misleads; Record/Register/Chronicle or a qualifier) with reasoning. It reads as a short lecture rather than talk, but it answers the question straight. It does not invent the earlier argument. 'Continuity with your existing accounting ledgers' assumes such ledgers exist, framed conditionally."
+ },
+ "B1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Message only, no address, opens with the thanks, dates and hours correct, the noise-limit question asked, no money, no 'excited', signed Joseph. 74 visible tokens. The one thing a reader might want is the word 'confirm' softened — it reads as a booking request, which is what was asked."
+ },
+ "B2": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "YES",
+  "contradiction": "NO",
+  "note": "Seven numbered one-line items, room booking first, sides and page 41 present, no catering, verbs first ('Note to bring…' is the weakest). Items 4–7 are padding to reach seven, which the instruction invited. The closing sentence — 'If the room falls through, I would confirm it earlier.' — is one sentence but says nothing: it does not name what she would move earlier. That requested information is materially missing."
+ },
+ "C1": {
+  "constraints": "AMBIGUOUS",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "The failed check is a character artifact: the answer contains 'non‑professional' with a non-breaking hyphen (U+2011) and 'neighbors' in American spelling, so none of the frozen spellings matched; the fact is preserved. Every factual claim survives (eleven days, grandmother's village, neighbours not actors, morning/afternoon, the brothers, the near-nothing budget). Length 140–190 met. First person kept. But the instruction to remove the 'not X, it's Y' rhythm was only partly followed: 'isn't picturesque but real', 'neighbors, not actors', 'wasn't a method, it was', 'isn't a film about… It's about', 'not because… but because' remain. The supplied prose spelt 'neighbours'; the revision changed it to 'neighbors', a small voice change. Two paragraphs, clearer structure than the original."
+ },
+ "C2": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Under 80 words, no heading, no forbidden words, uses both supplied facts (every letter kept; nothing written about himself). The prose is more ornate than plain ('quiet vigilance', 'speaks louder than any prose', 'a life lived as an archive for others'); 'honor' is American spelling. Whether it is good is the owner's read."
+ },
+ "D1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Scene 12 correctly on Tuesday; scene 14 Wednesday night; scene 9 Thursday with the tutor and the 6pm limit; the genuine conflict (scene 9 needs the drone, booked Tuesday only, and the child with his Thursday-only tutor) is found and flagged as irreconcilable without a change, not silently resolved. Facts and assumptions are separated. One over-statement: 'Priya present only on Tuesday' is listed as fixed, where the user said only that she is unavailable Wednesday. Presentation is a markdown table with headers and a closing offer — a document, not a conversation."
+ },
+ "D2": {
+  "constraints": "AMBIGUOUS",
+  "invention": "YES",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "The failed check looked for 'November'; the answer abbreviates to 'Nov' throughout, so the explicit constraints (dependencies, fact versus assumption, a recommendation with a strength) were in fact all met. Substance: she recommends hiring Tomas and states 'Moderate-high' confidence hinging on the sound unknown — the right shape. But the arithmetic is wrong — 'a four-week window gives him until 28 Oct' (1 Nov plus four weeks is 29 Nov, one day before the deadline), so the zero-slack point is gestured at ('narrow margin') but not actually established. Unsupported invention: '30 Nov (Wednesday)' asserts a weekday not supplied (30 November 2026 is a Monday); 'Tomas's proven capacity' is not in the facts; 'roughly 2–3 days per week' is invented. 'You will be unavailable for editing until after 31 Oct' overstates the day-job fact (evenings were not excluded)."
+ },
+ "E1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Says plainly she has no record of the review and invents no clause. Offers a present action (provide the excerpt) — but also 'direct me to where it is stored', which implies a fetching capability she does not have. No forward help for a call in ten minutes (nothing on what to look for in a distribution contract); the persona would lean toward offering it, but it was not required. 48 visible tokens."
+ },
+ "E2": {
+  "constraints": "YES",
+  "invention": "YES",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Reads the log correctly (signal 9 at frame 848 after 91% and 96% capacity warnings) and says 'highly probable' — then hardens it: 'So the failure was caused by insufficient storage', presenting the inference as the conclusion; the mechanism offered (the kernel killing a process 'to free space') is doubtful — a SIGKILL is more often memory pressure, and a full disk usually surfaces as a write error. On the backup: 'I have no record in this conversation' is right, but 'The system has not logged any backup activity for that period' is an invented observation — she cannot see any system log — and 'nor do I have a volume to consult' narrates the machinery."
+ },
+ "F1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "YES",
+  "correction_preserved": "YES",
+  "note": "The correction is preserved cleanly: turn 2 has the barn, 6pm, no plus-ones, the 25th and the 18th; turn 3 is exactly three lines carrying all of it and nothing stale. The contradiction: the user said 'I'm writing the invitation', and both drafts are signed 'Val, Maester of House Armand' with a bold title and a Subject line — she wrote it as from herself, and 'warm but short' became a formal notice."
+ },
+ "F2": {
+  "constraints": "NO",
+  "invention": "NO",
+  "omission": "YES",
+  "contradiction": "YES",
+  "correction_preserved": "YES",
+  "note": "Turn 1's failed check looked for the word 'risk'; the answer lists three numbered items without it — a naive check, recorded as it fell. Substance of turn 1: river sign-off and Daniel's 3pm exit are real; the third item misreads the memo (the night package is on set through Wednesday, and 'delay in their delivery' is not a stated risk). The memo's plainest risk — point 6, the insurance that does not cover the drone with a rider only after wrap — is omitted from the top three. Turn 2 preserves both corrections (insurance no longer raised; scene 19 gone) but contradicts the supplied forecast: 'wind gusts of 40 km/h by mid-afternoon Tuesday' — the memo says Tuesday dry and the gusts Thursday — and 'scene 15 onto Thursday… clash with Priya's night shoot on Tuesday' is incoherent. Turn 3: both corrections carried ('the drone is covered by our insurance'), Hannah addressed, prose only — but 'the river crossing has been excised from the schedule' breaks the explicit 'don't mention the river' instruction, the Tuesday-wind error is repeated, and the body runs to two paragraphs plus the salutation (the paragraph check counted three)."
+ }
+}
