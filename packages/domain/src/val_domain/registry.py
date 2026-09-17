@@ -759,6 +759,52 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 16),
     ),
     ModelConfig(
+        id=UUID("c7e2a5d1-4b6f-4e8a-9d3c-2f1b7a6e5d40"),
+        slug="qwen3-8-27b-mlx-6bit-lmstudio",
+        # Owner ruling, 16 September 2026: the ONE authorised Local Partner
+        # challenger, registered FOR EVALUATION ONLY after GPT-OSS-20B's Stage A
+        # (evidence index §71) — `lmstudio-community/Qwen3.8-27B-MLX-6bit`
+        # (Qwen3.8-27B, dense, 6-bit MLX quantization, 22,804,836,386 bytes on
+        # disk) served by LM Studio on the loopback interface of the house's own
+        # Mac (M4 Pro, 48 GB). Quantization and runtime are identity: a different
+        # quantization is a different entry.
+        provider="lmstudio",
+        # The canonical runtime identifier LM Studio's own listings expose for
+        # this artifact (`lms ls` model key, `/api/v0/models` id, `/v1/models`
+        # id) — read on 16 September 2026, not manufactured from the repository
+        # name; the adapter refuses a response naming any other model.
+        model_identifier="qwen3.8-27b-mlx",
+        display_name="Qwen3.8 27B (6-bit, Apple MLX, LM Studio — local, evaluation only)",
+        # The model's architectural context is 262,144 tokens (LM Studio's
+        # listing, `max_context_length`). The figure here is the qualification
+        # context the owner ruled — 32,768, the same window GPT-OSS was
+        # qualified at — and the runtime's actual loaded context governs the
+        # exact preflight on every call; this figure is nominal. The
+        # just-in-time-reload hazard recorded on the GPT-OSS entry applies.
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        # Qwen3.8 thinking levels are low / medium / xhigh, xhigh being the
+        # model preset's default; MEDIUM is the configuration ruled for
+        # qualification and the effort the adapter transmits on every call.
+        reasoning_effort=ReasoningEffort.MEDIUM,
+        # No VAL-specific sampling override (ruled): the effective preset is
+        # recorded as provenance, not changed.
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 16),
+        rates_verified_on=date(2026, 9, 16),
+    ),
+    ModelConfig(
         id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),
         slug="gpt-5-6-luna",
         provider="openai",

@@ -42,6 +42,9 @@ CANDIDATES = (
     "gpt-5-6-luna",
     # 16 September 2026: the first local candidate, evaluation only, target PARTNER.
     "gpt-oss-20b-mxfp4-mlx-lmstudio",
+    # 16 September 2026 (owner ruling): the one authorised Local Partner
+    # challenger, evaluation only, target PARTNER, no profile.
+    "qwen3-8-27b-mlx-6bit-lmstudio",
 )
 
 

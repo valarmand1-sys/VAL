@@ -15,6 +15,7 @@ from val_domain.gateway import (
     ModelConfig,
     PricingFeature,
     QualificationTarget,
+    ReasoningEffort,
 )
 from val_domain.registry import REGISTRY, active, by_slug, live_routes, under_evaluation
 
@@ -115,3 +116,37 @@ def test_the_local_entry_is_under_evaluation_and_nowhere_near_routing() -> None:
     assert config not in live_routes()
     assert {c.slug for c in live_routes()} == {"gpt-5-6-sol-medium"}, "production unchanged"
     assert all(c.fallback_slug != LOCAL for c in REGISTRY), "nobody's fallback"
+
+
+# --- the Qwen3.8-27B challenger entry (owner ruling, 16 September 2026) ----------------------
+
+
+def test_the_qwen_challenger_is_evaluation_only_local_unmetered_and_medium() -> None:
+    config = by_slug("qwen3-8-27b-mlx-6bit-lmstudio")
+    assert config is not None
+    assert config.provider == "lmstudio"
+    # LM Studio's own canonical runtime id for lmstudio-community/Qwen3.8-27B-MLX-6bit.
+    assert config.model_identifier == "qwen3.8-27b-mlx"
+    assert config.hosting is Hosting.LOCAL
+    assert config.metering is Metering.LOCAL_NO_METERED_COST
+    assert config.cost_per_mtok_in_usd == 0.0 and config.cost_per_mtok_out_usd == 0.0
+    assert config.admission is Admission.NOT_ADMITTED
+    assert config.capability_profiles == frozenset(), "no production profile"
+    assert config.qualification_targets == frozenset({QualificationTarget.PARTNER})
+    assert config.fallback_slug is None
+    assert config.reasoning_effort is ReasoningEffort.MEDIUM, "never xhigh, never low"
+    assert config.temperature is None, "no VAL-specific sampling override"
+    assert config.context_window_tokens == 32_768
+    incumbent_local = by_slug("gpt-oss-20b-mxfp4-mlx-lmstudio")
+    assert incumbent_local is not None
+    assert config.eligible_classifications == incumbent_local.eligible_classifications
+
+
+def test_both_local_entries_are_distinct_evaluation_only_entries() -> None:
+    local = [c for c in REGISTRY if c.provider == "lmstudio"]
+    assert {c.slug for c in local} == {
+        "gpt-oss-20b-mxfp4-mlx-lmstudio",
+        "qwen3-8-27b-mlx-6bit-lmstudio",
+    }
+    assert len({c.id for c in local}) == 2 and len({c.model_identifier for c in local}) == 2
+    assert all(c.admission is Admission.NOT_ADMITTED and not c.capability_profiles for c in local)

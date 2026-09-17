@@ -28,7 +28,13 @@ CANDIDATES = {"sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna"}
 # candidate; admitted to the partner profile on 14 September 2026, it left it.
 # `gpt-oss-20b-mxfp4-mlx-lmstudio` joined it on 16 September 2026: the first
 # local candidate, registered for evaluation only, target PARTNER, no profile.
-PARTNER_CANDIDATES: set[str] = {"gpt-oss-20b-mxfp4-mlx-lmstudio"}
+# `qwen3-8-27b-mlx-6bit-lmstudio` joined it on 16 September 2026 (owner ruling):
+# the one authorised Local Partner challenger, evaluation only, target PARTNER,
+# no profile — the pin moves under that ruling and says so.
+PARTNER_CANDIDATES: set[str] = {
+    "gpt-oss-20b-mxfp4-mlx-lmstudio",
+    "qwen3-8-27b-mlx-6bit-lmstudio",
+}
 
 
 def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registry() -> None:

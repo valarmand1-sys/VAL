@@ -19,7 +19,13 @@ terminal state, the exact-preflight result and parity, loaded context, cost and
 certainty, any refusal, any truncation, any error, and the mechanical checks
 frozen with the task. Hidden reasoning is never read, stored or printed.
 
-Usage: harness_stage_a.py OUT.json
+Usage: harness_stage_a.py OUT.json [CANDIDATE_SLUG [EXPECTED_LOADED_CONTEXT]]
+
+The optional candidate override (added for the Qwen3.8-27B challenger, owner
+ruling of 16 September 2026) points the SAME frozen task set at another
+NOT_ADMITTED registry entry; the tasks, prompts and mechanical checks in
+`benchmark.json` are never modified and the frozen artifact stays the one
+both runs are compared against.
 """
 
 import json
@@ -79,8 +85,12 @@ persona = DatabasePersonaLoader(engine).active()
 adapters, problems = build_adapters({"lmstudio"})
 assert not problems, problems
 adapter = adapters["lmstudio"]
-local = by_slug(BENCHMARK["candidate"]["slug"])
-assert local is not None and local.model_identifier == BENCHMARK["candidate"]["model"]
+CANDIDATE_SLUG = sys.argv[2] if len(sys.argv) > 2 else BENCHMARK["candidate"]["slug"]
+EXPECTED_CONTEXT = int(sys.argv[3]) if len(sys.argv) > 3 else BENCHMARK["candidate"]["expected_loaded_context"]
+local = by_slug(CANDIDATE_SLUG)
+assert local is not None, CANDIDATE_SLUG
+if CANDIDATE_SLUG == BENCHMARK["candidate"]["slug"]:
+    assert local.model_identifier == BENCHMARK["candidate"]["model"]
 assert local.reasoning_effort is not None
 assert local.reasoning_effort.value == BENCHMARK["candidate"]["reasoning_effort"], local.reasoning_effort
 
@@ -98,7 +108,7 @@ native = adapter.runtime_facts(local.model_identifier)
 inspector = adapter._inspector
 instance, handle = inspector.loaded_instance(local.model_identifier)
 loaded_by_sdk = handle.get_context_length()
-expected = BENCHMARK["candidate"]["expected_loaded_context"]
+expected = EXPECTED_CONTEXT
 LMSTUDIO_APP_PLIST = Path("/Applications/LM Studio.app/Contents/Info.plist")
 app_version = None
 if LMSTUDIO_APP_PLIST.exists():
@@ -249,6 +259,8 @@ def _persisted_answer(conversation_id) -> str | None:  # type: ignore[no-untyped
 
 out: dict[str, object] = {
     "benchmark": BENCHMARK["name"],
+    "benchmark_path": str(HERE / "benchmark.json"),
+    "candidate_slug": CANDIDATE_SLUG,
     "started_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
     "provenance": provenance,
     "runtime_facts_at_start": native,

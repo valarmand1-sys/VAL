@@ -78,6 +78,11 @@ TOKEN_SCAN_EXCLUDED = (
     # answer is data, not a version specifier, and evidence is never edited to
     # make a checker pass.
     "docs/reviews/economics/",
+    # Captured qualification evidence (Stage A, 16 September 2026, and later
+    # runs): candidates' visible answers recorded exactly as they fell. A word
+    # inside a recorded answer is data, not a version specifier; the frozen
+    # benchmark evidence is never edited to make a checker pass.
+    "docs/reviews/qualification/runs/",
 )
 LOCK_FILES = (
     "uv.lock",
