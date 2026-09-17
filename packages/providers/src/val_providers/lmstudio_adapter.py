@@ -62,8 +62,14 @@ from val_domain.gateway import (
     ReasoningEffort,
     TerminalState,
 )
-from val_domain.provider import ProviderEvent, TextDelta
+from val_domain.provider import (
+    ContextFeasibility,
+    ContextInspectionUnavailableError,
+    ProviderEvent,
+    TextDelta,
+)
 from val_providers.base import ProviderResult, normalize
+from val_providers.lmstudio_inspector import LMStudioContextInspector
 
 _LOGGER = logging.getLogger("val.providers.lmstudio")
 
@@ -92,6 +98,17 @@ _EFFORT: dict[ReasoningEffort, Literal["low", "medium", "high"]] = {
     ReasoningEffort.MEDIUM: "medium",
     ReasoningEffort.HIGH: "high",
 }
+
+
+def _chat_turns(messages: tuple[Message, ...], system: str | None) -> list[dict[str, str]]:
+    """The chat-completion items, in order, text unchanged — the one construction both
+    the inference request and the context measurement use."""
+    turns: list[dict[str, str]] = []
+    if system is not None:
+        turns.append({"role": "system", "content": system})
+    for m in messages:
+        turns.append({"role": "user" if m.role == "user" else "assistant", "content": m.content})
+    return turns
 
 
 def is_loopback(base_url: str) -> bool:
@@ -146,6 +163,7 @@ class LMStudioAdapter:
         *,
         timeout_seconds: float = 600.0,
         read_native_models: bool = True,
+        inspector: LMStudioContextInspector | None = None,
     ) -> None:
         if not is_loopback(base_url):
             raise ValueError(
@@ -168,6 +186,34 @@ class LMStudioAdapter:
         self._native_models: dict[str, Mapping[str, object]] = {}
         if read_native_models:
             self._native_models = self._read_native_models()
+        #: Ruling, 16 September 2026: the read-only runtime/context inspector,
+        #: built by startup with the same credential; None means measurement is
+        #: unavailable and the gateway fails closed on its byte bound.
+        self._inspector = inspector
+
+    # --- exact context measurement (ruling, 16 September 2026) ----------------
+
+    def measure_context(
+        self, config: ModelConfig, messages: tuple[Message, ...], system: str | None
+    ) -> ContextFeasibility:
+        """Measure exactly what `complete`/`stream` would send, against the loaded window.
+
+        The turns are built by the same function the request uses, so the
+        inspector renders the same message structure the OpenAI-compatible
+        call transmits. Nothing is sent; nothing is generated; nothing is
+        loaded. Without an inspector the measurement is unavailable and the
+        caller fails closed.
+        """
+        if self._inspector is None:
+            raise ContextInspectionUnavailableError(
+                f"{self.name}: no runtime inspector was built for this adapter; the exact "
+                "context preflight is unavailable and the conservative bound applies"
+            )
+        if config.provider != self.name:
+            raise ContextInspectionUnavailableError(
+                f"{self.name}: configuration {config.slug!r} belongs to {config.provider!r}"
+            )
+        return self._inspector.measure(config.model_identifier, _chat_turns(messages, system))
 
     # --- construction-time runtime facts ---------------------------------------
 
@@ -327,16 +373,9 @@ class LMStudioAdapter:
                 f"{self.name}: this route is conversation-only and enforces no output "
                 "schema; a schema-constrained task is refused rather than sent unconstrained",
             )
-        turns: list[dict[str, str]] = []
-        if system is not None:
-            turns.append({"role": "system", "content": system})
-        for m in messages:
-            turns.append(
-                {"role": "user" if m.role == "user" else "assistant", "content": m.content}
-            )
         kwargs: dict[str, Any] = {
             "model": config.model_identifier,
-            "messages": turns,
+            "messages": _chat_turns(messages, system),
             "max_tokens": max_output_tokens,
         }
         effort = _EFFORT.get(config.reasoning_effort)

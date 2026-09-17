@@ -41,6 +41,7 @@ from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
 from val_providers.lmstudio_adapter import DEFAULT_BASE_URL as LMSTUDIO_DEFAULT_BASE_URL
 from val_providers.lmstudio_adapter import LMStudioAdapter
+from val_providers.lmstudio_inspector import LMStudioContextInspector, inspector_host_of
 from val_providers.openai_adapter import OpenAIAdapter
 
 #: Where each provider's key is read from. A provider absent from this mapping
@@ -176,8 +177,14 @@ def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], lis
             # The adapter fails closed on a non-loopback host; that refusal is
             # a startup problem, stated, never a running service with a remote
             # server wearing the local provider's name.
+            # Ruling, 16 September 2026: the read-only inspector is built beside
+            # the adapter, on the same loopback host and the same credential,
+            # passed programmatically — never through the SDK's environment
+            # fallback, never a second secret.
             try:
-                adapters[provider] = LMStudioAdapter(configured_lmstudio_base_url(), key)
+                base_url = configured_lmstudio_base_url()
+                inspector = LMStudioContextInspector(inspector_host_of(base_url), key)
+                adapters[provider] = LMStudioAdapter(base_url, key, inspector=inspector)
             except ValueError as refused:
                 problems.append(str(refused))
         else:

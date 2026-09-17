@@ -9,6 +9,13 @@ dependencies = [
     # (01-architecture.md §5.1, enforced by check_boundaries.py).
     "anthropic==0.122.0",
     "openai==3.1.0",
+    # Ruling, 16 September 2026: the LM Studio SDK, for the READ-ONLY
+    # runtime/context inspector only — never inference. Pinned to a
+    # PRE-RELEASE by explicit owner exception to the stable-release practice:
+    # 1.5.0, the newest stable release, cannot authenticate to a server that requires
+    # an API token; 1.6.0b1 is the release carrying api_token support. Do not
+    # float this pin; a move to any other version is a ruling.
+    "lmstudio==1.6.0b1",
 ]
 
 [build-system]

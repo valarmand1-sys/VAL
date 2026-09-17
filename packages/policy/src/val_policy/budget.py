@@ -169,6 +169,46 @@ def limit_overrun(
     return None
 
 
+def local_context_overrun(
+    config: ModelConfig,
+    prompt_tokens: int,
+    context_tokens: int,
+    requested_max_output_tokens: int,
+) -> str | None:
+    """Why an exactly measured local request cannot fit its loaded window, or `None`.
+
+    Ruling, 16 September 2026 — the local context preflight, for
+    `Metering.LOCAL_NO_METERED_COST` routes only. The byte bound in
+    `limit_overrun` is a monetary upper bound and stays the cloud rule and the
+    local fail-closed fallback; this is context feasibility on exact figures:
+
+        prompt_tokens + requested_max_output_tokens <= context_tokens
+
+    `prompt_tokens` is the runtime's own count of the serialised prompt and
+    `context_tokens` the context of the instance actually loaded — never the
+    registry's nominal window. The output reserve is the whole requested
+    ceiling: on a reasoning model it covers hidden reasoning and visible text
+    together, because the server counts and caps them together. Nothing is
+    clamped or trimmed to fit; a request that does not fit is refused in words.
+    """
+    if requested_max_output_tokens > config.max_output_tokens:
+        return (
+            f"{config.slug} supports at most {config.max_output_tokens:,} output tokens "
+            f"and this request asks for {requested_max_output_tokens:,}. Refused rather "
+            "than clamped: serving less than was asked would make the authorised bound "
+            "and the transmitted request disagree."
+        )
+    if prompt_tokens + requested_max_output_tokens > context_tokens:
+        return (
+            f"{config.slug}: the loaded context is {context_tokens:,} tokens; this request's "
+            f"exact serialised prompt ({prompt_tokens:,}) plus its requested output reserve "
+            f"({requested_max_output_tokens:,}, reasoning and visible text together) cannot "
+            "fit. Refused locally — nothing was routed, reserved, or transmitted; nothing "
+            "was shortened to make it fit."
+        )
+    return None
+
+
 def maximum_cost(
     config: ModelConfig,
     parts: Iterable[str],

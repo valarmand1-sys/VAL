@@ -76,6 +76,9 @@ from val_domain.project import (
     ProjectScope,
 )
 from val_domain.provider import (
+    ContextFeasibility,
+    ContextInspectingAdapter,
+    ContextInspectionUnavailableError,
     DeltaSink,
     ProviderAdapter,
     ProviderResult,
@@ -92,6 +95,7 @@ from val_policy.budget import (
     effective_rates,
     exchange_envelope_message,
     limit_overrun,
+    local_context_overrun,
     maximum_cost,
     no_affordable_route_message,
 )
@@ -198,11 +202,50 @@ class CallMeasurement:
 
 
 def _runtime_diagnostics(
-    config: ModelConfig, reported: Mapping[str, object] | None
+    config: ModelConfig,
+    reported: Mapping[str, object] | None,
+    *,
+    feasibility: ContextFeasibility | None = None,
+    server_prompt_tokens: int | None = None,
 ) -> dict[str, object]:
-    """The runtime facts recorded on every call: the hosting axis, plus whatever
-    the adapter reported verbatim."""
-    return {"hosting": config.hosting.value, **({} if reported is None else dict(reported))}
+    """The runtime facts recorded on every call: the hosting axis, whatever the
+    adapter reported verbatim, and — ruling, 16 September 2026 — the exact
+    preflight that admitted the call beside the server's own prompt count, so
+    parity is evidence on the row and a disagreement is visible, never normal."""
+    facts: dict[str, object] = {
+        "hosting": config.hosting.value,
+        **({} if reported is None else dict(reported)),
+    }
+    if feasibility is not None:
+        difference = (
+            None
+            if server_prompt_tokens is None
+            else server_prompt_tokens - feasibility.prompt_tokens
+        )
+        facts["preflight"] = {
+            "source": feasibility.source,
+            "prompt_tokens": feasibility.prompt_tokens,
+            "context_tokens": feasibility.context_tokens,
+            "registry_context_tokens": config.context_window_tokens,
+            "registry_agrees": feasibility.context_tokens == config.context_window_tokens,
+            **dict(feasibility.details),
+        }
+        facts["parity"] = {
+            "preflight_prompt_tokens": feasibility.prompt_tokens,
+            "server_prompt_tokens": server_prompt_tokens,
+            "difference": difference,
+            "exact": difference == 0,
+        }
+        if difference is not None and difference != 0:
+            _LOGGER.warning(
+                "%s: preflight counted %d prompt tokens, the server reported %d (difference %+d); "
+                "parity is not exact",
+                config.slug,
+                feasibility.prompt_tokens,
+                server_prompt_tokens,
+                difference,
+            )
+    return facts
 
 
 class CallRecord:
@@ -746,7 +789,41 @@ class Gateway:
         # succeed. Nothing is clamped: a request for more output than the model
         # supports is refused in those words, because silently serving less
         # than was asked is a quiet lie about what was authorised.
-        overrun = limit_overrun(config, parts, request.max_output_tokens)
+        # Ruling, 16 September 2026: on an unmetered local route the context
+        # check is exact — the runtime's own rendering and tokenizer against
+        # the window that is actually loaded — and the byte bound remains the
+        # fail-closed fallback when the runtime cannot be measured. Cloud
+        # routes are untouched: the byte bound governs them as before.
+        feasibility: ContextFeasibility | None = None
+        if config.metering is Metering.LOCAL_NO_METERED_COST and isinstance(
+            adapter, ContextInspectingAdapter
+        ):
+            try:
+                feasibility = adapter.measure_context(config, request.messages, request.system)
+            except ContextInspectionUnavailableError as why:
+                _LOGGER.warning(
+                    "local context measurement unavailable for %s (%s); failing closed on the "
+                    "conservative bound",
+                    config.slug,
+                    why,
+                )
+        if feasibility is not None:
+            if feasibility.context_tokens != config.context_window_tokens:
+                _LOGGER.warning(
+                    "%s: loaded runtime context %d disagrees with the registry's nominal %d; "
+                    "the runtime governs",
+                    config.slug,
+                    feasibility.context_tokens,
+                    config.context_window_tokens,
+                )
+            overrun = local_context_overrun(
+                config,
+                feasibility.prompt_tokens,
+                feasibility.context_tokens,
+                request.max_output_tokens,
+            )
+        else:
+            overrun = limit_overrun(config, parts, request.max_output_tokens)
         if overrun is not None:
             raise GatewayError(GatewayErrorKind.INVALID_REQUEST, overrun)
 
@@ -779,7 +856,9 @@ class Gateway:
                 ),
             )
 
-        return self._call_and_settle(request, config, adapter, claim, cache_ttl, on_delta)
+        return self._call_and_settle(
+            request, config, adapter, claim, cache_ttl, on_delta, feasibility=feasibility
+        )
 
     def _cache_ttl_for(self, config: ModelConfig, request: GatewayRequest) -> CacheTtl | None:
         """Whether this call asks the provider to cache its stable prefix, and for how long.
@@ -827,6 +906,8 @@ class Gateway:
         claim: Reservation,
         cache_ttl: CacheTtl | None = None,
         on_delta: DeltaSink | None = None,
+        *,
+        feasibility: ContextFeasibility | None = None,
     ) -> GatewayResponse:
         """Contact the provider with a reservation held, and always resolve it.
 
@@ -1006,7 +1087,12 @@ class Gateway:
                     prompt_cache_key=result.prompt_cache_key,
                     cache_diagnostics=result.cache_diagnostics,
                     provider_reported_model=result.provider_reported_model,
-                    runtime_diagnostics=_runtime_diagnostics(config, result.runtime_diagnostics),
+                    runtime_diagnostics=_runtime_diagnostics(
+                        config,
+                        result.runtime_diagnostics,
+                        feasibility=feasibility,
+                        server_prompt_tokens=result.total_input_tokens,
+                    ),
                 ),
             )
         )

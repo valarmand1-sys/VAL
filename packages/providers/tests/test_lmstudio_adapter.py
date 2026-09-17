@@ -533,3 +533,39 @@ def test_the_native_listing_is_read_with_the_token_and_its_absence_is_tolerated(
     adapter._native_models = adapter._read_native_models()
     assert adapter._native_models == {}
     assert adapter.loaded_context_length("openai/gpt-oss-20b") is None
+
+
+# --- exact context measurement through the adapter (ruling, 16 September 2026) -------------
+
+
+def test_measurement_is_unavailable_without_an_inspector_never_estimated() -> None:
+    from val_domain.provider import ContextInspectionUnavailableError
+
+    adapter, _ = _adapter(_Completions(_completion()))
+    with pytest.raises(ContextInspectionUnavailableError, match="no runtime inspector"):
+        adapter.measure_context(local(), HISTORY, PERSONA)
+
+
+def test_measurement_receives_exactly_the_turns_the_request_transmits() -> None:
+    from val_domain.provider import ContextFeasibility
+
+    seen: dict[str, object] = {}
+
+    class FakeInspector:
+        sdk_version = "fake"
+
+        def measure(self, model_identifier: str, turns: object) -> ContextFeasibility:
+            seen["model"] = model_identifier
+            seen["turns"] = [dict(t) for t in turns]  # type: ignore[attr-defined]
+            return ContextFeasibility(5_417, 32_768, "fake", {})
+
+    adapter, client = _adapter(_Completions(_completion()))
+    adapter._inspector = FakeInspector()  # type: ignore[assignment]
+    result = adapter.measure_context(local(), HISTORY, PERSONA)
+    adapter.complete(local(), HISTORY, PERSONA, 6_144)
+    assert seen["model"] == "openai/gpt-oss-20b"
+    assert seen["turns"] == client.chat.completions.kwargs["messages"], (
+        "one construction for measurement and transmission"
+    )
+    assert (result.prompt_tokens, result.context_tokens) == (5_417, 32_768)
+    assert client.chat.completions.kwargs["messages"][0] == {"role": "system", "content": PERSONA}

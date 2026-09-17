@@ -367,15 +367,34 @@ def test_the_13_september_turn_sends_no_oversized_envelope_and_no_count_request(
     assert not hasattr(adapter, "count_tokens")
 
 
-def test_no_runtime_source_names_a_token_counting_endpoint() -> None:
-    pattern = re.compile(r"count_tokens|count-tokens|messages/count|countTokens")
-    offenders = [
-        str(path.relative_to(REPO_ROOT))
-        for root in ("packages", "apps")
-        for path in (REPO_ROOT / root).glob("*/src/**/*.py")
-        if pattern.search(path.read_text(encoding="utf-8"))
+# Amended under the ruling of 16 September 2026 (local context preflight): no
+# *provider* counting endpoint is named anywhere — the cloud byte bound and the
+# recall envelope bound are unchanged — and exactly one module may count tokens:
+# the read-only LM Studio inspector, which asks the already-loaded local
+# runtime's own tokenizer for the exact serialised prompt before a local call.
+# That is a measurement on this machine, not a provider request; nothing else
+# on the turn path may name a counting call.
+LOCAL_TOKENIZER_MODULE = Path("packages/providers/src/val_providers/lmstudio_inspector.py")
+
+
+def test_no_runtime_source_names_a_provider_token_counting_endpoint() -> None:
+    provider_endpoints = re.compile(r"count-tokens|messages/count|countTokens")
+    any_count = re.compile(r"count_tokens")
+    sources = [
+        path for root in ("packages", "apps") for path in (REPO_ROOT / root).glob("*/src/**/*.py")
     ]
-    assert offenders == []
+    endpoint_offenders = [
+        str(path.relative_to(REPO_ROOT))
+        for path in sources
+        if provider_endpoints.search(path.read_text(encoding="utf-8"))
+    ]
+    assert endpoint_offenders == []
+    counting = {
+        path.relative_to(REPO_ROOT)
+        for path in sources
+        if any_count.search(path.read_text(encoding="utf-8"))
+    }
+    assert counting == {LOCAL_TOKENIZER_MODULE}, "only the ruled local inspector counts"
 
 
 # --- automatic recall and House Recall: one rule, one envelope -----------------------

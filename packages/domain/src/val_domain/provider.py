@@ -212,6 +212,55 @@ class StreamingProviderAdapter(Protocol):
     ) -> Iterator[ProviderEvent]: ...
 
 
+@dataclass(frozen=True)
+class ContextFeasibility:
+    """An exact, runtime-derived measurement of one request against one loaded window.
+
+    Ruling, 16 September 2026 (the local context preflight). `prompt_tokens` is
+    the token count of the request as the runtime itself serialises it — its
+    own prompt template applied, its own tokenizer — never an estimate;
+    `context_tokens` is the context length of the instance that is actually
+    loaded, read from the runtime, never the registry's nominal figure. `source`
+    names the mechanism; `details` carries the runtime's provenance (instance
+    identity, versions, rendered length) verbatim for the evidence row.
+    """
+
+    prompt_tokens: int
+    context_tokens: int
+    source: str
+    details: Mapping[str, object]
+
+
+class ContextInspectionUnavailableError(Exception):
+    """The runtime could not be measured authoritatively — the caller fails closed.
+
+    Raised, never caught into a guess: no matching loaded instance, an ambiguous
+    instance, an identity that cannot be proven, a missing context length, a
+    runtime that cannot be reached, or a measurement the runtime refused.
+    """
+
+
+@runtime_checkable
+class ContextInspectingAdapter(Protocol):
+    """An adapter that can measure a request exactly against its runtime's loaded window.
+
+    Declared by implementing `measure_context`; consulted by the gateway only for
+    `Metering.LOCAL_NO_METERED_COST` configurations. The measurement never sends
+    the request, never generates, never loads a model.
+    """
+
+    name: str
+
+    def measure_context(
+        self, config: ModelConfig, messages: tuple[Message, ...], system: str | None
+    ) -> ContextFeasibility: ...
+
+
+def supports_context_inspection(adapter: object) -> bool:
+    """Whether this adapter declares exact context measurement — by implementing it."""
+    return callable(getattr(adapter, "measure_context", None))
+
+
 def supports_streaming(adapter: object) -> bool:
     """Whether this adapter declares the streaming capability.
 

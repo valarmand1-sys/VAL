@@ -12,7 +12,15 @@ Observers are non-mutating: the SDK client's `create` is wrapped only to
 timestamp the first chunk of any kind (prefill end) and the first content
 chunk; reasoning text is never read, stored or printed.
 
-Usage: harness_loopback.py OUT.json [--turns N]
+Exact preflight and parity (ruling, later on 16 September 2026): before each
+turn the read-only LM Studio SDK inspector's count of the exact serialised
+prompt is taken through the lane (`measure_candidate_context`); after each
+admitted call the gateway's own `runtime_diagnostics.parity` row — the SDK
+count beside the server's `usage.prompt_tokens` — is read back. Any inexact
+parity STOPS the run before the next turn. Version provenance (SDK, LM Studio
+app, the loaded instance's facts) is recorded on the output.
+
+Usage: harness_loopback.py OUT.json [label]
 """
 
 import json
@@ -59,6 +67,13 @@ from val_gateway.startup import build_adapters
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.project_resolution import ProjectSignals
 from val_policy.tokens import estimate_tokens
+import lmstudio  # version provenance only; the inspector is built by startup
+
+LMSTUDIO_APP_PLIST = Path("/Applications/LM Studio.app/Contents/Info.plist")
+app_version = None
+if LMSTUDIO_APP_PLIST.exists():
+    with LMSTUDIO_APP_PLIST.open("rb") as f:
+        app_version = plistlib.load(f).get("CFBundleShortVersionString")
 
 seed(engine, ROOT)
 persona = DatabasePersonaLoader(engine).active()
@@ -121,8 +136,27 @@ out: dict[str, object] = {
     "persona": {"version": persona.semantic_version, "id": str(persona.id)},
     "configuration": {"slug": local.slug, "id": str(local.id), "model": local.model_identifier},
     "runtime_facts_at_start": adapter.runtime_facts(local.model_identifier),
+    "provenance": {
+        "lmstudio_sdk_version": lmstudio.__version__,
+        "lmstudio_app_version": app_version,
+        "reasoning_effort": local.reasoning_effort.value if local.reasoning_effort else None,
+        "registry_context_window_tokens": local.context_window_tokens,
+        "output_reserve_tokens": CONVERSATION_MAX_OUTPUT_TOKENS,
+    },
     "turns": [],
 }
+seen_call_ids: set[str] = set()
+
+
+def _new_call_rows() -> list[dict]:  # type: ignore[type-arg]
+    with engine.connect() as c:
+        rows = [dict(r) for r in c.execute(text(
+            "select m.id::text as id, m.tokens_in, x.runtime_diagnostics from model_calls m "
+            "join model_call_measurements x on x.model_call_id = m.id order by m.created_at")).mappings()]
+    fresh = [r for r in rows if r["id"] not in seen_call_ids]
+    seen_call_ids.update(r["id"] for r in rows)
+    return fresh
+
 catalogue = load_catalogue(engine)
 conversation_id = None
 label = sys.argv[2] if len(sys.argv) > 2 else "run"
@@ -147,6 +181,17 @@ for index, content in enumerate(TURNS, start=1):
         "loaded_state_before": adapter._read_native_models().get(local.model_identifier, {}).get("state"),
         "estimated_prompt_tokens_local": estimated_prompt,
         "messages_sent": len(messages) + 1,
+    }
+    # The exact preflight measurement, taken read-only through the lane before the call.
+    feasibility = lane.measure_candidate_context(
+        messages, scope=opened.scope, turn=turn, configuration=local, classification=Classification.PROTECTED
+    )
+    record["sdk_preflight"] = None if feasibility is None else {
+        "prompt_tokens": feasibility.prompt_tokens,
+        "context_tokens": feasibility.context_tokens,
+        "source": feasibility.source,
+        "fits_with_reserve": feasibility.prompt_tokens + CONVERSATION_MAX_OUTPUT_TOKENS <= feasibility.context_tokens,
+        "details": feasibility.details,
     }
     try:
         response = lane.converse_candidate(
@@ -174,8 +219,18 @@ for index, content in enumerate(TURNS, start=1):
         "first_visible_content": None if timing.get("first_content") is None else round(timing["first_content"] - sent, 3),
         "generation_after_first_chunk": None if timing.get("first_chunk") is None else round((timing.get("last_chunk") or ended) - timing["first_chunk"], 3),
     }
+    fresh = _new_call_rows()
+    record["parity"] = [
+        {"tokens_in": r["tokens_in"], **{k: (r["runtime_diagnostics"] or {}).get(k) for k in ("preflight", "parity")}}
+        for r in fresh
+    ]
     out["turns"].append(record)
     if record["outcome"] == "GatewayError":
+        break
+    inexact = [r for r in record["parity"] if not ((r.get("parity") or {}).get("exact") is True)]
+    if inexact:
+        record["stop"] = "PARITY NOT EXACT — run stopped for owner review"
+        print(record["stop"], json.dumps(inexact, default=str))
         break
 
 with engine.connect() as c:

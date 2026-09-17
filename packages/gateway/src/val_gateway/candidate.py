@@ -40,7 +40,9 @@ always, and pins only the partner-class calls to the candidate.
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
+from typing import cast
 from uuid import UUID
 
 from sqlalchemy import Engine
@@ -60,13 +62,22 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.project import ProjectScope
-from val_domain.provider import DeltaSink, ProviderAdapter
+from val_domain.provider import (
+    ContextFeasibility,
+    ContextInspectingAdapter,
+    ContextInspectionUnavailableError,
+    DeltaSink,
+    ProviderAdapter,
+    supports_context_inspection,
+)
 from val_domain.registry import by_id
 from val_gateway.context import assemble
 from val_gateway.gateway import CallRecorder, Gateway, content_parts
 from val_gateway.ledger import BudgetLedger
 from val_gateway.persona import PersonaLoader, PersonaProblem, PersonaUnavailableError
 from val_policy.routing import is_eligible
+
+_LOGGER = logging.getLogger("val.candidate")
 
 #: The tasks a candidate may be exercised on, and the target each requires.
 _CANDIDATE_TASKS: dict[TaskType, QualificationTarget] = {
@@ -136,6 +147,50 @@ class CandidateGateway(Gateway):
             configuration, request.classification, request.task_type
         )
         return self._attempt(request, known, content_parts(request), on_delta=on_delta)
+
+    def measure_candidate_context(
+        self,
+        messages: tuple[Message, ...],
+        *,
+        scope: ProjectScope,
+        turn: TurnReference,
+        configuration: ModelConfig,
+        classification: Classification = Classification.PROTECTED,
+    ) -> ContextFeasibility | None:
+        """Measure exactly what `converse_candidate` would send, without sending it.
+
+        Ruling, 16 September 2026: the same assembly (persona whole, the same
+        messages) and the same candidate checks, then the adapter's exact
+        measurement against the loaded runtime. `None` means the adapter cannot
+        measure — the caller falls back to the conservative bound; nothing is
+        estimated here.
+        """
+        if self._persona_loader is None:
+            raise PersonaUnavailableError(
+                PersonaProblem.NONE_ACTIVE,
+                "this gateway was built without a persona loader, so it cannot assemble Val.",
+            )
+        persona = self._persona_loader.active()
+        request = assemble(
+            persona,
+            messages,
+            classification=classification,
+            task_type=TaskType.CONVERSATION,
+            scope=scope,
+            turn=turn,
+        )
+        known = self._verify_candidate_configuration(
+            configuration, request.classification, request.task_type
+        )
+        adapter = self._adapters.get(known.provider)
+        if adapter is None or not supports_context_inspection(adapter):
+            return None
+        inspecting = cast(ContextInspectingAdapter, adapter)
+        try:
+            return inspecting.measure_context(known, request.messages, request.system)
+        except ContextInspectionUnavailableError as why:
+            _LOGGER.warning("candidate context measurement unavailable for %s: %s", known.slug, why)
+            return None
 
     def complete_candidate(
         self, request: GatewayRequest, configuration: ModelConfig

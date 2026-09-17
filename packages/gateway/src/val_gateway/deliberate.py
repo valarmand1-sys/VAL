@@ -100,6 +100,7 @@ from val_domain.gateway import (
     GatewayRequest,
     GatewayResponse,
     Message,
+    Metering,
     ModelConfig,
     PersonaAttribution,
     TaskType,
@@ -343,6 +344,25 @@ def send(
     exchange = TurnReference(
         conversation_id=opened.conversation.id, message_id=opened.user_message.id
     )
+    # Ruling, 16 September 2026 — early feasibility, from what is known now and
+    # nothing more. On the candidate path to an unmetered local route the
+    # ordinary response prompt (persona, envelopes, retained history, the
+    # current message) is already fully known; if it plus the output reserve
+    # cannot fit the loaded window, no later material can make the exchange
+    # possible — the consequential prompt only adds to it — so the turn ends
+    # here, before any call, and the skipped calls are recorded. Nothing is
+    # predicted: a prompt that fits now is not judged, because the blind
+    # position it may later carry does not yet exist.
+    if (
+        candidate is not None
+        and candidate.metering is Metering.LOCAL_NO_METERED_COST
+        and isinstance(gateway, CandidateGateway)
+    ):
+        impossible = _known_material_cannot_fit(
+            engine, gateway, opened, classification, recall_limit, max_output_tokens, candidate
+        )
+        if impossible is not None:
+            return unanswered_or_raise(opened, impossible)
     classified = _classify(gateway, content, opened.scope, classification, exchange=exchange)
     verdict = classified.verdict
     record = record_classification(
@@ -696,6 +716,46 @@ def send(
         classification=record,
         strip_states=stripped.states,
     )
+
+
+def _known_material_cannot_fit(
+    engine: Engine,
+    gateway: CandidateGateway,
+    opened: OpenedTurn,
+    classification: Classification,
+    recall_limit: int,
+    max_output_tokens: int,
+    candidate: ModelConfig,
+) -> GatewayError | None:
+    """The lower-bound impossibility test: the already-known ordinary prompt against
+    the loaded window. `None` when it fits or cannot be measured (the exact preflight
+    at each call then decides, failing closed on the conservative bound)."""
+    messages, _recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
+    feasibility = gateway.measure_candidate_context(
+        messages,
+        scope=opened.scope,
+        turn=TurnReference(
+            conversation_id=opened.conversation.id, message_id=opened.user_message.id
+        ),
+        configuration=candidate,
+        classification=classification,
+    )
+    if feasibility is None:
+        return None
+    reserve = max_output_tokens
+    if feasibility.prompt_tokens + reserve <= feasibility.context_tokens:
+        return None
+    detail = (
+        f"{candidate.slug}: the material already known before classification — persona, "
+        f"envelopes, retained history and the current message, exactly "
+        f"{feasibility.prompt_tokens:,} tokens as the runtime serialises them — plus the "
+        f"{reserve:,}-token output reserve cannot fit the loaded context of "
+        f"{feasibility.context_tokens:,}. No later material could make this exchange "
+        "possible, so it ends here. Skipped: classification, strip, blind position, "
+        "response — none was made. Nothing was shortened."
+    )
+    _LOGGER.warning("early local feasibility refusal: %s", detail)
+    return GatewayError(GatewayErrorKind.INVALID_REQUEST, detail)
 
 
 def _ordinary(
