@@ -1,0 +1,410 @@
+{
+ "persona": {
+  "version": "1.8",
+  "id": "01a0acf8-f667-753c-a234-ffdf1eeeb8c4"
+ },
+ "configuration": {
+  "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio",
+  "id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+  "model": "openai/gpt-oss-20b"
+ },
+ "runtime_facts_at_start": {
+  "runtime": "LM Studio",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "requested_model": "openai/gpt-oss-20b",
+  "state": "loaded",
+  "arch": "gpt_oss",
+  "quantization": "MXFP4",
+  "compatibility_type": "mlx",
+  "max_context_length": 131072,
+  "loaded_context_length": 32768,
+  "publisher": "openai"
+ },
+ "provenance": {
+  "lmstudio_sdk_version": "1.6.0b1",
+  "lmstudio_app_version": "0.4.24+1",
+  "reasoning_effort": "medium",
+  "registry_context_window_tokens": 32768,
+  "output_reserve_tokens": 6144
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "label": "PARITY T1",
+   "loaded_state_before": "loaded",
+   "estimated_prompt_tokens_local": 6939,
+   "messages_sent": 3,
+   "sdk_preflight": {
+    "prompt_tokens": 5417,
+    "context_tokens": 32768,
+    "source": "lmstudio-sdk",
+    "fits_with_reserve": true,
+    "details": {
+     "sdk_version": "1.6.0b1",
+     "api_host": "127.0.0.1:1234",
+     "instance_identifier": "openai/gpt-oss-20b",
+     "model_key": "openai/gpt-oss-20b",
+     "loaded_context_length": 32768,
+     "max_context_length": 131072,
+     "format": "safetensors",
+     "architecture": "gpt_oss",
+     "path": "openai/gpt-oss-20b",
+     "rendered_chars": 25325,
+     "turns": 3
+    }
+   },
+   "outcome": "Turn",
+   "visible_chars": 1576,
+   "answer_head": "My lord, the record of a house is its living ledger: it must contain any decision that determines the house\u2019s present or future course. That means every formal decree, treaty clause, and financial allotment that will bind the house beyond the present day. It should also capture any covenant or oath taken by a lord or heir, and the conditions that accompany those commitments. The record should be p",
+   "timing_s": {
+    "core_call_total": 15.542,
+    "prefill_to_first_chunk": 7.462,
+    "first_visible_content": 10.418,
+    "generation_after_first_chunk": 7.743
+   },
+   "parity": [
+    {
+     "tokens_in": 5417,
+     "preflight": {
+      "path": "openai/gpt-oss-20b",
+      "turns": 3,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "openai/gpt-oss-20b",
+      "sdk_version": "1.6.0b1",
+      "architecture": "gpt_oss",
+      "prompt_tokens": 5417,
+      "context_tokens": 32768,
+      "rendered_chars": 25325,
+      "registry_agrees": true,
+      "max_context_length": 131072,
+      "instance_identifier": "openai/gpt-oss-20b",
+      "loaded_context_length": 32768,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 5417,
+      "preflight_prompt_tokens": 5417
+     }
+    }
+   ]
+  },
+  {
+   "turn": 2,
+   "label": "PARITY T2",
+   "loaded_state_before": "loaded",
+   "estimated_prompt_tokens_local": 7430,
+   "messages_sent": 5,
+   "sdk_preflight": {
+    "prompt_tokens": 5769,
+    "context_tokens": 32768,
+    "source": "lmstudio-sdk",
+    "fits_with_reserve": true,
+    "details": {
+     "sdk_version": "1.6.0b1",
+     "api_host": "127.0.0.1:1234",
+     "instance_identifier": "openai/gpt-oss-20b",
+     "model_key": "openai/gpt-oss-20b",
+     "loaded_context_length": 32768,
+     "max_context_length": 131072,
+     "format": "safetensors",
+     "architecture": "gpt_oss",
+     "path": "openai/gpt-oss-20b",
+     "rendered_chars": 27173,
+     "turns": 5
+    }
+   },
+   "outcome": "Turn",
+   "visible_chars": 1322,
+   "answer_head": "My lord, consider first a scenario where the house\u2019s borders are not formally recorded. A neighboring lord, recalling an old verbal agreement that had long since lapsed in memory, claims a strip of pasture that the Armand house has cultivated for generations. Because no deed or map exists, your lord cannot prove rightful ownership; the dispute escalates into a costly legal skirmish that drains bot",
+   "timing_s": {
+    "core_call_total": 15.315,
+    "prefill_to_first_chunk": 7.79,
+    "first_visible_content": 11.294,
+    "generation_after_first_chunk": 7.448
+   },
+   "parity": [
+    {
+     "tokens_in": 5769,
+     "preflight": {
+      "path": "openai/gpt-oss-20b",
+      "turns": 5,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "openai/gpt-oss-20b",
+      "sdk_version": "1.6.0b1",
+      "architecture": "gpt_oss",
+      "prompt_tokens": 5769,
+      "context_tokens": 32768,
+      "rendered_chars": 27173,
+      "registry_agrees": true,
+      "max_context_length": 131072,
+      "instance_identifier": "openai/gpt-oss-20b",
+      "loaded_context_length": 32768,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 5769,
+      "preflight_prompt_tokens": 5769
+     }
+    }
+   ]
+  },
+  {
+   "turn": 3,
+   "label": "PARITY T3",
+   "loaded_state_before": "loaded",
+   "estimated_prompt_tokens_local": 7821,
+   "messages_sent": 7,
+   "sdk_preflight": {
+    "prompt_tokens": 6046,
+    "context_tokens": 32768,
+    "source": "lmstudio-sdk",
+    "fits_with_reserve": true,
+    "details": {
+     "sdk_version": "1.6.0b1",
+     "api_host": "127.0.0.1:1234",
+     "instance_identifier": "openai/gpt-oss-20b",
+     "model_key": "openai/gpt-oss-20b",
+     "loaded_context_length": 32768,
+     "max_context_length": 131072,
+     "format": "safetensors",
+     "architecture": "gpt_oss",
+     "path": "openai/gpt-oss-20b",
+     "rendered_chars": 28658,
+     "turns": 7
+    }
+   },
+   "outcome": "Turn",
+   "visible_chars": 709,
+   "answer_head": "My lord, we have agreed that a house\u2019s official record must capture every binding decision\u2014decrees, treaties, financial allotments, and covenants\u2014that shapes its present and future; we have rejected the inclusion of fleeting counsel or subjective opinions, noting that reliance on memory alone leads to costly disputes over land and succession. We have illustrated two failure scenarios: an unrecorde",
+   "timing_s": {
+    "core_call_total": 17.404,
+    "prefill_to_first_chunk": 8.179,
+    "first_visible_content": 15.315,
+    "generation_after_first_chunk": 9.159
+   },
+   "parity": [
+    {
+     "tokens_in": 6046,
+     "preflight": {
+      "path": "openai/gpt-oss-20b",
+      "turns": 7,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "openai/gpt-oss-20b",
+      "sdk_version": "1.6.0b1",
+      "architecture": "gpt_oss",
+      "prompt_tokens": 6046,
+      "context_tokens": 32768,
+      "rendered_chars": 28658,
+      "registry_agrees": true,
+      "max_context_length": 131072,
+      "instance_identifier": "openai/gpt-oss-20b",
+      "loaded_context_length": 32768,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 6046,
+      "preflight_prompt_tokens": 6046
+     }
+    }
+   ]
+  }
+ ],
+ "calls": [
+  {
+   "task_type": "conversation",
+   "provider": "lmstudio",
+   "model_identifier": "openai/gpt-oss-20b",
+   "model_config_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+   "tokens_in": 5417,
+   "tokens_out": 489,
+   "cost": "0.000000",
+   "cost_certainty": "known",
+   "latency_ms": 15205,
+   "terminal_state": "complete",
+   "status": "ok",
+   "persona_id": "01a0acf8-f667-753c-a234-ffdf1eeeb8c4",
+   "streamed": true,
+   "first_text_ms": 10418,
+   "text_output_chars": 1576,
+   "reasoning_present": true,
+   "reasoning_output_tokens": 175,
+   "provider_reported_model": "openai/gpt-oss-20b",
+   "runtime_diagnostics": {
+    "arch": "gpt_oss",
+    "state": "loaded",
+    "parity": {
+     "exact": true,
+     "difference": 0,
+     "server_prompt_tokens": 5417,
+     "preflight_prompt_tokens": 5417
+    },
+    "hosting": "local",
+    "runtime": "LM Studio",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "preflight": {
+     "path": "openai/gpt-oss-20b",
+     "turns": 3,
+     "format": "safetensors",
+     "source": "lmstudio-sdk",
+     "api_host": "127.0.0.1:1234",
+     "model_key": "openai/gpt-oss-20b",
+     "sdk_version": "1.6.0b1",
+     "architecture": "gpt_oss",
+     "prompt_tokens": 5417,
+     "context_tokens": 32768,
+     "rendered_chars": 25325,
+     "registry_agrees": true,
+     "max_context_length": 131072,
+     "instance_identifier": "openai/gpt-oss-20b",
+     "loaded_context_length": 32768,
+     "registry_context_tokens": 32768
+    },
+    "publisher": "openai",
+    "quantization": "MXFP4",
+    "finish_reason": "stop",
+    "reported_model": "openai/gpt-oss-20b",
+    "requested_model": "openai/gpt-oss-20b",
+    "compatibility_type": "mlx",
+    "max_context_length": 131072,
+    "loaded_context_length": 32768
+   },
+   "reserved_max": "0.000000",
+   "settled_cost": "0.000000"
+  },
+  {
+   "task_type": "conversation",
+   "provider": "lmstudio",
+   "model_identifier": "openai/gpt-oss-20b",
+   "model_config_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+   "tokens_in": 5769,
+   "tokens_out": 467,
+   "cost": "0.000000",
+   "cost_certainty": "known",
+   "latency_ms": 15238,
+   "terminal_state": "complete",
+   "status": "ok",
+   "persona_id": "01a0acf8-f667-753c-a234-ffdf1eeeb8c4",
+   "streamed": true,
+   "first_text_ms": 11294,
+   "text_output_chars": 1322,
+   "reasoning_present": true,
+   "reasoning_output_tokens": 208,
+   "provider_reported_model": "openai/gpt-oss-20b",
+   "runtime_diagnostics": {
+    "arch": "gpt_oss",
+    "state": "loaded",
+    "parity": {
+     "exact": true,
+     "difference": 0,
+     "server_prompt_tokens": 5769,
+     "preflight_prompt_tokens": 5769
+    },
+    "hosting": "local",
+    "runtime": "LM Studio",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "preflight": {
+     "path": "openai/gpt-oss-20b",
+     "turns": 5,
+     "format": "safetensors",
+     "source": "lmstudio-sdk",
+     "api_host": "127.0.0.1:1234",
+     "model_key": "openai/gpt-oss-20b",
+     "sdk_version": "1.6.0b1",
+     "architecture": "gpt_oss",
+     "prompt_tokens": 5769,
+     "context_tokens": 32768,
+     "rendered_chars": 27173,
+     "registry_agrees": true,
+     "max_context_length": 131072,
+     "instance_identifier": "openai/gpt-oss-20b",
+     "loaded_context_length": 32768,
+     "registry_context_tokens": 32768
+    },
+    "publisher": "openai",
+    "quantization": "MXFP4",
+    "finish_reason": "stop",
+    "reported_model": "openai/gpt-oss-20b",
+    "requested_model": "openai/gpt-oss-20b",
+    "compatibility_type": "mlx",
+    "max_context_length": 131072,
+    "loaded_context_length": 32768
+   },
+   "reserved_max": "0.000000",
+   "settled_cost": "0.000000"
+  },
+  {
+   "task_type": "conversation",
+   "provider": "lmstudio",
+   "model_identifier": "openai/gpt-oss-20b",
+   "model_config_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+   "tokens_in": 6046,
+   "tokens_out": 567,
+   "cost": "0.000000",
+   "cost_certainty": "known",
+   "latency_ms": 17338,
+   "terminal_state": "complete",
+   "status": "ok",
+   "persona_id": "01a0acf8-f667-753c-a234-ffdf1eeeb8c4",
+   "streamed": true,
+   "first_text_ms": 15315,
+   "text_output_chars": 709,
+   "reasoning_present": true,
+   "reasoning_output_tokens": 424,
+   "provider_reported_model": "openai/gpt-oss-20b",
+   "runtime_diagnostics": {
+    "arch": "gpt_oss",
+    "state": "loaded",
+    "parity": {
+     "exact": true,
+     "difference": 0,
+     "server_prompt_tokens": 6046,
+     "preflight_prompt_tokens": 6046
+    },
+    "hosting": "local",
+    "runtime": "LM Studio",
+    "base_url": "http://127.0.0.1:1234/v1",
+    "preflight": {
+     "path": "openai/gpt-oss-20b",
+     "turns": 7,
+     "format": "safetensors",
+     "source": "lmstudio-sdk",
+     "api_host": "127.0.0.1:1234",
+     "model_key": "openai/gpt-oss-20b",
+     "sdk_version": "1.6.0b1",
+     "architecture": "gpt_oss",
+     "prompt_tokens": 6046,
+     "context_tokens": 32768,
+     "rendered_chars": 28658,
+     "registry_agrees": true,
+     "max_context_length": 131072,
+     "instance_identifier": "openai/gpt-oss-20b",
+     "loaded_context_length": 32768,
+     "registry_context_tokens": 32768
+    },
+    "publisher": "openai",
+    "quantization": "MXFP4",
+    "finish_reason": "stop",
+    "reported_model": "openai/gpt-oss-20b",
+    "requested_model": "openai/gpt-oss-20b",
+    "compatibility_type": "mlx",
+    "max_context_length": 131072,
+    "loaded_context_length": 32768
+   },
+   "reserved_max": "0.000000",
+   "settled_cost": "0.000000"
+  }
+ ],
+ "val_messages": 3
+}

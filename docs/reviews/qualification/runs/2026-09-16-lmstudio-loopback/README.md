@@ -60,3 +60,43 @@ Every call: `model_calls` with `provider = lmstudio`, `model_identifier = openai
 ## Reconciliation — later on 16 September 2026, Lord Armand
 
 The owner reloaded `openai/gpt-oss-20b` as the single canonical instance at a **32,768-token context** and ruled that the verified live runtime state (`lms ps`: `CONTEXT 32768`; the server's listing: `loaded_context_length: 32768`, `max_context_length: 131072`, `state: loaded`). The registry entry is reconciled from the fail-closed 8,192 to **32,768**, with the just-in-time-reload hazard recorded on the entry: an unload and JIT reload restores the model's per-model default, so the instance is not to be unloaded without amending the entry. The proof was **not** rerun: at 32,768 the house preflight's byte bound still refuses the second ordinary turn (≈26.8k + 6,144), and — shown by `test_at_the_registered_window_the_consequential_response_call_is_refused_by_the_byte_bound` — refuses the **response call of a consequential exchange on its first turn** (≈27.1k + 6,144): classification, strip and the blind call run, the response never leaves, the turn ends unanswered. Changing that preflight for local windows contradicts the 8 September 2026 ruling that placed the byte bound in the context-window preflight, so it is stopped for an owner ruling rather than altered.
+
+## Exact preflight and parity — later on 16 September 2026, after the ruling
+
+Owner rulings of 16 September 2026 (later): the local context preflight is exact, through the read-only LM Studio SDK inspector (`lmstudio==1.6.0b1`); the cloud byte bound is unchanged; parity between the inspector's count and the server's `usage.prompt_tokens` is a hard gate. Code: commit `306d1b6` and the commit that carries this section. Harness: `harness_loopback.py` (parity-aware); raw output: `results-parity.json`. **No cloud provider was called; provider/API cost $0.**
+
+**Runtime verified before the run, without unloading (step 10 of the ruled sequence).** The machine had rebooted at ≈19:05 CDT and the instance was gone; the owner reloaded it. Then: `lms ps` — one instance, `openai/gpt-oss-20b`, `CONTEXT 32768`, `PARALLEL 4`, `IDLE`; the native listing — `state: loaded`, `loaded_context_length: 32768`, `max_context_length: 131072`, `arch gpt_oss`, `MXFP4`, `mlx`; the SDK inspector's own enumeration — exactly one matching loaded instance, `context_length 32768`, `format safetensors`, `architecture gpt_oss`. `lms ps` after the run: the same instance, still loaded at 32,768. Nothing was loaded, unloaded or reloaded by the house.
+
+**Provenance.** LM Studio app 0.4.24+1 (Info.plist); `lmstudio` Python SDK 1.6.0b1; model identifier and model key `openai/gpt-oss-20b`; quantization MXFP4 (MLX); loaded context 32,768 of a 131,072 maximum; `reasoning_effort: medium`; output reserve 6,144 (reasoning and visible text together); registry window 32,768 (`registry_agrees: true` on every row).
+
+**The parity rows — the SDK's count of the exact serialised prompt against the server's `usage.prompt_tokens`, as recorded by the gateway on each measurement row:**
+
+| Turn | Messages sent | House estimator | Byte bound (before) | **SDK count** | **Server `prompt_tokens`** | Difference | Parity |
+|---|---|---|---|---|---|---|---|
+| T1 | 3 | 6,939 | ≈20.7k | **5,417** | **5,417** | 0 | **exact** |
+| T2 | 5 | 7,430 | ≈26.8k (refused before) | **5,769** | **5,769** | 0 | **exact** |
+| T3 | 7 | 7,821 | (never reached before) | **6,046** | **6,046** | 0 | **exact** |
+
+Every row: `preflight.source lmstudio-sdk`, `context_tokens 32768`, `fits_with_reserve true`, `parity.exact true`; no "parity is not exact" warning was logged. The pre-call measurement the harness took through `measure_candidate_context` matched the gateway's own preflight on every turn.
+
+**The multi-turn proof — the exchange the byte bound refused from T2 on now completes at 32,768:**
+
+| | T1 | T2 | T3 |
+|---|---|---|---|
+| Prompt tokens (SDK = server) | 5,417 | 5,769 | 6,046 |
+| First chunk of any kind (prefill) | 7.46 s | 7.79 s | 8.18 s |
+| First *visible* text at the Core boundary | **10.42 s** | **11.29 s** | **15.32 s** |
+| Output tokens (visible + reasoning) | 489 (314 + 175) | 467 (259 + 208) | 567 (143 + 424) |
+| Visible characters | 1,576 | 1,322 | 709 |
+| Generation after first chunk | 7.7 s | 7.4 s | 9.2 s |
+| Total (Core call) | 15.54 s | 15.32 s | 17.40 s |
+| Terminal / status / echo | complete / ok / `openai/gpt-oss-20b` | same | same |
+| Cost / certainty / reserved / settled | $0 / KNOWN / $0 / $0 | same | same |
+
+Three `val` messages persisted on the scratch store, one per turn. Prefill ≈ 730 tok/s and generation ≈ 62 tok/s as before; first visible text 10.4–15.3 s on this shape, the difference being reasoning length (175–424 tokens before the first visible token).
+
+**What exact parity establishes, and what it does not.** For these three admitted calls the runtime's own rendering and tokenizer, reached through the SDK, agree exactly with the count the server billed against the context. Both hazards recorded in the inspector module were present in these requests — the record-state envelope and the user turn are consecutive user messages the SDK's `Chat` merges, and `reasoning_effort` was sent on the HTTP path — and parity held. **It does not prove that the SDK can never conservatively overcount a request that the preflight refuses before inference**: a refused request is never sent, so no server count exists to compare. Parity is not timeless: SDK or server drift can break it, which is why every row carries the versions.
+
+**Early refusal.** Not exercised on this run: no turn was consequential (the harness makes no classification call), and every prompt fit. The behaviour is pinned by the gateway tests (`test_local_context_preflight.py`): a consequential exchange whose known material cannot fit the loaded context with the reserve ends unanswered before its classification call, with nothing shortened.
+
+**History collision — measured, not fixed.** At 32,768 with the 6,144 reserve, 26,624 tokens are usable for the prompt; the persona, envelopes and first turn take 5,417, leaving **21,207 tokens of headroom for history**. Observed growth per exchange on this shape: +352 (T1→T2) and +277 (T2→T3). At that rate the forty-message maximum and the 64,000-estimated-token history budget bind long before the window does; a heavier shape (long answers, recall envelopes up to 16,000 bytes) would reach the window sooner, and the exact preflight would then refuse the turn rather than shorten it. No collision was reached on this run.
