@@ -51,6 +51,7 @@ ROOT = Path("/Users/josepharmand/Projects/val")
 URL = "postgresql+psycopg://localhost:5433/val_test"
 SLUG = sys.argv[2]
 EXPECTED = int(sys.argv[3]) if len(sys.argv) > 3 else 32_768
+EXPECTED_CONTEXT_IS_AUTOFIT = EXPECTED != 32_768
 
 import lmstudio  # version provenance only
 
@@ -120,6 +121,13 @@ provenance = {
     "declared_temperature": local.temperature,
     "output_reserve_tokens": CONVERSATION_MAX_OUTPUT_TOKENS,
     "registry_context_window_tokens": local.context_window_tokens,
+    # Owner amendment, 17 September 2026 (Qwen MLX auto-fit exception): the
+    # per-model load configuration requests 32,768; LM Studio's MLX runtime
+    # (1.11.0) substitutes its auto-fitted value at load time. Both recorded;
+    # the actual loaded context governs the exact preflight.
+    "configured_context": 32_768 if EXPECTED_CONTEXT_IS_AUTOFIT else local.context_window_tokens,
+    "actual_loaded_context": native.get("loaded_context_length"),
+    "context_source": "MLX runtime auto-fit (owner exception, 17 September 2026)" if EXPECTED_CONTEXT_IS_AUTOFIT else "as configured",
     "persona_version": persona.semantic_version,
     "configuration_id": str(local.id),
 }

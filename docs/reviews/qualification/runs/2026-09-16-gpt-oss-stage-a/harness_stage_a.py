@@ -87,6 +87,7 @@ assert not problems, problems
 adapter = adapters["lmstudio"]
 CANDIDATE_SLUG = sys.argv[2] if len(sys.argv) > 2 else BENCHMARK["candidate"]["slug"]
 EXPECTED_CONTEXT = int(sys.argv[3]) if len(sys.argv) > 3 else BENCHMARK["candidate"]["expected_loaded_context"]
+EXPECTED_CONTEXT_IS_AUTOFIT = EXPECTED_CONTEXT != BENCHMARK["candidate"]["expected_loaded_context"]
 local = by_slug(CANDIDATE_SLUG)
 assert local is not None, CANDIDATE_SLUG
 if CANDIDATE_SLUG == BENCHMARK["candidate"]["slug"]:
@@ -131,6 +132,13 @@ provenance = {
     "reasoning_effort": local.reasoning_effort.value,
     "output_reserve_tokens": CONVERSATION_MAX_OUTPUT_TOKENS,
     "registry_context_window_tokens": local.context_window_tokens,
+    # Owner amendment, 17 September 2026 (Qwen MLX auto-fit exception): the
+    # per-model load configuration requests 32,768; LM Studio's MLX runtime
+    # (1.11.0) substitutes its auto-fitted value at load time. Both recorded;
+    # the actual loaded context governs the exact preflight.
+    "configured_context": 32_768 if EXPECTED_CONTEXT_IS_AUTOFIT else local.context_window_tokens,
+    "actual_loaded_context": native.get("loaded_context_length"),
+    "context_source": "MLX runtime auto-fit (owner exception, 17 September 2026)" if EXPECTED_CONTEXT_IS_AUTOFIT else "as configured",
     "persona_version": persona.semantic_version,
     "persona_id": str(persona.id),
     "configuration_id": str(local.id),
