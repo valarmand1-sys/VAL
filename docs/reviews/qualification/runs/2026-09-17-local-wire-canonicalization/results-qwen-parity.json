@@ -1,0 +1,113 @@
+{
+ "provenance": {
+  "runtime": "LM Studio",
+  "lmstudio_app_version": "0.4.24+1",
+  "lmstudio_sdk_version": "1.6.0b1",
+  "canonical_identifier": "qwen3.8-27b-mlx",
+  "model_key": "qwen3.8-27b-mlx",
+  "path": "lmstudio-community/Qwen3.8-27B-MLX-6bit",
+  "quantization": "6bit",
+  "compatibility_type": "mlx",
+  "architecture": "qwen3_5",
+  "format": "safetensors",
+  "state": "loaded",
+  "loaded_context_native": 80896,
+  "loaded_context_sdk": 80896,
+  "max_context_length": 262144,
+  "declared_reasoning_effort": "medium",
+  "declared_temperature": null,
+  "output_reserve_tokens": 6144,
+  "registry_context_window_tokens": 32768,
+  "configured_context": 32768,
+  "actual_loaded_context": 80896,
+  "context_source": "MLX runtime auto-fit (owner exception, 17 September 2026)",
+  "persona_version": "1.8",
+  "configuration_id": "c7e2a5d1-4b6f-4e8a-9d3c-2f1b7a6e5d40"
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "messages_sent": 3,
+   "assembled_history_contains_think_tags": false,
+   "sdk_preflight_prompt_tokens": 5561,
+   "sdk_context_tokens": 80896,
+   "outcome": "answered",
+   "visible_chars": 1723,
+   "visible_head": "\n\nA house should keep a written record of decisions as an instrument of continuity, not a monument to deliberation. Each entry should state the decision plainly, the problem it was meant to solve, the alternatives that were seriously considered, and the reasons for choosing one over them. It should ",
+   "on_delta_contains_think_tags": false,
+   "persisted_contains_think_tags": false,
+   "persisted_equals_streamed": true,
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "qwen3.8-27b-mlx",
+    "max_tokens": 6144,
+    "reasoning_effort": "medium",
+    "message_count": 2
+   },
+   "stream_observed": {
+    "reasoning_field_seen": true,
+    "think_tag_in_content": false,
+    "content_chunks": 332
+   },
+   "timing_s": {
+    "core_call_total": 124.014,
+    "prefill_to_first_chunk": 16.631,
+    "first_visible_content": 90.496
+   },
+   "call": {
+    "tokens_in": 5561,
+    "tokens_out": 1062,
+    "cost": "0.000000",
+    "cost_certainty": "known",
+    "latency_ms": 123968,
+    "terminal_state": "complete",
+    "status": "ok",
+    "reasoning_present": true,
+    "reasoning_output_tokens": 728,
+    "text_output_chars": 1723,
+    "first_text_ms": 90496,
+    "provider_reported_model": "qwen3.8-27b-mlx"
+   },
+   "preflight": {
+    "path": "lmstudio-community/Qwen3.8-27B-MLX-6bit",
+    "turns": 2,
+    "format": "safetensors",
+    "source": "lmstudio-sdk",
+    "api_host": "127.0.0.1:1234",
+    "model_key": "qwen3.8-27b-mlx",
+    "sdk_version": "1.6.0b1",
+    "architecture": "qwen3_5",
+    "prompt_tokens": 5561,
+    "context_tokens": 80896,
+    "rendered_chars": 25271,
+    "registry_agrees": false,
+    "max_context_length": 262144,
+    "instance_identifier": "qwen3.8-27b-mlx",
+    "loaded_context_length": 80896,
+    "registry_context_tokens": 32768
+   },
+   "parity": {
+    "exact": true,
+    "difference": 0,
+    "server_prompt_tokens": 5561,
+    "preflight_prompt_tokens": 5561
+   }
+  }
+ ],
+ "stop": null,
+ "runtime_facts_at_end": {
+  "runtime": "LM Studio",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "requested_model": "qwen3.8-27b-mlx",
+  "state": "loaded",
+  "arch": "qwen3_5",
+  "quantization": "6bit",
+  "compatibility_type": "mlx",
+  "max_context_length": 262144,
+  "loaded_context_length": 80896,
+  "publisher": "lmstudio-community"
+ }
+}
