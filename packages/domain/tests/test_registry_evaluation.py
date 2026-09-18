@@ -31,9 +31,12 @@ CANDIDATES = {"sonnet-5-medium", "gpt-5-6-terra", "gpt-5-6-luna"}
 # `qwen3-8-27b-mlx-6bit-lmstudio` joined it on 16 September 2026 (owner ruling):
 # the one authorised Local Partner challenger, evaluation only, target PARTNER,
 # no profile — the pin moves under that ruling and says so.
+# `mistral-small-3-2-24b-8bit-mlx-lmstudio` joined it on 17 September 2026 (owner
+# ruling): the Category-A challenger, evaluation only, target PARTNER, no profile.
 PARTNER_CANDIDATES: set[str] = {
     "gpt-oss-20b-mxfp4-mlx-lmstudio",
     "qwen3-8-27b-mlx-6bit-lmstudio",
+    "mistral-small-3-2-24b-8bit-mlx-lmstudio",
 }
 
 
@@ -47,8 +50,14 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
         assert config.capability_profiles == frozenset()
         assert config.fallback_slug is None
         assert by_id(config.id) is config and by_slug(config.slug) is config
-        # 16 September 2026: the local candidate carries its own registration date.
-        expected = date(2026, 9, 16) if config.provider == "lmstudio" else date(2026, 9, 10)
+        # 16 September 2026: the local candidates carry their own registration dates;
+        # the Category-A Mistral challenger was registered 17 September 2026 (pin moved).
+        local_dates = {
+            "gpt-oss-20b-mxfp4-mlx-lmstudio": date(2026, 9, 16),
+            "qwen3-8-27b-mlx-6bit-lmstudio": date(2026, 9, 16),
+            "mistral-small-3-2-24b-8bit-mlx-lmstudio": date(2026, 9, 17),
+        }
+        expected = local_dates[config.slug] if config.provider == "lmstudio" else date(2026, 9, 10)
         assert config.activated_on == config.rates_verified_on == expected
 
 

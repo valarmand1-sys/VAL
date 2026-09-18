@@ -805,6 +805,54 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 16),
     ),
     ModelConfig(
+        id=UUID("3b9f2c41-7d5e-4a86-b2c3-8e1f4d6a9c07"),
+        slug="mistral-small-3-2-24b-8bit-mlx-lmstudio",
+        # Owner ruling, 17 September 2026: the Category-A Local Partner
+        # challenger, registered FOR EVALUATION ONLY —
+        # `lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit`
+        # (Mistral Small 3.2 24B Instruct 2506, dense, 40 layers, 8-bit MLX,
+        # 25,927,575,926 bytes of weights, every shard verified against the
+        # publisher's SHA-256) served by LM Studio on the loopback interface of
+        # the house's own Mac (M4 Pro, 48 GB). Quantization and runtime are
+        # identity: a different quantization is a different entry. Text
+        # cognition only: the artifact's vision capability has no role here.
+        provider="lmstudio",
+        # The canonical runtime identifier LM Studio's own listings expose for
+        # this artifact (`lms ls` model key, `/api/v0/models` id, `/v1/models`
+        # id) — read on 17 September 2026, not derived from the repository
+        # name; the adapter refuses a response naming any other model.
+        model_identifier="mistral-small-3.2-24b-instruct-2506-mlx",
+        display_name="Mistral Small 3.2 24B (8-bit, Apple MLX, LM Studio — local, evaluation only)",
+        # Advertised maximum 131,072 (LM Studio's listing). The figure here is
+        # the qualification context the owner ruled — 32,768 — and the
+        # runtime's actual loaded context governs the exact preflight on every
+        # call; this figure is nominal.
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        # Category A (accepted 17 September 2026): no thinking mode, no toggle,
+        # no effort control, no reasoning marker in template or configs, no
+        # LM Studio reasoning metadata. NOT_APPLICABLE states that truthfully
+        # and the adapter sends no reasoning control of any kind.
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # No VAL-specific sampling override: the upstream generation
+        # configuration states temperature 0.15 as provenance; the effective
+        # runtime sampling is read at load and recorded, never forced.
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 17),
+        rates_verified_on=date(2026, 9, 17),
+    ),
+    ModelConfig(
         id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),
         slug="gpt-5-6-luna",
         provider="openai",

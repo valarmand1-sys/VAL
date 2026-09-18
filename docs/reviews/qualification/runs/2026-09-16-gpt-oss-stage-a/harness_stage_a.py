@@ -92,8 +92,11 @@ local = by_slug(CANDIDATE_SLUG)
 assert local is not None, CANDIDATE_SLUG
 if CANDIDATE_SLUG == BENCHMARK["candidate"]["slug"]:
     assert local.model_identifier == BENCHMARK["candidate"]["model"]
-assert local.reasoning_effort is not None
-assert local.reasoning_effort.value == BENCHMARK["candidate"]["reasoning_effort"], local.reasoning_effort
+if CANDIDATE_SLUG == BENCHMARK["candidate"]["slug"]:
+    assert local.reasoning_effort.value == BENCHMARK["candidate"]["reasoning_effort"], local.reasoning_effort
+# A candidate override carries its own declared reasoning configuration (recorded as
+# provenance, never asserted against the frozen GPT-OSS block): NOT_APPLICABLE for a
+# Category-A candidate (owner ruling, 17 September 2026) sends no reasoning control.
 
 lane = candidate_gateway_for_scratch_store(
     engine,

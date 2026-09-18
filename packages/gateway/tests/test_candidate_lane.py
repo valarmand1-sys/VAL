@@ -233,8 +233,10 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
     # two local LM Studio evaluation entries carrying a target — GPT-OSS-20B and the
     # Qwen3.8-27B challenger — both NOT_ADMITTED with no profile, and no other.
     with_targets = [entry for entry in under_evaluation() if entry.qualification_targets]
+    # ...and again on 17 September 2026 for the Category-A Mistral challenger.
     assert sorted(entry.slug for entry in with_targets) == [
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
+        "mistral-small-3-2-24b-8bit-mlx-lmstudio",
         "qwen3-8-27b-mlx-6bit-lmstudio",
     ]
     assert all(entry.admission is Admission.NOT_ADMITTED for entry in with_targets)

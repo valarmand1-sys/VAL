@@ -45,6 +45,9 @@ CANDIDATES = (
     # 16 September 2026 (owner ruling): the one authorised Local Partner
     # challenger, evaluation only, target PARTNER, no profile.
     "qwen3-8-27b-mlx-6bit-lmstudio",
+    # 17 September 2026 (owner ruling): the Category-A Mistral challenger,
+    # evaluation only, target PARTNER, no profile.
+    "mistral-small-3-2-24b-8bit-mlx-lmstudio",
 )
 
 

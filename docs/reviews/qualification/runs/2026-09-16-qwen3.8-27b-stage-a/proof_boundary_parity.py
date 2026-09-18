@@ -260,6 +260,24 @@ for index, content in enumerate(TURNS[:MAX_TURNS], start=1):
         print(out["stop"])
         Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str))
         sys.exit(4)
+    # Category-A gate (owner ruling, 17 September 2026): a candidate declaring
+    # NOT_APPLICABLE must show no hidden-reasoning channel, no think markers and no
+    # reasoning token accounting; any of them STOPs the run.
+    if local.reasoning_effort is not None and local.reasoning_effort.value == "not_applicable":
+        call = rec.get("call") or {}
+        hidden = {
+            "reasoning_field_seen": (rec.get("stream_observed") or {}).get("reasoning_field_seen"),
+            "think_tag_in_content": (rec.get("stream_observed") or {}).get("think_tag_in_content"),
+            "reasoning_present": call.get("reasoning_present"),
+            "reasoning_output_tokens": call.get("reasoning_output_tokens"),
+            "request_sent_reasoning_control": any(k in (rec.get("request_sent") or {}) for k in ("reasoning_effort", "reasoning", "enable_thinking", "thinking")),
+        }
+        rec["category_a_check"] = hidden
+        if hidden["reasoning_field_seen"] or hidden["think_tag_in_content"] or hidden["reasoning_present"] or (hidden["reasoning_output_tokens"] or 0) > 0 or hidden["request_sent_reasoning_control"]:
+            out["stop"] = f"CATEGORY-A CONTRADICTED on turn {index}: {hidden}. STOP."
+            print(out["stop"])
+            Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str))
+            sys.exit(5)
 
 out["runtime_facts_at_end"] = adapter.runtime_facts(local.model_identifier)
 Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str))
