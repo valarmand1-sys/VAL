@@ -36,12 +36,15 @@ import sys
 import time
 from pathlib import Path
 
+# Credentials, by provider, never printed (owner ruling, 18 September 2026: the llama.cpp
+# provider has its own dedicated key in a private file — never the LM Studio token).
 with open(Path.home() / "Library/LaunchAgents/house.armand.val.api.plist", "rb") as f:
     env = plistlib.load(f)["EnvironmentVariables"]
-if "VAL_LMSTUDIO_API_TOKEN" not in env:
-    print("VAL_LMSTUDIO_API_TOKEN is not in the LaunchAgent plist; nothing was run.")
-    sys.exit(2)
-os.environ["VAL_LMSTUDIO_API_TOKEN"] = env["VAL_LMSTUDIO_API_TOKEN"]
+if "VAL_LMSTUDIO_API_TOKEN" in env:
+    os.environ["VAL_LMSTUDIO_API_TOKEN"] = env["VAL_LMSTUDIO_API_TOKEN"]
+_LLAMACPP_KEY_FILE = Path.home() / ".config/val/llamacpp.key"
+if _LLAMACPP_KEY_FILE.exists():
+    os.environ["VAL_LLAMACPP_API_KEY"] = _LLAMACPP_KEY_FILE.read_text().strip()
 
 from alembic import command
 from alembic.config import Config
@@ -85,10 +88,13 @@ seed(engine, ROOT)
 persona = DatabasePersonaLoader(engine).active()
 
 # --- the candidate and its lane -----------------------------------------------------------
-adapters, problems = build_adapters({"lmstudio"})
-assert not problems, problems
-adapter = adapters["lmstudio"]
 CANDIDATE_SLUG = sys.argv[2] if len(sys.argv) > 2 else BENCHMARK["candidate"]["slug"]
+_candidate = by_slug(CANDIDATE_SLUG)
+assert _candidate is not None, CANDIDATE_SLUG
+PROVIDER = _candidate.provider
+adapters, problems = build_adapters({PROVIDER})
+assert not problems, problems
+adapter = adapters[PROVIDER]
 EXPECTED_CONTEXT = int(sys.argv[3]) if len(sys.argv) > 3 else BENCHMARK["candidate"]["expected_loaded_context"]
 EXPECTED_CONTEXT_IS_AUTOFIT = EXPECTED_CONTEXT != BENCHMARK["candidate"]["expected_loaded_context"]
 local = by_slug(CANDIDATE_SLUG)
@@ -103,7 +109,7 @@ if CANDIDATE_SLUG == BENCHMARK["candidate"]["slug"]:
 
 lane = candidate_gateway_for_scratch_store(
     engine,
-    adapters={"lmstudio": adapter},
+    adapters={PROVIDER: adapter},
     recorder=lambda record: record_call(engine, record),
     ledger=DatabaseLedger(engine),
     persona_loader=DatabasePersonaLoader(engine),
@@ -111,11 +117,36 @@ lane = candidate_gateway_for_scratch_store(
 )
 
 # --- runtime verification, read-only, before any prompt ----------------------------------
-native = adapter.runtime_facts(local.model_identifier)
-inspector = adapter._inspector
-instance, handle = inspector.loaded_instance(local.model_identifier)
-loaded_by_sdk = handle.get_context_length()
 expected = EXPECTED_CONTEXT
+inspector = adapter._inspector
+if PROVIDER == "llamacpp":
+    import hashlib
+    from types import SimpleNamespace
+
+    PINNED_TEMPLATE = ROOT / "docs/reviews/qualification/runs/2026-09-18-gemma-4-31b-contract-reassessment/official-chat_template@842da37.jinja"
+    pinned_sha = hashlib.sha256(PINNED_TEMPLATE.read_bytes()).hexdigest()
+    facts = inspector.runtime_facts()
+    served = inspector.model_ids()
+    models_payload = inspector._get("/v1/models")
+    meta = next((m.get("meta") or {} for m in models_payload.get("data", []) if m.get("id") == local.model_identifier), {})
+    if local.model_identifier not in served or facts.get("total_slots") != 1 or facts.get("chat_template_sha256") != pinned_sha:
+        print(f"STOP: the server is not the ruled runtime (served {served}, slots {facts.get('total_slots')}, "
+              f"template {facts.get('chat_template_sha256')} vs pinned {pinned_sha}); nothing was sent.")
+        sys.exit(3)
+    native = {"runtime": "llama.cpp server", "state": "loaded", "loaded_context_length": facts.get("n_ctx"),
+              "quantization": "Q6_K" if "Q6_K" in str(facts.get("model_path")) else None, "compatibility_type": "gguf"}
+    instance = SimpleNamespace(identifier=local.model_identifier, model_key=str(facts.get("model_path")),
+                               architecture=meta.get("architecture") or "gemma4", format="gguf",
+                               max_context_length=meta.get("n_ctx_train") or 0)
+    loaded_by_sdk = facts.get("n_ctx")
+    RUNTIME_VERSION, INSPECTOR_VERSION = str(facts.get("build_info")), "HTTP inspector (no SDK)"
+    EXTRA_PROVENANCE = {"chat_template_sha256": facts.get("chat_template_sha256"), "pinned_template_sha256": pinned_sha,
+                        "model_path": facts.get("model_path"), "total_slots": facts.get("total_slots"), "gguf_meta": meta}
+else:
+    native = adapter.runtime_facts(local.model_identifier)
+    instance, handle = inspector.loaded_instance(local.model_identifier)
+    loaded_by_sdk = handle.get_context_length()
+    RUNTIME_VERSION, INSPECTOR_VERSION, EXTRA_PROVENANCE = None, lmstudio.__version__, {}
 LMSTUDIO_APP_PLIST = Path("/Applications/LM Studio.app/Contents/Info.plist")
 app_version = None
 if LMSTUDIO_APP_PLIST.exists():
@@ -123,8 +154,8 @@ if LMSTUDIO_APP_PLIST.exists():
         app_version = plistlib.load(f).get("CFBundleShortVersionString")
 provenance = {
     "runtime": native.get("runtime"),
-    "lmstudio_app_version": app_version,
-    "lmstudio_sdk_version": lmstudio.__version__,
+    "lmstudio_app_version": RUNTIME_VERSION or app_version,
+    "lmstudio_sdk_version": INSPECTOR_VERSION,
     "model_identifier": instance.identifier,
     "model_key": instance.model_key,
     "quantization": native.get("quantization"),
@@ -139,6 +170,13 @@ provenance = {
     # Owner amendment, 17 September 2026: a declared temperature is an upstream
     # configuration pin transmitted on every call; None means no pin (GPT-OSS).
     "declared_temperature": local.temperature,
+    # Owner ruling, 18 September 2026: the binary thinking declaration and the
+    # verbatim upstream sampling, transmitted on every call where declared.
+    "thinking_enabled": local.thinking_enabled,
+    "preserve_thinking": local.preserve_thinking,
+    "top_p": local.top_p,
+    "top_k": local.top_k,
+    **EXTRA_PROVENANCE,
     "output_reserve_tokens": CONVERSATION_MAX_OUTPUT_TOKENS,
     "registry_context_window_tokens": local.context_window_tokens,
     # Owner amendment, 17 September 2026 (Qwen MLX auto-fit exception): the
@@ -296,6 +334,7 @@ for task in BENCHMARK["tasks"]:
                 "prompt_tokens": r["tokens_in"],
                 "output_tokens": r["tokens_out"],
                 "reasoning_tokens": r["reasoning_output_tokens"],
+                "reasoning_present": r["reasoning_present"],
                 "visible_tokens": None if r["tokens_out"] is None or r["reasoning_output_tokens"] is None else r["tokens_out"] - r["reasoning_output_tokens"],
                 "visible_chars": r["text_output_chars"],
                 "first_text_ms": r["first_text_ms"],
@@ -324,6 +363,16 @@ for task in BENCHMARK["tasks"]:
         if rec["outcome"] != "answered":
             print("   ", rec["refusal"])
             break
+        # A technical contract failure: hidden-thought markers in a visible answer.
+        leaked = [m for m in ("<|channel>", "<channel|>", "<|think|>", "<think>") if m in (rec["visible_answer"] or "")]
+        if leaked:
+            halt = f"HIDDEN-REASONING MARKER IN VISIBLE ANSWER on {task['id']} T{index}: {leaked}. STOP."
+            rec["stop"] = halt
+            out["tasks"].append(task_record)
+            out["stopped"] = halt
+            Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str, ensure_ascii=False))
+            print(halt)
+            sys.exit(5)
         # Owner ruling, 18 September 2026: any nonzero parity halts qualification at once.
         for call in rec["calls"]:
             halt = parity_halt(call.get("parity"), label=f"{task['id']} T{index}")
