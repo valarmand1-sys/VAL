@@ -1,6 +1,11 @@
 """Renders the owner review packet from the Stage-A results and the engineer's read.
 
-Usage: packet_stage_a.py RESULTS.json OBSERVATIONS.json OUT.md
+Usage: packet_stage_a.py RESULTS.json OBSERVATIONS.json OUT.md [RERUNS.json [FRONT_MATTER.md]]
+
+With RERUNS.json (owner ruling, 18 September 2026) each quarantined original is
+marked in place, the corrected rerun answer is shown beside it as the answer for
+final review, every final-review answer carries its parity status, and a lineage
+section closes the packet. FRONT_MATTER.md is included verbatim after the title.
 
 The packet shows, per task: the task ID, capability area, the user turn
 sequence, GPT-OSS's exact visible response per turn, the objective
@@ -18,12 +23,29 @@ from pathlib import Path
 
 results = json.loads(Path(sys.argv[1]).read_text())
 observations = json.loads(Path(sys.argv[2]).read_text())
+reruns = json.loads(Path(sys.argv[4]).read_text()) if len(sys.argv) > 4 else None
+front_matter = Path(sys.argv[5]).read_text() if len(sys.argv) > 5 else None
+rerun_by_label = {r["label"]: r for r in (reruns or {}).get("reruns", [])}
+rerun_notes = {}
+if reruns is not None:
+    notes_path = Path(sys.argv[4]).with_name("observations-reruns.json")
+    if notes_path.exists():
+        rerun_notes = json.loads(notes_path.read_text())
+
+
+def parity_status(call: dict) -> tuple[bool, str]:  # type: ignore[type-arg]
+    parity = call.get("parity") or {}
+    exact = parity.get("exact") is True and parity.get("difference") in (0, None)
+    return exact, f"difference {parity.get('difference'):+d}" if parity.get("difference") is not None else "not recorded"
 out: list[str] = []
 w = out.append
 
 prov = results["provenance"]
-w("# GPT-OSS Partner-quality qualification — Stage A owner review packet — 16 September 2026\n")
+candidate_name = results.get("candidate_slug") or "GPT-OSS"
+w(f"# Stage A owner review packet — {prov['model_identifier']} — {results.get('started_at', '')[:10]}\n")
 w("Local candidate lane on the scratch store, $0 cloud spend. No verdict is declared here; the responses are for the owner's reading.\n")
+if front_matter:
+    w(front_matter.rstrip() + "\n")
 w("**Configuration under evaluation:** "
   f"`{prov['model_identifier']}` ({prov['quantization']}, {prov['compatibility_type']}, {prov['architecture']}) on {prov['runtime']} "
   f"{prov['lmstudio_app_version']}; SDK {prov['lmstudio_sdk_version']} (inspection only); loaded context {prov['loaded_context_native']:,} "
@@ -57,13 +79,26 @@ for task in results["tasks"]:
         label = f"Turn {turn['turn']}" if n > 1 else "Prompt"
         w(f"**{label} — user:**\n")
         w("> " + turn["user_prompt"].replace("\n", "\n> ") + "\n")
-        w(f"**{label} — GPT-OSS visible response:**\n")
-        if turn["visible_answer"] is None:
-            w(f"*No answer. {turn['refusal']}*\n")
+        exact, detail = parity_status(turn["calls"][0]) if turn["calls"] else (False, "no call")
+        key = f"{task['id']} T{turn['turn']}"
+        if reruns is not None and key in rerun_by_label:
+            rr = rerun_by_label[key]
+            rr_exact, rr_detail = parity_status(rr["calls"][0])
+            w(f"**{label} — ORIGINAL RUN — QUARANTINED ({detail}); preserved as historical evidence, not for final review:**\n")
+            w("> " + (turn["visible_answer"] or "").strip().replace("\n", "\n> ") + "\n")
+            w(f"**{label} — CORRECTED RERUN — {'EXACT PARITY' if rr_exact else 'PARITY ' + rr_detail} — the answer for final review** (history: the original captured preceding turns of this task):\n")
+            w((rr["visible_answer"] or "").strip() + "\n")
+            if rerun_notes.get(key):
+                w(f"*PROVISIONAL ENGINEER NOTE on the rerun:* {rerun_notes[key]}\n")
         else:
-            w(turn["visible_answer"].strip() + "\n")
+            status = "ORIGINAL — EXACT PARITY" if exact else f"ORIGINAL — PARITY {detail}"
+            w(f"**{label} — {status} — visible response:**\n")
+            if turn["visible_answer"] is None:
+                w(f"*No answer. {turn['refusal']}*\n")
+            else:
+                w(turn["visible_answer"].strip() + "\n")
     # objective observations
-    w("**Objective observations**\n")
+    w("**Objective observations (mechanical results as they fell; PROVISIONAL ENGINEER NOTES separated below)**\n")
     mech_all = [c for turn in task["turns"] for c in turn["mechanical_checks"]]
     mech_pass = all(c["passed"] for c in mech_all) if mech_all else None
     tech_fail = task["failed"]
@@ -92,7 +127,7 @@ for task in results["tasks"]:
                 w(f"- T{turn['turn']} `{desc}` — **{mark}** ({c['detail']})")
         w("")
     if obs.get("note"):
-        w(f"Engineer's read: {obs['note']}\n")
+        w(f"*PROVISIONAL ENGINEER NOTES (first run):* {obs['note']}\n")
     # latency / tokens
     w("**Latency / tokens**\n")
     w("| Turn | Prompt tokens (preflight = server) | Output (visible + reasoning) | First visible | Total | Terminal | Cost |\n|---|---|---|---|---|---|---|")
