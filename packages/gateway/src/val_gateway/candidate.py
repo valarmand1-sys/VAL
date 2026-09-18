@@ -187,7 +187,9 @@ class CandidateGateway(Gateway):
             return None
         inspecting = cast(ContextInspectingAdapter, adapter)
         try:
-            return inspecting.measure_context(known, request.messages, request.system)
+            return inspecting.measure_context(
+                known, request.messages, request.system, request.max_output_tokens
+            )
         except ContextInspectionUnavailableError as why:
             _LOGGER.warning("candidate context measurement unavailable for %s: %s", known.slug, why)
             return None

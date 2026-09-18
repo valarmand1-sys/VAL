@@ -230,9 +230,17 @@ class LMStudioAdapter:
     # --- exact context measurement (ruling, 16 September 2026) ----------------
 
     def measure_context(
-        self, config: ModelConfig, messages: tuple[Message, ...], system: str | None
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int | None = None,
     ) -> ContextFeasibility:
         """Measure exactly what `complete`/`stream` would send, against the loaded window.
+
+        `max_output_tokens` is accepted for the shared contract and unused here: this
+        runtime measures the message structure through its template RPC, which the
+        output allowance does not enter.
 
         The turns are built by the same function the request uses, so the
         inspector renders the same message structure the OpenAI-compatible
@@ -249,6 +257,7 @@ class LMStudioAdapter:
             raise ContextInspectionUnavailableError(
                 f"{self.name}: configuration {config.slug!r} belongs to {config.provider!r}"
             )
+        del max_output_tokens
         return self._inspector.measure(config.model_identifier, _chat_turns(messages, system))
 
     # --- construction-time runtime facts ---------------------------------------
@@ -408,6 +417,20 @@ class LMStudioAdapter:
                 GatewayErrorKind.INVALID_REQUEST,
                 f"{self.name}: this route is conversation-only and enforces no output "
                 "schema; a schema-constrained task is refused rather than sent unconstrained",
+            )
+        undeliverable = [
+            name
+            for name in ("thinking_enabled", "preserve_thinking", "top_p", "top_k")
+            if getattr(config, name) is not None
+        ]
+        if undeliverable:
+            # Owner ruling, 18 September 2026: a declared state is transmitted and
+            # provable, or refused. This runtime's chat-completions request cannot
+            # carry a thinking switch, and no entry served here declares these.
+            raise GatewayError(
+                GatewayErrorKind.INVALID_REQUEST,
+                f"{self.name}: {config.slug!r} declares {', '.join(undeliverable)}, which this "
+                "adapter does not transmit; refused rather than silently dropped",
             )
         kwargs: dict[str, Any] = {
             "model": config.model_identifier,

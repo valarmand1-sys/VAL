@@ -39,6 +39,9 @@ from val_gateway.provenance import verifier
 from val_policy.routing import is_admitted, satisfies_profile
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
+from val_providers.llamacpp_adapter import DEFAULT_BASE_URL as LLAMACPP_DEFAULT_BASE_URL
+from val_providers.llamacpp_adapter import LlamaCppAdapter
+from val_providers.llamacpp_inspector import LlamaCppContextInspector
 from val_providers.lmstudio_adapter import DEFAULT_BASE_URL as LMSTUDIO_DEFAULT_BASE_URL
 from val_providers.lmstudio_adapter import LMStudioAdapter
 from val_providers.lmstudio_inspector import LMStudioContextInspector, inspector_host_of
@@ -56,6 +59,10 @@ KEY_VARIABLES = {
     # no `lmstudio` route is admitted, because `start()` builds adapters for
     # `active()` providers only and an evaluation-only entry is not active.
     "lmstudio": "VAL_LMSTUDIO_API_TOKEN",
+    # Owner ruling, 18 September 2026: the standalone llama.cpp server's own,
+    # dedicated key — never the LM Studio token. Required only where a `llamacpp`
+    # adapter is constructed (the candidate/evaluation harnesses).
+    "llamacpp": "VAL_LLAMACPP_API_KEY",
 }
 
 
@@ -82,6 +89,15 @@ CACHE_TTL_SETTING = "VAL_CACHE_TTL"
 #: only when the `lmstudio` adapter is built; the adapter refuses any host
 #: that is not this machine.
 LMSTUDIO_BASE_URL_SETTING = "VAL_LMSTUDIO_BASE_URL"
+
+
+#: The llama.cpp server's base URL; loopback only, refused otherwise.
+LLAMACPP_BASE_URL_SETTING = "VAL_LLAMACPP_BASE_URL"
+
+
+def configured_llamacpp_base_url() -> str:
+    raw = os.environ.get(LLAMACPP_BASE_URL_SETTING, "").strip()
+    return raw or LLAMACPP_DEFAULT_BASE_URL
 
 
 def configured_lmstudio_base_url() -> str:
@@ -185,6 +201,16 @@ def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], lis
                 base_url = configured_lmstudio_base_url()
                 inspector = LMStudioContextInspector(inspector_host_of(base_url), key)
                 adapters[provider] = LMStudioAdapter(base_url, key, inspector=inspector)
+            except ValueError as refused:
+                problems.append(str(refused))
+        elif provider == "llamacpp":
+            # The second LOCAL provider (owner ruling, 18 September 2026): the
+            # read-only HTTP inspector is built beside the adapter on the same
+            # loopback server with the same dedicated key.
+            try:
+                base_url = configured_llamacpp_base_url()
+                llama_inspector = LlamaCppContextInspector(base_url, key)
+                adapters[provider] = LlamaCppAdapter(base_url, key, inspector=llama_inspector)
             except ValueError as refused:
                 problems.append(str(refused))
         else:

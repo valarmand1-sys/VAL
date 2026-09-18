@@ -625,3 +625,21 @@ def test_the_gpt_oss_request_is_unchanged_by_the_mistral_pin() -> None:
     sent = client.chat.completions.kwargs
     assert "temperature" not in sent, "no sampling pin on the GPT-OSS entry"
     assert sent["reasoning_effort"] == "medium"
+
+
+# --- a declared state is transmitted or refused (owner ruling, 18 September 2026) ------------
+
+
+def test_a_declared_thinking_or_extra_sampling_setting_is_refused_not_dropped() -> None:
+    adapter, client = _adapter(_Completions(_completion()))
+    for update in (
+        {"thinking_enabled": True, "preserve_thinking": False},
+        {"top_p": 0.95},
+        {"top_k": 64},
+    ):
+        config = ModelConfig(**{**local().model_dump(), **update})
+        with pytest.raises(GatewayError) as refused:
+            adapter.complete(config, HISTORY, PERSONA, 6_144)
+        assert refused.value.kind is GatewayErrorKind.INVALID_REQUEST
+        assert "does not transmit" in refused.value.detail
+    assert client.chat.completions.kwargs == {}, "nothing was sent"

@@ -348,6 +348,21 @@ class ModelConfig(BaseModel):
     #: rather than filled in with an invented number.
     reasoning_effort: ReasoningEffort
     temperature: float | None = None
+    #: Owner ruling, 18 September 2026 — orthogonal to the graded `reasoning_effort`,
+    #: for models whose thinking is a binary switch the request itself declares.
+    #: `True` = Core requires thinking ON; `False` = Core requires it OFF; `None` =
+    #: the model/provider has no such contract. `None` never means "whatever the
+    #: runtime's UI happens to be set to": a declared state is transmitted by the
+    #: adapter and provable, or the adapter refuses the configuration.
+    thinking_enabled: bool | None = None
+    #: Whether prior-turn thinking may be replayed by the chat template. Val's
+    #: contract is `False` wherever the switch exists: hidden reasoning is never
+    #: persisted and never re-enters history.
+    preserve_thinking: bool | None = None
+    #: Sampling values an upstream publisher declares beside temperature, sent
+    #: verbatim when set. `None` = not declared, nothing sent.
+    top_p: float | None = Field(default=None, gt=0, le=1)
+    top_k: int | None = Field(default=None, ge=1)
     #: Ruling, 16 September 2026: zero is legal only under
     #: `Metering.LOCAL_NO_METERED_COST` (validated below); a metered route with a
     #: zero rate is refused at construction.
@@ -478,6 +493,21 @@ class ModelConfig(BaseModel):
             raise ValueError(
                 f"{self.slug}: cache rates are declared but caching is {self.caching.value}; "
                 "rates on an unverified route are a guess wearing a number"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _thinking_declaration_is_coherent(self) -> ModelConfig:
+        """`preserve_thinking` is a statement about a thinking switch that exists."""
+        if self.preserve_thinking is not None and self.thinking_enabled is None:
+            raise ValueError(
+                f"{self.slug}: preserve_thinking is declared without thinking_enabled; the "
+                "replay setting has no meaning for a model with no declared thinking switch"
+            )
+        if self.preserve_thinking is True:
+            raise ValueError(
+                f"{self.slug}: preserve_thinking = True would replay hidden reasoning into "
+                "history, which Val never persists (ruling, 18 September 2026)"
             )
         return self
 

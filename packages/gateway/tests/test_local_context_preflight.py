@@ -75,7 +75,11 @@ class Measuring:
     sent: list[tuple[str, str | None]] = field(default_factory=list)
 
     def measure_context(
-        self, config: ModelConfig, messages: tuple[Message, ...], system: str | None
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int | None = None,
     ) -> ContextFeasibility:
         self.measured += 1
         if self.prompt_tokens is None or self.context_tokens is None:
@@ -358,7 +362,10 @@ def test_the_final_response_is_checked_exactly_when_its_prompt_exists(
     counts = iter([5_417, 5_417, 27_000])  # early check, blind call, response call
 
     def measure(
-        config: ModelConfig, messages: tuple[Message, ...], system: str | None
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int | None = None,
     ) -> ContextFeasibility:
         adapter.measured += 1
         return ContextFeasibility(next(counts), 32_768, "scripted", {})

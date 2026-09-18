@@ -465,7 +465,9 @@ class ModelCall(Base):
             # monetary cost is a known $0 whether or not the runtime reported
             # tokens; the provider is named so every metered provider keeps the
             # original guard against a fabricated zero.
-            "(cost = 0 AND provider = 'lmstudio')",
+            # Owner ruling, 18 September 2026 (`0023`): the second ruled LOCAL
+            # provider joins the clause by name; metered providers are untouched.
+            "(cost = 0 AND provider IN ('lmstudio', 'llamacpp'))",
             name="known_cost_is_recorded",
         ),
         CheckConstraint(

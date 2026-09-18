@@ -252,8 +252,17 @@ class ContextInspectingAdapter(Protocol):
     name: str
 
     def measure_context(
-        self, config: ModelConfig, messages: tuple[Message, ...], system: str | None
-    ) -> ContextFeasibility: ...
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int | None = None,
+    ) -> ContextFeasibility:
+        """`max_output_tokens` (owner ruling, 18 September 2026) is the allowance the
+        call will carry, so an adapter whose runtime counts a whole request body can
+        count exactly the body it will send. Adapters that measure the message
+        structure alone ignore it."""
+        ...
 
 
 def supports_context_inspection(adapter: object) -> bool:

@@ -78,3 +78,39 @@ def test_the_monetary_bound_of_an_unmetered_route_is_zero_and_the_ceiling_still_
     assert sol is not None
     assert maximum_cost(sol, parts, 6_144) > 0.0
     assert not admits(CLOUD_CEILING_USD, maximum_cost(sol, parts, 6_144)), "metered still refused"
+
+
+# --- the second ruled LOCAL provider (owner ruling, 18 September 2026) ------------------------
+
+
+def _llamacpp() -> ModelConfig:
+    return ModelConfig(
+        **{
+            **_local().model_dump(),
+            "provider": "llamacpp",
+            "slug": "llamacpp-test-entry",
+            "reasoning_effort": "not_applicable",
+        }
+    )
+
+
+def test_llamacpp_is_a_ruled_local_provider_beside_lmstudio() -> None:
+    assert {"lmstudio", "llamacpp"} == set(LOCAL_PROVIDERS)
+    assert "llamacpp" in RULED_PROVIDERS and LOCAL_PROVIDERS <= RULED_PROVIDERS
+
+
+def test_a_llamacpp_entry_follows_the_same_local_contract() -> None:
+    config = _llamacpp()
+    assert startup_violations([config]) == []
+    assert is_eligible(config, Classification.PROTECTED)
+    assert not is_eligible(config, Classification.RESTRICTED), "Restricted stays excluded"
+    wearing_cloud = ModelConfig(
+        **{
+            **config.model_dump(),
+            "hosting": Hosting.CLOUD,
+            "metering": "metered",
+            "cost_per_mtok_in_usd": 1.0,
+            "cost_per_mtok_out_usd": 1.0,
+        }
+    )
+    assert any("hosting axis disagree" in p for p in startup_violations([wearing_cloud]))

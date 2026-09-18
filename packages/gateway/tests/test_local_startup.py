@@ -96,3 +96,38 @@ def test_core_never_imports_the_local_adapter() -> None:
 
     for module in (val_gateway.gateway, val_gateway.loop, val_gateway.deliberate):
         assert "lmstudio" not in inspect.getsource(module).lower()
+
+
+# --- the second LOCAL provider (owner ruling, 18 September 2026) -------------------------------
+
+
+def test_llamacpp_has_its_own_dedicated_key_and_a_loopback_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from val_gateway.startup import LLAMACPP_BASE_URL_SETTING, configured_llamacpp_base_url
+
+    assert KEY_VARIABLES["llamacpp"] == "VAL_LLAMACPP_API_KEY"
+    assert KEY_VARIABLES["llamacpp"] != KEY_VARIABLES["lmstudio"], "never the LM Studio token"
+    monkeypatch.delenv(LLAMACPP_BASE_URL_SETTING, raising=False)
+    assert configured_llamacpp_base_url() == "http://127.0.0.1:8766/v1"
+
+
+def test_constructing_the_llamacpp_adapter_requires_its_key_and_loopback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from val_gateway.startup import LLAMACPP_BASE_URL_SETTING
+    from val_providers.llamacpp_adapter import LlamaCppAdapter
+
+    monkeypatch.delenv("VAL_LLAMACPP_API_KEY", raising=False)
+    adapters, problems = build_adapters({"llamacpp"})
+    assert adapters == {} and "VAL_LLAMACPP_API_KEY is not set" in problems[0]
+    monkeypatch.setenv("VAL_LLAMACPP_API_KEY", "not-a-real-value")
+    adapters, problems = build_adapters({"llamacpp"})
+    assert problems == [] and isinstance(adapters["llamacpp"], LlamaCppAdapter)
+    monkeypatch.setenv(LLAMACPP_BASE_URL_SETTING, "http://192.168.1.20:8766/v1")
+    adapters, problems = build_adapters({"llamacpp"})
+    assert adapters == {} and "must name this machine" in problems[0]
+
+
+def test_production_startup_builds_no_llamacpp_adapter() -> None:
+    assert "llamacpp" not in {config.provider for config in active()}

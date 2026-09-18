@@ -197,6 +197,29 @@ def test_the_database_refuses_a_known_cost_with_no_figure(engine: Engine) -> Non
     assert _violated_constraint(caught.value) == "ck_model_calls_known_cost_is_recorded"
 
 
+def test_a_known_zero_without_tokens_is_writable_only_for_the_unmetered_local_providers(
+    engine: Engine,
+) -> None:
+    """`0022` and `0023`: the clause names `lmstudio` and `llamacpp`, and nobody else."""
+    for provider in ("lmstudio", "llamacpp"):
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    _CALL_COLUMNS + f"(gen_random_uuid(), '{provider}', 'x', null, null, 0, "
+                    "'known', 'complete', 'conversation', 'explicit_none', 1, '', 'ok')"
+                )
+            )
+    with pytest.raises(DBAPIError) as caught:
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    _CALL_COLUMNS + "(gen_random_uuid(), 'openai', 'x', null, null, 0, "
+                    "'known', 'complete', 'conversation', 'explicit_none', 1, '', 'ok')"
+                )
+            )
+    assert _violated_constraint(caught.value) == "ck_model_calls_known_cost_is_recorded"
+
+
 # --- the superseded fabricated zeroes — §2.2 amendment, 17 August 2026 -------
 #
 # Five rows written on 15 August 2026 carry a fabricated `cost = 0.000000` under

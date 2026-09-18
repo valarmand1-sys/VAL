@@ -24,7 +24,7 @@ from val_domain.registry import declared_chain_violations
 #: is how the strip-routing deviation's expiry (04-layer-0.md §4) tells a
 #: local route from a new cloud one, and an unlisted cloud provider fires a
 #: false red demanding the deviation move.
-RULED_PROVIDERS = frozenset({"anthropic", "openai", "google", "lmstudio"})
+RULED_PROVIDERS = frozenset({"anthropic", "openai", "google", "lmstudio", "llamacpp"})
 #: Providers ruled LOCAL (16 September 2026): inference on this machine over
 #: the loopback interface, the request never sent to an external provider.
 #: An entry naming a local provider must declare `hosting = LOCAL`, and an
@@ -33,7 +33,10 @@ RULED_PROVIDERS = frozenset({"anthropic", "openai", "google", "lmstudio"})
 #: at startup. Local is not a policy bypass: every rule below still applies,
 #: and Restricted eligibility for local inference is a separate ruling that
 #: has not been made.
-LOCAL_PROVIDERS = frozenset({"lmstudio"})
+#: Owner ruling, 18 September 2026: `llamacpp` — a standalone `llama-server` on the
+#: loopback interface, keyed — is the second ruled LOCAL provider, authorised as
+#: INFRASTRUCTURE only and candidate-only until a model separately qualifies.
+LOCAL_PROVIDERS = frozenset({"lmstudio", "llamacpp"})
 
 #: Excluded pending verification, not permanently: unverifiable terms as of
 #: July 2026. A US-hosted SOC 2 / ZDR route or self-hosting can qualify later on

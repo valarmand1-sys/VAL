@@ -799,7 +799,9 @@ class Gateway:
             adapter, ContextInspectingAdapter
         ):
             try:
-                feasibility = adapter.measure_context(config, request.messages, request.system)
+                feasibility = adapter.measure_context(
+                    config, request.messages, request.system, request.max_output_tokens
+                )
             except ContextInspectionUnavailableError as why:
                 _LOGGER.warning(
                     "local context measurement unavailable for %s (%s); failing closed on the "
