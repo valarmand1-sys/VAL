@@ -1,5 +1,9 @@
 # Mistral Small 3.2 24B — Category-A challenger — Stage A run — 17 September 2026
 
+## FINAL DISPOSITION (owner/VAL, recorded 18 September 2026)
+
+**Mistral Small 3.2 24B Instruct — NOT_ADMITTED AS LOCAL PARTNER — PARTNER QUALIFICATION CLOSED.** Reason: model-quality failure for the Partner role, especially cross-constraint reasoning, epistemic discipline, and capability-state interpretation. The decision is the owner's and Val's, made from the raw Stage A answers in `review-packet.md`; it is not an engineering verdict. All positive and negative evidence recorded here is preserved unchanged — the clean A1, E1 and D2 results, the preserved corrections, and the D1, E2, F1 and F2 findings alike. The serving-contract work this qualification produced (the local wire canonicalization, the ingress-matching render option, the parity hard stop) stands on its own and is closed. The registry entry stays as an evaluation-only, NOT_ADMITTED historical record; the downloaded artifact may be removed after this record is committed.
+
 Owner rulings of 17 September 2026 (approval; read-only verification accepted; the Mistral-only context exception and the upstream sampling pin). **No verdict is declared here.** Mistral remains `NOT_ADMITTED`, GPT-OSS remains `NOT_ADMITTED`, Qwen remains `NOT_ADMITTED` and deleted, Sol remains the production Partner. Cloud spend $0; every local call $0 KNOWN.
 
 ## STATUS (owner ruling, 18 September 2026): PARTIAL EVIDENCE of the first run, corrected by four exact reruns
