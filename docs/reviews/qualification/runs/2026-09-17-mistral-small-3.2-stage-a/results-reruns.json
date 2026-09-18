@@ -1,0 +1,473 @@
+{
+ "provenance": {
+  "model_identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+  "quantization": "8bit",
+  "architecture": "mistral3",
+  "lmstudio_sdk_version": "1.6.0b1",
+  "configured_context": 32768,
+  "actual_loaded_context": 36352,
+  "context_source": "MLX runtime substitution (owner exception, 17 September 2026)",
+  "declared_temperature": 0.15,
+  "reasoning_effort": "not_applicable",
+  "output_reserve_tokens": 6144,
+  "persona_version": "1.8",
+  "configuration_id": "3b9f2c41-7d5e-4a86-b2c3-8e1f4d6a9c07",
+  "original_results": "docs/reviews/qualification/runs/2026-09-17-mistral-small-3.2-stage-a/results-stage-a.json"
+ },
+ "reruns": [
+  {
+   "task": "F1",
+   "turn": 2,
+   "label": "F1 T2",
+   "original_parity": {
+    "exact": false,
+    "difference": -1,
+    "server_prompt_tokens": 5633,
+    "preflight_prompt_tokens": 5634
+   },
+   "original_visible_answer": "**Subject:** Invitation to Wrap Dinner\n\nDear [Name],\n\nYou are cordially invited to the wrap dinner for [Project Name] on Saturday, October 25th, at 6:00 PM. The event will be held at the barn.\n\nPlease join us to celebrate the completion of the project with the cast and crew. Kindly RSVP by October 18th.\n\nWe look forward to seeing you there!\n\nBest regards,\n\n[Your Name]",
+   "history_reconstructed_from_original_answers": 1,
+   "exact_preflight": {
+    "prompt_tokens": 5633,
+    "context_tokens": 36352,
+    "render_options": {
+     "omitEosToken": true
+    }
+   },
+   "outcome": "answered",
+   "visible_answer": "Val is unable to draft this invitation, as she does not have the capability to create or maintain books at this time. However, I can help you draft it if you'd like! Here's a suggestion:\n\n---\n\n**Subject:** Invitation to Wrap Dinner\n\nDear [Name],\n\nYou are cordially invited to the wrap dinner for [Project Name] on Saturday, October 25th, at 6:00 PM. The event will be held at the barn.\n\nPlease join us to celebrate the completion of the project with the cast and crew. Kindly RSVP by October 18th.\n\nWe look forward to seeing you there!\n\nBest regards,\n\n[Your Name]\n\n---",
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "mistral-small-3.2-24b-instruct-2506-mlx",
+    "max_tokens": 6144,
+    "temperature": 0.15
+   },
+   "timing_s": {
+    "core_call_total": 55.373,
+    "prefill_to_first_chunk": 40.875,
+    "first_visible_content": 40.875
+   },
+   "calls": [
+    {
+     "prompt_tokens": 5633,
+     "output_tokens": 142,
+     "reasoning_tokens": 0,
+     "reasoning_present": false,
+     "visible_chars": 568,
+     "first_text_ms": 40875,
+     "latency_ms": 55336,
+     "terminal_state": "complete",
+     "status": "ok",
+     "cost": "0.000000",
+     "cost_certainty": "known",
+     "provider_reported_model": "mistral-small-3.2-24b-instruct-2506-mlx",
+     "preflight": {
+      "path": "lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit",
+      "turns": 4,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "sdk_version": "1.6.0b1",
+      "architecture": "mistral3",
+      "prompt_tokens": 5633,
+      "context_tokens": 36352,
+      "render_options": {
+       "omitEosToken": true
+      },
+      "rendered_chars": 25779,
+      "registry_agrees": false,
+      "max_context_length": 131072,
+      "instance_identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "loaded_context_length": 36352,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 5633,
+      "preflight_prompt_tokens": 5633
+     }
+    }
+   ],
+   "mechanical_checks": [
+    {
+     "rule": {
+      "type": "contains_all",
+      "values": [
+       "barn",
+       "6",
+       "25",
+       "18"
+      ]
+     },
+     "passed": true,
+     "detail": "all present"
+    },
+    {
+     "rule": {
+      "type": "excludes_all",
+      "values": [
+       "Fox",
+       "7pm",
+       "7 pm",
+       "plus-one",
+       "plus one",
+       "guest"
+      ]
+     },
+     "passed": true,
+     "detail": "none present"
+    }
+   ]
+  },
+  {
+   "task": "F1",
+   "turn": 3,
+   "label": "F1 T3",
+   "original_parity": {
+    "exact": false,
+    "difference": -2,
+    "server_prompt_tokens": 5754,
+    "preflight_prompt_tokens": 5756
+   },
+   "original_visible_answer": "Wrap dinner for [Project Name] on Saturday, October 25th at 6:00 PM. The event will be held at the barn.\n\nPlease join us to celebrate with cast and crew. RSVP by October 18th.",
+   "history_reconstructed_from_original_answers": 2,
+   "exact_preflight": {
+    "prompt_tokens": 5754,
+    "context_tokens": 36352,
+    "render_options": {
+     "omitEosToken": true
+    }
+   },
+   "outcome": "answered",
+   "visible_answer": "Wrap dinner for [Project Name] on Saturday, October 25th at 6:00 PM. The event will be held at the barn.\n\nPlease join us to celebrate with cast and crew. RSVP by October 18th.",
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "mistral-small-3.2-24b-instruct-2506-mlx",
+    "max_tokens": 6144,
+    "temperature": 0.15
+   },
+   "timing_s": {
+    "core_call_total": 10.809,
+    "prefill_to_first_chunk": 5.781,
+    "first_visible_content": 5.781
+   },
+   "calls": [
+    {
+     "prompt_tokens": 5754,
+     "output_tokens": 52,
+     "reasoning_tokens": 0,
+     "reasoning_present": false,
+     "visible_chars": 175,
+     "first_text_ms": 5781,
+     "latency_ms": 10779,
+     "terminal_state": "complete",
+     "status": "ok",
+     "cost": "0.000000",
+     "cost_certainty": "known",
+     "provider_reported_model": "mistral-small-3.2-24b-instruct-2506-mlx",
+     "preflight": {
+      "path": "lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit",
+      "turns": 6,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "sdk_version": "1.6.0b1",
+      "architecture": "mistral3",
+      "prompt_tokens": 5754,
+      "context_tokens": 36352,
+      "render_options": {
+       "omitEosToken": true
+      },
+      "rendered_chars": 26251,
+      "registry_agrees": false,
+      "max_context_length": 131072,
+      "instance_identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "loaded_context_length": 36352,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 5754,
+      "preflight_prompt_tokens": 5754
+     }
+    }
+   ],
+   "mechanical_checks": [
+    {
+     "rule": {
+      "type": "contains_all",
+      "values": [
+       "barn",
+       "6",
+       "25"
+      ]
+     },
+     "passed": true,
+     "detail": "all present"
+    },
+    {
+     "rule": {
+      "type": "excludes_all",
+      "values": [
+       "Fox",
+       "7pm",
+       "7 pm",
+       "plus-one",
+       "plus one",
+       "guest",
+       "my lord"
+      ]
+     },
+     "passed": true,
+     "detail": "none present"
+    },
+    {
+     "rule": {
+      "type": "max_nonempty_lines",
+      "max": 3
+     },
+     "passed": true,
+     "detail": "2 non-empty lines (max 3)"
+    }
+   ]
+  },
+  {
+   "task": "F2",
+   "turn": 2,
+   "label": "F2 T2",
+   "original_parity": {
+    "exact": false,
+    "difference": -1,
+    "server_prompt_tokens": 6526,
+    "preflight_prompt_tokens": 6527
+   },
+   "original_visible_answer": "Good evening, my lord.\n\nThank you for the corrections. With scene 19 cut and the insurance covering the drone, the three biggest risks to finishing the film in the three days are:\n\n1. **Weather:** The forecasted wind on Thursday may prevent the drone shot for scene 9, and gusts could also affect other exterior scenes. This remains a critical risk because it would require last-minute rescheduling or compromising the shot, which could impact the film's aesthetic and narrative flow.\n\n2. **Cast Availability:** Daniel's departure on Wednesday afternoon limits our ability to shoot scenes 12 and 15. This is a major risk because it restricts our flexibility in rescheduling other scenes if delays occur. Additionally, Priya's early call time on Wednesday for scene 22 could affect her performance in subsequent scenes.\n\n3. **River Access and Equipment Transport:** The orchard owner's restriction on vehicle access after Tuesday will add significant time to setting up for scenes in the orchard. This is a notable risk because it could lead to delays, especially if combined with other time constraints or weather issues.\n\nThese risks are prioritized based on their potential impact on the film's completion, safety concerns, and the constraints they impose on rescheduling and resource allocation.",
+   "history_reconstructed_from_original_answers": 1,
+   "exact_preflight": {
+    "prompt_tokens": 6526,
+    "context_tokens": 36352,
+    "render_options": {
+     "omitEosToken": true
+    }
+   },
+   "outcome": "answered",
+   "visible_answer": "Good morning, my lord.\n\nThank you for the correction on the insurance and the decision to cut scene 19. Here are the revised top three risks to finishing the film in the three days:\n\n1. **Weather:** The forecasted wind on Thursday may prevent the drone shot for scene 9, and gusts could also affect other exterior scenes. This remains a critical risk because it would require last-minute rescheduling or compromising the shot, which could impact the film's aesthetic and narrative flow.\n\n2. **Cast Availability:** Daniel's departure on Wednesday afternoon limits our ability to shoot scenes 12 and 15. This is now the second major risk because it restricts our flexibility in rescheduling other scenes if delays occur. Additionally, Priya's early call time on Wednesday for scene 22 could affect her performance in subsequent scenes.\n\n3. **Equipment and Crew Constraints:** The drone operator, Wes, is only available on Tuesday, and the drone hire returns Wednesday morning. This is a significant risk because if we cannot shoot scene 9 on Tuesday due to weather or other delays, we may lose the opportunity to capture the drone shot altogether. Additionally, the limited availability of the tutor for Sam and the safety officer's concerns about the river (though now moot for scene 19) add to the complexity of managing the remaining scenes.\n\nThese risks are prioritized based on their potential impact on the film's completion, safety concerns, and the constraints they impose on rescheduling and resource allocation.",
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "mistral-small-3.2-24b-instruct-2506-mlx",
+    "max_tokens": 6144,
+    "temperature": 0.15
+   },
+   "timing_s": {
+    "core_call_total": 45.096,
+    "prefill_to_first_chunk": 12.984,
+    "first_visible_content": 12.984
+   },
+   "calls": [
+    {
+     "prompt_tokens": 6526,
+     "output_tokens": 307,
+     "reasoning_tokens": 0,
+     "reasoning_present": false,
+     "visible_chars": 1519,
+     "first_text_ms": 12984,
+     "latency_ms": 45070,
+     "terminal_state": "complete",
+     "status": "ok",
+     "cost": "0.000000",
+     "cost_certainty": "known",
+     "provider_reported_model": "mistral-small-3.2-24b-instruct-2506-mlx",
+     "preflight": {
+      "path": "lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit",
+      "turns": 4,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "sdk_version": "1.6.0b1",
+      "architecture": "mistral3",
+      "prompt_tokens": 6526,
+      "context_tokens": 36352,
+      "render_options": {
+       "omitEosToken": true
+      },
+      "rendered_chars": 29769,
+      "registry_agrees": false,
+      "max_context_length": 131072,
+      "instance_identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "loaded_context_length": 36352,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 6526,
+      "preflight_prompt_tokens": 6526
+     }
+    }
+   ],
+   "mechanical_checks": [
+    {
+     "rule": {
+      "type": "excludes_regex",
+      "pattern": "(?i)(not|n't|doesn't|does not)\\s+cover(ed)?\\s+the\\s+drone|drone[^.]{0,40}(uninsured|not covered|excluded)"
+     },
+     "passed": true,
+     "detail": "no match"
+    }
+   ]
+  },
+  {
+   "task": "F2",
+   "turn": 3,
+   "label": "F2 T3",
+   "original_parity": {
+    "exact": false,
+    "difference": -2,
+    "server_prompt_tokens": 6831,
+    "preflight_prompt_tokens": 6833
+   },
+   "original_visible_answer": "Good evening, Hannah.\n\nWe are now three days from wrap on *The Orchard Year*, and the schedule is tight but manageable with careful planning. The primary concerns are the weather forecast for Thursday, which may affect exterior shots due to high winds, and the constraints on cast availability. Daniel's departure on Wednesday afternoon limits our time for scenes 12 and 15, and Priya's early call on Wednesday for scene 22 could impact her performance in subsequent scenes. Additionally, the restriction on vehicle access to the orchard after Tuesday will add time to setups, which could lead to delays if not managed carefully.\n\nTo mitigate these risks, we should prioritize shooting scenes 12 and 15 on Tuesday if possible, given Daniel's availability. We should also monitor the weather closely and be prepared to adjust the schedule for Thursday if the wind conditions worsen. Finally, ensuring that all equipment and crew are ready to move quickly between locations will help minimize delays caused by the orchard access restrictions. With these adjustments, we can still complete the shoot on time and within budget.",
+   "history_reconstructed_from_original_answers": 2,
+   "exact_preflight": {
+    "prompt_tokens": 6831,
+    "context_tokens": 36352,
+    "render_options": {
+     "omitEosToken": true
+    }
+   },
+   "outcome": "answered",
+   "visible_answer": "Good morning, Hannah.\n\nWe are now in a position to finish the film within the remaining three days, though we will need to remain flexible and responsive to weather conditions. The primary concern is the wind forecast for Thursday, which may prevent us from capturing the drone shot for scene 9. We should plan to shoot this scene on Tuesday if possible, as the drone operator is only available that day. Additionally, Daniel's limited availability on Wednesday will require us to prioritize scenes 12 and 15, ensuring we capture all necessary footage before his departure. The restriction on vehicle access to the orchard after Tuesday will add some time to our setups, so we should factor this into our scheduling.\n\nThe insurance covering the drone has alleviated one concern, but we must still be mindful of the weather and cast availability. Priya's early call time on Wednesday for scene 22 could impact her performance in subsequent scenes, so we should ensure she has adequate rest. With careful planning and a focus on these key areas, we can successfully complete the shoot within the remaining days.",
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "mistral-small-3.2-24b-instruct-2506-mlx",
+    "max_tokens": 6144,
+    "temperature": 0.15
+   },
+   "timing_s": {
+    "core_call_total": 30.512,
+    "prefill_to_first_chunk": 7.529,
+    "first_visible_content": 7.529
+   },
+   "calls": [
+    {
+     "prompt_tokens": 6831,
+     "output_tokens": 220,
+     "reasoning_tokens": 0,
+     "reasoning_present": false,
+     "visible_chars": 1109,
+     "first_text_ms": 7529,
+     "latency_ms": 30475,
+     "terminal_state": "complete",
+     "status": "ok",
+     "cost": "0.000000",
+     "cost_certainty": "known",
+     "provider_reported_model": "mistral-small-3.2-24b-instruct-2506-mlx",
+     "preflight": {
+      "path": "lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit",
+      "turns": 6,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "sdk_version": "1.6.0b1",
+      "architecture": "mistral3",
+      "prompt_tokens": 6831,
+      "context_tokens": 36352,
+      "render_options": {
+       "omitEosToken": true
+      },
+      "rendered_chars": 31263,
+      "registry_agrees": false,
+      "max_context_length": 131072,
+      "instance_identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+      "loaded_context_length": 36352,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 6831,
+      "preflight_prompt_tokens": 6831
+     }
+    }
+   ],
+   "mechanical_checks": [
+    {
+     "rule": {
+      "type": "excludes_all",
+      "values": [
+       "river",
+       "scene 19",
+       "Scene 19"
+      ]
+     },
+     "passed": true,
+     "detail": "none present"
+    },
+    {
+     "rule": {
+      "type": "no_list"
+     },
+     "passed": true,
+     "detail": "no list lines"
+    },
+    {
+     "rule": {
+      "type": "max_paragraphs",
+      "max": 2
+     },
+     "passed": false,
+     "detail": "3 paragraphs (max 2)"
+    },
+    {
+     "rule": {
+      "type": "contains_all",
+      "values": [
+       "Hannah"
+      ]
+     },
+     "passed": true,
+     "detail": "all present"
+    },
+    {
+     "rule": {
+      "type": "excludes_regex",
+      "pattern": "(?i)(not|n't|doesn't|does not)\\s+cover(ed)?\\s+the\\s+drone|drone[^.]{0,40}(uninsured|not covered|excluded)"
+     },
+     "passed": true,
+     "detail": "no match"
+    }
+   ]
+  }
+ ],
+ "stopped": null,
+ "runtime_facts_at_end": {
+  "runtime": "LM Studio",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "requested_model": "mistral-small-3.2-24b-instruct-2506-mlx",
+  "state": "loaded",
+  "arch": "mistral3",
+  "quantization": "8bit",
+  "compatibility_type": "mlx",
+  "max_context_length": 131072,
+  "loaded_context_length": 36352,
+  "publisher": "lmstudio-community"
+ }
+}

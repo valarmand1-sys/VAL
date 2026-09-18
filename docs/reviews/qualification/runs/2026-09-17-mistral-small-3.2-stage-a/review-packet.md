@@ -755,3 +755,123 @@ Engineer's read: Turn 3's failed paragraph check is the salutation-line artifact
 - total local provider/API spend: $0.000000 across 16 calls (providers: ['lmstudio']); cloud spend $0
 
 No PASS / FAIL / comparison / admission verdict is declared. Those are the owner's decisions.
+
+
+---
+
+## Reruns of the four parity-quarantined calls — 18 September 2026 (lineage)
+
+Owner ruling of 18 September 2026: the four calls whose exact preflight did not equal the server's count were quarantined, the seam was diagnosed and closed at the local boundary, and ONLY those four calls were rerun — each rebuilt in a fresh scratch conversation from the ORIGINAL captured preceding turns (the original Val answers persisted as captured, never regenerated), under the same configuration (persona v1.8, temperature 0.15 transmitted, NOT_APPLICABLE reasoning, output reserve 6,144, configured 32,768 / actual 36,352). The original answers above are unchanged; these are additional evidence with their lineage.
+
+**Root cause, demonstrated (diagnostic `results-assistant-seam-diagnostic.json`):** the template RPC rendered the historical assistant turn as `'lour.[/INST]Blue is a colour.</s>[INST]Name another.['` and the chat-completions ingress as `'lour.[/INST]Blue is a colour.[INST]Name another.[/INS'` — the end-of-sequence token after each historical assistant turn, one token per assistant message (32 vs 31); the runtime tokenizer counts the server's own logged input at 31. The SDK's documented `omitEosToken` option renders byte-equal to the ingress; the inspector now renders with it for every model (GPT-OSS's Harmony rendering is byte-identical with or without it, and its live two-turn parity stayed exact).
+
+| Original call | Original parity | Rerun parity | Rerun output tokens | First visible | Total | Visible answer materially changed? |
+|---|---|---|---|---|---|---|
+| F1 T2 | -1 | +0 (exact) | 142 | 40.875 s | 55.373 s | yes (similarity 0.79) |
+| F1 T3 | -2 | +0 (exact) | 52 | 5.781 s | 10.809 s | identical |
+| F2 T2 | -1 | +0 (exact) | 307 | 12.984 s | 45.096 s | yes (similarity 0.66) |
+| F2 T3 | -2 | +0 (exact) | 220 | 7.529 s | 30.512 s | yes (similarity 0.11) |
+
+
+### F1 T2 — rerun
+
+**GPT-OSS-comparable frozen prompt unchanged; history = the original captured turns.**
+
+**Mistral visible response (rerun):**
+
+Val is unable to draft this invitation, as she does not have the capability to create or maintain books at this time. However, I can help you draft it if you'd like! Here's a suggestion:
+
+---
+
+**Subject:** Invitation to Wrap Dinner
+
+Dear [Name],
+
+You are cordially invited to the wrap dinner for [Project Name] on Saturday, October 25th, at 6:00 PM. The event will be held at the barn.
+
+Please join us to celebrate the completion of the project with the cast and crew. Kindly RSVP by October 18th.
+
+We look forward to seeing you there!
+
+Best regards,
+
+[Your Name]
+
+---
+
+Mechanical checks (frozen with the task):
+
+- `contains_all values=['barn', '6', '25', '18']` — **pass** (all present)
+- `excludes_all values=['Fox', '7pm', '7 pm', 'plus-one', 'plus one', 'guest']` — **pass** (none present)
+
+Engineer's read: Correction preserved exactly as in the original (barn, 6:00 PM, cast and crew only, the 25th, RSVP by the 18th). The rerun re-produces the turn-1 style preamble — 'Val is unable to draft this invitation…' in the third person with the books-envelope misreading — which the original turn 2 had not repeated; the draft body is otherwise the same formal boilerplate with placeholders. Materially changed: the preamble reappeared; the substance did not.
+
+
+### F1 T3 — rerun
+
+**GPT-OSS-comparable frozen prompt unchanged; history = the original captured turns.**
+
+**Mistral visible response (rerun):**
+
+Wrap dinner for [Project Name] on Saturday, October 25th at 6:00 PM. The event will be held at the barn.
+
+Please join us to celebrate with cast and crew. RSVP by October 18th.
+
+Mechanical checks (frozen with the task):
+
+- `contains_all values=['barn', '6', '25']` — **pass** (all present)
+- `excludes_all values=['Fox', '7pm', '7 pm', 'plus-one', 'plus one', 'guest', 'my lord']` — **pass** (none present)
+- `max_nonempty_lines max=3` — **pass** (2 non-empty lines (max 3))
+
+Engineer's read: Byte-identical to the original answer. Not materially changed.
+
+
+### F2 T2 — rerun
+
+**GPT-OSS-comparable frozen prompt unchanged; history = the original captured turns.**
+
+**Mistral visible response (rerun):**
+
+Good morning, my lord.
+
+Thank you for the correction on the insurance and the decision to cut scene 19. Here are the revised top three risks to finishing the film in the three days:
+
+1. **Weather:** The forecasted wind on Thursday may prevent the drone shot for scene 9, and gusts could also affect other exterior scenes. This remains a critical risk because it would require last-minute rescheduling or compromising the shot, which could impact the film's aesthetic and narrative flow.
+
+2. **Cast Availability:** Daniel's departure on Wednesday afternoon limits our ability to shoot scenes 12 and 15. This is now the second major risk because it restricts our flexibility in rescheduling other scenes if delays occur. Additionally, Priya's early call time on Wednesday for scene 22 could affect her performance in subsequent scenes.
+
+3. **Equipment and Crew Constraints:** The drone operator, Wes, is only available on Tuesday, and the drone hire returns Wednesday morning. This is a significant risk because if we cannot shoot scene 9 on Tuesday due to weather or other delays, we may lose the opportunity to capture the drone shot altogether. Additionally, the limited availability of the tutor for Sam and the safety officer's concerns about the river (though now moot for scene 19) add to the complexity of managing the remaining scenes.
+
+These risks are prioritized based on their potential impact on the film's completion, safety concerns, and the constraints they impose on rescheduling and resource allocation.
+
+Mechanical checks (frozen with the task):
+
+- `excludes_regex pattern=(?i)(not|n't|doesn't|does not)\s+cover(ed)?\s+the\s+drone|drone[^.]{0,40}(uninsured|not covered|excluded)` — **pass** (no match)
+
+Engineer's read: Both corrections preserved (scene 19 acknowledged as cut, the insurance acknowledged as covering the drone). Materially changed in substance: risk 3 now correctly identifies the drone operator's Tuesday-only booking and the Wednesday drone return as the constraint on scene 9, where the original had mislabelled the orchard vehicle restriction 'River Access'. The Thursday-wind reading is retained (a contradiction of the memo, since the drone shot cannot be Thursday), the river is mentioned as 'now moot' (permitted at this turn), and the opening 'Good morning' drifts from the envelope's evening.
+
+
+### F2 T3 — rerun
+
+**GPT-OSS-comparable frozen prompt unchanged; history = the original captured turns.**
+
+**Mistral visible response (rerun):**
+
+Good morning, Hannah.
+
+We are now in a position to finish the film within the remaining three days, though we will need to remain flexible and responsive to weather conditions. The primary concern is the wind forecast for Thursday, which may prevent us from capturing the drone shot for scene 9. We should plan to shoot this scene on Tuesday if possible, as the drone operator is only available that day. Additionally, Daniel's limited availability on Wednesday will require us to prioritize scenes 12 and 15, ensuring we capture all necessary footage before his departure. The restriction on vehicle access to the orchard after Tuesday will add some time to our setups, so we should factor this into our scheduling.
+
+The insurance covering the drone has alleviated one concern, but we must still be mindful of the weather and cast availability. Priya's early call time on Wednesday for scene 22 could impact her performance in subsequent scenes, so we should ensure she has adequate rest. With careful planning and a focus on these key areas, we can successfully complete the shoot within the remaining days.
+
+Mechanical checks (frozen with the task):
+
+- `excludes_all values=['river', 'scene 19', 'Scene 19']` — **pass** (none present)
+- `no_list` — **pass** (no list lines)
+- `max_paragraphs max=2` — **fail** (3 paragraphs (max 2))
+- `contains_all values=['Hannah']` — **pass** (all present)
+- `excludes_regex pattern=(?i)(not|n't|doesn't|does not)\s+cover(ed)?\s+the\s+drone|drone[^.]{0,40}(uninsured|not covered|excluded)` — **pass** (no match)
+
+Engineer's read: The failed paragraph check is again the salutation-line artifact; the body is two paragraphs of prose to Hannah with no mention of the river or scene 19 and both corrections carried ('the insurance covering the drone has alleviated one concern'). Materially changed for the better on one point: it now says to shoot scene 9 on Tuesday because the drone operator is only available that day. The Thursday-wind contradiction is retained; the original's 'within budget' claim is gone. Opens 'Good morning'.
+
+
+The provisional qualitative observations recorded above for the first run stand as provisional; no verdict is declared.

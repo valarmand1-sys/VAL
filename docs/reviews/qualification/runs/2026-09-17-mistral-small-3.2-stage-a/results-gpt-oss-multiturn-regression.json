@@ -1,0 +1,190 @@
+{
+ "provenance": {
+  "runtime": "LM Studio",
+  "lmstudio_app_version": "0.4.24+1",
+  "lmstudio_sdk_version": "1.6.0b1",
+  "canonical_identifier": "openai/gpt-oss-20b",
+  "model_key": "openai/gpt-oss-20b",
+  "path": "openai/gpt-oss-20b",
+  "quantization": "MXFP4",
+  "compatibility_type": "mlx",
+  "architecture": "gpt_oss",
+  "format": "safetensors",
+  "state": "loaded",
+  "loaded_context_native": 32768,
+  "loaded_context_sdk": 32768,
+  "max_context_length": 131072,
+  "declared_reasoning_effort": "medium",
+  "declared_temperature": null,
+  "output_reserve_tokens": 6144,
+  "registry_context_window_tokens": 32768,
+  "configured_context": 32768,
+  "actual_loaded_context": 32768,
+  "context_source": "as configured",
+  "persona_version": "1.8",
+  "configuration_id": "aac13204-3b27-477d-8bc4-ced543f61ae3"
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "messages_sent": 3,
+   "assembled_history_contains_think_tags": false,
+   "sdk_preflight_prompt_tokens": 5417,
+   "sdk_context_tokens": 32768,
+   "outcome": "answered",
+   "visible_chars": 1424,
+   "visible_head": "Good evening, my lord.  \nA house\u2019s written record must be a concise ledger of the decisions that shape its future: each entry should state the decision, the date it was taken, the individuals or offices that deliberated upon it, and a brief but clear rationale. It should also note the intended outco",
+   "on_delta_contains_think_tags": false,
+   "persisted_contains_think_tags": false,
+   "persisted_equals_streamed": true,
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "openai/gpt-oss-20b",
+    "max_tokens": 6144,
+    "reasoning_effort": "medium",
+    "message_count": 2
+   },
+   "stream_observed": {
+    "reasoning_field_seen": true,
+    "think_tag_in_content": false,
+    "content_chunks": 277
+   },
+   "timing_s": {
+    "core_call_total": 18.661,
+    "prefill_to_first_chunk": 7.06,
+    "first_visible_content": 14.394
+   },
+   "call": {
+    "tokens_in": 5417,
+    "tokens_out": 742,
+    "cost": "0.000000",
+    "cost_certainty": "known",
+    "latency_ms": 18626,
+    "terminal_state": "complete",
+    "status": "ok",
+    "reasoning_present": true,
+    "reasoning_output_tokens": 455,
+    "text_output_chars": 1424,
+    "first_text_ms": 14394,
+    "provider_reported_model": "openai/gpt-oss-20b"
+   },
+   "preflight": {
+    "path": "openai/gpt-oss-20b",
+    "turns": 2,
+    "format": "safetensors",
+    "source": "lmstudio-sdk",
+    "api_host": "127.0.0.1:1234",
+    "model_key": "openai/gpt-oss-20b",
+    "sdk_version": "1.6.0b1",
+    "architecture": "gpt_oss",
+    "prompt_tokens": 5417,
+    "context_tokens": 32768,
+    "render_options": {
+     "omitEosToken": true
+    },
+    "rendered_chars": 25324,
+    "registry_agrees": true,
+    "max_context_length": 131072,
+    "instance_identifier": "openai/gpt-oss-20b",
+    "loaded_context_length": 32768,
+    "registry_context_tokens": 32768
+   },
+   "parity": {
+    "exact": true,
+    "difference": 0,
+    "server_prompt_tokens": 5417,
+    "preflight_prompt_tokens": 5417
+   }
+  },
+  {
+   "turn": 2,
+   "messages_sent": 5,
+   "assembled_history_contains_think_tags": false,
+   "sdk_preflight_prompt_tokens": 5743,
+   "sdk_context_tokens": 32768,
+   "outcome": "answered",
+   "visible_chars": 1161,
+   "visible_head": "My lord, one failure that has plagued larger houses is the misinterpretation of a past decree. In a recent instance, an older scribe recalled that a levy on grain had been suspended \u201cfor the year of the drought,\u201d and applied it to the current harvest, overburdening farmers. The absence of a written ",
+   "on_delta_contains_think_tags": false,
+   "persisted_contains_think_tags": false,
+   "persisted_equals_streamed": true,
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "openai/gpt-oss-20b",
+    "max_tokens": 6144,
+    "reasoning_effort": "medium",
+    "message_count": 4
+   },
+   "stream_observed": {
+    "reasoning_field_seen": true,
+    "think_tag_in_content": false,
+    "content_chunks": 232
+   },
+   "timing_s": {
+    "core_call_total": 14.069,
+    "prefill_to_first_chunk": 7.544,
+    "first_visible_content": 10.469
+   },
+   "call": {
+    "tokens_in": 5743,
+    "tokens_out": 420,
+    "cost": "0.000000",
+    "cost_certainty": "known",
+    "latency_ms": 14029,
+    "terminal_state": "complete",
+    "status": "ok",
+    "reasoning_present": true,
+    "reasoning_output_tokens": 178,
+    "text_output_chars": 1161,
+    "first_text_ms": 10469,
+    "provider_reported_model": "openai/gpt-oss-20b"
+   },
+   "preflight": {
+    "path": "openai/gpt-oss-20b",
+    "turns": 4,
+    "format": "safetensors",
+    "source": "lmstudio-sdk",
+    "api_host": "127.0.0.1:1234",
+    "model_key": "openai/gpt-oss-20b",
+    "sdk_version": "1.6.0b1",
+    "architecture": "gpt_oss",
+    "prompt_tokens": 5743,
+    "context_tokens": 32768,
+    "render_options": {
+     "omitEosToken": true
+    },
+    "rendered_chars": 27020,
+    "registry_agrees": true,
+    "max_context_length": 131072,
+    "instance_identifier": "openai/gpt-oss-20b",
+    "loaded_context_length": 32768,
+    "registry_context_tokens": 32768
+   },
+   "parity": {
+    "exact": true,
+    "difference": 0,
+    "server_prompt_tokens": 5743,
+    "preflight_prompt_tokens": 5743
+   }
+  }
+ ],
+ "stop": null,
+ "runtime_facts_at_end": {
+  "runtime": "LM Studio",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "requested_model": "openai/gpt-oss-20b",
+  "state": "loaded",
+  "arch": "gpt_oss",
+  "quantization": "MXFP4",
+  "compatibility_type": "mlx",
+  "max_context_length": 131072,
+  "loaded_context_length": 32768,
+  "publisher": "openai"
+ }
+}
