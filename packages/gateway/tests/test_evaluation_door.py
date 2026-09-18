@@ -48,6 +48,9 @@ CANDIDATES = (
     # 17 September 2026 (owner ruling): the Category-A Mistral challenger,
     # evaluation only, target PARTNER, no profile.
     "mistral-small-3-2-24b-8bit-mlx-lmstudio",
+    # 18 September 2026 (owner ruling): Gemma 4 31B on the llama.cpp provider,
+    # evaluation only, target PARTNER, no profile.
+    "gemma-4-31b-q6k-llamacpp",
 )
 
 

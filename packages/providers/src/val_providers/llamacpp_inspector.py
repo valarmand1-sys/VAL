@@ -24,6 +24,7 @@ from __future__ import annotations
 import hashlib
 import logging
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from typing import Protocol
 from urllib.parse import urlparse
 
@@ -54,6 +55,46 @@ class _Http(Protocol):
     def post(
         self, url: str, *, headers: Mapping[str, str], json: object, timeout: float
     ) -> _Reply: ...
+
+
+@dataclass(frozen=True)
+class TemplateIdentity:
+    """The three hashes of a template pin and the verdict (owner ruling, 18 September 2026)."""
+
+    raw_official_sha256: str
+    canonical_official_sha256: str | None
+    active_sha256: str
+    raw_equal: bool
+    canonical_equal: bool
+
+    @property
+    def accepted(self) -> bool:
+        return self.raw_equal or self.canonical_equal
+
+
+def compare_with_pinned_template(pinned: bytes, active: str) -> TemplateIdentity:
+    """Byte identity of the server's active template with a pinned official template.
+
+    llama.cpp b10360 drops exactly one terminal LF when it reads
+    `--chat-template-file`. The owner accepted that one normalization and nothing
+    else: **if and only if the pinned bytes end in exactly one LF, the active
+    template may equal the pinned bytes with that one final LF removed.** No
+    `rstrip`, no whitespace, CRLF or Unicode normalization, no second newline, no
+    interior difference, no semantic equivalence. All three hashes are kept; the
+    upstream hash is never rewritten.
+    """
+    active_bytes = active.encode("utf-8")
+    exactly_one_terminal_lf = pinned.endswith(b"\n") and not pinned.endswith(b"\n\n")
+    canonical = pinned[:-1] if exactly_one_terminal_lf else None
+    return TemplateIdentity(
+        raw_official_sha256=hashlib.sha256(pinned).hexdigest(),
+        canonical_official_sha256=(
+            None if canonical is None else hashlib.sha256(canonical).hexdigest()
+        ),
+        active_sha256=hashlib.sha256(active_bytes).hexdigest(),
+        raw_equal=pinned == active_bytes,
+        canonical_equal=canonical is not None and canonical == active_bytes,
+    )
 
 
 def server_root_of(base_url: str) -> str:

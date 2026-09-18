@@ -16,6 +16,7 @@ from val_providers.llamacpp_inspector import (
     PROPS_PATH,
     SOURCE,
     LlamaCppContextInspector,
+    compare_with_pinned_template,
 )
 
 SENTINEL = "llamacpp-sentinel-value-that-must-never-appear-anywhere"
@@ -132,3 +133,57 @@ def test_the_key_is_rendered_nowhere(caplog: pytest.LogCaptureFixture) -> None:
     caplog.set_level(logging.DEBUG)
     result = _inspector(FakeHttp()).measure(MODEL, BODY)
     assert SENTINEL not in repr(result) + repr(result.details) + caplog.text
+
+
+# --- the template pin: one terminal LF and nothing else (owner ruling, 18 September 2026) ----
+
+OFFICIAL = b"{%- if x -%}\nbody\n{%- endif -%}\n"
+
+
+def test_exact_raw_equality_passes() -> None:
+    identity = compare_with_pinned_template(OFFICIAL, OFFICIAL.decode())
+    assert identity.raw_equal and identity.accepted
+    assert identity.raw_official_sha256 == identity.active_sha256
+
+
+def test_the_one_terminal_lf_the_server_drops_is_accepted_and_all_three_hashes_are_kept() -> None:
+    active = OFFICIAL[:-1].decode()
+    identity = compare_with_pinned_template(OFFICIAL, active)
+    assert not identity.raw_equal and identity.canonical_equal and identity.accepted
+    assert identity.raw_official_sha256 == hashlib.sha256(OFFICIAL).hexdigest()
+    assert identity.canonical_official_sha256 == hashlib.sha256(OFFICIAL[:-1]).hexdigest()
+    assert identity.active_sha256 == identity.canonical_official_sha256
+    assert identity.raw_official_sha256 != identity.active_sha256, (
+        "the upstream hash is not rewritten"
+    )
+
+
+def test_two_terminal_lf_bytes_do_not_silently_pass() -> None:
+    pinned = OFFICIAL + b"\n"
+    assert not compare_with_pinned_template(pinned, OFFICIAL.decode()).accepted
+    assert not compare_with_pinned_template(pinned, OFFICIAL[:-1].decode()).accepted
+    assert compare_with_pinned_template(pinned, OFFICIAL.decode()).canonical_official_sha256 is None
+    assert not compare_with_pinned_template(OFFICIAL, OFFICIAL[:-2].decode()).accepted
+
+
+def test_trailing_spaces_do_not_pass() -> None:
+    assert not compare_with_pinned_template(OFFICIAL, OFFICIAL[:-1].decode() + " ").accepted
+    assert not compare_with_pinned_template(OFFICIAL[:-1] + b" \n", OFFICIAL[:-1].decode()).accepted
+
+
+def test_crlf_changes_do_not_pass() -> None:
+    crlf = OFFICIAL.replace(b"\n", b"\r\n")
+    assert not compare_with_pinned_template(crlf, OFFICIAL[:-1].decode()).accepted
+    assert not compare_with_pinned_template(OFFICIAL, crlf[:-1].decode()).accepted
+
+
+def test_an_interior_byte_change_does_not_pass() -> None:
+    changed = OFFICIAL[:-1].decode().replace("body", "bodY")
+    identity = compare_with_pinned_template(OFFICIAL, changed)
+    assert not identity.raw_equal and not identity.canonical_equal and not identity.accepted
+
+
+def test_a_pinned_file_without_a_terminal_lf_has_no_canonical_form() -> None:
+    pinned = OFFICIAL[:-1]
+    assert compare_with_pinned_template(pinned, pinned.decode()).accepted, "raw equality"
+    assert not compare_with_pinned_template(pinned, pinned[:-1].decode()).accepted

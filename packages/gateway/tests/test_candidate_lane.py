@@ -234,7 +234,9 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
     # Qwen3.8-27B challenger — both NOT_ADMITTED with no profile, and no other.
     with_targets = [entry for entry in under_evaluation() if entry.qualification_targets]
     # ...and again on 17 September 2026 for the Category-A Mistral challenger.
+    # ...and on 18 September 2026 for Gemma 4 31B on the second LOCAL provider.
     assert sorted(entry.slug for entry in with_targets) == [
+        "gemma-4-31b-q6k-llamacpp",
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
         "mistral-small-3-2-24b-8bit-mlx-lmstudio",
         "qwen3-8-27b-mlx-6bit-lmstudio",

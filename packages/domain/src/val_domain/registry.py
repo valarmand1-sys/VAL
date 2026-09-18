@@ -858,6 +858,57 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 17),
     ),
     ModelConfig(
+        id=UUID("5d8e1f2a-9c47-4b36-a1e0-7f3c2b9d6e15"),
+        slug="gemma-4-31b-q6k-llamacpp",
+        # Owner ruling, 18 September 2026: the Local Partner candidate on the
+        # second LOCAL provider, registered FOR EVALUATION ONLY — Gemma 4 31B
+        # Instruct, `lmstudio-community/gemma-4-31B-it-GGUF` @ `67a72ce46218`,
+        # file `gemma-4-31B-it-Q6_K.gguf` (25,201,483,424 bytes, SHA-256
+        # `3baf863a64af732e1fc597baf1c6ea147d4b1c30f5d1203e0f8018ad258bb1ac`
+        # verified against the repository's published identity; GGUF v3,
+        # `gemma4`, Q6_K), served by a standalone llama.cpp server (b10360) on the
+        # loopback interface of the house's own Mac (M4 Pro, 48 GB). Text
+        # cognition only: the vision projector is not loaded.
+        provider="llamacpp",
+        # The identifier the running server answers to (`/v1/models`), read on
+        # 18 September 2026 — the alias the launch contract sets, not a name
+        # derived from the repository.
+        model_identifier="gemma-4-31b-it-q6_k",
+        display_name="Gemma 4 31B (Q6_K GGUF, llama.cpp — local, evaluation only)",
+        # Trained context 262,144. The qualification context is an explicit
+        # 32,768 in one slot, and on this path NO substitution is authorised:
+        # the server's actual context must equal it or the run stops.
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        # Gemma's thinking is a binary switch, not a graded effort: the graded
+        # field is NOT_APPLICABLE and the switch is declared beside it.
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # Thinking ON is the qualification mode (ruled); thinking OFF is proven
+        # as a capability but is not this entry. Hidden thought is never
+        # replayed: preserve_thinking is False.
+        thinking_enabled=True,
+        preserve_thinking=False,
+        # The official sampling of `google/gemma-4-31B-it` @ `842da3794eaa`
+        # (generation_config.json), verbatim; no tuning.
+        temperature=1.0,
+        top_p=0.95,
+        top_k=64,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 18),
+        rates_verified_on=date(2026, 9, 18),
+    ),
+    ModelConfig(
         id=UUID("f1347b73-47c7-40d6-8192-7d532f573a7a"),
         slug="gpt-5-6-luna",
         provider="openai",

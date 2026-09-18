@@ -1,6 +1,6 @@
 # Gemma 4 31B — qualification on the llama.cpp provider — 18 September 2026
 
-Owner rulings of 18 September 2026 (qualification authorised; security amendment on artifact provenance). **Status: STOPPED BEFORE ANY INFERENCE at the template-hash gate.** Gemma remains `NOT_ADMITTED`; Sol remains the production Partner. Machine provenance: Apple M4 Pro, arm64, 48 GB, **macOS 26.6.2** (the live value; an earlier request named 26.2).
+Owner rulings of 18 September 2026 (qualification authorised; security amendment on artifact provenance). **Status: template gate closed by owner ruling; proofs and Stage A recorded below as they complete.** (First stop, preserved: STOPPED BEFORE ANY INFERENCE at the template-hash gate.) Gemma remains `NOT_ADMITTED`; Sol remains the production Partner. Machine provenance: Apple M4 Pro, arm64, 48 GB, **macOS 26.6.2** (the live value; an earlier request named 26.2).
 
 ## ARTIFACT PROVENANCE AND INTEGRITY
 
@@ -29,16 +29,29 @@ Expected bytes 25,201,483,424; local bytes 25,201,483,424.
 
 **Runtime verification (read-only; no inference).** llama.cpp **b10360 (`48d22e295`)**, Homebrew stable, built with AppleClang 21 for Darwin arm64; Metal device `MTL0: Apple M4 Pro` (38,338 MiB working set). Launch contract: `serve_gemma.sh` (loopback, key file, `--ctx-size 32768 --parallel 1 --fit off`, `--chat-template-file` the pinned official template, `--no-mmproj`, `--no-webui`, `--reasoning-format auto`). Listening socket: `127.0.0.1:8766` only. Authentication: `/props`, `/metrics`, `/apply-template` and `/v1/chat/completions` reject unauthenticated requests (401); `/health` and the model list `/v1/models` answer without a key by llama.cpp's design, on loopback only. Served identity `gemma-4-31b-it-q6_k` (the launch alias) with server metadata `n_params 30,697,345,596`, `ftype Q6_K`, `n_ctx_train 262,144`, model path the canonical path above; vision, video and audio modalities off. **Configured context 32,768; actual server context 32,768; one slot.** Server counters at verification: `prompt_tokens_total 0`, `tokens_predicted_total 0`, `n_decode_total 0` — **no inference occurred before or during this gate.**
 
-## THE OPEN GATE — official template hash
+## The template gate — CLOSED by owner ruling (18 September 2026)
+
+The run first stopped here, as ruled, because the raw hashes differ. The owner then accepted **this specific one-byte terminal-LF normalization and nothing broader**: if and only if the pinned official file ends in exactly one LF, the active template is compared with the file minus that one byte. No `rstrip`, no whitespace, CRLF or Unicode normalization, no second newline, no interior difference, no semantic equivalence. The rule lives in `val_providers.llamacpp_inspector.compare_with_pinned_template`, is used by the proofs and by the Stage A harness's llama.cpp branch, and is pinned by seven tests. LM Studio behaviour is unchanged.
 
 | | SHA-256 |
 |---|---|
-| Pinned official template file (`google/gemma-4-31B-it` @ `842da3794eaa`), 18,681 bytes | `ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4` |
-| Active template reported by the server (`/props`), 18,680 characters | `6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82` |
-| The pinned file with its single final newline byte removed | `6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82` |
+| A. Raw official template (`google/gemma-4-31B-it` @ `842da3794eaa`), 18,683 bytes, 18,681 characters | `ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4` |
+| B. Canonical official template, the raw file minus its one terminal LF, 18,682 bytes | `6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82` |
+| C. Active server template (`/props`), 18,682 bytes | `6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82` |
 
-**The hashes differ, so the ruled gate says STOP, and it has.** A byte-for-byte comparison finds exactly one differing region: the official file ends `{%- endif -%}\n` and the server's active template ends `{%- endif -%}` — llama.cpp drops the file's terminal newline when it reads `--chat-template-file`. Every other byte is identical. Neither template was modified to force equality. (That final newline follows a `-%}` tag, whose whitespace control discards it at render time; this is stated as context, not as a reason to pass the gate.) Whether equality up to that one terminal newline satisfies the pin is the owner's decision.
+**RAW OFFICIAL != ACTIVE. CANONICAL OFFICIAL == ACTIVE.** The upstream hash is not rewritten. Correction of this file's earlier text: it gave the raw file as 18,681 *bytes*; that figure is its character count, and the byte count is 18,683. The hashes were and are right.
 
-## Not yet done
+### Rendered-equivalence check (read-only, before any inference)
 
-No thinking-OFF proof, no thinking-ON proof, no Stage A call, no registry entry for Gemma (the served identity is now known; the entry waits with the gate). The proof script (`proof_llamacpp.py`) and the Stage A harness's llama.cpp branch compare the active template hash with the pinned file's hash and would themselves stop as written.
+`rendered_equivalence.py`, evidence in `rendered-equivalence.json`. Only `/props`, `/v1/models`, `/apply-template`, the input-token count and `/metrics` were called.
+
+- The running server was launched with `--chat-template-file` naming the raw pinned official file itself (read from the process table), so its rendering is this runtime's rendering of the pinned official template.
+- One harmless canonical chat body, built by the adapter's own `wire_body` (system line, user, assistant, user; official sampling; output allowance 6,144), was rendered through `/apply-template` twice in each thinking state. Both renderings are recorded whole. Thinking OFF: SHA-256 `55a18eec16825ccb348c2b752dfa24b49867d6735f60ea0550396587ddfb42a0`, 52 input tokens, generation prompt ending in the pre-closed empty thought channel. Thinking ON: `2290b5be8dd4fd16db5a992059c0685a63ff108c5ffa1c3f7a3f7f49e21f1e9e`, 50 input tokens, `<|think|>` in the system turn. Each rendering was identical across its two calls.
+- The one byte the runtime drops follows a right-trimming `-%}` tag, checked on the pinned bytes, so it cannot reach a rendering.
+- **Rendered equivalence = TRUE** on that basis. **Limitation, stated plainly:** no second engine rendered the raw file independently. No Jinja engine is installed in the project or on the machine and none was added; llama.cpp b10360 accepts no per-request template, and its template debugging tool prints no rendering for this template. The server can only ever hold the form it read from the pinned file.
+
+### Security gate closure
+
+Repository provenance established; expected SHA-256 established independently; local SHA-256 exact match; byte size exact match; GGUF structural identity correct; Gemma 4 31B Q6_K identity correct; loopback-only listener confirmed; authentication confirmed; configured context 32,768; actual context 32,768; one slot; canonical official hash == active server hash; rendered equivalence confirmed; **no inference before closure**: every server counter read zero after the check (`prompt_tokens_total`, `tokens_predicted_total`, `n_decode_total`, `requests_processing` all 0). No repository code was executed. The GGUF and the raw official template file are untouched.
+
+The evaluation-only registry entry `gemma-4-31b-q6k-llamacpp` is added with the gate closed: provider `llamacpp`, identifier `gemma-4-31b-it-q6_k` as the server reports it, `NOT_ADMITTED`, no profile, no fallback, `PARTNER` target for the candidate lane only, known $0, thinking ON, `preserve_thinking` false, temperature 1.0, top_p 0.95, top_k 64, context 32,768.

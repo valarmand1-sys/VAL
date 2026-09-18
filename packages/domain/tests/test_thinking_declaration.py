@@ -60,3 +60,16 @@ def test_only_llamacpp_entries_declare_these_fields_and_every_other_entry_is_unc
         assert config.thinking_enabled is None, config.slug
         assert config.preserve_thinking is None, config.slug
         assert config.top_p is None and config.top_k is None, config.slug
+
+
+def test_the_gemma_candidate_declares_thinking_on_preserve_off_and_the_official_sampling() -> None:
+    config = by_slug("gemma-4-31b-q6k-llamacpp")
+    assert config is not None and config.provider == "llamacpp"
+    assert config.model_identifier == "gemma-4-31b-it-q6_k", "the identity the server exposes"
+    assert config.thinking_enabled is True and config.preserve_thinking is False
+    assert (config.temperature, config.top_p, config.top_k) == (1.0, 0.95, 64)
+    assert config.reasoning_effort.value == "not_applicable", "a switch is not a graded effort"
+    assert config.context_window_tokens == 32_768
+    assert config.admission.value == "not_admitted" and config.capability_profiles == frozenset()
+    assert config.fallback_slug is None
+    assert [c.slug for c in REGISTRY if c.provider == "llamacpp"] == [config.slug]

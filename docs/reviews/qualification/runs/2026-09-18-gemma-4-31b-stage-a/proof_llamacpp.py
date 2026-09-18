@@ -39,7 +39,6 @@ os.environ["VAL_LLAMACPP_API_KEY"] = KEY_FILE.read_text().strip()
 
 ROOT = Path("/Users/josepharmand/Projects/val")
 PINNED_TEMPLATE = ROOT / "docs/reviews/qualification/runs/2026-09-18-gemma-4-31b-contract-reassessment/official-chat_template@842da37.jinja"
-PINNED_SHA = hashlib.sha256(PINNED_TEMPLATE.read_bytes()).hexdigest()
 EXPECTED_CONTEXT = 32_768
 THOUGHT_MARKERS = ("<|channel>", "<channel|>", "<|think|>")
 
@@ -50,6 +49,7 @@ from val_domain.gateway import Classification, GatewayError, Message, ModelConfi
 from val_domain.provider import TextDelta  # noqa: E402
 from val_domain.registry import by_slug  # noqa: E402
 from val_gateway.startup import build_adapters  # noqa: E402
+from val_providers.llamacpp_inspector import compare_with_pinned_template  # noqa: E402
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS  # noqa: E402
 
 out: dict[str, object] = {"mode": MODE, "gates": [], "stop": None}
@@ -79,10 +79,19 @@ inspector = adapter._inspector
 # --- the runtime is the ruled runtime ------------------------------------------------------
 facts = inspector.runtime_facts()
 out["runtime"] = facts
-out["pinned_template_sha256"] = PINNED_SHA
+# The narrow rule (owner ruling, 18 September 2026): raw byte identity, or the pinned
+# file minus its ONE terminal LF. All three hashes are kept; anything else stops.
+identity = compare_with_pinned_template(PINNED_TEMPLATE.read_bytes(), str(inspector.props().get("chat_template") or ""))
+out["template_identity"] = {
+    "raw_official_sha256": identity.raw_official_sha256,
+    "canonical_official_sha256": identity.canonical_official_sha256,
+    "active_sha256": identity.active_sha256,
+    "RAW OFFICIAL == ACTIVE": identity.raw_equal,
+    "CANONICAL OFFICIAL == ACTIVE": identity.canonical_equal,
+}
 gate("actual server context is exactly 32,768", facts.get("n_ctx") == EXPECTED_CONTEXT, facts.get("n_ctx"))
 gate("one slot", facts.get("total_slots") == 1, facts.get("total_slots"))
-gate("active template is the pinned official template", facts.get("chat_template_sha256") == PINNED_SHA, facts.get("chat_template_sha256"))
+gate("active template is the pinned official template (raw, or minus exactly one terminal LF)", identity.accepted, out["template_identity"])
 gate("the server answers to the entry's identifier", entry.model_identifier in inspector.model_ids(), inspector.model_ids())
 
 # --- wire capture (what is actually sent; reasoning text never read) ---------------------------
@@ -152,13 +161,17 @@ if MODE == "off":
     config = ModelConfig(**{**entry.model_dump(), "thinking_enabled": False, "preserve_thinking": False})
     system = "You are a careful assistant. Answer in one short sentence."
     messages = (Message(role="user", content="Name one colour of the rainbow."),)
-    feasibility = adapter.measure_context(config, messages, system, 256)
-    result = adapter.complete(config, messages, system, 256)
+    # Output reserve 6,144, as ruled: the body counted is the body sent.
+    feasibility = adapter.measure_context(config, messages, system, CONVERSATION_MAX_OUTPUT_TOKENS)
+    result = adapter.complete(config, messages, system, CONVERSATION_MAX_OUTPUT_TOKENS)
     body = wire[-1]
     out["wire_body"] = {k: v for k, v in body.items() if k != "messages"} | {"message_count": len(body["messages"])}
     check_wire(body, config, "OFF")
     rendering = check_rendering(body, config, "OFF", prior_answers=[])
     out["rendering"] = rendering
+    gate("OFF: output reserve 6,144 on the wire", body.get("max_tokens") == 6_144 == CONVERSATION_MAX_OUTPUT_TOKENS, body.get("max_tokens"))
+    gate("OFF: the rendering ends in the template's pre-closed empty thought channel",
+         rendering["rendered_tail"].endswith("<|turn>model\n<|channel>thought\n<channel|>"), rendering["rendered_tail"])
     gate("OFF: preflight equals server usage exactly",
          feasibility.prompt_tokens == result.tokens_in == rendering["input_tokens"],
          {"preflight": feasibility.prompt_tokens, "server": result.tokens_in, "recount": rendering["input_tokens"]})
@@ -166,6 +179,17 @@ if MODE == "off":
     gate("OFF: no thought marker in the visible answer", not any(m in result.text for m in THOUGHT_MARKERS), None)
     gate("OFF: visible answer is non-empty", bool(result.text.strip()), {"chars": len(result.text), "terminal": result.terminal.value})
     gate("OFF: context still exactly 32,768", inspector.runtime_facts().get("n_ctx") == EXPECTED_CONTEXT, None)
+    # Nothing is persisted by this proof (an adapter-direct call writes no row), and the
+    # normalized result has no field that could carry reasoning text: only its presence
+    # and a token count travel past the adapter boundary.
+    import dataclasses  # noqa: E402
+
+    carried = {f.name: getattr(result, f.name) for f in dataclasses.fields(result)}
+    strings = {k: v for k, v in carried.items() if isinstance(v, str) and k != "text"}
+    out["result_fields"] = sorted(carried)
+    gate("OFF: no reasoning text is carried past the adapter, so none can be persisted",
+         not any(any(m in v for m in THOUGHT_MARKERS) for v in strings.values())
+         and not any("reasoning" in k and isinstance(v, str) for k, v in carried.items()), sorted(strings))
     out["answer"] = result.text
     out["usage"] = {"prompt_tokens": result.tokens_in, "completion_tokens": result.tokens_out}
     out["timings"] = (result.runtime_diagnostics or {}).get("timings")
@@ -219,6 +243,9 @@ else:
         conversation_id = opened.conversation.id
         messages, recalled = assemble_turn(engine, opened)
         gate(f"{label}: assembled history carries no thought text", not any(any(m in x.content for m in THOUGHT_MARKERS) for x in messages), None)
+        assistant_history = [x.content for x in messages if x.role == "assistant"]
+        gate(f"{label}: the assistant history is exactly the persisted visible answers, nothing more",
+             [a.strip() for a in assistant_history] == [a.strip() for a in prior_answers], {"assistant_turns": len(assistant_history), "prior_answers": len(prior_answers)})
         ref = TurnReference(conversation_id=opened.conversation.id, message_id=opened.user_message.id)
         deltas: list[str] = []
         started = time.monotonic()
@@ -248,6 +275,9 @@ else:
         visible = "".join(deltas)
         gate(f"{label}: no thought text leaked through streaming", not seen.get("marker_in_visible_delta") and not any(m in visible for m in THOUGHT_MARKERS), None)
         gate(f"{label}: hidden reasoning absent from the persisted message", not any(m in (persisted or "") for m in THOUGHT_MARKERS), None)
+        gate(f"{label}: the persisted message is exactly the visible content stream (the reasoning field contributes nothing)",
+             (persisted or "").strip() == visible.strip(), {"persisted_chars": len(persisted or ""), "visible_chars": len(visible)})
+        gate(f"{label}: output reserve 6,144 on the wire", body.get("max_tokens") == 6_144, body.get("max_tokens"))
         gate(f"{label}: visible content non-empty and complete", bool(visible.strip()) and row["terminal_state"] == "complete", {"chars": len(visible), "terminal": row["terminal_state"]})
         gate(f"{label}: settled at a known $0", row["cost"] == "0.000000" and row["cost_certainty"] == "known", {"cost": row["cost"], "certainty": row["cost_certainty"]})
         prior_answers.append(persisted or visible)

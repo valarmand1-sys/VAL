@@ -1,0 +1,152 @@
+{
+ "checks": [
+  {
+   "check": "template identity accepted under the one-terminal-LF rule",
+   "ok": true,
+   "detail": {
+    "raw_official_sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+    "canonical_official_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+    "active_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+    "RAW OFFICIAL == ACTIVE": false,
+    "CANONICAL OFFICIAL == ACTIVE": true
+   }
+  },
+  {
+   "check": "exactly one llama-server is running",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "check": "it was launched with --chat-template-file naming the raw pinned official file",
+   "ok": true,
+   "detail": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-18-gemma-4-31b-contract-reassessment/official-chat_template@842da37.jinja"
+  },
+  {
+   "check": "the pinned file ends `-%}` then exactly one LF (a right-trimming tag strips what follows)",
+   "ok": true,
+   "detail": "b'}\\n{%- endif -%}\\n'"
+  },
+  {
+   "check": "thinking_off: the rendering is deterministic (two calls, one prompt)",
+   "ok": true,
+   "detail": "55a18eec16825ccb348c2b752dfa24b49867d6735f60ea0550396587ddfb42a0"
+  },
+  {
+   "check": "thinking_off: the rendering does not end in a stray newline from the template's tail",
+   "ok": true,
+   "detail": "'|turn>model\\n<|channel>thought\\n<channel|>'"
+  },
+  {
+   "check": "thinking_off: the thinking switch is in the rendering as the official template writes it",
+   "ok": true,
+   "detail": false
+  },
+  {
+   "check": "thinking_on: the rendering is deterministic (two calls, one prompt)",
+   "ok": true,
+   "detail": "2290b5be8dd4fd16db5a992059c0685a63ff108c5ffa1c3f7a3f7f49e21f1e9e"
+  },
+  {
+   "check": "thinking_on: the rendering does not end in a stray newline from the template's tail",
+   "ok": true,
+   "detail": "'you. Name one more.<turn|>\\n<|turn>model\\n'"
+  },
+  {
+   "check": "thinking_on: the thinking switch is in the rendering as the official template writes it",
+   "ok": true,
+   "detail": true
+  },
+  {
+   "check": "the two thinking states render differently (the declared state reaches the template)",
+   "ok": true,
+   "detail": null
+  }
+ ],
+ "stop": null,
+ "template_identity": {
+  "raw_official_sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+  "canonical_official_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "active_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "RAW OFFICIAL == ACTIVE": false,
+  "CANONICAL OFFICIAL == ACTIVE": true
+ },
+ "server_launch_commands": [
+  "llama-server --model /Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf --alias gemma-4-31b-it-q6_k --host 127.0.0.1 --port 8766 --api-key-file /Users/josepharmand/.config/val/llamacpp.key --ctx-size 32768 --parallel 1 --fit off --jinja --chat-template-file /Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-18-gemma-4-31b-contract-reassessment/official-chat_template@842da37.jinja --reasoning-format auto --no-mmproj --no-webui --no-context-shift --metrics"
+ ],
+ "pinned_tail_bytes": "}\n{%- endif -%}\n",
+ "renderings": {
+  "thinking_off": {
+   "input_body": {
+    "model": "gemma-4-31b-it-q6_k",
+    "messages": [
+     {
+      "role": "system",
+      "content": "You are a courteous assistant. Answer briefly."
+     },
+     {
+      "role": "user",
+      "content": "Please name one primary colour."
+     },
+     {
+      "role": "assistant",
+      "content": "Blue."
+     },
+     {
+      "role": "user",
+      "content": "Thank you. Name one more."
+     }
+    ],
+    "max_tokens": 6144,
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64,
+    "chat_template_kwargs": {
+     "enable_thinking": false,
+     "preserve_thinking": false
+    }
+   },
+   "rendered_prompt": "<|turn>system\nYou are a courteous assistant. Answer briefly.<turn|>\n<|turn>user\nPlease name one primary colour.<turn|>\n<|turn>model\nBlue.<turn|>\n<|turn>user\nThank you. Name one more.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>",
+   "rendered_sha256": "55a18eec16825ccb348c2b752dfa24b49867d6735f60ea0550396587ddfb42a0",
+   "second_render_sha256": "55a18eec16825ccb348c2b752dfa24b49867d6735f60ea0550396587ddfb42a0",
+   "input_tokens": 52
+  },
+  "thinking_on": {
+   "input_body": {
+    "model": "gemma-4-31b-it-q6_k",
+    "messages": [
+     {
+      "role": "system",
+      "content": "You are a courteous assistant. Answer briefly."
+     },
+     {
+      "role": "user",
+      "content": "Please name one primary colour."
+     },
+     {
+      "role": "assistant",
+      "content": "Blue."
+     },
+     {
+      "role": "user",
+      "content": "Thank you. Name one more."
+     }
+    ],
+    "max_tokens": 6144,
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64,
+    "chat_template_kwargs": {
+     "enable_thinking": true,
+     "preserve_thinking": false
+    }
+   },
+   "rendered_prompt": "<|turn>system\n<|think|>\nYou are a courteous assistant. Answer briefly.<turn|>\n<|turn>user\nPlease name one primary colour.<turn|>\n<|turn>model\nBlue.<turn|>\n<|turn>user\nThank you. Name one more.<turn|>\n<|turn>model\n",
+   "rendered_sha256": "2290b5be8dd4fd16db5a992059c0685a63ff108c5ffa1c3f7a3f7f49e21f1e9e",
+   "second_render_sha256": "2290b5be8dd4fd16db5a992059c0685a63ff108c5ffa1c3f7a3f7f49e21f1e9e",
+   "input_tokens": 50
+  }
+ },
+ "rendered_equivalence": true,
+ "basis": "CANONICAL OFFICIAL == ACTIVE byte for byte; the server was launched from the raw pinned file, so its rendering is this runtime's rendering of the pinned official template; the rendering is deterministic; the one dropped byte follows a right-trimming tag and cannot reach a rendering.",
+ "limitation": "No second engine rendered the raw file independently: no Jinja engine is installed and none was added; llama.cpp b10360 accepts no per-request template."
+}

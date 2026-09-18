@@ -37,6 +37,8 @@ PARTNER_CANDIDATES: set[str] = {
     "gpt-oss-20b-mxfp4-mlx-lmstudio",
     "qwen3-8-27b-mlx-6bit-lmstudio",
     "mistral-small-3-2-24b-8bit-mlx-lmstudio",
+    # 18 September 2026 (owner ruling): Gemma 4 31B on the second LOCAL provider.
+    "gemma-4-31b-q6k-llamacpp",
 }
 
 
@@ -56,8 +58,10 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
             "gpt-oss-20b-mxfp4-mlx-lmstudio": date(2026, 9, 16),
             "qwen3-8-27b-mlx-6bit-lmstudio": date(2026, 9, 16),
             "mistral-small-3-2-24b-8bit-mlx-lmstudio": date(2026, 9, 17),
+            "gemma-4-31b-q6k-llamacpp": date(2026, 9, 18),
         }
-        expected = local_dates[config.slug] if config.provider == "lmstudio" else date(2026, 9, 10)
+        is_local = config.provider in ("lmstudio", "llamacpp")
+        expected = local_dates[config.slug] if is_local else date(2026, 9, 10)
         assert config.activated_on == config.rates_verified_on == expected
 
 

@@ -120,18 +120,21 @@ lane = candidate_gateway_for_scratch_store(
 expected = EXPECTED_CONTEXT
 inspector = adapter._inspector
 if PROVIDER == "llamacpp":
-    import hashlib
     from types import SimpleNamespace
 
+    from val_providers.llamacpp_inspector import compare_with_pinned_template
+
     PINNED_TEMPLATE = ROOT / "docs/reviews/qualification/runs/2026-09-18-gemma-4-31b-contract-reassessment/official-chat_template@842da37.jinja"
-    pinned_sha = hashlib.sha256(PINNED_TEMPLATE.read_bytes()).hexdigest()
     facts = inspector.runtime_facts()
+    # The narrow rule (owner ruling, 18 September 2026): raw identity, or the pinned
+    # file minus its ONE terminal LF; all three hashes kept; anything else stops.
+    identity = compare_with_pinned_template(PINNED_TEMPLATE.read_bytes(), str(inspector.props().get("chat_template") or ""))
     served = inspector.model_ids()
     models_payload = inspector._get("/v1/models")
     meta = next((m.get("meta") or {} for m in models_payload.get("data", []) if m.get("id") == local.model_identifier), {})
-    if local.model_identifier not in served or facts.get("total_slots") != 1 or facts.get("chat_template_sha256") != pinned_sha:
+    if local.model_identifier not in served or facts.get("total_slots") != 1 or not identity.accepted:
         print(f"STOP: the server is not the ruled runtime (served {served}, slots {facts.get('total_slots')}, "
-              f"template {facts.get('chat_template_sha256')} vs pinned {pinned_sha}); nothing was sent.")
+              f"template active {identity.active_sha256} vs raw {identity.raw_official_sha256} / canonical {identity.canonical_official_sha256}); nothing was sent.")
         sys.exit(3)
     native = {"runtime": "llama.cpp server", "state": "loaded", "loaded_context_length": facts.get("n_ctx"),
               "quantization": "Q6_K" if "Q6_K" in str(facts.get("model_path")) else None, "compatibility_type": "gguf"}
@@ -140,7 +143,10 @@ if PROVIDER == "llamacpp":
                                max_context_length=meta.get("n_ctx_train") or 0)
     loaded_by_sdk = facts.get("n_ctx")
     RUNTIME_VERSION, INSPECTOR_VERSION = str(facts.get("build_info")), "HTTP inspector (no SDK)"
-    EXTRA_PROVENANCE = {"chat_template_sha256": facts.get("chat_template_sha256"), "pinned_template_sha256": pinned_sha,
+    EXTRA_PROVENANCE = {"template_raw_official_sha256": identity.raw_official_sha256,
+                        "template_canonical_official_sha256": identity.canonical_official_sha256,
+                        "template_active_sha256": identity.active_sha256,
+                        "template_raw_equals_active": identity.raw_equal, "template_canonical_equals_active": identity.canonical_equal,
                         "model_path": facts.get("model_path"), "total_slots": facts.get("total_slots"), "gguf_meta": meta}
 else:
     native = adapter.runtime_facts(local.model_identifier)
