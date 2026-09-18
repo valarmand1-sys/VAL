@@ -579,3 +579,49 @@ def test_measurement_receives_exactly_the_turns_the_request_transmits() -> None:
     )
     assert (result.prompt_tokens, result.context_tokens) == (5_417, 32_768)
     assert client.chat.completions.kwargs["messages"][0] == {"role": "system", "content": PERSONA}
+
+
+# --- the Category-A Mistral challenger's wire form (owner amendment, 17 September 2026) ------
+
+
+def _mistral() -> ModelConfig:
+    config = by_slug("mistral-small-3-2-24b-8bit-mlx-lmstudio")
+    assert config is not None
+    return config
+
+
+def test_the_mistral_request_sends_exactly_the_upstream_temperature_and_no_reasoning() -> None:
+    completion = _completion(model="mistral-small-3.2-24b-instruct-2506-mlx")
+    adapter, client = _adapter(_Completions(completion))
+    adapter._native_models = {
+        "mistral-small-3.2-24b-instruct-2506-mlx": {
+            "id": "mistral-small-3.2-24b-instruct-2506-mlx",
+            "loaded_context_length": 36_352,
+        }
+    }
+    adapter.complete(_mistral(), HISTORY, PERSONA, 6_144)
+    sent = client.chat.completions.kwargs
+    assert sent["model"] == "mistral-small-3.2-24b-instruct-2506-mlx"
+    assert sent["temperature"] == 0.15, "the upstream pin, transmitted exactly"
+    assert "reasoning_effort" not in sent and "reasoning" not in sent
+    assert "enable_thinking" not in sent and "thinking" not in sent
+    invented = (
+        "top_p",
+        "top_k",
+        "min_p",
+        "repeat_penalty",
+        "presence_penalty",
+        "frequency_penalty",
+        "seed",
+    )
+    for field in invented:
+        assert field not in sent, f"no invented sampling field: {field}"
+    assert set(sent) == {"model", "messages", "max_tokens", "temperature"}
+
+
+def test_the_gpt_oss_request_is_unchanged_by_the_mistral_pin() -> None:
+    adapter, client = _adapter(_Completions(_completion()))
+    adapter.complete(local(), HISTORY, PERSONA, 6_144)
+    sent = client.chat.completions.kwargs
+    assert "temperature" not in sent, "no sampling pin on the GPT-OSS entry"
+    assert sent["reasoning_effort"] == "medium"

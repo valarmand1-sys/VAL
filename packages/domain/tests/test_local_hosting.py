@@ -166,7 +166,9 @@ def test_the_mistral_challenger_is_category_a_local_unmetered_and_evaluation_onl
     # lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit.
     assert config.model_identifier == "mistral-small-3.2-24b-instruct-2506-mlx"
     assert config.reasoning_effort is ReasoningEffort.NOT_APPLICABLE, "Category A: no control"
-    assert config.temperature is None, "no VAL-specific sampling override"
+    # Owner amendment, 17 September 2026: the upstream publisher configuration
+    # (generation_config.json, temperature 0.15) pinned explicitly — not tuning.
+    assert config.temperature == 0.15
     assert config.hosting is Hosting.LOCAL
     assert config.metering is Metering.LOCAL_NO_METERED_COST
     assert config.cost_per_mtok_in_usd == 0.0 and config.cost_per_mtok_out_usd == 0.0
@@ -175,3 +177,7 @@ def test_the_mistral_challenger_is_category_a_local_unmetered_and_evaluation_onl
     assert config.qualification_targets == frozenset({QualificationTarget.PARTNER})
     assert config.fallback_slug is None
     assert config.context_window_tokens == 32_768
+    # The other local entries carry no sampling pin — the amendment is Mistral-only.
+    for slug in ("gpt-oss-20b-mxfp4-mlx-lmstudio", "qwen3-8-27b-mlx-6bit-lmstudio"):
+        other = by_slug(slug)
+        assert other is not None and other.temperature is None

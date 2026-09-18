@@ -834,9 +834,14 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # LM Studio reasoning metadata. NOT_APPLICABLE states that truthfully
         # and the adapter sends no reasoning control of any kind.
         reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
-        # No VAL-specific sampling override: the upstream generation
-        # configuration states temperature 0.15 as provenance; the effective
-        # runtime sampling is read at load and recorded, never forced.
+        # Owner amendment, 17 September 2026: the loaded runtime exposes no
+        # readable default sampling, so the UPSTREAM publisher configuration is
+        # pinned explicitly — `mistralai/Mistral-Small-3.2-24B-Instruct-2506`
+        # generation_config.json declares temperature 0.15 (do_sample true).
+        # An upstream configuration pin, not VAL-specific tuning; transmitted
+        # as the chat-completions `temperature` parameter on every call. No
+        # other sampling field is declared or sent.
+        temperature=0.15,
         hosting=Hosting.LOCAL,
         metering=Metering.LOCAL_NO_METERED_COST,
         cost_per_mtok_in_usd=0.0,

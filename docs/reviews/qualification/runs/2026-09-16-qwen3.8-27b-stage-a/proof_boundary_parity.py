@@ -260,6 +260,16 @@ for index, content in enumerate(TURNS[:MAX_TURNS], start=1):
         print(out["stop"])
         Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str))
         sys.exit(4)
+    # Sampling transmission gate (owner amendment, 17 September 2026): a declared
+    # temperature must be transmitted exactly, or the run STOPs.
+    if local.temperature is not None:
+        transmitted = (rec.get("request_sent") or {}).get("temperature")
+        rec["temperature_check"] = {"declared": local.temperature, "transmitted": transmitted}
+        if transmitted != local.temperature:
+            out["stop"] = f"TEMPERATURE NOT TRANSMITTED EXACTLY on turn {index}: declared {local.temperature}, transmitted {transmitted}. STOP."
+            print(out["stop"])
+            Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str))
+            sys.exit(6)
     # Category-A gate (owner ruling, 17 September 2026): a candidate declaring
     # NOT_APPLICABLE must show no hidden-reasoning channel, no think markers and no
     # reasoning token accounting; any of them STOPs the run.

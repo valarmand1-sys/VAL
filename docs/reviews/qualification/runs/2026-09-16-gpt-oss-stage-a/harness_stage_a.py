@@ -133,6 +133,9 @@ provenance = {
     "loaded_context_sdk": loaded_by_sdk,
     "max_context_length": instance.max_context_length,
     "reasoning_effort": local.reasoning_effort.value,
+    # Owner amendment, 17 September 2026: a declared temperature is an upstream
+    # configuration pin transmitted on every call; None means no pin (GPT-OSS).
+    "declared_temperature": local.temperature,
     "output_reserve_tokens": CONVERSATION_MAX_OUTPUT_TOKENS,
     "registry_context_window_tokens": local.context_window_tokens,
     # Owner amendment, 17 September 2026 (Qwen MLX auto-fit exception): the
