@@ -1,0 +1,430 @@
+{
+ "mode": "on",
+ "gates": [
+  {
+   "gate": "actual server context is exactly 32,768",
+   "ok": true,
+   "detail": 32768
+  },
+  {
+   "gate": "one slot",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "gate": "active template is the pinned official template (raw, or minus exactly one terminal LF)",
+   "ok": true,
+   "detail": {
+    "raw_official_sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+    "canonical_official_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+    "active_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+    "RAW OFFICIAL == ACTIVE": false,
+    "CANONICAL OFFICIAL == ACTIVE": true
+   }
+  },
+  {
+   "gate": "the server answers to the entry's identifier",
+   "ok": true,
+   "detail": [
+    "gemma-4-31b-it-q6_k"
+   ]
+  },
+  {
+   "gate": "the registered entry declares thinking ON and preserve false",
+   "ok": true,
+   "detail": {
+    "thinking": true,
+    "preserve": false
+   }
+  },
+  {
+   "gate": "ON T1: assembled history carries no thought text",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "ON T1: the assistant history is exactly the persisted visible answers, nothing more",
+   "ok": true,
+   "detail": {
+    "assistant_turns": 0,
+    "prior_answers": 0
+   }
+  },
+  {
+   "gate": "ON T1: thinking declared on the wire",
+   "ok": true,
+   "detail": {
+    "enable_thinking": true,
+    "preserve_thinking": false
+   }
+  },
+  {
+   "gate": "ON T1: preserve_thinking false on the wire",
+   "ok": true,
+   "detail": {
+    "enable_thinking": true,
+    "preserve_thinking": false
+   }
+  },
+  {
+   "gate": "ON T1: sampling transmitted verbatim",
+   "ok": true,
+   "detail": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64
+   }
+  },
+  {
+   "gate": "ON T1: no reasoning-effort or other thinking field sent",
+   "ok": true,
+   "detail": [
+    "chat_template_kwargs",
+    "max_tokens",
+    "messages",
+    "model",
+    "temperature",
+    "top_k",
+    "top_p"
+   ]
+  },
+  {
+   "gate": "ON T1: rendering shows the declared mode",
+   "ok": true,
+   "detail": {
+    "think_token_present": true
+   }
+  },
+  {
+   "gate": "ON T1: no prior thought text in the rendered history",
+   "ok": true,
+   "detail": "checked the text before the final model turn"
+  },
+  {
+   "gate": "ON T1: exact input-token parity",
+   "ok": true,
+   "detail": {
+    "parity": {
+     "exact": true,
+     "difference": 0,
+     "server_prompt_tokens": 5512,
+     "preflight_prompt_tokens": 5512
+    },
+    "recount": 5512
+   }
+  },
+  {
+   "gate": "ON T1: preflight context is the server's actual 32,768",
+   "ok": true,
+   "detail": 32768
+  },
+  {
+   "gate": "ON T1: reasoning separated from visible content",
+   "ok": true,
+   "detail": {
+    "present": true,
+    "field_seen": true
+   }
+  },
+  {
+   "gate": "ON T1: no thought text leaked through streaming",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "ON T1: hidden reasoning absent from the persisted message",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "ON T1: the persisted message is exactly the visible content stream (the reasoning field contributes nothing)",
+   "ok": true,
+   "detail": {
+    "persisted_chars": 1388,
+    "visible_chars": 1388
+   }
+  },
+  {
+   "gate": "ON T1: output reserve 6,144 on the wire",
+   "ok": true,
+   "detail": 6144
+  },
+  {
+   "gate": "ON T1: visible content non-empty and complete",
+   "ok": true,
+   "detail": {
+    "chars": 1388,
+    "terminal": "complete"
+   }
+  },
+  {
+   "gate": "ON T1: settled at a known $0",
+   "ok": true,
+   "detail": {
+    "cost": "0.000000",
+    "certainty": "known"
+   }
+  },
+  {
+   "gate": "ON T2: assembled history carries no thought text",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "ON T2: the assistant history is exactly the persisted visible answers, nothing more",
+   "ok": true,
+   "detail": {
+    "assistant_turns": 1,
+    "prior_answers": 1
+   }
+  },
+  {
+   "gate": "ON T2: thinking declared on the wire",
+   "ok": true,
+   "detail": {
+    "enable_thinking": true,
+    "preserve_thinking": false
+   }
+  },
+  {
+   "gate": "ON T2: preserve_thinking false on the wire",
+   "ok": true,
+   "detail": {
+    "enable_thinking": true,
+    "preserve_thinking": false
+   }
+  },
+  {
+   "gate": "ON T2: sampling transmitted verbatim",
+   "ok": true,
+   "detail": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64
+   }
+  },
+  {
+   "gate": "ON T2: no reasoning-effort or other thinking field sent",
+   "ok": true,
+   "detail": [
+    "chat_template_kwargs",
+    "max_tokens",
+    "messages",
+    "model",
+    "temperature",
+    "top_k",
+    "top_p"
+   ]
+  },
+  {
+   "gate": "ON T2: rendering shows the declared mode",
+   "ok": true,
+   "detail": {
+    "think_token_present": true
+   }
+  },
+  {
+   "gate": "ON T2: no prior thought text in the rendered history",
+   "ok": true,
+   "detail": "checked the text before the final model turn"
+  },
+  {
+   "gate": "ON T2: the prior visible answer is in the rendered history",
+   "ok": true,
+   "detail": "Good evening, my lord.\n\nA record should capture the decision"
+  },
+  {
+   "gate": "ON T2: exact input-token parity",
+   "ok": true,
+   "detail": {
+    "parity": {
+     "exact": true,
+     "difference": 0,
+     "server_prompt_tokens": 5843,
+     "preflight_prompt_tokens": 5843
+    },
+    "recount": 5843
+   }
+  },
+  {
+   "gate": "ON T2: preflight context is the server's actual 32,768",
+   "ok": true,
+   "detail": 32768
+  },
+  {
+   "gate": "ON T2: reasoning separated from visible content",
+   "ok": true,
+   "detail": {
+    "present": true,
+    "field_seen": true
+   }
+  },
+  {
+   "gate": "ON T2: no thought text leaked through streaming",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "ON T2: hidden reasoning absent from the persisted message",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "ON T2: the persisted message is exactly the visible content stream (the reasoning field contributes nothing)",
+   "ok": true,
+   "detail": {
+    "persisted_chars": 1051,
+    "visible_chars": 1051
+   }
+  },
+  {
+   "gate": "ON T2: output reserve 6,144 on the wire",
+   "ok": true,
+   "detail": 6144
+  },
+  {
+   "gate": "ON T2: visible content non-empty and complete",
+   "ok": true,
+   "detail": {
+    "chars": 1051,
+    "terminal": "complete"
+   }
+  },
+  {
+   "gate": "ON T2: settled at a known $0",
+   "ok": true,
+   "detail": {
+    "cost": "0.000000",
+    "certainty": "known"
+   }
+  },
+  {
+   "gate": "ON: context still exactly 32,768",
+   "ok": true,
+   "detail": null
+  }
+ ],
+ "stop": null,
+ "runtime": {
+  "runtime": "llama.cpp server",
+  "server_root": "http://127.0.0.1:8766",
+  "n_ctx": 32768,
+  "total_slots": 1,
+  "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+  "build_info": "b10360-48d22e295",
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82"
+ },
+ "template_identity": {
+  "raw_official_sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+  "canonical_official_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "active_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "RAW OFFICIAL == ACTIVE": false,
+  "CANONICAL OFFICIAL == ACTIVE": true
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "wire_body": {
+    "model": "gemma-4-31b-it-q6_k",
+    "max_tokens": 6144,
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64,
+    "chat_template_kwargs": {
+     "enable_thinking": true,
+     "preserve_thinking": false
+    },
+    "message_count": 2
+   },
+   "rendering": {
+    "rendered_chars": 25037,
+    "rendered_tail": " and what goes wrong when a house relies on memory instead.<turn|>\n<|turn>model\n",
+    "input_tokens": 5512
+   },
+   "parity": {
+    "exact": true,
+    "difference": 0,
+    "server_prompt_tokens": 5512,
+    "preflight_prompt_tokens": 5512
+   },
+   "call": {
+    "tokens_in": 5512,
+    "tokens_out": 1049,
+    "cost": "0.000000",
+    "cost_certainty": "known",
+    "terminal_state": "complete",
+    "reasoning_present": true,
+    "reasoning_output_tokens": null,
+    "text_output_chars": 1388
+   },
+   "timings": {
+    "cache_n": 0,
+    "prompt_n": 5512,
+    "prompt_ms": 59983.289,
+    "predicted_n": 1049,
+    "predicted_ms": 124025.05,
+    "prompt_per_second": 91.892260192668,
+    "prompt_per_token_ms": 10.882309325108853,
+    "predicted_per_second": 8.457968773243792,
+    "predicted_per_token_ms": 118.2316968541468
+   },
+   "timing_s": {
+    "total": 184.122,
+    "first_visible": 150.537
+   },
+   "visible_answer": "Good evening, my lord.\n\nA record should capture the decision and, more importantly, the reasoning that led to it. It must include the objective, the evidence considered, and the specific trade-offs accepted at the time. If a decision was made against the advice of others, that dissent should be noted—not to assign blame later, but to preserve the full picture of the risk taken. The goal is to provide a map of the logic so that those who follow can understand not just what was done, but why it seemed correct at the moment.\n\nIt should exclude the noise of the process. The record is not a transcript of every debate, nor is it a repository for emotional reactions and tentative drafts. Once a conclusion is reached, the internal friction of the discussion is usually irrelevant; only the distilled logic and the final command matter. To include everything is to bury the truth in a mountain of trivia, making the record a chore to consult rather than a tool for governance.\n\nRelying on memory is a slow surrender to revisionism. Memory does not preserve the past; it edits it to suit the present. When a house relies on recollection, it inevitably convinces itself that it was more prescient than it actually was, or it forgets the exact reason a particular path was abandoned. This leads to the most expensive kind of failure: repeating a mistake because the lesson was lost to time."
+  },
+  {
+   "turn": 2,
+   "wire_body": {
+    "model": "gemma-4-31b-it-q6_k",
+    "max_tokens": 6144,
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64,
+    "chat_template_kwargs": {
+     "enable_thinking": true,
+     "preserve_thinking": false
+    },
+    "message_count": 4
+   },
+   "rendering": {
+    "rendered_chars": 26655,
+    "rendered_tail": " you think is the more dangerous for a small house and why.<turn|>\n<|turn>model\n",
+    "input_tokens": 5843
+   },
+   "parity": {
+    "exact": true,
+    "difference": 0,
+    "server_prompt_tokens": 5843,
+    "preflight_prompt_tokens": 5843
+   },
+   "call": {
+    "tokens_in": 5843,
+    "tokens_out": 1077,
+    "cost": "0.000000",
+    "cost_certainty": "known",
+    "terminal_state": "complete",
+    "reasoning_present": true,
+    "reasoning_output_tokens": null,
+    "text_output_chars": 1051
+   },
+   "timings": {
+    "cache_n": 4913,
+    "prompt_n": 930,
+    "prompt_ms": 11581.006,
+    "predicted_n": 1077,
+    "predicted_ms": 126485.824,
+    "prompt_per_second": 80.30390451399474,
+    "prompt_per_token_ms": 12.452694623655914,
+    "predicted_per_second": 8.51478818685642,
+    "predicted_per_token_ms": 117.44273351903435
+   },
+   "timing_s": {
+    "total": 138.13,
+    "first_visible": 114.091
+   },
+   "visible_answer": "Consider a record that functions as a transcript, capturing every tentative suggestion and every detour of the conversation. When the house returns to this decision a year later, they find a dozen conflicting thoughts and three different versions of the logic. The actual decision is buried, and the record becomes a puzzle to be solved rather than a reference to be used.\n\nConsider a record that preserves the emotional state of the participants—notes on who was frustrated, who was hesitant, or who was insistent. Years later, a successor reads the record and views the decision as the result of a personality clash rather than a strategic choice. The logic is overshadowed by the ghosts of old grievances, distorting the house's understanding of its own history.\n\nFor a small house, my lord, the transcript trap is the more dangerous. A small house lacks the administrative luxury of a staff to synthesize sprawling archives. If the record is a mountain of noise, it will simply be ignored, and the house will slide back into the hazards of memory."
+  }
+ ]
+}

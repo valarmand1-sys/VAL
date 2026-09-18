@@ -1,0 +1,206 @@
+{
+ "mode": "off",
+ "gates": [
+  {
+   "gate": "actual server context is exactly 32,768",
+   "ok": true,
+   "detail": 32768
+  },
+  {
+   "gate": "one slot",
+   "ok": true,
+   "detail": 1
+  },
+  {
+   "gate": "active template is the pinned official template (raw, or minus exactly one terminal LF)",
+   "ok": true,
+   "detail": {
+    "raw_official_sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+    "canonical_official_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+    "active_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+    "RAW OFFICIAL == ACTIVE": false,
+    "CANONICAL OFFICIAL == ACTIVE": true
+   }
+  },
+  {
+   "gate": "the server answers to the entry's identifier",
+   "ok": true,
+   "detail": [
+    "gemma-4-31b-it-q6_k"
+   ]
+  },
+  {
+   "gate": "OFF: thinking declared on the wire",
+   "ok": true,
+   "detail": {
+    "enable_thinking": false,
+    "preserve_thinking": false
+   }
+  },
+  {
+   "gate": "OFF: preserve_thinking false on the wire",
+   "ok": true,
+   "detail": {
+    "enable_thinking": false,
+    "preserve_thinking": false
+   }
+  },
+  {
+   "gate": "OFF: sampling transmitted verbatim",
+   "ok": true,
+   "detail": {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64
+   }
+  },
+  {
+   "gate": "OFF: no reasoning-effort or other thinking field sent",
+   "ok": true,
+   "detail": [
+    "chat_template_kwargs",
+    "max_tokens",
+    "messages",
+    "model",
+    "temperature",
+    "top_k",
+    "top_p"
+   ]
+  },
+  {
+   "gate": "OFF: rendering shows the declared mode",
+   "ok": true,
+   "detail": {
+    "think_token_present": false
+   }
+  },
+  {
+   "gate": "OFF: no prior thought text in the rendered history",
+   "ok": true,
+   "detail": "checked the text before the final model turn"
+  },
+  {
+   "gate": "OFF: output reserve 6,144 on the wire",
+   "ok": true,
+   "detail": 6144
+  },
+  {
+   "gate": "OFF: the rendering ends in the template's pre-closed empty thought channel",
+   "ok": true,
+   "detail": "Name one colour of the rainbow.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>"
+  },
+  {
+   "gate": "OFF: preflight equals server usage exactly",
+   "ok": true,
+   "detail": {
+    "preflight": 37,
+    "server": 37,
+    "recount": 37
+   }
+  },
+  {
+   "gate": "OFF: no reasoning returned",
+   "ok": true,
+   "detail": {
+    "present": false,
+    "tokens": null
+   }
+  },
+  {
+   "gate": "OFF: no thought marker in the visible answer",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "OFF: visible answer is non-empty",
+   "ok": true,
+   "detail": {
+    "chars": 33,
+    "terminal": "complete"
+   }
+  },
+  {
+   "gate": "OFF: context still exactly 32,768",
+   "ok": true,
+   "detail": null
+  },
+  {
+   "gate": "OFF: no reasoning text is carried past the adapter, so none can be persisted",
+   "ok": true,
+   "detail": [
+    "provider_reported_model",
+    "stop_reason",
+    "terminal"
+   ]
+  }
+ ],
+ "stop": null,
+ "runtime": {
+  "runtime": "llama.cpp server",
+  "server_root": "http://127.0.0.1:8766",
+  "n_ctx": 32768,
+  "total_slots": 1,
+  "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+  "build_info": "b10360-48d22e295",
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82"
+ },
+ "template_identity": {
+  "raw_official_sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+  "canonical_official_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "active_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "RAW OFFICIAL == ACTIVE": false,
+  "CANONICAL OFFICIAL == ACTIVE": true
+ },
+ "wire_body": {
+  "model": "gemma-4-31b-it-q6_k",
+  "max_tokens": 6144,
+  "temperature": 1.0,
+  "top_p": 0.95,
+  "top_k": 64,
+  "chat_template_kwargs": {
+   "enable_thinking": false,
+   "preserve_thinking": false
+  },
+  "message_count": 2
+ },
+ "rendering": {
+  "rendered_chars": 172,
+  "rendered_tail": "Name one colour of the rainbow.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>",
+  "input_tokens": 37
+ },
+ "result_fields": [
+  "cache_diagnostics",
+  "cache_read_tokens",
+  "cache_write_1h_tokens",
+  "cache_write_5m_tokens",
+  "cache_write_auto_tokens",
+  "prompt_cache_key",
+  "provider_reported_model",
+  "provider_request_id",
+  "reasoning_present",
+  "reasoning_tokens",
+  "runtime_diagnostics",
+  "stop_details",
+  "stop_reason",
+  "terminal",
+  "text",
+  "tokens_in",
+  "tokens_out"
+ ],
+ "answer": "Red is one colour of the rainbow.",
+ "usage": {
+  "prompt_tokens": 37,
+  "completion_tokens": 9
+ },
+ "timings": {
+  "cache_n": 0,
+  "prompt_n": 37,
+  "prompt_ms": 1919.333,
+  "prompt_per_token_ms": 51.87386486486487,
+  "prompt_per_second": 19.277530267025053,
+  "predicted_n": 9,
+  "predicted_ms": 884.278,
+  "predicted_per_token_ms": 98.25311111111111,
+  "predicted_per_second": 10.177794765899412
+ }
+}
