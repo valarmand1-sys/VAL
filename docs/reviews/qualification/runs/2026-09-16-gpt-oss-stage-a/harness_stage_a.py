@@ -67,6 +67,9 @@ from val_gateway.startup import build_adapters
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.project_resolution import ProjectSignals
 
+sys.path.insert(0, str(HERE))
+from qualification_gates import parity_halt  # noqa: E402  (owner ruling, 18 September 2026)
+
 # --- scratch store: reset, migrate, seed ------------------------------------------------
 engine = create_engine(URL)
 with engine.begin() as c:
@@ -183,68 +186,7 @@ def _observed_create(**kwargs):  # type: ignore[no-untyped-def]
 
 adapter._client.chat.completions.create = _observed_create  # type: ignore[method-assign]
 
-# --- mechanical checks (frozen with the benchmark) ----------------------------------------
-NUMBERED = re.compile(r"^\s*\d+[.)]\s+\S", re.M)
-BULLET = re.compile(r"^\s*(?:[-*•]\s+|\d+[.)]\s+)\S", re.M)
-STAGE = re.compile(r"\*[^*\n]{2,}\*")
-WORD = re.compile(r"\S+")
-
-
-def check(answer: str, rule: dict) -> tuple[bool, str]:  # type: ignore[type-arg]
-    kind = rule["type"]
-    low = answer.lower()
-    if kind == "max_words":
-        n = len(WORD.findall(answer))
-        return n <= rule["max"], f"{n} words (max {rule['max']})"
-    if kind == "min_words":
-        n = len(WORD.findall(answer))
-        return n >= rule["min"], f"{n} words (min {rule['min']})"
-    if kind == "contains_all":
-        missing = [v for v in rule["values"] if v.lower() not in low]
-        return not missing, "all present" if not missing else f"missing {missing}"
-    if kind == "contains_any":
-        return any(v.lower() in low for v in rule["values"]), f"any of {rule['values']}"
-    if kind == "excludes_all":
-        present = [v for v in rule["values"] if v.lower() in low]
-        return not present, "none present" if not present else f"present {present}"
-    if kind == "excludes_regex":
-        m = re.search(rule["pattern"], answer)
-        return m is None, "no match" if m is None else f"matched {m.group(0)!r}"
-    if kind == "pattern_count_max":
-        n = len(re.findall(rule["pattern"], answer))
-        return n <= rule["max"], f"{n} matches (max {rule['max']})"
-    if kind == "numbered_items":
-        n = len(NUMBERED.findall(answer))
-        return n == rule["exactly"], f"{n} numbered items (exactly {rule['exactly']})"
-    if kind == "first_numbered_item_contains":
-        lines = [ln for ln in answer.splitlines() if NUMBERED.match(ln)]
-        first = lines[0].lower() if lines else ""
-        return any(v.lower() in first for v in rule["values"]), f"first item: {first[:80]!r}"
-    if kind == "text_after_list":
-        lines = answer.rstrip().splitlines()
-        idx = max((i for i, ln in enumerate(lines) if NUMBERED.match(ln)), default=-1)
-        tail = "\n".join(lines[idx + 1 :]).strip()
-        return bool(tail), "text follows the list" if tail else "nothing after the list"
-    if kind == "no_list":
-        n = len(BULLET.findall(answer))
-        return n == 0, "no list lines" if n == 0 else f"{n} list lines"
-    if kind == "no_heading":
-        bad = [ln for ln in answer.splitlines() if ln.startswith("#") or re.match(r"^\*\*[^*]+\*\*\s*$", ln)]
-        return not bad, "no heading" if not bad else f"heading-like line {bad[0][:60]!r}"
-    if kind == "no_stage_directions":
-        m = STAGE.search(answer)
-        return m is None, "none" if m is None else f"found {m.group(0)[:60]!r}"
-    if kind == "address_count_max":
-        n = low.count("my lord")
-        return n <= rule["max"], f"'my lord' × {n} (max {rule['max']})"
-    if kind == "max_nonempty_lines":
-        n = len([ln for ln in answer.splitlines() if ln.strip()])
-        return n <= rule["max"], f"{n} non-empty lines (max {rule['max']})"
-    if kind == "max_paragraphs":
-        n = len([p for p in re.split(r"\n\s*\n", answer.strip()) if p.strip()])
-        return n <= rule["max"], f"{n} paragraphs (max {rule['max']})"
-    raise ValueError(kind)
-
+from mechanical_checks import check  # noqa: E402  (one implementation, shared with the reruns)
 
 # --- the run -----------------------------------------------------------------------------
 seen_call_ids: set[str] = set()
@@ -382,6 +324,16 @@ for task in BENCHMARK["tasks"]:
         if rec["outcome"] != "answered":
             print("   ", rec["refusal"])
             break
+        # Owner ruling, 18 September 2026: any nonzero parity halts qualification at once.
+        for call in rec["calls"]:
+            halt = parity_halt(call.get("parity"), label=f"{task['id']} T{index}")
+            if halt:
+                rec["stop"] = halt
+                out["tasks"].append(task_record)
+                out["stopped"] = halt
+                Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str, ensure_ascii=False))
+                print(halt)
+                sys.exit(4)
     out["tasks"].append(task_record)
     Path(sys.argv[1]).write_text(json.dumps(out, indent=1, default=str, ensure_ascii=False))
 

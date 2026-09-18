@@ -51,6 +51,17 @@ LOOPBACK_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
 #: The measurement's name on every evidence row.
 SOURCE = "lmstudio-sdk"
 
+#: How the preflight asks the runtime to render (owner ruling, 18 September 2026).
+#: LM Studio's chat-completions ingress renders historical assistant turns WITHOUT
+#: the template's end-of-sequence token; the template RPC, by default, emits it —
+#: one token per assistant message in history (Mistral Small 3.2: `</s>`; the
+#: synthetic four-message diagnostic, evidence index §75). The SDK's own documented
+#: rendering option makes the RPC render exactly as the ingress does — byte-equal
+#: on the diagnostic — so the preflight renders with it. A general rule for every
+#: model on this runtime, not a per-template correction: no token is removed by the
+#: house, no count is adjusted; the runtime renders both paths the same way.
+INGRESS_RENDER_OPTIONS: Mapping[str, bool] = {"omitEosToken": True}
+
 
 def inspector_host_of(base_url: str) -> str:
     """`host:port` for the SDK, from the adapter's OpenAI-compatible base URL."""
@@ -70,7 +81,7 @@ class _LoadedHandle(Protocol):
 
     def get_info(self) -> object: ...
     def get_context_length(self) -> int: ...
-    def apply_prompt_template(self, history: object) -> str: ...
+    def apply_prompt_template(self, history: object, opts: Mapping[str, bool]) -> str: ...
     def count_tokens(self, input: str) -> int: ...
 
 
@@ -246,7 +257,7 @@ class LMStudioContextInspector:
                     raise ContextInspectionUnavailableError(
                         f"lmstudio inspector: unsupported role {role!r} in the request"
                     )
-            rendered = handle.apply_prompt_template(chat)
+            rendered = handle.apply_prompt_template(chat, dict(INGRESS_RENDER_OPTIONS))
             prompt_tokens = handle.count_tokens(rendered)
             context_tokens = handle.get_context_length()
         except ContextInspectionUnavailableError:
@@ -278,6 +289,7 @@ class LMStudioContextInspector:
                 "architecture": instance.architecture,
                 "path": instance.path,
                 "rendered_chars": len(rendered),
+                "render_options": dict(INGRESS_RENDER_OPTIONS),
                 "turns": len(turns),
             },
         )

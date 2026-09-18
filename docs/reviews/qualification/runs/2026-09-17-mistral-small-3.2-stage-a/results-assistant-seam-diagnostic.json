@@ -1,0 +1,69 @@
+{
+ "fixture": {
+  "system": "You are a test fixture. Answer in one short sentence.",
+  "messages": [
+   {
+    "role": "user",
+    "content": "Name one colour.",
+    "cache_breakpoint": false
+   },
+   {
+    "role": "assistant",
+    "content": "Blue is a colour.",
+    "cache_breakpoint": false
+   },
+   {
+    "role": "user",
+    "content": "Name another.",
+    "cache_breakpoint": false
+   }
+  ]
+ },
+ "canonical_local_sequence": [
+  {
+   "role": "system",
+   "content": "You are a test fixture. Answer in one short sentence."
+  },
+  {
+   "role": "user",
+   "content": "Name one colour."
+  },
+  {
+   "role": "assistant",
+   "content": "Blue is a colour."
+  },
+  {
+   "role": "user",
+   "content": "Name another."
+  }
+ ],
+ "request_sent_messages": [
+  {
+   "role": "system",
+   "content": "You are a test fixture. Answer in one short sentence."
+  },
+  {
+   "role": "user",
+   "content": "Name one colour."
+  },
+  {
+   "role": "assistant",
+   "content": "Blue is a colour."
+  },
+  {
+   "role": "user",
+   "content": "Name another."
+  }
+ ],
+ "sdk_rendered": "<s>[SYSTEM_PROMPT]You are a test fixture. Answer in one short sentence.[/SYSTEM_PROMPT][INST]Name one colour.[/INST]Blue is a colour.</s>[INST]Name another.[/INST]",
+ "sdk_count": 32,
+ "measure_context_prompt_tokens": 32,
+ "server_usage_prompt_tokens": 31,
+ "server_logged_input": "<s>[SYSTEM_PROMPT]You are a test fixture. Answer in one short sentence.[/SYSTEM_PROMPT][INST]Name one colour.[/INST]Blue is a colour.[INST]Name another.[/INST]",
+ "server_logged_input_count_by_runtime_tokenizer": 31,
+ "difference_server_minus_sdk": -1,
+ "byte_equal": false,
+ "unified_diff": "--- sdk\n+++ server\n@@ -1 +1 @@\n-<s>[SYSTEM_PROMPT]You are a test fixture. Answer in one short sentence.[/SYSTEM_PROMPT][INST]Name one colour.[/INST]Blue is a colour.</s>[INST]Name another.[/INST]\n+<s>[SYSTEM_PROMPT]You are a test fixture. Answer in one short sentence.[/SYSTEM_PROMPT][INST]Name one colour.[/INST]Blue is a colour.[INST]Name another.[/INST]",
+ "seam_sdk_repr": "'lour.[/INST]Blue is a colour.</s>[INST]Name another.['",
+ "seam_server_repr": "'lour.[/INST]Blue is a colour.[INST]Name another.[/INS'"
+}

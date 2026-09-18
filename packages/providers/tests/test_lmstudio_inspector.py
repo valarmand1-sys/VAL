@@ -53,9 +53,12 @@ class FakeHandle:
         assert self.context_length is not None
         return self.context_length
 
-    def apply_prompt_template(self, history: object) -> str:
+    opts_seen: list[object] = field(default_factory=list)
+
+    def apply_prompt_template(self, history: object, opts: object = None) -> str:
         self.calls.append("apply_prompt_template")
         self.rendered.append(history)
+        self.opts_seen.append(opts)
         parts = [f"<|start|>{m.role}<|message|>{_text(m)}<|end|>" for m in history._messages]  # type: ignore[attr-defined]
         return "".join(parts) + "<|start|>assistant"
 
@@ -280,7 +283,7 @@ def test_measure_uses_the_loaded_instances_template_and_tokenizer_on_the_exact_t
 
 def test_a_runtime_refusing_the_measurement_fails_closed() -> None:
     class Refusing(FakeHandle):
-        def apply_prompt_template(self, history: object) -> str:
+        def apply_prompt_template(self, history: object, opts: object = None) -> str:
             raise RuntimeError("template failed")
 
     inspector, _ = _inspector([Refusing()])
@@ -295,3 +298,20 @@ def test_the_session_is_opened_once_and_closed_on_request() -> None:
     assert len(inspector._made) == 1  # type: ignore[attr-defined]
     inspector.close()
     assert client.closed
+
+
+# --- the rendering matches the chat-completions ingress (owner ruling, 18 September 2026) ----
+
+
+def test_the_preflight_renders_with_end_of_sequence_tokens_omitted_like_the_ingress() -> None:
+    from val_providers.lmstudio_inspector import INGRESS_RENDER_OPTIONS
+
+    handle = FakeHandle()
+    inspector, _ = _inspector([handle])
+    result = inspector.measure(MODEL, TURNS)
+    # The one documented option and no more, spelled as the SDK names it.
+    expected = [("omitEosToken", True)]
+    assert list(INGRESS_RENDER_OPTIONS.items()) == expected
+    passed_to_renderer = [list(o.items()) for o in handle.opts_seen]
+    assert passed_to_renderer == [expected], "passed to the runtime's renderer"
+    assert list(result.details["render_options"].items()) == expected, "recorded on the row"
