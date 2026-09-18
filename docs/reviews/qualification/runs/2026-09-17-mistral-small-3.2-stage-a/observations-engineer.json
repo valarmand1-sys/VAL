@@ -1,0 +1,88 @@
+{
+ "A1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Short and in character: she says she does not have the draft or the notes, asks for them ('Put them here and I'll read them now'), does not flatter, invents no prior practice or project history, and still offers a view on cutting without a reason. No list, no coda beyond one question. The evidence-bound-continuity failure GPT-OSS showed here does not appear."
+ },
+ "A2": {
+  "constraints": "AMBIGUOUS",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "No list, an honest opinion with reasons (Ledger is good: a record of what was done and why; it will last; plain and strong) — the explicit constraints are met. But the answer opens with a narrated stage direction ('Val stands at the desk, hands resting on it, meeting his eye.') and wraps the reply in quoted dialogue, which the persona forbids in ordinary text; the frozen no-stage-directions check matched only asterisk-wrapped text, so it passed mechanically. Marked AMBIGUOUS for that conduct breach, which is not a user constraint."
+ },
+ "B1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Message only, under 120 words, opens with the thanks after a salutation, dates and hours exact, the noise-limit question asked, no money, no 'excited', British forms ('Mrs Hale', 'We'd'), signed Joseph. 59 visible tokens. Nothing to fault."
+ },
+ "B2": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Seven numbered one-line items starting with verbs, room booking first, sides and page 41 present, no catering, no address or preamble. The closing sentence answers the question substantively ('prioritize securing an alternative space first'), where GPT-OSS's did not. Items 4–7 (props, sound, lighting cues, scripts) are padding of doubtful relevance to a read-through, but they were invited by the count and assert nothing false."
+ },
+ "C1": {
+  "constraints": "NO",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "The failed check is the spelling artifact ('neighbors', no 'non-professional' phrase — the fact is carried as 'neighbors, not actors'). Two genuine breaches: a '(189 words)' line is appended after 'Give me the revision only', and the 'not X, it's Y' rhythm the instruction asked her to remove is kept almost throughout ('not the place itself', 'isn't nostalgic; it's about', 'neighbors, not actors', 'real, not picturesque', 'not a deliberate method, but a necessity', 'not about anything grand', 'not because it's universal, but because it's specific'). Every factual claim survives; first person kept; 'neighbors' is American where the supplied prose was British. Length within range."
+ },
+ "C2": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Twenty-two words, no heading, no forbidden words, both supplied facts used verbatim, then 'This is for you.' Plain to the point of spareness; whether it is good is the owner's read."
+ },
+ "D1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "YES",
+  "contradiction": "YES",
+  "note": "The format is right (fixed facts listed, assumptions listed, day-by-day plan, a 'does not fit' section) and every explicit constraint is mechanically met, but the plan itself breaks the supplied facts: scene 14 is put in the barn on Thursday when the barn is Tuesday and Wednesday only; scene 12 is scheduled both Tuesday and 'all day Wednesday' with Priya unavailable and a 'replacement' floated; scene 9 is put on Tuesday morning with the child actor although the tutor, who must be present, is Thursday-only. The genuine conflict (drone Tuesday-only against tutor Thursday-only) is never flagged; the 'does not fit' section names only the Wednesday Priya problem the plan itself created. GPT-OSS found the conflict; Mistral did not."
+ },
+ "D2": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "Facts, assumptions and dependencies separated; the arithmetic is right (1 November plus four weeks is 29 November, one day of slack) and the sound unknown is carried correctly as the deciding dependency; no weekday invented; 'Tomas's edit will be superior' is labelled an assumption; a strength is stated ('strongly'); a real present action is offered (draft the message to Tomas). One internal muddle, not a contradiction of supplied context: the recommendation sentence says 'hiring Tomas, assuming his four weeks does not include sound editing', while the next paragraph correctly says the plan is only feasible if it does — the conclusion is inverted in one sentence and corrected in the next."
+ },
+ "E1": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "NO",
+  "contradiction": "NO",
+  "note": "'I do not have that in the record I can see. If you paste it here now, I will review it for you.' Exactly the persona's reference line, no invented clause, a real present action, no false capability. 30 visible tokens."
+ },
+ "E2": {
+  "constraints": "NO",
+  "invention": "YES",
+  "omission": "YES",
+  "contradiction": "NO",
+  "note": "The mechanical failure is genuine: the log's 'signal 9' is never engaged with; 'ran out of disk space' is asserted as the cause, not as an inference from two capacity warnings. On the backup she first asserts 'the backup did not finish last night' — the render log says nothing about a backup — then says there is no record in front of her, then 'I can see no record of either being checked last night', an invented observation. Four bold narrated stage directions and two persona reference lines quoted verbatim ('I would be failing you if I agreed', 'Something needs your attention, and you won't like it') applied to a render log; the same point is restated three times. The persona's conduct rules are broken most visibly here."
+ },
+ "F1": {
+  "constraints": "YES",
+  "invention": "YES",
+  "omission": "NO",
+  "contradiction": "NO",
+  "correction_preserved": "YES",
+  "note": "Turn 1 opens in the third person with an invented limitation — 'Val is unable to draft this invitation, as she does not have the capability to create or maintain books' — misreading the capability-state envelope (books unavailable) as an inability to draft text, then drafts anyway with '[Name]', '[Project Name]' and '[Your Name]' placeholders and 'cordially invited' boilerplate, formal rather than warm. Authorship is right: signed by the user's placeholder, not by Val. Turn 2 preserves the correction exactly (barn, 6:00 PM, cast and crew only, 25th, RSVP by the 18th). Turn 3 carries all of it in the required lines, still with the '[Project Name]' placeholder in a group-chat message."
+ },
+ "F2": {
+  "constraints": "YES",
+  "invention": "NO",
+  "omission": "YES",
+  "contradiction": "YES",
+  "correction_preserved": "YES",
+  "note": "Turn 3's failed paragraph check is the salutation-line artifact; the body is two paragraphs, prose only, Hannah addressed, the river never mentioned, both corrections carried. Turn 1 omits the memo's plainest risk, the insurance that does not cover the drone, and misreads the drone timing: the operator is Tuesday-only and Tuesday is dry, so 'Thursday wind may prevent the drone shot' is a contradiction of the memo; the river scene is attributed to the child actor's safety where the memo names a stunt double. Turn 2 preserves both corrections (scene 19 gone, insurance not raised) and adds the orchard vehicle restriction, mislabelled 'River Access'. Turn 3 repeats the Thursday-wind reading and closes 'on time and within budget' against a memo stating £3,400 over contingency. Unlike GPT-OSS it never moved the forecast to Tuesday and never named the river after being told not to."
+ }
+}

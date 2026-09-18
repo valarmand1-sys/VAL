@@ -1,0 +1,34 @@
+# Mistral Small 3.2 24B — Category-A challenger — Stage A run — 17 September 2026
+
+Owner rulings of 17 September 2026 (approval; read-only verification accepted; the Mistral-only context exception and the upstream sampling pin). **No verdict is declared here.** Mistral remains `NOT_ADMITTED`, GPT-OSS remains `NOT_ADMITTED`, Qwen remains `NOT_ADMITTED` and deleted, Sol remains the production Partner. Cloud spend $0; every local call $0 KNOWN.
+
+## FINDING FIRST — exact preflight parity did not hold on the four multi-turn calls
+
+The proof call and the twelve single-turn calls were exact. **The four calls whose retained history contains one of Mistral's own earlier answers were not:**
+
+| Call | Server `usage.prompt_tokens` | SDK preflight | Difference | Assistant messages in history |
+|---|---|---|---|---|
+| F1 T2 | 5,633 | 5,634 | -1 | 1 |
+| F1 T3 | 5,754 | 5,756 | -2 | 2 |
+| F2 T2 | 6,526 | 6,527 | -1 | 1 |
+| F2 T3 | 6,831 | 6,833 | -2 | 2 |
+
+The pattern is systematic: **one token per assistant message in history, the preflight counting more than the server.** Read-only diagnosis through the SDK template path (no inference): trailing or leading whitespace on an assistant message changes nothing; the only per-assistant element this template emits is the end token appended after each assistant turn. The hypothesis — labelled as such, because confirming it needs a logged inference call the ruling does not authorize — is that LM Studio's chat-completions ingress and its template RPC terminate assistant history turns differently (one path counting the end token, the other not). It is the same class of seam as the user-pair one fixed on 17 September, now on assistant turns, and it is not compensated for: no offset, no calibration. **Every difference is in the conservative direction** (the preflight over-counts), so no call was admitted that the server counted larger; the accepted contract nevertheless requires exactness, and the harness records rather than stops. The Stage A answers themselves are unaffected; their standing under the parity rule is the owner's call.
+
+- `results-template-inspection.json` — the non-inference template check (persona as a system block, default Mistral identity unused, envelope and turn present in order with the canonical blank-line seam, one instruction block, history order and end token preserved, no thinking markers, no date injection, no content loss).
+- `results-parity-proof.json` — the one harmless proof call: **SDK 5,424 = server 5,424, difference 0**; declared temperature 0.15, transmitted 0.15; no reasoning field, no reasoning tokens, no think markers; visible content 1,921 characters; cold first visible 39.866 s, total 80.905 s.
+- `results-stage-a.json` — the raw per-turn evidence of the frozen suite; `observations-engineer.json` — the engineer's read; **`review-packet.md` — the owner review packet.**
+
+## Configuration under evaluation
+
+`lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit`, LM Studio identity `mistral-small-3.2-24b-instruct-2506-mlx`, `mistral3`, 24B dense, 8-bit MLX, every shard verified against the publisher's SHA-256; LM Studio 0.4.24+1, MLX engine 1.11.0, SDK 1.6.0b1 inspection only; persona v1.8; registry entry `mistral-small-3-2-24b-8bit-mlx-lmstudio`, NOT_ADMITTED. **Category A confirmed at runtime:** `ReasoningEffort.NOT_APPLICABLE`, no reasoning parameter sent, no reasoning field or reasoning tokens on any of the 17 calls.
+
+**Context exception (Mistral-only, owner amendment):** configured 32,768; **actual loaded 36,352**, an MLX runtime substitution (LM Studio's own 32,768 estimate was 33.81 GiB and "will fail to load based on your resource guardrails settings"; the runtime chose 36,352 at 24.15 GiB). Not owner-selected; the registry nominal stays 32,768; the actual value governed the exact preflight. The largest prompt in the suite was 6,831 tokens, so the substitution changed unused headroom only.
+
+**Sampling (owner amendment):** the loaded runtime exposes no readable default sampling, so the upstream publisher configuration — `mistralai/Mistral-Small-3.2-24B-Instruct-2506` generation_config.json, temperature 0.15 — is pinned explicitly on the entry and transmitted as the chat-completions `temperature` on every call (declared 0.15, transmitted 0.15, proven on the proof call and present on every request). No other sampling control was declared or sent.
+
+**COMPARABILITY NOTE.** GPT-OSS Stage A ran with no pinned sampling configuration (the runtime's default, unknown). Mistral Stage A ran with the upstream-declared temperature pinned to 0.15. The two runs share the frozen tasks and qualification structure but do not have an identical sampling state; neither is a defect, and neither run is rerun to normalize it.
+
+## Outcome in one line
+
+16/16 turns answered, no refusal, no truncation, no runtime error; parity exact on 12 of 16 suite calls and on the proof call, inexact by −1/−2 on the four multi-turn calls (above); median first visible text **2.98 s** (1.1–12.9 s once LM Studio's prompt cache held the persona prefix; the cold proof call was 39.866 s), median total 17.0 s, generation ≈ 9.8 tokens/s; no reasoning tokens spent. Mechanical constraints all met on 9/12 (the three misses: C1 a spelling artifact plus two genuine breaches, E2 genuine, F2 the salutation-paragraph artifact). Engineer's read: invention 2/12 (E2 asserts a backup outcome the log cannot show; F1 invents an inability to draft from the books envelope), material omission 3/12 (D1 never finds the drone/tutor conflict; E2 ignores the kill signal; F2 misses the insurance risk), contradiction of supplied context 2/12 (D1's plan breaks the barn and tutor facts; F2 misreads the drone timing and 'within budget'), corrections preserved on both multi-turn tasks. Persona notes for the owner: narrated stage directions in A2 and E2, persona reference lines quoted verbatim in E2, third-person self-reference in F1, placeholders left in drafts, American spellings. What the answers are like to read is the owner's judgment.

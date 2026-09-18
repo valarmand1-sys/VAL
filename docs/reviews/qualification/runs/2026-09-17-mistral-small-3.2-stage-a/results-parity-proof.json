@@ -1,0 +1,124 @@
+{
+ "provenance": {
+  "runtime": "LM Studio",
+  "lmstudio_app_version": "0.4.24+1",
+  "lmstudio_sdk_version": "1.6.0b1",
+  "canonical_identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+  "model_key": "mistral-small-3.2-24b-instruct-2506-mlx",
+  "path": "lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit",
+  "quantization": "8bit",
+  "compatibility_type": "mlx",
+  "architecture": "mistral3",
+  "format": "safetensors",
+  "state": "loaded",
+  "loaded_context_native": 36352,
+  "loaded_context_sdk": 36352,
+  "max_context_length": 131072,
+  "declared_reasoning_effort": "not_applicable",
+  "declared_temperature": 0.15,
+  "output_reserve_tokens": 6144,
+  "registry_context_window_tokens": 32768,
+  "configured_context": 32768,
+  "actual_loaded_context": 36352,
+  "context_source": "MLX runtime auto-fit (owner exception, 17 September 2026)",
+  "persona_version": "1.8",
+  "configuration_id": "3b9f2c41-7d5e-4a86-b2c3-8e1f4d6a9c07"
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "messages_sent": 3,
+   "assembled_history_contains_think_tags": false,
+   "sdk_preflight_prompt_tokens": 5424,
+   "sdk_context_tokens": 36352,
+   "outcome": "answered",
+   "visible_chars": 1921,
+   "visible_head": "Good evening, my lord.\n\nA house's written record is its memory and its legacy. It should hold the decisions that shaped it, the reasoning behind them, and the lessons learned in making them. What belongs there are the consequential choices \u2014 those that define the house's direction, its values, and i",
+   "on_delta_contains_think_tags": false,
+   "persisted_contains_think_tags": false,
+   "persisted_equals_streamed": true,
+   "request_sent": {
+    "stream": true,
+    "stream_options": {
+     "include_usage": true
+    },
+    "model": "mistral-small-3.2-24b-instruct-2506-mlx",
+    "max_tokens": 6144,
+    "temperature": 0.15,
+    "message_count": 2
+   },
+   "stream_observed": {
+    "reasoning_field_seen": false,
+    "think_tag_in_content": false,
+    "content_chunks": 394
+   },
+   "timing_s": {
+    "core_call_total": 80.905,
+    "prefill_to_first_chunk": 39.866,
+    "first_visible_content": 39.866
+   },
+   "call": {
+    "tokens_in": 5424,
+    "tokens_out": 395,
+    "cost": "0.000000",
+    "cost_certainty": "known",
+    "latency_ms": 80870,
+    "terminal_state": "complete",
+    "status": "ok",
+    "reasoning_present": false,
+    "reasoning_output_tokens": 0,
+    "text_output_chars": 1921,
+    "first_text_ms": 39866,
+    "provider_reported_model": "mistral-small-3.2-24b-instruct-2506-mlx"
+   },
+   "preflight": {
+    "path": "lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-MLX-8bit",
+    "turns": 2,
+    "format": "safetensors",
+    "source": "lmstudio-sdk",
+    "api_host": "127.0.0.1:1234",
+    "model_key": "mistral-small-3.2-24b-instruct-2506-mlx",
+    "sdk_version": "1.6.0b1",
+    "architecture": "mistral3",
+    "prompt_tokens": 5424,
+    "context_tokens": 36352,
+    "rendered_chars": 25022,
+    "registry_agrees": false,
+    "max_context_length": 131072,
+    "instance_identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+    "loaded_context_length": 36352,
+    "registry_context_tokens": 32768
+   },
+   "parity": {
+    "exact": true,
+    "difference": 0,
+    "server_prompt_tokens": 5424,
+    "preflight_prompt_tokens": 5424
+   },
+   "temperature_check": {
+    "declared": 0.15,
+    "transmitted": 0.15
+   },
+   "category_a_check": {
+    "reasoning_field_seen": false,
+    "think_tag_in_content": false,
+    "reasoning_present": false,
+    "reasoning_output_tokens": 0,
+    "request_sent_reasoning_control": false
+   }
+  }
+ ],
+ "stop": null,
+ "runtime_facts_at_end": {
+  "runtime": "LM Studio",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "requested_model": "mistral-small-3.2-24b-instruct-2506-mlx",
+  "state": "loaded",
+  "arch": "mistral3",
+  "quantization": "8bit",
+  "compatibility_type": "mlx",
+  "max_context_length": 131072,
+  "loaded_context_length": 36352,
+  "publisher": "lmstudio-community"
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "first_turn": {
+  "canonical_roles": [
+   "system",
+   "user"
+  ],
+  "persona_is_system_block": true,
+  "default_mistral_identity_used": false,
+  "envelope_present": true,
+  "turn_present": true,
+  "order_envelope_before_turn": true,
+  "seam_repr": "'\\n\\n'",
+  "one_inst_block": true,
+  "thinking_markers": false,
+  "date_injected": false,
+  "rendered_chars": 277,
+  "tokens": 70,
+  "tail_repr": "'od evening, Val. What shall we turn our attention to?[/INST]'"
+ },
+ "multi_turn": {
+  "canonical_roles": [
+   "system",
+   "user",
+   "assistant",
+   "user"
+  ],
+  "order": [
+   113,
+   136,
+   160,
+   262
+  ],
+  "order_preserved": true,
+  "inst_blocks": 2,
+  "assistant_eos_present": true,
+  "no_content_loss": true,
+  "thinking_markers": false,
+  "unsupported_role_error": false,
+  "tokens": 79
+ },
+ "instance": {
+  "identifier": "mistral-small-3.2-24b-instruct-2506-mlx",
+  "context_length": 36352,
+  "arch": "mistral3",
+  "sdk": "1.6.0b1"
+ }
+}
