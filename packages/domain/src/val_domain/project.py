@@ -88,29 +88,6 @@ class ProjectAttribution(StrEnum):
     LEGACY_UNKNOWN = "legacy_unknown"
 
 
-class ReferenceTrust(StrEnum):
-    """Whether a project reference may decide scope, or only suggest it.
-
-    Corrective round, 18 August 2026. `04-layer-0.md` WP-0.6 requires that
-    *"application code sets final scope; no model output determines it"*, and
-    independent review found the original implementation satisfied that only
-    when something else disagreed: with no session and no conversation, an exact
-    reference from **any** origin resolved outright — including one a model
-    produced.
-
-    Origin is now part of the type rather than a matter of which field a caller
-    happened to use, because "this string came from a model" is not recoverable
-    by looking at the string.
-    """
-
-    #: Deterministic and application-owned: a UI selection, an exact user command
-    #: parsed by application code, a trusted identifier. **May resolve.**
-    TRUSTED = "trusted"
-    #: A model's suggestion, a heuristic, anything inferred from prose.
-    #: **Never resolves.** At most it becomes a candidate to confirm.
-    UNTRUSTED = "untrusted"
-
-
 class ResolutionSource(StrEnum):
     """Which authoritative signal decided the scope.
 
