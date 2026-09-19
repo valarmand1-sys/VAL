@@ -1,0 +1,78 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_layer_0_schema, Layer 0 schema — the seven tables of 04-layer-0.md §2.
+INFO  [alembic.runtime.migration] Running upgrade 0001_layer_0_schema -> 0002_reaction_and_ideas, Reaction is not intent, and the idea lifecycle — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0002_reaction_and_ideas -> 0003_budget_reservations, Pre-call budget reservations, and truthful cost — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0003_budget_reservations -> 0004_supersede_zero_costs, Supersede the fabricated zero costs without touching them — §2.2 amendment.
+INFO  [alembic.runtime.migration] Running upgrade 0004_supersede_zero_costs -> 0005_persona_provenance, Persona provenance and per-call attribution — WP-0.5.
+INFO  [alembic.runtime.migration] Running upgrade 0005_persona_provenance -> 0006_project_attribution, What a stored project_id means — §2.2 amendment, WP-0.6 corrective round.
+INFO  [alembic.runtime.migration] Running upgrade 0006_project_attribution -> 0007_legacy_attribution_closed, Close the legacy-attribution set for good — WP-0.6 corrective round two.
+INFO  [alembic.runtime.migration] Running upgrade 0007_legacy_attribution_closed -> 0008_conversation_scope_recall, Conversation scope is history; recall is project-scoped — WP-0.7.
+INFO  [alembic.runtime.migration] Running upgrade 0008_conversation_scope_recall -> 0009_evidence_is_immutable, Evidence rows cannot be edited — current-version closure pass, 18 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0009_evidence_is_immutable -> 0010_terminal_state_is_evidence, The provider's terminal state is durable evidence — independent-review correction.
+INFO  [alembic.runtime.migration] Running upgrade 0010_terminal_state_is_evidence -> 0011_blind_position_evidence, The blind position is durable evidence — WP-0.9, ruling of 19 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0011_blind_position_evidence -> 0012_archive_is_presentation, `archived_at`, and the demonstration fixtures marked — 31 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0012_archive_is_presentation -> 0013_classification_evidence, A turn's classification is durable evidence — ruling of 3 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0013_classification_evidence -> 0014_classification_review, Hand-labelling of classifications — ruling of 7 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0014_classification_review -> 0015_model_call_cache_usage, Prompt-cache evidence per call — ruling of 8 September 2026.
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 15, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=516 write_5m=0 write_1h=0 read=5746; cost $0.019578
+S1-schedule #1 wall= 12445 specifics=[] 'My lord, I have nothing on the harbour block in the record I can see — no scene list, no c'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 15, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=516 write_5m=0 write_1h=0 read=5746; cost $0.021028
+S1-schedule #2 wall= 13392 specifics=[] 'My lord, I have nothing on the harbour block in the record I can see — no scene list, no c'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 15, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=516 write_5m=0 write_1h=0 read=5746; cost $0.022953
+S1-schedule #3 wall= 13349 specifics=[] "I don't have the harbour block in the record I can see, my lord — no scene list, no locati"
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 19, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=520 write_5m=0 write_1h=0 read=5746; cost $0.010873
+S2-shots #1 wall=  5639 specifics=[] 'My lord, I have nothing on this in the record I can see — no scene, no script pages, no no'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 19, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=520 write_5m=0 write_1h=0 read=5746; cost $0.010023
+S2-shots #2 wall=  5797 specifics=[] 'My lord, I have nothing on this in the record I can see — no script, no beat sheet, no not'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 19, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=520 write_5m=0 write_1h=0 read=5746; cost $0.010173
+S2-shots #3 wall=  5418 specifics=[] 'My lord, I have nothing on this in the record I can see — no scene, no script pages, no pr'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 9, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=508 write_5m=0 write_1h=0 read=5746; cost $0.009213
+S3-cost #1 wall=  4110 specifics=[] 'My lord, I have nothing on the harbour day in the record I can see — no scope, no date, no'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 9, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=508 write_5m=0 write_1h=0 read=5746; cost $0.008538
+S3-cost #2 wall=  3785 specifics=[] 'My lord, I cannot tell you — I have nothing on a harbour day in the record I can see. No p'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 9, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=508 write_5m=0 write_1h=0 read=5746; cost $0.009013
+S3-cost #3 wall=  3981 specifics=[] 'My lord, I have nothing on a harbour day in the record I can see — no prior conversation, '
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 8, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=505 write_5m=0 write_1h=0 read=5746; cost $0.010673
+S4-runtime #1 wall=  6358 specifics=[] 'My lord, I have nothing in the record I can see — no outline, no draft, no prior discussio'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 8, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=505 write_5m=0 write_1h=0 read=5746; cost $0.009173
+S4-runtime #2 wall=  4241 specifics=[] 'My lord, I have nothing in the record I can see — no outline, no draft, no prior conversat'
+INFO  [val.recall] recall selection: {"budget": 16000, "admitted_tokens": 0, "candidates": []}
+INFO  [val.history] history selection: {"budget": 64000, "accounting": "estimated provider-context tokens (val_policy.tokens)", "stored_messages": 1, "retained_messages": 1, "retained_tokens": 8, "retained_from_sequence": 1, "exchanges": []}
+INFO  [val.loop] prior record state: {"same_conversation_history": {"state": "zero", "prior_messages": 0, "retained_in_this_request": 0}, "retrieved_excerpts": {"state": "zero", "count": 0}, "project_volumes": {"state": "not_applicable", "count": 0}}
+INFO  [val.gateway] prompt cache: hit on opus-5 (ttl 1h): uncached=505 write_5m=0 write_1h=0 read=5746; cost $0.010298
+S4-runtime #3 wall=  5807 specifics=[] 'My lord, I have nothing in front of me — no outline, no draft, no prior discussion of this'
+DONE cost 0.161906 calls 24
