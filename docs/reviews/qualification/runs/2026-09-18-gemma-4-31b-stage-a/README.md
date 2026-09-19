@@ -1,6 +1,6 @@
 # Gemma 4 31B — qualification on the llama.cpp provider — 18 September 2026
 
-Owner rulings of 18 September 2026 (qualification authorised; security amendment on artifact provenance). **Status: template gate closed by owner ruling; proofs and Stage A recorded below as they complete.** (First stop, preserved: STOPPED BEFORE ANY INFERENCE at the template-hash gate.) Gemma remains `NOT_ADMITTED`; Sol remains the production Partner. Machine provenance: Apple M4 Pro, arm64, 48 GB, **macOS 26.6.2** (the live value; an earlier request named 26.2).
+Owner rulings of 18 September 2026 (qualification authorised; security amendment on artifact provenance). **Status: template gate closed by owner ruling; both pre-suite proofs passed; the frozen Stage A suite completed, sixteen of sixteen calls at exact parity; owner review packet delivered; NO VERDICT.** (First stop, preserved: STOPPED BEFORE ANY INFERENCE at the template-hash gate.) Gemma remains `NOT_ADMITTED`; Sol remains the production Partner. Machine provenance: Apple M4 Pro, arm64, 48 GB, **macOS 26.6.2** (the live value; an earlier request named 26.2).
 
 ## ARTIFACT PROVENANCE AND INTEGRITY
 
@@ -55,3 +55,28 @@ The run first stopped here, as ruled, because the raw hashes differ. The owner t
 Repository provenance established; expected SHA-256 established independently; local SHA-256 exact match; byte size exact match; GGUF structural identity correct; Gemma 4 31B Q6_K identity correct; loopback-only listener confirmed; authentication confirmed; configured context 32,768; actual context 32,768; one slot; canonical official hash == active server hash; rendered equivalence confirmed; **no inference before closure**: every server counter read zero after the check (`prompt_tokens_total`, `tokens_predicted_total`, `n_decode_total`, `requests_processing` all 0). No repository code was executed. The GGUF and the raw official template file are untouched.
 
 The evaluation-only registry entry `gemma-4-31b-q6k-llamacpp` is added with the gate closed: provider `llamacpp`, identifier `gemma-4-31b-it-q6_k` as the server reports it, `NOT_ADMITTED`, no profile, no fallback, `PARTNER` target for the candidate lane only, known $0, thinking ON, `preserve_thinking` false, temperature 1.0, top_p 0.95, top_k 64, context 32,768.
+
+## Server counters immediately before the first inference
+
+`server-counters-before-first-inference.json`, read 18 September 2026 17:46:13 CDT: every counter zero — `prompt_tokens_total`, `tokens_predicted_total`, `n_decode_total`, `requests_processing`, `requests_deferred` and the rest. No prompt processing, no predicted tokens, no decode activity before the first proof.
+
+## Thinking-OFF proof — PASSED (`proof-thinking-off.json`)
+
+One harmless synthetic request, adapter-direct, nothing persisted. Thinking false and `preserve_thinking` false on the wire as `chat_template_kwargs`; temperature 1.0, top_p 0.95, top_k 64 verbatim; output reserve 6,144; no other thinking field sent; template identity under the one-terminal-LF rule; the rendering carries no `<|think|>` and ends in the template's pre-closed empty thought channel; preflight 37 == server `usage.prompt_tokens` 37 == recount 37; no reasoning returned; no thought marker in the visible answer; visible answer non-empty and complete; context still 32,768; the normalized result has no field that could carry reasoning text.
+
+## Thinking-ON two-turn proof — PASSED (`proof-thinking-on.json`)
+
+Two turns through the candidate lane on the scratch store under persona v1.8. On both turns: thinking true and `preserve_thinking` false on the wire; sampling verbatim; output reserve 6,144; template identity; exact parity (5,512 and 5,843); reasoning present in the provider's separate field; no thought marker in any visible streaming delta; the persisted message equal to the visible stream character for character (1,388 and 1,051); known $0; answer complete. Turn two's assembled assistant history is exactly turn one's persisted visible answer, the rendered history carries no thought channel, and the answer develops "your second point" of turn one correctly from that visible answer alone. Context still 32,768 afterwards.
+
+## Stage A — completed, sixteen of sixteen (`results-stage-a.json`, `review-packet.md`)
+
+Preconditions held at launch: security gate closed, both proofs passed, focused tests and the full mirror green, implementation committed (`2cb3cc8`, proofs `6c55331`), tree clean, `benchmark.json` byte-identical to freeze commit `60b65b7` (SHA-256 `a01bfb85ed26e744c80a4f1864ac1acb1c7d41e6392b5790e19a7af725787788`). Twelve tasks, sixteen calls, one pass in order, thinking ON, no prompt edit, no tuning, no hint, no retry, no regeneration, no cloud judge, no comparison during execution.
+
+- **Parity:** difference 0 on all sixteen calls; actual context 32,768 on every call; every call `complete`; no hidden-thought marker in any visible answer; every frozen mechanical check passed.
+- **Reasoning separation:** `reasoning_present` true on all sixteen; none persisted; F1 and F2 ran on visible history only.
+- **Tokens:** prompts 5,487 to 6,646; completion 20,528 in total, of which 2,166 visible by the server's own tokenizer and 18,362 hidden thought and channel markers (derived, `reasoning-token-derivation.json`; llama.cpp reports no separate reasoning count).
+- **Latency:** median first visible text 109.4 s, median total 141.1 s; slowest C1 at 449 s to first visible text and 470 s total.
+- **Spend:** local $0.000000 KNOWN across sixteen calls; cloud $0.
+- **Engineer's read:** `observations-engineer.json`, provisional and separated from the raw answers in the packet. It records, among other things, E2 stating the render's cause as fact rather than inference, F2 placing the dusk scene 15 before Daniel's 3pm Wednesday exit, D1 and D2 finding the scene 9 conflict and the one-day slack, and both F corrections preserved. These are readings for the owner, not a score.
+
+**No verdict is declared. Gemma remains NOT_ADMITTED; no production route changed; Sol remains the production Partner.**

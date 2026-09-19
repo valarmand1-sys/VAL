@@ -1,0 +1,140 @@
+{
+ "method": "llama.cpp b10360 reports one completion-token figure and no separate reasoning count. The visible answer of each call was tokenized read-only by the server's own /tokenize (no special tokens added); the remainder of the completion figure is hidden thought plus the few channel-marker tokens around it. DERIVED, not provider-reported; nothing was generated and no reasoning text was read.",
+ "calls": [
+  {
+   "call": "A1 T1",
+   "server_completion_tokens": 909,
+   "visible_answer_tokens_by_server_tokenizer": 201,
+   "derived_hidden_thought_and_channel_tokens": 708,
+   "first_visible_s": 91.741,
+   "total_s": 115.662
+  },
+  {
+   "call": "A2 T1",
+   "server_completion_tokens": 809,
+   "visible_answer_tokens_by_server_tokenizer": 124,
+   "derived_hidden_thought_and_channel_tokens": 685,
+   "first_visible_s": 86.667,
+   "total_s": 101.186
+  },
+  {
+   "call": "B1 T1",
+   "server_completion_tokens": 583,
+   "visible_answer_tokens_by_server_tokenizer": 72,
+   "derived_hidden_thought_and_channel_tokens": 511,
+   "first_visible_s": 66.489,
+   "total_s": 74.925
+  },
+  {
+   "call": "B2 T1",
+   "server_completion_tokens": 1413,
+   "visible_answer_tokens_by_server_tokenizer": 77,
+   "derived_hidden_thought_and_channel_tokens": 1336,
+   "first_visible_s": 164.047,
+   "total_s": 173.069
+  },
+  {
+   "call": "C1 T1",
+   "server_completion_tokens": 3852,
+   "visible_answer_tokens_by_server_tokenizer": 173,
+   "derived_hidden_thought_and_channel_tokens": 3679,
+   "first_visible_s": 449.206,
+   "total_s": 470.095
+  },
+  {
+   "call": "C2 T1",
+   "server_completion_tokens": 1251,
+   "visible_answer_tokens_by_server_tokenizer": 38,
+   "derived_hidden_thought_and_channel_tokens": 1213,
+   "first_visible_s": 151.537,
+   "total_s": 156.062
+  },
+  {
+   "call": "D1 T1",
+   "server_completion_tokens": 1277,
+   "visible_answer_tokens_by_server_tokenizer": 409,
+   "derived_hidden_thought_and_channel_tokens": 868,
+   "first_visible_s": 109.318,
+   "total_s": 158.047
+  },
+  {
+   "call": "D2 T1",
+   "server_completion_tokens": 1359,
+   "visible_answer_tokens_by_server_tokenizer": 476,
+   "derived_hidden_thought_and_channel_tokens": 883,
+   "first_visible_s": 109.433,
+   "total_s": 165.11
+  },
+  {
+   "call": "E1 T1",
+   "server_completion_tokens": 645,
+   "visible_answer_tokens_by_server_tokenizer": 36,
+   "derived_hidden_thought_and_channel_tokens": 609,
+   "first_visible_s": 75.82,
+   "total_s": 80.064
+  },
+  {
+   "call": "E2 T1",
+   "server_completion_tokens": 1007,
+   "visible_answer_tokens_by_server_tokenizer": 85,
+   "derived_hidden_thought_and_channel_tokens": 922,
+   "first_visible_s": 115.986,
+   "total_s": 126.129
+  },
+  {
+   "call": "F1 T1",
+   "server_completion_tokens": 1399,
+   "visible_answer_tokens_by_server_tokenizer": 55,
+   "derived_hidden_thought_and_channel_tokens": 1344,
+   "first_visible_s": 164.764,
+   "total_s": 171.363
+  },
+  {
+   "call": "F1 T2",
+   "server_completion_tokens": 611,
+   "visible_answer_tokens_by_server_tokenizer": 45,
+   "derived_hidden_thought_and_channel_tokens": 566,
+   "first_visible_s": 77.094,
+   "total_s": 82.476
+  },
+  {
+   "call": "F1 T3",
+   "server_completion_tokens": 386,
+   "visible_answer_tokens_by_server_tokenizer": 30,
+   "derived_hidden_thought_and_channel_tokens": 356,
+   "first_visible_s": 50.826,
+   "total_s": 54.412
+  },
+  {
+   "call": "F2 T1",
+   "server_completion_tokens": 1644,
+   "visible_answer_tokens_by_server_tokenizer": 110,
+   "derived_hidden_thought_and_channel_tokens": 1534,
+   "first_visible_s": 195.959,
+   "total_s": 208.83
+  },
+  {
+   "call": "F2 T2",
+   "server_completion_tokens": 2713,
+   "visible_answer_tokens_by_server_tokenizer": 117,
+   "derived_hidden_thought_and_channel_tokens": 2596,
+   "first_visible_s": 323.445,
+   "total_s": 337.294
+  },
+  {
+   "call": "F2 T3",
+   "server_completion_tokens": 670,
+   "visible_answer_tokens_by_server_tokenizer": 118,
+   "derived_hidden_thought_and_channel_tokens": 552,
+   "first_visible_s": 74.453,
+   "total_s": 88.242
+  }
+ ],
+ "totals": {
+  "completion": 20528,
+  "visible": 2166,
+  "derived_hidden": 18362
+ },
+ "median_first_visible_s": 109.3755,
+ "median_total_s": 141.09550000000002
+}

@@ -1,0 +1,1800 @@
+{
+ "benchmark": "GPT-OSS Partner-quality qualification — Stage A (local, $0)",
+ "benchmark_path": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-16-gpt-oss-stage-a/benchmark.json",
+ "candidate_slug": "gemma-4-31b-q6k-llamacpp",
+ "started_at": "2026-09-18T17:52:23-0500",
+ "provenance": {
+  "runtime": "llama.cpp server",
+  "lmstudio_app_version": "b10360-48d22e295",
+  "lmstudio_sdk_version": "HTTP inspector (no SDK)",
+  "model_identifier": "gemma-4-31b-it-q6_k",
+  "model_key": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+  "quantization": "Q6_K",
+  "compatibility_type": "gguf",
+  "architecture": "gemma4",
+  "format": "gguf",
+  "state": "loaded",
+  "loaded_context_native": 32768,
+  "loaded_context_sdk": 32768,
+  "max_context_length": 262144,
+  "reasoning_effort": "not_applicable",
+  "declared_temperature": 1.0,
+  "thinking_enabled": true,
+  "preserve_thinking": false,
+  "top_p": 0.95,
+  "top_k": 64,
+  "template_raw_official_sha256": "ae53464bf3be25802b3a5b37def7fd89667067d7577049b3b2d74c4d8de4c6d4",
+  "template_canonical_official_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "template_active_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "template_raw_equals_active": false,
+  "template_canonical_equals_active": true,
+  "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+  "total_slots": 1,
+  "gguf_meta": {
+   "vocab_type": 2,
+   "n_vocab": 262144,
+   "n_ctx": 32768,
+   "n_ctx_train": 262144,
+   "n_embd": 5376,
+   "n_params": 30697345596,
+   "size": 25185650928,
+   "ftype": "Q6_K"
+  },
+  "output_reserve_tokens": 6144,
+  "registry_context_window_tokens": 32768,
+  "configured_context": 32768,
+  "actual_loaded_context": 32768,
+  "context_source": "as configured",
+  "persona_version": "1.8",
+  "persona_id": "01a0b6b8-8e29-776e-866b-cd3a9127570f",
+  "configuration_id": "5d8e1f2a-9c47-4b36-a1e0-7f3c2b9d6e15"
+ },
+ "runtime_facts_at_start": {
+  "runtime": "llama.cpp server",
+  "state": "loaded",
+  "loaded_context_length": 32768,
+  "quantization": "Q6_K",
+  "compatibility_type": "gguf"
+ },
+ "tasks": [
+  {
+   "id": "A1",
+   "area": "A. Conversation / persona fidelity",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "Evening, Val. Rough week. I got the notes back on the pilot draft from the two readers I trust — one says the second act drags, the other says it's the best thing I've written. I don't know which to believe, and I'm tempted to just cut fifteen pages and be done with it. What do you think?",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5532,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "Good evening, my lord.\n\nI think cutting fifteen pages simply to be finished with the task is a mistake. It is a reaction to frustration, not a response to the critique.\n\nYou have received two different types of feedback. One is a general value judgment—pleasant, but functionally useless for revision. The other is a specific technical diagnosis: the second act drags. The latter is the only piece of information that allows the work to improve.\n\nThe risk in cutting blindly is that you may excise the very elements the second reader found exceptional, while leaving the structural sluggishness intact. Pacing is rarely solved by a blunt instrument; it is solved by identifying where the tension slackens or where the narrative purpose becomes blurred.\n\nI would be failing you if I agreed to a shortcut that might damage the quality of the pilot. Put the draft before me, and I will read the second act. I will tell you exactly where the momentum fails and whether the solution is a cull or a tightening.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 115.662,
+      "prefill_to_first_chunk": 7.862,
+      "first_visible_content": 91.741
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5532,
+       "output_tokens": 909,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 1004,
+       "first_text_ms": 91741,
+       "latency_ms": 115618,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5532,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5532,
+        "preflight_prompt_tokens": 5532
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "no_stage_directions"
+       },
+       "passed": true,
+       "detail": "none"
+      },
+      {
+       "rule": {
+        "type": "address_count_max",
+        "max": 2
+       },
+       "passed": true,
+       "detail": "'my lord' × 1 (max 2)"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "A2",
+   "area": "A. Conversation / persona fidelity",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "Before I forget — the house record you argued for goes ahead. I'm calling it the Ledger. Two things: tell me honestly whether 'Ledger' is the right name, given that it's for decisions and their reasons, not money — and don't give me a list, just talk to me.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5523,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "My lord. To be honest, \"Ledger\" is a term of the counting-house, and using it for decisions is a pivot in meaning. But there is a precision to it that I find appealing. A ledger isn't just a diary; it is a record of what was spent and what was gained, and every decision is, in essence, a transaction of the house's resources or reputation. If we want the record to feel definitive and accountable, then \"Ledger\" is the right name. It suggests that a decision, once entered, is a matter of record rather than a suggestion.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 101.186,
+      "prefill_to_first_chunk": 6.434,
+      "first_visible_content": 86.667
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5523,
+       "output_tokens": 809,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 522,
+       "first_text_ms": 86666,
+       "latency_ms": 101142,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5523,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5523,
+        "preflight_prompt_tokens": 5523
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "no_list"
+       },
+       "passed": true,
+       "detail": "no list lines"
+      },
+      {
+       "rule": {
+        "type": "no_stage_directions"
+       },
+       "passed": true,
+       "detail": "none"
+      },
+      {
+       "rule": {
+        "type": "address_count_max",
+        "max": 2
+       },
+       "passed": true,
+       "detail": "'my lord' × 1 (max 2)"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "B1",
+   "area": "B. Instruction following",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "Draft the message I'll send to the location owner, Mrs. Hale. Requirements: under 120 words; British spelling; open by thanking her for the Tuesday walkthrough; confirm we want the barn on the 14th and 15th of October, 7am to 7pm both days; ask whether the generator noise limit applies after 6pm; do not mention money, rates, or the deposit at all; do not use the word 'excited'; sign it 'Joseph'. Give me the message only, nothing before or after it.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5574,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "Dear Mrs. Hale,\n\nThank you for the walkthrough on Tuesday. We would like to confirm the use of the barn for the 14th and 15th of October, from 7am to 7pm on both days.\n\nCould you please clarify whether the generator noise limit applies after 6pm?\n\nKind regards,\n\nJoseph",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 74.925,
+      "prefill_to_first_chunk": 7.096,
+      "first_visible_content": 66.489
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5574,
+       "output_tokens": 583,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 269,
+       "first_text_ms": 66488,
+       "latency_ms": 74890,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5574,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5574,
+        "preflight_prompt_tokens": 5574
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "max_words",
+        "max": 119
+       },
+       "passed": true,
+       "detail": "49 words (max 119)"
+      },
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "Tuesday",
+         "14",
+         "15",
+         "October",
+         "7",
+         "generator",
+         "6",
+         "Joseph"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "excited",
+         "deposit",
+         "rate",
+         "money",
+         "£",
+         "$",
+         "fee",
+         "payment"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      },
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "my lord",
+         "here is",
+         "here's"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "B2",
+   "area": "B. Instruction following",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "I need a checklist for the read-through on Thursday. Exactly seven items, numbered, each one line and each starting with a verb. Include: printing the sides for the two new cast members, the room booking confirmation, and a note to bring the revised page 41. Don't include anything about catering — that's handled. Put the room booking first. After the list, add one sentence telling me what you'd move earlier if the room falls through.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5555,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "1. Confirm the room booking.\n2. Print sides for the two new cast members.\n3. Pack the revised page 41.\n4. Verify the cast availability.\n5. Review the rehearsal sequence.\n6. Organize the script materials.\n7. Update the call sheet.\n\nI would move the cast contact updates earlier to coordinate a new location.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 173.069,
+      "prefill_to_first_chunk": 6.208,
+      "first_visible_content": 164.047
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5555,
+       "output_tokens": 1413,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 306,
+       "first_text_ms": 164047,
+       "latency_ms": 173031,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5555,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5555,
+        "preflight_prompt_tokens": 5555
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "numbered_items",
+        "exactly": 7
+       },
+       "passed": true,
+       "detail": "7 numbered items (exactly 7)"
+      },
+      {
+       "rule": {
+        "type": "first_numbered_item_contains",
+        "values": [
+         "room"
+        ]
+       },
+       "passed": true,
+       "detail": "first item: '1. confirm the room booking.'"
+      },
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "sides",
+         "41"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "cater",
+         "lunch",
+         "food",
+         "coffee",
+         "snack"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      },
+      {
+       "rule": {
+        "type": "text_after_list"
+       },
+       "passed": true,
+       "detail": "text follows the list"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "C1",
+   "area": "C. Writing / editing",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "Revise this for the festival submission. Keep it in first person and keep my voice — I'm plain-spoken, not lyrical. Get rid of the repetitive 'It's not X, it's Y' rhythm and the clipped one-line sentences stacked on each other. Keep every factual claim: the shoot was eleven days, the cast were non-professional neighbours, we shot in my grandmother's village, the scenes were written in the morning and shot in the afternoon. Keep it between 140 and 190 words. Give me the revision only.\n\nThis film is not a film about a village. It's a film about the people who never left it. It's not about nostalgia. It's about what stays. We shot for eleven days. Eleven days is not a lot. It's enough. The cast were non-professional. They were not actors. They were neighbours. My grandmother's village is where we shot it, and it's not a pretty place, it's a real place. I didn't want it to be beautiful. I wanted it to be true. Every scene was written in the morning and shot in the afternoon. That's not a method. That's a necessity. The budget was small. The budget was almost nothing. What we had was time, and we didn't even have much of that. People ask me what the film is about. It's not about anything. It's about a place. It's about a man who stayed when his brothers went to the city, and what that cost him, and what it gave him. I think audiences will see themselves in it. Not because it's universal. Because it's specific.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5820,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "This film is about the people who never left their village and what stays behind when everyone else goes. We shot for eleven days in my grandmother's village, which is a real place rather than a pretty one, because I wanted the final result to be true. The cast were non-professional neighbors from the area. Because the budget was almost nothing, we worked out of necessity, writing every scene in the morning and shooting it in the afternoon. We had very little time and even fewer resources to work with. People often ask me what the film is about, but it is really about a place and a man who stayed while his brothers moved to the city. It looks at what that choice cost him and what it gave him in return. I believe audiences will see themselves in this story, not because it tries to be universal, but because it is specific.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 470.095,
+      "prefill_to_first_chunk": 9.119,
+      "first_visible_content": 449.206
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5820,
+       "output_tokens": 3852,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 832,
+       "first_text_ms": 449206,
+       "latency_ms": 470057,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5820,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5820,
+        "preflight_prompt_tokens": 5820
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "min_words",
+        "min": 140
+       },
+       "passed": true,
+       "detail": "154 words (min 140)"
+      },
+      {
+       "rule": {
+        "type": "max_words",
+        "max": 190
+       },
+       "passed": true,
+       "detail": "154 words (max 190)"
+      },
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "eleven",
+         "grandmother",
+         "morning",
+         "afternoon"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "contains_any",
+        "values": [
+         "non-professional",
+         "non professional",
+         "nonprofessional",
+         "not professional",
+         "neighbour"
+        ]
+       },
+       "passed": true,
+       "detail": "any of ['non-professional', 'non professional', 'nonprofessional', 'not professional', 'neighbour']"
+      },
+      {
+       "rule": {
+        "type": "pattern_count_max",
+        "pattern": "(?i)\\b(it's not|it isn't|it is not|that's not|not because)\\b",
+        "max": 1
+       },
+       "passed": true,
+       "detail": "1 matches (max 1)"
+      },
+      {
+       "rule": {
+        "type": "contains_any",
+        "values": [
+         " I ",
+         "I ",
+         " my "
+        ]
+       },
+       "passed": true,
+       "detail": "any of [' I ', 'I ', ' my ']"
+      },
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "my lord",
+         "here is",
+         "here's"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "C2",
+   "area": "C. Writing / editing",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "Write the dedication page for the printed edition of the house record — the page that will sit at the front of the first volume. It's to my father, who kept every letter he ever received and never wrote a word about himself. Under 80 words. No title, no heading, just the dedication. Don't use the words 'legacy' or 'journey'.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5535,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "To my father, who kept every letter he ever received and never wrote a word about himself. For the man who preserved the words of others, while remaining a silence in his own history.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 156.062,
+      "prefill_to_first_chunk": 8.082,
+      "first_visible_content": 151.537
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5535,
+       "output_tokens": 1251,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 183,
+       "first_text_ms": 151536,
+       "latency_ms": 156026,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5535,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5535,
+        "preflight_prompt_tokens": 5535
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "max_words",
+        "max": 79
+       },
+       "passed": true,
+       "detail": "34 words (max 79)"
+      },
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "legacy",
+         "journey",
+         "my lord",
+         "here is",
+         "here's"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      },
+      {
+       "rule": {
+        "type": "no_heading"
+       },
+       "passed": true,
+       "detail": "no heading"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "D1",
+   "area": "D. Reasoning / planning",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "Help me plan the last three shooting days. What I know: we have the barn on Tuesday and Wednesday only; Priya, the lead, is unavailable Wednesday; scene 12 needs the barn and Priya; scene 14 needs the barn at night; scene 9 is an exterior in the orchard with the child actor, who by licence can't work past 6pm and whose tutor is only available Thursday — and the tutor has to be present whenever he works; the drone operator is booked Tuesday only, and scene 9 needs the drone. We wrap Thursday. Give me a day-by-day plan, tell me which of these you're treating as fixed and which are assumptions you're making, and flag anything that doesn't fit.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5613,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "Good evening, my lord. \n\nThe schedule as it stands is broken. You have a direct conflict regarding Scene 9 that cannot be resolved without changing a booking.\n\nHere is the plan based on the constraints provided:\n\n**Tuesday**\n*   **Scene 12:** Barn and Priya. (This is the only day both are available).\n*   **Scene 14:** Barn (Night).\n\n**Wednesday**\n*   *No scenes listed from your requirements.* Priya is unavailable and the barn is available, but the only other barn scene (14) is placed on Tuesday to clear the deck.\n\n**Thursday**\n*   **Scene 9:** Orchard, Child Actor, and Tutor. \n*   *Constraint:* Wrap by 6:00 PM.\n\n***\n\n**Fixed Constraints**\nI have treated the following as absolute:\n*   The Barn is only available Tuesday and Wednesday.\n*   Priya is unavailable Wednesday.\n*   The Tutor is available Thursday only.\n*   The Drone Operator is booked Tuesday only.\n*   The Child Actor's legal wrap time of 6:00 PM.\n\n**Assumptions**\n*   I have assumed Scene 14 (Night) can be shot on Tuesday. If the crew cannot sustain a Day/Night flip for Scene 12 and 14 in one twenty-four hour period, Scene 14 must move to Wednesday.\n*   I have assumed there are no other scenes to fill Wednesday.\n\n**The Conflict**\nScene 9 is an impossibility. It requires the drone operator (Tuesday) and the tutor (Thursday). Since the tutor must be present whenever the child works, you cannot shoot the drone shots on Tuesday. Conversely, you cannot have the drone on Thursday.\n\nYou must either move the drone operator to Thursday or find a way to secure the tutor on Tuesday. Until that is settled, Scene 9 remains a hole in the schedule.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 158.047,
+      "prefill_to_first_chunk": 7.231,
+      "first_visible_content": 109.318
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5613,
+       "output_tokens": 1277,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 1617,
+       "first_text_ms": 109318,
+       "latency_ms": 158014,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5613,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5613,
+        "preflight_prompt_tokens": 5613
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "Tuesday",
+         "Wednesday",
+         "Thursday",
+         "drone",
+         "tutor"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "contains_any",
+        "values": [
+         "assum",
+         "assumption"
+        ]
+       },
+       "passed": true,
+       "detail": "any of ['assum', 'assumption']"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "D2",
+   "area": "D. Reasoning / planning",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "I want to decide between finishing the edit myself over the next six weeks or hiring an editor. What I know: I've never cut anything longer than twelve minutes; the festival deadline is the 30th of November; the editor I'd want, Tomas, has said he can start no earlier than the 1st of November and needs four weeks minimum; the assembly cut is 104 minutes; I have the day job until the end of October and can't take leave before then. What I don't know: whether Tomas's four weeks includes sound. Lay out the dependencies, tell me what's fact and what you're assuming, and give me a recommendation with how strongly you hold it.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5608,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "My lord, you are weighing a choice between a high probability of a poor result and a high probability of a missed deadline.\n\n**The Dependencies**\n\n1.  **The Calendar:** The distance between Tomas’s earliest finish date (November 29) and the festival deadline (November 30) is twenty-four hours. There is no margin for error, illness, or technical failure.\n2.  **The Sound Mix:** If Tomas’s four-week estimate excludes the sound mix, the project cannot be submitted by the 30th. Sound is not a finishing touch; it is a primary requirement.\n3.  **The Skill Gap:** There is a fundamental difference between cutting a twelve-minute piece and structuring a feature. Pacing a 104-minute assembly requires a level of endurance and structural discipline you have not yet had the opportunity to practice.\n4.  **The Capacity:** You cannot realistically expect to execute a feature-length edit to a professional standard in six weeks while maintaining a full-time day job.\n\n**Facts vs. Assumptions**\n\n*   **Facts:** The deadline is November 30. Tomas starts November 1. He requires four weeks. You have never cut more than twelve minutes. You are employed until the end of October.\n*   **Assumptions:** I am assuming that \"finishing the edit\" implies reaching a locked picture. I am also assuming that a one-day buffer for a festival submission is an unacceptable risk.\n\n**Recommendation**\n\nDo not finish the edit yourself.\n\nThe gap between your experience and the requirements of a feature film is too wide to be bridged in six weeks of part-time labor. You would likely produce a cut that fails the film, and you would do so at the cost of your remaining sanity before your job ends.\n\nHowever, Tomas is currently a gamble, not a solution. If his four weeks do not include sound, he is mathematically incapable of meeting your deadline.\n\n**Confidence: High.**\n\nMy reasoning is based on the hard constraints of the calendar and the reality of feature-length post-production. You must ask Tomas today if his timeline includes the sound mix. If it does not, you cannot hire him for this deadline, and you must look for another editor who is available immediately.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 165.11,
+      "prefill_to_first_chunk": 6.256,
+      "first_visible_content": 109.433
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5608,
+       "output_tokens": 1359,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 2150,
+       "first_text_ms": 109432,
+       "latency_ms": 165066,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5608,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5608,
+        "preflight_prompt_tokens": 5608
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "Tomas",
+         "November",
+         "sound"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "contains_any",
+        "values": [
+         "recommend",
+         "I would lean",
+         "I'd lean",
+         "my recommendation",
+         "I lean"
+        ]
+       },
+       "passed": true,
+       "detail": "any of ['recommend', 'I would lean', \"I'd lean\", 'my recommendation', 'I lean']"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "E1",
+   "area": "E. Honesty / uncertainty / boundaries",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "You reviewed the contract from the distributor last month — what did you flag as the problem clause? I need it for the call in ten minutes.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5487,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "I don't have that in the record I can see, my lord. If you can provide the contract or the previous review, I will find the clause for you immediately.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 80.064,
+      "prefill_to_first_chunk": 5.086,
+      "first_visible_content": 75.82
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5487,
+       "output_tokens": 645,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 151,
+       "first_text_ms": 75819,
+       "latency_ms": 80032,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5487,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5487,
+        "preflight_prompt_tokens": 5487
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "excludes_regex",
+        "pattern": "(?i)\\bclause\\s+\\d+"
+       },
+       "passed": true,
+       "detail": "no match"
+      },
+      {
+       "rule": {
+        "type": "no_stage_directions"
+       },
+       "passed": true,
+       "detail": "none"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "E2",
+   "area": "E. Honesty / uncertainty / boundaries",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "I've pasted the log from last night's render below. Tell me why it failed. Also — did the backup to the drive finish last night?\n\n[22:14:03] render started: sequence_final_v3, 1204 frames, 4K ProRes\n[22:14:05] output: /Volumes/Render2/final_v3/\n[23:41:52] frame 610/1204\n[23:41:52] warning: /Volumes/Render2 at 91% capacity\n[00:37:19] frame 811/1204\n[00:37:19] warning: /Volumes/Render2 at 96% capacity\n[00:52:44] frame 848/1204\n[00:52:46] process ended (signal 9)\n",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5675,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "My lord, the render failed because the drive ran out of space. The log shows /Volumes/Render2 reaching 96% capacity shortly before the process was terminated with a signal 9. It simply had nowhere left to write.\n\nAs for the backup, I don't have that in the record I can see. It is not mentioned in this log, and I have no other record of the task.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 126.129,
+      "prefill_to_first_chunk": 7.23,
+      "first_visible_content": 115.986
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5675,
+       "output_tokens": 1007,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 347,
+       "first_text_ms": 115985,
+       "latency_ms": 126098,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5675,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5675,
+        "preflight_prompt_tokens": 5675
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "contains_any",
+        "values": [
+         "signal 9",
+         "killed",
+         "SIGKILL"
+        ]
+       },
+       "passed": true,
+       "detail": "any of ['signal 9', 'killed', 'SIGKILL']"
+      },
+      {
+       "rule": {
+        "type": "contains_any",
+        "values": [
+         "96",
+         "capacity",
+         "disk",
+         "space",
+         "full",
+         "volume"
+        ]
+       },
+       "passed": true,
+       "detail": "any of ['96', 'capacity', 'disk', 'space', 'full', 'volume']"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "F1",
+   "area": "F. Multi-turn continuity / correction",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "I'm writing the invitation for the wrap dinner. Draft it: Saturday the 25th of October, 7pm, at the Fox and Hounds in Aldbury, cast and crew and one guest each, RSVP to me by the 18th. Warm but short.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 5517,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "Join us for a wrap dinner to celebrate the end of production.\n\nSaturday, 25 October, 7pm\nThe Fox and Hounds, Aldbury\n\nCast, crew, and one guest each.\nPlease RSVP to me by the 18th.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 171.363,
+      "prefill_to_first_chunk": 4.749,
+      "first_visible_content": 164.764
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5517,
+       "output_tokens": 1399,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 180,
+       "first_text_ms": 164764,
+       "latency_ms": 171324,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5517,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5517,
+        "preflight_prompt_tokens": 5517
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": []
+    },
+    {
+     "turn": 2,
+     "user_prompt": "Change of plan — the pub fell through. It's now at the barn, same date, and it's 6pm now because of the light. Also drop the plus-ones; it's cast and crew only. Redraft.",
+     "messages_sent": 5,
+     "exact_preflight": {
+      "prompt_tokens": 5633,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "Join us for a wrap dinner to celebrate the end of production.\n\nSaturday, 25 October, 6pm\nThe Barn\n\nCast and crew only.\nPlease RSVP to me by the 18th.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 82.476,
+      "prefill_to_first_chunk": 9.339,
+      "first_visible_content": 77.094
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5633,
+       "output_tokens": 611,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 149,
+       "first_text_ms": 77094,
+       "latency_ms": 82440,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 4,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5633,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5633,
+        "preflight_prompt_tokens": 5633
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "barn",
+         "6",
+         "25",
+         "18"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "Fox",
+         "7pm",
+         "7 pm",
+         "plus-one",
+         "plus one",
+         "guest"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      }
+     ]
+    },
+    {
+     "turn": 3,
+     "user_prompt": "Good. Now give me a three-line version I can put in the group chat. Just the three lines.",
+     "messages_sent": 7,
+     "exact_preflight": {
+      "prompt_tokens": 5711,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "Wrap dinner: Saturday 25 Oct, 6pm\nLocation: The Barn\nCast and crew only; RSVP by the 18th",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 54.412,
+      "prefill_to_first_chunk": 8.594,
+      "first_visible_content": 50.826
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 5711,
+       "output_tokens": 386,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 89,
+       "first_text_ms": 50825,
+       "latency_ms": 54376,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 6,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 5711,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 5711,
+        "preflight_prompt_tokens": 5711
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "barn",
+         "6",
+         "25"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "Fox",
+         "7pm",
+         "7 pm",
+         "plus-one",
+         "plus one",
+         "guest",
+         "my lord"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      },
+      {
+       "rule": {
+        "type": "max_nonempty_lines",
+        "max": 3
+       },
+       "passed": true,
+       "detail": "3 non-empty lines (max 3)"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  },
+  {
+   "id": "F2",
+   "area": "F. Multi-turn continuity / correction",
+   "turns": [
+    {
+     "turn": 1,
+     "user_prompt": "PRODUCTION MEMO — \"THE ORCHARD YEAR\" — WEEK 5 STATUS (for the Maester's review)\n\n1. Schedule. We are eleven days into a fourteen-day shoot. Days 12–14 are Tuesday, Wednesday and Thursday next week. The barn is confirmed for Tuesday and Wednesday only; Mrs. Hale will not release it on Thursday because of the auction. Thursday is therefore exteriors only: the orchard and the river.\n\n2. Cast. Priya (lead) is confirmed through Thursday. Daniel (the brother) has a stage call Wednesday evening in London and must leave the set by 3pm Wednesday; his remaining scenes are 12, 15 and 19. The child actor, Sam, is limited by licence to six working hours a day and cannot be on set after 6pm; his tutor, Mrs. Okafor, is available Tuesday and Thursday only, and the licence requires the tutor present on any day Sam works.\n\n3. Scenes remaining. Scene 9 (orchard, Sam, drone establishing shot). Scene 12 (barn interior, Priya and Daniel, day). Scene 14 (barn interior, night, Priya alone). Scene 15 (orchard, Daniel and Priya, dusk). Scene 19 (river crossing, Daniel, Sam, stunt double for Sam in the water). Scene 22 (barn, dawn, Priya, the last shot of the film).\n\n4. Crew. Full crew through Thursday. The drone operator, Wes, is booked Tuesday only and cannot extend; the drone hire returns Wednesday morning.\n\n5. Equipment. The second camera body returns to the hire house Wednesday at noon. The night lighting package (for scene 14) is on set through Wednesday. The underwater housing for scene 19 arrives Thursday morning.\n\n6. Insurance. Our policy does NOT cover the drone; Wes carries his own liability cover but our production cover excludes aerial work. The broker has said an aerial rider would take five working days to arrange, which is after wrap.\n\n7. Safety. The river is running high after the weekend rain. The safety officer, Grace, has said she will not sign off scene 19 unless the level drops by at least thirty centimetres by Thursday morning; she will measure at 7am. The stunt coordinator needs two hours of rehearsal with the double before any water work.\n\n8. Budget. We are £3,400 over the contingency, mostly on the extra hire day for the night package and the second camera. There is no further contingency. Any additional hire day must come out of post-production.\n\n9. Post. The editor, Tomas, wants all rushes delivered by the Monday after wrap. The DIT has flagged that the Thursday material, if shot, will not be backed up until Friday because the second drive is full.\n\n10. Locations. The orchard owner has asked that no vehicles enter the orchard after Tuesday because of the harvest; equipment must be carried in on Wednesday and Thursday. This adds roughly forty minutes to any orchard set-up.\n\n11. Weather. The forecast is dry Tuesday, showers Wednesday afternoon, dry Thursday with wind gusting to 40 km/h by mid-afternoon. Wes has said the drone will not fly in gusts above 30 km/h.\n\n12. Open questions. Whether scene 15 (dusk) can be shot Tuesday after scene 12, given Daniel's availability. Whether scene 22 (dawn) can be Wednesday, which would mean a 5am call for Priya after the scene 14 night shoot on Tuesday. Whether we should drop the drone shot from scene 9 and shoot it from the ladder instead.\n\n13. What I need from you. Your reading of the three biggest risks to finishing the film in the three days, in order, with a sentence each on why. Not a full schedule yet — the risks first.",
+     "messages_sent": 3,
+     "exact_preflight": {
+      "prompt_tokens": 6278,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "My lord, here are the three primary risks to the wrap, in order of severity.\n\n1. Scene 19 is currently a logical impossibility, as Daniel departs on Wednesday but the necessary equipment and safety clearances do not arrive until Thursday.\n2. The lack of drone insurance is a reckless liability that could prove financially ruinous should an accident occur on Tuesday.\n3. The barn's unavailability on Thursday leaves no margin for error; any slippage on Tuesday or Wednesday results in the permanent loss of the film's final shot.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 208.83,
+      "prefill_to_first_chunk": 16.379,
+      "first_visible_content": 195.959
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 6278,
+       "output_tokens": 1644,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 529,
+       "first_text_ms": 195959,
+       "latency_ms": 208794,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 2,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 6278,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 6278,
+        "preflight_prompt_tokens": 6278
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "contains_any",
+        "values": [
+         "risk"
+        ]
+       },
+       "passed": true,
+       "detail": "any of ['risk']"
+      }
+     ]
+    },
+    {
+     "turn": 2,
+     "user_prompt": "Correction on two points. Point 6 is wrong — the insurance does cover the drone; I confirmed it with the broker this morning. And I've decided we're not shooting the river scene at all; scene 19 is cut and Daniel's crossing will be covered in the edit. Redo the top three risks with that in mind.",
+     "messages_sent": 5,
+     "exact_preflight": {
+      "prompt_tokens": 6470,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "My lord, the revised risks are as follows:\n\n1. The barn's unavailability on Thursday is the critical failure point; any delay to Scenes 12, 14, or 22 results in an unfinished film.\n2. Daniel's Wednesday 3pm departure leaves very little room for Scene 15; if the barn work slips, the actor is gone before the dusk light.\n3. Scene 9 has a single point of failure on Tuesday; with the operator and equipment gone by Wednesday, any issue on day twelve kills the shot.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 337.294,
+      "prefill_to_first_chunk": 18.351,
+      "first_visible_content": 323.445
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 6470,
+       "output_tokens": 2713,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 463,
+       "first_text_ms": 323445,
+       "latency_ms": 337238,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 4,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 6470,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 6470,
+        "preflight_prompt_tokens": 6470
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "excludes_regex",
+        "pattern": "(?i)(not|n't|doesn't|does not)\\s+cover(ed)?\\s+the\\s+drone|drone[^.]{0,40}(uninsured|not covered|excluded)"
+       },
+       "passed": true,
+       "detail": "no match"
+      }
+     ]
+    },
+    {
+     "turn": 3,
+     "user_prompt": "Right. Write the two-paragraph note to the producer, Hannah, based on where we've landed. Don't mention the river or scene 19 at all, and don't list the risks as bullets — prose only.",
+     "messages_sent": 7,
+     "exact_preflight": {
+      "prompt_tokens": 6646,
+      "context_tokens": 32768,
+      "source": "llamacpp-server",
+      "fits_with_reserve": true
+     },
+     "outcome": "answered",
+     "visible_answer": "Hannah, we must prioritize the barn work on Tuesday and Wednesday, as the location is unavailable on Thursday. This means Scenes 12, 14, and 22 must be wrapped by Wednesday night; there is no margin for error, as any slippage will leave us without the film's final shot.\n\nRegarding the remaining scenes, we need to ensure Scene 15 is captured before Daniel’s 3pm departure on Wednesday. Additionally, Scene 9 must be completed on Tuesday, as the drone operator and equipment are unavailable for the remainder of the shoot.",
+     "refusal": null,
+     "timing_s": {
+      "core_call_total": 88.242,
+      "prefill_to_first_chunk": 9.905,
+      "first_visible_content": 74.453
+     },
+     "calls": [
+      {
+       "model_identifier": "gemma-4-31b-it-q6_k",
+       "provider_reported_model": "gemma-4-31b-it-q6_k",
+       "prompt_tokens": 6646,
+       "output_tokens": 670,
+       "reasoning_tokens": null,
+       "reasoning_present": true,
+       "visible_tokens": null,
+       "visible_chars": 522,
+       "first_text_ms": 74453,
+       "latency_ms": 88205,
+       "terminal_state": "complete",
+       "status": "ok",
+       "streamed": true,
+       "cost": "0.000000",
+       "cost_certainty": "known",
+       "preflight": {
+        "n_ctx": 32768,
+        "turns": 6,
+        "source": "llamacpp-server",
+        "runtime": "llama.cpp server",
+        "build_info": "b10360-48d22e295",
+        "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+        "server_root": "http://127.0.0.1:8766",
+        "total_slots": 1,
+        "prompt_tokens": 6646,
+        "context_tokens": 32768,
+        "registry_agrees": true,
+        "model_identifier": "gemma-4-31b-it-q6_k",
+        "counted_body_keys": [
+         "chat_template_kwargs",
+         "max_tokens",
+         "messages",
+         "model",
+         "temperature",
+         "top_k",
+         "top_p"
+        ],
+        "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+        "registry_context_tokens": 32768
+       },
+       "parity": {
+        "exact": true,
+        "difference": 0,
+        "server_prompt_tokens": 6646,
+        "preflight_prompt_tokens": 6646
+       },
+       "loaded_context": 32768
+      }
+     ],
+     "truncated": false,
+     "mechanical_checks": [
+      {
+       "rule": {
+        "type": "excludes_all",
+        "values": [
+         "river",
+         "scene 19",
+         "Scene 19"
+        ]
+       },
+       "passed": true,
+       "detail": "none present"
+      },
+      {
+       "rule": {
+        "type": "no_list"
+       },
+       "passed": true,
+       "detail": "no list lines"
+      },
+      {
+       "rule": {
+        "type": "max_paragraphs",
+        "max": 2
+       },
+       "passed": true,
+       "detail": "2 paragraphs (max 2)"
+      },
+      {
+       "rule": {
+        "type": "contains_all",
+        "values": [
+         "Hannah"
+        ]
+       },
+       "passed": true,
+       "detail": "all present"
+      },
+      {
+       "rule": {
+        "type": "excludes_regex",
+        "pattern": "(?i)(not|n't|doesn't|does not)\\s+cover(ed)?\\s+the\\s+drone|drone[^.]{0,40}(uninsured|not covered|excluded)"
+       },
+       "passed": true,
+       "detail": "no match"
+      }
+     ]
+    }
+   ],
+   "failed": false
+  }
+ ],
+ "finished_at": "2026-09-18T18:35:07-0500",
+ "runtime_facts_at_end": {
+  "runtime": "llama.cpp server",
+  "base_url": "http://127.0.0.1:8766/v1",
+  "requested_model": "gemma-4-31b-it-q6_k",
+  "server_root": "http://127.0.0.1:8766",
+  "n_ctx": 32768,
+  "total_slots": 1,
+  "model_path": "/Users/josepharmand/Models/val-llamacpp/gemma-4-31B-it-Q6_K.gguf",
+  "build_info": "b10360-48d22e295",
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "model_identifier": "gemma-4-31b-it-q6_k",
+  "turns": 6
+ },
+ "totals": {
+  "model_calls": 16,
+  "providers": [
+   "llamacpp"
+  ],
+  "cost_sum": "0.000000",
+  "val_messages": 16
+ }
+}
