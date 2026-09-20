@@ -23,9 +23,11 @@ to acquire one.
 
 from __future__ import annotations
 
+from base64 import b64decode
+from binascii import Error as BinasciiError
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sqlalchemy import Engine
@@ -69,8 +71,13 @@ from val_api.contracts import (
 )
 from val_api.streaming import turn_event_stream
 from val_domain.deliberation import ClassifiedBy, Ordering
-from val_domain.gateway import GatewayError
+from val_domain.gateway import Classification, GatewayError
 from val_gateway import conversations
+from val_gateway.attachments import (
+    CandidateAttachment,
+    acts_for_message,
+    blob_bytes,
+)
 from val_gateway.classification_review import (
     ReviewRefusedError,
     disagreements,
@@ -119,6 +126,7 @@ from val_gateway.projects import (
     project_listing,
 )
 from val_gateway.revisions import RevisionRefusedError, retract, revise
+from val_policy.attachments import AdmissionRefusedError
 from val_policy.project_resolution import ProjectSignals
 
 
@@ -228,7 +236,14 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
                 for transition in conversations.scope_transitions(engine, conversation_id)
             ],
             messages=[
-                MessageView.of_working(message, deliberated=message.record.id in deliberated)
+                MessageView.of_working(
+                    message,
+                    deliberated=message.record.id in deliberated,
+                    # Owner ruling, 19 September 2026: what was attached to this
+                    # message, so the thread can render it. Bytes are fetched
+                    # separately, by digest.
+                    attachments=acts_for_message(engine, message.record.id),
+                )
                 for message in conversations.working(engine, conversation_id).messages
             ],
             classifications=[
@@ -354,6 +369,50 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
 
     # --- the turn -------------------------------------------------------------
 
+    def _candidates(request: TurnRequest) -> tuple[CandidateAttachment, ...]:
+        """The turn's offered images, decoded. Nothing else is trusted about them.
+
+        Base64 that is not base64 is refused here, before admission, with the
+        same honesty admission itself uses: the send does not happen.
+        """
+        candidates = []
+        for offered in request.attachments:
+            try:
+                content = b64decode(offered.content_base64, validate=True)
+            except (BinasciiError, ValueError) as broken:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"{offered.filename!r}: the attachment is not valid base64",
+                ) from broken
+            candidates.append(
+                CandidateAttachment(
+                    content=content,
+                    given_filename=offered.filename,
+                    stated_classification=Classification(offered.classification),
+                )
+            )
+        return tuple(candidates)
+
+    @app.get("/attachments/{sha256}/bytes")
+    def attachment_bytes(sha256: str) -> Response:
+        """The admitted or derived bytes, by their own digest, for display.
+
+        Content-addressed: the key IS the digest, so nothing is guessable and
+        nothing is enumerable. The service listens on the loopback interface
+        only, and this endpoint is for the house's own interface to render what
+        it already holds — never for making an image addressable to a provider,
+        which receives the bytes inline and never a URL.
+        """
+        found = blob_bytes(engine, sha256)
+        if found is None:
+            raise HTTPException(status_code=404, detail="no such attachment")
+        content, media_type = found
+        return Response(
+            content=content,
+            media_type=media_type,
+            headers={"Cache-Control": "private, max-age=31536000, immutable"},
+        )
+
     @app.post("/turns")
     def turn(request: TurnRequest) -> TurnResponse:
         """One thing said to Val, through the full WP-0.9 deliberated path."""
@@ -370,7 +429,13 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
                 conversation_id=request.conversation_id,
                 title=request.title,
                 max_output_tokens=request.max_output_tokens,
+                attachments=_candidates(request),
             )
+        except AdmissionRefusedError as refused:
+            # Ruling, 19 September 2026: a file that could not be admitted
+            # refused the whole send, and nothing was written. 422: the request
+            # was understood and its content could not be accepted.
+            raise HTTPException(status_code=422, detail=str(refused)) from refused
         except RestrictedContentRefusedError as refusal:
             # A refusal to transmit is not a transport error and must never be
             # quiet (WP-0.7 §15). 403: the request was understood and refused.
@@ -441,7 +506,7 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
         been sent (`val_api.streaming`).
         """
         return StreamingResponse(
-            turn_event_stream(engine, gateway, request, render_turn),
+            turn_event_stream(engine, gateway, request, render_turn, _candidates(request)),
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )

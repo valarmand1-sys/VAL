@@ -426,3 +426,15 @@ def earlier_image_count(engine: Engine, conversation_id: UUID, message_id: UUID)
                 _EARLIER_IMAGES, {"c": conversation_id, "m": message_id}
             ).scalar_one()
         )
+
+
+def blob_bytes(engine: Engine, sha256: str) -> tuple[bytes, str] | None:
+    """The stored bytes and their media type, by digest, or None.
+
+    For the house's own interface to render what it already holds. An image is
+    handed to a provider **inline**, never as a URL, so nothing here makes an
+    attachment addressable to anything outside the machine.
+    """
+    with engine.connect() as connection:
+        row = connection.execute(_BLOB_BYTES, {"s": sha256}).one_or_none()
+    return None if row is None else (bytes(row.bytes), str(row.media_type))

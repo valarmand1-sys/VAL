@@ -12,6 +12,7 @@ that says so rather than a message that was never said.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -45,6 +46,7 @@ from val_domain.deliberation import (
 )
 from val_domain.execution import ExecutionEventRecord, ExecutionEventType, Reaction
 from val_domain.project import ProjectRecord
+from val_gateway.attachments import AttachmentAct
 from val_gateway.classification_review import (
     LabelledExchange,
     QueuedExchange,
@@ -218,6 +220,60 @@ DELIBERATED_REVISION_REFUSAL = (
 )
 
 
+class AttachmentInput(BaseModel):
+    """One image offered with a turn: the bytes, the name, and what is said of it.
+
+    Owner ruling, 19 September 2026 (Track C §13). Deliberately provider-neutral:
+    base64 rather than any provider's own image syntax, and a `classification`
+    the sender states per act. Nothing here is trusted about the content — the
+    media type is established from the bytes by the admission preflight, and the
+    filename is display only.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    filename: str = Field(min_length=1)
+    content_base64: str = Field(min_length=1)
+    #: Per act, defaulting to the strictest ordinary class. `restricted` is not
+    #: a value: it is refused at the act (Attachment Substrate v1.2 §3.3).
+    classification: Literal["public", "internal", "protected"] = "protected"
+
+
+class AttachmentView(BaseModel):
+    """One committed attachment act, as a client needs to render and refetch it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The act. Re-using the same file on a later turn is a different act over
+    #: the same content, so this is what identifies *this* association.
+    id: UUID
+    attachment_id: UUID
+    position: int
+    filename: str
+    classification: str
+    media_type: str
+    width: int
+    height: int
+    byte_size: int
+    #: The content-addressed key the bytes are fetched by.
+    sha256: str
+
+    @classmethod
+    def of(cls, act: AttachmentAct) -> AttachmentView:
+        return cls(
+            id=act.act_id,
+            attachment_id=act.attachment_id,
+            position=act.position,
+            filename=act.given_filename,
+            classification=act.stated_classification.value,
+            media_type=act.media_type,
+            width=act.width,
+            height=act.height,
+            byte_size=act.byte_size,
+            sha256=act.sha256,
+        )
+
+
 class MessageView(BaseModel):
     """One message. In a conversation detail, `content` is the wording in force.
 
@@ -242,6 +298,10 @@ class MessageView(BaseModel):
     answered_state: str | None = None
     revisions: list[RevisionView] = Field(default_factory=list)
     revision_refusal: str | None = None
+    #: Owner ruling, 19 September 2026: the attachment acts of this message, in
+    #: the order they were attached. Empty on every message that carries none,
+    #: which is every message the house held before today.
+    attachments: list[AttachmentView] = Field(default_factory=list)
 
     @classmethod
     def of(cls, record: MessageRecord) -> MessageView:
@@ -254,7 +314,13 @@ class MessageView(BaseModel):
         )
 
     @classmethod
-    def of_working(cls, message: WorkingMessage, *, deliberated: bool) -> MessageView:
+    def of_working(
+        cls,
+        message: WorkingMessage,
+        *,
+        deliberated: bool,
+        attachments: tuple[AttachmentAct, ...] = (),
+    ) -> MessageView:
         record = message.record
         return cls(
             id=record.id,
@@ -271,6 +337,7 @@ class MessageView(BaseModel):
                 if deliberated and record.role is StoredRole.USER
                 else None
             ),
+            attachments=[AttachmentView.of(act) for act in attachments],
         )
 
 
@@ -651,6 +718,9 @@ class TurnRequest(BaseModel):
     #: is the policy's, 6,144 total output tokens (reasoning and visible text
     #: share it on a reasoning route). A client may still state its own.
     max_output_tokens: int = Field(default=CONVERSATION_MAX_OUTPUT_TOKENS, gt=0)
+    #: Owner ruling, 19 September 2026: images attached to THIS turn. They are
+    #: admitted before anything is written, and bound to this turn's calls only.
+    attachments: list[AttachmentInput] = Field(default_factory=list)
     #: Ruling, 13 September 2026: on the streamed route, also send `stage`
     #: events as the house begins each stage of the turn. Opt-in, so the stream
     #: a client did not ask to change is unchanged. Ignored by `POST /turns`.

@@ -48,6 +48,7 @@ from pydantic import BaseModel
 from sqlalchemy import Engine
 
 from val_api.contracts import TurnRequest
+from val_gateway.attachments import CandidateAttachment
 from val_gateway.conversations import ConversationRemovedError
 from val_gateway.deliberate import DeliberatedOutcome, TurnStage
 from val_gateway.deliberate import send as deliberated_send
@@ -92,6 +93,7 @@ def turn_event_stream(
     gateway: Gateway,
     request: TurnRequest,
     render: Callable[[DeliberatedOutcome], BaseModel],
+    attachments: tuple[CandidateAttachment, ...] = (),
 ) -> Iterator[bytes]:
     """Run one deliberated turn on a worker thread; yield its events as they happen.
 
@@ -117,6 +119,7 @@ def turn_event_stream(
                 max_output_tokens=request.max_output_tokens,
                 on_delta=lambda text: events.put(_Delta(text)),
                 on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
+                attachments=attachments,
             )
         except BaseException as error:
             events.put(_Failed(error))
