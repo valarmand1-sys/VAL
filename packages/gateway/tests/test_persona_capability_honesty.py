@@ -21,7 +21,12 @@ from test_persona import REPO_ROOT, clean_personas
 
 from val_domain.persona import PersonaSource, digest_of, read_source
 from val_gateway import context as context_module
-from val_gateway.context import CAPABILITY_STATE, STATE_ENVELOPE_MARKER, PriorRecordState
+from val_gateway.context import (
+    CAPABILITY_STATE,
+    STATE_ENVELOPE_MARKER,
+    VISUAL_STATE_NOTE,
+    PriorRecordState,
+)
 from val_gateway.loop import send
 from val_gateway.persona import (
     DatabasePersonaLoader,
@@ -127,14 +132,24 @@ def test_the_capability_state_is_part_of_every_record_state_document() -> None:
     )
     document = state.as_document()
     assert document["capability_state"] == {"books": "unavailable"}
-    # Everything else in the record state is as it was.
+    # Everything else in the record state is as it was, plus `visual_input` —
+    # the additive Track C field ruled on 19 September 2026, which says whether
+    # visual material is bound to this turn and never lets "we discussed this
+    # image" read as "I can currently see it".
     assert list(document) == [
         "same_conversation_history",
         "retrieved_excerpts",
         "house_recall",
+        "visual_input",
         "project_volumes",
         "capability_state",
     ]
+    assert document["visual_input"] == {
+        "state": "none",
+        "bound_to_this_turn": 0,
+        "earlier_in_conversation": 0,
+        "note": VISUAL_STATE_NOTE,
+    }
     assert document["project_volumes"] == {"state": "not_applicable", "count": 0}
 
 

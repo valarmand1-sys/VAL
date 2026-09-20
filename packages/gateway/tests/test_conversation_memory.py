@@ -2665,15 +2665,23 @@ def test_prior_record_state_carries_the_current_local_time_as_a_fact(
     assert "current_time is the present local date and time" in str(_state_block(adapter)["note"])
     # Nothing else was added to the envelope — `house_recall` being the additive
     # sibling field approved on 12 September 2026 (04-layer-0.md WP-0.7 amendment),
-    # and `capability_state` the additive field ruled on 13 September 2026.
+    # `capability_state` the additive field ruled on 13 September 2026, and
+    # `visual_input` the additive field ruled on 19 September 2026 (Track C §8:
+    # "the smallest deterministic signal needed to tell VAL whether earlier
+    # visual material is presently bound to this turn").
     assert set(state) == {
         "current_time",
         "same_conversation_history",
         "retrieved_excerpts",
         "house_recall",
+        "visual_input",
         "project_volumes",
         "capability_state",
     }
+    # On an ordinary text turn the signal says so, and says nothing more.
+    assert state["visual_input"]["state"] == "none"
+    assert state["visual_input"]["bound_to_this_turn"] == 0
+    assert state["visual_input"]["earlier_in_conversation"] == 0
 
 
 # --- the recall gate, the clean room, and the outbound order (ruled 10 September 2026) --

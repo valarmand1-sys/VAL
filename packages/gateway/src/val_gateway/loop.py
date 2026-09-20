@@ -70,7 +70,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Engine
+from sqlalchemy import Connection, Engine
 
 from val_domain.conversation import (
     ConversationRecord,
@@ -84,13 +84,27 @@ from val_domain.gateway import (
     GatewayError,
     GatewayErrorKind,
     GatewayResponse,
+    ImagePart,
     Message,
+    ModelConfig,
+    TaskType,
     TerminalState,
     TurnReference,
 )
 from val_domain.project import AmbiguousProject, ExplicitNoProject, ProjectCandidate, ProjectScope
 from val_domain.provider import DeltaSink
 from val_gateway import conversations
+from val_gateway.attachments import (
+    AttachmentAct,
+    BoundImage,
+    CandidateAttachment,
+    admit_all,
+    bind_to_call,
+    commit_acts,
+    earlier_image_count,
+    prepare,
+    strictest,
+)
 from val_gateway.context import (
     PriorRecordState,
     recall_block,
@@ -108,6 +122,7 @@ from val_gateway.memory import (
     recall_with_state,
 )
 from val_gateway.projects import ProjectSession
+from val_policy.attachments import AdmissionRefusedError
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.recall_gate import ThreadContext, gate_house_recall, gate_recall
@@ -184,6 +199,10 @@ class OpenedTurn:
     conversation: ConversationRecord
     scope: ProjectScope
     user_message: MessageRecord
+    #: Owner ruling, 19 September 2026: the attachment acts committed with this
+    #: turn, in order. Empty on an ordinary text turn, which is every turn the
+    #: house had before today.
+    attachments: tuple[AttachmentAct, ...] = ()
 
 
 #: The two forms of an explicit current-interaction scope choice. WP-0.6 put
@@ -214,6 +233,7 @@ def send(
     recall_limit: int = DEFAULT_LIMIT,
     max_output_tokens: int = CONVERSATION_MAX_OUTPUT_TOKENS,
     on_delta: DeltaSink | None = None,
+    attachments: tuple[CandidateAttachment, ...] = (),
 ) -> TurnOutcome:
     """Say one thing to Val, in a conversation that outlives this process.
 
@@ -236,11 +256,44 @@ def send(
         session=session,
         conversation_id=conversation_id,
         title=title,
+        attachments=attachments,
     )
     if isinstance(opened, ClarificationNeeded):
         return opened
 
-    messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
+    # Owner ruling, 19 September 2026 (Track C). A turn carrying images needs the
+    # route decided BEFORE the bytes are chosen, because what may be transmitted
+    # depends on what that route accepts (Attachment Substrate v1.2 §8: admit →
+    # derive if needed → reserve from the bytes that will actually be sent →
+    # call). This is the same "selected once" device WP-0.9 already uses for the
+    # blind position and the response, and for the same reason: two calls that
+    # could pick different routes could send different pixels.
+    #
+    # The effective classification is the strictest of the text's and every
+    # act's (§6), so routing and eligibility run on what is actually leaving.
+    effective = strictest(classification, opened.attachments)
+    bound: tuple[BoundImage, ...] = ()
+    pinned: ModelConfig | None = None
+    images: tuple[ImagePart, ...] = ()
+    if opened.attachments:
+        try:
+            pinned = gateway.select_configuration(
+                effective,
+                (content,),
+                max_output_tokens,
+                task_type=TaskType.CONVERSATION,
+            )
+            bound = prepare(engine, opened.attachments, pinned)
+        except (GatewayError, AdmissionRefusedError) as failure:
+            return unanswered_or_raise(
+                opened,
+                failure
+                if isinstance(failure, GatewayError)
+                else GatewayError(kind=GatewayErrorKind.INVALID_REQUEST, detail=str(failure)),
+            )
+        images = tuple(image.part for image in bound)
+
+    messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit, images=images)
 
     # 8-9. Preflight over the assembled whole, budget over the same parts, then
     #      the provider. All three happen inside `converse`/`complete`.
@@ -254,7 +307,7 @@ def send(
         response = gateway.converse(
             messages,
             scope=opened.scope,
-            classification=classification,
+            classification=effective,
             # One object rather than two loose ids — and `persona_id` is filled
             # in by `assemble`, which is where the persona is known. The gateway
             # verifies the three agree with the records before transmitting.
@@ -263,9 +316,19 @@ def send(
             ),
             max_output_tokens=max_output_tokens,
             on_delta=on_delta,
+            # Pinned to the route the bytes were derived for. Pinning changes
+            # which route, never which checks: admission, eligibility, the
+            # quality floor and the budget all run on their own account.
+            configuration=pinned,
         )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
+
+    # §3.6 — which exact bytes reached which call, through which act. Written
+    # after the call is recorded, from the same plan that was transmitted; it is
+    # a binding, never a claim of sight.
+    if bound and response.model_call_id is not None and pinned is not None:
+        bind_to_call(engine, response.model_call_id, bound, pinned)
 
     return settle_turn(engine, opened, recalled, response)
 
@@ -279,6 +342,7 @@ def open_turn(
     session: ProjectSession | None = None,
     conversation_id: UUID | None = None,
     title: str | None = None,
+    attachments: tuple[CandidateAttachment, ...] = (),
 ) -> OpenedTurn | ClarificationNeeded:
     """Steps 1-3: preflight what was typed, resolve scope, persist the message."""
     # 1. Restricted, on what the user just typed, before anything is stored.
@@ -287,6 +351,15 @@ def open_turn(
     finding = preflight((content,))
     if finding is not None:
         raise RestrictedContentRefusedError(refusal_message(finding))
+
+    # 1b. Admission, over the ephemeral candidate bytes, **before any scope is
+    #     resolved and before any conversation exists** (Attachment Substrate
+    #     v1.2 §3.3). A refusal raises the way a Restricted refusal does, and for
+    #     the same reason: the send did not happen, so nothing it would have
+    #     written — conversation, message, blob, attachment, act, processing
+    #     event — is written. Remove-before-send accumulates no evidence of
+    #     things never sent.
+    admitted = admit_all(attachments)
 
     # 2. Scope, and the conversation it belongs to.
     #
@@ -337,12 +410,30 @@ def open_turn(
             engine, scope=scope, title=title or _title_from(content)
         )
 
-    # 3. The user's message becomes history now, before any provider is involved.
-    user_message = conversations.append(
-        engine, conversation.id, role=StoredRole.USER, content=content
-    )
+    # 3. The user's message becomes history now, before any provider is involved —
+    #    and, since 19 September 2026, so does every attachment admitted with it.
+    #    Attachment Substrate v1.2 §3.3: admission first, over ephemeral candidate
+    #    bytes; then ONE transaction holding the blob, the attachment, the act and
+    #    the message. A refused admission never reaches this line, so it leaves no
+    #    blob, no attachment, no association, no processing event, and no message.
+    acts: tuple[AttachmentAct, ...] = ()
+    if attachments:
 
-    return OpenedTurn(conversation=conversation, scope=scope, user_message=user_message)
+        def _commit(connection: Connection, message_id: UUID) -> None:
+            nonlocal acts
+            acts = commit_acts(connection, message_id, attachments, admitted)
+
+        user_message = conversations.append(
+            engine, conversation.id, role=StoredRole.USER, content=content, also=_commit
+        )
+    else:
+        user_message = conversations.append(
+            engine, conversation.id, role=StoredRole.USER, content=content
+        )
+
+    return OpenedTurn(
+        conversation=conversation, scope=scope, user_message=user_message, attachments=acts
+    )
 
 
 def local_now() -> datetime:
@@ -355,6 +446,7 @@ def assemble_turn(
     opened: OpenedTurn,
     *,
     recall_limit: int = DEFAULT_LIMIT,
+    images: tuple[ImagePart, ...] = (),
 ) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...]]:
     """Steps 4-7: history and recall, assembled into the outbound messages."""
     # 4-6. This conversation's own history — never gated — then cross-conversation
@@ -377,6 +469,18 @@ def assemble_turn(
     # Ruling, 13 September 2026: which retained Val answers were grounded in House
     # Recall when given, and in which sources — provenance only, no content.
     grounded = grounded_answers(engine, thread, selection.retained_from)
+    earlier = earlier_image_count(engine, opened.conversation.id, opened.user_message.id)
+    # Four states, never collapsed: bound now, only earlier, none at all, or —
+    # when this turn admitted attachments that produced no bound image — not
+    # established, which fails toward doubt rather than toward sight.
+    if images:
+        visual_state = "bound"
+    elif opened.attachments:
+        visual_state = "uncertain"
+    elif earlier:
+        visual_state = "earlier_only"
+    else:
+        visual_state = "none"
     now = local_now()
     current_local_time = now.strftime("%A %-d %B %Y, %H:%M")
     context = ThreadContext(
@@ -454,9 +558,28 @@ def assemble_turn(
         corrected_after_answer=corrected_after_answer,
         withdrawn_after_positions=withdrawn_after,
         grounded_answers=grounded,
+        # Owner ruling, 19 September 2026: current-turn visual binding, stated
+        # deterministically. `earlier` counts this conversation's attachment
+        # acts outside this turn — they are in the record and not in view.
+        visual_state=visual_state,
+        visual_bound_to_this_turn=len(images),
+        visual_earlier_in_conversation=earlier,
     )
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
     excerpts = recall_block(recalled)
+    # Owner ruling, 19 September 2026: CURRENT-TURN visual binding. The images
+    # admitted with this turn join this turn's message, after its words, and are
+    # never silently retransmitted on a later turn. Earlier images stay in the
+    # record — their bytes, provenance, acts and historical bindings all survive
+    # — but they are not in view, and the record-state envelope above says so
+    # deterministically rather than leaving Val to infer it from prose.
+    if images:
+        current = tuple(
+            message.model_copy(update={"parts": (*message.parts, *images)})
+            if index == len(current) - 1
+            else message
+            for index, message in enumerate(current)
+        )
     messages = (
         *prior,
         *((excerpts,) if excerpts is not None else ()),

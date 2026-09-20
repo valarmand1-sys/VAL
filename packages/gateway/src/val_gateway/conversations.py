@@ -64,9 +64,10 @@ to get wrong.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from uuid import UUID
 
-from sqlalchemy import Engine, text
+from sqlalchemy import Connection, Engine, text
 
 from val_domain.conversation import (
     ConversationRecord,
@@ -282,7 +283,12 @@ def resume(engine: Engine, conversation_id: UUID) -> tuple[ConversationRecord, P
 
 
 def append(
-    engine: Engine, conversation_id: UUID, *, role: StoredRole, content: str
+    engine: Engine,
+    conversation_id: UUID,
+    *,
+    role: StoredRole,
+    content: str,
+    also: Callable[[Connection, UUID], None] | None = None,
 ) -> MessageRecord:
     """Append one message and return it as persisted.
 
@@ -294,6 +300,12 @@ def append(
     truncates it: the stored message is the record of what was said, and a
     representation better suited to some later purpose is that purpose's problem,
     not a licence to edit history (`00-charter.md` invariant 14).
+
+    `also`, when given, runs inside that same transaction with the new message's
+    id — Attachment Substrate v1.2 §3.3's **atomic evidence commit**: the blob,
+    the attachment, the association and the message land together or not at all.
+    If it raises, the message does not exist either, which is precisely the
+    property that keeps a failed admission from leaving an orphan turn behind.
     """
     with engine.begin() as connection:
         locked = connection.execute(_LOCK_CONVERSATION, {"id": conversation_id}).one_or_none()
@@ -310,6 +322,8 @@ def append(
                 "sequence": sequence,
             },
         ).one()
+        if also is not None:
+            also(connection, row.id)
         connection.execute(_TOUCH_CONVERSATION, {"id": conversation_id})
     return _message(row)
 

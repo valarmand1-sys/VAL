@@ -381,6 +381,21 @@ class PriorRecordState:
     #: Lord Armand corrected after Val answered it. `withdrawn_after_positions`:
     #: for each withdrawn exchange inside the retained span, how many retained
     #: messages precede where it stood.
+    #: Owner ruling, 19 September 2026 (Track C §8). Whether visual material is
+    #: presently bound to THIS turn, kept as four deterministic states rather
+    #: than collapsed into one. The distinction that matters: *we discussed this
+    #: image before* must never become *I can currently see the image*, and that
+    #: is settled here rather than left to persona prose.
+    #:
+    #: ``bound`` — image parts are bound to this call and are in view.
+    #: ``earlier_only`` — this conversation holds earlier attachments; none is
+    #: bound to this turn, so none is in view.
+    #: ``none`` — this conversation holds no attachment at all.
+    #: ``uncertain`` — admission, derivation or binding did not complete
+    #: cleanly, so current sight is not established. Fails toward doubt.
+    visual_state: str = "none"
+    visual_bound_to_this_turn: int = 0
+    visual_earlier_in_conversation: int = 0
     corrected_after_answer: tuple[tuple[int, int], ...] = ()
     withdrawn_after_positions: tuple[int, ...] = ()
     #: Grounding continuity (ruling, 13 September 2026), additive and present
@@ -461,10 +476,27 @@ class PriorRecordState:
                 "count": self.house_recall_count,
                 **({"detail": self.house_recall_detail} if self.house_recall_detail else {}),
             },
+            "visual_input": {
+                "state": self.visual_state,
+                "bound_to_this_turn": self.visual_bound_to_this_turn,
+                "earlier_in_conversation": self.visual_earlier_in_conversation,
+                "note": VISUAL_STATE_NOTE,
+            },
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
             "capability_state": dict(CAPABILITY_STATE),
         }
 
+
+#: What the visual signal means, said once in the envelope rather than assumed.
+#: Owner ruling, 19 September 2026: an image attached to an earlier turn is not
+#: retransmitted, so it is in the record and not in view. Saying so plainly is
+#: what stops a truthful "we discussed this" becoming an untruthful "I can see it".
+VISUAL_STATE_NOTE = (
+    "Only images bound to this turn are in view. An image attached earlier in this "
+    "conversation remains in the House record with its provenance, but is not being "
+    "shown to you now: describe it from what was said about it, not as something you "
+    "can presently see. 'uncertain' means current sight is not established."
+)
 
 #: What a corrected excerpt says about itself (ruling, 12 September 2026).
 CORRECTED_WORDING_NOTE = (
