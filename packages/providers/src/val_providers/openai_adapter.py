@@ -54,12 +54,16 @@ known, which is the defect the WP-0.4 cost doctrine exists to prevent.
 """
 
 import hashlib
+from base64 import b64encode
 from collections.abc import Iterator, Mapping
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import openai
 from openai.types.responses import (
     ResponseFormatTextJSONSchemaConfigParam,
+    ResponseInputFileParam,
+    ResponseInputImageParam,
+    ResponseInputTextParam,
     ResponseTextConfigParam,
 )
 from openai.types.shared_params import Reasoning
@@ -68,6 +72,7 @@ from val_domain.gateway import (
     CacheTtl,
     GatewayError,
     GatewayErrorKind,
+    ImagePart,
     Message,
     ModelConfig,
     ReasoningEffort,
@@ -97,6 +102,69 @@ def logical_cache_boundary(messages: tuple[Message, ...]) -> int | None:
     """The index of the message Val Core flagged as the last retained history message, or None."""
     flagged = [index for index, m in enumerate(messages) if m.cache_breakpoint]
     return flagged[-1] if flagged else None
+
+
+def _image_block(part: ImagePart, config: ModelConfig) -> ResponseInputImageParam:
+    """One `input_image` block: the exact bytes Core selected, base64-encoded.
+
+    Owner ruling, 19 September 2026 (Track C §11). The adapter receives
+    **already-selected** content parts. It does not admit, classify, persist,
+    resize, re-encode or choose anything: it encodes what it was handed and
+    transmits it unchanged. `detail` comes from the configuration's declared
+    capability rather than from a default, because the provider's default
+    resolves to no patch budget and the reservation was taken against one.
+
+    Verified against the provider on 19 September 2026 — the data-URL form, the
+    `detail` field and the resulting usage are in
+    `docs/reviews/evidence/2026-09-19-sol-image-input.json`.
+    """
+    support = config.image_input
+    if support is None:
+        raise GatewayError(
+            kind=GatewayErrorKind.INVALID_REQUEST,
+            detail=(
+                f"{config.slug} declares no image input; a turn carrying an image must not "
+                "have been routed here"
+            ),
+        )
+    if part.media_type not in support.media_types:
+        raise GatewayError(
+            kind=GatewayErrorKind.INVALID_REQUEST,
+            detail=(
+                f"{config.slug} accepts {', '.join(sorted(support.media_types))}; "
+                f"the selected representation is {part.media_type}"
+            ),
+        )
+    return ResponseInputImageParam(
+        type="input_image",
+        detail=cast(Literal["low", "high", "auto"], support.detail),
+        image_url=f"data:{part.media_type};base64,{b64encode(part.content).decode()}",
+    )
+
+
+def _content_blocks(
+    message: Message, config: ModelConfig, *, cache_breakpoint: bool
+) -> list[ResponseInputTextParam | ResponseInputImageParam]:
+    """A message's parts as Responses blocks, in the order Core assembled them."""
+    blocks: list[ResponseInputTextParam | ResponseInputImageParam] = []
+    marked = False
+    for part in message.parts:
+        if isinstance(part, ImagePart):
+            blocks.append(_image_block(part, config))
+            continue
+        block = ResponseInputTextParam(type="input_text", text=part.text)
+        # Exactly one marker per request, on the first text block of the
+        # boundary message: the breakpoint is a position, not a repetition.
+        if cache_breakpoint and not marked:
+            block["prompt_cache_breakpoint"] = {"mode": "explicit"}
+            marked = True
+        blocks.append(block)
+    if cache_breakpoint and not marked:
+        raise GatewayError(
+            kind=GatewayErrorKind.INVALID_REQUEST,
+            detail="a cache boundary message carries no text block to mark",
+        )
+    return blocks
 
 
 def physical_cache_boundary(messages: tuple[Message, ...]) -> int | None:
@@ -315,22 +383,21 @@ class OpenAIAdapter:
         # (the implicit breakpoint stays enabled; explicit markers add to it,
         # never replace it) with the 30-minute minimum lifetime, the only
         # value the pinned client offers. Neither changes the items sent.
-        turns: list[openai.types.responses.EasyInputMessageParam] = [
-            {"role": "user" if m.role == "user" else "assistant", "content": m.content}
-            for m in messages
-        ]
+        # Owner ruling, 19 September 2026: a turn is an ordered sequence of
+        # content parts. A text-only message keeps the plain string form it has
+        # always had — byte-identical requests for every existing path — and
+        # only a message actually carrying an image is expanded into blocks.
         boundary = physical_cache_boundary(messages)
-        if boundary is not None:
-            turns[boundary] = {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": messages[boundary].content,
-                        "prompt_cache_breakpoint": {"mode": "explicit"},
-                    }
-                ],
-            }
+        turns: list[openai.types.responses.EasyInputMessageParam] = []
+        for index, m in enumerate(messages):
+            role: Literal["user", "assistant"] = "user" if m.role == "user" else "assistant"
+            if not m.images and index != boundary:
+                turns.append({"role": role, "content": m.content})
+                continue
+            blocks: list[
+                ResponseInputTextParam | ResponseInputImageParam | ResponseInputFileParam
+            ] = list(_content_blocks(m, config, cache_breakpoint=index == boundary))
+            turns.append({"role": role, "content": blocks})
         # 3 September 2026: a schema constraint rides on the Responses API's
         # `text.format` as a strict `json_schema`, the provider's structured
         # output mechanism — the reply is then guaranteed to conform. Strict
