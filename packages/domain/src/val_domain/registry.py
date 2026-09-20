@@ -50,10 +50,12 @@ from val_domain.gateway import (
     CapabilityProfile,
     Classification,
     Hosting,
+    HouseImagePolicy,
     ImageInputSupport,
     Metering,
     ModelConfig,
     PricingFeature,
+    ProviderImageLimits,
     QualificationTarget,
     ReasoningEffort,
 )
@@ -651,7 +653,7 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cache_minimum_prefix_tokens=1_024,
         batch_pricing=PricingFeature.NOT_VERIFIED,
         # Owner ruling, 19 September 2026 (Track C): the ONE image-capable
-        # production configuration of the first slice. Verified that day against
+        # production configuration of the first slice. Verified against
         # developers.openai.com/api/docs/guides/images-vision and the model page
         # — `gpt-5.6-sol` lists `image_input` among its supported features and
         # `text, image` among its input modalities — and then against the
@@ -659,41 +661,50 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # `docs/reviews/evidence/2026-09-19-sol-image-input.json`. Nothing here
         # is inferred from the older gpt-5-5 or opus-5 sizing work.
         #
-        # The documented tokenisation is patches of 32 pixels square, capped at
-        # the detail level's budget after the provider's own resize, billed at
-        # 1.2 input tokens each. Measured against a text-only baseline of 18
-        # tokens, the formula is EXACT within the budget — 512x512 predicted 308
-        # and measured 308; 1024x768 predicted 922 and measured 922 — and an
-        # image that EXCEEDS the budget billed 3001 where the formula's cap says
-        # 3000: one token above it.
+        # **Owner correction, 20 September 2026**, on re-reading the same page:
+        # `high` "fits within 2048 x 2048 pixels and 2,500 patches", patches are
+        # "32px x 32px", the gpt-5.6 multiplier is 1.2, and the provider
+        # documents no per-IMAGE size limit at all — only "Up to 512 MB total
+        # payload per request". The earlier entry capped the long edge at 1,600,
+        # which is right for a square and wrong for everything else: a 16:9 frame
+        # at 2048x1152 is 64 x 36 = 2,304 patches, already inside the budget, and
+        # shrinking it to 1600x900 discarded about a fifth of the linear
+        # resolution for no accounting reason. The bound below is now the
+        # provider's own, and `val_policy.attachments.fit_within_limits` finds
+        # the largest aspect-preserving size inside BOTH documented limits — it
+        # does not reproduce the provider's shrink, it simply never needs one.
         #
-        # `max_long_edge_pixels` is therefore 1,600 rather than 2,048, and that
-        # costs nothing: at `detail: high` the provider's own budget resizes a
-        # larger image to 1,600 on the long edge anyway (its worked example:
-        # "1600 x 1600 pixels, or 50 x 50 = 2500 patches"). Deriving to that
-        # bound here instead buys three things — the documented formula applies
-        # exactly, so the reservation is a true ceiling rather than one token
-        # short; the pixels the model interprets are the pixels the record says
-        # were sent; and no silent provider-side resize sits between the two.
-        # `detail` is declared rather than defaulted because the default,
-        # `auto`, resolves to no patch budget at all, and a cost with no ceiling
-        # cannot be reserved against a ceiling.
+        # The provider also documents that "floating-point rounding in billing
+        # can make the final count differ from the estimate by one token", which
+        # is exactly what the 2048x2048 probe measured (3,001 against a formula
+        # cap of 3,000). That is handled as a declared one-token **reservation
+        # margin** in `val_policy.budget`, never as part of the price.
         image_input=ImageInputSupport(
-            media_types=frozenset({"image/png", "image/jpeg", "image/webp", "image/gif"}),
-            max_long_edge_pixels=1_600,
-            # The house's transmission limit, well inside the provider's
-            # documented 512 MB per-request payload: these bytes also live in
-            # PostgreSQL and travel in every backup.
-            max_byte_size=20_000_000,
-            detail="high",
-            patch_pixels=32,
-            patch_budget=2_500,
-            token_multiplier=1.2,
-            verified_on=date(2026, 9, 19),
-            source=(
-                "developers.openai.com/api/docs/guides/images-vision and the gpt-5.6-sol "
-                "model page, read 19 September 2026; confirmed against the provider by the "
-                "probes in docs/reviews/evidence/2026-09-19-sol-image-input.json"
+            provider=ProviderImageLimits(
+                media_types=frozenset({"image/png", "image/jpeg", "image/webp", "image/gif"}),
+                # Declared, not defaulted: the provider's default `auto`
+                # resolves to `original`, which has no patch budget at all.
+                detail="high",
+                max_long_edge_pixels=2_048,
+                patch_pixels=32,
+                patch_budget=2_500,
+                token_multiplier=1.2,
+                verified_on=date(2026, 9, 20),
+                source=(
+                    "developers.openai.com/api/docs/guides/images-vision and the "
+                    "gpt-5.6-sol model page, first-party, re-read 20 September 2026; "
+                    "measured against the provider in "
+                    "docs/reviews/evidence/2026-09-19-sol-image-input.json"
+                ),
+            ),
+            house=HouseImagePolicy(
+                max_byte_size=20_000_000,
+                reason=(
+                    "House admission policy, not a provider limit: the provider documents "
+                    "no per-image size bound, only 512 MB per request. These bytes live in "
+                    "PostgreSQL as the sole authoritative store and travel in every backup, "
+                    "so the house sets its own ceiling well inside the provider's."
+                ),
             ),
         ),
         eligible_classifications=_PROTECTED,

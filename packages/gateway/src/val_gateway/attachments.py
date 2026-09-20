@@ -36,6 +36,7 @@ from val_policy.attachments import (
     AdmittedImage,
     Transmission,
     admit_image,
+    derivation_required,
     plan_transmission,
 )
 
@@ -262,10 +263,11 @@ def prepare(
 
     A derivation that produces bytes already derived reuses that representation
     (content addressing again) rather than writing a second row for identical
-    output. Every derivation attempt is recorded: one `started`, then exactly one
-    terminal event, in the same transaction as the representation it produced —
-    the §3.5 rule that stops a representation saying *done* while its trail says
-    only *started*.
+    output. **A processing attempt is recorded only when a derivation is
+    actually attempted** (owner correction, 20 September 2026): an original
+    transmitted unchanged writes no attempt, a real derivation writes `started`
+    then `succeeded` naming what it produced, and a real failure writes
+    `started` then `failed` with its reason.
     """
     support = config.image_input
     if support is None and acts:
@@ -279,22 +281,17 @@ def prepare(
         admitted = admit_image(payload.bytes)
         if support is None:  # unreachable: `acts` non-empty implies support above
             raise AdmissionRefusedError(f"{config.slug} declares no image input")
-        attempt = uuid4()
-        with engine.begin() as connection:
-            connection.execute(
-                _INSERT_EVENT,
-                {
-                    "a": act.attachment_id,
-                    "t": attempt,
-                    "i": DERIVE_INTENT,
-                    "e": "started",
-                    "r": None,
-                    "err": None,
-                },
-            )
-        try:
+        # Owner correction, 20 September 2026: a processing attempt is recorded
+        # only when a derivation is actually attempted. An original transmitted
+        # unchanged produces no `derive:model_input_image` row at all — the
+        # honest record of a derivation that did not happen is silence, not a
+        # success. `verify` keeps its own separate meaning and is not invented
+        # here to give an unchanged original something to point at.
+        if not derivation_required(admitted, support):
             plan: Transmission = plan_transmission(admitted, support)
-        except AdmissionRefusedError as refused:
+            representation_id: UUID | None = None
+        else:
+            attempt = uuid4()
             with engine.begin() as connection:
                 connection.execute(
                     _INSERT_EVENT,
@@ -302,15 +299,31 @@ def prepare(
                         "a": act.attachment_id,
                         "t": attempt,
                         "i": DERIVE_INTENT,
-                        "e": "failed",
+                        "e": "started",
                         "r": None,
-                        "err": str(refused),
+                        "err": None,
                     },
                 )
-            raise
-        representation_id: UUID | None = None
-        with engine.begin() as connection:
-            if plan.derived:
+            try:
+                plan = plan_transmission(admitted, support)
+            except AdmissionRefusedError as refused:
+                # A real attempt that really failed, durably recorded with its
+                # reason before the refusal travels on.
+                with engine.begin() as connection:
+                    connection.execute(
+                        _INSERT_EVENT,
+                        {
+                            "a": act.attachment_id,
+                            "t": attempt,
+                            "i": DERIVE_INTENT,
+                            "e": "failed",
+                            "r": None,
+                            "err": str(refused),
+                        },
+                    )
+                raise
+            representation_id = None
+            with engine.begin() as connection:
                 representation_id = connection.execute(
                     _EXISTING_REPRESENTATION,
                     {"a": act.attachment_id, "t": MODEL_INPUT_IMAGE, "s": plan.sha256},
@@ -334,17 +347,20 @@ def prepare(
                             "d": plan.derived_by,
                         },
                     ).scalar_one()
-            connection.execute(
-                _INSERT_EVENT,
-                {
-                    "a": act.attachment_id,
-                    "t": attempt,
-                    "i": DERIVE_INTENT,
-                    "e": "succeeded",
-                    "r": representation_id,
-                    "err": None,
-                },
-            )
+                # The representation row and its `succeeded` event commit in ONE
+                # transaction (§3.5 rule 6): otherwise the representation could
+                # say *done* while the trail said only *started*.
+                connection.execute(
+                    _INSERT_EVENT,
+                    {
+                        "a": act.attachment_id,
+                        "t": attempt,
+                        "i": DERIVE_INTENT,
+                        "e": "succeeded",
+                        "r": representation_id,
+                        "err": None,
+                    },
+                )
         bound.append(
             BoundImage(
                 act=act,
@@ -385,7 +401,7 @@ def bind_to_call(
     support = config.image_input
     # Serialised rather than formatted: a provider option is data, and a hand-built
     # JSON literal is one escaping mistake away from a record that will not parse.
-    options = json.dumps({} if support is None else {"detail": support.detail})
+    options = json.dumps({} if support is None else {"detail": support.provider.detail})
     with engine.begin() as connection:
         for image in bound:
             connection.execute(

@@ -185,10 +185,16 @@ def test_a_route_that_declares_no_image_input_refuses_rather_than_guessing() -> 
 
 
 def test_a_media_type_the_route_does_not_accept_is_refused_before_transmission() -> None:
+    support = SOL.image_input
+    assert support is not None
     narrowed = SOL.model_copy(
         update={
-            "image_input": SOL.image_input.model_copy(  # type: ignore[union-attr]
-                update={"media_types": frozenset({"image/jpeg"})}
+            "image_input": support.model_copy(
+                update={
+                    "provider": support.provider.model_copy(
+                        update={"media_types": frozenset({"image/jpeg"})}
+                    )
+                }
             )
         }
     )

@@ -359,12 +359,14 @@ def test_at_most_one_terminal_event_per_attempt(
 ) -> None:
     attempt = uuid4()
     start(connection, scene, attempt)
+    made = representation(connection, scene)
     connection.execute(
         text(
-            "insert into attachment_processing_events (attachment_id, attempt_id, intent, event) "
-            "values (:a, :t, 'derive:model_input_image', 'succeeded')"
+            "insert into attachment_processing_events (attachment_id, attempt_id, intent, "
+            "event, representation_id) "
+            "values (:a, :t, 'derive:model_input_image', 'succeeded', :r)"
         ),
-        {"a": scene["attachment"], "t": attempt},
+        {"a": scene["attachment"], "t": attempt, "r": made},
     )
     with pytest.raises(DBAPIError, match=r"one_terminal|duplicate key"):
         connection.execute(
@@ -415,12 +417,22 @@ def test_a_failure_says_why_and_a_success_does_not_invent_one(
         )
 
 
-def test_only_a_success_names_what_it_produced(
+def test_a_succeeded_derivation_must_name_what_it_produced(
     connection: Connection, scene: dict[str, Any]
 ) -> None:
+    """Owner correction, 20 September 2026, applied before `0024` ever ran on live.
+
+    The rule is now stated in both directions. A `started` may not name a
+    representation, because nothing has been produced yet — and a **succeeded
+    derivation may not omit one**, because recording that a derivation succeeded
+    while producing nothing asserts an event that did not happen.
+    """
     made = representation(connection, scene)
     attempt = uuid4()
-    with pytest.raises(DBAPIError, match="only_success_produces"):
+    with (
+        pytest.raises(DBAPIError, match="succeeded_derivation_produces"),
+        connection.begin_nested(),
+    ):
         connection.execute(
             text(
                 "insert into attachment_processing_events (attachment_id, attempt_id, intent, "
@@ -429,6 +441,42 @@ def test_only_a_success_names_what_it_produced(
             ),
             {"a": scene["attachment"], "t": attempt, "r": made},
         )
+    start(connection, scene, attempt)
+    with pytest.raises(DBAPIError, match="succeeded_derivation_produces"):
+        connection.execute(
+            text(
+                "insert into attachment_processing_events (attachment_id, attempt_id, intent, "
+                "event) values (:a, :t, 'derive:model_input_image', 'succeeded')"
+            ),
+            {"a": scene["attachment"], "t": attempt},
+        )
+
+
+def test_verify_succeeds_without_producing_anything(
+    connection: Connection, scene: dict[str, Any]
+) -> None:
+    """`verify` keeps its own meaning: it produces nothing, and that is legal."""
+    attempt = uuid4()
+    start(connection, scene, attempt, intent="verify")
+    connection.execute(
+        text(
+            "insert into attachment_processing_events (attachment_id, attempt_id, intent, event) "
+            "values (:a, :t, 'verify', 'succeeded')"
+        ),
+        {"a": scene["attachment"], "t": attempt},
+    )
+    events = (
+        connection.execute(
+            text(
+                "select event::text from attachment_processing_events where attempt_id = :t "
+                "order by created_at"
+            ),
+            {"t": attempt},
+        )
+        .scalars()
+        .all()
+    )
+    assert events == ["started", "succeeded"]
 
 
 def test_started_alone_is_a_readable_state_and_says_only_that(

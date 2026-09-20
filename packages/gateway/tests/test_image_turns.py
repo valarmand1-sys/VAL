@@ -222,7 +222,7 @@ def test_sight_is_the_binding_and_a_completed_call_together(store: Engine) -> No
 
 
 def test_an_oversized_image_is_derived_once_and_the_binding_names_it(store: Engine) -> None:
-    original = png(2400, 1800)
+    original = png(2400, 2400)
     turn(store, "And this one?", attachments=(attach(original, "storyboard.png"),))
 
     representations = rows(store, "attachment_representations")
@@ -235,15 +235,15 @@ def test_an_oversized_image_is_derived_once_and_the_binding_names_it(store: Engi
     assert binding["input_kind"] == "representation"
     assert binding["representation_id"] == representations[0]["id"]
     assert binding["transmitted_sha256"] == representations[0]["sha256"]
-    assert max(binding["width"], binding["height"]) == 1600, "inside the route's patch budget"
+    assert (binding["width"], binding["height"]) == (1600, 1600), "the largest square that fits"
     assert binding["transmitted_sha256"] != rows(store, "attachments")[0]["sha256"]
 
     blobs = {row["sha256"] for row in rows(store, "blobs")}
     assert len(blobs) == 2, "the original and the derived bytes, both kept"
 
 
-def test_a_derivation_records_one_started_and_one_terminal_event(store: Engine) -> None:
-    turn(store, "And this one?", attachments=(attach(png(2400, 1800)),))
+def test_a_real_derivation_records_one_started_and_one_terminal_event(store: Engine) -> None:
+    turn(store, "And this one?", attachments=(attach(png(2400, 2400)),))
     events = rows(store, "attachment_processing_events")
     assert [event["event"] for event in events] == ["started", "succeeded"]
     assert len({event["attempt_id"] for event in events}) == 1
@@ -251,6 +251,104 @@ def test_a_derivation_records_one_started_and_one_terminal_event(store: Engine) 
     assert events[0]["representation_id"] is None
     assert events[1]["representation_id"] == rows(store, "attachment_representations")[0]["id"]
     assert all(event["error"] is None for event in events)
+
+
+def test_an_unchanged_original_records_no_derivation_attempt(store: Engine) -> None:
+    """Owner correction, 20 September 2026.
+
+    The implementation previously wrote `derive:model_input_image started ->
+    succeeded` even when the original went unchanged and no representation was
+    produced — recording that a derivation succeeded when none occurred, which
+    is a false statement in a table whose whole purpose is honest attempts. The
+    honest record of a derivation that did not happen is silence.
+    """
+    _, adapter = turn(store, "What is in this?", attachments=(attach(png(320, 240)),))
+    assert rows(store, "attachment_processing_events") == []
+    assert rows(store, "attachment_representations") == []
+    # And the image still went, unchanged, and is still bound to the call.
+    assert sent_images(adapter)[0].content == rows(store, "blobs")[0]["bytes"]
+    assert rows(store, "model_call_image_inputs")[0]["input_kind"] == "original"
+
+
+def test_a_sixteen_by_nine_frame_is_transmitted_whole(store: Engine) -> None:
+    """The correction's motivating case, end to end: no resize, no attempt, no loss."""
+    payload = png(2048, 1152)
+    _, adapter = turn(store, "Look at this frame.", attachments=(attach(payload),))
+    assert sent_images(adapter)[0].content == payload
+    assert rows(store, "attachment_processing_events") == []
+    binding = rows(store, "model_call_image_inputs")[0]
+    assert (binding["width"], binding["height"]) == (2048, 1152)
+    assert binding["input_kind"] == "original"
+
+
+def test_a_failed_derivation_records_started_then_failed_with_its_reason(
+    store: Engine,
+) -> None:
+    """A real attempt that really failed is durable, with the reason it gave."""
+    from unittest.mock import patch as patched
+
+    from val_policy.attachments import AdmissionRefusedError
+
+    with (
+        patched(
+            "val_gateway.attachments.plan_transmission",
+            side_effect=AdmissionRefusedError("the derived image is still too large"),
+        ),
+        pytest.raises(AdmissionRefusedError),
+    ):
+        turn(store, "And this one?", attachments=(attach(png(2400, 2400)),))
+
+    events = rows(store, "attachment_processing_events")
+    assert [event["event"] for event in events] == ["started", "failed"]
+    assert len({event["attempt_id"] for event in events}) == 1
+    assert events[1]["error"] == "the derived image is still too large"
+    assert events[1]["representation_id"] is None
+    assert rows(store, "attachment_representations") == [], "nothing was produced"
+
+
+def test_the_database_refuses_a_succeeded_derivation_that_produced_nothing(
+    store: Engine,
+) -> None:
+    """The rule is structural, not merely observed (migration 0024, as corrected)."""
+    turn(store, "Something.", attachments=(attach(),))
+    attachment_id = rows(store, "attachments")[0]["id"]
+    attempt = uuid4()
+    with store.begin() as connection:
+        connection.execute(
+            text(
+                "insert into attachment_processing_events (attachment_id, attempt_id, intent, "
+                "event) values (:a, :t, 'derive:model_input_image', 'started')"
+            ),
+            {"a": attachment_id, "t": attempt},
+        )
+    with pytest.raises(Exception, match="succeeded_derivation_produces"), store.begin() as c:
+        c.execute(
+            text(
+                "insert into attachment_processing_events (attachment_id, attempt_id, intent, "
+                "event) values (:a, :t, 'derive:model_input_image', 'succeeded')"
+            ),
+            {"a": attachment_id, "t": attempt},
+        )
+
+
+def test_verify_keeps_its_own_meaning_and_produces_nothing(store: Engine) -> None:
+    """`verify` succeeds without producing a representation, and is not invented
+    to give an unchanged original something to point at."""
+    turn(store, "Something.", attachments=(attach(),))
+    attachment_id = rows(store, "attachments")[0]["id"]
+    attempt = uuid4()
+    with store.begin() as connection:
+        for event in ("started", "succeeded"):
+            connection.execute(
+                text(
+                    "insert into attachment_processing_events (attachment_id, attempt_id, "
+                    "intent, event) values (:a, :t, 'verify', :e)"
+                ),
+                {"a": attachment_id, "t": attempt, "e": event},
+            )
+    verified = [e for e in rows(store, "attachment_processing_events") if e["intent"] == "verify"]
+    assert [e["event"] for e in verified] == ["started", "succeeded"]
+    assert all(e["representation_id"] is None for e in verified)
 
 
 # --- current-turn binding ---------------------------------------------------------

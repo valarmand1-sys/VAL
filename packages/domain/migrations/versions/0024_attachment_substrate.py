@@ -365,9 +365,18 @@ def upgrade() -> None:
             "(event = 'failed') = (error IS NOT NULL)",
             name="failed_states_why",
         ),
+        # Owner correction, 20 September 2026, applied before this migration ever
+        # touched the live store. The rule is now stated in both directions: a
+        # SUCCEEDED derivation must name the representation it produced, and
+        # nothing else may name one. Recording `derive:model_input_image
+        # succeeded` with no representation would assert that a derivation
+        # happened when none did. `verify` keeps its own meaning: it succeeds
+        # without producing anything, and the database says so rather than
+        # forcing an invented representation onto it.
         sa.CheckConstraint(
-            "event = 'succeeded' OR representation_id IS NULL",
-            name="only_success_produces",
+            "CASE WHEN event = 'succeeded' AND intent LIKE 'derive:%' "
+            "THEN representation_id IS NOT NULL ELSE representation_id IS NULL END",
+            name="succeeded_derivation_produces",
         ),
         sa.ForeignKeyConstraint(
             ["attachment_id"],

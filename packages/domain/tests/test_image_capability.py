@@ -11,7 +11,7 @@ from datetime import date
 
 import pytest
 
-from val_domain.gateway import ImageInputSupport, ModelConfig
+from val_domain.gateway import ModelConfig, ProviderImageLimits
 from val_domain.registry import REGISTRY, by_slug
 
 SOL = "gpt-5-6-sol-medium"
@@ -36,48 +36,66 @@ def test_no_local_or_incumbent_route_became_image_capable() -> None:
 def test_sol_declares_the_facts_that_were_verified_against_the_provider() -> None:
     support = by_slug(SOL).image_input  # type: ignore[union-attr]
     assert support is not None
-    assert support.verified_on == date(2026, 9, 19)
-    assert "images-vision" in support.source and "2026-09-19-sol-image-input" in support.source
-    assert support.media_types == frozenset({"image/png", "image/jpeg", "image/webp", "image/gif"})
-    assert (support.patch_pixels, support.patch_budget, support.token_multiplier) == (32, 2500, 1.2)
+    provider = support.provider
+    assert provider.verified_on == date(2026, 9, 20), "re-read first-party on the correction"
+    assert "images-vision" in provider.source and "first-party" in provider.source
+    assert provider.media_types == frozenset({"image/png", "image/jpeg", "image/webp", "image/gif"})
+    assert (provider.patch_pixels, provider.patch_budget, provider.token_multiplier) == (
+        32,
+        2500,
+        1.2,
+    )
+    assert provider.max_long_edge_pixels == 2048, "the provider's own bound, not a house choice"
 
 
 def test_the_detail_level_is_declared_because_the_default_has_no_budget() -> None:
     """`auto` resolves to `original`, which has no patch budget — and no ceiling."""
     support = by_slug(SOL).image_input  # type: ignore[union-attr]
     assert support is not None
-    assert support.detail == "high"
+    assert support.provider.detail == "high"
     assert support.max_tokens_per_image == 3000
 
 
-def test_the_transmission_bound_keeps_every_sent_image_inside_the_patch_budget() -> None:
-    """The property the whole reservation rests on, checked as arithmetic.
+def test_the_dimension_bound_is_the_providers_own_not_a_transmission_choice() -> None:
+    """Owner correction, 20 September 2026 — and this test changed with it.
 
-    A measured image that exceeds the provider's budget billed one token above
-    the formula's cap. Deriving to a long edge of 1,600 means the provider never
-    has to resize, so the documented formula applies exactly — and the worst
-    case, a square at the bound, lands on the budget rather than past it.
+    It previously asserted `edge == 1600` and `patches_per_edge ** 2 == 2500`.
+    Both were true of the *old transmission rule*, not of the provider: 1,600 is
+    the largest square inside the patch budget, and capping every image there
+    threw away resolution on everything that is not square. The registry now
+    carries the provider's documented bound, and fitting inside both limits is
+    `val_policy.attachments.fit_within_limits`'s job, per image.
     """
+    provider = by_slug(SOL).image_input.provider  # type: ignore[union-attr]
+    assert provider.max_long_edge_pixels == 2048
+    assert provider.patch_budget == 2500
+    # The square case the old constant encoded is still true — as a consequence
+    # of the two facts above, not as a rule of its own.
+    assert math.ceil(1600 / provider.patch_pixels) ** 2 == provider.patch_budget
+
+
+def test_a_house_limit_is_recorded_as_a_house_limit() -> None:
+    """The provider documents no per-image size bound, so this one is ours."""
     support = by_slug(SOL).image_input  # type: ignore[union-attr]
     assert support is not None
-    edge = support.max_long_edge_pixels
-    patches_per_edge = math.ceil(edge / support.patch_pixels)
-    assert patches_per_edge**2 == support.patch_budget == 2500, "a square at the bound"
-    assert edge == 1600
+    assert support.house.max_byte_size == 20_000_000
+    assert "not a provider limit" in support.house.reason
+    assert "PostgreSQL" in support.house.reason, "it says why, not merely that"
+    # And the provider half carries no byte bound at all to be mistaken for one.
+    assert not hasattr(support.provider, "max_byte_size")
 
 
 def test_a_declared_capability_must_name_real_media_types() -> None:
     for media_types in (frozenset[str](), frozenset({"PNG"}), frozenset({"image/p/ng"})):
         with pytest.raises(ValueError, match="media type"):
-            ImageInputSupport(
+            ProviderImageLimits(
                 media_types=media_types,
-                max_long_edge_pixels=1,
-                max_byte_size=1,
                 detail="high",
+                max_long_edge_pixels=1,
                 patch_pixels=32,
                 patch_budget=1,
                 token_multiplier=1.0,
-                verified_on=date(2026, 9, 19),
+                verified_on=date(2026, 9, 20),
                 source="x",
             )
 

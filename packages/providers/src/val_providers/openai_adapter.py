@@ -127,17 +127,17 @@ def _image_block(part: ImagePart, config: ModelConfig) -> ResponseInputImagePara
                 "have been routed here"
             ),
         )
-    if part.media_type not in support.media_types:
+    if part.media_type not in support.provider.media_types:
         raise GatewayError(
             kind=GatewayErrorKind.INVALID_REQUEST,
             detail=(
-                f"{config.slug} accepts {', '.join(sorted(support.media_types))}; "
+                f"{config.slug} accepts {', '.join(sorted(support.provider.media_types))}; "
                 f"the selected representation is {part.media_type}"
             ),
         )
     return ResponseInputImageParam(
         type="input_image",
-        detail=cast(Literal["low", "high", "auto"], support.detail),
+        detail=cast(Literal["low", "high", "auto"], support.provider.detail),
         image_url=f"data:{part.media_type};base64,{b64encode(part.content).decode()}",
     )
 

@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import math
 from dataclasses import dataclass
 from typing import Final
 
@@ -199,6 +200,98 @@ def _reencode(image: Image.Image, media_type: str) -> tuple[bytes, str]:
     return buffer.getvalue(), "image/png"
 
 
+def patch_count(width: int, height: int, support: ImageInputSupport) -> int:
+    """The provider's patch count for these exact dimensions."""
+    pixels = support.provider.patch_pixels
+    return math.ceil(width / pixels) * math.ceil(height / pixels)
+
+
+def within_provider_limits(width: int, height: int, support: ImageInputSupport) -> bool:
+    """Both documented limits: the dimension bound **and** the patch budget."""
+    return (
+        max(width, height) <= support.provider.max_long_edge_pixels
+        and patch_count(width, height, support) <= support.provider.patch_budget
+    )
+
+
+def fit_within_limits(width: int, height: int, support: ImageInputSupport) -> tuple[int, int]:
+    """The largest aspect-preserving size that lands inside both documented limits.
+
+    Owner correction, 20 September 2026. The earlier rule capped the long edge at
+    1,600 — exactly right for a square and increasingly wrong as the aspect ratio
+    departs from it. A 16:9 frame at 2048x1152 is 64 x 36 = 2,304 patches, already
+    inside the budget, and the old rule shrank it to 1600x900 for no accounting
+    reason at all. Storyboards, character sheets and production frames are
+    precisely the material this slice exists for, so that resolution matters.
+
+    **This does not reproduce the provider's own shrink.** Matching someone
+    else's arithmetic is what produced the one-token discrepancy, and it would
+    drift the moment they adjusted it. The only requirement is that the
+    transmitted image land inside both documented limits, so the provider
+    performs no resize and the documented formula applies exactly.
+
+    **The rule, stated so it can be checked rather than inferred.** The long edge
+    is the search variable. For a candidate long edge L, the short edge is the
+    exact proportional value **floored**:
+
+        short = max(1, floor(source_short * L / source_long))
+
+    The chosen L is the **largest integer** in `[1, min(source_long,
+    max_long_edge_pixels)]` for which both limits hold. Patch count is
+    non-decreasing in L, so that maximum is unique and a binary search finds it.
+
+    **The tie-break, because one is owed.** Each candidate L yields exactly one
+    dimension pair, and the largest feasible L is taken; there is therefore no
+    set of distinct pairs at the same maximal scale to choose between. Flooring
+    the short edge is what makes the pair a function of L rather than of a
+    rounding mood, and it never rounds *up* into the limit that was being
+    respected. The consequence is what matters downstream: identical source
+    bytes and identical capability facts always produce identical dimensions,
+    and so identical derived bytes and an identical digest — which blind/final
+    equality and provenance both rest on.
+    """
+    longest = max(width, height)
+    shortest = min(width, height)
+    ceiling = min(longest, support.provider.max_long_edge_pixels)
+
+    def pair(long_edge: int) -> tuple[int, int]:
+        short_edge = max(1, (shortest * long_edge) // longest)
+        return (long_edge, short_edge) if width >= height else (short_edge, long_edge)
+
+    low, high, best = 1, ceiling, None
+    while low <= high:
+        middle = (low + high) // 2
+        candidate = pair(middle)
+        if within_provider_limits(*candidate, support):
+            best, low = candidate, middle + 1
+        else:
+            high = middle - 1
+    if best is None:  # unreachable: a 1-pixel image is one patch
+        raise AdmissionRefusedError(
+            "no aspect-preserving size of this image fits the route's documented limits"
+        )
+    return best
+
+
+def derivation_required(admitted: AdmittedImage, support: ImageInputSupport) -> bool:
+    """Whether this route needs a `model_input_image` derived, without doing the work.
+
+    Owner correction, 20 September 2026. Core must be able to answer this
+    *before* recording a derivation attempt: writing `derive:model_input_image
+    started -> succeeded` for an original transmitted unchanged records that a
+    derivation succeeded when none occurred, which is a false statement in an
+    evidence table whose whole purpose is honest attempts.
+
+    `plan_transmission` reads the same predicate, so the decision and the work
+    cannot drift apart.
+    """
+    return not (
+        within_provider_limits(admitted.width, admitted.height, support)
+        and admitted.byte_size <= support.house.max_byte_size
+        and admitted.media_type in support.provider.media_types
+    )
+
+
 def plan_transmission(admitted: AdmittedImage, support: ImageInputSupport) -> Transmission:
     """What will actually be sent to this route, decided before the reservation.
 
@@ -213,19 +306,16 @@ def plan_transmission(admitted: AdmittedImage, support: ImageInputSupport) -> Tr
     # The route must accept the original or that target, or there is nothing to
     # send — and refusing here is refusing *before* the pixels leave the house.
     target = "image/jpeg" if admitted.media_type == "image/jpeg" else "image/png"
-    if admitted.media_type not in support.media_types and target not in support.media_types:
+    accepted = support.provider.media_types
+    if admitted.media_type not in accepted and target not in accepted:
         raise AdmissionRefusedError(
-            f"this route accepts {', '.join(sorted(support.media_types))}; the image is "
+            f"this route accepts {', '.join(sorted(accepted))}; the image is "
             f"{admitted.media_type} and would be derived as {target}"
         )
 
-    long_edge = max(admitted.width, admitted.height)
-    within_limits = (
-        long_edge <= support.max_long_edge_pixels
-        and admitted.byte_size <= support.max_byte_size
-        and admitted.media_type in support.media_types
-    )
-    if within_limits:
+    # Never upscale, and never derive an image that already satisfies both
+    # documented limits and the house's own byte ceiling: it goes as it is.
+    if not derivation_required(admitted, support):
         return Transmission(
             content=admitted.content,
             sha256=admitted.sha256,
@@ -237,12 +327,11 @@ def plan_transmission(admitted: AdmittedImage, support: ImageInputSupport) -> Tr
             derived_by=None,
         )
 
-    scale = min(1.0, support.max_long_edge_pixels / long_edge)
-    width = max(1, round(admitted.width * scale))
-    height = max(1, round(admitted.height * scale))
+    width, height = fit_within_limits(admitted.width, admitted.height, support)
     with Image.open(io.BytesIO(admitted.content)) as image:
         image.load()
-        resized = image if scale == 1.0 else image.resize((width, height), Image.Resampling.LANCZOS)
+        unchanged = (width, height) == (admitted.width, admitted.height)
+        resized = image if unchanged else image.resize((width, height), Image.Resampling.LANCZOS)
         content, media_type = _reencode(resized, admitted.media_type)
 
     # Measured from the derived bytes, never assumed from the arithmetic above:
@@ -251,10 +340,10 @@ def plan_transmission(admitted: AdmittedImage, support: ImageInputSupport) -> Tr
         derived.load()
         width, height = derived.size
 
-    if len(content) > support.max_byte_size:
+    if len(content) > support.house.max_byte_size:
         raise AdmissionRefusedError(
-            f"the image is {len(content):,} bytes after derivation and this route accepts "
-            f"{support.max_byte_size:,}"
+            f"the image is {len(content):,} bytes after derivation and this house sends at "
+            f"most {support.house.max_byte_size:,} per image"
         )
     return Transmission(
         content=content,

@@ -1559,8 +1559,12 @@ class AttachmentProcessingEvent(Base):
         ),
         CheckConstraint("intent IN ('derive:model_input_image', 'verify')", name="intent_declared"),
         CheckConstraint("(event = 'failed') = (error IS NOT NULL)", name="failed_states_why"),
+        # Correction, 20 September 2026: stated in both directions, so a
+        # succeeded derivation cannot claim to have produced nothing.
         CheckConstraint(
-            "event = 'succeeded' OR representation_id IS NULL", name="only_success_produces"
+            "CASE WHEN event = 'succeeded' AND intent LIKE 'derive:%' "
+            "THEN representation_id IS NOT NULL ELSE representation_id IS NULL END",
+            name="succeeded_derivation_produces",
         ),
         Index("ix_attachment_processing_events_attachment_id", "attachment_id"),
         Index(

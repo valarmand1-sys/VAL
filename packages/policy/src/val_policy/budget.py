@@ -210,6 +210,19 @@ def local_context_overrun(
     return None
 
 
+#: A reservation margin, and **not** part of the pricing formula (owner ruling,
+#: 20 September 2026). The provider documents that "floating-point rounding in
+#: billing can make the final count differ from the estimate by one token", and
+#: this house measured exactly that: an image the provider had to resize billed
+#: 3,001 where the documented arithmetic gives 3,000. VAL no longer transmits an
+#: image the provider must resize, so the formula is exact on every route this
+#: reserves for — but a ceiling that is exact is one rounding change away from
+#: being short, and a reservation is meant to be a bound. One token per image is
+#: added when reserving. Settlement continues from returned usage, unchanged, and
+#: nothing describes this margin as what an image costs.
+IMAGE_RESERVATION_MARGIN_TOKENS = 1
+
+
 def image_input_tokens(width: int, height: int, support: ImageInputSupport) -> int:
     """Billable input tokens for one transmitted image, by the provider's formula.
 
@@ -230,8 +243,10 @@ def image_input_tokens(width: int, height: int, support: ImageInputSupport) -> i
     above it — the provider shrinks such an image before counting, so it bills
     at most the capped figure and usually slightly less.
     """
-    patches = math.ceil(width / support.patch_pixels) * math.ceil(height / support.patch_pixels)
-    return math.ceil(min(patches, support.patch_budget) * support.token_multiplier)
+    pixels = support.provider.patch_pixels
+    patches = math.ceil(width / pixels) * math.ceil(height / pixels)
+    capped = min(patches, support.provider.patch_budget)
+    return math.ceil(capped * support.provider.token_multiplier)
 
 
 def upper_bound_image_tokens(images: Sequence[ImagePart], config: ModelConfig) -> int:
@@ -249,7 +264,10 @@ def upper_bound_image_tokens(images: Sequence[ImagePart], config: ModelConfig) -
             f"{config.slug} declares no image input, so an image bound cannot be computed; "
             "routing must not have selected it for a turn carrying images"
         )
-    return sum(image_input_tokens(image.width, image.height, support) for image in images)
+    return sum(
+        image_input_tokens(image.width, image.height, support) + IMAGE_RESERVATION_MARGIN_TOKENS
+        for image in images
+    )
 
 
 def maximum_cost(
@@ -295,7 +313,8 @@ def maximum_cost(
     | Batch submissions | No — never requested, and cheaper |  |
     | **Image input** | **Yes**, since 19 September 2026 | Term 1, via
       `upper_bound_image_tokens`: capped per image by the route's declared
-      patch budget, and refused on a route that declares none |
+      patch budget, plus a declared one-token rounding margin, and refused on a
+      route that declares none |
     | Audio, video, documents | No — no part type carries them yet |  |
     | Tool or web-search calls | No — no tool exists until Layer 2 |  |
     | Per-request or storage fees | No — none in these providers' pricing |  |

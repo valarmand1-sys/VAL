@@ -326,66 +326,87 @@ class GatewayError(Exception):
         self.model_call_ids = model_call_ids
 
 
-class ImageInputSupport(BaseModel):
-    """What one exact configuration accepts as image input, verified and dated.
+class ProviderImageLimits(BaseModel):
+    """What the **provider** documents about image input. Verified and dated.
 
-    Owner ruling, 19 September 2026 (Track C). **Capability is a routing fact,
-    not a provider guess**: a route does not receive an image because its
-    underlying provider might support one. The configuration declares it, with
-    the limits that decide whether the original may be transmitted or a
-    `model_input_image` must be derived first — and those limits must be known
-    *before* the reservation is taken (Attachment Substrate v1.2 §8), which is
-    why they live on the registry entry beside the rates rather than inside an
-    adapter.
-
-    `verified_on` and `source` follow the same discipline as `rates_verified_on`:
-    a capability fact nobody re-verifies is a capability fact that quietly goes
-    stale. Nothing here is inferred from another model's documentation.
+    Owner ruling, 19 September 2026; corrected 20 September 2026. Every field
+    here is a fact read from first-party documentation and re-read on
+    `verified_on`. Nothing this house merely prefers belongs in this object —
+    that lives in `HouseImagePolicy` beside it, so a later reader can tell a
+    provider limit from a house choice without opening a document.
     """
 
     model_config = ConfigDict(frozen=True)
 
-    #: Media types this configuration accepts, as the provider documents them.
+    #: Media types the provider accepts, as it documents them.
     media_types: frozenset[str]
-    #: The longest edge the provider accepts without resizing on its own terms.
-    #: An image beyond it is derived down before transmission, never sent and
-    #: hoped for.
-    max_long_edge_pixels: int = Field(gt=0)
-    #: The largest transmitted payload the provider accepts, in bytes.
-    max_byte_size: int = Field(gt=0)
-    #: The provider option transmitted on every image of this route, and
-    #: recorded on the `model_call_image_inputs` row because it changes both
-    #: pricing and interpretation (Attachment Substrate v1.2 §3.6). It is
-    #: declared rather than defaulted: the provider's default resolves to "no
-    #: patch budget", and a cost with no ceiling cannot be reserved against a
-    #: ceiling.
+    #: The detail level transmitted on every image of this route. Declared
+    #: rather than defaulted: the provider's default resolves to no patch
+    #: budget, and a cost with no ceiling cannot be reserved against a ceiling.
     detail: str = Field(min_length=1)
-    #: The provider's documented image tokenisation, as facts rather than as
-    #: constants in code: patches of `patch_pixels` square, at most
-    #: `patch_budget` of them after the provider's own resizing, each billed at
-    #: `token_multiplier` input tokens. The bound a reservation is taken
-    #: against is therefore `ceil(patch_budget x token_multiplier)` per image,
-    #: whatever arrives.
+    #: The dimension bound of that detail level. An image inside it **and**
+    #: inside the patch budget is transmitted as it is: the provider performs no
+    #: resize, so the documented formula applies exactly.
+    max_long_edge_pixels: int = Field(gt=0)
+    #: The documented tokenisation: patches this many pixels square, at most
+    #: `patch_budget` of them, each billed at `token_multiplier` input tokens.
     patch_pixels: int = Field(gt=0)
     patch_budget: int = Field(gt=0)
     token_multiplier: float = Field(gt=0)
-    #: When the facts above were read, and from where.
     verified_on: date
     source: str = Field(min_length=1)
 
-    @property
-    def max_tokens_per_image(self) -> int:
-        """The most one transmitted image can bill, by the provider's own budget."""
-        return math.ceil(self.patch_budget * self.token_multiplier)
-
     @model_validator(mode="after")
-    def _media_types_are_media_types(self) -> ImageInputSupport:
+    def _media_types_are_media_types(self) -> ProviderImageLimits:
         if not self.media_types:
             raise ValueError("a configuration declaring image input must name its media types")
         for media_type in self.media_types:
             if media_type != media_type.lower() or media_type.count("/") != 1:
                 raise ValueError(f"{media_type!r} is not a media type")
         return self
+
+
+class HouseImagePolicy(BaseModel):
+    """What **this house** chooses about image input, and why.
+
+    Correction, 20 September 2026: a house limit recorded among provider facts
+    is a house limit that a later reader will cite as the provider's. The
+    provider documents no per-image size limit at all — only a per-request
+    payload bound — so the ceiling below is the house's own, and says so.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: The largest single transmitted image this house will send. A house
+    #: admission and safety policy, not a provider limit.
+    max_byte_size: int = Field(gt=0)
+    #: Why this house set it where it did.
+    reason: str = Field(min_length=1)
+
+
+class ImageInputSupport(BaseModel):
+    """One configuration's image-input capability: what the provider allows, and
+    what this house permits itself.
+
+    The two halves are separate objects on purpose (correction, 20 September
+    2026). Routing, transmission planning and the reservation each read the half
+    they are entitled to, and the registry entry reads as what it is.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    provider: ProviderImageLimits
+    house: HouseImagePolicy
+
+    @property
+    def max_tokens_per_image(self) -> int:
+        """The most one transmitted image can bill, by the provider's own budget.
+
+        The documented formula alone. The reservation adds a separate, declared
+        margin for the provider's documented one-token rounding; that margin is
+        not part of this figure and is never described as pricing.
+        """
+        return math.ceil(self.provider.patch_budget * self.provider.token_multiplier)
 
 
 class ModelConfig(BaseModel):
