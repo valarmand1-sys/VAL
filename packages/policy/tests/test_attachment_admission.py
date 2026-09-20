@@ -26,6 +26,10 @@ SUPPORT = ImageInputSupport(
     media_types=frozenset({"image/png", "image/jpeg"}),
     max_long_edge_pixels=512,
     max_byte_size=200_000,
+    detail="high",
+    patch_pixels=32,
+    patch_budget=2500,
+    token_multiplier=1.2,
     verified_on=date(2026, 9, 19),
     source="test",
 )

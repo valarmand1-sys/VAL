@@ -34,9 +34,10 @@ too little breaches the ceiling.
 Pure arithmetic. No clock, no database, no provider.
 """
 
-from collections.abc import Iterable
+import math
+from collections.abc import Iterable, Sequence
 
-from val_domain.gateway import CacheTtl, ModelConfig
+from val_domain.gateway import CacheTtl, ImageInputSupport, ImagePart, ModelConfig
 
 #: The routing ceiling: cloud model inference, per month (01-architecture.md §5.5).
 CLOUD_CEILING_USD = 200.00
@@ -209,11 +210,55 @@ def local_context_overrun(
     return None
 
 
+def image_input_tokens(width: int, height: int, support: ImageInputSupport) -> int:
+    """Billable input tokens for one transmitted image, by the provider's formula.
+
+    Owner ruling, 19 September 2026 (Track C). The provider tokenises an image
+    as square patches and bills a multiple of the patch count, capping the count
+    at the detail level's budget and resizing to fit. Transcribed from
+    `support`, which carries the numbers as dated, sourced registry facts:
+
+        patches  = ceil(width / patch_pixels) x ceil(height / patch_pixels)
+        billable = ceil(min(patches, patch_budget) x token_multiplier)
+
+    The cap is what makes this **bounded**: whatever arrives, one image cannot
+    bill more than `support.max_tokens_per_image`. That is the property a
+    reservation needs, and it is why the detail level is declared rather than
+    left to the provider's default, which resolves to no budget at all.
+
+    The value is exact for an image inside the budget, and conservative for one
+    above it — the provider shrinks such an image before counting, so it bills
+    at most the capped figure and usually slightly less.
+    """
+    patches = math.ceil(width / support.patch_pixels) * math.ceil(height / support.patch_pixels)
+    return math.ceil(min(patches, support.patch_budget) * support.token_multiplier)
+
+
+def upper_bound_image_tokens(images: Sequence[ImagePart], config: ModelConfig) -> int:
+    """The bound on every transmitted image of one call. Fails closed.
+
+    A configuration that declares no image input cannot price an image, so a
+    call carrying one is refused here rather than reserved at a figure that
+    omits it. Under-reserving is how a ceiling stops being a ceiling.
+    """
+    if not images:
+        return 0
+    support = config.image_input
+    if support is None:
+        raise ValueError(
+            f"{config.slug} declares no image input, so an image bound cannot be computed; "
+            "routing must not have selected it for a turn carrying images"
+        )
+    return sum(image_input_tokens(image.width, image.height, support) for image in images)
+
+
 def maximum_cost(
     config: ModelConfig,
     parts: Iterable[str],
     max_output_tokens: int,
     cache_ttl: CacheTtl | None = None,
+    *,
+    images: Sequence[ImagePart] = (),
 ) -> float:
     """The most this proposed call is permitted to consume, in USD.
 
@@ -248,7 +293,10 @@ def maximum_cost(
     | Prompt-cache **writes** | **No** — never requested | See the warning below |
     | Prompt-cache reads | No — never requested, and cheaper than base input |  |
     | Batch submissions | No — never requested, and cheaper |  |
-    | Images, audio, documents | No — Layer 0 messages are text only |  |
+    | **Image input** | **Yes**, since 19 September 2026 | Term 1, via
+      `upper_bound_image_tokens`: capped per image by the route's declared
+      patch budget, and refused on a route that declares none |
+    | Audio, video, documents | No — no part type carries them yet |  |
     | Tool or web-search calls | No — no tool exists until Layer 2 |  |
     | Per-request or storage fees | No — none in these providers' pricing |  |
 
@@ -262,7 +310,9 @@ def maximum_cost(
     > `caching` field is `NOT_VERIFIED` on every entry precisely so that nobody
     > can switch it on believing it was already accounted for.
     """
-    tokens_in = upper_bound_input_tokens(parts, config)
+    # Widened for image input exactly as the caching warning below required of
+    # caching: the component is counted in the same change that enables it.
+    tokens_in = upper_bound_input_tokens(parts, config) + upper_bound_image_tokens(images, config)
     tokens_out = upper_bound_output_tokens(max_output_tokens, config)
     rate_in, rate_out = effective_rates(config, tokens_in)
     # The long-context multiplier stacks on cache rates as it does on the base

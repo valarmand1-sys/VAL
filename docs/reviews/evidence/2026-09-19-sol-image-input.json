@@ -1,0 +1,187 @@
+{
+ "started_at": "2026-09-20T04:40:55.906256+00:00",
+ "configuration": {
+  "slug": "gpt-5-6-sol-medium",
+  "model_identifier": "gpt-5.6-sol",
+  "cost_per_mtok_in_usd": 4.0,
+  "cost_per_mtok_out_usd": 20.0
+ },
+ "documented_facts": {
+  "detail": "high",
+  "patch_pixels": 32,
+  "patch_budget": 2500,
+  "token_multiplier": 1.2,
+  "source": "developers.openai.com/api/docs/guides/images-vision",
+  "read_on": "2026-09-19"
+ },
+ "cap_usd": 0.5,
+ "probes": [
+  {
+   "label": "under budget, square",
+   "image": {
+    "description": "navy field with a white square in the upper-left quarter",
+    "sha256": "aad5aac13530b9c0158b1e02a3430ec672439b6aca69b9951ff14d03e01ddfe3",
+    "byte_size": 1890,
+    "media_type": "image/png",
+    "declared_dimensions": [
+     512,
+     512
+    ],
+    "decoded_dimensions": [
+     512,
+     512
+    ]
+   },
+   "derived_representation": null,
+   "transmitted": "the admitted original, unchanged",
+   "prediction": {
+    "patches_before_budget": 256,
+    "patch_budget": 2500,
+    "patches_after_budget": 256,
+    "token_multiplier": 1.2,
+    "predicted_image_tokens": 308,
+    "shipped_function_agrees": true,
+    "formula": "ceil(min(ceil(w/32) * ceil(h/32), patch_budget) * token_multiplier)"
+   },
+   "predicted_text_input_tokens_bound": 63,
+   "predicted_total_input_tokens": 371,
+   "max_output_tokens": 64,
+   "predicted_cost_usd": 0.002764,
+   "cumulative_projected_spend_usd": 0.002764,
+   "returned_usage": {
+    "input_tokens": 326,
+    "output_tokens": 5,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0
+    },
+    "cached_tokens": 0
+   },
+   "actual_cost_usd": 0.001404,
+   "cumulative_actual_spend_usd": 0.001404,
+   "status": "completed",
+   "visible_answer": "Blue",
+   "implied_image_tokens": 263,
+   "prediction_minus_implied": 45,
+   "measured_image_tokens": 308,
+   "formula_minus_measured": 0
+  },
+  {
+   "label": "under budget, rectangular \u2014 per-dimension rounding",
+   "image": {
+    "description": "navy field with a white square in the upper-left quarter",
+    "sha256": "01b7e7a839d78f9baf914b27902151920b66c70d25b9bbfba1e5671e8d2e55e0",
+    "byte_size": 4035,
+    "media_type": "image/png",
+    "declared_dimensions": [
+     1024,
+     768
+    ],
+    "decoded_dimensions": [
+     1024,
+     768
+    ]
+   },
+   "derived_representation": null,
+   "transmitted": "the admitted original, unchanged",
+   "prediction": {
+    "patches_before_budget": 768,
+    "patch_budget": 2500,
+    "patches_after_budget": 768,
+    "token_multiplier": 1.2,
+    "predicted_image_tokens": 922,
+    "shipped_function_agrees": true,
+    "formula": "ceil(min(ceil(w/32) * ceil(h/32), patch_budget) * token_multiplier)"
+   },
+   "predicted_text_input_tokens_bound": 63,
+   "predicted_total_input_tokens": 985,
+   "max_output_tokens": 64,
+   "predicted_cost_usd": 0.00522,
+   "cumulative_projected_spend_usd": 0.006624,
+   "returned_usage": {
+    "input_tokens": 940,
+    "output_tokens": 5,
+    "input_tokens_details": {
+     "cache_write_tokens": 0,
+     "cached_tokens": 0
+    },
+    "cached_tokens": 0
+   },
+   "actual_cost_usd": 0.00386,
+   "cumulative_actual_spend_usd": 0.005264,
+   "status": "completed",
+   "visible_answer": "Blue",
+   "implied_image_tokens": 877,
+   "prediction_minus_implied": 45,
+   "measured_image_tokens": 922,
+   "formula_minus_measured": 0
+  },
+  {
+   "label": "over budget \u2014 the cap the reservation relies on",
+   "image": {
+    "description": "navy field with a white square in the upper-left quarter",
+    "sha256": "593c3ee57b5ad6b8c6b7dd84fe2b3d00a4c88fff77f119dd963794172ebdc8e6",
+    "byte_size": 16927,
+    "media_type": "image/png",
+    "declared_dimensions": [
+     2048,
+     2048
+    ],
+    "decoded_dimensions": [
+     2048,
+     2048
+    ]
+   },
+   "derived_representation": null,
+   "transmitted": "the admitted original, unchanged",
+   "prediction": {
+    "patches_before_budget": 4096,
+    "patch_budget": 2500,
+    "patches_after_budget": 2500,
+    "token_multiplier": 1.2,
+    "predicted_image_tokens": 3000,
+    "shipped_function_agrees": true,
+    "formula": "ceil(min(ceil(w/32) * ceil(h/32), patch_budget) * token_multiplier)"
+   },
+   "predicted_text_input_tokens_bound": 63,
+   "predicted_total_input_tokens": 3063,
+   "max_output_tokens": 64,
+   "predicted_cost_usd": 0.013532,
+   "cumulative_projected_spend_usd": 0.018796,
+   "returned_usage": {
+    "input_tokens": 3019,
+    "output_tokens": 5,
+    "input_tokens_details": {
+     "cache_write_tokens": 3016,
+     "cached_tokens": 0
+    },
+    "cached_tokens": 0
+   },
+   "actual_cost_usd": 0.012176,
+   "cumulative_actual_spend_usd": 0.01744,
+   "status": "completed",
+   "visible_answer": "Blue",
+   "implied_image_tokens": 2956,
+   "prediction_minus_implied": 44,
+   "measured_image_tokens": 3001,
+   "formula_minus_measured": -1
+  }
+ ],
+ "total_actual_spend_usd": 0.018072,
+ "finished_at": "2026-09-20T04:41:02.218147+00:00",
+ "text_only_baseline": {
+  "prompt": "Reply with one word: the dominant colour of this image.",
+  "input_tokens": 18,
+  "output_tokens": 28,
+  "cost_usd": 0.000632,
+  "purpose": "isolates the image term exactly rather than by inference"
+ },
+ "findings": {
+  "image_input_supported": "gpt-5.6-sol accepted `input_image` through the Responses API on every probe; status `completed`, and it answered correctly about each image's dominant colour.",
+  "formula_exact_within_the_patch_budget": "Against a measured text-only baseline of 18 input tokens for the identical prompt: 512x512 predicted 308 and measured 308; 1024x768 predicted 922 and measured 922. ceil(min(ceil(w/32)*ceil(h/32), 2500) * 1.2) is exact for an image the provider does not have to resize.",
+  "one_token_above_the_cap_when_the_provider_resizes": "2048x2048, which exceeds the 2,500-patch budget at detail `high`, measured 3001 where the formula's cap gives 3000. The discrepancy is one token in the direction that matters: a bound of ceil(patch_budget * multiplier) is not a strict ceiling for an image the provider resizes on its own terms.",
+  "resolution": "VAL never transmits an image the provider would have to resize. `max_long_edge_pixels` is 1,600, so the worst case (a square at the bound) is exactly 2,500 patches and the documented formula applies exactly. This costs no quality: at detail `high` the provider's own budget resizes a larger image to 1,600 on the long edge anyway. It also removes a silent provider-side resize between the dimensions the record states and the pixels the model interpreted. No formula was improvised; the transmission limit was chosen so the documented formula holds.",
+  "cache_observation": "The 2048x2048 probe reported cache_write_tokens 3016 with cached_tokens 0. Automatic caching is already priced into the cold bound by the 14 September 2026 ruling (the whole input at the write rate), so image input does not widen that exposure.",
+  "detail_default_is_unbounded": "The provider's default `auto` resolves to `original`, which has no patch budget and rejects only above 30,000 patches. `detail` is therefore declared on the route and transmitted on every image, and recorded in `provider_options` on the binding row."
+ }
+}

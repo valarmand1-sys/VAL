@@ -50,6 +50,7 @@ from val_domain.gateway import (
     CapabilityProfile,
     Classification,
     Hosting,
+    ImageInputSupport,
     Metering,
     ModelConfig,
     PricingFeature,
@@ -649,6 +650,52 @@ REGISTRY: tuple[ModelConfig, ...] = (
         cache_read_per_mtok_in_usd=0.40,
         cache_minimum_prefix_tokens=1_024,
         batch_pricing=PricingFeature.NOT_VERIFIED,
+        # Owner ruling, 19 September 2026 (Track C): the ONE image-capable
+        # production configuration of the first slice. Verified that day against
+        # developers.openai.com/api/docs/guides/images-vision and the model page
+        # — `gpt-5.6-sol` lists `image_input` among its supported features and
+        # `text, image` among its input modalities — and then against the
+        # provider itself, by four paid probes totalling $0.018072 recorded in
+        # `docs/reviews/evidence/2026-09-19-sol-image-input.json`. Nothing here
+        # is inferred from the older gpt-5-5 or opus-5 sizing work.
+        #
+        # The documented tokenisation is patches of 32 pixels square, capped at
+        # the detail level's budget after the provider's own resize, billed at
+        # 1.2 input tokens each. Measured against a text-only baseline of 18
+        # tokens, the formula is EXACT within the budget — 512x512 predicted 308
+        # and measured 308; 1024x768 predicted 922 and measured 922 — and an
+        # image that EXCEEDS the budget billed 3001 where the formula's cap says
+        # 3000: one token above it.
+        #
+        # `max_long_edge_pixels` is therefore 1,600 rather than 2,048, and that
+        # costs nothing: at `detail: high` the provider's own budget resizes a
+        # larger image to 1,600 on the long edge anyway (its worked example:
+        # "1600 x 1600 pixels, or 50 x 50 = 2500 patches"). Deriving to that
+        # bound here instead buys three things — the documented formula applies
+        # exactly, so the reservation is a true ceiling rather than one token
+        # short; the pixels the model interprets are the pixels the record says
+        # were sent; and no silent provider-side resize sits between the two.
+        # `detail` is declared rather than defaulted because the default,
+        # `auto`, resolves to no patch budget at all, and a cost with no ceiling
+        # cannot be reserved against a ceiling.
+        image_input=ImageInputSupport(
+            media_types=frozenset({"image/png", "image/jpeg", "image/webp", "image/gif"}),
+            max_long_edge_pixels=1_600,
+            # The house's transmission limit, well inside the provider's
+            # documented 512 MB per-request payload: these bytes also live in
+            # PostgreSQL and travel in every backup.
+            max_byte_size=20_000_000,
+            detail="high",
+            patch_pixels=32,
+            patch_budget=2_500,
+            token_multiplier=1.2,
+            verified_on=date(2026, 9, 19),
+            source=(
+                "developers.openai.com/api/docs/guides/images-vision and the gpt-5.6-sol "
+                "model page, read 19 September 2026; confirmed against the provider by the "
+                "probes in docs/reviews/evidence/2026-09-19-sol-image-input.json"
+            ),
+        ),
         eligible_classifications=_PROTECTED,
         # The partner profile alone: structured work keeps its cheaper
         # structured routes, and the strip its designated route.

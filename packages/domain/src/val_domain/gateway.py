@@ -5,6 +5,7 @@ Nothing here knows how any provider spells its request; that knowledge lives in
 `val_providers`, and only there.
 """
 
+import math
 from datetime import date
 from enum import Enum, StrEnum
 from typing import TYPE_CHECKING, Annotated, Literal
@@ -352,9 +353,30 @@ class ImageInputSupport(BaseModel):
     max_long_edge_pixels: int = Field(gt=0)
     #: The largest transmitted payload the provider accepts, in bytes.
     max_byte_size: int = Field(gt=0)
-    #: When the two facts above were read, and from where.
+    #: The provider option transmitted on every image of this route, and
+    #: recorded on the `model_call_image_inputs` row because it changes both
+    #: pricing and interpretation (Attachment Substrate v1.2 §3.6). It is
+    #: declared rather than defaulted: the provider's default resolves to "no
+    #: patch budget", and a cost with no ceiling cannot be reserved against a
+    #: ceiling.
+    detail: str = Field(min_length=1)
+    #: The provider's documented image tokenisation, as facts rather than as
+    #: constants in code: patches of `patch_pixels` square, at most
+    #: `patch_budget` of them after the provider's own resizing, each billed at
+    #: `token_multiplier` input tokens. The bound a reservation is taken
+    #: against is therefore `ceil(patch_budget x token_multiplier)` per image,
+    #: whatever arrives.
+    patch_pixels: int = Field(gt=0)
+    patch_budget: int = Field(gt=0)
+    token_multiplier: float = Field(gt=0)
+    #: When the facts above were read, and from where.
     verified_on: date
     source: str = Field(min_length=1)
+
+    @property
+    def max_tokens_per_image(self) -> int:
+        """The most one transmitted image can bill, by the provider's own budget."""
+        return math.ceil(self.patch_budget * self.token_multiplier)
 
     @model_validator(mode="after")
     def _media_types_are_media_types(self) -> ImageInputSupport:
