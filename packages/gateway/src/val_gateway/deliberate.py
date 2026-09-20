@@ -105,11 +105,13 @@ from val_domain.gateway import (
     PersonaAttribution,
     TaskType,
     TerminalState,
+    TextPart,
     TurnReference,
 )
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
 from val_domain.provider import DeltaSink
 from val_gateway import conversations
+from val_gateway.attachments import CandidateAttachment
 from val_gateway.candidate import CandidateGateway
 from val_gateway.deliberation import (
     record_blind_position,
@@ -123,8 +125,11 @@ from val_gateway.loop import (
     TruncatedTurn,
     Turn,
     UnansweredTurn,
+    VisualTurn,
     assemble_turn,
+    bind_response,
     open_turn,
+    prepare_visual,
     settle_turn,
     unanswered_or_raise,
 )
@@ -301,6 +306,7 @@ def send(
     on_delta: DeltaSink | None = None,
     on_stage: StageSink | None = None,
     candidate: ModelConfig | None = None,
+    attachments: tuple[CandidateAttachment, ...] = (),
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -328,10 +334,23 @@ def send(
         session=session,
         conversation_id=conversation_id,
         title=title,
+        attachments=attachments,
     )
     if isinstance(opened, ClarificationNeeded):
         return opened
     _stage(on_stage, TurnStage.UNDERSTANDING)
+
+    # Owner ruling, 19 September 2026 (Track C §12). The turn's images are
+    # selected ONCE here, before the classifier runs, and the same ordered set
+    # is bound to every partner-class call this turn makes — the blind position
+    # and the final answer alike. No substitution, no omitted image, no
+    # differently resized image, no reordered list: they cannot differ, because
+    # neither call chooses.
+    try:
+        visual = prepare_visual(engine, gateway, opened, classification, max_output_tokens)
+    except GatewayError as failure:
+        return unanswered_or_raise(opened, failure)
+    classification = visual.classification
 
     # 2. Classify, before any position is formed (§4.8: the classification runs
     #    first, because it decides whether the blind call happens at all).
@@ -398,6 +417,7 @@ def send(
             on_delta,
             on_stage,
             candidate=candidate,
+            visual=visual,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -499,13 +519,20 @@ def send(
 
     # 4. One configuration for both remaining calls (ruling, 19 August 2026).
     persona = DatabasePersonaLoader(engine).active()
-    messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
+    messages, recalled = assemble_turn(
+        engine, opened, recall_limit=recall_limit, images=visual.images
+    )
     sizing = (*(message.content for message in messages), persona.content)
     try:
         config = (
             candidate
             if candidate is not None
-            else gateway.select_configuration(
+            # Owner ruling, 19 September 2026: on a turn carrying images the route
+            # was already selected — and the bytes derived for it — before the
+            # classifier ran. Selecting again could pick a different route, and a
+            # different route could mean different pixels.
+            else visual.configuration
+            or gateway.select_configuration(
                 classification, sizing, max_output_tokens, task_type=TaskType.CONVERSATION
             )
         )
@@ -513,8 +540,25 @@ def send(
         return unanswered_or_raise(opened, failure)
 
     # 5. The blind position, pinned, carrying the persona, payload logged.
+    # Attachment Substrate v1.2 §7 and the owner ruling of 19 September 2026 §12:
+    # the blind position and the final answer receive the **same ordered image
+    # set** — same identities, same transmitted digests, same order. If the blind
+    # call did not get the images, Val would form a position on a description
+    # rather than on the work, which is the inferior evidence class Track C
+    # exists to remove; and if the two calls saw different bytes, the
+    # deliberation ledger would be theatre. Neither call chooses: both are handed
+    # what `prepare_visual` selected once.
+    #
+    # The claim boundary, stated because pixels can carry preference: `ordering =
+    # enforced` here means the TEXT was stripped. It does not mean the pixels are
+    # preference-free, and nothing in the record may describe it as a blinded
+    # *visual* deliberation.
     blind_message = Message(
-        role="user", content=f"{BLIND_POSITION_INSTRUCTION}\n\nThe question:\n{question}"
+        role="user",
+        parts=(
+            TextPart(text=f"{BLIND_POSITION_INSTRUCTION}\n\nThe question:\n{question}"),
+            *visual.images,
+        ),
     )
     blind_payload = _log_blind_payload(config, persona.id, blind_message, withheld=withheld)
     blind_request = GatewayRequest(
@@ -553,6 +597,10 @@ def send(
             return unanswered_or_raise(opened, failure)
         if blind_response.model_call_id is not None:
             blind_calls.append(blind_response.model_call_id)
+        # The blind call's own image binding, written as soon as it has a call to
+        # name — so a reader can check after the fact that the position and the
+        # answer were formed on the same pixels.
+        bind_response(engine, blind_response, visual)
         blind_outcome = _blind_outcome_from(blind_response.text, blind_response.terminal)
         if blind_outcome is not None:
             break
@@ -663,6 +711,11 @@ def send(
         # the exchange going unanswered does not unhappen it.
         return unanswered_or_raise(opened, failure)
 
+    # §3.6 — the final answer's binding. The blind call's own binding was written
+    # when it returned, so both calls of a consequential visual turn carry the
+    # same ordered set on the record, checkable after the fact.
+    bind_response(engine, response, visual)
+
     # 8. Her prose becomes her message; the verdict is machinery output,
     #    checked against the recorded position (ruling, 7 September 2026).
     prose, reconciliation, problem = split_reconciled(response.text, blind_outcome.position)
@@ -768,9 +821,13 @@ def _ordinary(
     on_delta: DeltaSink | None = None,
     on_stage: StageSink | None = None,
     candidate: ModelConfig | None = None,
+    visual: VisualTurn | None = None,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """The WP-0.7 turn, from an already-opened state."""
-    messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
+    visual = visual or VisualTurn(classification=classification, configuration=None, bound=())
+    messages, recalled = assemble_turn(
+        engine, opened, recall_limit=recall_limit, images=visual.images
+    )
     _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     turn = TurnReference(conversation_id=opened.conversation.id, message_id=opened.user_message.id)
     try:
@@ -792,9 +849,13 @@ def _ordinary(
                 turn=turn,
                 max_output_tokens=max_output_tokens,
                 on_delta=on_delta,
+                # Pinned to the route this turn's images were derived for; None
+                # on a text turn, where routing proceeds exactly as it always has.
+                configuration=visual.configuration,
             )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
+    bind_response(engine, response, visual)
     return settle_turn(engine, opened, recalled, response)
 
 

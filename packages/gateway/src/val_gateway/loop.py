@@ -122,7 +122,6 @@ from val_gateway.memory import (
     recall_with_state,
 )
 from val_gateway.projects import ProjectSession
-from val_policy.attachments import AdmissionRefusedError
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.recall_gate import ThreadContext, gate_house_recall, gate_recall
@@ -219,6 +218,64 @@ def _states_scope_now(signals: ProjectSignals) -> bool:
     return signals.explicit_selection is not None or signals.explicit_no_project
 
 
+@dataclass(frozen=True)
+class VisualTurn:
+    """What a turn's attachments mean for the calls it is about to make.
+
+    Owner ruling, 19 September 2026 (Track C). Produced once, before the
+    reservation, and used by **every** call of the turn — the ordinary response,
+    and on a consequential turn both the blind position and the final answer.
+    That is Attachment Substrate v1.2 §7's "derive once, reuse" made structural:
+    the two calls cannot independently resize, because neither of them chooses.
+    """
+
+    classification: Classification
+    #: The route the bytes were derived for. `None` when the turn carries no
+    #: image, in which case routing proceeds exactly as it always has.
+    configuration: ModelConfig | None
+    bound: tuple[BoundImage, ...]
+
+    @property
+    def images(self) -> tuple[ImagePart, ...]:
+        return tuple(image.part for image in self.bound)
+
+
+def prepare_visual(
+    engine: Engine,
+    gateway: Gateway,
+    opened: OpenedTurn,
+    classification: Classification,
+    max_output_tokens: int,
+) -> VisualTurn:
+    """Select the route, derive the transmitted bytes, and fix both for this turn.
+
+    The effective classification is the strictest of the text's and every act's
+    (§6), and the route is selected against **that**, so eligibility runs on what
+    is actually leaving the house. The route is then pinned for every call of the
+    turn: pinning changes which route, never which checks.
+    """
+    effective = strictest(classification, opened.attachments)
+    if not opened.attachments:
+        return VisualTurn(classification=effective, configuration=None, bound=())
+    pinned = gateway.select_configuration(
+        effective,
+        (opened.user_message.content,),
+        max_output_tokens,
+        task_type=TaskType.CONVERSATION,
+    )
+    return VisualTurn(
+        classification=effective,
+        configuration=pinned,
+        bound=prepare(engine, opened.attachments, pinned),
+    )
+
+
+def bind_response(engine: Engine, response: GatewayResponse, visual: VisualTurn) -> None:
+    """§3.6 — record which bytes reached this call, once it has a call to name."""
+    if visual.bound and response.model_call_id is not None and visual.configuration is not None:
+        bind_to_call(engine, response.model_call_id, visual.bound, visual.configuration)
+
+
 def send(
     engine: Engine,
     gateway: Gateway,
@@ -271,29 +328,14 @@ def send(
     #
     # The effective classification is the strictest of the text's and every
     # act's (§6), so routing and eligibility run on what is actually leaving.
-    effective = strictest(classification, opened.attachments)
-    bound: tuple[BoundImage, ...] = ()
-    pinned: ModelConfig | None = None
-    images: tuple[ImagePart, ...] = ()
-    if opened.attachments:
-        try:
-            pinned = gateway.select_configuration(
-                effective,
-                (content,),
-                max_output_tokens,
-                task_type=TaskType.CONVERSATION,
-            )
-            bound = prepare(engine, opened.attachments, pinned)
-        except (GatewayError, AdmissionRefusedError) as failure:
-            return unanswered_or_raise(
-                opened,
-                failure
-                if isinstance(failure, GatewayError)
-                else GatewayError(kind=GatewayErrorKind.INVALID_REQUEST, detail=str(failure)),
-            )
-        images = tuple(image.part for image in bound)
+    try:
+        visual = prepare_visual(engine, gateway, opened, classification, max_output_tokens)
+    except GatewayError as failure:
+        return unanswered_or_raise(opened, failure)
 
-    messages, recalled = assemble_turn(engine, opened, recall_limit=recall_limit, images=images)
+    messages, recalled = assemble_turn(
+        engine, opened, recall_limit=recall_limit, images=visual.images
+    )
 
     # 8-9. Preflight over the assembled whole, budget over the same parts, then
     #      the provider. All three happen inside `converse`/`complete`.
@@ -307,7 +349,7 @@ def send(
         response = gateway.converse(
             messages,
             scope=opened.scope,
-            classification=effective,
+            classification=visual.classification,
             # One object rather than two loose ids — and `persona_id` is filled
             # in by `assemble`, which is where the persona is known. The gateway
             # verifies the three agree with the records before transmitting.
@@ -319,7 +361,7 @@ def send(
             # Pinned to the route the bytes were derived for. Pinning changes
             # which route, never which checks: admission, eligibility, the
             # quality floor and the budget all run on their own account.
-            configuration=pinned,
+            configuration=visual.configuration,
         )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
@@ -327,8 +369,7 @@ def send(
     # §3.6 — which exact bytes reached which call, through which act. Written
     # after the call is recorded, from the same plan that was transmitted; it is
     # a binding, never a claim of sight.
-    if bound and response.model_call_id is not None and pinned is not None:
-        bind_to_call(engine, response.model_call_id, bound, pinned)
+    bind_response(engine, response, visual)
 
     return settle_turn(engine, opened, recalled, response)
 

@@ -1728,3 +1728,107 @@ def test_a_second_blind_failure_ends_the_turn_unanswered_never_ordinary(store: E
     assert len(blind_positions_for(store, outcome.conversation.id)) == 0
     assert deliberations == 0
     assert _calls_by_task(store).get("conversation", 0) == 0, "never the ordinary path"
+
+
+# =============================================================================
+# A consequential visual turn: the blind position and the answer see the same
+# pixels (Attachment Substrate v1.2 §7; owner ruling, 19 September 2026 §12)
+# =============================================================================
+
+
+def _png(width: int = 200, height: int = 150) -> bytes:
+    from io import BytesIO
+
+    from PIL import Image
+
+    buffer = BytesIO()
+    Image.new("RGB", (width, height), "navy").save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def _visual_turn(store: Engine, payload: bytes) -> tuple[object, ScriptedAdapter]:
+    from val_gateway.attachments import CandidateAttachment
+
+    adapter = ScriptedAdapter(full_script())
+    outcome = deliberated_send(
+        store,
+        build_gateway(store, adapter),
+        MIXED_MESSAGE,
+        catalogue=load_catalogue(store),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+        attachments=(
+            CandidateAttachment(
+                content=payload,
+                given_filename="frame.png",
+                stated_classification=Classification.PROTECTED,
+            ),
+        ),
+    )
+    return outcome, adapter
+
+
+def test_the_blind_position_and_the_answer_bind_the_same_ordered_image_set(
+    store: Engine,
+) -> None:
+    """If the two calls could see different pixels, the ledger would be theatre.
+
+    Neither call chooses: both are handed what was selected once, before the
+    classifier ran. Proved on the wire (what each call was actually given) and
+    on the record (what each call's binding rows say).
+    """
+    payload = _png()
+    outcome, adapter = _visual_turn(store, payload)
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.captured_as is DeliberationClassification.CONSEQUENTIAL
+
+    _classify, _strip, blind, response = adapter.sent
+    blind_images = [part for m in blind.messages for part in m.images]
+    answer_images = [part for m in response.messages for part in m.images]
+    assert len(blind_images) == 1, "the blind call forms its position on the work itself"
+    assert [p.sha256 for p in blind_images] == [p.sha256 for p in answer_images]
+    assert [p.content for p in blind_images] == [payload]
+    assert [(p.width, p.height) for p in blind_images] == [(200, 150)]
+
+    with store.connect() as connection:
+        rows = connection.execute(
+            text(
+                "select m.task_type::text, i.position, i.transmitted_sha256, i.input_kind::text "
+                "  from model_call_image_inputs i join model_calls m on m.id = i.model_call_id "
+                " order by m.created_at, i.position"
+            )
+        ).all()
+    assert [row[0] for row in rows] == ["blind_position", "conversation"]
+    assert len({row[2] for row in rows}) == 1, "one set of bytes, named by both calls"
+    assert {row[3] for row in rows} == {"original"}
+
+
+def test_the_classifier_and_strip_calls_stay_text_only(store: Engine) -> None:
+    """Ruled for the first slice, and recorded as a limit rather than hidden.
+
+    The classifier decides consequentiality from the words. It is not given the
+    image, no second vision call is made to make it multimodal, and no
+    multimodal classifier evidence is manufactured.
+    """
+    outcome, adapter = _visual_turn(store, _png())
+    assert isinstance(outcome, DeliberatedTurn)
+    classify, strip, _blind, _response = adapter.sent
+    for call in (classify, strip):
+        assert [part for m in call.messages for part in m.images] == []
+
+
+def test_enforced_ordering_on_a_visual_turn_claims_only_that_the_text_was_stripped(
+    store: Engine,
+) -> None:
+    """§7's claim boundary: pixels can carry preference, and nothing pretends otherwise."""
+    outcome, _ = _visual_turn(store, _png())
+    assert isinstance(outcome, DeliberatedTurn) and outcome.blind is not None
+    assert outcome.blind.ordering is Ordering.ENFORCED
+    with store.connect() as connection:
+        bound_to_blind = connection.execute(
+            text(
+                "select count(*) from model_call_image_inputs i join model_calls m "
+                "on m.id = i.model_call_id where m.task_type = 'blind_position'"
+            )
+        ).scalar_one()
+    # The images reached the blind call; the enforcement claim is about the text.
+    assert bound_to_blind == 1
