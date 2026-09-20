@@ -295,6 +295,59 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "source_sent_at",
         "source_conversation_title",
     ),
+    # --- Attachment Substrate v1.2, the governing contract, §3.1 to §3.6 --------
+    # Transcribed from `docs/contracts/VAL_Attachment_Substrate_v1.md`, not from
+    # the models, for the same reason as everything above.
+    "blobs": ("sha256", "byte_size", "media_type", "bytes", "created_at"),
+    "attachments": ("id", "created_at", "sha256"),
+    "message_attachments": (
+        "id",
+        "attached_at",
+        "message_id",
+        "attachment_id",
+        "position",
+        "given_filename",
+        "stated_classification",
+    ),
+    "attachment_representations": (
+        "id",
+        "created_at",
+        "attachment_id",
+        "parent_representation_id",
+        "representation_type",
+        "sha256",
+        "locator_ordinal",
+        "locator_region",
+        "derived_by",
+        "model_config_id",
+        "model_call_id",
+    ),
+    "attachment_processing_events": (
+        "id",
+        "created_at",
+        "attachment_id",
+        "attempt_id",
+        "intent",
+        "event",
+        "representation_id",
+        "error",
+    ),
+    "model_call_image_inputs": (
+        "id",
+        "created_at",
+        "model_call_id",
+        "message_attachment_id",
+        "attachment_id",
+        "input_kind",
+        "representation_id",
+        "transmitted_sha256",
+        "width",
+        "height",
+        "media_type",
+        "provider_options",
+        "stated_classification",
+        "position",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -388,6 +441,19 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # NULL revision: the source's original wording; NULL project: unassigned.
         ("answer_recall_sources", "source_revision_number"),
         ("answer_recall_sources", "source_project_id"),
+        # Attachment Substrate v1.2. NULL parent: derived directly from the
+        # original. NULL locators: the whole of what the parent is. NULL model
+        # provenance: a local derivation, which is every v1 derivation. NULL
+        # representation: the original itself was transmitted, or the processing
+        # event produced nothing. NULL error: the attempt did not fail.
+        ("attachment_representations", "parent_representation_id"),
+        ("attachment_representations", "locator_ordinal"),
+        ("attachment_representations", "locator_region"),
+        ("attachment_representations", "model_config_id"),
+        ("attachment_representations", "model_call_id"),
+        ("attachment_processing_events", "representation_id"),
+        ("attachment_processing_events", "error"),
+        ("model_call_image_inputs", "representation_id"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.
@@ -401,6 +467,12 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
 
 #: Enumerated values §2 lists, by the type carrying them.
 SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
+    # Attachment Substrate v1.2. `restricted` is deliberately absent from the
+    # act classification: §3.3 refuses it at the act, and a value that cannot be
+    # written is stronger than a rule saying it must not be.
+    "attachment_act_classification": ("public", "internal", "protected"),
+    "attachment_processing_event": ("started", "succeeded", "failed"),
+    "model_call_image_input_kind": ("original", "representation"),
     "message_role": ("user", "val", "system"),
     "model_call_task_type": (
         "conversation",

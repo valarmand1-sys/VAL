@@ -37,6 +37,7 @@ from sqlalchemy import (
     CheckConstraint,
     Enum,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     MetaData,
@@ -45,7 +46,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TIMESTAMP
+from sqlalchemy.dialects.postgresql import ARRAY, BYTEA, JSONB, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -66,6 +67,20 @@ class Base(DeclarativeBase):
     """Declarative base carrying the naming convention."""
 
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+
+
+# --- Attachment Substrate v1.2 (19 September 2026) ---------------------------
+#
+# `restricted` is deliberately absent: §3.3 refuses it *at the act*, and a value
+# that cannot be written is stronger than a rule saying it must not be.
+AttachmentActClassification = Enum(
+    "public", "internal", "protected", name="attachment_act_classification"
+)
+AttachmentProcessingEventType = Enum(
+    "started", "succeeded", "failed", name="attachment_processing_event"
+)
+#: §3.6 — explicit discrimination, so no reader has to interpret a NULL.
+ModelCallImageInputKind = Enum("original", "representation", name="model_call_image_input_kind")
 
 
 # --- enumerated types --------------------------------------------------------
@@ -1335,6 +1350,312 @@ class AnswerRecallSource(Base):
     )
 
 
+# --- Attachment Substrate v1.2 — the six append-only tables ------------------
+#
+# Owner ruling, 19 September 2026 (Track C resumed). The governing contract is
+# `docs/contracts/VAL_Attachment_Substrate_v1.md`; migration `0024` builds this.
+# Designed once for all four modalities: images are the first consumer, and
+# documents, audio and video inherit the same identity, provenance and binding
+# without a second evidence system.
+
+
+class Blob(Base):
+    """§3.1 — one content-addressed byte store; originals and derived bytes alike.
+
+    The primary key **is** the digest of the content, and a check constraint says
+    so: PostgreSQL's `sha256()` is immutable, so a row whose key does not match
+    its bytes cannot exist. `media_type` is established by the admission
+    preflight from the bytes themselves, never from a filename or EXIF, so it
+    lives with the bytes it describes.
+    """
+
+    __tablename__ = "blobs"
+
+    sha256: Mapped[str] = mapped_column(Text, primary_key=True)
+    byte_size: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    media_type: Mapped[str] = mapped_column(Text, nullable=False)
+    content: Mapped[bytes] = mapped_column("bytes", BYTEA, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        CheckConstraint("sha256 = encode(sha256(bytes), 'hex')", name="sha256_is_the_digest"),
+        CheckConstraint("byte_size = length(bytes)", name="byte_size_is_the_length"),
+        CheckConstraint("byte_size > 0", name="byte_size_positive"),
+        CheckConstraint(
+            "media_type ~ '^[a-z0-9][a-z0-9.+-]*/[a-z0-9][a-z0-9.+-]*$'",
+            name="media_type_is_a_media_type",
+        ),
+    )
+
+
+class Attachment(Base):
+    """§3.2 — the immutable original: one content instance per distinct bytes.
+
+    Deliberately thin, and staying so. `blobs.sha256` means *these exact bytes
+    exist*; `attachments.id` means *these bytes were admitted as an original
+    conversational attachment and are the root of this provenance tree*. Two
+    different facts, so two different keys.
+    """
+
+    __tablename__ = "attachments"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    sha256: Mapped[str] = mapped_column(
+        Text, ForeignKey("blobs.sha256", ondelete="NO ACTION"), nullable=False
+    )
+
+    __table_args__ = (UniqueConstraint("sha256", name="uq_attachments_sha256"),)
+
+
+class MessageAttachment(Base):
+    """§3.3 — the act: this attachment accompanied this user message, here.
+
+    Identity is the content; the **act** is what carries a classification, and it
+    carries its own. Re-using an attachment on a later turn is a new act with a
+    new statement, defaulting to `protected` again — never inheriting a weaker
+    class from an earlier one. Evidence begins at the successful send commit:
+    a failed admission writes nothing at all.
+    """
+
+    __tablename__ = "message_attachments"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    attached_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    attachment_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("attachments.id", ondelete="NO ACTION"), nullable=False
+    )
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: The name as provided *at this act* — display, never identity.
+    given_filename: Mapped[str] = mapped_column(Text, nullable=False)
+    stated_classification: Mapped[str] = mapped_column(AttachmentActClassification, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("message_id", "position", name="uq_message_attachments_message_position"),
+        # §5.3a — an input row's act is tied to its own attachment by a key.
+        UniqueConstraint("id", "attachment_id", name="uq_message_attachments_id_attachment"),
+        CheckConstraint("position > 0", name="position_positive"),
+        CheckConstraint("length(btrim(given_filename)) > 0", name="given_filename_present"),
+        Index("ix_message_attachments_message_id", "message_id"),
+    )
+
+
+class AttachmentRepresentation(Base):
+    """§3.4 — a typed derived view, resolving to the one attachment it belongs to.
+
+    Complete at insert: a row exists only for a derivation that succeeded. v1
+    declares exactly one type, `model_input_image` — the bytes actually
+    transmitted when they differ from the original. The locator columns are
+    declared now, unused by images, so the documents sibling inherits them rather
+    than inventing a second provenance model.
+    """
+
+    __tablename__ = "attachment_representations"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    attachment_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("attachments.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: NULL = derived directly from the original.
+    parent_representation_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), nullable=True
+    )
+    representation_type: Mapped[str] = mapped_column(Text, nullable=False)
+    sha256: Mapped[str] = mapped_column(
+        Text, ForeignKey("blobs.sha256", ondelete="NO ACTION"), nullable=False
+    )
+    #: 1-based page/slide within the parent; NULL = the whole parent.
+    locator_ordinal: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    #: `x0,y0,x1,y1` in the parent's pixel coordinates; NULL = the whole of it.
+    locator_region: Mapped[str | None] = mapped_column(Text, nullable=True)
+    #: Tool and pinned version. The derived digest carries identity.
+    derived_by: Mapped[str] = mapped_column(Text, nullable=False)
+    #: Non-null exactly when a model produced the representation. v1 derivations
+    #: are local, so both stay NULL.
+    model_config_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    model_call_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=True
+    )
+
+    __table_args__ = (
+        # §5.1 and §5.3 — the device that keeps one file's tree one file's tree.
+        UniqueConstraint("id", "attachment_id", name="uq_attachment_representations_id_attachment"),
+        ForeignKeyConstraint(
+            ["parent_representation_id", "attachment_id"],
+            ["attachment_representations.id", "attachment_representations.attachment_id"],
+            name="fk_attachment_representations_parent",
+        ),
+        CheckConstraint(
+            "representation_type IN ('model_input_image')", name="representation_type_declared"
+        ),
+        CheckConstraint(
+            "parent_representation_id IS NULL OR parent_representation_id <> id",
+            name="no_self_parent",
+        ),
+        CheckConstraint(
+            "locator_ordinal IS NULL OR locator_ordinal > 0", name="locator_ordinal_positive"
+        ),
+        CheckConstraint("length(btrim(derived_by)) > 0", name="derived_by_present"),
+        CheckConstraint(
+            "(model_config_id IS NULL) = (model_call_id IS NULL)",
+            name="model_provenance_is_paired",
+        ),
+        Index("ix_attachment_representations_attachment_id", "attachment_id"),
+    )
+
+
+class AttachmentProcessingEvent(Base):
+    """§3.5 — attempts, honestly. Current state is derived, never mutated.
+
+    `started` with no terminal event means exactly that, and never "currently
+    processing": a crash after `started` leaves the same durable sequence as a
+    live attempt, and the record does not pretend to know the difference. One
+    `started` per attempt and at most one terminal event are partial unique
+    indexes; that a terminal event matches its `started` is a trigger.
+    """
+
+    __tablename__ = "attachment_processing_events"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    attachment_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("attachments.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: Durable attempt identity: all events of one attempt share it.
+    attempt_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    intent: Mapped[str] = mapped_column(Text, nullable=False)
+    event: Mapped[str] = mapped_column(AttachmentProcessingEventType, nullable=False)
+    representation_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        # §3.5 rule 5 — a produced representation belongs to the same attachment.
+        ForeignKeyConstraint(
+            ["representation_id", "attachment_id"],
+            ["attachment_representations.id", "attachment_representations.attachment_id"],
+            name="fk_attachment_processing_events_representation",
+        ),
+        CheckConstraint("intent IN ('derive:model_input_image', 'verify')", name="intent_declared"),
+        CheckConstraint("(event = 'failed') = (error IS NOT NULL)", name="failed_states_why"),
+        CheckConstraint(
+            "event = 'succeeded' OR representation_id IS NULL", name="only_success_produces"
+        ),
+        Index("ix_attachment_processing_events_attachment_id", "attachment_id"),
+        Index(
+            "ux_attachment_processing_events_one_started",
+            "attempt_id",
+            unique=True,
+            postgresql_where=text("event = 'started'"),
+        ),
+        Index(
+            "ux_attachment_processing_events_one_terminal",
+            "attempt_id",
+            unique=True,
+            postgresql_where=text("event IN ('succeeded', 'failed')"),
+        ),
+    )
+
+
+class ModelCallImageInput(Base):
+    """§3.6 — which exact image bytes were bound to a recorded call, through which act.
+
+    The name is deliberate at every step: v1.0's `model_call_sight` overclaimed
+    sight and v1.1's `model_call_inputs` overclaimed being the record of *all* a
+    call's inputs. This row proves a **binding**. Sight is this row together with
+    the call's `terminal_state = 'complete'` (§4) — a refusal can come from a
+    safety layer that never ran vision, and claiming otherwise is exactly the
+    invariant 29 failure.
+
+    The chain, complete: call → image input → attachment act → attachment →
+    original blob.
+    """
+
+    __tablename__ = "model_call_image_inputs"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    model_call_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: The exact participating act — same attachment used `internal` on Monday
+    #: and `protected` on Thursday: this names which act supplied the image here.
+    message_attachment_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    attachment_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("attachments.id", ondelete="NO ACTION"), nullable=False
+    )
+    input_kind: Mapped[str] = mapped_column(ModelCallImageInputKind, nullable=False)
+    representation_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    #: The exact bytes bound to this call. One lookup, no reconstruction.
+    transmitted_sha256: Mapped[str] = mapped_column(
+        Text, ForeignKey("blobs.sha256", ondelete="NO ACTION"), nullable=False
+    )
+    #: Read from the decoded bytes, never EXIF — these priced the call (§8).
+    width: Mapped[int] = mapped_column(Integer, nullable=False)
+    height: Mapped[int] = mapped_column(Integer, nullable=False)
+    media_type: Mapped[str] = mapped_column(Text, nullable=False)
+    #: Any provider option that changes pricing or interpretation; empty when none.
+    provider_options: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    #: Copied from the participating act at send, so the egress record is
+    #: self-contained even though the act is named directly.
+    stated_classification: Mapped[str] = mapped_column(AttachmentActClassification, nullable=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "model_call_id", "position", name="uq_model_call_image_inputs_model_call_position"
+        ),
+        # §5.3 and §5.3a — the representation and the act both belong to this
+        # row's own attachment, by key rather than by application care.
+        ForeignKeyConstraint(
+            ["representation_id", "attachment_id"],
+            ["attachment_representations.id", "attachment_representations.attachment_id"],
+            name="fk_model_call_image_inputs_representation",
+        ),
+        ForeignKeyConstraint(
+            ["message_attachment_id", "attachment_id"],
+            ["message_attachments.id", "message_attachments.attachment_id"],
+            name="fk_model_call_image_inputs_act",
+        ),
+        CheckConstraint("position > 0", name="position_positive"),
+        CheckConstraint(
+            "(input_kind = 'representation') = (representation_id IS NOT NULL)",
+            name="kind_matches_representation",
+        ),
+        CheckConstraint("width > 0 AND height > 0", name="dimensions_positive"),
+        CheckConstraint(
+            "media_type ~ '^[a-z0-9][a-z0-9.+-]*/[a-z0-9][a-z0-9.+-]*$'",
+            name="media_type_is_a_media_type",
+        ),
+        Index("ix_model_call_image_inputs_model_call_id", "model_call_id"),
+    )
+
+
 #: Every table §2 names, and nothing else. The schema test asserts against this.
 SPECIFIED_TABLES = frozenset(
     {
@@ -1358,5 +1679,12 @@ SPECIFIED_TABLES = frozenset(
         "ideas",
         "idea_state_changes",
         "budget_reservations",
+        # Attachment Substrate v1.2, migration 0024 (19 September 2026).
+        "blobs",
+        "attachments",
+        "message_attachments",
+        "attachment_representations",
+        "attachment_processing_events",
+        "model_call_image_inputs",
     }
 )
