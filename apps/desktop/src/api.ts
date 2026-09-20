@@ -69,6 +69,26 @@ export interface RevisionView {
 // that cannot be rewritten. The service always sends them; they are optional
 // here because their absence means exactly the defaults (current, no original,
 // no facts), which is what a message with no revision history is.
+// Owner ruling, 19 September 2026 (Track C). One committed attachment act: the
+// association, not the content. `sha256` is the content-addressed key the bytes
+// are fetched by; re-using the same file on a later turn is a different act over
+// the same content, so `id` is what identifies this association.
+export interface AttachmentView {
+  id: string;
+  attachment_id: string;
+  position: number;
+  filename: string;
+  classification: AttachmentClassification;
+  media_type: string;
+  width: number;
+  height: number;
+  byte_size: number;
+  sha256: string;
+}
+
+// `restricted` is deliberately absent: it is refused at the act.
+export type AttachmentClassification = "public" | "internal" | "protected";
+
 export interface MessageView {
   id: string;
   role: "user" | "val" | "system";
@@ -80,6 +100,8 @@ export interface MessageView {
   answered_state?: MessageState | null;
   revisions?: RevisionView[];
   revision_refusal?: string | null;
+  // Absent means none, which is true of every message before 19 September 2026.
+  attachments?: AttachmentView[];
 }
 
 export type Ordering = "enforced" | "contaminated";
@@ -438,6 +460,9 @@ export const api = {
     request<ConversationView>(`/conversations/${id}/archive`, { method: "POST" }),
   unarchiveConversation: (id: string) =>
     request<ConversationView>(`/conversations/${id}/unarchive`, { method: "POST" }),
+  // The bytes of an admitted or derived attachment, by digest — for rendering
+  // what the house already holds. Content-addressed, on the loopback service.
+  attachmentUrl: (sha256: string) => `${API_BASE}/attachments/${sha256}/bytes`,
   turn: (body: TurnBody) =>
     request<TurnResponse>("/turns", { method: "POST", body: JSON.stringify(body) }),
   // The streamed turn — responsiveness phase, 11 September 2026. Val's text
@@ -472,8 +497,18 @@ export const api = {
   disagreement: () => request<{ last_disagreement_at: string | null }>("/signals/disagreement"),
 };
 
+// What the composer offers with a turn: the bytes, base64, and the class stated
+// for THIS act. Nothing about the content is trusted — the media type is
+// established from the bytes by the service, and the filename is display only.
+export interface AttachmentInput {
+  filename: string;
+  content_base64: string;
+  classification: AttachmentClassification;
+}
+
 export interface TurnBody {
   content: string;
+  attachments?: AttachmentInput[];
   conversation_id?: string;
   project?: string;
   no_project?: boolean;

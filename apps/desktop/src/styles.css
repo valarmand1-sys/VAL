@@ -403,3 +403,72 @@ body {
 .timing p {
   margin: 0.1rem 0;
 }
+
+/* Attachments — Track C, owner ruling of 19 September 2026.
+   A thumbnail is a convenience; the record is the act beneath it, so the
+   caption carries the name, the true dimensions and the class stated for THIS
+   act rather than for the file in general. */
+.attachments,
+.pending-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.4rem 0;
+}
+.attachment,
+.pending-attachment {
+  margin: 0;
+  max-width: 14rem;
+}
+.attachment img,
+.pending-attachment img {
+  display: block;
+  max-width: 14rem;
+  max-height: 11rem;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+}
+.attachment figcaption,
+.pending-attachment figcaption {
+  font-size: 0.75em;
+  opacity: 0.8;
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.pending-attachment figcaption .name {
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.composer-actions .attach {
+  font-size: 0.85em;
+  opacity: 0.85;
+  cursor: pointer;
+}
+.composer-actions .attach input {
+  display: none;
+}
+/* The stated class is shown, never implied: Protected is the default and the
+   quiet case; a weaker statement is the one worth seeing. */
+.class-internal,
+.class-public {
+  font-weight: 600;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -14,6 +14,9 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 import type {
+  AttachmentClassification,
+  AttachmentInput,
+  AttachmentView,
   Confidence,
   ConversationDetail,
   ConversationView,
@@ -102,6 +105,8 @@ export function App(): React.JSX.Element {
   const [clarification, setClarification] = useState<TurnClarification | null>(null);
   const [pendingContent, setPendingContent] = useState<string>("");
   const [composer, setComposer] = useState("");
+  // Ephemeral until sent: selecting a file writes nothing anywhere.
+  const [pending, setPending] = useState<PendingAttachment[]>([]);
   const [busy, setBusy] = useState(false);
   // Whether archived rows are listed. Display scoping only — the flag carries
   // no evidentiary meaning (§2.1 amendment, 31 August 2026), and everything
@@ -222,7 +227,7 @@ export function App(): React.JSX.Element {
   }, [streaming]);
 
   const send = useCallback(
-    async (content: string, projectOverride?: string) => {
+    async (content: string, projectOverride?: string, attached: PendingAttachment[] = []) => {
       if (content.trim() === "" || busy) return;
       setBusy(true);
       setNotice(null);
@@ -239,8 +244,10 @@ export function App(): React.JSX.Element {
           projectOverride !== undefined
             ? { project: projectOverride }
             : turnScopeFields(entry, detail?.conversation ?? null);
+        const attachments =
+          attached.length === 0 ? undefined : await Promise.all(attached.map(asAttachmentInput));
         const result = await api.turnStream(
-          { content, ...scopeFields, progress: true },
+          { content, ...scopeFields, progress: true, ...(attachments ? { attachments } : {}) },
           {
             onDelta: (text) => {
               if (clock.firstDeltaMs === null) {
@@ -441,7 +448,10 @@ export function App(): React.JSX.Element {
           className="composer"
           onSubmit={(event) => {
             event.preventDefault();
-            void send(composer);
+            const attached = pending;
+            for (const item of attached) URL.revokeObjectURL(item.previewUrl);
+            setPending([]);
+            void send(composer, undefined, attached);
           }}
         >
           <textarea
@@ -450,9 +460,81 @@ export function App(): React.JSX.Element {
             placeholder="Say something to Val…"
             rows={3}
           />
-          <button type="submit" disabled={busy || detail?.conversation.removed === true}>
-            {busy ? "…" : "Send"}
-          </button>
+          {pending.length > 0 && (
+            <div className="pending-attachments">
+              {pending.map((item) => (
+                <figure key={item.key} className="pending-attachment">
+                  <img src={item.previewUrl} alt={item.file.name} />
+                  <figcaption>
+                    <span className="name">{item.file.name}</span>
+                    {/* Per act, defaulting to Protected, resolving upward. This
+                        statement governs where the image may be sent, so it is
+                        set here, beside the file, rather than assumed later. */}
+                    <label>
+                      <span className="visually-hidden">Classification</span>
+                      <select
+                        value={item.classification}
+                        onChange={(event) =>
+                          setPending((current) =>
+                            current.map((existing) =>
+                              existing.key === item.key
+                                ? {
+                                    ...existing,
+                                    classification: event.target
+                                      .value as AttachmentClassification,
+                                  }
+                                : existing,
+                            ),
+                          )
+                        }
+                      >
+                        <option value="protected">Protected</option>
+                        <option value="internal">Internal</option>
+                        <option value="public">Public</option>
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        URL.revokeObjectURL(item.previewUrl);
+                        setPending((current) =>
+                          current.filter((existing) => existing.key !== item.key),
+                        );
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
+          <div className="composer-actions">
+            <label className="attach">
+              Attach image
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                multiple
+                onChange={(event) => {
+                  const chosen = Array.from(event.target.files ?? []);
+                  setPending((current) => [
+                    ...current,
+                    ...chosen.map((file) => ({
+                      key: `${file.name}:${file.size}:${file.lastModified}:${Math.random()}`,
+                      file,
+                      previewUrl: URL.createObjectURL(file),
+                      classification: "protected" as AttachmentClassification,
+                    })),
+                  ]);
+                  event.target.value = "";
+                }}
+              />
+            </label>
+            <button type="submit" disabled={busy || detail?.conversation.removed === true}>
+              {busy ? "…" : "Send"}
+            </button>
+          </div>
         </form>
 
         <footer className="signals">
@@ -507,7 +589,10 @@ function StreamingThread(props: {
         <div key={message.id} className={`message ${message.role} ${isLive(message) ? "" : "withdrawn collapsed"}`}>
           <div className="speaker">{message.role === "user" ? "Lord Armand" : "Val"}</div>
           {isLive(message) ? (
-            <div className="content">{message.content}</div>
+            <>
+              <div className="content">{message.content}</div>
+              <Attachments attachments={message.attachments} />
+            </>
           ) : (
             <div className="state-line">{userStateLine(message) ?? answerStateLine(message)}</div>
           )}
@@ -531,6 +616,62 @@ function StreamingThread(props: {
           <div className="content">{streaming.text}</div>
         )}
       </div>
+    </div>
+  );
+}
+
+
+// Owner ruling, 19 September 2026 (Track C §14). What was attached to a message,
+// rendered from the bytes the house already holds. The classification shown is
+// the one stated for THIS act — the same file attached again on a later turn is
+// a different act with its own statement, and the thread says so rather than
+// implying one class follows the file around.
+// One image chosen in the composer, before anything is sent. Ephemeral client
+// state: selecting a file writes nothing, and removing it before sending leaves
+// no trace, because evidence begins at the successful send commit.
+interface PendingAttachment {
+  key: string;
+  file: File;
+  previewUrl: string;
+  classification: AttachmentClassification;
+}
+
+async function asAttachmentInput(pending: PendingAttachment): Promise<AttachmentInput> {
+  const buffer = await pending.file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return {
+    filename: pending.file.name,
+    content_base64: btoa(binary),
+    classification: pending.classification,
+  };
+}
+
+function Attachments(props: { attachments: AttachmentView[] | undefined }): React.JSX.Element | null {
+  const attachments = props.attachments ?? [];
+  if (attachments.length === 0) return null;
+  return (
+    <div className="attachments">
+      {attachments.map((attachment) => (
+        <figure key={attachment.id} className="attachment">
+          <img
+            src={api.attachmentUrl(attachment.sha256)}
+            alt={attachment.filename}
+            width={attachment.width}
+            height={attachment.height}
+          />
+          <figcaption>
+            {attachment.filename}
+            {" · "}
+            {attachment.width}×{attachment.height}
+            {" · "}
+            <span className={`class-${attachment.classification}`}>
+              {attachment.classification}
+            </span>
+          </figcaption>
+        </figure>
+      ))}
     </div>
   );
 }
@@ -691,7 +832,10 @@ function MessageBlock(props: {
           <button onClick={() => setEditing(false)}>Cancel</button>
         </div>
       ) : (
-        <div className="content">{message.content}</div>
+        <>
+          <div className="content">{message.content}</div>
+          <Attachments attachments={message.attachments} />
+        </>
       )}
 
       {blind.map((position) => {
