@@ -75,14 +75,50 @@ def test_the_dimension_bound_is_the_providers_own_not_a_transmission_choice() ->
 
 
 def test_a_house_limit_is_recorded_as_a_house_limit() -> None:
-    """The provider documents no per-image size bound, so this one is ours."""
+    """The provider documents no per-image size bound, so this one is ours.
+
+    Owner ruling, 20 September 2026: 50 MB on the admitted ORIGINAL, raised from
+    20 MB so that real production material — character sheets, storyboards,
+    frames, high-resolution PNGs — is not refused by a ceiling set too tight.
+    """
     support = by_slug(SOL).image_input  # type: ignore[union-attr]
     assert support is not None
-    assert support.house.max_byte_size == 20_000_000
+    assert support.house.max_byte_size == 50_000_000
     assert "not a provider limit" in support.house.reason
-    assert "PostgreSQL" in support.house.reason, "it says why, not merely that"
-    # And the provider half carries no byte bound at all to be mistaken for one.
+    assert "ORIGINAL" in support.house.reason, "it says what the ceiling applies to"
+    assert "storyboards" in support.house.reason, "and why it is where it is"
+    # The provider halves carry no byte bound at all to be mistaken for one.
     assert not hasattr(support.provider, "max_byte_size")
+
+
+def test_the_request_wide_provider_limits_are_their_own_facts() -> None:
+    """Request-level provider facts, distinct from per-image ones and from policy."""
+    limits = by_slug(SOL).image_input.provider_request  # type: ignore[union-attr]
+    assert limits.max_images_per_request == 1_500
+    assert limits.max_total_payload_bytes == 512_000_000, "512 x 10^6, the smaller reading"
+    assert limits.verified_on == date(2026, 9, 20)
+    assert "images-vision" in limits.source and "first-party" in limits.source
+    assert "1,500 images per request" in limits.source
+    assert "512 MB total payload per request" in limits.source
+
+
+def test_the_undocumented_payload_unit_is_recorded_as_undocumented() -> None:
+    """A gap in the documentation is a fact about the documentation, kept as one.
+
+    The provider states the ceiling and never says what is counted against it.
+    That is recorded on the provider object; the house's conservative reading is
+    recorded separately, so nobody later reads one as the other.
+    """
+    support = by_slug(SOL).image_input  # type: ignore[union-attr]
+    assert support is not None
+    assert support.provider_request.payload_unit_is_documented is False
+    assert "defines no measurement unit" in support.provider_request.source
+
+    assert support.house.request_payload_measure == "data_uri_bytes"
+    reason = support.house.request_payload_measure_reason
+    assert reason.startswith("HOUSE INTERPRETATION OF AN AMBIGUOUS PROVIDER FACT")
+    assert "not a statement of how the provider meters" in reason
+    assert "raw bytes < base64 < data URI" in reason, "it says why it is conservative"
 
 
 def test_a_declared_capability_must_name_real_media_types() -> None:

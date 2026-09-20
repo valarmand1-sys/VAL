@@ -18,18 +18,23 @@ from val_domain.gateway import (
     ImageInputSupport,
     ImagePart,
     ProviderImageLimits,
+    ProviderRequestImageLimits,
 )
 from val_domain.registry import by_slug
 from val_policy.attachments import (
     DERIVED_BY,
     MAX_DECODED_PIXELS,
+    REQUEST_PAYLOAD_MEASURE,
     SUPPORTED_MEDIA_TYPES,
     AdmissionRefusedError,
     admit_image,
+    check_request_limits,
+    data_uri_bytes,
     derivation_required,
     fit_within_limits,
     patch_count,
     plan_transmission,
+    request_load,
     within_provider_limits,
 )
 from val_policy.budget import (
@@ -37,6 +42,29 @@ from val_policy.budget import (
     image_input_tokens,
     upper_bound_image_tokens,
 )
+
+
+def house(**overrides: object) -> HouseImagePolicy:
+    fields: dict[str, object] = {
+        "max_byte_size": 50_000_000,
+        "reason": "test",
+        "request_payload_measure": "data_uri_bytes",
+        "request_payload_measure_reason": "test",
+    }
+    fields.update(overrides)
+    return HouseImagePolicy(**fields)  # type: ignore[arg-type]
+
+
+def request_limits(**overrides: object) -> ProviderRequestImageLimits:
+    fields: dict[str, object] = {
+        "max_images_per_request": 1_500,
+        "max_total_payload_bytes": 512_000_000,
+        "payload_unit_is_documented": False,
+        "verified_on": date(2026, 9, 20),
+        "source": "test",
+    }
+    fields.update(overrides)
+    return ProviderRequestImageLimits(**fields)  # type: ignore[arg-type]
 
 
 def support(**provider: object) -> ImageInputSupport:
@@ -54,7 +82,8 @@ def support(**provider: object) -> ImageInputSupport:
     limits.update(provider)
     return ImageInputSupport(
         provider=ProviderImageLimits(**limits),  # type: ignore[arg-type]
-        house=HouseImagePolicy(max_byte_size=20_000_000, reason="test"),
+        provider_request=request_limits(),
+        house=house(),
     )
 
 
@@ -274,7 +303,9 @@ def test_a_route_that_takes_neither_the_image_nor_png_refuses_before_transmissio
 
 def test_a_payload_still_too_large_after_derivation_is_refused_not_sent() -> None:
     tiny = ImageInputSupport(
-        provider=SUPPORT.provider, house=HouseImagePolicy(max_byte_size=8, reason="test")
+        provider=SUPPORT.provider,
+        provider_request=SUPPORT.provider_request,
+        house=house(max_byte_size=8),
     )
     with pytest.raises(AdmissionRefusedError, match="this house sends at most"):
         plan_transmission(admit_image(make("PNG", (900, 900))), tiny)
@@ -283,7 +314,9 @@ def test_a_payload_still_too_large_after_derivation_is_refused_not_sent() -> Non
 def test_the_house_byte_ceiling_alone_makes_a_derivation_required() -> None:
     """A house limit is a real reason to derive, and is named as the house's."""
     small = ImageInputSupport(
-        provider=SUPPORT.provider, house=HouseImagePolicy(max_byte_size=500, reason="test")
+        provider=SUPPORT.provider,
+        provider_request=SUPPORT.provider_request,
+        house=house(max_byte_size=500),
     )
     admitted = admit_image(make("PNG", (400, 300)))
     assert within_provider_limits(admitted.width, admitted.height, small)
@@ -323,3 +356,149 @@ def test_a_route_declaring_no_image_input_cannot_bound_an_image() -> None:
     assert incumbent is not None and incumbent.image_input is None
     with pytest.raises(ValueError, match="declares no image input"):
         upper_bound_image_tokens([part], incumbent)
+
+
+# --- request-wide limits (owner ruling, 20 September 2026) -----------------------
+
+
+def test_the_measure_is_exactly_what_the_adapter_would_build() -> None:
+    """The preflight and the wire must agree, or the guard measures a fiction."""
+    from base64 import b64encode
+
+    for media_type, size in (("image/png", 1), ("image/png", 1000), ("image/jpeg", 99_991)):
+        payload = b"x" * size
+        built = f"data:{media_type};base64,{b64encode(payload).decode()}"
+        assert data_uri_bytes(media_type, size) == len(built)
+
+
+def test_the_measure_is_the_largest_image_attributable_quantity() -> None:
+    """Conservative by construction: raw bytes < base64 < the data URI."""
+    from base64 import b64encode
+
+    payload = b"y" * 3_000
+    raw = len(payload)
+    encoded = len(b64encode(payload))
+    uri = data_uri_bytes("image/png", raw)
+    assert raw < encoded < uri
+    assert REQUEST_PAYLOAD_MEASURE == "data_uri_bytes"
+
+
+def test_an_aggregate_inside_both_provider_limits_proceeds() -> None:
+    load = request_load([("image/png", 1_000), ("image/png", 2_000), ("image/jpeg", 3_000)])
+    assert load.image_count == 3
+    assert load.measure == "data_uri_bytes"
+    check_request_limits(load, SUPPORT)  # does not raise
+
+
+def test_too_many_images_refuses_and_names_the_count_limit() -> None:
+    narrow = ImageInputSupport(
+        provider=SUPPORT.provider,
+        provider_request=request_limits(max_images_per_request=2),
+        house=house(),
+    )
+    load = request_load([("image/png", 10)] * 3)
+    with pytest.raises(AdmissionRefusedError) as refused:
+        check_request_limits(load, narrow)
+    message = str(refused.value)
+    assert "3 images" in message and "2 per request" in message
+    assert "provider request limit: image count" in message
+    assert "No image was transmitted" in message
+
+
+def test_too_much_image_data_refuses_and_names_the_payload_limit() -> None:
+    narrow = ImageInputSupport(
+        provider=SUPPORT.provider,
+        provider_request=request_limits(max_total_payload_bytes=1_000),
+        house=house(),
+    )
+    load = request_load([("image/png", 900), ("image/png", 900)])
+    with pytest.raises(AdmissionRefusedError) as refused:
+        check_request_limits(load, narrow)
+    message = str(refused.value)
+    assert "provider request limit: total image data" in message
+    assert f"{load.payload_bytes:,} bytes" in message
+    assert "1,000 per request" in message
+    # While the unit is undocumented, the refusal says whose reading it is.
+    assert "measured conservatively by the house" in message
+    assert "No image was transmitted" in message
+
+
+def test_the_refusal_stops_saying_house_when_the_provider_defines_the_unit() -> None:
+    """A documentation change flips the flag, and the wording follows it."""
+    settled = ImageInputSupport(
+        provider=SUPPORT.provider,
+        provider_request=request_limits(
+            max_total_payload_bytes=1_000, payload_unit_is_documented=True
+        ),
+        house=house(),
+    )
+    with pytest.raises(AdmissionRefusedError) as refused:
+        check_request_limits(request_load([("image/png", 2_000)]), settled)
+    assert "measured conservatively by the house" not in str(refused.value)
+
+
+def test_the_count_limit_is_checked_before_the_payload_limit() -> None:
+    """Both violated: the refusal names one limit, deterministically."""
+    both = ImageInputSupport(
+        provider=SUPPORT.provider,
+        provider_request=request_limits(max_images_per_request=1, max_total_payload_bytes=10),
+        house=house(),
+    )
+    with pytest.raises(AdmissionRefusedError, match="image count"):
+        check_request_limits(request_load([("image/png", 900)] * 2), both)
+
+
+# --- the reservation composes over every image -----------------------------------
+
+
+def parts(*sizes: tuple[int, int]) -> list[ImagePart]:
+    return [
+        ImagePart(
+            sha256=f"{index}".rjust(64, "0"),
+            media_type="image/png",
+            width=width,
+            height=height,
+            content=b"x",
+        )
+        for index, (width, height) in enumerate(sizes)
+    ]
+
+
+def test_two_images_both_contribute_to_the_reservation() -> None:
+    config = by_slug("gpt-5-6-sol-medium")
+    assert config is not None and config.image_input is not None
+    support_facts = config.image_input
+    both = parts((2048, 1152), (512, 512))
+    expected = sum(
+        image_input_tokens(p.width, p.height, support_facts) + IMAGE_RESERVATION_MARGIN_TOKENS
+        for p in both
+    )
+    assert upper_bound_image_tokens(both, config) == expected
+    # Neither image alone accounts for it.
+    assert upper_bound_image_tokens(both, config) > upper_bound_image_tokens(both[:1], config)
+
+
+@pytest.mark.parametrize("count", [1, 2, 3, 5, 12])
+def test_the_reservation_composes_over_any_number_of_images(count: int) -> None:
+    config = by_slug("gpt-5-6-sol-medium")
+    assert config is not None and config.image_input is not None
+    images = parts(*[(640, 480)] * count)
+    one = image_input_tokens(640, 480, config.image_input) + IMAGE_RESERVATION_MARGIN_TOKENS
+    assert upper_bound_image_tokens(images, config) == one * count
+
+
+def test_the_margin_is_counted_once_per_image_not_once_per_request() -> None:
+    config = by_slug("gpt-5-6-sol-medium")
+    assert config is not None and config.image_input is not None
+    images = parts((800, 600), (800, 600), (800, 600))
+    formula_only = sum(image_input_tokens(p.width, p.height, config.image_input) for p in images)
+    assert upper_bound_image_tokens(images, config) == formula_only + 3
+
+
+def test_differently_sized_images_are_each_priced_on_their_own_dimensions() -> None:
+    config = by_slug("gpt-5-6-sol-medium")
+    assert config is not None and config.image_input is not None
+    small, large = parts((320, 240), (2048, 1152))
+    assert upper_bound_image_tokens([small, large], config) == (
+        upper_bound_image_tokens([small], config) + upper_bound_image_tokens([large], config)
+    )

@@ -56,6 +56,7 @@ from val_domain.gateway import (
     ModelConfig,
     PricingFeature,
     ProviderImageLimits,
+    ProviderRequestImageLimits,
     QualificationTarget,
     ReasoningEffort,
 )
@@ -697,13 +698,50 @@ REGISTRY: tuple[ModelConfig, ...] = (
                     "docs/reviews/evidence/2026-09-19-sol-image-input.json"
                 ),
             ),
+            # Request-wide provider facts, re-read first-party on 20 September
+            # 2026. The count is stated plainly; the payload ceiling is stated
+            # WITHOUT a unit — the page never says whether it counts raw bytes,
+            # base64, the data URI or the whole HTTP body — so the gap is
+            # recorded as a fact and the house's reading lives below, separately.
+            provider_request=ProviderRequestImageLimits(
+                max_images_per_request=1_500,
+                # "Up to 512 MB total payload per request", read as 512 x 10^6
+                # rather than 512 MiB: the smaller reading of an ambiguous
+                # ceiling is the conservative one.
+                max_total_payload_bytes=512_000_000,
+                payload_unit_is_documented=False,
+                verified_on=date(2026, 9, 20),
+                source=(
+                    "developers.openai.com/api/docs/guides/images-vision, first-party, "
+                    "re-read 20 September 2026: 'Up to 1,500 images per request' and "
+                    "'Up to 512 MB total payload per request'; the page defines no "
+                    "measurement unit for the payload figure and states no per-image "
+                    "size limit at all"
+                ),
+            ),
             house=HouseImagePolicy(
-                max_byte_size=20_000_000,
+                # Owner ruling, 20 September 2026: 50 MB per ORIGINAL image.
+                # Raised from 20 MB because this house is built to receive real
+                # production material — character sheets, storyboards, frames,
+                # high-resolution PNGs — and a tighter ceiling would refuse
+                # legitimate work. Still a conservative house bound.
+                max_byte_size=50_000_000,
                 reason=(
-                    "House admission policy, not a provider limit: the provider documents "
-                    "no per-image size bound, only 512 MB per request. These bytes live in "
-                    "PostgreSQL as the sole authoritative store and travel in every backup, "
-                    "so the house sets its own ceiling well inside the provider's."
+                    "House admission policy on the ORIGINAL file, not a provider limit: the "
+                    "provider documents no per-image size bound at all. Set at 50 MB by owner "
+                    "ruling of 20 September 2026 so that production material — character "
+                    "sheets, storyboards, production frames, high-resolution PNGs — is not "
+                    "refused; these bytes live in PostgreSQL as the sole authoritative store "
+                    "and travel in every backup, so the ceiling stays deliberate."
+                ),
+                request_payload_measure="data_uri_bytes",
+                request_payload_measure_reason=(
+                    "HOUSE INTERPRETATION OF AN AMBIGUOUS PROVIDER FACT, not a statement of "
+                    "how the provider meters its limit. The provider caps 'total payload per "
+                    "request' without defining what is counted. The house counts the complete "
+                    "data URIs it would transmit — the largest image-attributable quantity it "
+                    "actually puts on the wire, since raw bytes < base64 < data URI — so it "
+                    "cannot become more permissive than a ceiling whose meaning is unsettled."
                 ),
             ),
         ),

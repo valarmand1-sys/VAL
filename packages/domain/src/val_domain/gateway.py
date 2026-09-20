@@ -366,6 +366,37 @@ class ProviderImageLimits(BaseModel):
         return self
 
 
+class ProviderRequestImageLimits(BaseModel):
+    """What the provider documents about a **whole request** carrying images.
+
+    Owner correction, 20 September 2026. These are request-wide provider facts
+    and belong to neither the per-image sizing rules above nor any house policy:
+    a turn whose images are each individually valid can still be an invalid
+    request, and the house must know that before any pixels leave the machine.
+
+    **The measurement unit of the payload ceiling is NOT documented.** The page
+    states the number and does not say what is counted against it — raw bytes,
+    base64, the data URI, or the whole HTTP body. That gap is recorded here as a
+    fact about the documentation (`payload_unit_is_documented`), so nobody later
+    reads the house's conservative reading as something the provider said. How
+    the house measures against it lives in `HouseImagePolicy`.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: "Up to 1,500 images per request."
+    max_images_per_request: int = Field(gt=0)
+    #: "Up to 512 MB total payload per request." Interpreted as 512 x 1,000,000
+    #: rather than 512 MiB, because the smaller reading of an ambiguous ceiling
+    #: is the conservative one.
+    max_total_payload_bytes: int = Field(gt=0)
+    #: False while the provider documents the number without defining the unit.
+    #: A later documentation change that settles it flips this deliberately.
+    payload_unit_is_documented: bool = False
+    verified_on: date
+    source: str = Field(min_length=1)
+
+
 class HouseImagePolicy(BaseModel):
     """What **this house** chooses about image input, and why.
 
@@ -377,11 +408,18 @@ class HouseImagePolicy(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    #: The largest single transmitted image this house will send. A house
-    #: admission and safety policy, not a provider limit.
+    #: The largest ORIGINAL image this house admits. A house admission and
+    #: safety policy, not a provider limit: the provider documents none.
     max_byte_size: int = Field(gt=0)
     #: Why this house set it where it did.
     reason: str = Field(min_length=1)
+    #: **A house interpretation of an ambiguous provider fact, not a provider
+    #: fact.** The provider caps a request's "total payload" and does not define
+    #: what is measured; this names the quantity the house counts instead.
+    request_payload_measure: str = Field(min_length=1)
+    #: Why that quantity is the conservative choice, in words a later reader can
+    #: check against the documentation themselves.
+    request_payload_measure_reason: str = Field(min_length=1)
 
 
 class ImageInputSupport(BaseModel):
@@ -395,7 +433,11 @@ class ImageInputSupport(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
+    #: Per-image provider facts.
     provider: ProviderImageLimits
+    #: Request-wide provider facts.
+    provider_request: ProviderRequestImageLimits
+    #: What this house chooses, including how it reads the ambiguous ceiling.
     house: HouseImagePolicy
 
     @property

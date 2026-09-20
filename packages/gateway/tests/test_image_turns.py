@@ -19,9 +19,11 @@ provider. Proved here:
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 from typing import Any
+from unittest.mock import patch as patched
 from uuid import UUID, uuid4
 
 import pytest
@@ -40,10 +42,12 @@ from test_conversation_memory import (
 )
 
 from val_domain.gateway import Classification, ImagePart
+from val_domain.registry import by_slug
 from val_gateway.attachments import AttachmentAct, CandidateAttachment, strictest
 from val_gateway.context import STATE_ENVELOPE_MARKER
 from val_gateway.loop import Turn, send
 from val_policy.attachments import AdmissionRefusedError
+from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS, maximum_cost, upper_bound_image_tokens
 from val_policy.project_resolution import ProjectSignals
 
 
@@ -99,6 +103,32 @@ def state(adapter: StubAdapter) -> dict[str, Any]:
 
 def sent_images(adapter: StubAdapter) -> tuple[ImagePart, ...]:
     return tuple(part for message in adapter.sent_messages for part in message.images)
+
+
+def _narrowed(**limits: object) -> tuple[object, ...]:
+    """The real registry with only Sol's request-level limits narrowed."""
+    from val_domain.registry import REGISTRY
+
+    narrowed = []
+    for config in REGISTRY:
+        if config.slug == "gpt-5-6-sol-medium" and config.image_input is not None:
+            support = config.image_input
+            narrowed.append(
+                config.model_copy(
+                    update={
+                        "image_input": support.model_copy(
+                            update={
+                                "provider_request": support.provider_request.model_copy(
+                                    update=limits
+                                )
+                            }
+                        )
+                    }
+                )
+            )
+        else:
+            narrowed.append(config)
+    return tuple(narrowed)
 
 
 # --- the commit ------------------------------------------------------------------
@@ -432,3 +462,139 @@ def test_the_strictest_rule_resolves_upward_over_every_act() -> None:
         )
         is Classification.PROTECTED
     )
+
+
+# --- several images at once, and the request-level guard -------------------------
+
+
+def test_several_images_keep_their_order_acts_and_digests(store: Engine) -> None:
+    """Each image stays bound to its own act and its own transmitted bytes."""
+    first, second, third = png(320, 240, "navy"), png(200, 150, "maroon"), png(64, 64, "olive")
+    _, adapter = turn(
+        store,
+        "Compare these three.",
+        attachments=(
+            attach(first, "a.png"),
+            attach(second, "b.png", Classification.INTERNAL),
+            attach(third, "c.png"),
+        ),
+    )
+    sent = sent_images(adapter)
+    assert [image.content for image in sent] == [first, second, third], "order preserved"
+
+    acts = sorted(rows(store, "message_attachments"), key=lambda row: row["position"])
+    assert [act["given_filename"] for act in acts] == ["a.png", "b.png", "c.png"]
+    assert [act["stated_classification"] for act in acts] == ["protected", "internal", "protected"]
+
+    bindings = sorted(rows(store, "model_call_image_inputs"), key=lambda row: row["position"])
+    assert len(bindings) == 3
+    assert [b["position"] for b in bindings] == [1, 2, 3]
+    # Each binding names its own act, its own attachment and its own digest.
+    assert [b["message_attachment_id"] for b in bindings] == [a["id"] for a in acts]
+    assert [b["attachment_id"] for b in bindings] == [a["attachment_id"] for a in acts]
+    assert [b["transmitted_sha256"] for b in bindings] == [
+        hashlib.sha256(payload).hexdigest() for payload in (first, second, third)
+    ]
+    assert len({b["transmitted_sha256"] for b in bindings}) == 3, "three distinct images"
+    # And the act's own statement rides on its own binding.
+    assert [b["stated_classification"] for b in bindings] == [
+        "protected",
+        "internal",
+        "protected",
+    ]
+
+
+def test_every_image_of_the_turn_is_counted_in_the_reservation(store: Engine) -> None:
+    """Not only the first: the bound covers each transmitted image and its margin.
+
+    Measured over the images the turn *actually* transmitted, so this is the
+    composition over a real turn rather than over invented parts. The arithmetic
+    itself is pinned in the policy tests.
+    """
+    config = by_slug("gpt-5-6-sol-medium")
+    assert config is not None
+    _, adapter = turn(
+        store,
+        "Two of these.",
+        attachments=(attach(png(320, 240)), attach(png(640, 480), "b.png")),
+    )
+    images = list(sent_images(adapter))
+    assert len(images) == 2
+    both = upper_bound_image_tokens(images, config)
+    assert both == sum(upper_bound_image_tokens([image], config) for image in images)
+    assert both > upper_bound_image_tokens(images[:1], config), "the second image counts"
+    # And the whole-call bound is strictly larger than the same turn's text alone.
+    text_only = maximum_cost(config, ("Two of these.",), CONVERSATION_MAX_OUTPUT_TOKENS)
+    with_images = maximum_cost(
+        config, ("Two of these.",), CONVERSATION_MAX_OUTPUT_TOKENS, images=images
+    )
+    assert with_images > text_only
+
+
+def test_too_many_images_refuses_before_the_provider_is_reached(store: Engine) -> None:
+    """The aggregate guard runs in Core, after derivation and before transmission."""
+    narrow = _narrowed(max_images_per_request=2)
+    adapter = answering("unused")
+    with (
+        patched("val_domain.registry.REGISTRY", narrow),
+        pytest.raises(AdmissionRefusedError, match="provider request limit: image count"),
+    ):
+        send(
+            store,
+            build_gateway(store, adapter),
+            "Three of these.",
+            catalogue=catalogue(store),
+            signals=ProjectSignals(explicit_no_project=True),
+            attachments=tuple(attach(png(64, 64), f"{n}.png") for n in "abc"),
+        )
+    assert adapter.calls == 0, "the provider adapter was never invoked"
+    assert rows(store, "model_call_image_inputs") == [], "no binding claims a transmission"
+
+
+def test_too_much_image_data_refuses_before_the_provider_is_reached(store: Engine) -> None:
+    narrow = _narrowed(max_total_payload_bytes=2_000)
+    adapter = answering("unused")
+    with (
+        patched("val_domain.registry.REGISTRY", narrow),
+        pytest.raises(AdmissionRefusedError) as refused,
+    ):
+        send(
+            store,
+            build_gateway(store, adapter),
+            "Two large ones.",
+            catalogue=catalogue(store),
+            signals=ProjectSignals(explicit_no_project=True),
+            attachments=(attach(png(400, 300)), attach(png(400, 300), "b.png")),
+        )
+    message = str(refused.value)
+    assert "provider request limit: total image data" in message
+    assert "measured conservatively by the house" in message, "the unit is undocumented"
+    assert adapter.calls == 0, "the provider adapter was never invoked"
+    assert rows(store, "model_call_image_inputs") == [], "no binding claims a transmission"
+
+
+def test_a_refused_aggregate_leaves_the_admitted_evidence_it_truly_has(
+    store: Engine,
+) -> None:
+    """The attachments were genuinely admitted; only the transmission is refused.
+
+    The refusal does not pretend the files never arrived, and it does not write
+    a binding claiming they were sent. Both statements are true at once, and the
+    record keeps them apart.
+    """
+    narrow = _narrowed(max_images_per_request=1)
+    adapter = answering("unused")
+    with (
+        patched("val_domain.registry.REGISTRY", narrow),
+        pytest.raises(AdmissionRefusedError),
+    ):
+        send(
+            store,
+            build_gateway(store, adapter),
+            "Two of these.",
+            catalogue=catalogue(store),
+            signals=ProjectSignals(explicit_no_project=True),
+            attachments=(attach(png(64, 64)), attach(png(80, 80), "b.png")),
+        )
+    assert len(rows(store, "message_attachments")) == 2, "the acts happened"
+    assert rows(store, "model_call_image_inputs") == [], "the transmission did not"

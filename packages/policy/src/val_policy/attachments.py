@@ -37,6 +37,7 @@ from __future__ import annotations
 import hashlib
 import io
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Final
 
@@ -198,6 +199,87 @@ def _reencode(image: Image.Image, media_type: str) -> tuple[bytes, str]:
         return buffer.getvalue(), "image/jpeg"
     image.save(buffer, format="PNG", optimize=True)
     return buffer.getvalue(), "image/png"
+
+
+#: The quantity the house counts against the provider's request payload ceiling.
+#: **A house interpretation of an ambiguous provider fact** (owner ruling,
+#: 20 September 2026): the provider caps "512 MB total payload per request" and
+#: nowhere says what is measured against it.
+REQUEST_PAYLOAD_MEASURE = "data_uri_bytes"
+
+#: The fixed parts of the data URI the adapter builds: `data:` + the media type
+#: + `;base64,` + the encoding itself.
+_DATA_URI_PREFIX = len("data:") + len(";base64,")
+
+
+def data_uri_bytes(media_type: str, byte_size: int) -> int:
+    """The exact length of the data URI the adapter will build, without building it.
+
+    This is the house's conservative measure against the provider's undocumented
+    "total payload" ceiling, and it is conservative because it is the **largest**
+    image-attributable quantity the house actually puts on the wire:
+
+        raw bytes  <  base64  <  the complete data URI
+
+    Base64 is four characters per three bytes, and the URI adds its scheme, the
+    media type and the marker on top of that. Counting the smaller quantities
+    would let the house become more permissive than a limit whose meaning is not
+    established, which is the one direction an ambiguous ceiling must not be
+    read in.
+
+    It is **not** a statement of how the provider meters the limit. If the
+    documentation later defines the unit, this becomes a verified fact and the
+    registry's `payload_unit_is_documented` flips deliberately.
+    """
+    return _DATA_URI_PREFIX + len(media_type) + 4 * ((byte_size + 2) // 3)
+
+
+@dataclass(frozen=True)
+class RequestImageLoad:
+    """What one request's images amount to, measured before any are transmitted."""
+
+    image_count: int
+    payload_bytes: int
+    measure: str = REQUEST_PAYLOAD_MEASURE
+
+
+def request_load(transmitted: Sequence[tuple[str, int]]) -> RequestImageLoad:
+    """The aggregate of `(media_type, byte_size)` pairs actually to be sent."""
+    return RequestImageLoad(
+        image_count=len(transmitted),
+        payload_bytes=sum(data_uri_bytes(media_type, size) for media_type, size in transmitted),
+    )
+
+
+def check_request_limits(load: RequestImageLoad, support: ImageInputSupport) -> None:
+    """Refuse a request whose aggregate exceeds a documented provider limit.
+
+    Owner ruling, 20 September 2026. A turn whose images are each individually
+    valid can still be an invalid request, and discovering that at the provider
+    means the pixels have already left the machine. The refusal names the limit,
+    the measured state, and which of the two was violated — and nothing here
+    drops an attachment to make the turn fit, or splits one turn into several
+    calls to slip past a request limit.
+    """
+    limits = support.provider_request
+    if load.image_count > limits.max_images_per_request:
+        raise AdmissionRefusedError(
+            f"this turn carries {load.image_count:,} images and the provider accepts "
+            f"{limits.max_images_per_request:,} per request (provider request limit: image "
+            f"count). No image was transmitted."
+        )
+    if load.payload_bytes > limits.max_total_payload_bytes:
+        qualifier = (
+            ""
+            if limits.payload_unit_is_documented
+            else ", measured conservatively by the "
+            "house as the data URIs it would send, because the provider does not define the unit"
+        )
+        raise AdmissionRefusedError(
+            f"this turn's images come to {load.payload_bytes:,} bytes and the provider accepts "
+            f"{limits.max_total_payload_bytes:,} per request (provider request limit: total "
+            f"image data{qualifier}). No image was transmitted."
+        )
 
 
 def patch_count(width: int, height: int, support: ImageInputSupport) -> int:

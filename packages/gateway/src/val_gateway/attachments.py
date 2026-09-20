@@ -36,8 +36,10 @@ from val_policy.attachments import (
     AdmittedImage,
     Transmission,
     admit_image,
+    check_request_limits,
     derivation_required,
     plan_transmission,
+    request_load,
 )
 
 #: §3.3 — `restricted` is refused at the act, and the type has no such value.
@@ -374,6 +376,20 @@ def prepare(
                 input_kind="representation" if plan.derived else "original",
                 representation_id=representation_id,
             )
+        )
+    # Owner ruling, 20 September 2026: the aggregate request is verified here —
+    # after every attachment is admitted and its exact transmitted
+    # representation derived and measured, and BEFORE any of it reaches a
+    # provider. A turn whose images are each individually valid can still be an
+    # invalid request; discovering that at the provider means the pixels have
+    # already left. Core owns this, not an adapter, and the refusal drops no
+    # attachment and splits no turn to make it fit.
+    if bound:
+        if support is None:  # unreachable: `acts` non-empty implies support above
+            raise AdmissionRefusedError(f"{config.slug} declares no image input")
+        check_request_limits(
+            request_load([(image.part.media_type, len(image.part.content)) for image in bound]),
+            support,
         )
     return tuple(bound)
 
