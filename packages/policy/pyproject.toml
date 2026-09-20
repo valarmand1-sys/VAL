@@ -5,6 +5,14 @@ description = "Deterministic classification and permission evaluation. Depends o
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "val-domain",
+    # Owner ruling, 19 September 2026 (Track C). ONE pinned image-processing
+    # library, here rather than in an adapter: Attachment Substrate v1.2 §6 and
+    # §8 require that the bytes actually transmitted are known — and derived —
+    # before the reservation is taken, so no provider may resize independently.
+    # Admission reads the media type from the bytes themselves and the
+    # dimensions from the decoded image; policy is where "what may be admitted,
+    # and at what size" already lives, beside the Restricted preflight.
+    "pillow==12.3.0",
 ]
 
 [build-system]

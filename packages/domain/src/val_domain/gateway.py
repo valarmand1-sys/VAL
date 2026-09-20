@@ -7,6 +7,7 @@ Nothing here knows how any provider spells its request; that knowledge lives in
 
 from datetime import date
 from enum import Enum, StrEnum
+from typing import TYPE_CHECKING, Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -324,6 +325,47 @@ class GatewayError(Exception):
         self.model_call_ids = model_call_ids
 
 
+class ImageInputSupport(BaseModel):
+    """What one exact configuration accepts as image input, verified and dated.
+
+    Owner ruling, 19 September 2026 (Track C). **Capability is a routing fact,
+    not a provider guess**: a route does not receive an image because its
+    underlying provider might support one. The configuration declares it, with
+    the limits that decide whether the original may be transmitted or a
+    `model_input_image` must be derived first — and those limits must be known
+    *before* the reservation is taken (Attachment Substrate v1.2 §8), which is
+    why they live on the registry entry beside the rates rather than inside an
+    adapter.
+
+    `verified_on` and `source` follow the same discipline as `rates_verified_on`:
+    a capability fact nobody re-verifies is a capability fact that quietly goes
+    stale. Nothing here is inferred from another model's documentation.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: Media types this configuration accepts, as the provider documents them.
+    media_types: frozenset[str]
+    #: The longest edge the provider accepts without resizing on its own terms.
+    #: An image beyond it is derived down before transmission, never sent and
+    #: hoped for.
+    max_long_edge_pixels: int = Field(gt=0)
+    #: The largest transmitted payload the provider accepts, in bytes.
+    max_byte_size: int = Field(gt=0)
+    #: When the two facts above were read, and from where.
+    verified_on: date
+    source: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _media_types_are_media_types(self) -> ImageInputSupport:
+        if not self.media_types:
+            raise ValueError("a configuration declaring image input must name its media types")
+        for media_type in self.media_types:
+            if media_type != media_type.lower() or media_type.count("/") != 1:
+                raise ValueError(f"{media_type!r} is not a media type")
+        return self
+
+
 class ModelConfig(BaseModel):
     """One entry of the Model Configuration Registry (`01-architecture.md` §5.2).
 
@@ -377,6 +419,11 @@ class ModelConfig(BaseModel):
     #: August 2026). The threshold and multipliers live HERE, on the registry
     #: entry, because a pricing fact embedded in code is a pricing fact nobody
     #: re-verifies. `None` means the provider documents no such rule.
+    #: Owner ruling, 19 September 2026 (Track C): declared image-input capability.
+    #: `None` means this configuration is not image-capable, which is every
+    #: configuration but the first slice's approved route. Declaring it does not
+    #: admit a model or change a profile; it states what this route accepts.
+    image_input: ImageInputSupport | None = None
     long_context_threshold_tokens: int | None = None
     long_context_in_multiplier: float = Field(default=1.0, ge=1.0)
     long_context_out_multiplier: float = Field(default=1.0, ge=1.0)
@@ -555,19 +602,119 @@ class ModelConfig(BaseModel):
         return rate
 
 
+class TextPart(BaseModel):
+    """Words. The part every turn has had since Layer 0 began."""
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["text"] = "text"
+    text: str
+
+
+class ImagePart(BaseModel):
+    """The exact image bytes selected for transmission, with what describes them.
+
+    Owner ruling, 19 September 2026 (Track C). These are **already-selected**
+    bytes: the admission preflight established the media type from them, and
+    transmission planning decided whether the original or a derived
+    `model_input_image` is what leaves the house. An adapter base64-encodes what
+    it is given and transmits it unchanged — no adapter resizes, re-encodes or
+    chooses, because two adapters choosing independently is how a blind call and
+    a final call come to see different pixels (Attachment Substrate v1.2 §7).
+
+    `width` and `height` are the decoded dimensions of *these* bytes, so the
+    figures that priced the call, the figures on the wire and the figures on the
+    `model_call_image_inputs` row are one set of facts (§8).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    kind: Literal["image"] = "image"
+    #: The digest of `content`, and the key of the blob holding it.
+    sha256: str = Field(min_length=64, max_length=64)
+    media_type: str
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    #: Never in a repr: an image in a log line is an image outside the record.
+    content: bytes = Field(repr=False)
+
+
+#: One ordered sequence, discriminated on `kind`. **Audio and video become
+#: additional members here** — a new part type and the adapters that can carry
+#: it — rather than a second boundary beside this one. Nothing else about a
+#: message changes when they arrive, which is the whole point of doing this once.
+ContentPart = Annotated[TextPart | ImagePart, Field(discriminator="kind")]
+
+
 class Message(BaseModel):
-    """One conversational turn, provider-neutral."""
+    """One conversational turn, provider-neutral: an ordered sequence of parts.
+
+    Owner ruling, 19 September 2026. Val Core used to assume a turn *was* a
+    string. It is now an ordered list of content parts, of which text is one —
+    the same lesson as the provider-neutral cognition boundary: build the
+    abstraction once, then populate it as capabilities arrive.
+
+    A text-only turn is unchanged in every way that matters. `Message(role=...,
+    content="...")` still constructs one, `message.content` still reads the
+    words back, and every existing caller, adapter and test keeps working: the
+    string is simply the one text part, and `content` is the text of the parts
+    rather than a second field beside them. There is one source of truth.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     role: str = Field(pattern=r"^(user|assistant)$")
-    content: str
+    parts: tuple[ContentPart, ...] = Field(min_length=1)
+
+    if TYPE_CHECKING:
+        # Pydantic builds `__init__` at run time and the validator below accepts
+        # `content=` as shorthand for one text part. Declaring the signature here
+        # lets the type checker see both spellings; it exists only for analysis.
+        def __init__(
+            self,
+            *,
+            role: str,
+            content: str = ...,
+            parts: tuple[ContentPart, ...] = ...,
+            cache_breakpoint: bool = ...,
+        ) -> None: ...
+
     #: Ruled 10 September 2026: the last retained same-conversation history
     #: message carries the prompt-cache breakpoint, so the append-only history
     #: prefix (persona + history) is cached and later turns read it. An adapter
     #: that caches honours it when a lifetime was requested; one that does not
     #: cache ignores it. Never set on the envelopes or the current turn.
     cache_breakpoint: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def _text_is_one_part(cls, data: object) -> object:
+        """`content="..."` is the ordinary way to say *one text part*."""
+        if isinstance(data, dict) and "content" in data and "parts" not in data:
+            supplied = dict(data)
+            text = supplied.pop("content")
+            if not isinstance(text, str):
+                raise ValueError("Message content is text; other media are parts")
+            supplied["parts"] = (TextPart(text=text),)
+            return supplied
+        return data
+
+    @property
+    def content(self) -> str:
+        """The words of this turn, in order — the text parts and nothing else.
+
+        A text-only message returns exactly what it was constructed with. A
+        message carrying images returns the words around them, which is what a
+        byte bound, a lexical screen or a log line should see: the pixels are
+        accounted for by their own dimensions, never by pretending they are
+        characters.
+        """
+        return "".join(part.text for part in self.parts if isinstance(part, TextPart))
+
+    @property
+    def images(self) -> tuple[ImagePart, ...]:
+        """The image parts of this turn, in the order they were attached."""
+        return tuple(part for part in self.parts if isinstance(part, ImagePart))
 
 
 class TurnReference(BaseModel):
