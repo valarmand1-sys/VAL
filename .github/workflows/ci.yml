@@ -45,7 +45,14 @@ jobs:
       - run: uv run --no-project python infrastructure/ci/check_pins.py
       # Governance stays in step: CLAUDE.md's Current work restates the newest
       # scope ruling recorded in the baselines, or this fails (1 September 2026).
-      - run: uv run --no-project python infrastructure/ci/check_scope_ruling.py
+      #
+      # Synced, unlike the pins check above (corrected 20 September 2026): the
+      # strip-deviation half of this check asks the registry which providers are
+      # routable — the registry is the authority for that, by the ruling of 16
+      # September — and the registry is a pydantic module. Under `--no-project`
+      # it failed on the first push after that amendment landed.
+      - run: uv sync --all-packages --locked
+      - run: uv run python infrastructure/ci/check_scope_ruling.py
 
   boundaries:
     name: Dependency direction

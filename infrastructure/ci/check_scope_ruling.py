@@ -87,18 +87,15 @@ _PROVIDER = re.compile(r'provider="([a-z0-9_-]+)"')
 def _admitted_providers() -> frozenset[str]:
     """Providers of the registry's routable entries — the registry is the authority.
 
-    This check runs in CI under `uv run --no-project`, deliberately: it must not
-    need the service's dependency tree to tell whether two documents are in
-    step. But the registry it consults is a module, so the domain package's
-    source directory is put on the path here rather than installed. The registry
-    imports nothing outside the standard library, which is what makes that safe
-    — and what made the omission invisible until the first push after it landed
-    (20 September 2026), because a developer machine has the package installed
-    and the same call therefore succeeded locally.
+    **This import is why the CI step that runs this check is synced** (corrected
+    20 September 2026). The check began as a comparison of two documents and ran
+    under `uv run --no-project` accordingly; the 16 September amendment gave it a
+    registry lookup, and the registry is a pydantic module, not a text file. The
+    omission was invisible for four days because a developer machine has the
+    package installed, so the identical local step passed. Moving the step to the
+    synced form is the honest fix: the authority for what is routable is the
+    registry, the ruling says so, and consulting it costs the dependency tree.
     """
-    source = str(REPO_ROOT / "packages" / "domain" / "src")
-    if source not in sys.path:
-        sys.path.insert(0, source)
     from val_domain.registry import active
 
     return frozenset(config.provider for config in active())
