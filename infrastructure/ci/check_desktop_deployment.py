@@ -122,8 +122,20 @@ def problems_with(bundles: list[Bundle], built_sha256: str | None = None) -> lis
     return problems
 
 
+def on_macos() -> bool:
+    """Behind a function deliberately.
+
+    Written inline, a type checker running on Linux narrows `sys.platform` to a
+    literal and calls the whole rest of this module unreachable — which is how CI
+    first failed here, and a neat illustration of the same blindness that caused
+    the defect this file guards: a check that only ever runs on one machine
+    stops being checked anywhere else.
+    """
+    return sys.platform == "darwin"
+
+
 def main() -> int:
-    if sys.platform != "darwin":
+    if not on_macos():
         print("desktop deployment: skipped, this check runs on the machine that installs it")
         return 0
 
