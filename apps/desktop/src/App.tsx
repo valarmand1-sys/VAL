@@ -16,7 +16,6 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import type {
   AttachmentClassification,
   AttachmentInput,
-  AttachmentView,
   Confidence,
   ConversationDetail,
   ConversationView,
@@ -31,6 +30,7 @@ import type {
   ReviewProgressView,
   TurnClarification,
 } from "./api";
+import { Attachments } from "./attachments";
 import type { Inline } from "./markdown";
 import { parseMarkdown } from "./markdown";
 import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST, StreamRefused } from "./api";
@@ -698,34 +698,6 @@ function Prose(props: { text: string }): React.JSX.Element {
         return <p key={key}>{spans(block.spans)}</p>;
       })}
     </>
-  );
-}
-
-function Attachments(props: { attachments: AttachmentView[] | undefined }): React.JSX.Element | null {
-  const attachments = props.attachments ?? [];
-  if (attachments.length === 0) return null;
-  return (
-    <div className="attachments">
-      {attachments.map((attachment) => (
-        <figure key={attachment.id} className="attachment">
-          <img
-            src={api.attachmentUrl(attachment.sha256)}
-            alt={attachment.filename}
-            width={attachment.width}
-            height={attachment.height}
-          />
-          <figcaption>
-            {attachment.filename}
-            {" · "}
-            {attachment.width}×{attachment.height}
-            {" · "}
-            <span className={`class-${attachment.classification}`}>
-              {attachment.classification}
-            </span>
-          </figcaption>
-        </figure>
-      ))}
-    </div>
   );
 }
 

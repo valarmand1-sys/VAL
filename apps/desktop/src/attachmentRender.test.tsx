@@ -17,6 +17,13 @@
 // cannot: that the element the view produces points at the governed route, and
 // that the policy the desktop actually ships **permits that exact origin**. The
 // bytes and content type are proven on the service side, in the API tests.
+//
+// Both halves read the shipped thing itself — owner correction, 20 September
+// 2026. The renderer under test is `Attachments` from `./attachments`, the very
+// component the conversation thread mounts, not a copy of its markup; the policy
+// is parsed out of the shipped Tauri configuration, not restated here. A test
+// that held its own copy of either could pass while the shipped code diverged or
+// broke, which is precisely the defect it is meant to catch.
 
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -24,6 +31,8 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { AttachmentView } from "./api";
 import { api, API_BASE } from "./api";
+// The production renderer itself — the same component the thread mounts.
+import { Attachments } from "./attachments";
 // The policy the desktop actually ships, read from the shipped configuration
 // rather than restated here — a test that restated it would pass while the
 // shipped file said something else, which is the whole defect it guards.
@@ -98,27 +107,7 @@ describe("the policy the desktop actually ships", () => {
   });
 });
 
-describe("what the view puts in the thread", () => {
-  function Attachments(props: { attachments: AttachmentView[] }): React.JSX.Element {
-    // The same element the thread renders; imported shape, local copy so the
-    // test needs no route or store.
-    return (
-      <div className="attachments">
-        {props.attachments.map((attachment) => (
-          <figure key={attachment.id} className="attachment">
-            <img
-              src={api.attachmentUrl(attachment.sha256)}
-              alt={attachment.filename}
-              width={attachment.width}
-              height={attachment.height}
-            />
-            <figcaption>{attachment.filename}</figcaption>
-          </figure>
-        ))}
-      </div>
-    );
-  }
-
+describe("what the production thread renderer puts in the thread", () => {
   it("renders an image element pointing at the governed route", () => {
     const container = render(<Attachments attachments={[ACT]} />);
     const image = container.querySelector("img");
@@ -148,6 +137,30 @@ describe("what the view puts in the thread", () => {
 
   it("renders nothing at all when a message carries no attachment", () => {
     const container = render(<Attachments attachments={[]} />);
+    expect(container.querySelectorAll("img")).toHaveLength(0);
+  });
+
+  it("shows the filename, the true size and the stated classification", () => {
+    const container = render(<Attachments attachments={[ACT]} />);
+    const caption = container.querySelector("figcaption")!.textContent ?? "";
+    expect(caption).toContain(ACT.filename);
+    expect(caption).toContain("2752×1536");
+    expect(caption).toContain("protected");
+    expect(container.querySelector(".class-protected")).not.toBeNull();
+  });
+
+  it("renders one figure per attachment, in the order given", () => {
+    const second: AttachmentView = { ...ACT, id: "second", position: 2, filename: "b.png", sha256: "b".repeat(64) };
+    const container = render(<Attachments attachments={[ACT, second]} />);
+    const names = Array.from(container.querySelectorAll("img")).map((image) =>
+      image.getAttribute("alt"),
+    );
+    expect(names).toEqual([ACT.filename, "b.png"]);
+  });
+
+  it("renders nothing at all when the message has no attachments field", () => {
+    const container = render(<Attachments attachments={undefined} />);
+    expect(container.querySelector(".attachments")).toBeNull();
     expect(container.querySelectorAll("img")).toHaveLength(0);
   });
 

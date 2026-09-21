@@ -18,6 +18,7 @@ from gateway_fakes import StubAdapter
 from sqlalchemy import Engine, text
 from test_conversation_memory import answering, build_gateway, catalogue, store
 from test_persona import REPO_ROOT, clean_personas
+from test_persona_form import v1_8_from
 
 from val_domain.persona import PersonaSource, digest_of, read_source
 from val_gateway import context as context_module
@@ -49,6 +50,10 @@ HOUSE_FIRST = "Her service is to the house itself, not to any single Lord."
 
 #: Every change from v1.7 to v1.8, as (v1.8 text, v1.7 text). Reversing all of them
 #: must reproduce v1.7 byte for byte, so nothing else in the persona moved.
+#:
+#: The governing document is now v1.9, so the source is first reversed to v1.8 by
+#: `test_persona_form.v1_8_from` and then to v1.7 here. Each revision keeps its own
+#: reversal: one broken chain names the version whose text moved.
 CHANGES = (
     ("# 03 — Persona Specification v1.8\n", "# 03 — Persona Specification v1.7\n"),
     (
@@ -200,8 +205,8 @@ def test_the_capability_state_needs_no_provider_and_is_a_constant_of_the_build()
 
 def test_v1_8_changes_v1_7_only_where_ruled() -> None:
     source = read_source(REPO_ROOT)
-    assert source.semantic_version == "1.8"
-    assert digest_of(v1_7_from(source.content)) == V1_7_SHA256
+    assert source.semantic_version == "1.9"
+    assert digest_of(v1_7_from(v1_8_from(source.content))) == V1_7_SHA256
 
 
 def test_the_ruled_principles_are_in_the_source() -> None:
@@ -233,9 +238,11 @@ def test_the_core_mission_and_the_house_first_ruling_are_unchanged() -> None:
     assert "## 2. The books" in content, "the library remains her character"
 
 
-def test_v1_7_stays_preserved_and_only_v1_8_is_active(clean_personas: Engine) -> None:
+def test_v1_7_stays_preserved_and_only_the_current_persona_is_active(
+    clean_personas: Engine,
+) -> None:
     current = read_source(REPO_ROOT)
-    old_content = v1_7_from(current.content)
+    old_content = v1_7_from(v1_8_from(current.content))
     v1_7 = PersonaSource(
         content=old_content,
         sha256=digest_of(old_content),
@@ -247,7 +254,7 @@ def test_v1_7_stays_preserved_and_only_v1_8_is_active(clean_personas: Engine) ->
 
     loader = DatabasePersonaLoader(clean_personas)
     assert loader.active().id == later.id
-    assert loader.active().semantic_version == "1.8"
+    assert loader.active().semantic_version == "1.9"
     assert verify_against_source(loader.active(), REPO_ROOT) == []
 
     kept = loader.by_id(earlier.id)

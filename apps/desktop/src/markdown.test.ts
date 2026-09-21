@@ -81,7 +81,6 @@ describe("inline", () => {
   it("reads bold, italics and code", () => {
     expect(parseInline("**bold**")).toEqual([{ kind: "bold", text: "bold" }]);
     expect(parseInline("*slanted*")).toEqual([{ kind: "italic", text: "slanted" }]);
-    expect(parseInline("_slanted_")).toEqual([{ kind: "italic", text: "slanted" }]);
     expect(parseInline("`code`")).toEqual([{ kind: "code", text: "code" }]);
   });
 
@@ -104,6 +103,54 @@ describe("inline", () => {
   it("leaves an unmatched marker as ordinary text", () => {
     expect(parseInline("2 * 3 = 6")).toEqual([text("2 * 3 = 6")]);
     expect(parseInline("a lone ** here")).toEqual([text("a lone ** here")]);
+  });
+});
+
+describe("underscores belong to names, not to emphasis", () => {
+  // Owner correction, 20 September 2026. Val discusses column names,
+  // configuration keys, filenames and model identifiers constantly; reading the
+  // middle of one as italics would mangle the very word she is being precise
+  // about. Asterisks mark emphasis; an underscore is a character in a name.
+  it.each([
+    "model_call_image_inputs",
+    "attachment_processing_events",
+    "message_attachments",
+    "gpt_5_6",
+    "some_file_name",
+    "VAL_OPENAI_API_KEY",
+    "__init__",
+    "a_b_c_d_e",
+  ])("leaves %s exactly as written", (identifier) => {
+    expect(parseInline(identifier)).toEqual([text(identifier)]);
+  });
+
+  it("leaves an identifier alone inside a sentence", () => {
+    const line = "The binding lands on model_call_image_inputs, as the contract says.";
+    expect(parseInline(line)).toEqual([text(line)]);
+  });
+
+  it("leaves a whole paragraph of identifiers alone", () => {
+    const line = "Both attachment_representations and attachment_processing_events are append-only.";
+    expect(parseMarkdown(line)).toEqual([{ kind: "paragraph", spans: [text(line)] }]);
+  });
+
+  it("still emphasises with asterisks in the same sentence", () => {
+    expect(parseInline("*see* model_call_image_inputs")).toEqual([
+      { kind: "italic", text: "see" },
+      text(" model_call_image_inputs"),
+    ]);
+  });
+
+  it("leaves a snake_case identifier inside a list item alone", () => {
+    expect(parseMarkdown("- model_call_image_inputs")).toEqual([
+      { kind: "bullets", items: [[text("model_call_image_inputs")]] },
+    ]);
+  });
+
+  it("leaves a snake_case identifier inside a heading alone", () => {
+    expect(parseMarkdown("### attachment_processing_events")).toEqual([
+      { kind: "heading", level: 3, spans: [text("attachment_processing_events")] },
+    ]);
   });
 });
 

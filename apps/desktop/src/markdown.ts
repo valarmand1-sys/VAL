@@ -30,7 +30,16 @@ export type Block =
 // Bold before italic, so `**x**` is not read as an italic `*` around `*x*`.
 // Inline code is matched first and its contents are never re-scanned, which is
 // what makes ``**not bold**`` inside backticks stay literal.
-const INLINE = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*\n]+\*)|(_[^_\n]+_)/;
+//
+// **Underscores are not emphasis** (owner correction, 20 September 2026). Val
+// discusses column names, configuration keys, filenames and model identifiers
+// constantly — `model_call_image_inputs`, `attachment_processing_events` — and
+// reading `_call_image_` as italics would quietly mangle the very words she is
+// being precise about. Asterisks alone mark emphasis; an underscore is a
+// character in a name. This is the smaller of the two available corrections and
+// it satisfies the requirement completely, which is why boundary-aware
+// underscore emphasis was not built.
+const INLINE = /(`[^`]+`)|(\*\*[^*]+\*\*)|(\*[^*\n]+\*)/;
 
 export function parseInline(source: string): Inline[] {
   const spans: Inline[] = [];
