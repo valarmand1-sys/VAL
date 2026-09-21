@@ -85,7 +85,20 @@ _PROVIDER = re.compile(r'provider="([a-z0-9_-]+)"')
 
 
 def _admitted_providers() -> frozenset[str]:
-    """Providers of the registry's routable entries — the registry is the authority."""
+    """Providers of the registry's routable entries — the registry is the authority.
+
+    This check runs in CI under `uv run --no-project`, deliberately: it must not
+    need the service's dependency tree to tell whether two documents are in
+    step. But the registry it consults is a module, so the domain package's
+    source directory is put on the path here rather than installed. The registry
+    imports nothing outside the standard library, which is what makes that safe
+    — and what made the omission invisible until the first push after it landed
+    (20 September 2026), because a developer machine has the package installed
+    and the same call therefore succeeded locally.
+    """
+    source = str(REPO_ROOT / "packages" / "domain" / "src")
+    if source not in sys.path:
+        sys.path.insert(0, source)
     from val_domain.registry import active
 
     return frozenset(config.provider for config in active())
