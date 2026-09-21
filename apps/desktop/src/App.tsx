@@ -31,6 +31,8 @@ import type {
   ReviewProgressView,
   TurnClarification,
 } from "./api";
+import type { Inline } from "./markdown";
+import { parseMarkdown } from "./markdown";
 import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST, StreamRefused } from "./api";
 import {
   AGREEMENT_WORDS,
@@ -590,7 +592,9 @@ function StreamingThread(props: {
           <div className="speaker">{message.role === "user" ? "Lord Armand" : "Val"}</div>
           {isLive(message) ? (
             <>
-              <div className="content">{message.content}</div>
+              <div className="content">
+                {message.role === "val" ? <Prose text={message.content} /> : message.content}
+              </div>
               <Attachments attachments={message.attachments} />
             </>
           ) : (
@@ -613,7 +617,9 @@ function StreamingThread(props: {
             </div>
           )
         ) : (
-          <div className="content">{streaming.text}</div>
+          <div className="content">
+            <Prose text={streaming.text} />
+          </div>
         )}
       </div>
     </div>
@@ -646,6 +652,53 @@ async function asAttachmentInput(pending: PendingAttachment): Promise<Attachment
     content_base64: btoa(binary),
     classification: pending.classification,
   };
+}
+
+// VAL's answers may use a conservative Markdown subset; the thread renders it
+// rather than showing the control syntax (owner defect report, 20 September
+// 2026). Every piece of the message's own text becomes a React text node, so
+// nothing here can inject markup or execute a script, and no link or image is
+// rendered from model output. The stored message is untouched.
+function Prose(props: { text: string }): React.JSX.Element {
+  const spans = (parts: Inline[]): React.JSX.Element[] =>
+    parts.map((span, index) => {
+      const key = `${span.kind}-${index}`;
+      if (span.kind === "bold") return <strong key={key}>{span.text}</strong>;
+      if (span.kind === "italic") return <em key={key}>{span.text}</em>;
+      if (span.kind === "code") return <code key={key}>{span.text}</code>;
+      return <Fragment key={key}>{span.text}</Fragment>;
+    });
+  return (
+    <>
+      {parseMarkdown(props.text).map((block, index) => {
+        const key = `${block.kind}-${index}`;
+        if (block.kind === "heading") {
+          const Tag = (["h3", "h4", "h5", "h6", "h6", "h6"][block.level - 1] ??
+            "h6") as "h3" | "h4" | "h5" | "h6";
+          return <Tag key={key}>{spans(block.spans)}</Tag>;
+        }
+        if (block.kind === "bullets") {
+          return (
+            <ul key={key}>
+              {block.items.map((item, at) => (
+                <li key={at}>{spans(item)}</li>
+              ))}
+            </ul>
+          );
+        }
+        if (block.kind === "numbers") {
+          return (
+            <ol key={key}>
+              {block.items.map((item, at) => (
+                <li key={at}>{spans(item)}</li>
+              ))}
+            </ol>
+          );
+        }
+        return <p key={key}>{spans(block.spans)}</p>;
+      })}
+    </>
+  );
 }
 
 function Attachments(props: { attachments: AttachmentView[] | undefined }): React.JSX.Element | null {
@@ -833,7 +886,9 @@ function MessageBlock(props: {
         </div>
       ) : (
         <>
-          <div className="content">{message.content}</div>
+          <div className="content">
+            {message.role === "val" ? <Prose text={message.content} /> : message.content}
+          </div>
           <Attachments attachments={message.attachments} />
         </>
       )}

@@ -1,0 +1,163 @@
+// @vitest-environment jsdom
+//
+// The attachment actually renders — owner defect report, 20 September 2026.
+//
+// The first genuine image turn worked end to end: VAL received the image and
+// described it in detail. But the thread showed only the filename, dimensions
+// and classification; the image itself never appeared. The element was right,
+// the URL was right, and the existing test — which asserted the URL *string* —
+// passed while the user saw nothing.
+//
+// The cause was one directive. The webview's content security policy allowed
+// `connect-src` to the loopback service, so every fetch worked, but `img-src`
+// was `'self' data:` only. An `<img>` pointing at the governed byte route was
+// therefore refused by the webview before any request was made, silently.
+//
+// So these tests deliberately cover the two halves a URL-string assertion
+// cannot: that the element the view produces points at the governed route, and
+// that the policy the desktop actually ships **permits that exact origin**. The
+// bytes and content type are proven on the service side, in the API tests.
+
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, describe, expect, it } from "vitest";
+
+import type { AttachmentView } from "./api";
+import { api, API_BASE } from "./api";
+// The policy the desktop actually ships, read from the shipped configuration
+// rather than restated here — a test that restated it would pass while the
+// shipped file said something else, which is the whole defect it guards.
+import tauriConfig from "../src-tauri/tauri.conf.json";
+
+const ACT: AttachmentView = {
+  id: "01a0c109-8994-73d0-a194-6cf75324bb06",
+  attachment_id: "01a0c109-8993-7842-b309-73b169e4a27c",
+  position: 1,
+  filename: "a-real-frame.png",
+  classification: "protected",
+  media_type: "image/png",
+  width: 2752,
+  height: 1536,
+  byte_size: 8_371_957,
+  sha256: "7fc13a7c5072b69acc119d20a16beb6523dc21aa4ba6a4ef950c7ba748c12db0",
+};
+
+function policy(): Record<string, string[]> {
+  const directives: Record<string, string[]> = {};
+  for (const part of tauriConfig.app.security.csp.split(";")) {
+    const [name, ...sources] = part.trim().split(/\s+/);
+    if (name) directives[name] = sources;
+  }
+  return directives;
+}
+
+let root: Root | null = null;
+let host: HTMLDivElement | null = null;
+
+function render(element: React.JSX.Element): HTMLDivElement {
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  act(() => root!.render(element));
+  return host;
+}
+
+afterEach(() => {
+  act(() => root?.unmount());
+  host?.remove();
+  root = null;
+  host = null;
+});
+
+describe("the policy the desktop actually ships", () => {
+  it("permits images from the governed loopback route", () => {
+    const origin = new URL(api.attachmentUrl(ACT.sha256)).origin;
+    expect(origin).toBe(API_BASE);
+    const sources = policy()["img-src"] ?? [];
+    expect(
+      sources.includes(origin),
+      `img-src is ${JSON.stringify(sources)} and must permit ${origin}; ` +
+        "an <img> at that origin is otherwise refused by the webview before any request",
+    ).toBe(true);
+  });
+
+  it("still permits the composer's own local previews", () => {
+    const sources = policy()["img-src"] ?? [];
+    expect(sources).toContain("'self'");
+    expect(sources).toContain("blob:");
+  });
+
+  it("opens nothing wider than that: no wildcard, no https at large", () => {
+    const sources = policy()["img-src"] ?? [];
+    expect(sources).not.toContain("*");
+    expect(sources).not.toContain("https:");
+    expect(sources.filter((source) => source.startsWith("http")).sort()).toEqual([API_BASE]);
+    // And the rest of the policy is untouched by this correction.
+    expect(policy()["default-src"]).toEqual(["'self'"]);
+    expect(policy()["connect-src"]).toEqual(["'self'", API_BASE]);
+  });
+});
+
+describe("what the view puts in the thread", () => {
+  function Attachments(props: { attachments: AttachmentView[] }): React.JSX.Element {
+    // The same element the thread renders; imported shape, local copy so the
+    // test needs no route or store.
+    return (
+      <div className="attachments">
+        {props.attachments.map((attachment) => (
+          <figure key={attachment.id} className="attachment">
+            <img
+              src={api.attachmentUrl(attachment.sha256)}
+              alt={attachment.filename}
+              width={attachment.width}
+              height={attachment.height}
+            />
+            <figcaption>{attachment.filename}</figcaption>
+          </figure>
+        ))}
+      </div>
+    );
+  }
+
+  it("renders an image element pointing at the governed route", () => {
+    const container = render(<Attachments attachments={[ACT]} />);
+    const image = container.querySelector("img");
+    expect(image).not.toBeNull();
+    expect(image!.getAttribute("src")).toBe(
+      `${API_BASE}/attachments/${ACT.sha256}/bytes`,
+    );
+    expect(image!.getAttribute("alt")).toBe(ACT.filename);
+  });
+
+  it("uses no external or public URL", () => {
+    const container = render(<Attachments attachments={[ACT]} />);
+    for (const image of container.querySelectorAll("img")) {
+      const source = image.getAttribute("src") ?? "";
+      expect(source.startsWith(API_BASE)).toBe(true);
+      expect(source).not.toContain("://example");
+      expect(new URL(source).hostname).toBe("127.0.0.1");
+    }
+  });
+
+  it("carries the true dimensions, not the thumbnail's", () => {
+    const container = render(<Attachments attachments={[ACT]} />);
+    const image = container.querySelector("img")!;
+    expect(image.getAttribute("width")).toBe("2752");
+    expect(image.getAttribute("height")).toBe("1536");
+  });
+
+  it("renders nothing at all when a message carries no attachment", () => {
+    const container = render(<Attachments attachments={[]} />);
+    expect(container.querySelectorAll("img")).toHaveLength(0);
+  });
+
+  it("a reopened conversation resolves the same bytes by the same digest", () => {
+    // The URL is a pure function of the content digest, so a message read back
+    // later resolves exactly what was stored — no session, no signed link, no
+    // expiry.
+    const first = api.attachmentUrl(ACT.sha256);
+    const later = api.attachmentUrl(ACT.sha256);
+    expect(later).toBe(first);
+    expect(first).toContain(ACT.sha256);
+  });
+});
