@@ -216,7 +216,7 @@ def test_the_gateway_refuses_without_trying_another_route(ledger_engine: Engine)
     assert GatewayErrorKind.EXCHANGE_ENVELOPE_EXCEEDED not in RETRYABLE
     adapter = _NeverCalled()
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},  # type: ignore[dict-item]
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},  # type: ignore[dict-item]
         recorder=lambda record: record_call(ledger_engine, record),
         ledger=DatabaseLedger(ledger_engine, exchange_envelope_usd=0.000001),
         observe_block=lambda message: None,

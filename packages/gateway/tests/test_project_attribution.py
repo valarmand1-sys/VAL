@@ -134,7 +134,7 @@ def exchange(
 
 def build_gateway(engine: Engine, adapter: StubAdapter) -> Gateway:
     return Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(engine, record),
         ledger=FakeLedger(),
         observe_block=lambda message: None,

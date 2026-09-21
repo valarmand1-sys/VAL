@@ -59,7 +59,7 @@ def store(clean_personas: Engine) -> Engine:  # noqa: F811 - pytest fixture inje
 
 def conversational_gateway(engine: Engine, adapter: StubAdapter) -> Gateway:
     return Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(engine, record),
         ledger=FakeLedger(),
         observe_block=lambda message: None,
@@ -319,21 +319,28 @@ def test_an_unknown_terminal_state_fails_closed(store: Engine) -> None:
 
 
 def test_missing_usage_is_recorded_unknown_not_zero(store: Engine) -> None:
-    """§5. The OpenAI missing-usage path, formerly a fabricated known $0."""
+    """§5. The OpenAI missing-usage path, formerly a fabricated known $0.
+
+    The metered route is named here rather than routed to. Since 21 September
+    2026 the ordinary partner route is the local one, whose cost is a known $0
+    whether or not the provider reports usage — a different and equally correct
+    story. This test is about the *metered* path, so it pins one, which is a
+    deliberate act and not the silent fallback the stop of that date forbids.
+    """
     adapter = StubAdapter(
         ProviderResult("an answer with no usage block", TerminalState.COMPLETE, None, None, "r")
     )
-    outcome = send(
-        store,
-        conversational_gateway(store, adapter),
-        "Hello.",
-        catalogue=load_catalogue(store),
-        signals=ProjectSignals(explicit_no_project=True),
+    metered = by_slug("gpt-5-6-sol-medium")
+    assert metered is not None
+    response = conversational_gateway(store, adapter).converse(
+        (Message(role="user", content="Hello."),),
+        scope=ExplicitNoProject(),
+        turn=a_turn(store),
+        configuration=metered,
     )
 
-    assert isinstance(outcome, Turn)
-    assert outcome.response.cost_usd is None
-    assert outcome.response.tokens_in is None
+    assert response.cost_usd is None
+    assert response.tokens_in is None
     with store.connect() as connection:
         row = connection.execute(
             text(
@@ -351,7 +358,7 @@ def test_missing_usage_settles_the_reservation_at_its_maximum(store: Engine) -> 
     adapter = StubAdapter(ProviderResult("no usage", TerminalState.COMPLETE, None, None, "r"))
     ledger = FakeLedger()
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(store, record),
         ledger=ledger,
         observe_block=lambda message: None,
@@ -545,7 +552,7 @@ def test_the_entrances_refuse_a_smuggled_provenance_shape(store: Engine) -> None
     adapter = StubAdapter(ProviderResult("never", TerminalState.COMPLETE, 1, 1, None))
     ledger = FakeLedger()
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(store, record),
         ledger=ledger,
         observe_block=lambda message: None,

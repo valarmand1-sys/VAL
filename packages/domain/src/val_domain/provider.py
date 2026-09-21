@@ -270,6 +270,50 @@ def supports_context_inspection(adapter: object) -> bool:
     return callable(getattr(adapter, "measure_context", None))
 
 
+class LocalRuntimeUnavailableError(Exception):
+    """A local runtime could not be brought up, or the model could not be loaded.
+
+    Raised after the adapter's own bounded recovery attempt has been made and
+    failed. It is an honest end to the turn, never a signal to try a different
+    provider: what to do when local cognition is unavailable is a decision with
+    a cost attached, and it belongs to the owner.
+    """
+
+
+@runtime_checkable
+class LocalRuntimeAdapter(Protocol):
+    """An adapter that can bring its own runtime up before a call — 21 September 2026.
+
+    Owner ruling: ordinary use must not require opening a terminal, starting a
+    server, or loading a model by hand. An adapter declares this the way every
+    other capability here is declared, by implementing the method; the core calls
+    it through the adapter it already holds and learns nothing about which
+    runtime is underneath.
+
+    `ensure_runtime_ready` is expected to be cheap and idempotent when the
+    runtime is already serving the configuration, because it runs before calls on
+    that route. It raises `LocalRuntimeUnavailableError` when it cannot get
+    there, having already made whatever single bounded recovery attempt it
+    considers appropriate — the core does not retry it.
+    """
+
+    name: str
+
+    def ensure_runtime_ready(self, config: ModelConfig) -> Mapping[str, object]:
+        """Make this configuration servable now, and describe what was done.
+
+        The returned mapping is provenance for the evidence record: what state
+        the runtime was found in, what was started or loaded, and the context
+        length the instance now holds.
+        """
+        ...
+
+
+def supports_local_runtime(adapter: object) -> bool:
+    """Whether this adapter can bring its own runtime up — by implementing it."""
+    return callable(getattr(adapter, "ensure_runtime_ready", None))
+
+
 def supports_streaming(adapter: object) -> bool:
     """Whether this adapter declares the streaming capability.
 

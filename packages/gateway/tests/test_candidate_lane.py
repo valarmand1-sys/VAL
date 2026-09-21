@@ -175,7 +175,7 @@ class Recording:
 def lane(engine: Engine, adapter: Recording) -> CandidateGateway:
     return candidate_gateway_for_scratch_store(
         engine,
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(engine, record),
         ledger=DatabaseLedger(engine),
         persona_loader=DatabasePersonaLoader(engine),
@@ -186,7 +186,7 @@ def lane(engine: Engine, adapter: Recording) -> CandidateGateway:
 
 def plain(engine: Engine, adapter: Recording) -> Gateway:
     return Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(engine, record),
         ledger=DatabaseLedger(engine),
         persona_loader=DatabasePersonaLoader(engine),

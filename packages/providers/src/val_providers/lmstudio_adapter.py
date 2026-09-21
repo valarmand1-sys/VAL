@@ -70,6 +70,7 @@ from val_domain.provider import (
 )
 from val_providers.base import ProviderResult, normalize
 from val_providers.lmstudio_inspector import LMStudioContextInspector
+from val_providers.lmstudio_runtime import LMStudioRuntime
 
 _LOGGER = logging.getLogger("val.providers.lmstudio")
 
@@ -200,6 +201,7 @@ class LMStudioAdapter:
         timeout_seconds: float = 600.0,
         read_native_models: bool = True,
         inspector: LMStudioContextInspector | None = None,
+        runtime: LMStudioRuntime | None = None,
     ) -> None:
         if not is_loopback(base_url):
             raise ValueError(
@@ -226,6 +228,23 @@ class LMStudioAdapter:
         #: built by startup with the same credential; None means measurement is
         #: unavailable and the gateway fails closed on its byte bound.
         self._inspector = inspector
+        #: Owner ruling, 21 September 2026: the runtime supervisor, so ordinary
+        #: use never asks Lord Armand to start a server or load a model. Built
+        #: here by default because an adapter that can reach this server can also
+        #: bring it up; injected in tests.
+        self._runtime = runtime or LMStudioRuntime(self._base_url, token)
+
+    # --- bringing the runtime up (owner ruling, 21 September 2026) ------------
+
+    def ensure_runtime_ready(self, config: ModelConfig) -> Mapping[str, object]:
+        """Make this configuration servable now, and describe what that took.
+
+        Declaring `val_domain.provider.LocalRuntimeAdapter` by implementing it.
+        The core calls this before a call on this route and learns nothing about
+        LM Studio from doing so; the provenance returned goes to the evidence
+        record, and carries no credential.
+        """
+        return self._runtime.ensure_ready(config)
 
     # --- exact context measurement (ruling, 16 September 2026) ----------------
 
@@ -412,12 +431,33 @@ class LMStudioAdapter:
                 f"{self.name}: configuration {config.slug!r} belongs to provider "
                 f"{config.provider!r}; this adapter serves only {self.name!r} entries",
             )
+        schema_request: dict[str, Any] = {}
         if output_schema is not None:
-            raise GatewayError(
-                GatewayErrorKind.INVALID_REQUEST,
-                f"{self.name}: this route is conversation-only and enforces no output "
-                "schema; a schema-constrained task is refused rather than sent unconstrained",
-            )
+            # Owner admission ruling, 21 September 2026 — and this adapter used to
+            # refuse here. While the route was conversation-only (16 September) a
+            # schema-constrained task had no business on it, and refusing was
+            # right: sending it unconstrained would have produced a call row and
+            # no evidence. That premise has changed. The blind position is
+            # Partner-class work, the owner has ruled it onto this route, and it
+            # carries a strict contract because the position is the primary
+            # evidence of an independent judgment.
+            #
+            # **Nothing about the contract is relaxed.** The schema is handed to
+            # the server for it to enforce — `strict`, `additionalProperties`
+            # false, required keys — exactly as the cloud structured routes do.
+            # An unconstrained send remains forbidden: if the runtime will not
+            # enforce the shape, the call is refused rather than attempted, which
+            # is the same rule written the other way round.
+            schema_request = {
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "val_structured_output",
+                        "strict": True,
+                        "schema": dict(output_schema),
+                    },
+                }
+            }
         undeliverable = [
             name
             for name in ("thinking_enabled", "preserve_thinking", "top_p", "top_k")
@@ -442,6 +482,7 @@ class LMStudioAdapter:
             kwargs["reasoning_effort"] = effort
         if config.temperature is not None:
             kwargs["temperature"] = config.temperature
+        kwargs.update(schema_request)
         return kwargs
 
     def _refuse_mismatch(self, config: ModelConfig, reported: str) -> None:

@@ -66,6 +66,7 @@ from val_domain.project import (
     ResolutionSource,
     ResolvedProject,
 )
+from val_domain.registry import by_slug
 from val_gateway import conversations as conv
 from val_gateway.context import (
     MAX_HISTORY_TURNS,
@@ -86,6 +87,7 @@ from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader, seed
 from val_gateway.projects import ProjectSession, load_catalogue
 from val_gateway.provenance import verifier
+from val_policy.budget import maximum_cost
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_providers.base import ProviderResult
 
@@ -153,7 +155,7 @@ def failing(error: Exception) -> StubAdapter:
 
 def build_gateway(engine: Engine, adapter: StubAdapter) -> Gateway:
     return Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(engine, record),
         ledger=FakeLedger(),
         observe_block=lambda message: None,
@@ -1404,7 +1406,7 @@ def test_the_budget_ceiling_sees_the_assembled_payload_including_memory(store: E
     send(
         store,
         Gateway(
-            adapters={"anthropic": adapter, "openai": adapter},
+            adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
             recorder=lambda record: record_call(store, record),
             ledger=with_memory,
             observe_block=lambda message: None,
@@ -1422,7 +1424,7 @@ def test_the_budget_ceiling_sees_the_assembled_payload_including_memory(store: E
     send(
         store,
         Gateway(
-            adapters={"anthropic": bare_adapter, "openai": bare_adapter},
+            adapters={"anthropic": bare_adapter, "openai": bare_adapter, "lmstudio": bare_adapter},
             recorder=lambda record: record_call(store, record),
             ledger=without_memory,
             observe_block=lambda message: None,
@@ -1440,12 +1442,21 @@ def test_the_budget_ceiling_sees_the_assembled_payload_including_memory(store: E
     assert bulky in _envelope_contents(adapter), "the bulky memory never reached the payload"
     assert bulky not in bare_adapter.sent_text
 
-    reserved_with_memory = _only_reservation(with_memory)
-    reserved_without = _only_reservation(without_memory)
-    assert reserved_with_memory > reserved_without, (
-        "the reservation did not grow when a large recalled message was added to the "
-        "payload, so the ceiling was computed against something other than what "
-        "would be sent"
+    # The claim is that the ceiling is computed against **what would be sent**,
+    # and it is checked against the payloads that actually were. Since 21
+    # September 2026 the ordinary route is local and settles every call at a
+    # known $0, so a dollar figure taken from that route cannot grow with
+    # anything; the ceiling arithmetic is therefore exercised against a metered
+    # route, on the two real payloads. Both ledgers are still read, to pin that
+    # the local route reserved nothing rather than something unrecorded.
+    assert _only_reservation(with_memory) == _only_reservation(without_memory) == 0.0
+    metered = by_slug("gpt-5-6-sol-medium")
+    assert metered is not None
+    priced_with = maximum_cost(metered, (adapter.sent_text,), 6_144)
+    priced_without = maximum_cost(metered, (bare_adapter.sent_text,), 6_144)
+    assert priced_with > priced_without, (
+        "the ceiling did not grow when a large recalled message was added to the "
+        "payload, so it was computed against something other than what would be sent"
     )
     assert alpha.project_id is not None
 

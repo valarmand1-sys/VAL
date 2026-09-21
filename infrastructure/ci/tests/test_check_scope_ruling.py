@@ -128,16 +128,25 @@ def test_deviation_gone_and_local_route_present_is_green(tmp_path: Path) -> None
     assert check_strip_deviation(layer0, registry, admitted=frozenset({"mlx-local"})) == []
 
 
-def test_the_real_registry_holds_a_non_cloud_entry_that_is_not_admitted() -> None:
-    """The first local candidate is in the registry text and not among the routable
-    providers, so the real tree's deviation stands by the ruled condition."""
+def test_the_real_registry_now_holds_an_admitted_non_cloud_route() -> None:
+    """The tripwire's condition arrived — 21 September 2026 — and this test says so.
+
+    It used to assert the opposite, and was right while every local entry was
+    registered for evaluation only: the deviation stood because there was no
+    local route the strip could have moved to. A local Partner route is now
+    admitted to routing, so the condition the 1 September ruling wrote down has
+    been met, `04-layer-0.md` §4 has moved, and its marker is gone. What the
+    owner decided about the strip in the same instruction — that it stays on its
+    cloud route for now — is recorded there as a decision rather than left
+    standing as a lapsed condition.
+    """
     from check_scope_ruling import CLOUD_PROVIDERS, _admitted_providers
 
     root = Path(__file__).resolve().parents[3]
     text = (root / "packages" / "domain" / "src" / "val_domain" / "registry.py").read_text()
     assert 'provider="lmstudio"' in text
     assert "lmstudio" not in CLOUD_PROVIDERS
-    assert "lmstudio" not in _admitted_providers()
+    assert "lmstudio" in _admitted_providers(), "a local route is admitted to routing"
 
 
 def test_the_real_tree_deviation_is_currently_consistent() -> None:

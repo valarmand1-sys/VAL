@@ -31,6 +31,7 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.project import ProjectAttribution
+from val_domain.provider import ContextFeasibility
 from val_domain.registry import by_slug
 from val_gateway.gateway import CallRecord, Gateway
 from val_gateway.ledger import Refusal, Reservation
@@ -66,6 +67,28 @@ class StubAdapter:
         #: test can assert a machine-readable contract was actually enforced.
         self.sent_output_schema: Mapping[str, object] | None = None
         self.sent_cache_ttl: CacheTtl | None = None
+        #: Owner ruling, 21 September 2026: the ordinary partner route is now
+        #: local, and the gateway measures a local route's context exactly
+        #: against the loaded window. A stub standing in for that runtime says
+        #: what the runtime would: a real count, and the window it holds. Set a
+        #: larger `measured_prompt_tokens` to drive the preflight to refuse.
+        self.measured_prompt_tokens = 1_024
+        self.measured_context_tokens = 32_768
+
+    def measure_context(
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int | None = None,
+    ) -> ContextFeasibility:
+        """The exact local preflight, faked — consulted only for unmetered local routes."""
+        return ContextFeasibility(
+            prompt_tokens=self.measured_prompt_tokens,
+            context_tokens=self.measured_context_tokens,
+            source="stub",
+            details={"stub": True},
+        )
 
     def complete(
         self,
@@ -240,7 +263,12 @@ def build(
     rows: list[CallRecord] = []
     blocks: list[str] = []
     ledger = FakeLedger(opening_committed_usd=committed)
-    wired = adapters if adapters is not None else {"anthropic": adapter}
+    # Owner ruling, 21 September 2026: the ordinary partner route is the local
+    # one, so a gateway wired for ordinary work has a local adapter. Without it
+    # every partner turn would correctly stop rather than reach for a paid
+    # route, which is the new control doing its job and not the subject of most
+    # of these tests.
+    wired = adapters if adapters is not None else {"anthropic": adapter, "lmstudio": adapter}
     gateway = Gateway(
         adapters=wired,  # type: ignore[arg-type]
         recorder=lambda record: (rows.append(record), uuid4())[1],

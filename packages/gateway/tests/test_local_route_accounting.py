@@ -256,7 +256,7 @@ def test_the_metered_fabricated_zero_protection_is_untouched(
         name="openai",
     )
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(store, record),
         ledger=DatabaseLedger(store),
         persona_loader=DatabasePersonaLoader(store),
@@ -264,11 +264,16 @@ def test_the_metered_fabricated_zero_protection_is_untouched(
         observe_block=lambda message: None,
     )
     turn = a_turn(store)
+    metered = by_slug("gpt-5-6-sol-medium")
+    assert metered is not None
     gateway.converse(
         (Message(role="user", content="Hello."),),
         scope=ExplicitNoProject(),
         turn=turn,
         max_output_tokens=6_144,
+        # Named, not routed to: the ordinary partner route is local since 21
+        # September 2026, and this test is about what a *metered* route records.
+        configuration=metered,
     )
     (row,) = _rows(store)
     assert row["provider"] == "openai" and row["cost"] is None and row["certainty"] == "unknown"

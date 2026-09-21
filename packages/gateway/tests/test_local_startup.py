@@ -40,12 +40,22 @@ def test_the_token_variable_is_named_and_the_base_url_defaults_to_loopback(
     assert configured_lmstudio_base_url() == DEFAULT_BASE_URL == "http://127.0.0.1:1234/v1"
 
 
-def test_production_startup_does_not_require_the_local_token(
+def test_production_startup_now_requires_the_local_token(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The set `start()` builds from excludes the evaluation-only local entry."""
+    """Owner admission ruling, 21 September 2026 — and this test says the opposite of before.
+
+    While the only local entry was evaluation-only, the production service built
+    no `lmstudio` adapter and needed no token; that was this test's subject and
+    it was correct. Admitting a local Partner route reverses it: `start()` builds
+    adapters for `active()` providers, the local route is now one of them, and a
+    service without the token stops rather than running without the route Val
+    thinks on. The deployment consequence is that the token belongs in the
+    installed LaunchAgent, which is where it is.
+    """
     production = {config.provider for config in active()}
-    assert "lmstudio" not in production
+    assert "lmstudio" in production, "the admitted local Partner route is in production"
+    # The candidates are still evaluation-only beside it, and still absent here.
     assert "lmstudio" in {config.provider for config in under_evaluation()}
     source = inspect.getsource(startup.start)
     assert "build_adapters({config.provider for config in active()})" in source
@@ -53,7 +63,11 @@ def test_production_startup_does_not_require_the_local_token(
     monkeypatch.setenv("VAL_ANTHROPIC_API_KEY", "not-a-real-value")
     monkeypatch.setenv("VAL_OPENAI_API_KEY", "not-a-real-value")
     adapters, problems = build_adapters(production)
-    assert problems == [] and "lmstudio" not in adapters
+    # Without the token the service refuses to start, naming the reason. It does
+    # not come up quietly with Val's own route missing, because that is a house
+    # with no local cognition pretending to be a working one.
+    assert "lmstudio" not in adapters
+    assert len(problems) == 1 and "VAL_LMSTUDIO_API_TOKEN" in problems[0]
 
 
 def test_constructing_the_local_adapter_requires_the_token(

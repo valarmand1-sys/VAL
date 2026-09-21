@@ -62,7 +62,17 @@ def test_sol_is_an_active_partner_configuration_in_the_incumbents_admission_stat
     assert incumbent is not None and incumbent.admission is config.admission
 
 
-def test_an_ordinary_partner_request_resolves_to_sol_through_the_ordinary_router() -> None:
+def test_sol_is_no_longer_the_ordinary_partner_route_but_is_still_one() -> None:
+    """Owner admission ruling, 21 September 2026 — and this test used to say the reverse.
+
+    It asserted that an ordinary partner request resolves to Sol, which was true
+    and is the evidence of Sol's cutover of 14 September. What changed is not Sol
+    and not the router: a local partner route was admitted at a cost of zero, and
+    cost ranks what the floor has already admitted. Sol stays registered,
+    partner-profiled and eligible — the route an owner-approved escalation would
+    name — and is simply no longer the cheapest. Its admission evidence in this
+    file is untouched.
+    """
     order = attempt_order(
         active(),
         Classification.PROTECTED,
@@ -72,33 +82,42 @@ def test_an_ordinary_partner_request_resolves_to_sol_through_the_ordinary_router
         profile=required_profile(TaskType.CONVERSATION),
         cost_bound=lambda config: config.cost_per_mtok_in_usd + config.cost_per_mtok_out_usd,
     )
-    assert order and order[0].slug == SOL
+    assert order and order[0].slug == "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
     assert all(satisfies_profile(config, CapabilityProfile.PARTNER) for config in order)
-    # The attempt order is the cheapest partner route plus its declared fallback
-    # chain — Sol declares none, so it stands alone, exactly as the incumbent did
-    # for conversation (its haiku fallback is structured-only). The incumbent
-    # remains registered and partner-profiled; it is simply not the cheapest.
-    assert order == (order[0],) or all(c.slug != "opus-5-medium" for c in order[1:])
+    # The order is the cheapest partner route plus its declared chain. The local
+    # route declares no fallback, so it stands alone: an undeclared fallback is
+    # no fallback, which is what keeps a paid route from being reached by
+    # accident when the local one fails.
+    assert len(order) == 1
+
+    sol = by_slug(SOL)
+    assert sol is not None and sol in active()
+    assert CapabilityProfile.PARTNER in sol.capability_profiles
     incumbent = by_slug("opus-5-medium")
     assert incumbent is not None and incumbent in active()
     assert CapabilityProfile.PARTNER in incumbent.capability_profiles
 
 
-def test_the_gateway_routes_a_conversation_to_sol_and_records_it_under_sols_identity() -> None:
+def test_the_gateway_now_selects_the_local_partner_for_an_ordinary_conversation() -> None:
+    """The same selection this file used to pin to Sol, at the gateway seam."""
     answering = StubAdapter(
         ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 5, "r")
     )
-    gateway, _, _, _ = build(adapters={"anthropic": answering, "openai": answering})
+    gateway, _, _, _ = build(
+        adapters={"anthropic": answering, "openai": answering, "lmstudio": answering}
+    )
     chosen = gateway.select_configuration(
         Classification.PROTECTED, ("persona", "hello"), 4096, task_type=TaskType.CONVERSATION
     )
-    assert chosen.slug == SOL
-    assert chosen.provider == "openai"
+    assert chosen.slug == "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+    assert chosen.provider == "lmstudio"
 
 
 def test_the_blind_position_pins_to_the_same_partner_configuration() -> None:
     answering = StubAdapter(ProviderResult("{}", TerminalState.COMPLETE, 20, 5, "r"))
-    gateway, _, _, _ = build(adapters={"anthropic": answering, "openai": answering})
+    gateway, _, _, _ = build(
+        adapters={"anthropic": answering, "openai": answering, "lmstudio": answering}
+    )
     chosen = gateway.select_configuration(
         Classification.PROTECTED, ("persona", "q"), 4096, task_type=TaskType.CONVERSATION
     )
@@ -107,7 +126,9 @@ def test_the_blind_position_pins_to_the_same_partner_configuration() -> None:
 
 def test_structured_work_does_not_route_to_sol() -> None:
     answering = StubAdapter(ProviderResult("{}", TerminalState.COMPLETE, 20, 5, "r"))
-    gateway, _, _, _ = build(adapters={"anthropic": answering, "openai": answering})
+    gateway, _, _, _ = build(
+        adapters={"anthropic": answering, "openai": answering, "lmstudio": answering}
+    )
     for task in (TaskType.CLASSIFICATION, TaskType.TITLE, TaskType.STRIP):
         chosen = gateway.select_configuration(Classification.PROTECTED, ("x",), 256, task_type=task)
         assert chosen.slug != SOL, task
@@ -115,7 +136,9 @@ def test_structured_work_does_not_route_to_sol() -> None:
 
 def test_the_candidate_lane_refuses_the_admitted_configuration() -> None:
     answering = StubAdapter(ProviderResult("{}", TerminalState.COMPLETE, 20, 5, "r"), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": answering, "openai": answering})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": answering, "openai": answering, "lmstudio": answering}
+    )
     lane = CandidateGateway.__new__(CandidateGateway)
     lane.__dict__.update(gateway.__dict__)
     with __import__("pytest").raises(GatewayError) as refused:

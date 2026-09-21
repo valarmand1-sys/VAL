@@ -231,12 +231,36 @@ def test_the_request_is_the_core_prompt_whole_with_no_tools_and_no_cloud_fields(
         assert forbidden not in sent, forbidden
 
 
-def test_a_schema_constrained_request_is_refused_not_sent_unconstrained() -> None:
+def test_a_schema_constrained_request_is_enforced_by_the_server_not_sent_unconstrained() -> None:
+    """Owner admission ruling, 21 September 2026 — and this test used to assert a refusal.
+
+    While the route was conversation-only, refusing a schema-constrained task was
+    right: the alternative was sending it unconstrained, which produces a call row
+    and no usable evidence. The ruling put the consequential blind position on
+    this route, and that call carries a strict contract, so the adapter now hands
+    the schema to the server to enforce. **The guarantee is the same one, kept the
+    same way round:** the shape is enforced by the provider, never hoped for.
+    """
+    schema = {
+        "type": "object",
+        "properties": {"position": {"type": "string"}},
+        "required": ["position"],
+        "additionalProperties": False,
+    }
     adapter, client = _adapter(_Completions(_completion()))
-    with pytest.raises(GatewayError) as refused:
-        adapter.complete(local(), HISTORY, PERSONA, 4_096, output_schema={"type": "object"})
-    assert refused.value.kind is GatewayErrorKind.INVALID_REQUEST
-    assert client.chat.completions.kwargs == {}, "nothing left the adapter"
+    adapter.complete(local(), HISTORY, PERSONA, 4_096, output_schema=schema)
+
+    sent = client.chat.completions.kwargs["response_format"]
+    assert sent["type"] == "json_schema"
+    assert sent["json_schema"]["strict"] is True, "the server enforces it, not the prompt"
+    assert sent["json_schema"]["schema"] == schema, "transmitted whole, not summarised"
+
+
+def test_an_ordinary_conversation_carries_no_output_schema() -> None:
+    """Nothing is constrained that was not asked to be."""
+    adapter, client = _adapter(_Completions(_completion()))
+    adapter.complete(local(), HISTORY, PERSONA, 4_096)
+    assert "response_format" not in client.chat.completions.kwargs
 
 
 def test_a_configuration_of_another_provider_is_refused() -> None:

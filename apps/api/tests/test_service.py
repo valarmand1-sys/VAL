@@ -45,6 +45,7 @@ from val_domain.gateway import (
     TaskType,
     TerminalState,
 )
+from val_domain.provider import ContextFeasibility
 from val_gateway.gateway import Gateway
 from val_gateway.ledger import Refusal, Reservation
 from val_gateway.persistence import record_call
@@ -65,6 +66,26 @@ class ScriptedAdapter:
     script: list[ProviderResult | Exception]
     name: str = "scripted"
     calls: int = 0
+    #: The ordinary partner route is local since 21 September 2026, and an
+    #: unmetered local route's context is measured exactly against the loaded
+    #: window rather than by the conservative byte bound. A stub standing in for
+    #: that runtime answers that question too.
+    measured_prompt_tokens: int = 1_024
+    measured_context_tokens: int = 32_768
+
+    def measure_context(
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int | None = None,
+    ) -> ContextFeasibility:
+        return ContextFeasibility(
+            prompt_tokens=self.measured_prompt_tokens,
+            context_tokens=self.measured_context_tokens,
+            source="scripted",
+            details={"scripted": True},
+        )
 
     def complete(
         self,
@@ -138,7 +159,10 @@ def client(
     engine: Engine, adapter: ScriptedAdapter, ledger: OpenLedger | None = None
 ) -> TestClient:
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        # The ordinary partner route is local since 21 September 2026; a gateway
+        # that could not reach it would stop every partner turn rather than
+        # quietly using a paid one.
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(engine, record),
         ledger=ledger if ledger is not None else OpenLedger(),
         observe_block=lambda message: None,
@@ -610,7 +634,9 @@ def test_the_cost_view_carries_classification_on_its_own_line(store: Engine) -> 
 
     costs = api.get("/costs").json()
     assert costs["by_task_type"]["classification"] > 0
-    assert costs["by_task_type"]["conversation"] > 0
+    # Val's own calls are local and cost nothing since 21 September 2026; the
+    # line is still reported separately, which is what this test is about.
+    assert costs["by_task_type"]["conversation"] == 0.0
     assert costs["uncosted_calls"] == 0 and costs["complete"] is True
     assert costs["month_to_date_usd"] == pytest.approx(sum(costs["by_task_type"].values()))
 

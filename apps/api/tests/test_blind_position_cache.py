@@ -73,7 +73,10 @@ def test_the_blind_call_requests_no_cache_and_everything_else_is_unchanged(store
     adapter = RecordingAdapter(deliberated_script())
     ledger = RecordingLedger()
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        # The ordinary partner route is local since 21 September 2026; a gateway
+        # that could not reach it would stop every partner turn rather than
+        # quietly using a paid one.
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(store, record),
         ledger=ledger,  # type: ignore[arg-type]
         observe_block=lambda message: None,
@@ -99,8 +102,11 @@ def test_the_blind_call_requests_no_cache_and_everything_else_is_unchanged(store
     # 14 September 2026: the partner route is `gpt-5-6-sol-medium`, whose provider
     # caches automatically — no lifetime is requested on either partner call, and
     # the blind call still requests none by its own rule.
-    assert by_task["blind_position"] == ("gpt-5-6-sol-medium", True, None)
-    assert by_task["conversation"] == ("gpt-5-6-sol-medium", False, None)
+    # 21 September 2026: the blind position pins to the same Partner as the
+    # answer, and that Partner is now the local route. The property under test —
+    # that the blind call requests no cache — is unchanged by which route it is.
+    assert by_task["blind_position"] == ("gpt-oss-20b-mxfp4-mlx-lmstudio-partner", True, None)
+    assert by_task["conversation"] == ("gpt-oss-20b-mxfp4-mlx-lmstudio-partner", False, None)
     assert by_task["strip"] == ("sonnet-5-low", True, CacheTtl.ONE_HOUR)
     assert by_task["classification"][2] is None
 
@@ -117,9 +123,9 @@ def test_the_blind_call_requests_no_cache_and_everything_else_is_unchanged(store
             text("select id from personas where is_active")
         ).scalar_one()
     rows = {row[0]: row for row in calls}
-    sol_config = by_slug("gpt-5-6-sol-medium")
-    assert sol_config is not None
-    assert rows["blind_position"][2] == sol_config.id, "the partner route: gpt-5-6-sol-medium"
+    partner = by_slug("gpt-oss-20b-mxfp4-mlx-lmstudio-partner")
+    assert partner is not None
+    assert rows["blind_position"][2] == partner.id, "the partner route, local since 21 September"
     assert rows["blind_position"][1] == active_persona, "persona attribution unchanged"
     assert rows["blind_position"][3] == 0, "no cache-usage row: nothing was requested"
     assert rows["conversation"][3] == 0, (
@@ -131,6 +137,7 @@ def test_the_blind_call_requests_no_cache_and_everything_else_is_unchanged(store
         cost for task, _, cost in ledger.reserved if task is TaskType.BLIND_POSITION
     )
     blind_parts, blind_max_output = adapter.parts[2]
-    assert blind_reserved == maximum_cost(sol_config, blind_parts, blind_max_output, None), (
-        "reserved at the route's cold bound (every input token at the automatic write rate)"
+    assert blind_reserved == maximum_cost(partner, blind_parts, blind_max_output, None), (
+        "reserved at the route's own bound — zero on the local route, which is the "
+        "whole point of it, and still computed rather than assumed"
     )

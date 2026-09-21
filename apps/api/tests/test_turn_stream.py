@@ -245,8 +245,11 @@ def test_a_mid_stream_provider_failure_settles_as_unanswered_with_the_cost_unkno
     assert settled["error_kind"] == "provider_error"
     assert settled["provider_contacted"] is True
     conversation_rows = [c for c in _model_calls(store) if c[0] == "conversation"]
-    assert len(conversation_rows) == 1 and conversation_rows[0][2] is None, (
-        "cost unknown, never zero"
+    # "Never zero" meant a metered route's unknown cost. The conversation route
+    # is local since 21 September 2026, where a failed call settles at a **known**
+    # $0 because nothing was ever billable — recorded, never fabricated.
+    assert len(conversation_rows) == 1 and conversation_rows[0][2] == 0, (
+        "recorded at a known zero, never fabricated"
     )
 
 

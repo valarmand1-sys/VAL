@@ -51,12 +51,14 @@ import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import date
+from typing import cast
 from uuid import UUID
 
 from val_domain.gateway import (
     Admission,
     CacheTtl,
     CallStatus,
+    CapabilityProfile,
     Classification,
     CostCertainty,
     GatewayError,
@@ -80,9 +82,13 @@ from val_domain.provider import (
     ContextInspectingAdapter,
     ContextInspectionUnavailableError,
     DeltaSink,
+    LocalRuntimeAdapter,
+    LocalRuntimeUnavailableError,
     ProviderAdapter,
     ProviderResult,
     TextDelta,
+    supports_context_inspection,
+    supports_local_runtime,
     supports_streaming,
 )
 from val_domain.registry import active, by_id, fallback_for, stale_rates
@@ -98,13 +104,17 @@ from val_policy.budget import (
     local_context_overrun,
     maximum_cost,
     no_affordable_route_message,
+    output_cap_overrun,
 )
 from val_policy.eligibility import refusal_for, startup_violations
 from val_policy.restricted import preflight, refusal_message
 from val_policy.routing import (
     attempt_order,
+    can_carry_images,
     is_admitted,
     is_eligible,
+    local_alternative,
+    paid_partner_refusal,
     required_profile,
     satisfies_profile,
 )
@@ -576,7 +586,7 @@ class Gateway:
             # route that CAN hold it, and so `_attempt`'s own refusal is the
             # backstop rather than the mechanism.
             is_affordable=lambda config: (
-                limit_overrun(config, parts, request.max_output_tokens) is None
+                self._fits(config, parts, request.max_output_tokens)
                 and self._affordable(config, request, parts, committed)
             ),
             resolve_fallback=fallback_for,
@@ -593,6 +603,14 @@ class Gateway:
                 GatewayErrorKind.NO_ELIGIBLE_ROUTE,
                 self._no_route_detail(request, parts, committed),
             )
+        self._refuse_paid_partner(
+            order[0],
+            request.classification,
+            parts,
+            request.max_output_tokens,
+            profile=required_profile(request.task_type),
+            requires_image_input=False,
+        )
 
         last: GatewayError | None = None
         # Every call written on the way to failing, across routes, so the
@@ -780,6 +798,30 @@ class Gateway:
                 GatewayErrorKind.INVALID_REQUEST,
                 f"no adapter is configured for provider {config.provider!r}",
             )
+
+        # Owner ruling, 21 September 2026: an adapter that can bring its own
+        # runtime up is asked to, before anything is reserved or transmitted, so
+        # ordinary use never requires a terminal. Provider-neutral at this seam:
+        # the core asks whether the capability is declared and learns nothing
+        # about what is underneath. A runtime that cannot be brought up ends the
+        # turn honestly — it is never a reason to try a paid route instead, which
+        # is why the failure carries the same kind as the stop above.
+        if supports_local_runtime(adapter):
+            local = cast(LocalRuntimeAdapter, adapter)
+            try:
+                readiness = local.ensure_runtime_ready(config)
+                self._observe_block(
+                    "local runtime ready: "
+                    + ", ".join(f"{key}={value}" for key, value in readiness.items())
+                )
+            except LocalRuntimeUnavailableError as failure:
+                raise GatewayError(
+                    GatewayErrorKind.LOCAL_PARTNER_UNAVAILABLE,
+                    f"the local runtime for {config.slug} could not be made ready, and one "
+                    f"bounded recovery attempt was made: {failure}. Nothing was transmitted "
+                    "and nothing was charged; cloud escalation would need Lord Armand's "
+                    "explicit approval (owner ruling, 21 September 2026).",
+                ) from failure
 
         # Closure pass, 18 August 2026: the model's own limits are enforced
         # HERE, before a reservation is taken and before anything is
@@ -1380,6 +1422,7 @@ class Gateway:
         max_output_tokens: int,
         *,
         task_type: TaskType,
+        requires_image_input: bool = False,
     ) -> ModelConfig:
         """The configuration routing would choose for this work, without calling.
 
@@ -1399,7 +1442,16 @@ class Gateway:
             classification,
             is_ready=lambda config: config.provider in self._adapters,
             is_affordable=lambda config: (
-                limit_overrun(config, parts, max_output_tokens) is None
+                # A turn that shows something needs a route that can see it.
+                # Ruled into selection on 21 September 2026, when a local Partner
+                # route with no image capability joined the partner profile at
+                # zero cost: cost ranks what the floor admits, so without this
+                # the cheapest partner route would be pinned for an image turn
+                # and refused later by the component that derives bytes. Track C
+                # behaviour is unchanged by it — the one image-capable partner
+                # route is still the one chosen.
+                (not requires_image_input or can_carry_images(config))
+                and self._fits(config, tuple(parts), max_output_tokens)
                 and admits(committed, maximum_cost(config, parts, max_output_tokens))
             ),
             resolve_fallback=fallback_for,
@@ -1415,6 +1467,14 @@ class Gateway:
                 "content of this size. Truthful unavailability, not a licence to "
                 "downgrade or to lower the floor (01-architecture.md §5.4, §5.5).",
             )
+        self._refuse_paid_partner(
+            order[0],
+            classification,
+            tuple(parts),
+            max_output_tokens,
+            profile=floor,
+            requires_image_input=requires_image_input,
+        )
         return order[0]
 
     def _refuse_restricted(self, request: GatewayRequest) -> None:
@@ -1448,6 +1508,77 @@ class Gateway:
             second,
             bound,
         )
+
+    def _fits(self, config: ModelConfig, parts: tuple[str, ...], max_output_tokens: int) -> bool:
+        """Whether this route can hold the request, as well as that can be known here.
+
+        On a route the runtime measures exactly — an unmetered local one with an
+        inspecting adapter — only the model's published output cap is applied,
+        and the context question waits for the exact measurement `_attempt`
+        makes against the window that is actually loaded. Everywhere else the
+        conservative byte bound governs, unchanged.
+
+        The reason is arithmetic, found on 21 September 2026: the byte bound
+        counts the persona alone at about 23,600 tokens where the runtime counts
+        about 5,000, so against a 32,768-token window it leaves roughly 3,000
+        tokens of headroom and an ordinary conversation exhausts that almost at
+        once. Striking the route out on that basis would end turns the model can
+        comfortably answer. Nothing is loosened by this: the exact preflight
+        still refuses what will not fit, before anything is transmitted, and it
+        still falls back to the byte bound when the runtime cannot be measured.
+        """
+        adapter = self._adapters.get(config.provider)
+        exactly_measured = (
+            config.metering is Metering.LOCAL_NO_METERED_COST
+            and adapter is not None
+            and supports_context_inspection(adapter)
+        )
+        if exactly_measured:
+            return output_cap_overrun(config, max_output_tokens) is None
+        return limit_overrun(config, parts, max_output_tokens) is None
+
+    def _refuse_paid_partner(
+        self,
+        chosen: ModelConfig,
+        classification: Classification,
+        parts: tuple[str, ...],
+        max_output_tokens: int,
+        *,
+        profile: CapabilityProfile,
+        requires_image_input: bool,
+    ) -> None:
+        """Stop before a Partner-class call the local route should have carried.
+
+        Owner ruling, 21 September 2026. Placed **after** the order is computed
+        and **before** anything is attempted, so nothing is transmitted, nothing
+        is reserved and nothing is charged. `local_alternative` is blind to
+        readiness on purpose: the local runtime being down is the case this
+        exists for, not a reason to decide the work was never local work.
+        """
+
+        def can_hold(config: ModelConfig) -> bool:
+            """Whether the local route was *the kind of route* this request needed.
+
+            Capability only, and deliberately **not** the size estimate. The
+            house's byte bound is a conservative pre-routing guess — it counts
+            the persona alone at about five times the runtime's own figure — and
+            letting it answer this question would mean that "our estimate says it
+            might not fit" silently became authority to spend the owner's money
+            on a cloud Partner model. It is not. A request the local route cannot
+            hold stops with a reason, which is the rule as ruled on 21 September
+            2026. A request it was never capable of — a turn carrying images,
+            which it has no image input for — is a different matter, and is the
+            one thing still checked here.
+            """
+            return not requires_image_input or can_carry_images(config)
+
+        refusal = paid_partner_refusal(
+            chosen,
+            local_alternative(active(), classification, profile=profile, can_hold=can_hold),
+            profile=profile,
+        )
+        if refusal is not None:
+            raise GatewayError(GatewayErrorKind.LOCAL_PARTNER_UNAVAILABLE, refusal)
 
     def _affordable(
         self,

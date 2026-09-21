@@ -256,18 +256,24 @@ def test_a_metered_cloud_route_never_takes_the_exact_path(
     adapter = Measuring([ok("Two o'clock, my lord.")], prompt_tokens=10, context_tokens=10)
     adapter.name = "openai"
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(store, record),
         ledger=DatabaseLedger(store),
         persona_loader=DatabasePersonaLoader(store),
         verify_provenance=verifier(store),
         observe_block=lambda message: None,
     )
+    metered = by_slug("gpt-5-6-sol-medium")
+    assert metered is not None
     gateway.converse(
         (Message(role="user", content="Hello."),),
         scope=ExplicitNoProject(),
         turn=a_turn(store),
         max_output_tokens=6_144,
+        # Named, not routed to: since 21 September 2026 the route the router
+        # would choose is the local one, and this test is about what a metered
+        # route does — which is never to be measured exactly.
+        configuration=metered,
     )
     assert adapter.measured == 0, "a metered route is never measured; the byte bound governs"
     (row,) = _diagnostics(store)

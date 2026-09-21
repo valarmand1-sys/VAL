@@ -130,7 +130,7 @@ def test_the_attempt_is_durable_before_the_provider_boundary(store: Engine) -> N
     """Property 1, observed from inside the boundary rather than asserted about it."""
     adapter = _ProbingAdapter(store, ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "r"))
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(store, record),
         ledger=DatabaseLedger(store),
         observe_block=lambda message: None,

@@ -855,6 +855,79 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 16),
     ),
     ModelConfig(
+        id=UUID("3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"),
+        slug="gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+        # OWNER ADMISSION RULING, Lord Armand, 21 September 2026: the production
+        # local Partner route. The same artifact, quantization and runtime as the
+        # evaluation entry above — which is left exactly as it stands, because
+        # this is a **separate** record of a **new decision**, not a revision of
+        # an old one. Reading the two together is the point: the evaluation entry
+        # says what the frozen benchmark found, this entry says what the owner
+        # decided knowing it.
+        provider="lmstudio",
+        model_identifier="openai/gpt-oss-20b",
+        display_name="GPT-OSS 20B (MXFP4, Apple MLX, LM Studio — local Partner, owner-admitted)",
+        # The context the exact preflight was proven against, and the context the
+        # runtime supervisor loads. The hazard recorded on the evaluation entry
+        # is why the supervisor names it explicitly rather than trusting
+        # just-in-time loading: a JIT reload restores the model's per-model
+        # default, which is smaller, and the preflight would then fail closed on
+        # ordinary turns. Runtime remains authoritative at call time.
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        reasoning_effort=ReasoningEffort.MEDIUM,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        # Unchanged from the evaluation entry: exactly the incumbent partner
+        # route's non-Restricted classifications. Admitting a model to a role
+        # widens no eligibility.
+        eligible_classifications=_PROTECTED,
+        # The partner profile: ordinary conversation and the consequential blind
+        # position, which `val_policy.routing` already requires the same profile
+        # for. Val's own thinking and speaking, on one route.
+        capability_profiles=frozenset({CapabilityProfile.PARTNER}),
+        # **The Stage A findings, as found.** These are production risks the
+        # owner is carrying deliberately; they are not softened, and nothing in
+        # this entry claims the qualification evidence changed.
+        known_weaknesses=(
+            "fabricated House Armand continuity and history — Stage A, 16 September 2026",
+            "claimed access to system logs it does not have — Stage A, 16 September 2026",
+            "incorrect date arithmetic — Stage A, 16 September 2026",
+        ),
+        # No fallback is declared, and an undeclared fallback is no fallback
+        # (`val_policy.routing.attempt_order`). A Partner call that this route
+        # cannot complete ends honestly rather than reaching for a paid one.
+        fallback_slug=None,
+        # Formal qualification status remains NOT MET against the frozen
+        # benchmark. `QUALIFIED` is not set and nothing here implies it. The same
+        # admission state, and the same meaning of that state, as the incumbent
+        # cloud partner routes.
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        owner_authorization=(
+            "OWNER ADMISSION RULING BY EXCEPTION, Lord Armand, 21 September 2026: "
+            "openai/gpt-oss-20b is admitted to the production role VAL DEFAULT LOCAL TEXT "
+            "COGNITION / PARTNER, and becomes Val's ordinary text cognition provider. This "
+            "is an owner exception relative to the Stage A result, taken with that result's "
+            "substantive reliability findings known and listed above — fabricated House "
+            "Armand continuity, a false claim of system-log access, and incorrect date "
+            "arithmetic. No claim is made that the earlier qualification evidence changed; "
+            "the Stage A record and the evaluation-only entry "
+            "`gpt-oss-20b-mxfp4-mlx-lmstudio` are preserved unchanged, and formal "
+            "qualification status remains NOT MET. Persona v1.9 revision 8 is part of the "
+            "admitted configuration. Val Core remains Val: this entry is a replaceable "
+            "cognition provider and owns no identity, memory, state or authority."
+        ),
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 21),
+        # There are no rates: verified on the admission date against the local
+        # server, which bills nothing.
+        rates_verified_on=date(2026, 9, 21),
+    ),
+    ModelConfig(
         id=UUID("c7e2a5d1-4b6f-4e8a-9d3c-2f1b7a6e5d40"),
         slug="qwen3-8-27b-mlx-6bit-lmstudio",
         # Owner ruling, 16 September 2026: the ONE authorised Local Partner

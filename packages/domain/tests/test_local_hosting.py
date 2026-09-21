@@ -9,6 +9,7 @@ import pytest
 
 from val_domain.gateway import (
     Admission,
+    CapabilityProfile,
     Classification,
     Hosting,
     Metering,
@@ -152,14 +153,66 @@ def test_the_qwen_challenger_is_evaluation_only_local_unmetered_and_medium() -> 
 def test_the_local_entries_are_distinct_evaluation_only_entries() -> None:
     # Pin moved 17 September 2026 (owner ruling): the Category-A Mistral challenger
     # joins the two earlier local evaluation entries; all three NOT_ADMITTED, no profile.
-    local = [c for c in REGISTRY if c.provider == "lmstudio"]
-    assert {c.slug for c in local} == {
+    #
+    # Pin moved again 21 September 2026 (owner admission ruling): a fourth local
+    # entry exists and is **admitted**, and the three candidates are unchanged
+    # beside it. That is the shape the ruling asked for — the new decision
+    # recorded separately, the evaluation record preserved — so the two halves
+    # are asserted separately here rather than blurred into one set.
+    candidates = [c for c in REGISTRY if c.provider == "lmstudio" and not c.capability_profiles]
+    assert {c.slug for c in candidates} == {
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
         "qwen3-8-27b-mlx-6bit-lmstudio",
         "mistral-small-3-2-24b-8bit-mlx-lmstudio",
     }
-    assert len({c.id for c in local}) == 3 and len({c.model_identifier for c in local}) == 3
-    assert all(c.admission is Admission.NOT_ADMITTED and not c.capability_profiles for c in local)
+    assert len({c.id for c in candidates}) == 3
+    assert all(c.admission is Admission.NOT_ADMITTED for c in candidates)
+    assert all(not c.capability_profiles for c in candidates)
+
+
+def test_the_owner_admitted_local_partner_is_a_separate_record() -> None:
+    """Owner admission ruling, 21 September 2026 — recorded beside the history, not over it.
+
+    The evaluation entry keeps saying what the frozen benchmark found. This entry
+    says what the owner decided knowing it. Neither is edited to agree with the
+    other, which is the whole point of writing the second one.
+    """
+    evaluation = by_slug("gpt-oss-20b-mxfp4-mlx-lmstudio")
+    production = by_slug("gpt-oss-20b-mxfp4-mlx-lmstudio-partner")
+    assert evaluation is not None and production is not None
+
+    # The history, untouched.
+    assert evaluation.admission is Admission.NOT_ADMITTED
+    assert evaluation.capability_profiles == frozenset()
+    assert evaluation.owner_authorization is None
+
+    # The decision, recorded.
+    assert production.admission is Admission.PROVISIONALLY_ADMITTED
+    assert production.capability_profiles == frozenset({CapabilityProfile.PARTNER})
+    assert production.id != evaluation.id
+    authorization = production.owner_authorization or ""
+    assert "OWNER ADMISSION RULING BY EXCEPTION" in authorization
+    assert "21 September 2026" in authorization
+    assert "NOT MET" in authorization, "formal qualification status is not claimed"
+
+    # The same artifact, and the same limits on where it may be used.
+    assert production.model_identifier == evaluation.model_identifier
+    assert production.hosting is evaluation.hosting
+    assert production.metering is evaluation.metering
+    assert production.eligible_classifications == evaluation.eligible_classifications
+    assert production.context_window_tokens == evaluation.context_window_tokens
+
+    # The Stage A findings are carried as production risks, in the words they
+    # were found in. Softening them here would be rewriting the record.
+    weaknesses = " ".join(production.known_weaknesses).lower()
+    for finding in ("fabricated", "system logs", "date arithmetic"):
+        assert finding in weaknesses, finding
+
+
+def test_the_admitted_local_partner_declares_no_fallback() -> None:
+    """An undeclared fallback is no fallback, which is what makes the stop hold."""
+    production = by_slug("gpt-oss-20b-mxfp4-mlx-lmstudio-partner")
+    assert production is not None and production.fallback_slug is None
 
 
 # --- the Mistral Small 3.2 Category-A challenger (owner ruling, 17 September 2026) --------

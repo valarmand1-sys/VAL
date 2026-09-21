@@ -172,6 +172,14 @@ class GatewayErrorKind(StrEnum):
     #: route — a cheaper configuration is never substituted to fit the envelope —
     #: and proceeding requires Lord Armand's authorisation.
     EXCHANGE_ENVELOPE_EXCEEDED = "exchange_envelope_exceeded"
+    #: Owner ruling, 21 September 2026: ordinary Partner cognition runs locally,
+    #: and a Partner-class call the local route could have carried is never sent
+    #: to a metered provider on Core's own initiative. When the local route
+    #: cannot complete it, the turn **stops here** — it does not fall through to
+    #: a paid Partner model. Cloud Partner escalation is the owner's decision and
+    #: needs his explicit approval for that call; previous cloud use is not
+    #: approval. Not retryable, because retrying is precisely the thing forbidden.
+    LOCAL_PARTNER_UNAVAILABLE = "local_partner_unavailable"
 
 
 class QualificationTarget(Enum):

@@ -37,6 +37,7 @@ from val_domain.gateway import (
     Admission,
     CapabilityProfile,
     Classification,
+    Hosting,
     ModelConfig,
     TaskType,
 )
@@ -218,3 +219,93 @@ def attempt_order(
         current = successor
 
     return order
+
+
+# --- images: a route that cannot see is not a candidate for a turn that shows ---
+
+
+def can_carry_images(config: ModelConfig) -> bool:
+    """Whether this configuration declares image input at all.
+
+    Declared, never inferred, exactly as a capability profile is. Selection has
+    to know this from 21 September 2026, when a local Partner route with no
+    image capability joined the partner profile at a cost of zero: cost ranks
+    what the floor admits, so without this filter the cheapest partner route
+    would be pinned for a turn carrying an image and the turn would then be
+    refused deeper in, by a component whose job is deriving bytes rather than
+    choosing routes. The filter keeps Track C's image behaviour exactly as it
+    was — one image-capable partner route, still chosen — and it is a capability
+    test, not an exception for images.
+    """
+    return config.image_input is not None
+
+
+# --- Partner cognition runs locally: the stop before a paid Partner call ---
+
+
+def is_metered(config: ModelConfig) -> bool:
+    """Whether using this configuration incurs a provider charge."""
+    return config.hosting is not Hosting.LOCAL
+
+
+def local_alternative(
+    configs: Iterable[ModelConfig],
+    classification: Classification,
+    *,
+    profile: CapabilityProfile,
+    can_hold: Callable[[ModelConfig], bool],
+) -> ModelConfig | None:
+    """A local route that is admitted, eligible, and able to carry this request.
+
+    Deliberately **blind to readiness and to the budget**, because those are the
+    very conditions under which the question is asked: the local runtime being
+    down is not evidence that the work was never local work. What it does check
+    is that the local route could have carried *this* request — right
+    classification, right capability floor, able to hold it — so a turn the local
+    route was never capable of, an image turn among them, finds no alternative
+    here and is left exactly as it was.
+    """
+    for config in configs:
+        if (
+            is_admitted(config)
+            and not is_metered(config)
+            and is_eligible(config, classification)
+            and satisfies_profile(config, profile)
+            and can_hold(config)
+        ):
+            return config
+    return None
+
+
+def paid_partner_refusal(
+    chosen: ModelConfig, local: ModelConfig | None, *, profile: CapabilityProfile
+) -> str | None:
+    """Why this Partner-class call must stop rather than be transmitted, or `None`.
+
+    Owner ruling, 21 September 2026. Ordinary Partner cognition — the final
+    answer and the consequential blind position, the calls in which Val herself
+    thinks and speaks — runs on the house's own machine. When the local route
+    cannot complete one, Core stops and says so. It does not quietly spend the
+    owner's money on a cloud Partner model instead, because a fallback nobody
+    chose is a decision nobody made.
+
+    **This is enforced here, in policy, and not in persona wording**, which is
+    the difference between a rule and a hope. It is narrow on purpose: it governs
+    Partner-class cognition only. Classification and stripping keep their
+    existing structured cloud routes, which this never touches, and a request the
+    local route could not have carried is not caught by it at all.
+
+    There is no approve-and-retry path in this pass by the owner's instruction.
+    The turn ends with the reason, and the next move is his.
+    """
+    if profile is not CapabilityProfile.PARTNER:
+        return None
+    if local is None or not is_metered(chosen):
+        return None
+    return (
+        f"Partner cognition runs locally, and the local Partner route "
+        f"{local.slug} cannot carry this request. Stopping rather than sending it to "
+        f"{chosen.slug}, which is a paid provider: cloud Partner escalation is Lord "
+        "Armand's decision and needs his explicit approval for this call (owner ruling, "
+        "21 September 2026). Nothing was transmitted and nothing was charged."
+    )

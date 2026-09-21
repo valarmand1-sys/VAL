@@ -133,6 +133,29 @@ def upper_bound_output_tokens(requested_max_output_tokens: int, config: ModelCon
     return min(requested_max_output_tokens, config.max_output_tokens)
 
 
+def output_cap_overrun(config: ModelConfig, requested_max_output_tokens: int) -> str | None:
+    """The output half of `limit_overrun`, alone — a hard fact about the model.
+
+    Separated 21 September 2026 so a candidate filter can apply the part that is
+    a *fact* without the part that is an *estimate*. A model's output cap is
+    published; the input side is a deliberately conservative byte bound, and on
+    a route the runtime measures exactly it is about five times the real figure.
+    Using that estimate to strike a route out of the candidate list would refuse
+    a route the runtime can demonstrably hold — and on the local Partner route
+    that means an ordinary conversation ending, or being sent somewhere it
+    should not go. The exact check still runs before transmission and still
+    fails closed; this only stops a guess from pre-empting it.
+    """
+    if requested_max_output_tokens > config.max_output_tokens:
+        return (
+            f"{config.slug} supports at most {config.max_output_tokens:,} output tokens "
+            f"and this request asks for {requested_max_output_tokens:,}. Refused rather "
+            "than clamped: serving less than was asked would make the authorised bound "
+            "and the transmitted request disagree."
+        )
+    return None
+
+
 def limit_overrun(
     config: ModelConfig, parts: Iterable[str], requested_max_output_tokens: int
 ) -> str | None:
@@ -151,13 +174,9 @@ def limit_overrun(
        prices (`upper_bound_input_tokens`, uncapped), so enforcement and
        budgeting cannot drift apart: one function, one estimate.
     """
-    if requested_max_output_tokens > config.max_output_tokens:
-        return (
-            f"{config.slug} supports at most {config.max_output_tokens:,} output tokens "
-            f"and this request asks for {requested_max_output_tokens:,}. Refused rather "
-            "than clamped: serving less than was asked would make the authorised bound "
-            "and the transmitted request disagree."
-        )
+    capped = output_cap_overrun(config, requested_max_output_tokens)
+    if capped is not None:
+        return capped
 
     input_bound = raw_input_bound(parts)
     if input_bound + requested_max_output_tokens > config.context_window_tokens:

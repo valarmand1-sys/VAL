@@ -121,7 +121,9 @@ def test_an_unverified_route_prices_cache_figures_at_the_base_rate() -> None:
 
 def _gateway(adapter: StubAdapter, ttl: CacheTtl | None) -> tuple[Gateway, list[CallRecord]]:
     rows: list[CallRecord] = []
-    gateway, _, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, _, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     gateway._cache_ttl = ttl
     original = gateway._record
 

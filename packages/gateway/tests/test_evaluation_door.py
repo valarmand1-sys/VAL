@@ -106,7 +106,9 @@ def test_no_candidate_is_ever_a_routing_candidate_for_any_profile() -> None:
 
 def test_the_pinned_path_refuses_a_candidate_for_the_floor() -> None:
     adapter = StubAdapter(_answer(), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     terra = by_slug("gpt-5-6-terra")
     assert terra is not None
     with pytest.raises(GatewayError) as caught:
@@ -118,7 +120,9 @@ def test_the_pinned_path_refuses_a_candidate_for_the_floor() -> None:
 def test_routing_never_reaches_a_candidate_for_the_strip() -> None:
     """The cheapest entry in the registry is Luna; the strip does not go there."""
     adapter = StubAdapter(_answer(), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     gateway.complete(strip_request())
     assert len(rows) == 1
     routed = by_id(rows[0].model_config_id)
@@ -132,7 +136,9 @@ def test_routing_never_reaches_a_candidate_for_the_strip() -> None:
 
 def test_the_door_runs_a_schema_constrained_strip_on_a_candidate() -> None:
     adapter = StubAdapter(_answer(), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     terra = by_slug("gpt-5-6-terra")
     assert terra is not None
 
@@ -147,7 +153,9 @@ def test_the_door_runs_a_schema_constrained_strip_on_a_candidate() -> None:
 def test_the_door_refuses_an_admitted_configuration() -> None:
     """A serving configuration is exercised through routing or the pinned path."""
     adapter = StubAdapter(_answer())
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     sonnet = by_slug("sonnet-5")
     assert sonnet is not None and sonnet.admission is Admission.PROVISIONALLY_ADMITTED
     with pytest.raises(GatewayError) as caught:
@@ -159,7 +167,9 @@ def test_the_door_refuses_an_admitted_configuration() -> None:
 
 def test_the_door_refuses_a_callers_copy_of_a_candidate() -> None:
     adapter = StubAdapter(_answer(), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     terra = by_slug("gpt-5-6-terra")
     assert terra is not None
     edited = terra.model_copy(update={"model_identifier": "gpt-6-astra"})
@@ -171,7 +181,9 @@ def test_the_door_refuses_a_callers_copy_of_a_candidate() -> None:
 
 def test_the_door_refuses_a_task_in_which_val_speaks() -> None:
     adapter = StubAdapter(_answer(), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     terra = by_slug("gpt-5-6-terra")
     assert terra is not None
     with pytest.raises(GatewayError) as caught:
@@ -183,7 +195,9 @@ def test_the_door_refuses_a_task_in_which_val_speaks() -> None:
 
 def test_the_door_refuses_a_request_without_a_schema() -> None:
     adapter = StubAdapter(_answer(), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     terra = by_slug("gpt-5-6-terra")
     assert terra is not None
     with pytest.raises(GatewayError) as caught:
@@ -194,7 +208,9 @@ def test_the_door_refuses_a_request_without_a_schema() -> None:
 
 def test_the_door_refuses_restricted_content() -> None:
     adapter = StubAdapter(_answer(), name="openai")
-    gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     terra = by_slug("gpt-5-6-terra")
     assert terra is not None
     request = strip_request().model_copy(update={"classification": Classification.RESTRICTED})

@@ -33,10 +33,12 @@ from test_conversation_memory import (
 
 from val_domain.conversation import StoredRole
 from val_domain.project import ExplicitNoProject
+from val_domain.registry import by_slug
 from val_gateway.context import MEMORY_ENVELOPE_MARKER, STATE_ENVELOPE_MARKER
 from val_gateway.exchange import RestrictedContentRefusedError
 from val_gateway.loop import Turn, send
 from val_gateway.memory import house_recall_with_state
+from val_policy.budget import maximum_cost
 from val_policy.project_resolution import ProjectSignals
 
 ASK_HOUSE = "What did we decide about the lighthouse lens colour in our earlier conversations?"
@@ -404,6 +406,13 @@ def test_the_budget_reservation_includes_house_recall_material(store: Engine) ->
     )
     assert _envelope(adapter2) is None
 
-    assert _only_reservation(with_house) > _only_reservation(without), (
-        "the reservation must grow with the house-recalled material"
-    )
+    # The ordinary route is local since 21 September 2026 and settles at a known
+    # $0, so the ceiling arithmetic is exercised against a metered route on the
+    # two payloads that actually went out. The claim is unchanged: recalled
+    # material is priced, never carried for free.
+    assert _only_reservation(with_house) == _only_reservation(without) == 0.0
+    metered = by_slug("gpt-5-6-sol-medium")
+    assert metered is not None
+    assert maximum_cost(metered, (adapter.sent_text,), 6_144) > maximum_cost(
+        metered, (adapter2.sent_text,), 6_144
+    ), "the ceiling must grow with the house-recalled material"

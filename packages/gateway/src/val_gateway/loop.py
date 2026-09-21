@@ -262,6 +262,10 @@ def prepare_visual(
         (opened.user_message.content,),
         max_output_tokens,
         task_type=TaskType.CONVERSATION,
+        # This turn carries images, so only a route declaring image input may be
+        # pinned for it (21 September 2026). Reached only when there are acts —
+        # the branch above returns first when there are none.
+        requires_image_input=True,
     )
     return VisualTurn(
         classification=effective,

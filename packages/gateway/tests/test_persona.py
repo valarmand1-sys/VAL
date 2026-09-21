@@ -53,6 +53,7 @@ from val_domain.project import (
     ResolvedProject,
 )
 from val_domain.registry import active as registry_active
+from val_domain.registry import by_slug
 from val_gateway import conversations
 from val_gateway.context import assemble, persona_occurrences
 from val_gateway.gateway import Gateway, check_startup
@@ -901,7 +902,7 @@ def test_a_model_call_records_the_persona_revision_used(clean_personas: Engine) 
         ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "req")
     )
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(clean_personas, record),
         ledger=FakeLedger(),
         persona_loader=DatabasePersonaLoader(clean_personas),
@@ -935,7 +936,10 @@ def test_a_transmitted_call_that_errors_still_records_its_persona(
 
     adapter = StubAdapter(error=GatewayError(GatewayErrorKind.TIMEOUT, "timed out"))
     gateway = Gateway(
-        adapters={"anthropic": adapter},
+        # The partner route is local since 21 September 2026; a gateway that
+        # could not reach it would stop before transmitting, and there would be
+        # no transmitted call for this test to be about.
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(clean_personas, record),
         ledger=FakeLedger(),
         observe_block=lambda message: None,
@@ -943,11 +947,17 @@ def test_a_transmitted_call_that_errors_still_records_its_persona(
         verify_provenance=verifier(clean_personas),
     )
     # *Closure pass:* through `converse` — the only conversation entrance now.
+    metered = by_slug("gpt-5-6-sol-medium")
+    assert metered is not None
     with pytest.raises(GatewayError):
         gateway.converse(
             (Message(role="user", content="Good evening."),),
             scope=ExplicitNoProject(),
             turn=a_persisted_turn(clean_personas),
+            # Named, not routed to. A failed call on a *metered* route is the
+            # one whose cost is unknown; the local route settles a failure at a
+            # known $0, which is true and is a different assertion.
+            configuration=metered,
         )
 
     with clean_personas.connect() as connection:
@@ -971,7 +981,7 @@ def test_historical_attribution_survives_a_later_activation(
 
     adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 10, 10, "req"))
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(clean_personas, record),
         ledger=FakeLedger(),
         persona_loader=DatabasePersonaLoader(clean_personas),

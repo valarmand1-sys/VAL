@@ -58,6 +58,7 @@ from val_domain.gateway import (
     TerminalState,
 )
 from val_domain.project import ProjectAttribution
+from val_domain.provider import ContextFeasibility
 from val_gateway.deliberate import (
     BLIND_MAX_OUTPUT_TOKENS,
     CLASSIFIER_MAX_OUTPUT_TOKENS,
@@ -142,6 +143,27 @@ class ScriptedAdapter:
     #: conditions between the blind call and the response — the exact window
     #: the pinning rule governs.
     after_last_call: Callable[[], None] | None = None
+    #: The ordinary partner route is local since 21 September 2026, and the
+    #: gateway measures a local route's context exactly against the loaded
+    #: window rather than by the conservative byte bound. Standing in for that
+    #: runtime means answering that question too; raise it to drive the
+    #: preflight to refuse.
+    measured_prompt_tokens: int = 1_024
+    measured_context_tokens: int = 32_768
+
+    def measure_context(
+        self,
+        config: ModelConfig,
+        messages: tuple[Message, ...],
+        system: str | None,
+        max_output_tokens: int | None = None,
+    ) -> ContextFeasibility:
+        return ContextFeasibility(
+            prompt_tokens=self.measured_prompt_tokens,
+            context_tokens=self.measured_context_tokens,
+            source="scripted",
+            details={"scripted": True},
+        )
 
     def complete(
         self,
@@ -263,7 +285,7 @@ def reconciled(
 
 def build_gateway(engine: Engine, adapter: ScriptedAdapter) -> Gateway:
     return Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(engine, record),
         ledger=FakeLedger(),
         observe_block=lambda message: None,
@@ -809,15 +831,17 @@ def test_a_pinned_configuration_is_never_silently_reselected(store: Engine) -> N
     Same discipline as OP-2's "enforced only by absence": a stated limit,
     not a claimed proof.
     """
-    # 14 September 2026: the partner route is `gpt-5-6-sol-medium` on openai (A);
-    # classification and strip still run on anthropic's structured routes, and
-    # the incumbent `opus-5-medium` on anthropic is the route the router would
-    # choose once A's adapter is gone (B). The two-adapter counterfactual is the
-    # same; only the providers behind A and B have swapped.
+    # 21 September 2026: the partner route is the local `gpt-oss-…-partner` on
+    # lmstudio (A); classification and strip still run on anthropic's structured
+    # routes (B). The counterfactual is unchanged in shape — only the provider
+    # behind A has moved again. What changes is *why* the turn fails once A is
+    # gone: the router would now have to reach for a paid partner route, and the
+    # stop of this date forbids exactly that. Either way B is never asked to
+    # speak, which is the guarantee under test.
     adapters: dict[str, ScriptedAdapter] = {}
     adapter_a = ScriptedAdapter(
         [blind_says("Open on the close-up.")],
-        after_last_call=lambda: adapters.pop("openai"),
+        after_last_call=lambda: adapters.pop("lmstudio"),
     )
     adapter_b = ScriptedAdapter(
         [
@@ -826,7 +850,7 @@ def test_a_pinned_configuration_is_never_silently_reselected(store: Engine) -> N
             reconciled("B must never be asked to say this.", "held"),
         ]
     )
-    adapters["openai"] = adapter_a
+    adapters["lmstudio"] = adapter_a
     adapters["anthropic"] = adapter_b
 
     gateway = Gateway(
@@ -1305,9 +1329,15 @@ def test_classification_spend_is_reported_on_its_own_line(store: Engine) -> None
     deliberate(store, adapter)
 
     spend = spend_by_task_type(store)
-    assert "classification" in spend and spend["classification"] > 0
-    assert "conversation" in spend and spend["conversation"] > 0
-    assert "strip" in spend and "blind_position" in spend
+    # Owner ruling, 21 September 2026: Val's own two calls — the answer and the
+    # blind position — are the local route's, and cost nothing. The structured
+    # support calls keep their cloud routes for now and are what a consequential
+    # turn actually spends. Every line is still reported separately, which is the
+    # subject here; only which of them carry money has changed.
+    assert spend["classification"] > 0
+    assert spend["strip"] > 0
+    assert spend["conversation"] == 0.0
+    assert spend["blind_position"] == 0.0
 
 
 def test_blind_evidence_refuses_update_and_delete(store: Engine) -> None:

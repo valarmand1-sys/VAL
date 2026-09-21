@@ -113,7 +113,7 @@ def test_the_router_selects_without_the_caller_naming_a_provider() -> None:
         ProviderResult("Good evening, my lord.", TerminalState.COMPLETE, 20, 10, "req")
     )
     gateway, rows, _, _ = build(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
     )
     response = gateway.complete(request())
 
@@ -126,7 +126,9 @@ def test_the_router_selects_without_the_caller_naming_a_provider() -> None:
 def test_the_router_prefers_the_cheaper_of_two_eligible_routes() -> None:
     """Cost ranks what eligibility has already admitted — and only that."""
     adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "req"))
-    gateway, _, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, _, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     response = gateway.complete(request())
     assert response.slug == "haiku-4-5-20251001", "the cheapest eligible route was not chosen"
 
@@ -134,7 +136,9 @@ def test_the_router_prefers_the_cheaper_of_two_eligible_routes() -> None:
 def test_selection_is_stable_across_identical_requests() -> None:
     """Two identical requests route the same way, or cost comparison is noise."""
     adapter = StubAdapter(ProviderResult("ok", TerminalState.COMPLETE, 5, 5, "req"))
-    gateway, _, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, _, _, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
     first = gateway.complete(request())
     second = gateway.complete(request())
     assert first.slug == second.slug
@@ -289,7 +293,15 @@ def test_a_declared_fallback_is_used_when_it_holds_independently() -> None:
 
 def _declared_chain_length() -> int:
     """The primary (cheapest active entry) plus its declared fallback chain."""
-    ranked = sorted(active(), key=lambda entry: entry.cost_per_mtok_in_usd)
+    # The chain of the route this request would actually take, which means
+    # **within its own capability floor**. Profile-blind ranking happened to give
+    # the right answer until 21 September 2026, when a partner-only route became
+    # the cheapest entry in the registry: it is not a candidate for structured
+    # work at all, so starting the chain there would describe a route this
+    # request could never have been given.
+    floor = required_profile(TaskType.CLASSIFICATION)
+    eligible = [entry for entry in active() if floor in entry.capability_profiles]
+    ranked = sorted(eligible, key=lambda entry: (entry.cost_per_mtok_in_usd, entry.slug))
     seen = {ranked[0].slug}
     current = ranked[0]
     while current.fallback_slug and current.fallback_slug not in seen:
@@ -304,7 +316,9 @@ def _declared_chain_length() -> int:
 def test_when_every_route_fails_the_failure_is_normalized() -> None:
     """D: primary and fallback both unavailable, and nothing unsafe is reached."""
     failing = StubAdapter(error=GatewayError(GatewayErrorKind.TIMEOUT, "timed out"))
-    gateway, rows, _, _ = build(adapters={"anthropic": failing, "openai": failing})
+    gateway, rows, _, _ = build(
+        adapters={"anthropic": failing, "openai": failing, "lmstudio": failing}
+    )
 
     with pytest.raises(GatewayError) as caught:
         gateway.complete(request())
@@ -325,7 +339,9 @@ def test_when_every_route_fails_the_failure_is_normalized() -> None:
 def test_a_content_refusal_is_not_retried_elsewhere() -> None:
     """A provider declining is an answer. Re-asking until one complies is not."""
     refusing = StubAdapter(error=GatewayError(GatewayErrorKind.REFUSAL, "declined"))
-    gateway, _, _, _ = build(adapters={"anthropic": refusing, "openai": refusing})
+    gateway, _, _, _ = build(
+        adapters={"anthropic": refusing, "openai": refusing, "lmstudio": refusing}
+    )
 
     with pytest.raises(GatewayError) as caught:
         gateway.complete(request())
@@ -340,7 +356,9 @@ def test_a_content_refusal_is_not_retried_elsewhere() -> None:
 def test_restricted_content_never_reaches_route_selection() -> None:
     """E: blocked before any route or provider is involved."""
     adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
-    gateway, rows, ledger, blocks = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, ledger, blocks = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
 
     with pytest.raises(GatewayError) as caught:
         gateway.complete(request(Classification.RESTRICTED))
@@ -355,7 +373,9 @@ def test_restricted_content_never_reaches_route_selection() -> None:
 def test_restricted_content_by_detection_never_reaches_route_selection() -> None:
     """Adversarial proof 6 of the order: caller claims PROTECTED, content is not."""
     adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
-    gateway, rows, ledger, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+    gateway, rows, ledger, _ = build(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+    )
 
     leaking = request(content="my routing number is 021000021, transfer it today")
     with pytest.raises(GatewayError) as caught:
@@ -390,7 +410,7 @@ def test_when_nothing_is_affordable_no_cloud_call_occurs() -> None:
     """F, second half: no route fits, so nothing is sent and nothing is recorded."""
     adapter = StubAdapter(ProviderResult("should never run", TerminalState.COMPLETE, 1, 1, None))
     gateway, rows, ledger, _ = build(
-        adapters={"anthropic": adapter, "openai": adapter}, committed=199.999
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}, committed=199.999
     )
 
     with pytest.raises(GatewayError) as caught:
@@ -436,7 +456,9 @@ def test_provider_substitution_changes_no_identity_or_governance_state() -> None
     project = uuid4()
 
     def ask(adapter: StubAdapter, slug: str) -> object:
-        gateway, rows, _, _ = build(adapters={"anthropic": adapter, "openai": adapter})
+        gateway, rows, _, _ = build(
+            adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter}
+        )
         outgoing = request()
         # *WP-0.7 corrective round:* `conversation_id` is no longer a settable
         # field — it is read from the conversation provenance object, which a
@@ -624,8 +646,13 @@ def test_conversation_routes_only_to_partner_qualified_routes_in_the_real_regist
     # the partner profile by owner ruling of that date, is the cheapest partner
     # route; `opus-5-medium` (10 September 2026) remains registered under its
     # existing state. A changed ruling changes this line, nothing in routing.
-    assert chosen[0].slug == "gpt-5-6-sol-medium"
-    assert "opus-5-medium" in {entry.slug for entry in chosen}
+    # Registry state as of 21 September 2026: the owner-admitted local route is
+    # the cheapest partner route at a cost of zero, and it is what ordinary
+    # conversation now selects. The cloud partner routes stay registered and
+    # partner-profiled beside it, for an escalation the owner asks for. A changed
+    # ruling changes these lines and nothing in routing.
+    assert chosen[0].slug == "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+    assert {"gpt-5-6-sol-medium", "opus-5-medium"} <= {entry.slug for entry in chosen}
 
 
 def test_classification_and_strip_route_to_the_cheapest_structured_route() -> None:

@@ -198,7 +198,11 @@ def test_a_stream_without_a_terminal_result_is_a_provider_failure_settled_unknow
     assert "without a terminal result" in str(outcome.error)
     assert sink == ["partial"], "what streamed was shown; nothing from it was persisted"
     rows = _conversation_rows(store)
-    assert len(rows) == 1 and rows[0][1] is None, "recorded, cost unknown, never zero"
+    # The call is recorded and never fabricated. What "never zero" meant was a
+    # metered route's unknown cost; since 21 September 2026 the conversation
+    # route is local, where a failed call settles at a **known** $0 because
+    # nothing was ever billable — a different fact, not a softer one.
+    assert len(rows) == 1 and rows[0][1] == 0.0
 
 
 def test_an_adapter_without_stream_answers_by_completion_when_a_sink_is_offered(
@@ -307,7 +311,7 @@ def test_the_reservation_is_durable_before_the_first_delta_and_first_output_is_m
 ) -> None:
     adapter = _ProbingStreamer(store)
     gateway = Gateway(
-        adapters={"anthropic": adapter, "openai": adapter},
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
         recorder=lambda record: record_call(store, record),
         ledger=DatabaseLedger(store),
         observe_block=lambda message: None,

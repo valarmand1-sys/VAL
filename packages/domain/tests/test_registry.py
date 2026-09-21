@@ -129,6 +129,10 @@ def test_only_a_real_answer_marks_a_route_live() -> None:
         "opus-5-medium",  # in service under the owner-authorised exception, 10 September 2026
         "sonnet-5",  # registered 9 September 2026 for the strip floor; strip removed 11 September
         "sonnet-5-low",  # designated for the strip 11 September 2026; never answered live
+        # Admitted 21 September 2026 as the local Partner route. Unproven until a
+        # real answer lands on it: an admission is a decision, not a live call,
+        # and recording one as the other would be inventing history.
+        "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
         "haiku-4-5-20251001",
         "gpt-5-5-20260423",
     }
