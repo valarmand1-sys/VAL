@@ -1,0 +1,68 @@
+{
+ "load_seconds": 1.05,
+ "case_c_source": {
+  "path": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-22-case-c-repair/case_c_video_v2.mp4",
+  "sha256": "6925c05c4ea8d164f172e0d16de775736ffccd0d62dd0c649fb9a354f680a169",
+  "matches_frozen": true
+ },
+ "case_c_delivery": {
+  "source_total_frames": 270,
+  "source_fps": 30.0,
+  "duration_seconds": 9.0,
+  "width": 640,
+  "height": 480,
+  "frames_delivered": 18,
+  "frame_indices": [
+   0,
+   16,
+   32,
+   47,
+   63,
+   79,
+   95,
+   111,
+   127,
+   142,
+   158,
+   174,
+   190,
+   206,
+   222,
+   237,
+   253,
+   269
+  ],
+  "timestamps_seconds": [
+   0.0,
+   0.533,
+   1.067,
+   1.567,
+   2.1,
+   2.633,
+   3.167,
+   3.7,
+   4.233,
+   4.733,
+   5.267,
+   5.8,
+   6.333,
+   6.867,
+   7.4,
+   7.9,
+   8.433,
+   8.967
+  ],
+  "sampled_fps": 2.0,
+  "frames_array_shape": [
+   18,
+   3,
+   480,
+   640
+  ]
+ },
+ "case_c_prompt_rendered": "<|im_start|>user\n<|vision_start|><|video_pad|><|vision_end|>Describe what happens in this video and the order in which it happens. Report only what is visible.<|im_end|>\n<|im_start|>assistant\n",
+ "case_c": {
+  "seconds": 9.5,
+  "answer": "A red square appears on the left side of the screen. It moves to the center, then to the right side of the screen. A blue circle appears below the red square."
+ }
+}

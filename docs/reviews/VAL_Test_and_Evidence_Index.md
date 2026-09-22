@@ -1158,3 +1158,21 @@ Ruled by Lord Armand and frozen on his personal verification of the production-s
 
 **Governance, recorded plainly.** This is the **second** visual-test repair after candidate failures; both carry defects documented from the exam itself. It must not become precedent for changing the test until a candidate passes. **No further change to Case A or Case C during candidate qualification** without a new explicit owner ruling that identifies the defect, demonstrates it independently of a candidate answer, and authorises the amendment before the next candidate is tested. If the next candidate fails the repaired test, the failure is reported and no repair is proposed.
 
+---
+
+## 92. Qwen3-VL-8B-Instruct local visual perception — Case C PASSES, Case A fails, qualification FAILS — 22 September 2026
+
+Part 2 of the owner's order of that date, run against the Case A criterion repaired before Qwen2.5-VL and the Case C fixture repaired and frozen at `53705f2`. **Both must pass; Case A did not.** Not admitted, nothing connected, image behaviour untouched, no standing Sol exception, **no exam repair proposed or performed**. Record: `docs/reviews/qualification/runs/2026-09-22-qwen3-vl/`.
+
+**The useful finding first: this is the first candidate to pass the video case**, and it passed the repaired fixture cleanly — "A red square appears on the left side of the screen. **It** moves to the center, then to the right side of the screen. A blue circle appears below the red square." Every criterion met, no fail condition triggered, the pronoun carrying the object identity that three earlier candidates lost. The Part 1 repair is validated by use rather than by argument. 9.5 s.
+
+**The video demonstrably reached the model and matched the frozen record.** Digest verified against `6925c05c…` before inference; default sampling gave 2.0 fps and 18 frames at source indices 0…269 with timestamps 0.000–8.967 s — **identical** to the Part 1 sampling record, indices and timestamps both, with nothing adjusted to make them agree. This runtime is the only one of the three tested that renders explicit `<t.t seconds>` markers interleaved with the frame groups, alongside `temporal_patch_size` 2 and mrope `[24, 20, 20]`.
+
+**Case A failed on two criteria, the second decisive.** It opened accurately — three people, the embrace, the living room — then called the cape "a black coat" (cape not established, judged as MiniCPM-o's identical wording was), and then degenerated into a repetition loop that ran until the token budget was exhausted: moles and scores of invented scars on eyebrows, cheeks, chin, neck, shoulders, arms, legs, feet and every finger, cycling for the bulk of an 8,763-character answer. None of it is in the image. That is the plainest possible case of inventing material central detail about the central people. Recorded without acting on it: the loop is a generation pathology rather than a perception one — the first four bullets are well grounded — and a repetition penalty might suppress it, but nothing was tuned, no setting changed and the run was not repeated. 68.1 s.
+
+**Artifact and runtime.** `mlx-community/Qwen3-VL-8B-Instruct-4bit` at immutable revision `defcdea7cc7a4b0858fea563cbbce171d328e457`, every hashed file matching the source; `model_type: qwen3_vl`, 4-bit group size 64 mode affine, Instruct build, 5.4 GB installed. **No runtime update was taken or needed** — mlx-vlm 0.7.2 is both installed and the current release — and the production environment and its pins were untouched. Untuned defaults on both cases. Plain prose throughout, no thinking channel or reasoning markup. 28.6 GB free after the runs; GPT-OSS not resident.
+
+**Whole-test:** both runs local, zero provider calls, $0, no fallback, no crash, media tied to each observation.
+
+**Stopped at the failure.** Artifacts remain on disk wired into nothing; the MiniCPM-o, Qwen3-Omni and Qwen2.5-VL artifacts and the isolated MLX-VLM environment were left untouched and no cleanup was done. **What this settles for the next order:** the obstacle has moved off video and onto the image case, and specifically onto output discipline rather than perception — this candidate saw the scene accurately and then could not stop writing.
+
