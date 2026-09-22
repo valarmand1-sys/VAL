@@ -19,33 +19,50 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 WIDTH, HEIGHT = 640, 480
-FPS = 10
+#: One frame per second, eight frames, eight seconds.
+#:
+#: The frame rate is dictated by how the runtime actually delivers video, found
+#: by reading it (`tools/server/ws_handler.cpp`): it runs
+#: `ffmpeg -frames:v N` with no sampling filter and N capped at 8, which takes
+#: the **first** N frames of the file and not N frames spread across it. At ten
+#: frames a second the model would have been shown the first 0.8 seconds — the
+#: square sitting still on the left — and asked to describe a movement it had
+#: never seen. Encoding the sequence at one frame a second makes the runtime's
+#: own selection cover the whole eight seconds. The sequence, the duration and
+#: the criteria are unchanged; only the frame rate is, and it is changed so the
+#: fixture reaches the model at all.
+FPS = 1
 SQUARE = 90
 CIRCLE = 70
-#: Seconds in each phase: the square still on the left, crossing, still on the
-#: right, then the circle present beneath it. 8 seconds in total.
-HOLD_LEFT, CROSS, HOLD_RIGHT, WITH_CIRCLE = 1.5, 3.0, 1.0, 2.5
 
+#: Where the square sits on each of the eight frames, left to right, and from
+#: which frame the circle is present. Written out per frame rather than
+#: interpolated, so every frame the model sees is unambiguous: two on the left,
+#: one part-way, one at the centre, one part-way, then three on the right, with
+#: the circle on the last two.
+POSITIONS = ("left", "left", "quarter", "centre", "three_quarter", "right", "right", "right")
+CIRCLE_FROM = 6
+
+SQUARE_Y = 120
 LEFT_X = 60
 RIGHT_X = WIDTH - 60 - SQUARE
-SQUARE_Y = 120
+_PLACES = {
+    "left": LEFT_X,
+    "quarter": LEFT_X + (RIGHT_X - LEFT_X) // 4,
+    "centre": (WIDTH - SQUARE) // 2,
+    "three_quarter": LEFT_X + 3 * (RIGHT_X - LEFT_X) // 4,
+    "right": RIGHT_X,
+}
 
 
 def square_x(frame: int) -> int:
-    """Where the square is on this frame, by phase."""
-    hold = int(HOLD_LEFT * FPS)
-    cross = int(CROSS * FPS)
-    if frame < hold:
-        return LEFT_X
-    if frame < hold + cross:
-        progress = (frame - hold) / cross
-        return int(LEFT_X + (RIGHT_X - LEFT_X) * progress)
-    return RIGHT_X
+    """Where the square is on this frame."""
+    return _PLACES[POSITIONS[frame]]
 
 
 def main(destination: str) -> int:
-    total = int((HOLD_LEFT + CROSS + HOLD_RIGHT + WITH_CIRCLE) * FPS)
-    circle_from = int((HOLD_LEFT + CROSS + HOLD_RIGHT) * FPS)
+    total = len(POSITIONS)
+    circle_from = CIRCLE_FROM
     with tempfile.TemporaryDirectory() as workspace:
         for frame in range(total):
             image = Image.new("RGB", (WIDTH, HEIGHT), (245, 245, 245))

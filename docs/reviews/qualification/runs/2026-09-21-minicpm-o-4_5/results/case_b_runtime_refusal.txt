@@ -1,0 +1,19 @@
+0.00.039.713 I common_init_result: fitting params to device memory ...
+0.00.039.718 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)
+0.00.209.683 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+0.00.421.314 W llama_context: n_ctx_seq (16384) < n_ctx_train (40960) -- the full capacity of the model will not be utilized
+0.00.542.938 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
+0.00.590.008 I mtmd_cli_context: chat template example:
+<|im_start|>system
+You are a helpful assistant<|im_end|>
+<|im_start|>user
+Hello<|im_end|>
+<|im_start|>assistant
+Hi there<|im_end|>
+<|im_start|>user
+How are you?<|im_end|>
+<|im_start|>assistant
+
+0.00.591.026 E mtmd_init_from_file: error: Failed to load CLIP model from /Users/josepharmand/.val-models/MiniCPM-o-4_5-gguf/audio/MiniCPM-o-4_5-audio-F16.gguf
+
+0.00.591.030 E Failed to load vision model from /Users/josepharmand/.val-models/MiniCPM-o-4_5-gguf/audio/MiniCPM-o-4_5-audio-F16.gguf
