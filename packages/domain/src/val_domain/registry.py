@@ -1106,6 +1106,95 @@ REGISTRY: tuple[ModelConfig, ...] = (
         activated_on=date(2026, 9, 10),
         rates_verified_on=date(2026, 9, 10),
     ),
+    ModelConfig(
+        id=UUID("b8a7c3e5-9d14-4f62-8e07-3a5b6c1d2e40"),
+        slug="qwen3-5-9b-mlx-4bit-mlxvlm-perception",
+        # OWNER ADMISSION RULING, Lord Armand, 22 September 2026: Val's local
+        # visual-perception provider, on the frozen two-case acceptance test
+        # passed in full — `docs/reviews/qualification/runs/2026-09-22-qwen3_5-9b/`.
+        # It is a perception provider and nothing else: it never answers as Val,
+        # never carries conversation, and never forms a blind position.
+        provider="mlxvlm",
+        # The repository, and the immutable revision the qualification ran
+        # against. Quantization and runtime are identity here exactly as they are
+        # on the local text entries: a different quantization is a different
+        # entry, and so is a different revision.
+        model_identifier="lmstudio-community/Qwen3.5-9B-MLX-4bit",
+        display_name="Qwen3.5 9B (4-bit, Apple MLX, MLX-VLM — local visual perception)",
+        # Qwen3.5's text context is 262,144 (`config.json`
+        # text_config.max_position_embeddings). The figure here is the working
+        # window this route is registered for; a perception prompt is the owner's
+        # question and a short instruction, and the image tokens the runtime
+        # derives are not text tokens. Nothing routes conversation here, so this
+        # is not a conversational context claim.
+        context_window_tokens=32_768,
+        # The frozen generation configuration, committed at f0c81dd before either
+        # case ran and unchanged since: the MLX-VLM library default.
+        max_output_tokens=2_048,
+        # Perception has no graded reasoning effort and MLX-VLM exposes none.
+        # `thinking_enabled` stays None — the honest value, meaning the runtime
+        # has no such contract to transmit. The artifact's chat template opens
+        # and immediately closes the thinking block on every turn, so no
+        # reasoning content is produced at all; that is a property of the
+        # artifact, observed in qualification, not a switch this house sets.
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # Greedy decoding, frozen before the acceptance test ran. The remaining
+        # frozen settings — the 2,048-token ceiling above, top-p 1.0, top-k 0,
+        # min-p 0.0 and no repetition penalty — are the MLX-VLM library defaults,
+        # held by the adapter as one frozen block and recorded on every run,
+        # rather than restated here where nothing transmits them.
+        temperature=0.0,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        # Exactly the non-Restricted classifications every other route carries.
+        # Admitting a model to a role widens no eligibility, and local execution
+        # is not a reason to widen one: Restricted stays refused.
+        eligible_classifications=_PROTECTED,
+        # The perception profile alone. It carries no conversation, no blind
+        # position, no classification, no strip and no title — the order is
+        # explicit that Qwen3.5 must not become Val's ordinary final-response
+        # model, and a profile it does not hold is the structural form of that.
+        capability_profiles=frozenset({CapabilityProfile.PERCEPTION}),
+        # Image and video perception were both demonstrated. **Audio was not
+        # tested, is not admitted, and is not reachable** — the boundary's
+        # modality type has no audio member (owner order §27).
+        known_weaknesses=(
+            "video perception is admitted and demonstrated, but owner-facing governed "
+            "video ingestion does not exist, so no owner video reaches it — 22 September 2026",
+            "the consequential classifier remains text-only, so an image contributes "
+            "nothing to how a turn is classified — Track C limit, unchanged",
+        ),
+        # No fallback, and an undeclared fallback is no fallback. A perception
+        # run this route cannot complete ends honestly; it never reaches for a
+        # paid image-capable provider instead.
+        fallback_slug=None,
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        owner_authorization=(
+            "OWNER ADMISSION RULING, Lord Armand, 22 September 2026: "
+            "lmstudio-community/Qwen3.5-9B-MLX-4bit at immutable revision "
+            "b455506b0f574c74616dbcd56879bde38fafcff3 is admitted to the production role "
+            "VAL LOCAL VISUAL PERCEPTION PROVIDER, for IMAGE PERCEPTION and VIDEO "
+            "PERCEPTION only. AUDIO, TTS, speech generation and ordinary final-response "
+            "cognition are NOT admitted. Admission follows the one bounded acceptance "
+            "test, run once per case under a generation configuration frozen before "
+            "either case ran: Case A PASS (three people, top hat and cape both "
+            "established, embracing, indoor living room, nothing material invented), "
+            "Case C PASS on the repaired frozen fixture, and MACHINE FIT PASS (zero new "
+            "swap, never below 70% memory free, resources released, GPT-OSS reloaded "
+            "afterwards at its registered window). Val Core remains Val and GPT-OSS "
+            "remains the cognition provider: this entry is a replaceable perception "
+            "provider and owns no identity, memory, state, policy or authority."
+        ),
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 22),
+        # There are no rates: verified on the admission date against the local
+        # runtime, which bills nothing.
+        rates_verified_on=date(2026, 9, 22),
+    ),
 )
 
 

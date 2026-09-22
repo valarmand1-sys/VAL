@@ -97,6 +97,14 @@ ModelCallTaskType = Enum(
     name="model_call_task_type",
 )
 ModelCallStatus = Enum("ok", "error", "refused", name="model_call_status")
+# Owner ruling, 22 September 2026 — local visual perception (migration 0025).
+# `audio` is deliberately absent: not qualified, not admitted, and a value that
+# cannot be written is stronger than a rule saying it must not be.
+PerceptionModality = Enum("image", "video", name="perception_modality")
+# How the cognition provider was told to treat the current turn's media.
+# `bound` keeps its Track C meaning exactly — raw media supplied directly to the
+# cognition provider — and every historical row keeps it too.
+PerceptionState = Enum("perceived", "bound", name="perception_state")
 # §2.2 amendment, 17 August 2026. A provider attempt has three accounting
 # outcomes and only two of them are rows: NOT_SENT writes nothing at all, because
 # no call occurred. `known` and `unknown` distinguish the other two, and `unknown`
@@ -1661,6 +1669,170 @@ class ModelCallImageInput(Base):
 
 
 #: Every table §2 names, and nothing else. The schema test asserts against this.
+# ---------------------------------------------------------------------------
+# Local visual perception
+# ---------------------------------------------------------------------------
+#
+# Owner ruling, 22 September 2026, on Qwen3.5-9B's qualification; migration
+# `0025` builds these. Val perceives media on her own machine and hands the
+# cognition provider grounded observations rather than pixels, so the record has
+# to hold a kind of act the cognition tables were not built for: evidence
+# derived from SOURCE MEDIA plus the OWNER'S QUESTION. Three tables say what it
+# was, what it looked at, and who received it.
+
+
+class PerceptionRun(Base):
+    """One perception run: the provider, the artifact, the question, the answer.
+
+    Not a `model_calls` row, and deliberately not. That table accounts for calls
+    that buy thinking — tokens, reservations, cache splits, metered rates — and
+    this buys none of them. What it produces is evidence, and evidence has to be
+    able to say what it came from.
+    """
+
+    __tablename__ = "perception_runs"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: One perception per turn, and the unique constraint below makes §22's "run
+    #: perception once" a key rather than a convention.
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    model_config_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    provider: Mapped[str] = mapped_column(Text, nullable=False)
+    model_identifier: Mapped[str] = mapped_column(Text, nullable=False)
+    #: The immutable revision. A perception record that cannot say which weights
+    #: produced it is not provenance.
+    model_revision: Mapped[str] = mapped_column(Text, nullable=False)
+    quantization: Mapped[str] = mapped_column(Text, nullable=False)
+    runtime: Mapped[str] = mapped_column(Text, nullable=False)
+    runtime_version: Mapped[str] = mapped_column(Text, nullable=False)
+    #: The generation settings in force, read back from the runtime rather than
+    #: restated from the registry.
+    generation: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    #: His actual words, and the exact instruction transmitted. Both, because the
+    #: second is derived from the first and a record holding only the derivation
+    #: cannot show what it was derived from.
+    owner_question: Mapped[str] = mapped_column(Text, nullable=False)
+    perception_prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    observation: Mapped[str] = mapped_column(Text, nullable=False)
+    current_perception_state: Mapped[str] = mapped_column(PerceptionState, nullable=False)
+    local: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    cost_usd: Mapped[Decimal] = mapped_column(Numeric(12, 6), nullable=False)
+    duration_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: §14's observation-discipline finding, per run rather than assumed once.
+    reasoning_separated: Mapped[bool] = mapped_column(Boolean, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("message_id", name="uq_perception_runs_message"),
+        CheckConstraint("length(btrim(perception_prompt)) > 0", name="prompt_present"),
+        CheckConstraint("length(btrim(observation)) > 0", name="observation_present"),
+        CheckConstraint("duration_ms >= 0", name="duration_not_negative"),
+        #: A local run bills nothing, said as a constraint rather than as a habit.
+        CheckConstraint("(local AND cost_usd = 0) OR NOT local", name="local_costs_nothing"),
+        Index("ix_perception_runs_conversation", "conversation_id"),
+    )
+
+
+class PerceptionSource(Base):
+    """What one run looked at — the SOURCE → OBSERVATION relationship.
+
+    The act and the attachment are nullable together, for a house-internal source
+    that never arrived on a message; a trigger holds them to the same file
+    whenever they are set, so a source row cannot name one file's act and another
+    file's bytes.
+    """
+
+    __tablename__ = "perception_sources"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    perception_run_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("perception_runs.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    message_attachment_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("message_attachments.id", ondelete="NO ACTION"),
+        nullable=True,
+    )
+    attachment_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("attachments.id", ondelete="NO ACTION"), nullable=True
+    )
+    sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    media_type: Mapped[str] = mapped_column(Text, nullable=False)
+    byte_size: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    modality: Mapped[str] = mapped_column(PerceptionModality, nullable=False)
+    #: `original` for this slice: the local runtime reads the admitted bytes and
+    #: does its own preprocessing, so nothing is derived for transmission.
+    representation: Mapped[str] = mapped_column(Text, nullable=False)
+    #: What was reported about THIS source, so a multi-image turn can say which
+    #: observation belongs to which file.
+    observation: Mapped[str] = mapped_column(Text, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "perception_run_id", "position", name="uq_perception_sources_run_position"
+        ),
+        CheckConstraint("position > 0", name="position_positive"),
+        CheckConstraint("byte_size > 0", name="byte_size_positive"),
+        CheckConstraint("length(sha256) = 64", name="sha256_is_a_digest"),
+        CheckConstraint(
+            "(message_attachment_id IS NULL) = (attachment_id IS NULL)",
+            name="act_and_attachment_together",
+        ),
+        Index("ix_perception_sources_run", "perception_run_id"),
+    )
+
+
+class PerceptionHandoff(Base):
+    """Which cognition call received this perception — OBSERVATION → COGNITION.
+
+    Two rows naming one run is exactly the proof §22 asks for: on a consequential
+    turn the blind position and the final answer were grounded in the same frozen
+    observation, and the record can show it without re-reading either payload.
+    """
+
+    __tablename__ = "perception_handoffs"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    perception_run_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("perception_runs.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    model_call_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=False
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "perception_run_id", "model_call_id", name="uq_perception_handoffs_run_call"
+        ),
+        Index("ix_perception_handoffs_run", "perception_run_id"),
+        Index("ix_perception_handoffs_call", "model_call_id"),
+    )
+
+
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
@@ -1690,5 +1862,9 @@ SPECIFIED_TABLES = frozenset(
         "attachment_representations",
         "attachment_processing_events",
         "model_call_image_inputs",
+        # Local visual perception, migration 0025 (22 September 2026).
+        "perception_runs",
+        "perception_sources",
+        "perception_handoffs",
     }
 )

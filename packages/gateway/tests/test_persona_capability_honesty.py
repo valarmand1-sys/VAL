@@ -149,9 +149,13 @@ def test_the_capability_state_is_part_of_every_record_state_document() -> None:
         "project_volumes",
         "capability_state",
     ]
+    # `perceived_this_turn` joined it on 22 September 2026, when local visual
+    # perception was admitted: pixels in the request and observations about
+    # pixels that stayed on this machine are different facts, counted separately.
     assert document["visual_input"] == {
         "state": "none",
         "bound_to_this_turn": 0,
+        "perceived_this_turn": 0,
         "earlier_in_conversation": 0,
         "note": VISUAL_STATE_NOTE,
     }

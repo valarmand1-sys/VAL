@@ -45,6 +45,7 @@ from val_providers.llamacpp_inspector import LlamaCppContextInspector
 from val_providers.lmstudio_adapter import DEFAULT_BASE_URL as LMSTUDIO_DEFAULT_BASE_URL
 from val_providers.lmstudio_adapter import LMStudioAdapter
 from val_providers.lmstudio_inspector import LMStudioContextInspector, inspector_host_of
+from val_providers.mlxvlm_perception import MLXVLMPerception
 from val_providers.openai_adapter import OpenAIAdapter
 
 #: Where each provider's key is read from. A provider absent from this mapping
@@ -236,7 +237,17 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     moment = today or datetime.now(UTC)
     violations, warnings = check_startup(moment.date())
 
-    adapters, problems = build_adapters({config.provider for config in active()})
+    # Owner ruling, 22 September 2026: perception routes are not conversation
+    # routes, and they do not have a `ProviderAdapter`. They are excluded here by
+    # the profile they declare, so a perception provider never has to pretend to
+    # be a chat provider to get past this line.
+    adapters, problems = build_adapters(
+        {
+            config.provider
+            for config in active()
+            if not satisfies_profile(config, CapabilityProfile.PERCEPTION)
+        }
+    )
     violations.extend(problems)
 
     # Ruling, 8 September 2026: prompt caching on the partner route's stable
@@ -298,6 +309,22 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     # that has not been seeded yet, and refusing to boot would leave Lord Armand
     # without the service he would use to seed it. `converse` still refuses, so
     # nothing runs on a substitute — the failure is moved, not softened.
+    # Local visual perception (owner ruling, 22 September 2026), built beside
+    # the adapters and reported the same way.
+    perception: MLXVLMPerception | None = None
+    if any(
+        is_admitted(config) and satisfies_profile(config, CapabilityProfile.PERCEPTION)
+        for config in active()
+    ):
+        perception = MLXVLMPerception()
+        unavailable = perception.available()
+        if unavailable is not None:
+            warnings.append(
+                f"the local visual-perception route is admitted but cannot run: {unavailable}. "
+                "A turn carrying an image will fail closed and say so; it will not be sent "
+                "to a paid image-capable provider instead. Text turns are unaffected."
+            )
+
     persona_loader = DatabasePersonaLoader(engine)
     try:
         persona = persona_loader.active()
@@ -330,5 +357,13 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         # That is the right direction to fail, and it is why this line is not
         # optional in the one place that builds the real gateway.
         verify_provenance=verifier(engine),
+        # Owner ruling, 22 September 2026: Val's local visual-perception
+        # provider, wired here for the same reason the adapters are — the core
+        # must not import a provider package to find out whether it can see.
+        # `None` when no perception route is admitted, and a route that is
+        # admitted but whose runtime is missing is a **warning**, not a refusal:
+        # a turn carrying media then fails closed with the reason, and every
+        # text turn is unaffected.
+        perception=perception,
     )
     return Startup(gateway=gateway, warnings=warnings)

@@ -71,9 +71,10 @@ def test_defaults_are_cloud_and_metered() -> None:
     sol = by_slug("gpt-5-6-sol-medium")
     assert sol is not None
     assert sol.hosting is Hosting.CLOUD and sol.metering is Metering.METERED
-    # The two ruled LOCAL providers (the second by owner ruling, 18 September 2026);
-    # everything else is cloud and metered.
-    local_providers = ("lmstudio", "llamacpp")
+    # The three ruled LOCAL providers (the second by owner ruling, 18 September
+    # 2026; `mlxvlm`, the visual-perception runtime, by the ruling of 22
+    # September 2026); everything else is cloud and metered.
+    local_providers = ("lmstudio", "llamacpp", "mlxvlm")
     cloud = [c for c in REGISTRY if c.provider not in local_providers]
     assert all(c.hosting is Hosting.CLOUD for c in cloud)
     assert all(c.metering is Metering.METERED for c in cloud)

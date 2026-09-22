@@ -108,6 +108,7 @@ from val_domain.gateway import (
     TextPart,
     TurnReference,
 )
+from val_domain.perception import PerceptionRefusedError, PerceptionUnavailableError
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
 from val_domain.provider import DeltaSink
 from val_gateway import conversations
@@ -350,6 +351,13 @@ def send(
         visual = prepare_visual(engine, gateway, opened, classification, max_output_tokens)
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
+    except (PerceptionUnavailableError, PerceptionRefusedError) as failure:
+        # Owner ruling, 22 September 2026 §19. Fail closed, before the classifier
+        # and before any position exists. The media are not sent to a paid
+        # image-capable Partner instead.
+        return unanswered_or_raise(
+            opened, GatewayError(GatewayErrorKind.LOCAL_PERCEPTION_UNAVAILABLE, str(failure))
+        )
     classification = visual.classification
 
     # 2. Classify, before any position is formed (§4.8: the classification runs
@@ -520,7 +528,11 @@ def send(
     # 4. One configuration for both remaining calls (ruling, 19 August 2026).
     persona = DatabasePersonaLoader(engine).active()
     messages, recalled = assemble_turn(
-        engine, opened, recall_limit=recall_limit, images=visual.images
+        engine,
+        opened,
+        recall_limit=recall_limit,
+        images=visual.images,
+        perception=visual.perception,
     )
     sizing = (*(message.content for message in messages), persona.content)
     try:
@@ -553,6 +565,14 @@ def send(
     # enforced` here means the TEXT was stripped. It does not mean the pixels are
     # preference-free, and nothing in the record may describe it as a blinded
     # *visual* deliberation.
+    #
+    # Owner ruling, 22 September 2026 §22, one modality over: under local
+    # perception neither call receives pixels, and both receive the **same frozen
+    # grounded observation** — the identical envelope object, from the one run
+    # `prepare_visual` performed before the classifier. Perception is not re-run
+    # for the blind call, and `perception_runs.message_id` is unique, so the
+    # database refuses a second run for this turn even if something above it
+    # tried. Two `perception_handoffs` rows naming one run is the durable proof.
     blind_message = Message(
         role="user",
         parts=(
@@ -560,11 +580,12 @@ def send(
             *visual.images,
         ),
     )
+    blind_messages = (*visual.blocks, blind_message)
     blind_payload = _log_blind_payload(config, persona.id, blind_message, withheld=withheld)
     blind_request = GatewayRequest(
         task_type=TaskType.BLIND_POSITION,
         classification=classification,
-        messages=(blind_message,),
+        messages=blind_messages,
         # The persona, whole, exactly once — and attributed, verified against
         # the active row by the gateway before transmission.
         system=persona.content,
@@ -826,7 +847,11 @@ def _ordinary(
     """The WP-0.7 turn, from an already-opened state."""
     visual = visual or VisualTurn(classification=classification, configuration=None, bound=())
     messages, recalled = assemble_turn(
-        engine, opened, recall_limit=recall_limit, images=visual.images
+        engine,
+        opened,
+        recall_limit=recall_limit,
+        images=visual.images,
+        perception=visual.perception,
     )
     _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     turn = TurnReference(conversation_id=opened.conversation.id, message_id=opened.user_message.id)

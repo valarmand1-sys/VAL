@@ -387,6 +387,11 @@ class PriorRecordState:
     #: image before* must never become *I can currently see the image*, and that
     #: is settled here rather than left to persona prose.
     #:
+    #: ``perceived`` (owner ruling, 22 September 2026) — the current source media
+    #: were perceived during THIS turn through Val's governed local perception
+    #: subsystem, and the cognition provider is receiving grounded observations
+    #: rather than raw media. Additive: it does not redefine ``bound``, which
+    #: keeps its Track C meaning and its historical rows exactly.
     #: ``bound`` — image parts are bound to this call and are in view.
     #: ``earlier_only`` — this conversation holds earlier attachments; none is
     #: bound to this turn, so none is in view.
@@ -395,6 +400,11 @@ class PriorRecordState:
     #: cleanly, so current sight is not established. Fails toward doubt.
     visual_state: str = "none"
     visual_bound_to_this_turn: int = 0
+    #: How many of this turn's media were perceived locally. Counted separately
+    #: from `visual_bound_to_this_turn` because they are different facts: one is
+    #: pixels in the request, the other is observations about pixels that stayed
+    #: on this machine.
+    visual_perceived_this_turn: int = 0
     visual_earlier_in_conversation: int = 0
     corrected_after_answer: tuple[tuple[int, int], ...] = ()
     withdrawn_after_positions: tuple[int, ...] = ()
@@ -479,6 +489,7 @@ class PriorRecordState:
             "visual_input": {
                 "state": self.visual_state,
                 "bound_to_this_turn": self.visual_bound_to_this_turn,
+                "perceived_this_turn": self.visual_perceived_this_turn,
                 "earlier_in_conversation": self.visual_earlier_in_conversation,
                 "note": VISUAL_STATE_NOTE,
             },
@@ -495,7 +506,11 @@ VISUAL_STATE_NOTE = (
     "Only images bound to this turn are in view. An image attached earlier in this "
     "conversation remains in the House record with its provenance, but is not being "
     "shown to you now: describe it from what was said about it, not as something you "
-    "can presently see. 'uncertain' means current sight is not established."
+    "can presently see. 'uncertain' means current sight is not established. "
+    "'perceived' means the House looked at this turn's media through its own local "
+    "perception subsystem and the grounded observations are supplied below: that is "
+    "current perception of the current media, and it is the whole of what is known "
+    "about them."
 )
 
 #: What a corrected excerpt says about itself (ruling, 12 September 2026).

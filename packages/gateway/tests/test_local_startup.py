@@ -15,6 +15,7 @@ import inspect
 
 import pytest
 
+from val_domain.gateway import CapabilityProfile
 from val_domain.registry import active, under_evaluation
 from val_gateway import startup
 from val_gateway.startup import (
@@ -23,6 +24,7 @@ from val_gateway.startup import (
     build_adapters,
     configured_lmstudio_base_url,
 )
+from val_policy.routing import satisfies_profile
 from val_providers.lmstudio_adapter import DEFAULT_BASE_URL, LMStudioAdapter
 
 
@@ -53,12 +55,21 @@ def test_production_startup_now_requires_the_local_token(
     thinks on. The deployment consequence is that the token belongs in the
     installed LaunchAgent, which is where it is.
     """
-    production = {config.provider for config in active()}
+    # The set `start()` actually passes. Since 22 September 2026 it excludes
+    # perception routes, which have no `ProviderAdapter` and are not conversation
+    # routes — a perception provider never has to pretend to be a chat provider
+    # to get past that line. Everything else about this test is unchanged.
+    production = {
+        config.provider
+        for config in active()
+        if not satisfies_profile(config, CapabilityProfile.PERCEPTION)
+    }
     assert "lmstudio" in production, "the admitted local Partner route is in production"
+    assert "mlxvlm" not in production, "the perception route is not a conversation adapter"
     # The candidates are still evaluation-only beside it, and still absent here.
     assert "lmstudio" in {config.provider for config in under_evaluation()}
     source = inspect.getsource(startup.start)
-    assert "build_adapters({config.provider for config in active()})" in source
+    assert "build_adapters(" in source and "CapabilityProfile.PERCEPTION" in source
     monkeypatch.delenv("VAL_LMSTUDIO_API_TOKEN", raising=False)
     monkeypatch.setenv("VAL_ANTHROPIC_API_KEY", "not-a-real-value")
     monkeypatch.setenv("VAL_OPENAI_API_KEY", "not-a-real-value")

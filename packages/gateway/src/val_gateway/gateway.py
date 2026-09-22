@@ -73,6 +73,7 @@ from val_domain.gateway import (
     TerminalState,
     TurnReference,
 )
+from val_domain.perception import PerceptionProvider
 from val_domain.project import (
     ProjectAttribution,
     ProjectScope,
@@ -442,7 +443,15 @@ class Gateway:
         persona_loader: PersonaLoader | None = None,
         verify_provenance: Callable[[GatewayRequest], None] | None = None,
         cache_ttl: CacheTtl | None = None,
+        perception: PerceptionProvider | None = None,
     ) -> None:
+        #: Owner ruling, 22 September 2026. Val's local visual-perception
+        #: provider, supplied by the composition root exactly as the adapters
+        #: are. `None` means no perception route is wired, in which case a turn
+        #: carrying media behaves as it did before this ruling. It is held here
+        #: rather than reached for, because the core must not import a provider
+        #: package to find out whether it can see.
+        self.perception = perception
         self._adapters = adapters
         self._record = recorder
         self._ledger = ledger

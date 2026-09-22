@@ -143,6 +143,14 @@ class CapabilityProfile(StrEnum):
     #: input. Structured-task competence elsewhere (classification, title)
     #: does not confer it, and holding it confers nothing else.
     STRIP = "strip"
+    #: Owner ruling, 22 September 2026. Local visual perception: reporting what
+    #: is in an image or a video, so that the cognition route receives grounded
+    #: observations rather than pixels. It is a floor of its own and confers
+    #: nothing else — a route holding it may not carry conversation, the blind
+    #: position, classification, the strip or a title, and holding any of those
+    #: confers no perception. Nothing selected by this profile ever speaks as
+    #: Val; its product is evidence.
+    PERCEPTION = "perception"
 
 
 class GatewayErrorKind(StrEnum):
@@ -180,6 +188,12 @@ class GatewayErrorKind(StrEnum):
     #: needs his explicit approval for that call; previous cloud use is not
     #: approval. Not retryable, because retrying is precisely the thing forbidden.
     LOCAL_PARTNER_UNAVAILABLE = "local_partner_unavailable"
+    #: Owner ruling, 22 September 2026, and the same shape of rule one modality
+    #: over: Val perceives the owner's media on her own machine, and when the
+    #: local perception route cannot do it — after its one bounded recovery
+    #: attempt — the turn **stops here**. It does not fall through to a paid
+    #: image-capable Partner. Nothing is transmitted and nothing is charged.
+    LOCAL_PERCEPTION_UNAVAILABLE = "local_perception_unavailable"
 
 
 class QualificationTarget(Enum):

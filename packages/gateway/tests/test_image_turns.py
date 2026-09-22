@@ -393,9 +393,14 @@ def test_a_later_turn_does_not_retransmit_the_image(store: Engine) -> None:
 
 def test_the_record_state_distinguishes_bound_from_merely_earlier(store: Engine) -> None:
     first, bound_adapter = turn(store, "What is in this?", attachments=(attach(),))
+    # `bound` is untouched by the 22 September 2026 perception ruling, and this
+    # gateway has no perception provider wired — so the Track C path is exactly
+    # what it was. The additive `perceived_this_turn` is 0, which is the honest
+    # count of media perceived locally on a turn whose pixels were transmitted.
     assert state(bound_adapter)["visual_input"] == {
         "state": "bound",
         "bound_to_this_turn": 1,
+        "perceived_this_turn": 0,
         "earlier_in_conversation": 0,
         "note": state(bound_adapter)["visual_input"]["note"],
     }

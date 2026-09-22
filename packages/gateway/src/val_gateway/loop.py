@@ -80,6 +80,7 @@ from val_domain.conversation import (
     WorkingThread,
 )
 from val_domain.gateway import (
+    CapabilityProfile,
     Classification,
     GatewayError,
     GatewayErrorKind,
@@ -91,8 +92,10 @@ from val_domain.gateway import (
     TerminalState,
     TurnReference,
 )
+from val_domain.perception import PerceptionRefusedError, PerceptionUnavailableError
 from val_domain.project import AmbiguousProject, ExplicitNoProject, ProjectCandidate, ProjectScope
 from val_domain.provider import DeltaSink
+from val_domain.registry import active
 from val_gateway import conversations
 from val_gateway.attachments import (
     AttachmentAct,
@@ -121,11 +124,13 @@ from val_gateway.memory import (
     house_recall_with_state,
     recall_with_state,
 )
+from val_gateway.perception import TurnPerception, perceive_turn, record_handoff
 from val_gateway.projects import ProjectSession
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.recall_gate import ThreadContext, gate_house_recall, gate_recall
 from val_policy.restricted import preflight, refusal_message
+from val_policy.routing import is_admitted, is_eligible, satisfies_profile
 
 _LOGGER = logging.getLogger("val.loop")
 
@@ -227,17 +232,32 @@ class VisualTurn:
     and on a consequential turn both the blind position and the final answer.
     That is Attachment Substrate v1.2 §7's "derive once, reuse" made structural:
     the two calls cannot independently resize, because neither of them chooses.
+
+    Owner ruling, 22 September 2026, amending it: when a local visual-perception
+    route is admitted, a turn carrying media no longer pins an image-capable
+    Partner and derives pixels for it. Val perceives the media herself, once, and
+    the frozen observation travels to the cognition calls instead. `perception`
+    then holds the run and `bound` is empty; when no perception route is wired
+    the Track C behaviour below is exactly as it was.
     """
 
     classification: Classification
     #: The route the bytes were derived for. `None` when the turn carries no
-    #: image, in which case routing proceeds exactly as it always has.
+    #: media, and `None` under local perception, where routing proceeds exactly
+    #: as it does for an ordinary text turn because no pixels are transmitted.
     configuration: ModelConfig | None
     bound: tuple[BoundImage, ...]
+    #: This turn's frozen local perception, run once, handed to every call.
+    perception: TurnPerception | None = None
 
     @property
     def images(self) -> tuple[ImagePart, ...]:
         return tuple(image.part for image in self.bound)
+
+    @property
+    def blocks(self) -> tuple[Message, ...]:
+        """The envelopes this turn's media contribute to every cognition call."""
+        return () if self.perception is None else (self.perception.block(),)
 
 
 def prepare_visual(
@@ -247,16 +267,40 @@ def prepare_visual(
     classification: Classification,
     max_output_tokens: int,
 ) -> VisualTurn:
-    """Select the route, derive the transmitted bytes, and fix both for this turn.
+    """Perceive this turn's media once, or — with no perception route — pin a route.
 
     The effective classification is the strictest of the text's and every act's
-    (§6), and the route is selected against **that**, so eligibility runs on what
-    is actually leaving the house. The route is then pinned for every call of the
-    turn: pinning changes which route, never which checks.
+    (§6), and it governs either way: perception is local, but a local provider is
+    checked for eligibility exactly as a remote one is, and Restricted is refused
+    on both paths.
+
+    **Under local perception, no route is pinned and no pixels are derived.** The
+    cognition call that follows is an ordinary text call: it receives grounded
+    observations, so the image-capable filter has nothing to filter for. That is
+    the whole of §19 — an image turn no longer reaches a paid image-capable
+    Partner merely because it contains an image.
     """
     effective = strictest(classification, opened.attachments)
     if not opened.attachments:
         return VisualTurn(classification=effective, configuration=None, bound=())
+
+    perception_route = perception_configuration(effective)
+    if perception_route is not None and gateway.perception is not None:
+        # Failure raises. The caller fails the turn closed and says so; it does
+        # not quietly send the owner's media to a paid provider instead.
+        perceived = perceive_turn(
+            engine,
+            gateway.perception,
+            perception_route,
+            conversation_id=opened.conversation.id,
+            message_id=opened.user_message.id,
+            question=opened.user_message.content,
+            acts=opened.attachments,
+        )
+        return VisualTurn(
+            classification=effective, configuration=None, bound=(), perception=perceived
+        )
+
     pinned = gateway.select_configuration(
         effective,
         (opened.user_message.content,),
@@ -274,10 +318,38 @@ def prepare_visual(
     )
 
 
+def perception_configuration(classification: Classification) -> ModelConfig | None:
+    """The admitted local visual-perception route, or `None` if there is none.
+
+    Deterministic, and it names no model: the perception profile is the only
+    thing consulted, exactly as every other capability floor works. A route that
+    is not admitted, not eligible for this classification, or does not declare
+    the profile is not returned — and no route means the caller falls back to the
+    Track C path rather than inventing one.
+    """
+    for config in active():
+        if (
+            is_admitted(config)
+            and is_eligible(config, classification)
+            and satisfies_profile(config, CapabilityProfile.PERCEPTION)
+        ):
+            return config
+    return None
+
+
 def bind_response(engine: Engine, response: GatewayResponse, visual: VisualTurn) -> None:
-    """§3.6 — record which bytes reached this call, once it has a call to name."""
-    if visual.bound and response.model_call_id is not None and visual.configuration is not None:
+    """Record what reached this call, once it has a call to name.
+
+    Two shapes, because there are two kinds of grounding. Transmitted pixels get
+    a `model_call_image_inputs` binding (§3.6); a local perception gets a handoff
+    row naming the frozen run, which is what proves the blind position and the
+    final answer were grounded identically.
+    """
+    if response.model_call_id is None:
+        return
+    if visual.bound and visual.configuration is not None:
         bind_to_call(engine, response.model_call_id, visual.bound, visual.configuration)
+    record_handoff(engine, visual.perception, response.model_call_id)
 
 
 def send(
@@ -336,9 +408,23 @@ def send(
         visual = prepare_visual(engine, gateway, opened, classification, max_output_tokens)
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
+    except (PerceptionUnavailableError, PerceptionRefusedError) as failure:
+        # Owner ruling, 22 September 2026 §19: fail closed, honestly. The local
+        # visual route has already made its one bounded recovery attempt. The
+        # media are NOT sent to a paid image-capable Partner instead — that would
+        # be a decision nobody made — so the turn ends with the reason on record
+        # and the user's message preserved as the unanswered turn it is.
+        return unanswered_or_raise(
+            opened,
+            GatewayError(GatewayErrorKind.LOCAL_PERCEPTION_UNAVAILABLE, str(failure)),
+        )
 
     messages, recalled = assemble_turn(
-        engine, opened, recall_limit=recall_limit, images=visual.images
+        engine,
+        opened,
+        recall_limit=recall_limit,
+        images=visual.images,
+        perception=visual.perception,
     )
 
     # 8-9. Preflight over the assembled whole, budget over the same parts, then
@@ -492,6 +578,7 @@ def assemble_turn(
     *,
     recall_limit: int = DEFAULT_LIMIT,
     images: tuple[ImagePart, ...] = (),
+    perception: TurnPerception | None = None,
 ) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...]]:
     """Steps 4-7: history and recall, assembled into the outbound messages."""
     # 4-6. This conversation's own history — never gated — then cross-conversation
@@ -518,7 +605,17 @@ def assemble_turn(
     # Four states, never collapsed: bound now, only earlier, none at all, or —
     # when this turn admitted attachments that produced no bound image — not
     # established, which fails toward doubt rather than toward sight.
-    if images:
+    #
+    # Owner ruling, 22 September 2026, adds a fifth: `perceived`. It is checked
+    # first because it is the one state that says what actually happened on this
+    # turn under local perception — the House looked at the media, and the
+    # cognition model is receiving grounded observations rather than pixels.
+    # `bound` is untouched and keeps its Track C meaning exactly: raw media
+    # supplied directly to the cognition provider. Historical rows are not
+    # reinterpreted, and nothing collapses the two.
+    if perception is not None:
+        visual_state = "perceived"
+    elif images:
         visual_state = "bound"
     elif opened.attachments:
         visual_state = "uncertain"
@@ -608,6 +705,7 @@ def assemble_turn(
         # acts outside this turn — they are in the record and not in view.
         visual_state=visual_state,
         visual_bound_to_this_turn=len(images),
+        visual_perceived_this_turn=(0 if perception is None else len(perception.sources)),
         visual_earlier_in_conversation=earlier,
     )
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
@@ -629,6 +727,10 @@ def assemble_turn(
         *prior,
         *((excerpts,) if excerpts is not None else ()),
         record_state_block(state),
+        # The grounded observations, after the record state and before the turn
+        # they describe: the envelope has just said current perception is
+        # `perceived`, and this is what that state refers to.
+        *((perception.block(),) if perception is not None else ()),
         *current,
     )
     return messages, recalled

@@ -1862,3 +1862,151 @@ def test_enforced_ordering_on_a_visual_turn_claims_only_that_the_text_was_stripp
         ).scalar_one()
     # The images reached the blind call; the enforcement claim is about the text.
     assert bound_to_blind == 1
+
+
+# =============================================================================
+# Local visual perception on a consequential turn — owner ruling, 22 September 2026
+# =============================================================================
+#
+# §28.7 and §28.8 of that order. A consequential media turn perceives ONCE, and
+# the blind position and the final answer are grounded in the identical frozen
+# observation. Neither is a matter of care taken at the call sites: perception
+# happens before the classifier runs and `perception_runs.message_id` is unique,
+# so a second run for one turn cannot be written even by a mistake upstream.
+
+
+@dataclass
+class _Eyes:
+    """The visual runtime, counting how many times it was actually asked."""
+
+    observation: str = "A red square on the left of the frame, and nothing else."
+    requests: list[object] = field(default_factory=list)
+
+    def perceive(self, request: object) -> object:
+        from val_domain.perception import PerceptionObservation, PerceptionResult
+
+        self.requests.append(request)
+        return PerceptionResult(
+            observations=tuple(
+                PerceptionObservation(
+                    source_sha256=source.sha256, modality=source.modality, text=self.observation
+                )
+                for source in request.sources  # type: ignore[attr-defined]
+            ),
+            provider="mlxvlm",
+            model_identifier="lmstudio-community/Qwen3.5-9B-MLX-4bit",
+            model_revision="b455506b0f574c74616dbcd56879bde38fafcff3",
+            quantization="4-bit, group size 64, affine (MLX)",
+            runtime="mlx-vlm",
+            runtime_version="0.7.2",
+            generation={"max_tokens": 2048, "temperature": 0.0},
+            duration_seconds=28.1,
+            cost_usd=0.0,
+            local=True,
+            reasoning_separated=True,
+        )
+
+    def release(self) -> None:
+        return None
+
+
+def _an_image() -> object:
+    import io
+
+    from PIL import Image
+
+    from val_gateway.attachments import CandidateAttachment
+
+    buffer = io.BytesIO()
+    Image.new("RGB", (320, 240), "navy").save(buffer, format="PNG")
+    return CandidateAttachment(
+        content=buffer.getvalue(),
+        given_filename="frame.png",
+        stated_classification=Classification.PROTECTED,
+    )
+
+
+def _deliberate_with_eyes(
+    engine: Engine, adapter: ScriptedAdapter, eyes: _Eyes
+) -> tuple[object, ScriptedAdapter]:
+    gateway = build_gateway(engine, adapter)
+    gateway.perception = eyes  # type: ignore[assignment]
+    outcome = deliberated_send(
+        engine,
+        gateway,
+        MIXED_MESSAGE,
+        catalogue=load_catalogue(engine),
+        signals=ProjectSignals(explicit_selection="Project Alpha"),
+        attachments=(_an_image(),),  # type: ignore[arg-type]
+    )
+    return outcome, adapter
+
+
+def test_a_consequential_media_turn_perceives_once(store: Engine) -> None:
+    """§28.7. One run for the turn, whatever the turn goes on to do.
+
+    A consequential turn makes four provider calls — classify, strip, blind,
+    respond — and two of them are Partner-class calls that need the media. It
+    perceives once, before the classifier, and reuses that.
+    """
+    eyes = _Eyes()
+    outcome, adapter = _deliberate_with_eyes(store, ScriptedAdapter(full_script()), eyes)
+
+    assert isinstance(outcome, DeliberatedTurn)
+    assert outcome.captured_as is not None, "the turn really was consequential"
+    assert len(adapter.sent) == 4, "classify, strip, blind, respond"
+    assert len(eyes.requests) == 1, "and one perception for all of it"
+
+    with store.connect() as connection:
+        runs = list(connection.execute(text("select * from perception_runs")).mappings())
+    assert len(runs) == 1
+    assert runs[0]["current_perception_state"] == "perceived"
+
+
+def test_the_blind_position_and_the_final_answer_receive_identical_grounding(
+    store: Engine,
+) -> None:
+    """§28.8. The same frozen observation, in both payloads and on the record.
+
+    Two proofs, because either alone is weaker than it looks. The payload proof
+    says the two calls were handed the identical envelope; the record proof says
+    the House can still establish that afterwards, from
+    `perception_handoffs`, without re-reading a payload.
+    """
+    from uuid import UUID as _UUID
+
+    from val_gateway.perception import PERCEPTION_ENVELOPE_MARKER, handoffs_for
+
+    eyes = _Eyes()
+    outcome, adapter = _deliberate_with_eyes(store, ScriptedAdapter(full_script()), eyes)
+    assert isinstance(outcome, DeliberatedTurn)
+
+    blind_call, response_call = adapter.sent[2], adapter.sent[3]
+    assert blind_call.max_output_tokens != 0  # the blind call happened
+
+    def envelope(call: SentCall) -> str:
+        return next(
+            message.content
+            for message in call.messages
+            if message.content.startswith(PERCEPTION_ENVELOPE_MARKER)
+        )
+
+    assert envelope(blind_call) == envelope(response_call), "byte-identical grounding"
+    assert eyes.observation in envelope(blind_call)
+
+    # And neither call received pixels: perception replaced transmission, it did
+    # not accompany it.
+    for call in (blind_call, response_call):
+        assert not any(message.images for message in call.messages)
+
+    with store.connect() as connection:
+        runs = list(connection.execute(text("select id from perception_runs")).mappings())
+        received = handoffs_for(connection, _UUID(str(runs[0]["id"])))
+        calls = list(
+            connection.execute(
+                text("select id, task_type from model_calls where id = any(:ids)"),
+                {"ids": received},
+            ).mappings()
+        )
+    assert len(received) == 2, "two cognition calls, one perception run"
+    assert {row["task_type"] for row in calls} == {"blind_position", "conversation"}

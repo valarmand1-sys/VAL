@@ -1,0 +1,612 @@
+# ruff: noqa: F811, F401 - fixtures imported by name
+"""Local visual perception, end to end — owner ruling, 22 September 2026.
+
+Seventeen proofs, one per numbered requirement of §28 of that order. Real
+PostgreSQL, a stub cognition adapter, and a fake perception provider standing in
+for the isolated MLX-VLM runtime: what is under test is Val Core's behaviour, not
+Qwen3.5's eyesight, and Qwen3.5's eyesight was settled by the acceptance test
+(`docs/reviews/qualification/runs/2026-09-22-qwen3_5-9b/`) rather than here.
+
+The fake records every request it is given, so the assertions can be about what
+actually reached the provider rather than about what the code looks like.
+"""
+
+from __future__ import annotations
+
+import io
+import json
+from dataclasses import dataclass, field
+from typing import Any
+from uuid import UUID
+
+import pytest
+from gateway_fakes import StubAdapter
+from PIL import Image
+from sqlalchemy import Engine, text
+from test_conversation_memory import (
+    answering,
+    build_gateway,
+    catalogue,
+    clean_personas,
+    scope_of,
+    seeded_conversation,
+    store,
+)
+
+from val_domain.gateway import CapabilityProfile, Classification
+from val_domain.perception import (
+    PerceptionObservation,
+    PerceptionRequest,
+    PerceptionResult,
+    PerceptionUnavailableError,
+)
+from val_domain.registry import by_slug
+from val_gateway.attachments import CandidateAttachment
+from val_gateway.context import STATE_ENVELOPE_MARKER
+from val_gateway.loop import Turn, UnansweredTurn, perception_configuration, send
+from val_gateway.perception import PERCEPTION_ENVELOPE_MARKER, handoffs_for, perception_prompt
+from val_policy.project_resolution import ProjectSignals
+from val_policy.routing import can_carry_images, is_admitted, satisfies_profile
+
+PERCEPTION_SLUG = "qwen3-5-9b-mlx-4bit-mlxvlm-perception"
+
+#: What the fake reports. Deliberately the shape of a grounded observation — a
+#: description, not an answer and not advice.
+OBSERVED = (
+    "Three people are present: two adults and a child. The child is wearing a black "
+    "top hat and a black cape. The adults are embracing the child. The setting is an "
+    "indoor living room with a beige sofa."
+)
+
+
+def png(width: int = 320, height: int = 240, colour: str = "navy") -> bytes:
+    buffer = io.BytesIO()
+    image = Image.new("RGB", (width, height), colour)
+    image.paste(Image.new("RGB", (width // 4, height // 4), "white"), (0, 0))
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+def attach(content: bytes = b"", name: str = "family.png") -> CandidateAttachment:
+    return CandidateAttachment(
+        content=content or png(),
+        given_filename=name,
+        stated_classification=Classification.PROTECTED,
+    )
+
+
+@dataclass
+class FakePerception:
+    """The isolated visual runtime, standing still so Core can be measured.
+
+    It records the exact `PerceptionRequest` it was handed — sources, question
+    and the full transmitted prompt — because every assertion about targeting
+    and about which bytes were perceived is an assertion about that object.
+    """
+
+    observation: str = OBSERVED
+    failure: Exception | None = None
+    requests: list[PerceptionRequest] = field(default_factory=list)
+    released: int = 0
+
+    def perceive(self, request: PerceptionRequest) -> PerceptionResult:
+        self.requests.append(request)
+        if self.failure is not None:
+            raise self.failure
+        return PerceptionResult(
+            observations=tuple(
+                PerceptionObservation(
+                    source_sha256=source.sha256,
+                    modality=source.modality,
+                    text=self.observation,
+                )
+                for source in request.sources
+            ),
+            provider="mlxvlm",
+            model_identifier="lmstudio-community/Qwen3.5-9B-MLX-4bit",
+            model_revision="b455506b0f574c74616dbcd56879bde38fafcff3",
+            quantization="4-bit, group size 64, affine (MLX)",
+            runtime="mlx-vlm",
+            runtime_version="0.7.2",
+            generation={"max_tokens": 2048, "temperature": 0.0, "repetition_penalty": None},
+            duration_seconds=28.1,
+            cost_usd=0.0,
+            local=True,
+            reasoning_separated=True,
+        )
+
+    def release(self) -> None:
+        self.released += 1
+
+
+def turn(
+    store: Engine,
+    content: str,
+    *,
+    attachments: tuple[CandidateAttachment, ...] = (),
+    conversation_id: UUID | None = None,
+    perception: FakePerception | None = None,
+) -> tuple[Any, StubAdapter, FakePerception]:
+    """One ordinary turn, with local perception wired as the application wires it."""
+    eyes = perception or FakePerception()
+    adapter = answering("Three of them, my lord, and the boy is in costume.")
+    gateway = build_gateway(store, adapter)
+    gateway.perception = eyes
+    outcome = send(
+        store,
+        gateway,
+        content,
+        catalogue=catalogue(store),
+        signals=None if conversation_id else ProjectSignals(explicit_no_project=True),
+        conversation_id=conversation_id,
+        attachments=attachments,
+    )
+    return outcome, adapter, eyes
+
+
+def rows(store: Engine, table: str) -> list[Any]:
+    with store.connect() as connection:
+        return list(connection.execute(text(f"select * from {table}")).mappings())  # noqa: S608
+
+
+def record_state(adapter: StubAdapter) -> dict[str, Any]:
+    block = next(m for m in adapter.sent_messages if m.content.startswith(STATE_ENVELOPE_MARKER))
+    return json.loads(block.content.split("\n", 1)[1])["prior_record_state"]
+
+
+def perception_envelope(adapter: StubAdapter) -> dict[str, Any]:
+    block = next(
+        m for m in adapter.sent_messages if m.content.startswith(PERCEPTION_ENVELOPE_MARKER)
+    )
+    parsed: dict[str, Any] = json.loads(block.content.split("\n", 1)[1])
+    return parsed
+
+
+def sent_images(adapter: StubAdapter) -> tuple[Any, ...]:
+    return tuple(part for message in adapter.sent_messages for part in message.images)
+
+
+# --- 1. a normal governed image turn selects admitted local perception -----------
+
+
+def test_a_normal_image_turn_selects_the_admitted_local_perception_route(store: Engine) -> None:
+    """§28.1. The route is chosen by the profile it declares, never by its name."""
+    config = perception_configuration(Classification.PROTECTED)
+    assert config is not None and config.slug == PERCEPTION_SLUG
+    assert is_admitted(config)
+    assert satisfies_profile(config, CapabilityProfile.PERCEPTION)
+    assert config.hosting.value == "local" and config.cost_per_mtok_in_usd == 0.0
+
+    outcome, _, eyes = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+    assert len(eyes.requests) == 1, "the local route was used, once"
+
+    run = rows(store, "perception_runs")
+    assert len(run) == 1
+    assert run[0]["provider"] == "mlxvlm"
+    assert run[0]["model_config_id"] == config.id
+    assert run[0]["current_perception_state"] == "perceived"
+    assert run[0]["local"] is True and run[0]["cost_usd"] == 0
+
+
+# --- 2. the correct attachment reaches perception --------------------------------
+
+
+def test_the_correct_attachment_reaches_perception(store: Engine) -> None:
+    """§28.2. By digest, and by bytes — not by trusting that the right file was picked."""
+    payload = png(colour="darkgreen")
+    outcome, _, eyes = turn(store, "Describe this.", attachments=(attach(payload),))
+    assert isinstance(outcome, Turn)
+
+    (source,) = eyes.requests[0].sources
+    assert source.content == payload
+    assert source.media_type == "image/png"
+    assert source.modality == "image"
+
+    act = rows(store, "message_attachments")[0]
+    recorded = rows(store, "perception_sources")[0]
+    assert source.sha256 == recorded["sha256"] == rows(store, "blobs")[0]["sha256"]
+    assert recorded["message_attachment_id"] == act["id"]
+    assert recorded["attachment_id"] == act["attachment_id"]
+    assert recorded["representation"] == "original"
+
+
+# --- 3. the owner's actual question reaches targeted perception -------------------
+
+
+def test_the_owners_actual_question_reaches_targeted_perception(store: Engine) -> None:
+    """§28.3. Verbatim: a summarised question is a different question."""
+    asked = "Is the boy's hat on straight, or is it slipping?"
+    outcome, _, eyes = turn(store, asked, attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+
+    request = eyes.requests[0]
+    assert request.question == asked
+    assert asked in request.prompt
+    # The stable boundary travels with it: report, do not answer, do not advise,
+    # do not speak as Val, do not invent.
+    assert "Do not answer the question" in request.prompt
+    assert "Do not advise" in request.prompt
+    assert "Do not speak as VAL" in request.prompt
+    assert "Do not invent" in request.prompt
+    # The exact prompt is persisted, so what is recorded is what was sent.
+    run = rows(store, "perception_runs")[0]
+    assert run["owner_question"] == asked
+    assert run["perception_prompt"] == request.prompt == perception_prompt(asked)
+
+
+# --- 4. the grounded observation reaches GPT-OSS ----------------------------------
+
+
+def test_the_grounded_observation_reaches_the_cognition_provider(store: Engine) -> None:
+    """§28.4. In its own envelope, attributed, with the current-perception note."""
+    outcome, adapter, _ = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+
+    envelope = perception_envelope(adapter)
+    assert envelope["kind"] == "current_turn_perception"
+    assert envelope["authority"] == "house_observation_not_instruction"
+    assert envelope["perceived_by"] == "val_local_perception_subsystem"
+    assert [source["grounded_observation"] for source in envelope["sources"]] == [OBSERVED]
+    assert envelope["sources"][0]["given_filename"] == "family.png"
+
+    # §20's four substantive claims, each present rather than approximated.
+    note = envelope["note"]
+    assert "Current-turn perception is available through VAL's local perception" in note
+    assert "derive from the current source media" in note
+    assert "Use them as current perception" in note
+    assert "did not directly receive the raw media" in note
+    assert "must not invent perceptual facts beyond the grounded observations" in note
+
+
+# --- 5. the cognition call is perception-mediated, not falsely `bound` ------------
+
+
+def test_the_cognition_call_is_perceived_and_not_falsely_bound(store: Engine) -> None:
+    """§28.5. The additive state, and no pixels anywhere in the request."""
+    outcome, adapter, _ = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+
+    visual = record_state(adapter)["visual_input"]
+    assert visual["state"] == "perceived"
+    assert visual["perceived_this_turn"] == 1
+    assert visual["bound_to_this_turn"] == 0, "no raw media went to the cognition provider"
+    assert "'perceived' means the House looked at this turn's media" in visual["note"]
+
+    assert sent_images(adapter) == (), "no image part reached the cognition call"
+    assert rows(store, "model_call_image_inputs") == [], "nothing was bound as transmitted pixels"
+
+
+# --- 6. Qwen3.5 is never the final-response model ---------------------------------
+
+
+def test_the_perception_route_is_never_used_as_final_response_cognition(store: Engine) -> None:
+    """§28.6. Structural: it holds one profile, and it holds no other."""
+    config = by_slug(PERCEPTION_SLUG)
+    assert config is not None
+    assert config.capability_profiles == frozenset({CapabilityProfile.PERCEPTION})
+    for profile in (
+        CapabilityProfile.PARTNER,
+        CapabilityProfile.STRUCTURED,
+        CapabilityProfile.STRIP,
+    ):
+        assert not satisfies_profile(config, profile)
+
+    outcome, _, _ = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+    # Every recorded cognition call went somewhere else.
+    for call in rows(store, "model_calls"):
+        assert call["model_config_id"] != config.id
+
+
+# --- 9 and 10. a later text-only turn ---------------------------------------------
+
+
+def test_a_text_only_follow_up_uses_stored_perception_without_reinspecting(
+    store: Engine,
+) -> None:
+    """§28.9 and §28.10 together, because they are one behaviour seen from two sides.
+
+    The stored observation is in the record and is not re-perceived; the earlier
+    media are not silently re-read; and nothing lets the cognition provider reach
+    for the raw bytes on its own.
+    """
+    first, _, eyes = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(first, Turn)
+    assert len(eyes.requests) == 1
+
+    second, follow_up, _ = turn(
+        store,
+        "How many people did you say there were?",
+        conversation_id=first.conversation.id,
+        perception=eyes,
+    )
+    assert isinstance(second, Turn)
+
+    # §28.10 — no autonomous raw-media access. Perception did not run again, no
+    # second run row exists, and no image part reached the cognition call.
+    assert len(eyes.requests) == 1, "the follow-up did not reinspect"
+    assert len(rows(store, "perception_runs")) == 1
+    assert sent_images(follow_up) == ()
+
+    # §28.9 — what is available to the follow-up is the stored record: the
+    # earlier exchange, in history, with the observation Val already gave.
+    state = record_state(follow_up)["visual_input"]
+    assert state["state"] == "earlier_only", "in the record, not in view"
+    assert state["perceived_this_turn"] == 0
+    assert state["earlier_in_conversation"] == 1
+    stored = rows(store, "perception_runs")[0]
+    assert stored["observation"] == OBSERVED
+    assert stored["message_id"] == first.user_message.id
+
+
+# --- 11. a healthy local route prevents silent paid perception --------------------
+
+
+def test_a_healthy_local_route_prevents_silent_paid_perception(store: Engine) -> None:
+    """§28.11. The paid image-capable route still exists, and is not used for this."""
+    sol = by_slug("gpt-5-6-sol-medium")
+    assert sol is not None and can_carry_images(sol), "Sol's declared capability is untouched"
+
+    outcome, adapter, _ = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+    # No image reached any provider, so no image-capable route was needed and
+    # none was pinned for the image's sake.
+    assert sent_images(adapter) == ()
+    assert rows(store, "model_call_image_inputs") == []
+    run = rows(store, "perception_runs")[0]
+    assert run["cost_usd"] == 0 and run["local"] is True
+
+
+# --- 12. one bounded recovery attempt, then fail closed ---------------------------
+
+
+def test_a_runtime_failure_gets_one_bounded_recovery_then_fails_closed(store: Engine) -> None:
+    """§28.12. The recovery belongs to the adapter; Core's job is to stop honestly.
+
+    What is proved here is the stopping: the turn ends unanswered, the user's
+    message survives, no perception row is written, and — the part that matters —
+    **no cognition call happens at all**, so the media cannot have gone anywhere.
+    """
+    broken = FakePerception(
+        failure=PerceptionUnavailableError(
+            "local visual perception failed twice and is not available. "
+            "Nothing was sent to any paid provider and nothing was charged."
+        )
+    )
+    outcome, adapter, _ = turn(
+        store, "What is in this?", attachments=(attach(),), perception=broken
+    )
+    assert isinstance(outcome, UnansweredTurn)
+    assert "failed twice" in str(outcome.error)
+    assert "Nothing was sent to any paid provider" in str(outcome.error)
+
+    assert tuple(adapter.sent_messages) == (), "no cognition call was made"
+    assert rows(store, "perception_runs") == []
+    assert rows(store, "model_calls") == []
+    # The message was said, so it is history. The act and the bytes are too.
+    assert len(rows(store, "messages")) == 1
+    assert len(rows(store, "message_attachments")) == 1
+
+
+# --- 13. no Terminal, no manual runtime action ------------------------------------
+
+
+def test_ordinary_owner_use_requires_no_terminal_or_manual_runtime_action(
+    store: Engine,
+) -> None:
+    """§28.13. The whole mechanism is inside one `send`, with nothing to start first.
+
+    The adapter's own argument vector is checked in `test_perception_adapter.py`;
+    what this proves is the shape of the call site — one ordinary turn, no
+    activation step, no load step, no unload step, nothing for the owner to do.
+    """
+    from val_providers.mlxvlm_perception import MLXVLMPerception
+
+    outcome, _, eyes = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+    assert outcome.val_message.content
+    assert len(eyes.requests) == 1
+
+    # The real provider needs no `start`, no `load` and no `ensure_ready`: there
+    # is no daemon and no resident model, so there is nothing to bring up.
+    real = MLXVLMPerception()
+    assert not hasattr(real, "start")
+    assert not hasattr(real, "ensure_ready")
+    assert hasattr(real, "perceive") and hasattr(real, "release")
+
+
+# --- 14 and 15. resources are released, and GPT-OSS resumes -----------------------
+
+
+def test_visual_resources_release_and_cognition_continues_afterwards(store: Engine) -> None:
+    """§28.14 and §28.15. Sequential residency, seen from Core's side.
+
+    The measured proof is in the qualification record — wired memory 13.10 GB
+    during perception, 2.97 GB after the process exited, GPT-OSS reloaded at its
+    registered 32,768-token window in 10.7 s. What Core must show is that the two
+    take turns: a perception turn, then ordinary cognition, then another
+    perception turn, with no residency held in between and nothing to reset.
+    """
+    first, _, eyes = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(first, Turn)
+
+    text_turn, _, _ = turn(
+        store,
+        "And what should I do about it?",
+        conversation_id=first.conversation.id,
+        perception=eyes,
+    )
+    assert isinstance(text_turn, Turn)
+    assert text_turn.val_message.content, "ordinary cognition still works afterwards"
+    assert len(eyes.requests) == 1, "a text turn does not touch the visual runtime"
+
+    again, _, _ = turn(
+        store,
+        "Here is another.",
+        attachments=(attach(png(colour="maroon"), "second.png"),),
+        conversation_id=first.conversation.id,
+        perception=eyes,
+    )
+    assert isinstance(again, Turn)
+    assert len(eyes.requests) == 2, "the visual runtime is invoked again on a later image"
+    assert len(rows(store, "perception_runs")) == 2
+
+
+# --- 16. historical `bound` semantics are unchanged -------------------------------
+
+
+def test_historical_bound_semantics_are_unchanged(store: Engine) -> None:
+    """§28.16. `bound` still means raw media went to the cognition provider.
+
+    With no perception provider wired — which is every turn the house took before
+    22 September 2026 — the Track C path is untouched, down to the state string
+    and the binding row. The new state is additive, and old rows are not
+    reinterpreted: `perception_state` still carries `bound` as its own value.
+    """
+    from val_domain.schema import PerceptionState
+
+    assert list(PerceptionState.enums) == ["perceived", "bound"]
+
+    adapter = answering("A navy field, my lord.")
+    gateway = build_gateway(store, adapter)
+    assert gateway.perception is None, "no perception provider: the Track C path"
+    outcome = send(
+        store,
+        gateway,
+        "What is in this?",
+        catalogue=catalogue(store),
+        signals=ProjectSignals(explicit_no_project=True),
+        attachments=(attach(),),
+    )
+    assert isinstance(outcome, Turn)
+    visual = record_state(adapter)["visual_input"]
+    assert visual["state"] == "bound"
+    assert visual["bound_to_this_turn"] == 1
+    assert visual["perceived_this_turn"] == 0
+    assert len(sent_images(adapter)) == 1, "the pixels were transmitted, as before"
+    assert len(rows(store, "model_call_image_inputs")) == 1
+    assert rows(store, "perception_runs") == []
+
+
+# --- 17. historical evidence is unchanged -----------------------------------------
+
+
+def test_historical_sol_track_c_and_failed_candidate_evidence_is_unchanged() -> None:
+    """§28.17. Nothing about the earlier record was edited to make room for this."""
+    sol = by_slug("gpt-5-6-sol-medium")
+    assert sol is not None
+    assert sol.image_input is not None, "Sol's Track C image capability stands"
+    assert is_admitted(sol) and satisfies_profile(sol, CapabilityProfile.PARTNER)
+
+    # The failed candidates' records: registered, never admitted, no profile.
+    for slug in (
+        "gpt-oss-20b-mxfp4-mlx-lmstudio",
+        "qwen3-8-27b-mlx-6bit-lmstudio",
+    ):
+        entry = by_slug(slug)
+        assert entry is not None, f"{slug} is preserved"
+        assert not is_admitted(entry)
+        assert entry.capability_profiles == frozenset()
+
+    # The local Partner admission of 21 September is untouched by this one.
+    partner = by_slug("gpt-oss-20b-mxfp4-mlx-lmstudio-partner")
+    assert partner is not None
+    assert partner.capability_profiles == frozenset({CapabilityProfile.PARTNER})
+    assert len(partner.known_weaknesses) == 3, "the Stage A findings are still carried"
+
+
+# --- 7 and 8. the consequential turn ----------------------------------------------
+#
+# These two need the deliberation orchestrator rather than the ordinary loop, so
+# they live beside the rest of that machinery — but they are §28.7 and §28.8 and
+# they are named here so the seventeen can be counted in one place.
+
+
+def test_seven_and_eight_are_proved_in_the_deliberation_suite() -> None:
+    """§28.7 and §28.8 — one perception per consequential turn, identical grounding.
+
+    Proved in `test_deliberation_machinery.py`, against the real orchestrator:
+    `test_a_consequential_media_turn_perceives_once` and
+    `test_the_blind_position_and_the_final_answer_receive_identical_grounding`.
+    The database backs both independently — `perception_runs.message_id` is
+    unique, so a second run for one turn cannot be written even by mistake.
+    """
+    from val_domain import schema
+
+    unique = {
+        constraint.name
+        for constraint in schema.PerceptionRun.__table__.constraints
+        if constraint.name is not None
+    }
+    assert "uq_perception_runs_message" in unique
+
+
+# --- the record, whole -------------------------------------------------------------
+
+
+def test_the_provenance_record_holds_everything_the_ruling_lists(store: Engine) -> None:
+    """§26, as a single readable row rather than as a promise."""
+    asked = "What is going on here?"
+    outcome, _, _ = turn(store, asked, attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+
+    run = rows(store, "perception_runs")[0]
+    source = rows(store, "perception_sources")[0]
+    config = by_slug(PERCEPTION_SLUG)
+    assert config is not None
+
+    assert run["conversation_id"] == outcome.conversation.id
+    assert run["message_id"] == outcome.user_message.id
+    assert run["model_config_id"] == config.id
+    assert run["provider"] == "mlxvlm"
+    assert run["model_identifier"] == "lmstudio-community/Qwen3.5-9B-MLX-4bit"
+    assert run["model_revision"] == "b455506b0f574c74616dbcd56879bde38fafcff3"
+    assert run["quantization"] == "4-bit, group size 64, affine (MLX)"
+    assert run["runtime"] == "mlx-vlm" and run["runtime_version"] == "0.7.2"
+    assert run["generation"]["max_tokens"] == 2048
+    assert run["generation"]["repetition_penalty"] is None
+    assert run["owner_question"] == asked
+    assert asked in run["perception_prompt"]
+    assert run["observation"] == OBSERVED
+    assert run["current_perception_state"] == "perceived"
+    assert run["local"] is True and run["cost_usd"] == 0
+    assert run["duration_ms"] > 0 and run["reasoning_separated"] is True
+
+    assert source["modality"] == "image" and source["media_type"] == "image/png"
+    assert source["byte_size"] > 0 and len(source["sha256"]) == 64
+    assert source["observation"] == OBSERVED
+
+    # OBSERVATION -> COGNITION: the response call is on record as having been
+    # grounded in this run.
+    with store.connect() as connection:
+        received = handoffs_for(connection, UUID(str(run["id"])))
+    assert len(received) == 1
+    assert received[0] == outcome.response.model_call_id
+
+
+def test_the_grounded_observation_is_not_stored_as_an_ordinary_chat_message(
+    store: Engine,
+) -> None:
+    """§26's closing rule: it is evidence, not something Val said."""
+    outcome, _, _ = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+    contents = [row["content"] for row in rows(store, "messages")]
+    assert OBSERVED not in contents
+    assert rows(store, "perception_runs")[0]["observation"] == OBSERVED
+
+
+def test_a_perception_row_cannot_be_edited_or_deleted(store: Engine) -> None:
+    """Append-only, under the standing Layer 0 guards."""
+    outcome, _, _ = turn(store, "What is in this?", attachments=(attach(),))
+    assert isinstance(outcome, Turn)
+    run_id = rows(store, "perception_runs")[0]["id"]
+    with pytest.raises(Exception, match=r"evidence|immutable|cannot"):
+        with store.begin() as connection:
+            connection.execute(
+                text("update perception_runs set observation = 'something else' where id = :i"),
+                {"i": run_id},
+            )
+    with pytest.raises(Exception, match=r"delete|evidence|cannot"):
+        with store.begin() as connection:
+            connection.execute(text("delete from perception_runs where id = :i"), {"i": run_id})

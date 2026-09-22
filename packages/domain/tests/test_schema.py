@@ -348,6 +348,50 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "stated_classification",
         "position",
     ),
+    # --- Local visual perception, owner ruling 22 September 2026 ---------------
+    # Transcribed from the ruling's §26, not from the models.
+    "perception_runs": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "message_id",
+        "model_config_id",
+        "provider",
+        "model_identifier",
+        "model_revision",
+        "quantization",
+        "runtime",
+        "runtime_version",
+        "generation",
+        "owner_question",
+        "perception_prompt",
+        "observation",
+        "current_perception_state",
+        "local",
+        "cost_usd",
+        "duration_ms",
+        "reasoning_separated",
+    ),
+    "perception_sources": (
+        "id",
+        "created_at",
+        "perception_run_id",
+        "position",
+        "message_attachment_id",
+        "attachment_id",
+        "sha256",
+        "media_type",
+        "byte_size",
+        "modality",
+        "representation",
+        "observation",
+    ),
+    "perception_handoffs": (
+        "id",
+        "created_at",
+        "perception_run_id",
+        "model_call_id",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -454,6 +498,11 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("attachment_processing_events", "representation_id"),
         ("attachment_processing_events", "error"),
         ("model_call_image_inputs", "representation_id"),
+        # Local visual perception. Both NULL together on a house-internal source
+        # that never arrived on a message; a trigger holds them to one file
+        # whenever they are set.
+        ("perception_sources", "message_attachment_id"),
+        ("perception_sources", "attachment_id"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.
@@ -473,6 +522,10 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
     "attachment_act_classification": ("public", "internal", "protected"),
     "attachment_processing_event": ("started", "succeeded", "failed"),
     "model_call_image_input_kind": ("original", "representation"),
+    # Local visual perception, 22 September 2026. `audio` is absent because it
+    # is not qualified and not admitted; `bound` keeps its Track C meaning.
+    "perception_modality": ("image", "video"),
+    "perception_state": ("perceived", "bound"),
     "message_role": ("user", "val", "system"),
     "model_call_task_type": (
         "conversation",
