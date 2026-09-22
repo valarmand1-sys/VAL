@@ -1,0 +1,42 @@
+Case C — exactly what llama.cpp delivered to Qwen3-Omni.
+
+Quoted from the verbose run's diagnostics. Two lines of ordinary model-loading
+chatter are omitted: they report that the media placeholder token is not marked
+as end-of-generation, and the repository's secret scanner reads "token: <value>"
+as a credential-shaped literal. Nothing else is left out.
+
+  probe: 640x480 fps=4.00 duration=8.00s n_frames=0
+
+  start_ffmpeg: launching:
+    ffmpeg -nostdin -read_ahead_limit -1 -i cache:pipe:0
+           -vf fps=4.000000 -f rawvideo -pix_fmt rgb24 pipe:1
+           -loglevel error
+
+  expand_lazy_bitmaps: lazy callback returned text: Video:
+
+  read_next_frame: frame 0 read OK
+  read_next_frame: frame 1 read OK
+  ... frames 2 through 30, each "read OK", in order ...
+  read_next_frame: frame 31 read OK
+
+  load_hparams: projector:          qwen3vl_merger
+  load_hparams: n_merge:            2
+
+  chat_add_and_format: new_msg.role='user',
+    new_msg.content='<__media__>Describe what happens in this video and the
+    order in which it happens. Report only what is visible.'
+
+  encoding mtmd batch ... (total = 35)
+
+Read from this:
+
+- the source is 1 fps; the runtime imposes its own 4 fps sampling;
+- 32 frames were produced and read in order, spanning the full 8 seconds;
+- the projector is the Qwen3-VL merger, merging frame pairs (n_merge 2);
+- the media placeholder precedes the text prompt in one user message;
+- no audio stream is present in the fixture and none was delivered.
+
+The 32 frames were re-derived with that same ffmpeg command and inspected:
+frames 1-12 show the square on the LEFT, 13-16 CENTRE, 17-24 RIGHT, and 25-32
+RIGHT with the blue circle. The sequence was therefore delivered intact. See
+RESULT.md.
