@@ -1,0 +1,90 @@
+{
+ "load_seconds": 0.99,
+ "generation_settings_in_force": {
+  "max_tokens": 2048,
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "top_k": 0,
+  "min_p": 0.0,
+  "repetition_penalty": null,
+  "eos_token_id": [
+   248044,
+   248046
+  ],
+  "kwargs_passed_to_generate": []
+ },
+ "case_a_source": {
+  "path": "/private/tmp/claude-501/-Users-josepharmand-Projects-val/f5cf12ed-8043-4d6d-95f1-c313ddbf0b76/scratchpad/fixtures/case_a_image.png",
+  "sha256": "7fc13a7c5072b69acc119d20a16beb6523dc21aa4ba6a4ef950c7ba748c12db0",
+  "matches": true
+ },
+ "case_a": {
+  "seconds": 28.11,
+  "answer": "Based on the image provided, here is a factual report of what is visible:\n\n**People Present:**\n- Three people are present: one adult male, one adult female, and one child.\n\n**Child\u2019s Clothing:**\n- The child is wearing a black top hat with a white band.\n- The child is wearing a black cape with a red lining.\n- The child is wearing a black jacket or coat with a high collar.\n\n**Actions:**\n- The adult male is kneeling and hugging the child from the left side.\n- The adult female is kneeling and hugging the child from the right side.\n- The child is being hugged by both adults and is leaning into them with eyes closed.\n- The adult male has his right arm around the child\u2019s back.\n- The adult female has her left hand on the child\u2019s shoulder and her right arm around the child\u2019s back.\n\n**Setting:**\n- The scene takes place in a living room.\n- There is a beige sofa with multiple pillows (beige, pink, and gray) behind the people.\n- A wooden coffee table is in the foreground with books on it.\n- To the left, there is a wooden side table with books and a vase of flowers.\n- To the right, there is another wooden side table with a lamp and a small potted plant.\n- In the background, there is a window with curtains, a floor lamp, and a bookshelf.\n- A framed picture hangs on the wall to the far left.\n\n**Major Visible Continuity Details:**\n- All three individuals are dressed in casual, modern clothing.\n- The lighting is warm and appears to come from natural light through the window and artificial light from the lamps.\n- The overall style is consistent with 3D animated characters, featuring smooth textures and stylized facial features.\n- The furniture and decor are arranged in a typical, tidy living room layout.\n- The child\u2019s costume (top hat and cape) contrasts with the everyday attire of the adults."
+ },
+ "case_c_source": {
+  "path": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-22-case-c-repair/case_c_video_v2.mp4",
+  "sha256": "6925c05c4ea8d164f172e0d16de775736ffccd0d62dd0c649fb9a354f680a169",
+  "matches_frozen": true
+ },
+ "case_c_delivery": {
+  "source_total_frames": 270,
+  "source_fps": 30.0,
+  "duration_seconds": 9.0,
+  "width": 640,
+  "height": 480,
+  "frames_delivered": 18,
+  "frame_indices": [
+   0,
+   16,
+   32,
+   47,
+   63,
+   79,
+   95,
+   111,
+   127,
+   142,
+   158,
+   174,
+   190,
+   206,
+   222,
+   237,
+   253,
+   269
+  ],
+  "timestamps_seconds": [
+   0.0,
+   0.533,
+   1.067,
+   1.567,
+   2.1,
+   2.633,
+   3.167,
+   3.7,
+   4.233,
+   4.733,
+   5.267,
+   5.8,
+   6.333,
+   6.867,
+   7.4,
+   7.9,
+   8.433,
+   8.967
+  ],
+  "sampled_fps": 2.0,
+  "frames_array_shape": [
+   18,
+   3,
+   480,
+   640
+  ]
+ },
+ "case_c_prompt_rendered": "<|im_start|>user\n<|vision_start|><|video_pad|><|vision_end|>Describe what happens in this video and the order in which it happens. Report only what is visible.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+ "case_c": {
+  "seconds": 9.67,
+  "answer": "Initially, a red square is positioned on the left side of the screen. As the video progresses, the red square moves horizontally to the right side of the screen. Following this, a blue circle appears below the red square on the right side of the screen. The video concludes with the red square and blue circle in their respective positions on the right side of the screen."
+ }
+}
