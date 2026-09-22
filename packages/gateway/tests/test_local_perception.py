@@ -610,3 +610,56 @@ def test_a_perception_row_cannot_be_edited_or_deleted(store: Engine) -> None:
     with pytest.raises(Exception, match=r"delete|evidence|cannot"):
         with store.begin() as connection:
             connection.execute(text("delete from perception_runs where id = :i"), {"i": run_id})
+
+
+# --- OP-3, reviewed at its own checkpoint -----------------------------------------
+
+
+def _shape(adapter: StubAdapter) -> list[str]:
+    """What each assembled message is, by kind rather than by content."""
+    from val_gateway.context import MEMORY_ENVELOPE_MARKER
+
+    kinds = []
+    for message in adapter.sent_messages:
+        if message.content.startswith(MEMORY_ENVELOPE_MARKER):
+            kinds.append("recall_envelope")
+        elif message.content.startswith(STATE_ENVELOPE_MARKER):
+            kinds.append("record_state_envelope")
+        elif message.content.startswith(PERCEPTION_ENVELOPE_MARKER):
+            kinds.append("perception_envelope")
+        else:
+            kinds.append(f"turn:{message.role}")
+    return kinds
+
+
+def test_the_assembled_request_contains_exactly_the_enumerated_parts(store: Engine) -> None:
+    """OP-3's closure condition, landing at the checkpoint that made it meaningful.
+
+    Recorded 1 September 2026: an exact-composition assertion was declined then
+    because it would have asserted the absence of a feature that did not exist.
+    The perception envelope is the first non-conversation context block to arrive
+    since — a real one, added by this very change — so the assertion is now worth
+    what it claims. Any later addition must name itself here.
+
+    The system channel is pinned byte-exact elsewhere; this is the message
+    channel, which was only ever asserted piecewise.
+    """
+    text_turn, plain, eyes = turn(store, "Good morning.")
+    assert isinstance(text_turn, Turn)
+    assert _shape(plain) == ["record_state_envelope", "turn:user"]
+
+    image_turn, seen, _ = turn(
+        store,
+        "And what is in this?",
+        attachments=(attach(),),
+        conversation_id=text_turn.conversation.id,
+        perception=eyes,
+    )
+    assert isinstance(image_turn, Turn)
+    assert _shape(seen) == [
+        "turn:user",
+        "turn:assistant",
+        "record_state_envelope",
+        "perception_envelope",
+        "turn:user",
+    ], "history, the record state, the perception it describes, then the turn"

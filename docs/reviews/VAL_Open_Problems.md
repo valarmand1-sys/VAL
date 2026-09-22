@@ -44,6 +44,7 @@ they demonstrably fail. (Also stated in `CLAUDE.md`, Current work.)
 | **Responsible layer / WP** | The post-gate core-loop packages above, then Layer 4. |
 | **Closure condition** | A remedy exists, demonstrated, that is honest about what the records can actually support — not closed because its first remedy failed. |
 | **Last reviewed** | 13 September 2026, at the message revision/retraction checkpoint: narrowed, not solved — what was said, what it was corrected to, and what any past call received are now deterministic from `messages`, `message_revisions` and the as-of rule (`VAL_Conversation_Management_Record.md` §8); outbound claims are still unexamined. |
+| | **22 September 2026, at the attachment-substrate-and-image-vision checkpoint: narrowed again, and still not solved.** Local visual perception makes *what she received and perceived* deterministic for the first time: `perception_runs` holds the exact source digests, the owner's question, the transmitted prompt and the observation returned; `perception_sources` ties each observation to one file by key; `perception_handoffs` names every cognition call that was grounded in it, so a claim about what Val saw on a given turn can be checked against a record rather than against a payload. **The unsolved half is unchanged and should not be read as smaller:** nothing examines an outbound claim before it is sent, so Val can still assert a perceptual fact the observation does not support. The record now makes such a claim *checkable afterwards*; it does not prevent one. Worth stating plainly because the new state is called `perceived`: the envelope's note tells the cognition model not to invent beyond the grounded observations, and an instruction is not a mechanism. |
 
 ---
 
@@ -70,7 +71,7 @@ they demonstrably fail. (Also stated in `CLAUDE.md`, Current work.)
 | Field | |
 |---|---|
 | **Problem ID** | OP-3 |
-| **Status** | **Open. Partially covered.** |
+| **Status** | **Closed 22 September 2026**, at the attachment-substrate checkpoint, by the exact-composition assertion its closure condition named. |
 | **Statement** | The `system` channel is pinned byte-exact by existing tests (`request.system == persona.content`, `persona_occurrences == 1`, adapters' `sent_system` asserted at every call site), so permanent injection of accumulated books — or anything else — into the governance channel fails today. The message channel is asserted piecewise (envelope excerpt count equals recall count; forged content stays one string; the current turn is last) but no test asserts the request contains *only* the recall envelope plus conversation turns, so a future non-conversation message block would not by itself fail an assertion. |
 | **Affected invariants** | `02-partner-systems.md` §2.4 (retrieval, not permanent injection — the authoritative side, per the 1 September 2026 amendment); WP-0.5 assembly doctrine. |
 | **What is known** | No books mechanism exists in any code path; the danger is future, not current. |
@@ -80,6 +81,7 @@ they demonstrably fail. (Also stated in `CLAUDE.md`, Current work.)
 | **Responsible layer / WP** | The attachment-substrate work package (post-gate order item 2). |
 | **Closure condition** | An exact-composition assertion lands with the substrate: the assembled request contains exactly the enumerated parts and nothing else, so any later addition must name itself in the test. |
 | **Last reviewed** | 1 September 2026. |
+| | **22 September 2026 — closed at its own checkpoint, by the thing it was waiting for.** The first legitimate non-conversation context block has arrived: the perception envelope, added by the local-perception ruling of that date. `test_the_assembled_request_contains_exactly_the_enumerated_parts` (`packages/gateway/tests/test_local_perception.py`) now asserts the message channel's exact composition by kind, on a text turn and on a perception turn — history, the recall envelope where there is one, the record-state envelope, the perception envelope where there is one, then the current turn, and nothing else. Any later block must name itself there. The system channel's byte-exact pins are unchanged. **Status: closed.** |
 
 ---
 
