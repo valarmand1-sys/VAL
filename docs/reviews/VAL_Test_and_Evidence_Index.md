@@ -1138,3 +1138,23 @@ Owner implementation order of that date: the architecture is deliberately no lon
 
 **Stopped at the failure**, as ruled. Artifacts remain on disk wired into nothing; MiniCPM-o and Qwen3-Omni artifacts were left untouched throughout, as instructed. **Carried forward:** three candidates have now failed the same video case, and for the last two the delivery was verified intact — ordered frames with timestamps in both. The common failure is not plumbing; each model read one square in motion as several squares appearing. It may be worth asking whether the fixture's abstract shapes are the hardest possible case for models trained on natural video.
 
+---
+
+## 91. Case C exam repair — the fixture now depicts the movement the criterion asks for — 22 September 2026
+
+Ruled by Lord Armand and frozen on his personal verification of the production-sampled evidence. **No candidate was downloaded or run**, no routing changed, no integration built. Record: `docs/reviews/qualification/runs/2026-09-22-case-c-repair/`.
+
+**The defect, independent of any candidate's answer.** The original fixture is eight frames at 1 fps: the square is *held* at left on frames 1–3, at centre on 4–5, at right on 6–8, with abrupt cuts between. Nothing travels. The criterion nevertheless required a candidate to establish that one square **moves** left → centre → right, and failed an answer reading them as several squares. Counting the frames and reading the word "moves" is the whole demonstration; no candidate result is needed for it, and none is excused by it.
+
+**The repair, minimal.** Only the fixture changes. The Case C criterion's five pass points, its fail conditions and the frozen prompt are untouched, and the temporal requirement is not weakened. The original fixture is preserved at `docs/reviews/qualification/fixtures/case_c_original/case_c_video_original.mp4`, digest `23551e4a…` unchanged.
+
+**The repaired fixture** (`case_c_video_v2.mp4`, `6925c05c4ea8d164f172e0d16de775736ffccd0d62dd0c649fb9a354f680a169`, 19,027 bytes): 640×480, **30 fps**, 270 frames, 9.0 s — same background, one red square, one blue circle, no text, arrow, label, trail or second square. One second at rest left, five seconds of continuous linear travel, one second at rest right, then the circle beneath for a two-second hold. **Genuine frame-to-frame motion:** across all 150 travel frames the square advances 2–3 px every frame, strictly increasing, never zero. The generator is deterministic — regeneration reproduced the identical digest.
+
+**Verified through the default production sampler**, nothing passed to make it easier. MLX-VLM `load_video` defaults gave 2.0 fps, **18 frames**, source indices 0…269, timestamps 0.000–8.967 s. **Twelve distinct square positions, ten of them intermediate** — twice the five required — monotonic left to right, bands in order, and **never more than one red region in any frame**, so no duplicate-object ambiguity. Movement starts 1.067 s, the square reaches the right 6.333 s, the circle first appears **7.400 s**, a second after arrival and never during motion, and is beneath the square whenever present. **No fixture adjustment was needed**; the first authoring attempt satisfied the sampler.
+
+**Owner verification.** A contact sheet of all 18 delivered frames, labelled with timestamps, was produced and reviewed by Lord Armand personally. Approved 22 September 2026, with the two initial frames at the same left position accepted as the intentional pre-motion hold. The original defect survived three candidates precisely because the delivered frames had never been compared by eye against the word "movement".
+
+**Effect on the candidates already tested:** MiniCPM-o 4.5, Qwen3-Omni and Qwen2.5-VL each sat the **original** fixture. None is rescored, reopened, rerun or inferred against the repaired one; their records stand as what happened under the tests they actually sat. Qwen2.5-VL remains independently closed on its repaired Case A failure — cape described as a suit, tie invented.
+
+**Governance, recorded plainly.** This is the **second** visual-test repair after candidate failures; both carry defects documented from the exam itself. It must not become precedent for changing the test until a candidate passes. **No further change to Case A or Case C during candidate qualification** without a new explicit owner ruling that identifies the defect, demonstrates it independently of a candidate answer, and authorises the amendment before the next candidate is tested. If the next candidate fails the repaired test, the failure is reported and no repair is proposed.
+

@@ -10,6 +10,23 @@ re-run with different prompts after seeing an answer. A genuine installation or
 integration defect that stopped the model from receiving the intended input at
 all may be corrected; the model may not be tuned against the answers.
 
+> **Amendments — read these with this document.** Two exam repairs have been
+> ruled since it was frozen, each recorded separately so this text stays as it
+> was committed. **No criterion wording below has been edited**; where an
+> amendment governs, it says so and supersedes.
+>
+> - **Case A criterion**, ruled 22 September 2026 —
+>   `../2026-09-22-qwen2_5-vl/EXAM_REPAIR_CASE_A.md`. The interpretive identity
+>   label is replaced by the visible garments. The prompt is unchanged.
+> - **Case C fixture**, ruled 22 September 2026 —
+>   `../2026-09-22-case-c-repair/EXAM_REPAIR_CASE_C.md`. The fixture is replaced
+>   by one that actually depicts continuous movement. The criterion and the
+>   prompt are unchanged, and the original fixture is preserved.
+>
+> No further change may be made to Case A or Case C during candidate
+> qualification without a new explicit owner ruling that demonstrates a defect
+> independently of any candidate's answer.
+
 Candidate role: **Val local perception provider** — grounded observations from
 images, audio and video. Not final cognition. Val Core remains Val; GPT-OSS
 remains the cognition provider; MiniCPM-o is a replaceable perception provider
