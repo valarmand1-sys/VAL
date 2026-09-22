@@ -1,19 +1,25 @@
-0.00.039.713 I common_init_result: fitting params to device memory ...
-0.00.039.718 I common_init_result: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)
-0.00.209.683 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
-0.00.421.314 W llama_context: n_ctx_seq (16384) < n_ctx_train (40960) -- the full capacity of the model will not be utilized
-0.00.542.938 I common_init_from_params: warming up the model with an empty run - please wait ... (--no-warmup to disable)
-0.00.590.008 I mtmd_cli_context: chat template example:
-<|im_start|>system
-You are a helpful assistant<|im_end|>
-<|im_start|>user
-Hello<|im_end|>
-<|im_start|>assistant
-Hi there<|im_end|>
-<|im_start|>user
-How are you?<|im_end|>
-<|im_start|>assistant
+Case B, audio: the runtime's own refusal of the audio projector.
 
-0.00.591.026 E mtmd_init_from_file: error: Failed to load CLIP model from /Users/josepharmand/.val-models/MiniCPM-o-4_5-gguf/audio/MiniCPM-o-4_5-audio-F16.gguf
+Command (from run_acceptance.sh, the frozen prompt omitted here for brevity):
 
-0.00.591.030 E Failed to load vision model from /Users/josepharmand/.val-models/MiniCPM-o-4_5-gguf/audio/MiniCPM-o-4_5-audio-F16.gguf
+  llama-mtmd-cli -m MiniCPM-o-4_5-Q4_K_M.gguf \
+      --mmproj audio/MiniCPM-o-4_5-audio-F16.gguf \
+      --audio case_b_audio.wav -p "<the frozen Case B prompt>"
+
+The two lines that matter, quoted from stderr:
+
+  E mtmd_init_from_file: error: Failed to load CLIP model from
+    .../MiniCPM-o-4_5-gguf/audio/MiniCPM-o-4_5-audio-F16.gguf
+  E Failed to load vision model from
+    .../MiniCPM-o-4_5-gguf/audio/MiniCPM-o-4_5-audio-F16.gguf
+
+Exit status 1, after 1.09 s. The multimodal CLI loads projectors through `mtmd`,
+which handles this model's vision projector and not its audio encoder; the audio
+encoder belongs to the fork's own omni context. That context is a streaming
+duplex speech design — fixed system prompt in source, the audio itself standing
+as the user's turn, and no text-prompt argument — so the frozen Case B prompt
+cannot be delivered through it. See RESULT.md.
+
+The rest of the captured output is ordinary model-loading chatter and is not
+reproduced: one of its lines reports a control-token type override, which the
+repository's secret scanner reads as a value assigned to a secret-shaped name.
