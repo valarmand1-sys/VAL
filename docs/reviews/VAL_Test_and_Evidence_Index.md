@@ -1116,3 +1116,25 @@ Owner implementation order of that date, tested against the acceptance test froz
 
 **Stopped at the failure**, as ruled: no prompt rewritten, no criterion softened, no fixture altered, no quantization switched, no second Qwen build, no repeated tuning, no silent substitution. Artifacts remain on disk wired into nothing; the failed MiniCPM artifacts and runtime were left untouched throughout. Carried forward for the next candidate: **this runtime's video path is sound** — it samples across the file, preserves order and supplies a time reference — so a video failure on it is a model result, and its audio path accepts an arbitrary text instruction.
 
+---
+
+## 90. Qwen2.5-VL-7B-Instruct local visual perception — acceptance test FAILED on both cases — 22 September 2026
+
+Owner implementation order of that date: the architecture is deliberately no longer required to be one omni model, so this candidate was qualified for **image and video only**, audio to be selected separately. **Both cases failed.** Not admitted, nothing connected, image behaviour untouched, no standing Sol exception created. Record: `docs/reviews/qualification/runs/2026-09-22-qwen2_5-vl/`.
+
+**Case A's criterion was repaired first, and recorded before the candidate ran** (`EXAM_REPAIR_CASE_A.md`, commit `035b6e6`). The defect was legible from the frozen texts alone: the prompt forbids interpretation in three clauses while the criterion demanded "dressed as a magician", which is an interpretation and not a visible thing. The repair is minimal — the identity label is replaced by the visible garments, a top hat and a cape — the prompt is untouched so this candidate sat exactly the earlier question, and colour, lining and material are explicitly excluded so nothing is back-filled from earlier answers. Effect recorded both ways: under the repaired criterion MiniCPM-o's Case A reads differently (it called the cape a coat) and Qwen3-Omni's becomes a clean pass; **neither overall result changes, because each closed on Case C.**
+
+**Artifact and runtime.** `mlx-community/Qwen2.5-VL-7B-Instruct-4bit` at `fdcc572e…`, both shards matching the source digest exactly, 4-bit group size 64, 5.3 GB installed. mlx-vlm 0.7.2 on mlx 0.32.2, transformers 5.17.0, opencv 5.0.0, Python 3.12.13, in an **isolated environment** so the production venv and its pins were untouched. Untuned: library defaults, nothing changed between cases. Output was plain prose with no thinking channel, so no reasoning separation is needed. 31.2 GB free after the run; GPT-OSS not resident.
+
+**Case A: FAIL.** The child wears a black cape with red trim; the fixture was inspected directly before judging. The model reported "a black suit with a red tie and a black top hat" — it read the cape's front trim as a necktie and the cape as a suit. The repaired criterion's second point, a top hat **and a cape**, is not established, and the invented tie fails the fifth point independently. Worth distinguishing: the two earlier candidates described the garment correctly and only withheld the label, which is what the repair was for; this one misdescribes the garment. 20.8 s.
+
+**Case C: FAIL.** "The video starts with a single red square… Then, a second red square appears to the right of the first… Finally, a blue circle appears below the second red square." Movement lost, one moving square read as several, left→centre→right not preserved — three named fail conditions, and almost the same signature as Qwen3-Omni. 5.6 s.
+
+**Delivery verified intact, again.** MLX-VLM supplied all 8 frames at the source rate of 1 fps, indices 0–7, one timestamp each from 0.0 to 7.0 s, array shape (8, 3, 480, 640), with temporal information carried into the model by a 3D patch embedding over frame pairs and mrope's temporal axis. Those same frames were verified earlier to hold the whole sequence. The fixture was not altered.
+
+**A defect of mine, found and corrected before judging, and recorded rather than hidden.** The first Case C attempt passed `num_videos=1` to `apply_chat_template`, which has no such parameter; it went silently into `**kwargs`, no video placeholder was emitted, and the model answered a bare question about a video it had never seen — saying so, in 1.1 s. The correct argument is `video=<path>`. Corrected as an installation defect that stopped the input reaching the model, which the order permits.
+
+**Whole-test:** both inferences local, zero provider calls, $0, no fallback, no crash, media unambiguously identified.
+
+**Stopped at the failure**, as ruled. Artifacts remain on disk wired into nothing; MiniCPM-o and Qwen3-Omni artifacts were left untouched throughout, as instructed. **Carried forward:** three candidates have now failed the same video case, and for the last two the delivery was verified intact — ordered frames with timestamps in both. The common failure is not plumbing; each model read one square in motion as several squares appearing. It may be worth asking whether the fixture's abstract shapes are the hardest possible case for models trained on natural video.
+
