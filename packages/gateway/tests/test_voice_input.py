@@ -1016,3 +1016,35 @@ def test_an_utterance_merges_without_rewriting_either_half() -> None:
     assert merged.utterance == 2
     assert first.text == "Ask the cook", "the halves are unchanged"
     assert second.text == "about dinner."
+
+
+def test_a_failure_writing_provenance_is_reported_not_swallowed(store: Engine) -> None:
+    """The turn happened; its provenance did not. That is a state he must see.
+
+    Found by restarting the live service on a store that had not yet taken the
+    migration: the write ran on a worker thread whose exception nobody observed,
+    so the session went on looking healthy while the record was incomplete.
+    """
+    recognizer = ScriptedRecognizer(batches=[[started(1), final(1, "Note that down.")]])
+    conversation = a_conversation(store)
+    session, _, clock = a_session(store, recognizer, conversation_id=conversation)
+    with store.begin() as connection:
+        connection.execute(text("alter table voice_message_provenance rename to provenance_gone"))
+    try:
+        session.feed(MARKER)
+        # The turn completes; the provenance write is what fails, so this returns
+        # rather than raising — which is exactly why it has to be reported.
+        settle(session, clock)
+    finally:
+        with store.begin() as connection:
+            connection.execute(
+                text("alter table provenance_gone rename to voice_message_provenance")
+            )
+
+    view = session.snapshot()
+    assert view.state is VoiceSessionState.ERROR
+    assert view.error is not None
+    assert "voice provenance could not be recorded" in view.error
+    assert said_by_the_owner(store, conversation) == ["Note that down."], (
+        "the turn itself happened and is not pretended away"
+    )

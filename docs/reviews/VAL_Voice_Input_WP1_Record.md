@@ -248,9 +248,9 @@ except `packages/domain/tests/test_schema.py`**, which is the hand-transcribed
 schema and had to gain the three new tables, their columns and their nullable
 columns — the transcription is the check.
 
-New, 51 tests:
+New, 52 tests:
 
-- `packages/gateway/tests/test_voice_input.py` (27) — the acceptance list A–V
+- `packages/gateway/tests/test_voice_input.py` (28) — the acceptance list A–V
   against real PostgreSQL and the real deliberated Core path, plus the session's
   own lifecycle and the domain's merge.
 - `packages/providers/tests/test_whisper_recognizer.py` (13) — the framed
@@ -287,15 +287,26 @@ Where each acceptance requirement is held:
 Test PCM is synthetic or the frozen fixture. **No owner microphone audio was
 recorded, used or retained.**
 
-### One defect the tests found before it shipped
+### Two defects found before they could matter, and how each was found
 
-The service's first submission closure restated the session's project signals on
-**every** utterance. House doctrine reads a project stated on a resumed
-conversation as a switch, and a switch starts a new conversation — so a voice
-session would have scattered one spoken conversation across a new conversation per
-utterance. The signals are now offered only while there is no conversation yet;
-once there is one, its own stored scope is the authority (WP-0.7 §18). Found by
-`test_h`, which asked for one message in one conversation and got none.
+**One spoken conversation would have become many.** The service's first submission
+closure restated the session's project signals on **every** utterance. House
+doctrine reads a project stated on a resumed conversation as a switch, and a
+switch starts a new conversation — so a voice session would have scattered one
+spoken conversation across a new conversation per utterance. The signals are now
+offered only while there is no conversation yet; once there is one, its own stored
+scope is the authority (WP-0.7 §18). Found by `test_h`, which asked for one
+message in one conversation and got none.
+
+**A failed provenance write was silently swallowed.** Found by restarting the real
+service onto this build before the live store had taken migration `0028`: the
+provenance insert runs on a worker thread, and its exception died with the thread
+— so the turn was answered and in the conversation while the session went on
+looking healthy and the record was incomplete. The write now reports the failure
+onto the session's own state, which is a thing a caller can see and say.
+`test_a_failure_writing_provenance_is_reported_not_swallowed` holds it by renaming
+the table out from under a live session, and asserts the turn itself is not
+pretended away.
 
 ---
 
@@ -345,7 +356,31 @@ returned.
 
 ---
 
-## 11. What is not claimed
+## 11. Deployment
+
+**The live store took migration `0028` through the explicit deployment path**
+(`alembic -x deploy=live upgrade head`), moving `0027_local_speech` →
+`0028_voice_input`. The three tables are present and empty, with their guards in
+place; no existing table was altered. This is the deliberate act the migration
+doctrine requires, not something an environment variable did.
+
+**The service was restarted onto this build and is healthy** — `/health` reports
+`{"status":"running","warnings":[]}` with no voice warning, because the runtime,
+the library and both models are present. A live voice session opened successfully
+against the real recognizer through the production service (`201`), and the
+recognizer subprocess was released when the service was restarted, leaving nothing
+behind. **No turn was taken through the live store**: a proof does not write into
+his conversation history, and the live voice tables are empty.
+
+Baseline before this package: `master` `9537499a13d264464869896abc279c790f088ca1`,
+live store `0027_local_speech`, persona v1.9 revision 8, cognition
+`gpt-oss-20b-mxfp4-mlx-lmstudio-partner` at MEDIUM with a 32,768-token context,
+production voice `val-established-v1`. **Persona, cognition, reasoning effort,
+context and voice are all untouched by this package.**
+
+---
+
+## 12. What is not claimed
 
 - **Recognition accuracy is not characterised.** One fixture transcribed exactly
   is one fixture transcribed exactly. No word-error rate was measured, and none

@@ -632,6 +632,16 @@ class VoiceSession:
             return
         try:
             self._record(pending, outcome)
+        except Exception as failure:
+            # The turn itself succeeded and is in the conversation; its
+            # provenance did not get written. That is a state the owner must be
+            # able to see, and this runs on a worker thread whose exception
+            # nobody would otherwise observe — so it is reported rather than left
+            # to die quietly with the thread.
+            self._fail(
+                f"the spoken turn was answered and its voice provenance could not be "
+                f"recorded: {failure}"
+            )
         finally:
             with self._lock:
                 self._inflight = None
