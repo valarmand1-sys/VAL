@@ -26,10 +26,12 @@ from __future__ import annotations
 import json
 from base64 import b64decode
 from binascii import Error as BinasciiError
+from collections.abc import AsyncIterator, Callable
+from contextlib import asynccontextmanager
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sqlalchemy import Engine, text
@@ -48,6 +50,7 @@ from val_api.contracts import (
     ExecutionEventRequest,
     ExecutionEventView,
     Health,
+    InterruptedUtteranceView,
     LabelledExchangeView,
     LabelRequest,
     ManualDeliberationRequest,
@@ -71,6 +74,9 @@ from val_api.contracts import (
     TurnResponse,
     TurnTruncated,
     TurnUnanswered,
+    VoiceSessionRequest,
+    VoiceSessionView,
+    VoiceTurnView,
 )
 from val_api.streaming import turn_event_stream
 from val_domain.deliberation import ClassifiedBy, Ordering
@@ -82,6 +88,7 @@ from val_domain.gateway import (
 )
 from val_domain.registry import active
 from val_domain.speech import SpeechRefusedError, SpeechUnavailableError
+from val_domain.voice import LiveRecognizer, VoiceUnavailableError
 from val_gateway import conversations
 from val_gateway.attachments import (
     CandidateAttachment,
@@ -137,6 +144,7 @@ from val_gateway.projects import (
 )
 from val_gateway.revisions import RevisionRefusedError, retract, revise
 from val_gateway.speech import register_voice, speak_message
+from val_gateway.voice import NO_SESSION, VoiceSession, VoiceSessions, interrupted
 from val_policy.attachments import AdmissionRefusedError
 from val_policy.project_resolution import ProjectSignals
 from val_policy.routing import is_admitted, satisfies_profile
@@ -169,7 +177,13 @@ def voice_record(path: Path = VOICE_RECORD) -> dict[str, object]:
     return described
 
 
-def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = None) -> FastAPI:
+def create_app(
+    engine: Engine,
+    gateway: Gateway,
+    warnings: list[str] | None = None,
+    *,
+    recognizers: Callable[[], LiveRecognizer] | None = None,
+) -> FastAPI:
     """The service, wired to an already-started house.
 
     The caller supplies the engine and a gateway that `val_gateway.startup`
@@ -177,7 +191,18 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
     happens there, before this function is reachable, so a running service is
     one that was allowed to start (`04-layer-0.md` WP-0.4).
     """
-    app = FastAPI(title="Val", version="0.0.0")
+    #: The live voice sessions this process is listening with. In-process because
+    #: a live session *is* process state — it holds a subprocess and volatile
+    #: audio buffers — and could not be resumed from a store if it tried.
+    sessions = VoiceSessions()
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        """A recognizer is a subprocess; the service does not leave one behind."""
+        yield
+        sessions.close_all()
+
+    app = FastAPI(title="Val", version="0.0.0", lifespan=lifespan)
 
     # The desktop shell is a browser client on its own origin (Tauri serves the
     # interface from tauri://localhost on macOS, http://tauri.localhost on
@@ -746,5 +771,174 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
     @app.get("/signals/disagreement")
     def disagreement() -> DisagreementSignal:
         return DisagreementSignal(last_disagreement_at=last_disagreement_at(engine))
+
+    # --- live voice input ------------------------------------------------------
+    #
+    # The smallest contract the later desktop package needs: open a session, feed
+    # PCM, poll the guess and the state, finalize an utterance, observe the
+    # canonical result, stop. It rides the existing transport — ordinary POST and
+    # GET on the same loopback-only service, under the same CORS grant and the
+    # same two shell origins — because the existing stack carries these events
+    # perfectly well and a second realtime framework would be a second thing to
+    # secure. **Nothing here is weaker than the rest of the service**: no new
+    # origin, no new bind, no new header, no upgrade, no token.
+    #
+    # Audio arrives as `application/octet-stream` and goes straight to the
+    # recognizer. It is not stored, not buffered here, and not written anywhere.
+
+    def voice_session_or_404(session: UUID) -> VoiceSession:
+        live = sessions.get(session)
+        if live is None:
+            raise HTTPException(status_code=404, detail="no such voice session")
+        return live
+
+    def render_voice(session: UUID, live: VoiceSession) -> VoiceSessionView:
+        view = live.snapshot()
+        return VoiceSessionView(
+            session=session,
+            voice_session_id=None if view.session_id == NO_SESSION else view.session_id,
+            conversation_id=view.conversation_id,
+            state=view.state.value,
+            utterance=view.utterance,
+            provisional=view.provisional,
+            hearing=view.hearing,
+            pending=view.pending,
+            turns=[
+                VoiceTurnView(
+                    message_id=turn.message_id,
+                    conversation_id=turn.conversation_id,
+                    text=turn.utterance.text,
+                    utterance=turn.utterance.utterance,
+                    endpoint_reason=turn.utterance.reason,
+                    provisional_events=turn.provisional_events,
+                    merged_from=list(turn.utterance.merged_from),
+                    revised_to=turn.revised_to,
+                    merge_refused=turn.merge_refused,
+                    delivered=turn.delivered,
+                    answer=render_turn(turn.outcome),
+                )
+                for turn in view.turns
+            ],
+            error=view.error,
+            recognizer=view.recognizer,
+            endpoint={key: float(value) for key, value in view.endpoint.items()},
+        )
+
+    @app.post("/voice/sessions", status_code=201)
+    def open_voice_session(request: VoiceSessionRequest) -> VoiceSessionView:
+        """Start listening. One recognizer, one conversation, one session."""
+        if recognizers is None:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "live voice input is not available in this service. No cloud speech "
+                    "recognition was called and none is configured."
+                ),
+            )
+        signals = ProjectSignals(
+            explicit_selection=request.project, explicit_no_project=request.no_project
+        )
+
+        def submit(content: str, conversation_id: UUID | None) -> DeliberatedOutcome:
+            """The ordinary door. A spoken turn is an ordinary turn.
+
+            The session's project signals are a statement made when it was
+            opened, and they are offered **only** while there is no conversation
+            yet. Once there is one, its own stored scope is the authority
+            (WP-0.7 §18) — and restating a project on a resumed conversation is
+            read, correctly, as switching, which starts a new conversation. A
+            voice session that restated its signals every utterance would
+            therefore scatter one spoken conversation across many.
+            """
+            return deliberated_send(
+                engine,
+                gateway,
+                content,
+                catalogue=load_catalogue(engine),
+                signals=None if conversation_id is not None else signals,
+                conversation_id=conversation_id,
+            )
+
+        live = VoiceSession(
+            engine,
+            recognizers(),
+            submit=submit,
+            conversation_id=request.conversation_id,
+        )
+        try:
+            live.start()
+        except VoiceUnavailableError as unavailable:
+            raise HTTPException(status_code=503, detail=str(unavailable)) from unavailable
+        key = uuid4()
+        sessions.add(key, live)
+        return render_voice(key, live)
+
+    @app.post("/voice/sessions/{session}/audio")
+    async def feed_voice_session(session: UUID, request: Request) -> VoiceSessionView:
+        """One block of 16 kHz mono little-endian int16 PCM.
+
+        Handed to the recognizer and to nothing else. Never stored, never a file,
+        never a database field.
+        """
+        live = voice_session_or_404(session)
+        pcm = await request.body()
+        try:
+            live.feed(pcm)
+        except VoiceUnavailableError as unavailable:
+            raise HTTPException(status_code=409, detail=str(unavailable)) from unavailable
+        return render_voice(session, live)
+
+    @app.get("/voice/sessions/{session}")
+    def poll_voice_session(session: UUID) -> VoiceSessionView:
+        """The guess, the state, and any turns this session has produced."""
+        return render_voice(session, voice_session_or_404(session))
+
+    @app.post("/voice/sessions/{session}/finalize")
+    def finalize_voice_session(session: UUID) -> VoiceSessionView:
+        """End the utterance in progress now, rather than waiting for silence."""
+        live = voice_session_or_404(session)
+        try:
+            live.finalize()
+        except VoiceUnavailableError as unavailable:
+            raise HTTPException(status_code=409, detail=str(unavailable)) from unavailable
+        return render_voice(session, live)
+
+    @app.post("/voice/sessions/{session}/delivered/{message_id}")
+    def voice_turn_delivered(session: UUID, message_id: UUID) -> VoiceSessionView:
+        """The caller has given the owner this answer.
+
+        After it, resumed speech is a new turn rather than a continuation. In this
+        package nothing speaks aloud, so nothing calls this yet; the delivering
+        layer does, in work package 2.
+        """
+        live = voice_session_or_404(session)
+        live.deliver(message_id)
+        return render_voice(session, live)
+
+    @app.post("/voice/sessions/{session}/close")
+    def close_voice_session(session: UUID) -> VoiceSessionView:
+        """Stop listening and release the recognizer."""
+        live = voice_session_or_404(session)
+        live.close()
+        sessions.remove(session)
+        return render_voice(session, live)
+
+    @app.get("/voice/interrupted")
+    def interrupted_utterances() -> list[InterruptedUtteranceView]:
+        """Guesses an interrupted session left open, labelled as interrupted.
+
+        Read once after a restart. Each is the words the recognizer had reached,
+        offered back as a guess — **never** silently promoted into something the
+        owner said.
+        """
+        return [
+            InterruptedUtteranceView(
+                voice_session_id=open_guess.voice_session_id,
+                conversation_id=open_guess.conversation_id,
+                utterance=open_guess.utterance,
+                provisional_text=open_guess.provisional_text,
+            )
+            for open_guess in interrupted(engine)
+        ]
 
     return app

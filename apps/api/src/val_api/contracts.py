@@ -934,3 +934,92 @@ class Health(BaseModel):
 
     status: str
     warnings: list[str]
+
+
+# =============================================================================
+# Live voice input — Voice mode work package 1, 23 September 2026
+# =============================================================================
+
+
+class VoiceSessionRequest(BaseModel):
+    """Open a session for listening, on a conversation or on a new one.
+
+    A voice session is an input modality attached to a conversation, never a
+    second conversation. Omitting `conversation_id` is how a new chat begins: the
+    conversation is created by the first spoken turn itself, exactly as a typed
+    one is, and the session attaches to it then.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    conversation_id: UUID | None = None
+    project: str | None = None
+    no_project: bool = False
+
+
+class VoiceTurnView(BaseModel):
+    """One canonical owner turn that arrived by voice.
+
+    `text` is the settled transcription that became the message — never a guess.
+    `revised_to` is present only when the owner resumed before delivery and the
+    wording was corrected through the append-only revision machinery.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    message_id: UUID
+    conversation_id: UUID
+    text: str
+    utterance: int
+    endpoint_reason: str
+    provisional_events: int
+    merged_from: list[int]
+    revised_to: str | None
+    merge_refused: str | None
+    delivered: bool
+    #: The answer, in the same shape `POST /turns` returns, so a caller has one
+    #: way to read a turn whether it was typed or spoken.
+    answer: TurnResponse
+
+
+class VoiceSessionView(BaseModel):
+    """What a session is doing, for the desktop to poll.
+
+    `provisional` and `turns` are separate fields on purpose. A provisional
+    transcript is mutable working state and **not a message**: it is here to be
+    shown as the owner speaks and to be superseded. A caller that renders it as
+    conversation has to have chosen to.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    session: UUID
+    voice_session_id: UUID | None
+    conversation_id: UUID | None
+    state: str
+    utterance: int
+    #: The rolling guess. Never history, never recall, never Partner context.
+    provisional: str
+    hearing: bool
+    #: A settled utterance waiting out the resume window, or in flight.
+    pending: str
+    turns: list[VoiceTurnView]
+    error: str | None
+    recognizer: dict[str, str]
+    endpoint: dict[str, float]
+
+
+class InterruptedUtteranceView(BaseModel):
+    """A guess a crash left open. **Provisional, and labelled so.**
+
+    Offered back as the words the recognizer had reached, never as something the
+    owner said. Nothing submits it and nothing acts on it.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    voice_session_id: UUID
+    conversation_id: UUID
+    utterance: int
+    provisional_text: str
+    state: Literal["interrupted"] = "interrupted"

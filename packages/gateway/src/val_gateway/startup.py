@@ -19,6 +19,7 @@ the way that is hardest to notice.
 """
 
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -28,6 +29,7 @@ from val_domain.gateway import CacheTtl, CapabilityProfile
 from val_domain.perception import PerceptionProvider
 from val_domain.registry import active
 from val_domain.speech import SpeechUnavailableError, VoiceConditioning
+from val_domain.voice import LiveRecognizer
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
 from val_gateway.memory import (
@@ -51,6 +53,7 @@ from val_providers.mlxvlm_perception import MLXVLMPerception
 from val_providers.omni_audio_perception import OmniAudioPerception
 from val_providers.openai_adapter import OpenAIAdapter
 from val_providers.qwen_tts_speech import QwenTTSSpeech, load_canonical_voice
+from val_providers.whisper_recognizer import WhisperRecognizer
 
 #: Where each provider's key is read from. A provider absent from this mapping
 #: has no adapter and cannot be configured.
@@ -85,6 +88,13 @@ class Startup:
 
     gateway: Gateway
     warnings: list[str]
+    #: How to build a recognizer for one live voice session. A factory rather
+    #: than an instance because a recognizer is *session* state — it owns a
+    #: subprocess and volatile audio — and a house-wide singleton would be two
+    #: conversations listening through one pair of ears. `None` means live voice
+    #: input is not available in this process, and the service says so rather
+    #: than reaching for anything else.
+    recognizers: Callable[[], LiveRecognizer] | None = None
 
 
 #: The prompt-cache lifetime the gateway requests on cacheable calls.
@@ -377,6 +387,22 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
                     f"{missing}. Speech will fail closed until one is designed."
                 )
 
+    # Val's ears (owner execution order, 23 September 2026). A *factory*, because
+    # a recognizer belongs to one voice session. Built unconditionally rather than
+    # behind an admitted route: whisper.cpp is a local library reached through a
+    # subprocess, not a route with an eligibility, a profile or a price. A missing
+    # runtime is a warning and a live voice session then refuses with the reason;
+    # nothing about text conversation is touched.
+    probe = WhisperRecognizer()
+    unheard = probe.available()
+    if unheard is not None:
+        warnings.append(
+            f"live voice input is installed but cannot run: {unheard}. Starting a voice "
+            "session will fail closed and say so; no cloud speech recognition will be "
+            "called. Typed conversation is unaffected."
+        )
+    recognizers: Callable[[], LiveRecognizer] = WhisperRecognizer
+
     persona_loader = DatabasePersonaLoader(engine)
     try:
         persona = persona_loader.active()
@@ -417,4 +443,4 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         speech=speech,
         voice=voice,
     )
-    return Startup(gateway=gateway, warnings=warnings)
+    return Startup(gateway=gateway, warnings=warnings, recognizers=recognizers)

@@ -1966,6 +1966,177 @@ class SpeechGeneration(Base):
     )
 
 
+class VoiceSession(Base):
+    """One live listening session, attached to an existing conversation.
+
+    A voice session is **not a second conversation**; it is an input modality on
+    one. It carries no audio of any kind: the recognizer's buffers are volatile
+    process state, and what survives is the text they produced.
+
+    The only table in the voice set with a lifecycle. Everything that identifies
+    the session — above all which recognizer and which models heard it — is
+    immutable in the store; only `state`, `closed_at` and `closed_reason` move.
+    """
+
+    __tablename__ = "voice_sessions"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    started_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    closed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    state: Mapped[str] = mapped_column(Text, nullable=False)
+    closed_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    #: Exactly what heard this. *You typed* and *the recognizer heard* are
+    #: different claims, and the difference should survive a model upgrade.
+    recognizer: Mapped[str] = mapped_column(Text, nullable=False)
+    recognizer_version: Mapped[str] = mapped_column(Text, nullable=False)
+    recognizer_commit: Mapped[str] = mapped_column(Text, nullable=False)
+    asr_model: Mapped[str] = mapped_column(Text, nullable=False)
+    asr_model_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    vad_model: Mapped[str] = mapped_column(Text, nullable=False)
+    vad_model_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    #: The endpointing figures actually in force, so a transcript's boundaries are
+    #: readable from the record rather than from whatever the code says today.
+    endpoint_configuration: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+
+    __table_args__ = (
+        CheckConstraint(
+            "state IN ('listening', 'hearing', 'thinking', 'closed', 'error')",
+            name="state_is_known",
+        ),
+        CheckConstraint(
+            "(state IN ('closed', 'error')) = (closed_at IS NOT NULL)",
+            name="closed_exactly_when_it_ended",
+        ),
+        CheckConstraint("recognizer = 'whisper.cpp'", name="recognizer_is_the_local_one"),
+        CheckConstraint("length(asr_model_sha256) = 64", name="asr_model_is_a_digest"),
+        CheckConstraint("length(vad_model_sha256) = 64", name="vad_model_is_a_digest"),
+        Index("ix_voice_sessions_conversation", "conversation_id"),
+    )
+
+
+class VoiceMessageProvenance(Base):
+    """How a finalized voice-origin turn arrived. One row per message.
+
+    A sidecar rather than columns on `messages`, because a spoken turn is an
+    ordinary turn and the core table should not learn about microphones to say so.
+    The visible message text is untouched: none of this appears in it.
+
+    Only ever written for `final` transcription. A rolling guess is not a message
+    and so can have no provenance row.
+    """
+
+    __tablename__ = "voice_message_provenance"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    voice_session_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("voice_sessions.id", ondelete="NO ACTION"), nullable=False
+    )
+    input_mode: Mapped[str] = mapped_column(Text, nullable=False, server_default="voice")
+    transcription_status: Mapped[str] = mapped_column(Text, nullable=False, server_default="final")
+    finalized_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
+    utterance: Mapped[int] = mapped_column(Integer, nullable=False)
+    endpoint_reason: Mapped[str] = mapped_column(Text, nullable=False)
+    #: Evidence that the provisional path ran, kept without keeping the guesses.
+    provisional_events: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    #: Utterances this turn absorbed when the owner resumed before Val answered.
+    merged_from: Mapped[list[int]] = mapped_column(
+        ARRAY(Integer), nullable=False, server_default=text("'{}'::integer[]")
+    )
+
+    __table_args__ = (
+        UniqueConstraint("message_id", name="uq_voice_message_provenance_message"),
+        CheckConstraint("input_mode = 'voice'", name="input_mode_is_voice"),
+        CheckConstraint("transcription_status = 'final'", name="only_final_is_a_message"),
+        CheckConstraint("utterance > 0", name="utterance_is_counted_from_one"),
+        CheckConstraint("provisional_events >= 0", name="provisional_events_not_negative"),
+        CheckConstraint(
+            "endpoint_reason IN ('silence', 'maximum_length', 'flush')",
+            name="endpoint_reason_is_known",
+        ),
+        Index("ix_voice_message_provenance_session", "voice_session_id"),
+    )
+
+
+class VoiceRecoveryJournalEntry(Base):
+    """A crash-recovery note for an unfinished spoken utterance. **Text only.**
+
+    Not authoritative conversation, and structurally unable to become it: recall
+    and history read `messages_current`, which this table has no part in. Nothing
+    here is ever `final` — recovered words are provisional, and promoting them to
+    a canonical statement is a thing the owner does, not a thing a restart does.
+
+    Append-only: the next state of an entry is the next entry.
+    """
+
+    __tablename__ = "voice_recovery_journal"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    recorded_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    voice_session_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("voice_sessions.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: Carried directly as well as through the session, because recovery runs when
+    #: the process that knew the connection between them has died.
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    utterance: Mapped[int] = mapped_column(Integer, nullable=False)
+    entry: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: The owner's words as last heard — never audio, never a path to audio.
+    provisional_text: Mapped[str] = mapped_column(Text, nullable=False)
+    state: Mapped[str] = mapped_column(Text, nullable=False)
+    #: The link runs journal → message and never the other way, so conversation
+    #: history never gains a reference to a guess.
+    superseded_by_message_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=True
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "voice_session_id", "utterance", "entry", name="uq_voice_recovery_journal_entry"
+        ),
+        CheckConstraint(
+            "state IN ('provisional', 'superseded', 'abandoned', 'interrupted')",
+            name="state_is_known_and_never_final",
+        ),
+        CheckConstraint(
+            "(state = 'superseded') = (superseded_by_message_id IS NOT NULL)",
+            name="superseded_names_its_message",
+        ),
+        CheckConstraint("utterance > 0", name="utterance_is_counted_from_one"),
+        CheckConstraint("entry > 0", name="entry_is_counted_from_one"),
+        Index("ix_voice_recovery_journal_session", "voice_session_id"),
+        Index(
+            "ix_voice_recovery_journal_open",
+            "conversation_id",
+            postgresql_where=text("state = 'provisional'"),
+        ),
+    )
+
+
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
@@ -2002,5 +2173,10 @@ SPECIFIED_TABLES = frozenset(
         # Local speech output, migration 0027 (22 September 2026).
         "speech_voices",
         "speech_generations",
+        # Live voice input, migration 0028 (23 September 2026). No audio column
+        # appears in any of the three, by construction.
+        "voice_sessions",
+        "voice_message_provenance",
+        "voice_recovery_journal",
     }
 )

@@ -64,7 +64,15 @@ def build() -> tuple[FastAPI, Settings]:
     started = start(engine)
     for warning in started.warnings:
         _LOGGER.warning("%s", warning)
-    return create_app(engine, started.gateway, started.warnings), settings
+    return (
+        create_app(
+            engine,
+            started.gateway,
+            started.warnings,
+            recognizers=started.recognizers,
+        ),
+        settings,
+    )
 
 
 def serve() -> None:

@@ -440,6 +440,50 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "cost_usd",
         "elapsed_ms",
     ),
+    # Live voice input — Voice mode work package 1, 23 September 2026.
+    # Transcribed by hand like everything else here. Read these three column
+    # lists as the privacy claim they are: **no audio column of any type appears
+    # in any of them.**
+    "voice_sessions": (
+        "id",
+        "conversation_id",
+        "started_at",
+        "closed_at",
+        "state",
+        "closed_reason",
+        "recognizer",
+        "recognizer_version",
+        "recognizer_commit",
+        "asr_model",
+        "asr_model_sha256",
+        "vad_model",
+        "vad_model_sha256",
+        "endpoint_configuration",
+    ),
+    "voice_message_provenance": (
+        "id",
+        "created_at",
+        "message_id",
+        "voice_session_id",
+        "input_mode",
+        "transcription_status",
+        "finalized_at",
+        "utterance",
+        "endpoint_reason",
+        "provisional_events",
+        "merged_from",
+    ),
+    "voice_recovery_journal": (
+        "id",
+        "recorded_at",
+        "voice_session_id",
+        "conversation_id",
+        "utterance",
+        "entry",
+        "provisional_text",
+        "state",
+        "superseded_by_message_id",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -566,6 +610,12 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # path that legitimately assembles none*. Neither is a Val utterance to
         # attribute.
         ("model_calls", "persona_id"),
+        # Live voice input, 23 September 2026. An open session has no end and no
+        # reason for one; a journal entry names a superseding message only when a
+        # canonical turn actually replaced the guess.
+        ("voice_sessions", "closed_at"),
+        ("voice_sessions", "closed_reason"),
+        ("voice_recovery_journal", "superseded_by_message_id"),
     }
 )
 
