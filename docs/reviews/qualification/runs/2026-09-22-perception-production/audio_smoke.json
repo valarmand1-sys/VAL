@@ -1,0 +1,63 @@
+{
+ "modality": "audio",
+ "startup_warnings": [],
+ "perception_providers": [
+  {
+   "class": "MLXVLMPerception",
+   "modalities": [
+    "image",
+    "video"
+   ]
+  },
+  {
+   "class": "OmniAudioPerception",
+   "modalities": [
+    "audio"
+   ]
+  }
+ ],
+ "seconds": 42.44,
+ "outcome": "Turn",
+ "val_answer": "My lord, I shall bring the red envelope; its number is 42.",
+ "perception": {
+  "state": "perceived",
+  "provider": "llamacpp-omni",
+  "model": "ggml-org/Qwen3-Omni-30B-A3B-Instruct-GGUF",
+  "revision": "6e35a28f4a19b18730f8949b0c579c6429649ab8",
+  "runtime": "llama.cpp 0.4.1 (build 10964, commit b29c606e2)",
+  "local": true,
+  "cost_usd": "0.000000",
+  "duration_ms": 27322,
+  "owner_question": "Which envelope should she bring, and what is the number?",
+  "observation": "The red envelope, and the number is 42.",
+  "sources": [
+   {
+    "modality": "audio",
+    "media_type": "audio/wav",
+    "sha256": "d73733aef1b12570c548b7af6c95f60c953b81373d6b2d4483565cdba39dbe2f",
+    "duration_seconds": "22.383",
+    "verified": "decoded_header"
+   }
+  ],
+  "handoffs": 1
+ },
+ "negative_proof": {
+  "provider_calls_in_interval": 1,
+  "calls": [
+   {
+    "task": "conversation",
+    "cost_usd": "0.000000",
+    "route": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "status": "ok"
+   }
+  ],
+  "total_provider_cost_usd": "0.0",
+  "raw_media_bound_to_any_cognition_call": 0,
+  "perception_cost_usd": "0.000000",
+  "transcription_or_cloud_processes_seen": [],
+  "local_perception_binaries_seen": [
+   "/opt/homebrew/bin/llama-mtmd-cli"
+  ],
+  "processes_sampled": 623
+ }
+}
