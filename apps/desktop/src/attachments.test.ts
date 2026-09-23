@@ -67,6 +67,8 @@ describe("rendering what the house holds", () => {
     width: 1600,
     height: 900,
     byte_size: 12345,
+    modality: "image",
+    duration_seconds: null,
     sha256: "a".repeat(64),
   };
 

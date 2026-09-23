@@ -1777,23 +1777,40 @@ def _png(width: int = 200, height: int = 150) -> bytes:
 
 
 def _visual_turn(store: Engine, payload: bytes) -> tuple[object, ScriptedAdapter]:
+    """A Track C consequential visual turn — pixels transmitted to the Partner.
+
+    The three tests below are about the transmission machinery: the same ordered
+    image set on both calls, the classifier and strip staying text-only, and the
+    claim boundary on `ordering = enforced`. That machinery is unchanged. What
+    changed on 22 September 2026 is which world production is in — with a
+    perception route admitted, Core perceives locally and transmits nothing — so
+    the premise is stated here rather than left to the registry of the day these
+    were written. The perception-mediated equivalents are at the end of this
+    module.
+    """
+    import val_gateway.loop as loop
     from val_gateway.attachments import CandidateAttachment
 
     adapter = ScriptedAdapter(full_script())
-    outcome = deliberated_send(
-        store,
-        build_gateway(store, adapter),
-        MIXED_MESSAGE,
-        catalogue=load_catalogue(store),
-        signals=ProjectSignals(explicit_selection="Project Alpha"),
-        attachments=(
-            CandidateAttachment(
-                content=payload,
-                given_filename="frame.png",
-                stated_classification=Classification.PROTECTED,
+    original = loop.perception_configuration
+    loop.perception_configuration = lambda *_: None  # type: ignore[assignment]
+    try:
+        outcome = deliberated_send(
+            store,
+            build_gateway(store, adapter),
+            MIXED_MESSAGE,
+            catalogue=load_catalogue(store),
+            signals=ProjectSignals(explicit_selection="Project Alpha"),
+            attachments=(
+                CandidateAttachment(
+                    content=payload,
+                    given_filename="frame.png",
+                    stated_classification=Classification.PROTECTED,
+                ),
             ),
-        ),
-    )
+        )
+    finally:
+        loop.perception_configuration = original  # type: ignore[assignment]
     return outcome, adapter
 
 
@@ -1881,6 +1898,8 @@ class _Eyes:
 
     observation: str = "A red square on the left of the frame, and nothing else."
     requests: list[object] = field(default_factory=list)
+    #: Declared exactly as a real specialist declares it: Core routes on this.
+    modalities: frozenset[str] = field(default_factory=lambda: frozenset({"image", "video"}))
 
     def perceive(self, request: object) -> object:
         from val_domain.perception import PerceptionObservation, PerceptionResult
@@ -1930,7 +1949,7 @@ def _deliberate_with_eyes(
     engine: Engine, adapter: ScriptedAdapter, eyes: _Eyes
 ) -> tuple[object, ScriptedAdapter]:
     gateway = build_gateway(engine, adapter)
-    gateway.perception = eyes  # type: ignore[assignment]
+    gateway.perception = (eyes,)  # type: ignore[assignment]
     outcome = deliberated_send(
         engine,
         gateway,

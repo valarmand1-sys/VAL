@@ -32,10 +32,18 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Literal, Protocol, runtime_checkable
 
-#: The modalities this boundary carries. `audio` is deliberately absent: it is
-#: not qualified, not admitted, and not reachable — a member here would be a
-#: capability waiting for someone to use it (owner order §27).
-Modality = Literal["image", "video"]
+#: The modalities this boundary carries.
+#:
+#: `audio` joined on 22 September 2026 (owner execution order §6), when Qwen3-Omni
+#: was admitted as the audio specialist on its already-settled Case B evidence.
+#: **A member here is a modality some admitted provider can actually perceive,
+#: never a placeholder** — which is why it was absent until there was one.
+#:
+#: Being a member is not permission: no provider receives a modality it does not
+#: declare, and `PerceptionProvider.modalities` is what declares it. Qwen3.5
+#: never receives audio; Qwen3-Omni never receives video, whatever encoders its
+#: artifact happens to contain.
+Modality = Literal["image", "video", "audio"]
 
 
 class PerceptionUnavailableError(Exception):
@@ -144,6 +152,11 @@ class PerceptionProvider(Protocol):
     it reports observations. Replacing it changes nothing above this line.
     """
 
+    #: The modalities this provider is admitted to perceive. Declared, never
+    #: inferred: a model whose artifact contains a video encoder does not thereby
+    #: acquire video duties, and a name says nothing at all.
+    modalities: frozenset[str]
+
     def perceive(self, request: PerceptionRequest) -> PerceptionResult:
         """Perceive these sources, or raise.
 
@@ -166,6 +179,19 @@ class PerceptionProvider(Protocol):
 def supports_perception(candidate: object) -> bool:
     """Whether this object implements the perception boundary."""
     return isinstance(candidate, PerceptionProvider)
+
+
+class MixedModalityRefusedError(Exception):
+    """One turn carried audio and visual attachments together.
+
+    Owner execution order, 22 September 2026 §6. The admitted specialists are
+    different models — Qwen3.5 sees, Qwen3-Omni hears — and running two local
+    models over one turn, freezing two observations and keeping both grounded
+    identically through a consequential deliberation is a redesign, not a wiring
+    job. It was ruled out for tonight rather than half-built, and **the turn
+    fails closed and says exactly that**, because a generic failure would leave
+    the owner guessing at a rule nobody wrote down.
+    """
 
 
 def sources_are_coherent(sources: Sequence[PerceptionSource]) -> str | None:

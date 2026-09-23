@@ -1,4 +1,3 @@
-# ruff: noqa: F401 - fixtures and helpers imported by name
 """Attaching an image through the API, and fetching it back to render.
 
 Owner ruling, 19 September 2026 (Track C §13). The API contract stays
@@ -23,6 +22,21 @@ import pytest
 from PIL import Image
 from sqlalchemy import Engine, text
 from test_service import ScriptedAdapter, classifier_says, client, ok
+
+
+@pytest.fixture(autouse=True)
+def no_admitted_perception_route(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The world this module describes: no local perception route is admitted.
+
+    Everything below is about the **API contract** — base64 in, a
+    content-addressed byte URL out, no provider's image syntax anywhere. That
+    contract is unchanged. What changed on 22 September 2026 is the world
+    production runs in: with a perception route admitted, Core perceives locally,
+    and a service with no perception provider wired fails the turn closed rather
+    than transmitting pixels. Stated here so these tests keep testing the API
+    rather than accidentally testing routing.
+    """
+    monkeypatch.setattr("val_gateway.loop.perception_configuration", lambda *_: None)
 
 
 def png(width: int = 240, height: int = 180) -> bytes:

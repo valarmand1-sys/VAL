@@ -255,6 +255,13 @@ class AttachmentView(BaseModel):
     width: int
     height: int
     byte_size: int
+    #: Owner execution order, 22 September 2026: what kind of medium this is —
+    #: `image`, `video` or `audio` — established from the bytes at admission.
+    #: The interface renders from this rather than guessing from the filename.
+    modality: str = "image"
+    #: How long it runs. `None` for a still image, and `None` for a video whose
+    #: container did not state one.
+    duration_seconds: float | None = None
     #: The content-addressed key the bytes are fetched by.
     sha256: str
 
@@ -270,6 +277,8 @@ class AttachmentView(BaseModel):
             width=act.width,
             height=act.height,
             byte_size=act.byte_size,
+            modality=act.modality,
+            duration_seconds=act.duration_seconds,
             sha256=act.sha256,
         )
 

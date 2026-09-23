@@ -1159,9 +1159,12 @@ REGISTRY: tuple[ModelConfig, ...] = (
         # explicit that Qwen3.5 must not become Val's ordinary final-response
         # model, and a profile it does not hold is the structural form of that.
         capability_profiles=frozenset({CapabilityProfile.PERCEPTION}),
-        # Image and video perception were both demonstrated. **Audio was not
-        # tested, is not admitted, and is not reachable** — the boundary's
-        # modality type has no audio member (owner order §27).
+        # Image and video perception were both demonstrated, and those two alone
+        # are declared. **Audio was never tested on this artifact and it will
+        # never receive any**: the declaration is what routing reads, so this is
+        # the refusal, not a note about one (owner execution order, 22 September
+        # 2026 §6).
+        perception_modalities=frozenset({"image", "video"}),
         known_weaknesses=(
             "video perception is admitted and demonstrated, but owner-facing governed "
             "video ingestion does not exist, so no owner video reaches it — 22 September 2026",
@@ -1193,6 +1196,76 @@ REGISTRY: tuple[ModelConfig, ...] = (
         activated_on=date(2026, 9, 22),
         # There are no rates: verified on the admission date against the local
         # runtime, which bills nothing.
+        rates_verified_on=date(2026, 9, 22),
+    ),
+    ModelConfig(
+        id=UUID("c4f18b2e-6a90-4d37-b15c-8e02d7a63f19"),
+        slug="qwen3-omni-30b-a3b-q4-k-m-llamacpp-audio",
+        # OWNER ADMISSION RULING, Lord Armand, 22 September 2026: Val's local
+        # AUDIO-perception provider, and **nothing else**. It is admitted on the
+        # Case B evidence already on record (21 September 2026), which was never
+        # in doubt: all seven required facts recovered in 3.5 s, through the
+        # model's own native multimodal path — no Whisper, no separate
+        # transcription model, no cloud service, no pre-transcribed text.
+        #
+        # **Its earlier overall failure stands and is not reinterpreted.** That
+        # candidacy failed on VIDEO, and the record of that failure is preserved.
+        # What changed is not the evidence but the question: Val now admits
+        # modality specialists, so a model that hears well and sees badly can be
+        # given the hearing and refused the seeing. The refusal is structural —
+        # `perception_modalities` carries `audio` alone, so no video or image
+        # reaches this entry however its artifact is built.
+        provider="llamacpp-omni",
+        model_identifier="ggml-org/Qwen3-Omni-30B-A3B-Instruct-GGUF",
+        display_name="Qwen3-Omni 30B-A3B (Q4_K_M GGUF, llama.cpp — local audio perception)",
+        # The context the qualification ran at, and the context the adapter
+        # passes. Perception prompts are short; this is the working window, not a
+        # conversational claim, and nothing routes conversation here.
+        context_window_tokens=16_384,
+        # The runtime's own default output allowance. Nothing was tuned at
+        # qualification — no temperature, top-p, top-k or repeat penalty was
+        # passed — and nothing is tuned now.
+        max_output_tokens=2_048,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset({CapabilityProfile.PERCEPTION}),
+        # **Audio alone.** The artifact's projector carries a vision encoder as
+        # well; that is a fact about the file, not a permission, and this line is
+        # what decides. Its video perception was tested and failed.
+        perception_modalities=frozenset({"audio"}),
+        known_weaknesses=(
+            "video perception failed the frozen Case C: it fused a moving object into "
+            "several separate objects and lost the movement — 21 September 2026. Video is "
+            "not admitted on this entry and this route never receives any.",
+            "the audio pass establishes clean single-speaker speech only: nothing about "
+            "overlapping speakers, music under dialogue, noisy production audio, speaker "
+            "identification or tonal judgement — frozen scope, 21 September 2026",
+        ),
+        fallback_slug=None,
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        owner_authorization=(
+            "OWNER ADMISSION RULING, Lord Armand, 22 September 2026: "
+            "ggml-org/Qwen3-Omni-30B-A3B-Instruct-GGUF at immutable revision "
+            "6e35a28f4a19b18730f8949b0c579c6429649ab8 is admitted to the production role "
+            "VAL AUDIO-PERCEPTION PROVIDER ONLY, on the strength of the existing frozen "
+            "Case B evidence (PASS: all seven required facts recovered in 3.5 seconds "
+            "through the model's own native multimodal path, no Whisper, no separate "
+            "transcription model, no cloud service, no pre-transcribed text). IMAGE, "
+            "VIDEO, final-response cognition, and any Talker / TTS / speech-generation "
+            "component are NOT admitted; no such component is downloaded. The earlier "
+            "overall candidate failure on VIDEO stands unreinterpreted and is carried as "
+            "a declared weakness. Val Core remains Val and GPT-OSS remains the cognition "
+            "provider: this entry is a replaceable perception provider and owns no "
+            "identity, memory, state, policy or authority."
+        ),
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 22),
         rates_verified_on=date(2026, 9, 22),
     ),
 )

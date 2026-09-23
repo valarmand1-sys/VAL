@@ -75,6 +75,14 @@ def make(
 ) -> ModelConfig:
     """A configuration for a case the real registry cannot legally hold."""
     return ModelConfig(
+        # A route declaring the perception profile must say what it perceives
+        # (22 September 2026). These fixtures are about eligibility and cost
+        # rather than about modality, so they declare everything.
+        perception_modalities=(
+            frozenset({"image", "video", "audio"})
+            if CapabilityProfile.PERCEPTION in profiles
+            else frozenset()
+        ),
         id=uuid4(),
         slug=slug,
         provider=provider,

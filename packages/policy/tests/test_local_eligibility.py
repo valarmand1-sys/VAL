@@ -95,10 +95,11 @@ def _llamacpp() -> ModelConfig:
 
 
 def test_llamacpp_is_a_ruled_local_provider_beside_lmstudio() -> None:
-    # Three, since 22 September 2026: the two local text runtimes and `mlxvlm`,
-    # the visual-perception runtime, which is local in the strongest sense
-    # available — a subprocess of this machine, with no socket at all.
-    assert {"lmstudio", "llamacpp", "mlxvlm"} == set(LOCAL_PROVIDERS)
+    # Four, since 22 September 2026: the two local text runtimes, `mlxvlm` (the
+    # visual-perception runtime) and `llamacpp-omni` (the audio one). The last
+    # two are local in the strongest sense available — subprocesses of this
+    # machine, with no socket at all.
+    assert {"lmstudio", "llamacpp", "llamacpp-omni", "mlxvlm"} == set(LOCAL_PROVIDERS)
     assert "llamacpp" in RULED_PROVIDERS and LOCAL_PROVIDERS <= RULED_PROVIDERS
 
 

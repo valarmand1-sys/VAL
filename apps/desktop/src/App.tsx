@@ -466,7 +466,15 @@ export function App(): React.JSX.Element {
             <div className="pending-attachments">
               {pending.map((item) => (
                 <figure key={item.key} className="pending-attachment">
-                  <img src={item.previewUrl} alt={item.file.name} />
+                  {/* The medium as what it is, so the owner can check he
+                      attached the right one before it becomes evidence. */}
+                  {item.file.type.startsWith("video/") ? (
+                    <video src={item.previewUrl} controls preload="metadata" />
+                  ) : item.file.type.startsWith("audio/") ? (
+                    <audio src={item.previewUrl} controls preload="metadata" />
+                  ) : (
+                    <img src={item.previewUrl} alt={item.file.name} />
+                  )}
                   <figcaption>
                     <span className="name">{item.file.name}</span>
                     {/* Per act, defaulting to Protected, resolving upward. This
@@ -513,10 +521,18 @@ export function App(): React.JSX.Element {
           )}
           <div className="composer-actions">
             <label className="attach">
-              Attach image
+              Attach media
               <input
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
+                /* Owner execution order, 22 September 2026: video and audio join
+                   the owner's path. One video container and one audio container,
+                   because a format the house cannot check is a format it should
+                   not admit — and admission reads the bytes, so this list is a
+                   convenience for the picker and never the authority. */
+                accept={
+                  "image/png,image/jpeg,image/webp,image/gif," +
+                  "video/mp4,audio/wav,audio/x-wav,audio/wave"
+                }
                 multiple
                 onChange={(event) => {
                   const chosen = Array.from(event.target.files ?? []);

@@ -563,6 +563,15 @@ class ModelConfig(BaseModel):
     #: an entry that declares nothing serves nothing. Qualification for
     #: `PARTNER` is a ruling, never inferred from eligibility, price, or name.
     capability_profiles: frozenset[CapabilityProfile]
+    #: Owner execution order, 22 September 2026: which perception modalities this
+    #: configuration is admitted for. **Declared, never inferred.** The whole
+    #: point is that holding the `perception` profile says nothing about *what*
+    #: a route can perceive: Qwen3.5 is admitted for image and video and never
+    #: receives audio, and Qwen3-Omni is admitted for audio and never receives
+    #: video, whatever encoders its artifact happens to contain. Empty on every
+    #: configuration that is not a perception route, and required to be non-empty
+    #: on one (validated below).
+    perception_modalities: frozenset[str] = frozenset()
     #: Weaknesses observed in this house's own use (§5.2). Written from
     #: observation, never from a provider's or a benchmark's claims, so an empty
     #: tuple means "none observed here yet" rather than "none exist".
@@ -609,6 +618,32 @@ class ModelConfig(BaseModel):
     #: Configuration cannot claim it; the verifier sets it.
     billing_verified: bool = False
     retired: bool = False
+
+    @model_validator(mode="after")
+    def _modalities_iff_perception(self) -> ModelConfig:
+        """A perception route names its modalities; nothing else names any.
+
+        Both directions, because both mistakes are real. A perception entry with
+        no modalities could never be selected and would look like a route that
+        simply never matched; a non-perception entry carrying modalities would
+        be a capability declared where nothing reads it, waiting for someone to
+        start reading it.
+        """
+        perceives = CapabilityProfile.PERCEPTION in self.capability_profiles
+        if perceives and not self.perception_modalities:
+            raise ValueError(
+                f"{self.slug} declares the perception profile and no modalities; a route "
+                "that perceives must say what it perceives"
+            )
+        if not perceives and self.perception_modalities:
+            raise ValueError(
+                f"{self.slug} declares perception modalities without the perception "
+                "profile; a modality is not a capability on its own"
+            )
+        unknown = self.perception_modalities - {"image", "video", "audio"}
+        if unknown:
+            raise ValueError(f"{self.slug} declares unknown perception modalities: {unknown}")
+        return self
 
     @model_validator(mode="after")
     def _qualification_targets_only_on_candidates(self) -> ModelConfig:

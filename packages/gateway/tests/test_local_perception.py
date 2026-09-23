@@ -88,6 +88,9 @@ class FakePerception:
     failure: Exception | None = None
     requests: list[PerceptionRequest] = field(default_factory=list)
     released: int = 0
+    #: What this stand-in is admitted for, exactly as a real specialist declares
+    #: it. Core routes on this, so the fake has to carry it too.
+    modalities: frozenset[str] = frozenset({"image", "video"})
 
     def perceive(self, request: PerceptionRequest) -> PerceptionResult:
         self.requests.append(request)
@@ -131,7 +134,7 @@ def turn(
     eyes = perception or FakePerception()
     adapter = answering("Three of them, my lord, and the boy is in costume.")
     gateway = build_gateway(store, adapter)
-    gateway.perception = eyes
+    gateway.perception = (eyes,)
     outcome = send(
         store,
         gateway,
@@ -171,7 +174,7 @@ def sent_images(adapter: StubAdapter) -> tuple[Any, ...]:
 
 def test_a_normal_image_turn_selects_the_admitted_local_perception_route(store: Engine) -> None:
     """§28.1. The route is chosen by the profile it declares, never by its name."""
-    config = perception_configuration(Classification.PROTECTED)
+    config = perception_configuration(Classification.PROTECTED, "visual")
     assert config is not None and config.slug == PERCEPTION_SLUG
     assert is_admitted(config)
     assert satisfies_profile(config, CapabilityProfile.PERCEPTION)
@@ -457,12 +460,15 @@ def test_visual_resources_release_and_cognition_continues_afterwards(store: Engi
 
 
 def test_historical_bound_semantics_are_unchanged(store: Engine) -> None:
-    """§28.16. `bound` still means raw media went to the cognition provider.
+    """§28.16, and the fail-closed rule of the execution order together.
 
-    With no perception provider wired — which is every turn the house took before
-    22 September 2026 — the Track C path is untouched, down to the state string
-    and the binding row. The new state is additive, and old rows are not
-    reinterpreted: `perception_state` still carries `bound` as its own value.
+    `bound` keeps its meaning exactly — raw media supplied directly to the
+    cognition provider — it keeps its place in the vocabulary, and the machinery
+    that produces it is untouched and still proved in `test_image_turns.py`.
+    What is *not* preserved, deliberately, is the fall-through: with a perception
+    route admitted and no local provider wired, a media turn **fails closed**
+    rather than quietly reverting to sending pixels to a paid provider. A missing
+    local adapter is a misconfigured house, not permission.
     """
     from val_domain.schema import PerceptionState
 
@@ -470,7 +476,7 @@ def test_historical_bound_semantics_are_unchanged(store: Engine) -> None:
 
     adapter = answering("A navy field, my lord.")
     gateway = build_gateway(store, adapter)
-    assert gateway.perception is None, "no perception provider: the Track C path"
+    assert gateway.perception == (), "the admitted route's provider is not wired"
     outcome = send(
         store,
         gateway,
@@ -479,14 +485,38 @@ def test_historical_bound_semantics_are_unchanged(store: Engine) -> None:
         signals=ProjectSignals(explicit_no_project=True),
         attachments=(attach(),),
     )
-    assert isinstance(outcome, Turn)
-    visual = record_state(adapter)["visual_input"]
+    assert isinstance(outcome, UnansweredTurn)
+    assert "no local visual-perception provider is wired" in str(outcome.error)
+    assert "nothing was charged" in str(outcome.error)
+    assert tuple(adapter.sent_messages) == (), "no cognition call, so no pixels anywhere"
+    assert rows(store, "model_call_image_inputs") == [], "nothing was transmitted as pixels"
+
+    # And the Track C path itself, in the world it belongs to: no admitted
+    # perception route. Same machinery, same `bound`, same binding row.
+    import val_gateway.loop as loop
+
+    original = loop.perception_configuration
+    loop.perception_configuration = lambda *_: None  # type: ignore[assignment]
+    try:
+        track_c_adapter = answering("A navy field, my lord.")
+        track_c = send(
+            store,
+            build_gateway(store, track_c_adapter),
+            "And this one?",
+            catalogue=catalogue(store),
+            signals=ProjectSignals(explicit_no_project=True),
+            attachments=(attach(png(colour="teal"), "teal.png"),),
+        )
+    finally:
+        loop.perception_configuration = original  # type: ignore[assignment]
+
+    assert isinstance(track_c, Turn)
+    visual = record_state(track_c_adapter)["visual_input"]
     assert visual["state"] == "bound"
     assert visual["bound_to_this_turn"] == 1
     assert visual["perceived_this_turn"] == 0
-    assert len(sent_images(adapter)) == 1, "the pixels were transmitted, as before"
+    assert len(sent_images(track_c_adapter)) == 1, "the pixels were transmitted, as before"
     assert len(rows(store, "model_call_image_inputs")) == 1
-    assert rows(store, "perception_runs") == []
 
 
 # --- 17. historical evidence is unchanged -----------------------------------------
@@ -663,3 +693,272 @@ def test_the_assembled_request_contains_exactly_the_enumerated_parts(store: Engi
         "perception_envelope",
         "turn:user",
     ], "history, the record state, the perception it describes, then the turn"
+
+
+# --- video and audio join the owner's path — execution order, 22 September 2026 ----
+
+
+def mp4(seconds: float = 9.0) -> bytes:
+    """A minimal, structurally valid MP4, built the way the admission reads one."""
+    import struct
+
+    def box(name: bytes, body: bytes) -> bytes:
+        return struct.pack(">I", len(body) + 8) + name + body
+
+    mvhd = box(
+        b"mvhd",
+        bytes(4)
+        + struct.pack(">I", 0)
+        + struct.pack(">I", 0)
+        + struct.pack(">I", 1000)
+        + struct.pack(">I", int(seconds * 1000))
+        + bytes(80),
+    )
+    return b"".join(
+        [
+            box(b"ftyp", b"isom" + struct.pack(">I", 512) + b"isomiso2mp41"),
+            box(b"moov", mvhd),
+            box(b"mdat", bytes(64)),
+        ]
+    )
+
+
+def wav(seconds: float = 2.0) -> bytes:
+    import io as _io
+    import wave as _wave
+
+    buffer = _io.BytesIO()
+    with _wave.open(buffer, "wb") as writer:
+        writer.setnchannels(1)
+        writer.setsampwidth(2)
+        writer.setframerate(16_000)
+        writer.writeframes(b"\x00\x00" * int(16_000 * seconds))
+    return buffer.getvalue()
+
+
+@dataclass
+class FakeEars:
+    """The audio specialist, declaring audio and nothing else."""
+
+    observation: str = "A woman says the number is forty-two and to bring the red envelope."
+    requests: list[PerceptionRequest] = field(default_factory=list)
+    modalities: frozenset[str] = frozenset({"audio"})
+
+    def perceive(self, request: PerceptionRequest) -> PerceptionResult:
+        self.requests.append(request)
+        return PerceptionResult(
+            observations=tuple(
+                PerceptionObservation(
+                    source_sha256=source.sha256, modality="audio", text=self.observation
+                )
+                for source in request.sources
+            ),
+            provider="llamacpp-omni",
+            model_identifier="ggml-org/Qwen3-Omni-30B-A3B-Instruct-GGUF",
+            model_revision="6e35a28f4a19b18730f8949b0c579c6429649ab8",
+            quantization="Q4_K_M (language model), Q8_0 (projector)",
+            runtime="llama.cpp",
+            runtime_version="0.4.1 (build 10964, commit b29c606e2)",
+            generation={"context_tokens": 16384, "sampling_arguments_passed": []},
+            duration_seconds=3.5,
+            cost_usd=0.0,
+            local=True,
+            reasoning_separated=True,
+        )
+
+    def release(self) -> None:
+        return None
+
+
+def multimodal_turn(
+    store: Engine,
+    content: str,
+    *,
+    attachments: tuple[CandidateAttachment, ...],
+    eyes: FakePerception | None = None,
+    ears: FakeEars | None = None,
+    conversation_id: UUID | None = None,
+) -> tuple[Any, StubAdapter, FakePerception, FakeEars]:
+    """A turn with both specialists wired, exactly as the application wires them."""
+    eyes = eyes or FakePerception()
+    ears = ears or FakeEars()
+    adapter = answering("Noted, my lord.")
+    gateway = build_gateway(store, adapter)
+    gateway.perception = (eyes, ears)
+    outcome = send(
+        store,
+        gateway,
+        content,
+        catalogue=catalogue(store),
+        signals=None if conversation_id else ProjectSignals(explicit_no_project=True),
+        conversation_id=conversation_id,
+        attachments=attachments,
+    )
+    return outcome, adapter, eyes, ears
+
+
+def test_a_video_turn_reaches_the_visual_specialist_and_not_the_audio_one(
+    store: Engine,
+) -> None:
+    """§5. Governed MP4 ingestion, end to end, on the ordinary owner path."""
+    clip = mp4(seconds=9.0)
+    outcome, adapter, eyes, ears = multimodal_turn(
+        store,
+        "What happens in this clip?",
+        attachments=(
+            CandidateAttachment(
+                content=clip,
+                given_filename="sequence.mp4",
+                stated_classification=Classification.PROTECTED,
+            ),
+        ),
+    )
+    assert isinstance(outcome, Turn)
+    assert len(eyes.requests) == 1 and ears.requests == [], "the video went to the eyes"
+    (perceived,) = eyes.requests[0].sources
+    assert perceived.modality == "video" and perceived.media_type == "video/mp4"
+    assert perceived.content == clip
+
+    run = rows(store, "perception_runs")[0]
+    source = rows(store, "perception_sources")[0]
+    assert run["current_perception_state"] == "perceived"
+    assert source["modality"] == "video"
+    assert float(source["duration_seconds"]) == 9.0
+    assert source["verified"] == "container_structure", "a container walk, honestly named"
+
+    # No raw video anywhere near the cognition call.
+    assert sent_images(adapter) == ()
+    envelope = perception_envelope(adapter)
+    assert envelope["sources"][0]["modality"] == "video"
+    visual = record_state(adapter)["visual_input"]
+    assert visual["state"] == "perceived" and visual["perceived_this_turn"] == 1
+
+
+def test_an_audio_turn_reaches_the_audio_specialist_and_not_the_visual_one(
+    store: Engine,
+) -> None:
+    """§9 and §10. Governed WAV ingestion, with the audio doctrine in the prompt."""
+    recording = wav(seconds=2.0)
+    asked = "What did she say about the envelope?"
+    outcome, _, eyes, ears = multimodal_turn(
+        store,
+        asked,
+        attachments=(
+            CandidateAttachment(
+                content=recording,
+                given_filename="note.wav",
+                stated_classification=Classification.PROTECTED,
+            ),
+        ),
+    )
+    assert isinstance(outcome, Turn)
+    assert len(ears.requests) == 1 and eyes.requests == [], "the recording went to the ears"
+    request = ears.requests[0]
+    (perceived,) = request.sources
+    assert perceived.modality == "audio" and perceived.media_type == "audio/wav"
+    assert perceived.content == recording
+
+    # §10's doctrine, in the verbs that fit a recording.
+    assert request.question == asked and asked in request.prompt
+    assert "audio perception component" in request.prompt
+    assert "Do not answer the question" in request.prompt
+    assert "Do not invent anything that was not said" in request.prompt
+    assert "If the recording does not establish" in request.prompt
+    assert "visible" not in request.prompt, "a recording is not visible"
+
+    run = rows(store, "perception_runs")[0]
+    assert run["provider"] == "llamacpp-omni"
+    assert run["perception_prompt"] == request.prompt
+    assert run["local"] is True and run["cost_usd"] == 0
+    source = rows(store, "perception_sources")[0]
+    assert source["modality"] == "audio"
+    assert float(source["duration_seconds"]) == 2.0
+    assert source["verified"] == "decoded_header"
+
+
+def test_a_recording_is_reported_as_audio_and_never_as_visual_input(
+    store: Engine,
+) -> None:
+    """§7. The envelope does not call a recording something Val can see."""
+    outcome, adapter, _, _ = multimodal_turn(
+        store,
+        "What is on this recording?",
+        attachments=(
+            CandidateAttachment(
+                content=wav(),
+                given_filename="note.wav",
+                stated_classification=Classification.PROTECTED,
+            ),
+        ),
+    )
+    assert isinstance(outcome, Turn)
+    state = record_state(adapter)
+    assert state["visual_input"]["state"] == "none", "nothing was seen"
+    assert state["visual_input"]["perceived_this_turn"] == 0
+    audio = state["audio_input"]
+    assert audio["state"] == "perceived"
+    assert audio["perceived_this_turn"] == 1
+    assert "presently hear" in audio["note"]
+
+
+def test_a_conversation_with_no_audio_never_mentions_audio(store: Engine) -> None:
+    """The per-turn necessity rule: a field restating nothing is context spent on nothing."""
+    outcome, adapter, _ = turn(store, "Good morning.")
+    assert isinstance(outcome, Turn)
+    assert "audio_input" not in record_state(adapter)
+    assert "visual_input" in record_state(adapter), "the visual field is unchanged"
+
+
+def test_audio_beside_visual_material_fails_closed_and_says_exactly_why(
+    store: Engine,
+) -> None:
+    """§6. The refusal names mixed audio-and-visual attachment, not "failed"."""
+    outcome, adapter, eyes, ears = multimodal_turn(
+        store,
+        "Compare these.",
+        attachments=(
+            CandidateAttachment(
+                content=png(),
+                given_filename="frame.png",
+                stated_classification=Classification.PROTECTED,
+            ),
+            CandidateAttachment(
+                content=wav(),
+                given_filename="note.wav",
+                stated_classification=Classification.PROTECTED,
+            ),
+        ),
+    )
+    assert isinstance(outcome, UnansweredTurn)
+    said = str(outcome.error)
+    assert "audio and visual material together" in said
+    assert "different local specialists" in said
+    assert "separate turns" in said
+    assert "single-modality turns are fully supported" in said
+
+    # Nothing ran, nothing was sent, nothing was perceived.
+    assert eyes.requests == [] and ears.requests == []
+    assert tuple(adapter.sent_messages) == ()
+    assert rows(store, "perception_runs") == []
+    # The message and both acts are history: they were sent.
+    assert len(rows(store, "messages")) == 1
+    assert len(rows(store, "message_attachments")) == 2
+
+
+def test_the_specialists_are_chosen_by_declaration_not_by_order(store: Engine) -> None:
+    """A model's name and its encoders say nothing; its declaration decides."""
+    from val_gateway.loop import perception_configuration, perception_provider_for
+
+    visual = perception_configuration(Classification.PROTECTED, "visual")
+    audio = perception_configuration(Classification.PROTECTED, "audio")
+    assert visual is not None and audio is not None and visual.slug != audio.slug
+    assert visual.perception_modalities == frozenset({"image", "video"})
+    assert audio.perception_modalities == frozenset({"audio"})
+
+    eyes, ears = FakePerception(), FakeEars()
+    adapter = answering("Noted.")
+    gateway = build_gateway(store, adapter)
+    # Deliberately audio-first, so position cannot be what decides.
+    gateway.perception = (ears, eyes)
+    assert perception_provider_for(gateway, "visual") is eyes
+    assert perception_provider_for(gateway, "audio") is ears

@@ -51,6 +51,25 @@ from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS, maximum_cost, uppe
 from val_policy.project_resolution import ProjectSignals
 
 
+@pytest.fixture(autouse=True)
+def no_admitted_perception_route(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The world these tests describe: no local perception route is admitted.
+
+    Every assertion below is about the Track C transmission machinery — admission,
+    derivation, the reservation, the binding, `bound` — and that machinery is
+    unchanged. What changed on 22 September 2026 is which world production is in:
+    with Qwen3.5 admitted, Core perceives locally and never transmits pixels, so
+    this path is no longer *reached* in production. It is not gone, and these
+    tests are not weakened; their premise is simply made explicit here instead of
+    being an accident of the registry on the day they were written.
+
+    Stated deliberately rather than deleted: `bound` keeps its meaning, the
+    historical rows keep theirs, and the mechanism still works when it is the one
+    in force.
+    """
+    monkeypatch.setattr("val_gateway.loop.perception_configuration", lambda *_: None)
+
+
 def png(width: int = 320, height: int = 240, colour: str = "navy") -> bytes:
     buffer = io.BytesIO()
     image = Image.new("RGB", (width, height), colour)

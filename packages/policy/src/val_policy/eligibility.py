@@ -28,7 +28,15 @@ from val_domain.registry import declared_chain_violations
 #: visual runtime, in a subprocess on this machine, reading local files — is the
 #: third ruled LOCAL provider, admitted as Val's local visual-perception
 #: provider. It is not a network provider at all: no socket, no port, no URL.
-RULED_PROVIDERS = frozenset({"anthropic", "openai", "google", "lmstudio", "llamacpp", "mlxvlm"})
+#: Owner ruling, 22 September 2026 (execution order §8): `llamacpp-omni` — the
+#: official llama.cpp multimodal CLI, run as a subprocess of this machine over
+#: local artifacts — is the fourth ruled LOCAL provider, admitted as Val's audio
+#: perception runtime. Kept distinct from `llamacpp`, which is the keyed
+#: loopback *server* for candidate text work: the two are different binaries with
+#: different contracts, and one name for both would hide that.
+RULED_PROVIDERS = frozenset(
+    {"anthropic", "openai", "google", "lmstudio", "llamacpp", "llamacpp-omni", "mlxvlm"}
+)
 #: Providers ruled LOCAL (16 September 2026): inference on this machine over
 #: the loopback interface, the request never sent to an external provider.
 #: An entry naming a local provider must declare `hosting = LOCAL`, and an
@@ -44,7 +52,7 @@ RULED_PROVIDERS = frozenset({"anthropic", "openai", "google", "lmstudio", "llama
 #: available — a subprocess of this machine reading files from this machine.
 #: Admitting it widens no classification: Restricted stays refused here as
 #: everywhere, and perception is a capability floor of its own.
-LOCAL_PROVIDERS = frozenset({"lmstudio", "llamacpp", "mlxvlm"})
+LOCAL_PROVIDERS = frozenset({"lmstudio", "llamacpp", "llamacpp-omni", "mlxvlm"})
 
 #: Excluded pending verification, not permanently: unverifiable terms as of
 #: July 2026. A US-hosted SOC 2 / ZDR route or self-hosting can qualify later on

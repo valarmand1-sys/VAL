@@ -25,6 +25,7 @@ from datetime import UTC, datetime
 from sqlalchemy import Engine
 
 from val_domain.gateway import CacheTtl, CapabilityProfile
+from val_domain.perception import PerceptionProvider
 from val_domain.registry import active
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
@@ -46,6 +47,7 @@ from val_providers.lmstudio_adapter import DEFAULT_BASE_URL as LMSTUDIO_DEFAULT_
 from val_providers.lmstudio_adapter import LMStudioAdapter
 from val_providers.lmstudio_inspector import LMStudioContextInspector, inspector_host_of
 from val_providers.mlxvlm_perception import MLXVLMPerception
+from val_providers.omni_audio_perception import OmniAudioPerception
 from val_providers.openai_adapter import OpenAIAdapter
 
 #: Where each provider's key is read from. A provider absent from this mapping
@@ -309,20 +311,37 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     # that has not been seeded yet, and refusing to boot would leave Lord Armand
     # without the service he would use to seed it. `converse` still refuses, so
     # nothing runs on a substitute — the failure is moved, not softened.
-    # Local visual perception (owner ruling, 22 September 2026), built beside
-    # the adapters and reported the same way.
-    perception: MLXVLMPerception | None = None
-    if any(
-        is_admitted(config) and satisfies_profile(config, CapabilityProfile.PERCEPTION)
+    # Local perception specialists (owner rulings, 22 September 2026), built
+    # beside the adapters and reported the same way. **The application wires
+    # these itself** — the order is explicit that a turn must not depend on a
+    # provider injected by a test.
+    #
+    # Each is built when a route declaring its modalities is admitted, so a
+    # specialist never exists for work nothing has admitted. A route that is
+    # admitted while its runtime is missing is a **warning, not a refusal**: a
+    # turn carrying that modality then fails closed with the reason, and every
+    # other turn is unaffected.
+    perception: list[PerceptionProvider] = []
+    admitted_modalities = {
+        modality
         for config in active()
+        if is_admitted(config) and satisfies_profile(config, CapabilityProfile.PERCEPTION)
+        for modality in config.perception_modalities
+    }
+    for specialist, needs, kind in (
+        (MLXVLMPerception, {"image", "video"}, "visual"),
+        (OmniAudioPerception, {"audio"}, "audio"),
     ):
-        perception = MLXVLMPerception()
-        unavailable = perception.available()
+        if not (admitted_modalities & needs):
+            continue
+        built = specialist()
+        perception.append(built)
+        unavailable = built.available()
         if unavailable is not None:
             warnings.append(
-                f"the local visual-perception route is admitted but cannot run: {unavailable}. "
-                "A turn carrying an image will fail closed and say so; it will not be sent "
-                "to a paid image-capable provider instead. Text turns are unaffected."
+                f"the local {kind}-perception route is admitted but cannot run: "
+                f"{unavailable}. A turn carrying that material will fail closed and say so; "
+                "it will not be sent to a paid provider instead. Other turns are unaffected."
             )
 
     persona_loader = DatabasePersonaLoader(engine)
@@ -357,13 +376,9 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         # That is the right direction to fail, and it is why this line is not
         # optional in the one place that builds the real gateway.
         verify_provenance=verifier(engine),
-        # Owner ruling, 22 September 2026: Val's local visual-perception
-        # provider, wired here for the same reason the adapters are — the core
-        # must not import a provider package to find out whether it can see.
-        # `None` when no perception route is admitted, and a route that is
-        # admitted but whose runtime is missing is a **warning**, not a refusal:
-        # a turn carrying media then fails closed with the reason, and every
-        # text turn is unaffected.
-        perception=perception,
+        # Val's local perception specialists, wired here for the same reason the
+        # adapters are: the core must not import a provider package to find out
+        # whether it can see or hear.
+        perception=tuple(perception),
     )
     return Startup(gateway=gateway, warnings=warnings)

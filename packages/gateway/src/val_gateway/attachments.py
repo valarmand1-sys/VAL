@@ -33,7 +33,6 @@ from val_domain.gateway import Classification, ImagePart
 from val_domain.gateway import ModelConfig as Config
 from val_policy.attachments import (
     AdmissionRefusedError,
-    AdmittedImage,
     Transmission,
     admit_image,
     check_request_limits,
@@ -41,6 +40,7 @@ from val_policy.attachments import (
     plan_transmission,
     request_load,
 )
+from val_policy.media import AdmittedMedia, admit_media
 
 #: §3.3 — `restricted` is refused at the act, and the type has no such value.
 ACT_CLASSIFICATIONS = (Classification.PUBLIC, Classification.INTERNAL, Classification.PROTECTED)
@@ -72,7 +72,14 @@ class CandidateAttachment:
 
 @dataclass(frozen=True)
 class AttachmentAct:
-    """One committed act: the identity, the association, and the admitted facts."""
+    """One committed act: the identity, the association, and the admitted facts.
+
+    Since the owner's execution order of 22 September 2026 an act can be an
+    image, a video or a recording. `modality` is established from the bytes at
+    admission and is what Core routes on; `width`/`height` stay the image facts
+    and are 0 elsewhere, `duration_seconds` is the time-based fact and is None
+    for a still image, and `verified` says how far admission actually went.
+    """
 
     act_id: UUID
     attachment_id: UUID
@@ -84,6 +91,9 @@ class AttachmentAct:
     width: int
     height: int
     byte_size: int
+    modality: str = "image"
+    duration_seconds: float | None = None
+    verified: str = "decoded"
 
 
 @dataclass(frozen=True)
@@ -108,7 +118,7 @@ def strictest(
     return max(stated, key=lambda value: _STRICTNESS[value])
 
 
-def admit_all(candidates: tuple[CandidateAttachment, ...]) -> tuple[AdmittedImage, ...]:
+def admit_all(candidates: tuple[CandidateAttachment, ...]) -> tuple[AdmittedMedia, ...]:
     """§3.3's preflight over every candidate, before anything is written.
 
     All or nothing: one unreadable file refuses the whole send rather than
@@ -124,7 +134,7 @@ def admit_all(candidates: tuple[CandidateAttachment, ...]) -> tuple[AdmittedImag
         if not candidate.given_filename.strip():
             raise AdmissionRefusedError(f"attachment {position} was sent without a filename")
         try:
-            admitted.append(admit_image(candidate.content))
+            admitted.append(admit_media(candidate.content))
         except AdmissionRefusedError as refused:
             raise AdmissionRefusedError(f"{candidate.given_filename!r}: {refused}") from refused
     return tuple(admitted)
@@ -148,7 +158,7 @@ def commit_acts(
     connection: object,
     message_id: UUID,
     candidates: tuple[CandidateAttachment, ...],
-    admitted: tuple[AdmittedImage, ...],
+    admitted: tuple[AdmittedMedia, ...],
 ) -> tuple[AttachmentAct, ...]:
     """Write blob, attachment and act for each candidate, on an open connection.
 
@@ -197,6 +207,9 @@ def commit_acts(
                 width=image.width,
                 height=image.height,
                 byte_size=image.byte_size,
+                modality=image.modality,
+                duration_seconds=image.duration_seconds,
+                verified=image.verified,
             )
         )
     return tuple(acts)
@@ -236,7 +249,7 @@ def acts_for_message(engine: Engine, message_id: UUID) -> tuple[AttachmentAct, .
         acts = []
         for row in rows:
             payload = connection.execute(_BLOB_BYTES, {"s": row.sha256}).one()
-            admitted = admit_image(payload.bytes)
+            admitted = admit_media(payload.bytes)
             acts.append(
                 AttachmentAct(
                     act_id=row.id,
@@ -249,6 +262,9 @@ def acts_for_message(engine: Engine, message_id: UUID) -> tuple[AttachmentAct, .
                     width=admitted.width,
                     height=admitted.height,
                     byte_size=row.byte_size,
+                    modality=admitted.modality,
+                    duration_seconds=admitted.duration_seconds,
+                    verified=admitted.verified,
                 )
             )
     return tuple(acts)
@@ -439,25 +455,32 @@ def bind_to_call(
             )
 
 
-_EARLIER_IMAGES = text(
-    "select count(*) from message_attachments a join messages m on m.id = a.message_id "
+#: The same count, split by what the media actually are. The media type is on
+#: the blob, established from the bytes at admission, so this asks the record
+#: rather than the filename.
+_EARLIER_BY_KIND = text(
+    "select count(*) filter (where b.media_type like 'audio/%') as audio, "
+    "       count(*) filter (where b.media_type not like 'audio/%') as visual "
+    "  from message_attachments a "
+    "  join messages m on m.id = a.message_id "
+    "  join attachments t on t.id = a.attachment_id "
+    "  join blobs b on b.sha256 = t.sha256 "
     " where m.conversation_id = :c and a.message_id <> :m"
 )
 
 
-def earlier_image_count(engine: Engine, conversation_id: UUID, message_id: UUID) -> int:
-    """How many attachment acts this conversation holds outside the current turn.
+def earlier_media_counts(
+    engine: Engine, conversation_id: UUID, message_id: UUID
+) -> tuple[int, int]:
+    """(visual, audio) attachment acts this conversation holds outside this turn.
 
-    Feeds the record-state envelope's visual signal: earlier images exist in the
-    record and are **not** in view, which is a different state from there being
-    none at all.
+    Two numbers rather than one because they feed two different envelope fields,
+    and because *we discussed a photograph* and *we discussed a recording* are
+    different facts that must not be reported as one.
     """
     with engine.connect() as connection:
-        return int(
-            connection.execute(
-                _EARLIER_IMAGES, {"c": conversation_id, "m": message_id}
-            ).scalar_one()
-        )
+        row = connection.execute(_EARLIER_BY_KIND, {"c": conversation_id, "m": message_id}).one()
+    return int(row.visual), int(row.audio)
 
 
 def blob_bytes(engine: Engine, sha256: str) -> tuple[bytes, str] | None:

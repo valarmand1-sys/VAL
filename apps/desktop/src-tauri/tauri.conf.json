@@ -19,12 +19,14 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: blob: http://127.0.0.1:8756; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:8756"
+      "csp": "default-src 'self'; img-src 'self' data: blob: http://127.0.0.1:8756; media-src 'self' blob: http://127.0.0.1:8756; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:8756"
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["app"],
+    "targets": [
+      "app"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

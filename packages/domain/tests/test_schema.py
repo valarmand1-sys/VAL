@@ -385,6 +385,8 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "modality",
         "representation",
         "observation",
+        "duration_seconds",
+        "verified",
     ),
     "perception_handoffs": (
         "id",
@@ -503,6 +505,10 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # whenever they are set.
         ("perception_sources", "message_attachment_id"),
         ("perception_sources", "attachment_id"),
+        # A still image has no duration; `verified` is NULL only on rows written
+        # before migration 0026 named how far admission went.
+        ("perception_sources", "duration_seconds"),
+        ("perception_sources", "verified"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.
@@ -524,7 +530,7 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
     "model_call_image_input_kind": ("original", "representation"),
     # Local visual perception, 22 September 2026. `audio` is absent because it
     # is not qualified and not admitted; `bound` keeps its Track C meaning.
-    "perception_modality": ("image", "video"),
+    "perception_modality": ("image", "video", "audio"),
     "perception_state": ("perceived", "bound"),
     "message_role": ("user", "val", "system"),
     "model_call_task_type": (

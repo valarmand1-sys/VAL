@@ -398,6 +398,20 @@ class PriorRecordState:
     #: ``none`` — this conversation holds no attachment at all.
     #: ``uncertain`` — admission, derivation or binding did not complete
     #: cleanly, so current sight is not established. Fails toward doubt.
+    #: Owner execution order, 22 September 2026 §7: audio is not visual input,
+    #: and calling it that in the envelope would be a small lie told on every
+    #: turn that carries a recording. So it gets its own additive field, and the
+    #: visual one is neither renamed nor reinterpreted.
+    #:
+    #: ``perceived`` — a recording attached to THIS turn was heard through Val's
+    #: local perception subsystem, and the observations are supplied below.
+    #: ``earlier_only`` — this conversation holds earlier recordings; none was
+    #: heard on this turn.
+    #: ``none`` — this conversation holds no recording at all, which is when the
+    #: whole field is omitted rather than stated.
+    audio_state: str = "none"
+    audio_perceived_this_turn: int = 0
+    audio_earlier_in_conversation: int = 0
     visual_state: str = "none"
     visual_bound_to_this_turn: int = 0
     #: How many of this turn's media were perceived locally. Counted separately
@@ -493,6 +507,22 @@ class PriorRecordState:
                 "earlier_in_conversation": self.visual_earlier_in_conversation,
                 "note": VISUAL_STATE_NOTE,
             },
+            # Present only when this conversation has actually carried audio.
+            # A field restating "no recordings" on every text turn of every
+            # conversation would be context spent on nothing (the per-turn
+            # necessity rule, `01-architecture.md` §5.5).
+            **(
+                {
+                    "audio_input": {
+                        "state": self.audio_state,
+                        "perceived_this_turn": self.audio_perceived_this_turn,
+                        "earlier_in_conversation": self.audio_earlier_in_conversation,
+                        "note": AUDIO_STATE_NOTE,
+                    }
+                }
+                if self.audio_state != "none"
+                else {}
+            ),
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
             "capability_state": dict(CAPABILITY_STATE),
         }
@@ -511,6 +541,19 @@ VISUAL_STATE_NOTE = (
     "perception subsystem and the grounded observations are supplied below: that is "
     "current perception of the current media, and it is the whole of what is known "
     "about them."
+)
+
+#: What the audio signal means. The same discipline as the visual note, in the
+#: verbs that fit a recording: *we discussed this recording* must never read as
+#: *I am hearing it now*.
+AUDIO_STATE_NOTE = (
+    "Only a recording attached to this turn was heard. A recording attached earlier in "
+    "this conversation remains in the House record with its provenance, but is not being "
+    "played to you now: describe it from what was said about it, not as something you can "
+    "presently hear. 'perceived' means the House heard this turn's recording through its "
+    "own local perception subsystem and the grounded observations are supplied below: "
+    "that is current perception of the current recording, and it is the whole of what is "
+    "known about it."
 )
 
 #: What a corrected excerpt says about itself (ruling, 12 September 2026).

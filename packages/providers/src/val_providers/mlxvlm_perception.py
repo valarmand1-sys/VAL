@@ -113,6 +113,9 @@ class MLXVLMPerception:
 
     provider = "mlxvlm"
     model_identifier = "lmstudio-community/Qwen3.5-9B-MLX-4bit"
+    #: **Image and video, and nothing else.** Declared rather than inferred: this
+    #: route never receives audio, whatever the runtime could be made to do.
+    modalities = frozenset({"image", "video"})
 
     def __init__(
         self,
@@ -151,6 +154,12 @@ class MLXVLMPerception:
         incoherent = sources_are_coherent(request.sources)
         if incoherent is not None:
             raise PerceptionRefusedError(incoherent)
+        for source in request.sources:
+            if source.modality not in self.modalities:
+                raise PerceptionRefusedError(
+                    f"this route is admitted for {', '.join(sorted(self.modalities))} and "
+                    f"was handed {source.modality!r}"
+                )
         unavailable = self.available()
         if unavailable is not None:
             raise PerceptionUnavailableError(unavailable)

@@ -92,7 +92,11 @@ from val_domain.gateway import (
     TerminalState,
     TurnReference,
 )
-from val_domain.perception import PerceptionRefusedError, PerceptionUnavailableError
+from val_domain.perception import (
+    MixedModalityRefusedError,
+    PerceptionRefusedError,
+    PerceptionUnavailableError,
+)
 from val_domain.project import AmbiguousProject, ExplicitNoProject, ProjectCandidate, ProjectScope
 from val_domain.provider import DeltaSink
 from val_domain.registry import active
@@ -104,7 +108,7 @@ from val_gateway.attachments import (
     admit_all,
     bind_to_call,
     commit_acts,
-    earlier_image_count,
+    earlier_media_counts,
     prepare,
     strictest,
 )
@@ -267,7 +271,7 @@ def prepare_visual(
     classification: Classification,
     max_output_tokens: int,
 ) -> VisualTurn:
-    """Perceive this turn's media once, or — with no perception route — pin a route.
+    """Perceive this turn's media once, with the specialist admitted for it.
 
     The effective classification is the strictest of the text's and every act's
     (§6), and it governs either way: perception is local, but a local provider is
@@ -277,20 +281,38 @@ def prepare_visual(
     **Under local perception, no route is pinned and no pixels are derived.** The
     cognition call that follows is an ordinary text call: it receives grounded
     observations, so the image-capable filter has nothing to filter for. That is
-    the whole of §19 — an image turn no longer reaches a paid image-capable
-    Partner merely because it contains an image.
+    §19 — a media turn no longer reaches a paid image-capable Partner merely
+    because it carries media.
+
+    **The specialist is chosen by the modality the bytes actually are** (owner
+    execution order, 22 September 2026 §6): Qwen3.5 sees, Qwen3-Omni hears, and
+    neither is offered what it does not declare.
     """
     effective = strictest(classification, opened.attachments)
     if not opened.attachments:
         return VisualTurn(classification=effective, configuration=None, bound=())
 
-    perception_route = perception_configuration(effective)
-    if perception_route is not None and gateway.perception is not None:
+    modality = single_modality(opened.attachments)
+    perception_route = perception_configuration(effective, modality)
+    if perception_route is not None:
+        provider = perception_provider_for(gateway, modality)
+        if provider is None:
+            # **Fail closed** (execution order §3). An admitted perception route
+            # with no wired adapter is a misconfigured house, not permission to
+            # fall back to the historical raw-media path: the pixels would then
+            # go to a paid provider because a local component was missing, which
+            # is the one outcome the local-first rulings exist to prevent.
+            raise PerceptionUnavailableError(
+                f"{perception_route.slug} is admitted for {modality} perception and no local "
+                f"{modality}-perception provider is wired in this service. Stopping rather "
+                "than sending the media to a paid provider instead; nothing was transmitted "
+                "and nothing was charged."
+            )
         # Failure raises. The caller fails the turn closed and says so; it does
         # not quietly send the owner's media to a paid provider instead.
         perceived = perceive_turn(
             engine,
-            gateway.perception,
+            provider,
             perception_route,
             conversation_id=opened.conversation.id,
             message_id=opened.user_message.id,
@@ -318,22 +340,63 @@ def prepare_visual(
     )
 
 
-def perception_configuration(classification: Classification) -> ModelConfig | None:
-    """The admitted local visual-perception route, or `None` if there is none.
+#: What the owner is told when one turn carries both audio and visual material.
+#: Named rather than generic, because a rule nobody can read is a rule nobody
+#: can work around (owner execution order, 22 September 2026 §6).
+MIXED_MODALITY_REFUSAL = (
+    "This turn attaches audio and visual material together, and VAL perceives the two "
+    "through different local specialists — one that sees and one that hears. Running both "
+    "over a single turn is not supported yet, so nothing was perceived and nothing was "
+    "sent anywhere. Send the recording and the image or video as separate turns: "
+    "single-modality turns are fully supported."
+)
 
-    Deterministic, and it names no model: the perception profile is the only
-    thing consulted, exactly as every other capability floor works. A route that
-    is not admitted, not eligible for this classification, or does not declare
-    the profile is not returned — and no route means the caller falls back to the
-    Track C path rather than inventing one.
+
+def single_modality(acts: tuple[AttachmentAct, ...]) -> str:
+    """The one modality this turn's attachments are, or a named refusal.
+
+    Several images together are one modality and are fine. An image beside a
+    video is also fine — both are the visual specialist's, and it takes them in
+    one run. Audio beside either is not, and says exactly why.
     """
+    modalities = {act.modality for act in acts}
+    if "audio" in modalities and modalities - {"audio"}:
+        raise MixedModalityRefusedError(MIXED_MODALITY_REFUSAL)
+    return "audio" if modalities == {"audio"} else "visual"
+
+
+def perception_configuration(classification: Classification, modality: str) -> ModelConfig | None:
+    """The admitted local perception route for this modality, or `None`.
+
+    Deterministic, and it names no model: the perception profile and the route's
+    own **declared** modalities are the only things consulted. A route that is
+    not admitted, not eligible for this classification, does not declare the
+    profile, or does not declare this modality is not returned — which is how
+    Qwen3-Omni never receives a video and Qwen3.5 never receives a recording.
+    """
+    wanted = {"audio"} if modality == "audio" else {"image", "video"}
     for config in active():
         if (
             is_admitted(config)
             and is_eligible(config, classification)
             and satisfies_profile(config, CapabilityProfile.PERCEPTION)
+            and wanted & config.perception_modalities
         ):
             return config
+    return None
+
+
+def perception_provider_for(gateway: Gateway, modality: str) -> object | None:
+    """The wired provider that declares this modality, or `None`.
+
+    The provider's own declaration decides, never its position in the tuple and
+    never its class name.
+    """
+    wanted = {"audio"} if modality == "audio" else {"image", "video"}
+    for provider in gateway.perception:
+        declared: frozenset[str] = getattr(provider, "modalities", frozenset())
+        if wanted & set(declared):
+            return provider
     return None
 
 
@@ -408,7 +471,11 @@ def send(
         visual = prepare_visual(engine, gateway, opened, classification, max_output_tokens)
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
-    except (PerceptionUnavailableError, PerceptionRefusedError) as failure:
+    except (
+        PerceptionUnavailableError,
+        PerceptionRefusedError,
+        MixedModalityRefusedError,
+    ) as failure:
         # Owner ruling, 22 September 2026 §19: fail closed, honestly. The local
         # visual route has already made its one bounded recovery attempt. The
         # media are NOT sent to a paid image-capable Partner instead — that would
@@ -601,7 +668,9 @@ def assemble_turn(
     # Ruling, 13 September 2026: which retained Val answers were grounded in House
     # Recall when given, and in which sources — provenance only, no content.
     grounded = grounded_answers(engine, thread, selection.retained_from)
-    earlier = earlier_image_count(engine, opened.conversation.id, opened.user_message.id)
+    earlier, earlier_audio = earlier_media_counts(
+        engine, opened.conversation.id, opened.user_message.id
+    )
     # Four states, never collapsed: bound now, only earlier, none at all, or —
     # when this turn admitted attachments that produced no bound image — not
     # established, which fails toward doubt rather than toward sight.
@@ -613,11 +682,25 @@ def assemble_turn(
     # `bound` is untouched and keeps its Track C meaning exactly: raw media
     # supplied directly to the cognition provider. Historical rows are not
     # reinterpreted, and nothing collapses the two.
-    if perception is not None:
+    #
+    # Audio is counted separately and never reported as visual input: a
+    # recording is not something Val can see, and saying so on every audio turn
+    # would be a small untruth told repeatedly (execution order, 22 September
+    # 2026 §7).
+    perceived = perception.sources if perception is not None else ()
+    heard = tuple(source for source in perceived if source.modality == "audio")
+    seen = tuple(source for source in perceived if source.modality != "audio")
+    if heard:
+        audio_state = "perceived"
+    elif earlier_audio:
+        audio_state = "earlier_only"
+    else:
+        audio_state = "none"
+    if seen:
         visual_state = "perceived"
     elif images:
         visual_state = "bound"
-    elif opened.attachments:
+    elif opened.attachments and not heard:
         visual_state = "uncertain"
     elif earlier:
         visual_state = "earlier_only"
@@ -705,8 +788,11 @@ def assemble_turn(
         # acts outside this turn — they are in the record and not in view.
         visual_state=visual_state,
         visual_bound_to_this_turn=len(images),
-        visual_perceived_this_turn=(0 if perception is None else len(perception.sources)),
+        visual_perceived_this_turn=len(seen),
         visual_earlier_in_conversation=earlier,
+        audio_state=audio_state,
+        audio_perceived_this_turn=len(heard),
+        audio_earlier_in_conversation=earlier_audio,
     )
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
     excerpts = recall_block(recalled)

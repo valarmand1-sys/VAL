@@ -48,7 +48,7 @@ guarantee `04-layer-0.md` §1.1 claims.
 
 import logging
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from typing import cast
@@ -443,15 +443,19 @@ class Gateway:
         persona_loader: PersonaLoader | None = None,
         verify_provenance: Callable[[GatewayRequest], None] | None = None,
         cache_ttl: CacheTtl | None = None,
-        perception: PerceptionProvider | None = None,
+        perception: Sequence[PerceptionProvider] = (),
     ) -> None:
-        #: Owner ruling, 22 September 2026. Val's local visual-perception
-        #: provider, supplied by the composition root exactly as the adapters
-        #: are. `None` means no perception route is wired, in which case a turn
-        #: carrying media behaves as it did before this ruling. It is held here
-        #: rather than reached for, because the core must not import a provider
-        #: package to find out whether it can see.
-        self.perception = perception
+        #: Owner ruling, 22 September 2026, extended the same evening: Val's
+        #: local perception **specialists**, supplied by the composition root
+        #: exactly as the adapters are. One sees, one hears; each declares the
+        #: modalities it is admitted for, and Core selects by that declaration
+        #: rather than by order or by class name. Empty means none is wired —
+        #: in which case a turn carrying media whose route *is* admitted fails
+        #: closed rather than falling back to the paid raw-media path.
+        #:
+        #: Held here rather than reached for, because the core must not import a
+        #: provider package to find out whether it can see or hear.
+        self.perception: tuple[PerceptionProvider, ...] = tuple(perception)
         self._adapters = adapters
         self._record = recorder
         self._ledger = ledger

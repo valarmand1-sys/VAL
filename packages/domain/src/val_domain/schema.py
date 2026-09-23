@@ -100,7 +100,9 @@ ModelCallStatus = Enum("ok", "error", "refused", name="model_call_status")
 # Owner ruling, 22 September 2026 — local visual perception (migration 0025).
 # `audio` is deliberately absent: not qualified, not admitted, and a value that
 # cannot be written is stronger than a rule saying it must not be.
-PerceptionModality = Enum("image", "video", name="perception_modality")
+# `audio` joined on 22 September 2026 (migration 0026), when an admitted provider
+# could finally hear. A member here is a modality some specialist perceives.
+PerceptionModality = Enum("image", "video", "audio", name="perception_modality")
 # How the cognition provider was told to treat the current turn's media.
 # `bound` keeps its Track C meaning exactly — raw media supplied directly to the
 # cognition provider — and every historical row keeps it too.
@@ -1780,6 +1782,14 @@ class PerceptionSource(Base):
     #: `original` for this slice: the local runtime reads the admitted bytes and
     #: does its own preprocessing, so nothing is derived for transmission.
     representation: Mapped[str] = mapped_column(Text, nullable=False)
+    #: Time-based media say how long they are; a still image says NULL (0026).
+    duration_seconds: Mapped[Decimal | None] = mapped_column(Numeric(10, 3), nullable=True)
+    #: **How far admission actually went** (0026): `decoded` for an image that was
+    #: really decoded, `decoded_header` for a WAV whose header the standard
+    #: library parsed, `container_structure` for an MP4 whose boxes were walked
+    #: and whose frames were not. One word for all three would claim a decode
+    #: that did not happen.
+    verified: Mapped[str | None] = mapped_column(Text, nullable=True)
     #: What was reported about THIS source, so a multi-image turn can say which
     #: observation belongs to which file.
     observation: Mapped[str] = mapped_column(Text, nullable=False)
@@ -1791,6 +1801,9 @@ class PerceptionSource(Base):
         CheckConstraint("position > 0", name="position_positive"),
         CheckConstraint("byte_size > 0", name="byte_size_positive"),
         CheckConstraint("length(sha256) = 64", name="sha256_is_a_digest"),
+        CheckConstraint(
+            "duration_seconds IS NULL OR duration_seconds >= 0", name="duration_not_negative"
+        ),
         CheckConstraint(
             "(message_attachment_id IS NULL) = (attachment_id IS NULL)",
             name="act_and_attachment_together",

@@ -83,8 +83,15 @@ export interface AttachmentView {
   width: number;
   height: number;
   byte_size: number;
+  // What kind of medium this is, established from the bytes at admission —
+  // never from the filename. The thread renders from this (22 September 2026).
+  modality: AttachmentModality;
+  // How long it runs; null for a still image.
+  duration_seconds: number | null;
   sha256: string;
 }
+
+export type AttachmentModality = "image" | "video" | "audio";
 
 // `restricted` is deliberately absent: it is refused at the act.
 export type AttachmentClassification = "public" | "internal" | "protected";

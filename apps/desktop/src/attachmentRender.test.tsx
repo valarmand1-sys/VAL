@@ -48,6 +48,8 @@ const ACT: AttachmentView = {
   width: 2752,
   height: 1536,
   byte_size: 8_371_957,
+  modality: "image",
+  duration_seconds: null,
   sha256: "7fc13a7c5072b69acc119d20a16beb6523dc21aa4ba6a4ef950c7ba748c12db0",
 };
 
@@ -172,5 +174,92 @@ describe("what the production thread renderer puts in the thread", () => {
     const later = api.attachmentUrl(ACT.sha256);
     expect(later).toBe(first);
     expect(first).toContain(ACT.sha256);
+  });
+});
+
+// --- video and audio, owner execution order, 22 September 2026 ------------------
+//
+// The same defect class as the img-src one above, one media element over: a
+// <video> or <audio> at the loopback origin is refused by the webview before any
+// request is made unless `media-src` permits it, and the failure looks exactly
+// like a broken file rather than like a policy.
+
+const VIDEO: AttachmentView = {
+  ...ACT,
+  id: "01a0cbb8-0000-7000-8000-000000000001",
+  filename: "a-real-clip.mp4",
+  media_type: "video/mp4",
+  modality: "video",
+  duration_seconds: 9,
+  sha256: "b".repeat(64),
+};
+
+const RECORDING: AttachmentView = {
+  ...ACT,
+  id: "01a0cbb8-0000-7000-8000-000000000002",
+  filename: "a-real-recording.wav",
+  media_type: "audio/wav",
+  modality: "audio",
+  duration_seconds: 22.38,
+  width: 0,
+  height: 0,
+  sha256: "c".repeat(64),
+};
+
+describe("the policy permits the media the owner can now attach", () => {
+  it("permits video and audio from the governed loopback route", () => {
+    const sources = policy()["media-src"] ?? [];
+    expect(
+      sources.includes(API_BASE),
+      `media-src is ${JSON.stringify(sources)} and must permit ${API_BASE}; a <video> ` +
+        "or <audio> at that origin is otherwise refused before any request is made",
+    ).toBe(true);
+    expect(sources).toContain("'self'");
+    expect(sources).toContain("blob:");
+  });
+
+  it("opens nothing wider for media than for images", () => {
+    const sources = policy()["media-src"] ?? [];
+    expect(sources).not.toContain("*");
+    expect(sources).not.toContain("https:");
+    expect(sources.filter((source) => source.startsWith("http")).sort()).toEqual([API_BASE]);
+    // And the rest of the policy is untouched by this addition.
+    expect(policy()["default-src"]).toEqual(["'self'"]);
+    expect(policy()["connect-src"]).toEqual(["'self'", API_BASE]);
+  });
+});
+
+describe("the thread renders each medium as what it is", () => {
+  it("a video renders as a playable video at its own digest", () => {
+    const shown = render(<Attachments attachments={[VIDEO]} />);
+    const element = shown.querySelector("video");
+    expect(element, "a video attachment must render a <video>, not an <img>").not.toBeNull();
+    expect(element!.getAttribute("src")).toBe(api.attachmentUrl(VIDEO.sha256));
+    expect(element!.hasAttribute("controls")).toBe(true);
+    expect(shown.querySelector("img")).toBeNull();
+    expect(shown.textContent).toContain("a-real-clip.mp4");
+    expect(shown.textContent).toContain("0:09");
+  });
+
+  it("a recording renders as playable audio and says its length, not its pixels", () => {
+    const shown = render(<Attachments attachments={[RECORDING]} />);
+    const element = shown.querySelector("audio");
+    expect(element, "an audio attachment must render an <audio>").not.toBeNull();
+    expect(element!.getAttribute("src")).toBe(api.attachmentUrl(RECORDING.sha256));
+    expect(element!.hasAttribute("controls")).toBe(true);
+    expect(shown.querySelector("img")).toBeNull();
+    expect(shown.textContent).toContain("a-real-recording.wav");
+    expect(shown.textContent).toContain("0:22");
+    // A recording has no dimensions, and saying "0×0" would be noise dressed
+    // as information.
+    expect(shown.textContent).not.toContain("0×0");
+  });
+
+  it("an image is unchanged: still an <img>, still its true dimensions", () => {
+    const shown = render(<Attachments attachments={[ACT]} />);
+    expect(shown.querySelector("img")).not.toBeNull();
+    expect(shown.querySelector("video")).toBeNull();
+    expect(shown.querySelector("audio")).toBeNull();
+    expect(shown.textContent).toContain("2752×1536");
   });
 });

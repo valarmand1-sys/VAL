@@ -50,6 +50,8 @@ from val_domain.perception import (
     PerceptionSource,
     PerceptionUnavailableError,
 )
+from val_policy.attachments import AdmissionRefusedError
+from val_policy.media import modality_of as policy_modality_of
 
 from .attachments import AttachmentAct, blob_bytes
 
@@ -84,6 +86,33 @@ PERCEPTION_INSTRUCTION = (
     "scene for continuity. If the media does not show what the question asks about, say so "
     "plainly rather than supplying a plausible answer."
 )
+
+
+#: The same doctrine, in the verbs that fit a recording (owner execution order,
+#: 22 September 2026 §10). Deliberately parallel to the visual instruction above,
+#: sentence for sentence: report, do not answer, do not advise, do not conclude
+#: beyond the recording, do not invent, and say when the recording does not
+#: establish something.
+AUDIO_PERCEPTION_INSTRUCTION = (
+    "You are an audio perception component. Report the grounded information the recording "
+    "supplied actually conveys, relevant to the question below.\n\n"
+    "Report only what is actually in the recording. Do not answer the question. Do not "
+    "advise, recommend, or conclude beyond what was said. Do not speak as VAL or as anyone; "
+    "you are not the assistant in this conversation and nothing you write is a reply to "
+    "anybody. Do not invent anything that was not said.\n\n"
+    "Report the content the question depends on first, then enough of the rest of the "
+    "recording for continuity. If the recording does not establish what the question asks "
+    "about, say so plainly rather than supplying a plausible answer."
+)
+
+#: Which instruction governs which modality. A mapping rather than a branch so
+#: that a modality with no instruction is a `KeyError` at the call site instead
+#: of quietly inheriting the visual one.
+_INSTRUCTIONS = {
+    "image": PERCEPTION_INSTRUCTION,
+    "video": PERCEPTION_INSTRUCTION,
+    "audio": AUDIO_PERCEPTION_INSTRUCTION,
+}
 
 
 @dataclass(frozen=True)
@@ -136,30 +165,33 @@ class TurnPerception:
         return Message(role="user", content=f"{PERCEPTION_ENVELOPE_MARKER}\n{body}")
 
 
-def perception_prompt(question: str) -> str:
+def perception_prompt(question: str, modality: str = "image") -> str:
     """The exact instruction transmitted, from the owner's actual words.
 
     Verbatim, never paraphrased: a summarised question is a different question,
     and the record would then hold evidence gathered for something he did not
     ask. The whole string is persisted, so what is recorded is what was sent.
+
+    The instruction is the one that fits the medium — a recording is not
+    "visible" — and the doctrine is identical in both.
     """
     asked = question.strip() or "(no question was stated with this media)"
-    return f"{PERCEPTION_INSTRUCTION}\n\nThe question:\n{asked}"
+    return f"{_INSTRUCTIONS[modality]}\n\nThe question:\n{asked}"
 
 
 def modality_of(media_type: str) -> str:
-    """The admitted modality of this medium.
+    """The admitted modality of this medium, from the media type alone.
 
-    Audio is not admitted and has no branch here; an unadmitted medium raises
-    rather than being guessed at.
+    A thin wrapper over the admission policy so the gateway does not carry a
+    second, drifting copy of the rule. An unadmitted medium raises rather than
+    being guessed at.
     """
-    if media_type.startswith("image/"):
-        return "image"
-    if media_type.startswith("video/"):
-        return "video"
-    raise PerceptionUnavailableError(
-        f"{media_type!r} is not a medium VAL's local perception is admitted for"
-    )
+    try:
+        return policy_modality_of(media_type)
+    except AdmissionRefusedError as refused:
+        raise PerceptionUnavailableError(
+            f"{media_type!r} is not a medium VAL's local perception is admitted for"
+        ) from refused
 
 
 _INSERT_RUN = text(
@@ -172,8 +204,9 @@ _INSERT_RUN = text(
 )
 _INSERT_SOURCE = text(
     "insert into perception_sources (perception_run_id, position, message_attachment_id, "
-    "attachment_id, sha256, media_type, byte_size, modality, representation, observation) "
-    "values (:r, :pos, :act, :att, :sha, :mt, :n, :mod, :repr, :obs)"
+    "attachment_id, sha256, media_type, byte_size, modality, representation, observation, "
+    "duration_seconds, verified) "
+    "values (:r, :pos, :act, :att, :sha, :mt, :n, :mod, :repr, :obs, :dur, :ver)"
 )
 _INSERT_HANDOFF = text(
     "insert into perception_handoffs (perception_run_id, model_call_id) values (:r, :c) "
@@ -220,7 +253,10 @@ def perceive_turn(
             )
         )
 
-    prompt = perception_prompt(question)
+    # One prompt for the run, in the voice of the modality being perceived. A
+    # turn is single-modality by the time it reaches here — mixed audio and
+    # visual material is refused above, by name — so the first source decides.
+    prompt = perception_prompt(question, sources[0].modality)
     result = provider.perceive(
         PerceptionRequest(
             sources=tuple(sources),
@@ -331,6 +367,10 @@ def _record(
                     # preprocessing, so nothing is derived for transmission.
                     "repr": "original",
                     "obs": seen.observation,
+                    # How long it runs, and how far admission actually went.
+                    # Both read from the act rather than re-derived here.
+                    "dur": seen.act.duration_seconds,
+                    "ver": seen.act.verified,
                 },
             )
     return UUID(str(run_id))

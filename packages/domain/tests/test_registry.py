@@ -137,6 +137,10 @@ def test_only_a_real_answer_marks_a_route_live() -> None:
         # answered in qualification, which is not a live call on the production
         # path, so it is unproven here for exactly the same reason.
         "qwen3-5-9b-mlx-4bit-mlxvlm-perception",
+        # Admitted 22 September 2026 as the local audio-perception route, on the
+        # Case B evidence already on record. It has answered in qualification,
+        # which is not a live call on the production path.
+        "qwen3-omni-30b-a3b-q4-k-m-llamacpp-audio",
         "haiku-4-5-20251001",
         "gpt-5-5-20260423",
     }
