@@ -29,6 +29,7 @@ from val_providers.qwen_tts_speech import (
     VOICE_DESIGN_MODEL,
     VOICE_DESIGN_REVISION,
     QwenTTSSpeech,
+    clone_prompt_for,
 )
 
 WAV = b"RIFF\x00\x00\x00\x08WAVE" + b"pretend frames"
@@ -83,7 +84,7 @@ def adapter(runner: RecordingRunner, tmp_path: Path) -> QwenTTSSpeech:
     return QwenTTSSpeech(
         python=python,
         model_path=model,
-        clone_prompt=tmp_path / "clone.npz",
+        voice_dir=tmp_path,
         runner=runner,  # type: ignore[arg-type]
     )
 
@@ -148,7 +149,24 @@ def test_every_utterance_names_the_same_reusable_clone_prompt(tmp_path: Path) ->
     provider.synthesize(SpeechRequest(text="One.", voice=voice()))
     provider.synthesize(SpeechRequest(text="Two.", voice=voice()))
     prompts = {json.loads(payload)["clone_prompt_path"] for _, payload in runner.calls}
-    assert prompts == {str(tmp_path / "clone.npz")}
+    assert prompts == {str(clone_prompt_for(digest_of(WAV), tmp_path))}
+
+
+def test_two_voices_never_share_a_clone_prompt(tmp_path: Path) -> None:
+    """One file per reference, so one voice cannot borrow another's codes.
+
+    The library keys its ICL cache on the reference text and waveform, so a
+    shared path would let stored codes be loaded under the wrong key — Val
+    speaking in the wrong voice while every digest in the record still looked
+    right. Unrepresentable rather than guarded against.
+    """
+    other = b"RIFF" + b"\x00" * 40 + b"a different recording entirely"
+    runner = RecordingRunner({}, {})
+    provider = adapter(runner, tmp_path)
+    provider.synthesize(SpeechRequest(text="One.", voice=voice()))
+    provider.synthesize(SpeechRequest(text="One.", voice=voice(other)))
+    prompts = [json.loads(payload)["clone_prompt_path"] for _, payload in runner.calls]
+    assert len(set(prompts)) == 2, "each reference has its own conditioning file"
 
 
 # --- the voice must be the governed one --------------------------------------------
@@ -227,7 +245,7 @@ def test_an_absent_runtime_is_reported_as_an_absent_runtime(tmp_path: Path) -> N
     provider = QwenTTSSpeech(
         python=tmp_path / "missing",
         model_path=tmp_path,
-        clone_prompt=tmp_path / "clone.npz",
+        voice_dir=tmp_path,
         runner=runner,  # type: ignore[arg-type]
     )
     assert provider.available() is not None

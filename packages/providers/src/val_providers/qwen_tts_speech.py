@@ -66,12 +66,23 @@ QUANTIZATION = "8-bit MLX, group size 64, affine"
 VOICE_DESIGN_MODEL = "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit"
 VOICE_DESIGN_REVISION = "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee"
 
-#: Where the governed voice lives: the canonical reference and the reusable
+#: Where the governed voice lives: its reference recording and the reusable
 #: clone prompt derived from it. Fixed paths, outside the repository, because
 #: they are operating state rather than source.
 VOICE_DIR = Path.home() / ".val-voice"
-CANONICAL_REFERENCE = VOICE_DIR / "val-canonical-reference.wav"
-CLONE_PROMPT = VOICE_DIR / "val-clone-prompt.npz"
+
+
+def clone_prompt_for(reference_sha256: str, directory: Path = VOICE_DIR) -> Path:
+    """The reusable conditioning file belonging to **this** reference.
+
+    Keyed on the reference digest rather than fixed, because the library's ICL
+    cache is keyed on the reference text and waveform: a single shared path would
+    let one voice's stored codes be loaded under another voice's key, and the
+    result would be Val speaking in the wrong voice while every digest in the
+    record still looked right. One file per voice makes that unrepresentable.
+    """
+    return directory / f"clone-prompt-{reference_sha256[:16]}.npz"
+
 
 #: The runner, resolved from this file rather than from a working directory.
 RUNNER = Path(__file__).resolve().parents[4] / "infrastructure" / "speech" / "qwen_tts_speak.py"
@@ -123,13 +134,13 @@ class QwenTTSSpeech:
         *,
         python: Path = VENV_PYTHON,
         model_path: Path = MODEL_PATH,
-        clone_prompt: Path = CLONE_PROMPT,
+        voice_dir: Path = VOICE_DIR,
         runner: _Runner | None = None,
         timeout: float = RUN_TIMEOUT_SECONDS,
     ) -> None:
         self._python = python
         self._model_path = model_path
-        self._clone_prompt = clone_prompt
+        self._voice_dir = voice_dir
         self._runner = runner or _Runner()
         self._timeout = timeout
 
@@ -218,7 +229,11 @@ class QwenTTSSpeech:
                     "ref_audio_path": str(reference),
                     "ref_audio_sha256": request.voice.reference_sha256,
                     "ref_text": request.voice.reference_text,
-                    "clone_prompt_path": str(self._clone_prompt),
+                    # Belonging to this reference, so a second voice can never
+                    # be conditioned on the first one's codes.
+                    "clone_prompt_path": str(
+                        clone_prompt_for(request.voice.reference_sha256, self._voice_dir)
+                    ),
                     "out_path": str(out_path),
                 }
             )

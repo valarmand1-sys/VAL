@@ -1,0 +1,26 @@
+{
+ "name": "val-established-v1",
+ "reference_path": "/Users/josepharmand/.val-voice/val-established-reference.wav",
+ "reference_sha256": "c5ebe0c7210bf332ab7bf6fda29683664f729cbe21c62f9ce405fc761b6b0e4b",
+ "reference_bytes": 900362,
+ "reference_sample_rate": 24000,
+ "reference_duration_seconds": 18.756,
+ "reference_text": "Good evening, my lord. There you are. I was beginning to wonder whether the day had carried you off entirely. Now, what are we working on? A difficult decision, a new idea, or one of those wonderfully complicated problems you seem to collect? Whatever it is, we shall sort through it together. Go on then, tell me everything.",
+ "reference_text_sha256": "64bea724dfe8d8661b7b44a1db53e1afeb94f2ecb8405f5e8f4b00d987cf5123",
+ "voice_description": "VAL's established voice, created by the owner through ElevenLabs Voice Design as an original synthetic voice for VAL. Not a clone of any real person. Used here solely as inference-time reference conditioning.",
+ "voice_description_sha256": "96b8780a84d88180d23e99574cec9f67ec8f20563b17a9bfae7efc52f0ba4512",
+ "designed_by_model": "ElevenLabs Voice Design (owner-created, external)",
+ "designed_by_revision": "not applicable \u2014 not a local model artifact",
+ "designed_by_quantization": "not applicable",
+ "designed_by_runtime": "not applicable \u2014 the reference is an owner-held recording",
+ "designed_generation": {
+  "note": "Produced outside this house by ElevenLabs Voice Design; no local generation settings apply to the reference itself."
+ },
+ "designed_on": "2026-09-23",
+ "origin": "VAL's established voice, created by the owner through ElevenLabs Voice Design \u2014 an original synthetic voice for VAL, not a clone of any real person. Source recording: VAL's Voice.mp3, SHA-256 dfea9cdef7b965bbde6cd47ae0b2afa6019f0cac38f80c1636d9544e6b7505f0, 44.1 kHz mono MP3, 18.756 s. The conditioning input is a deterministic transcode of it to 24 kHz mono WAV (ffmpeg), whose digest is recorded above. The transcript was read locally by the admitted Qwen3-Omni perception route and is MACHINE-READ, not owner-supplied: no Whisper, no cloud STT, and not the TTS runtime's automatic reference transcription.",
+ "identity_claim": "This is VAL's established voice used as zero-shot reference conditioning. What is established is that production speech is conditioned on that reference; how closely the result resembles it is NOT model-verified, no similarity score was measured, and the final judgement is the owner's listening judgement. OWNER AUTHORIZATION, Lord Armand, 23 September 2026, verbatim: \"I created VAL's established voice through ElevenLabs Voice Design. It is an original synthetic voice created for VAL and is not a clone of any real person. I possess the resulting recording VAL's Voice.mp3 and authorize its use as reference audio for VAL's private, local Qwen3-TTS speech system. This authorization is specifically for inference-time voice conditioning, including the verification sample and production smoke needed to install and operate it. It does not authorize using the recording to train or fine-tune any model, to benchmark or compare models, or to create a dataset. I understand that ElevenLabs' published terms contain restrictions concerning AI-model use of its Output. I am making the owner decision that this private zero-shot reference-conditioning use is materially distinct from model training or development, and I accept the contractual ambiguity associated with that interpretation. This ruling explicitly supersedes the previous VAL-project prohibition against using the historical ElevenLabs VAL recording as Qwen3-TTS conditioning input for this specific local speech implementation.\"",
+ "authorization": "OWNER AUTHORIZATION, Lord Armand, 23 September 2026, verbatim: \"I created VAL's established voice through ElevenLabs Voice Design. It is an original synthetic voice created for VAL and is not a clone of any real person. I possess the resulting recording VAL's Voice.mp3 and authorize its use as reference audio for VAL's private, local Qwen3-TTS speech system. This authorization is specifically for inference-time voice conditioning, including the verification sample and production smoke needed to install and operate it. It does not authorize using the recording to train or fine-tune any model, to benchmark or compare models, or to create a dataset. I understand that ElevenLabs' published terms contain restrictions concerning AI-model use of its Output. I am making the owner decision that this private zero-shot reference-conditioning use is materially distinct from model training or development, and I accept the contractual ambiguity associated with that interpretation. This ruling explicitly supersedes the previous VAL-project prohibition against using the historical ElevenLabs VAL recording as Qwen3-TTS conditioning input for this specific local speech implementation.\"",
+ "source_recording": "/Users/josepharmand/Desktop/Avatars/VAL/Voice/VAL's Voice.mp3",
+ "source_recording_sha256": "dfea9cdef7b965bbde6cd47ae0b2afa6019f0cac38f80c1636d9544e6b7505f0",
+ "transcript_provenance": "machine-read locally by Qwen3-Omni; not owner-supplied"
+}

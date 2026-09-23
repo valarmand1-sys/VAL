@@ -1,0 +1,42 @@
+{
+ "path": "docs/reviews/qualification/runs/2026-09-23-established-voice/val-established-reference.wav",
+ "thresholds": {
+  "clip_level": 0.999,
+  "clip_fraction_max": 0.005,
+  "silence_level": 0.01,
+  "interior_silence_seconds_max": 2.0,
+  "duration_seconds_min": 2.0,
+  "duration_seconds_max": 30.0
+ },
+ "measured": {
+  "sample_rate": 24000,
+  "channels": 1,
+  "sample_width_bytes": 2,
+  "samples": 450142,
+  "duration_seconds": 18.756,
+  "peak_amplitude": 0.731384,
+  "rms_amplitude": 0.090678,
+  "samples_at_or_near_full_scale": 0,
+  "fraction_at_or_near_full_scale": 0.0,
+  "longest_near_silent_run_seconds": 0.958,
+  "longest_near_silent_run_starts_at_seconds": 16.205,
+  "longest_near_silent_run_is_interior": true,
+  "interior_silence_seconds": 0.958,
+  "leading_silence_seconds": 0.13,
+  "trailing_silence_seconds": 0.057,
+  "word_count": 58,
+  "expected_duration_band_seconds": [
+   19.33,
+   41.43
+  ]
+ },
+ "checks": {
+  "duration_in_band": true,
+  "no_severe_clipping": true,
+  "no_long_interior_silence": true,
+  "duration_plausible_for_word_count": true,
+  "audio_is_readable": true,
+  "single_channel": true
+ },
+ "verdict": "PASS"
+}
