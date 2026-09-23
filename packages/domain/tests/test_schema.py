@@ -394,6 +394,52 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "perception_run_id",
         "model_call_id",
     ),
+    # --- Local speech output, owner execution order 22 September 2026 ----------
+    "speech_voices": (
+        "id",
+        "created_at",
+        "name",
+        "reference_sha256",
+        "reference_bytes",
+        "reference_sample_rate",
+        "reference_duration_seconds",
+        "reference_text",
+        "reference_text_sha256",
+        "voice_description",
+        "voice_description_sha256",
+        "designed_by_model",
+        "designed_by_revision",
+        "designed_by_quantization",
+        "designed_by_runtime",
+        "designed_generation",
+        "origin",
+        "identity_claim",
+    ),
+    "speech_generations": (
+        "id",
+        "created_at",
+        "voice_id",
+        "message_id",
+        "model_config_id",
+        "final_text",
+        "final_text_sha256",
+        "provider",
+        "model_identifier",
+        "model_revision",
+        "quantization",
+        "runtime",
+        "runtime_version",
+        "generation",
+        "clone_prompt_sha256",
+        "audio_sha256",
+        "audio_path",
+        "audio_bytes",
+        "sample_rate",
+        "duration_seconds",
+        "local",
+        "cost_usd",
+        "elapsed_ms",
+    ),
     # §2.4 Ideas — amendment, 15 August 2026
     "ideas": ("id", "project_id", "title", "lifecycle_state", "created_at", "updated_at"),
     "idea_state_changes": ("id", "idea_id", "from_state", "to_state", "changed_at"),
@@ -509,6 +555,9 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # before migration 0026 named how far admission went.
         ("perception_sources", "duration_seconds"),
         ("perception_sources", "verified"),
+        # A house-internal utterance has no source message, which reads
+        # differently from an utterance with no source at all.
+        ("speech_generations", "message_id"),
         # WP-0.5. NULL activated_at means *never activated* — a revision created
         # and not yet made live carries no activation instant, because inventing
         # one would put a time in the record for an event that did not happen.

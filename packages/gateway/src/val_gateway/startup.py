@@ -27,6 +27,7 @@ from sqlalchemy import Engine
 from val_domain.gateway import CacheTtl, CapabilityProfile
 from val_domain.perception import PerceptionProvider
 from val_domain.registry import active
+from val_domain.speech import SpeechUnavailableError, VoiceConditioning
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
 from val_gateway.memory import (
@@ -49,6 +50,7 @@ from val_providers.lmstudio_inspector import LMStudioContextInspector, inspector
 from val_providers.mlxvlm_perception import MLXVLMPerception
 from val_providers.omni_audio_perception import OmniAudioPerception
 from val_providers.openai_adapter import OpenAIAdapter
+from val_providers.qwen_tts_speech import QwenTTSSpeech, load_canonical_voice
 
 #: Where each provider's key is read from. A provider absent from this mapping
 #: has no adapter and cannot be configured.
@@ -239,15 +241,18 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     moment = today or datetime.now(UTC)
     violations, warnings = check_startup(moment.date())
 
-    # Owner ruling, 22 September 2026: perception routes are not conversation
-    # routes, and they do not have a `ProviderAdapter`. They are excluded here by
-    # the profile they declare, so a perception provider never has to pretend to
-    # be a chat provider to get past this line.
+    # Owner rulings, 22 September 2026: perception and speech routes are not
+    # conversation routes and have no `ProviderAdapter`. They are excluded here
+    # by the profiles they declare, so a specialist never has to pretend to be a
+    # chat provider to get past this line.
     adapters, problems = build_adapters(
         {
             config.provider
             for config in active()
-            if not satisfies_profile(config, CapabilityProfile.PERCEPTION)
+            if not any(
+                satisfies_profile(config, profile)
+                for profile in (CapabilityProfile.PERCEPTION, CapabilityProfile.SPEECH)
+            )
         }
     )
     violations.extend(problems)
@@ -344,6 +349,34 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
                 "it will not be sent to a paid provider instead. Other turns are unaffected."
             )
 
+    # Val's local voice (owner execution order, 22 September 2026), built beside
+    # the adapters and the perception specialists, and reported the same way. A
+    # route admitted while its runtime or its designed voice is missing is a
+    # **warning, not a refusal**: a request for speech then fails closed with the
+    # reason, and every other path is unaffected.
+    speech: QwenTTSSpeech | None = None
+    voice: VoiceConditioning | None = None
+    if any(
+        is_admitted(config) and satisfies_profile(config, CapabilityProfile.SPEECH)
+        for config in active()
+    ):
+        speech = QwenTTSSpeech()
+        unavailable = speech.available()
+        if unavailable is not None:
+            warnings.append(
+                f"the local speech route is admitted but cannot run: {unavailable}. A "
+                "request for speech will fail closed and say so; no cloud voice service "
+                "will be called. Everything else is unaffected."
+            )
+        else:
+            try:
+                voice = load_canonical_voice()
+            except SpeechUnavailableError as missing:
+                warnings.append(
+                    f"the local speech route is admitted and Val has no governed voice: "
+                    f"{missing}. Speech will fail closed until one is designed."
+                )
+
     persona_loader = DatabasePersonaLoader(engine)
     try:
         persona = persona_loader.active()
@@ -380,5 +413,8 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         # adapters are: the core must not import a provider package to find out
         # whether it can see or hear.
         perception=tuple(perception),
+        # Val's voice, and the provider that speaks in it.
+        speech=speech,
+        voice=voice,
     )
     return Startup(gateway=gateway, warnings=warnings)

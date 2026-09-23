@@ -52,6 +52,7 @@ from val_gateway.classification_review import (
     QueuedExchange,
     ReviewProgress,
 )
+from val_gateway.speech import SpokenText
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 
 # =============================================================================
@@ -237,6 +238,43 @@ class AttachmentInput(BaseModel):
     #: Per act, defaulting to the strictest ordinary class. `restricted` is not
     #: a value: it is refused at the act (Attachment Substrate v1.2 §3.3).
     classification: Literal["public", "internal", "protected"] = "protected"
+
+
+class SpeechView(BaseModel):
+    """One generated utterance, as a client needs to play and cite it.
+
+    Owner execution order, 22 September 2026. The client gets the digest rather
+    than a path: the bytes are fetched by their own content address, exactly as
+    an attachment's are, so nothing here makes Val's voice addressable to
+    anything outside this machine.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: UUID
+    voice_id: UUID
+    #: The content-addressed key the waveform is fetched by.
+    audio_sha256: str
+    sample_rate: int
+    duration_seconds: float
+    #: The reusable voice conditioning this utterance was anchored to. Equal
+    #: across utterances is what says the voice did not drift between them.
+    clone_prompt_sha256: str
+    local: bool
+    cost_usd: float
+
+    @classmethod
+    def of(cls, spoken: SpokenText) -> SpeechView:
+        return cls(
+            id=spoken.generation_id,
+            voice_id=spoken.voice_id,
+            audio_sha256=spoken.audio_sha256,
+            sample_rate=spoken.sample_rate,
+            duration_seconds=spoken.duration_seconds,
+            clone_prompt_sha256=spoken.clone_prompt_sha256,
+            local=spoken.local,
+            cost_usd=spoken.cost_usd,
+        )
 
 
 class AttachmentView(BaseModel):

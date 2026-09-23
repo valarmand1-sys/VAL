@@ -23,14 +23,16 @@ to acquire one.
 
 from __future__ import annotations
 
+import json
 from base64 import b64decode
 from binascii import Error as BinasciiError
+from pathlib import Path
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from sqlalchemy import Engine
+from sqlalchemy import Engine, text
 
 from val_api.contracts import (
     BlindPositionView,
@@ -62,6 +64,7 @@ from val_api.contracts import (
     RevisionRequest,
     RevisionView,
     ScopeTransitionView,
+    SpeechView,
     TurnAnswered,
     TurnClarification,
     TurnRequest,
@@ -71,7 +74,14 @@ from val_api.contracts import (
 )
 from val_api.streaming import turn_event_stream
 from val_domain.deliberation import ClassifiedBy, Ordering
-from val_domain.gateway import Classification, GatewayError
+from val_domain.gateway import (
+    CapabilityProfile,
+    Classification,
+    GatewayError,
+    ModelConfig,
+)
+from val_domain.registry import active
+from val_domain.speech import SpeechRefusedError, SpeechUnavailableError
 from val_gateway import conversations
 from val_gateway.attachments import (
     CandidateAttachment,
@@ -126,8 +136,11 @@ from val_gateway.projects import (
     project_listing,
 )
 from val_gateway.revisions import RevisionRefusedError, retract, revise
+from val_gateway.speech import register_voice, speak_message
 from val_policy.attachments import AdmissionRefusedError
 from val_policy.project_resolution import ProjectSignals
+from val_policy.routing import is_admitted, satisfies_profile
+from val_providers.qwen_tts_speech import VOICE_RECORD
 
 
 def _revision_http_error(refused: RevisionRefusedError) -> HTTPException:
@@ -136,6 +149,24 @@ def _revision_http_error(refused: RevisionRefusedError) -> HTTPException:
     return HTTPException(
         status_code=status, detail={"reason": refused.reason, "message": str(refused)}
     )
+
+
+def speech_configuration() -> ModelConfig | None:
+    """The admitted local speech route, or `None`.
+
+    Selected by the profile it declares, never by name — the same rule every
+    other capability floor uses.
+    """
+    for config in active():
+        if is_admitted(config) and satisfies_profile(config, CapabilityProfile.SPEECH):
+            return config
+    return None
+
+
+def voice_record(path: Path = VOICE_RECORD) -> dict[str, object]:
+    """The governed voice's own description, as written when it was designed."""
+    described: dict[str, object] = json.loads(path.read_text())
+    return described
 
 
 def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = None) -> FastAPI:
@@ -392,6 +423,73 @@ def create_app(engine: Engine, gateway: Gateway, warnings: list[str] | None = No
                 )
             )
         return tuple(candidates)
+
+    # --- Val's voice: the production seam (owner execution order, 22 Sep 2026) ---
+    #
+    # The smallest real path from a finished Val response to a waveform. It is
+    # deliberately not a "text to speech" endpoint: the caller names a message,
+    # and the words come from the record, so what is spoken is provably what Val
+    # said. There is no avatar and no voice-mode UX here — those are later
+    # layers, and this is the seam they will stand on.
+
+    @app.post("/messages/{message_id}/speech")
+    def speak(message_id: UUID) -> SpeechView:
+        """Speak a persisted Val message in Val's governed local voice."""
+        if gateway.speech is None or gateway.voice is None:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "Val has no local voice available. Nothing was sent to a cloud voice "
+                    "service: the local route fails closed rather than falling back."
+                ),
+            )
+        configuration = speech_configuration()
+        if configuration is None:
+            raise HTTPException(
+                status_code=503, detail="no admitted local speech route is registered"
+            )
+        voice_id = register_voice(engine, gateway.voice, voice_record())
+        try:
+            spoken = speak_message(
+                engine,
+                gateway.speech,
+                configuration,
+                gateway.voice,
+                voice_id,
+                message_id,
+            )
+        except SpeechRefusedError as refused:
+            raise HTTPException(status_code=400, detail=str(refused)) from refused
+        except SpeechUnavailableError as unavailable:
+            raise HTTPException(status_code=503, detail=str(unavailable)) from unavailable
+        return SpeechView.of(spoken)
+
+    @app.get("/speech/{audio_sha256}/bytes")
+    def speech_bytes(audio_sha256: str) -> Response:
+        """The generated waveform, by its own digest, for the interface to play.
+
+        Content-addressed, like the attachment bytes beside it: the key is the
+        digest, so nothing is guessable and nothing is enumerable, and the
+        service listens on the loopback interface only.
+        """
+        with engine.connect() as connection:
+            row = connection.execute(
+                text(
+                    "select audio_path from speech_generations where audio_sha256 = :s "
+                    "order by created_at desc limit 1"
+                ),
+                {"s": audio_sha256},
+            ).one_or_none()
+        if row is None:
+            raise HTTPException(status_code=404, detail="no such speech")
+        audio = Path(row.audio_path)
+        if not audio.is_file():
+            raise HTTPException(status_code=410, detail="the staged audio is no longer present")
+        return Response(
+            content=audio.read_bytes(),
+            media_type="audio/wav",
+            headers={"Cache-Control": "private, max-age=31536000, immutable"},
+        )
 
     @app.get("/attachments/{sha256}/bytes")
     def attachment_bytes(sha256: str) -> Response:

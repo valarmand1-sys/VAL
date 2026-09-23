@@ -1846,6 +1846,126 @@ class PerceptionHandoff(Base):
     )
 
 
+# ---------------------------------------------------------------------------
+# Local speech output
+# ---------------------------------------------------------------------------
+#
+# Owner execution order, 22 September 2026; migration `0027` builds these. Two
+# tables, and the split is the point: a voice is an identity, written once, and
+# an utterance is an event, written each time. Neither is a `model_calls` row —
+# that table accounts for calls that buy thinking, and speech buys none.
+
+
+class SpeechVoice(Base):
+    """Who Val is when she speaks, and where that came from.
+
+    The reference recording lives on disk at a fixed governed path; what lives
+    here is its digest and everything needed to say honestly what the voice is —
+    including, deliberately, what is **not** claimed about it.
+    """
+
+    __tablename__ = "speech_voices"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    reference_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    reference_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    reference_sample_rate: Mapped[int] = mapped_column(Integer, nullable=False)
+    reference_duration_seconds: Mapped[Decimal] = mapped_column(Numeric(10, 3), nullable=False)
+    #: Supplied explicitly to the clone path. No automatic transcription
+    #: produced it, and the record holds the words as well as their digest.
+    reference_text: Mapped[str] = mapped_column(Text, nullable=False)
+    reference_text_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    #: The frozen description the voice was designed from — the only thing a
+    #: future rebuild of this voice would need.
+    voice_description: Mapped[str] = mapped_column(Text, nullable=False)
+    voice_description_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    designed_by_model: Mapped[str] = mapped_column(Text, nullable=False)
+    designed_by_revision: Mapped[str] = mapped_column(Text, nullable=False)
+    designed_by_quantization: Mapped[str] = mapped_column(Text, nullable=False)
+    designed_by_runtime: Mapped[str] = mapped_column(Text, nullable=False)
+    designed_generation: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    #: Where the reference came from, and what is not claimed about it.
+    origin: Mapped[str] = mapped_column(Text, nullable=False)
+    identity_claim: Mapped[str] = mapped_column(Text, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("reference_sha256", name="uq_speech_voices_reference"),
+        CheckConstraint("length(btrim(name)) > 0", name="name_present"),
+        CheckConstraint("length(reference_sha256) = 64", name="reference_is_a_digest"),
+        CheckConstraint("length(btrim(reference_text)) > 0", name="reference_text_present"),
+        CheckConstraint("length(btrim(voice_description)) > 0", name="voice_description_present"),
+        CheckConstraint("reference_bytes > 0", name="reference_bytes_positive"),
+        CheckConstraint("reference_sample_rate > 0", name="reference_sample_rate_positive"),
+    )
+
+
+class SpeechGeneration(Base):
+    """One utterance: Val's finished words, and the waveform of exactly those.
+
+    `final_text` is copied verbatim from what Val already said. The provider
+    spoke it and decided none of it, so a reader can check later that the voice
+    said what the record says — which is the whole reason the text is here and
+    not merely referenced.
+    """
+
+    __tablename__ = "speech_generations"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    voice_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("speech_voices.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: NULL for a house-internal utterance, which reads differently from an
+    #: utterance with no source at all.
+    message_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=True
+    )
+    model_config_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
+    final_text: Mapped[str] = mapped_column(Text, nullable=False)
+    final_text_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    provider: Mapped[str] = mapped_column(Text, nullable=False)
+    model_identifier: Mapped[str] = mapped_column(Text, nullable=False)
+    model_revision: Mapped[str] = mapped_column(Text, nullable=False)
+    quantization: Mapped[str] = mapped_column(Text, nullable=False)
+    runtime: Mapped[str] = mapped_column(Text, nullable=False)
+    runtime_version: Mapped[str] = mapped_column(Text, nullable=False)
+    generation: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    #: The reusable identity anchor. Equal across utterances is the proof that
+    #: the voice did not drift between them.
+    clone_prompt_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    audio_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    audio_path: Mapped[str] = mapped_column(Text, nullable=False)
+    audio_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    sample_rate: Mapped[int] = mapped_column(Integer, nullable=False)
+    duration_seconds: Mapped[Decimal] = mapped_column(Numeric(10, 3), nullable=False)
+    local: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    cost_usd: Mapped[Decimal] = mapped_column(Numeric(12, 6), nullable=False)
+    elapsed_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    __table_args__ = (
+        CheckConstraint("length(btrim(final_text)) > 0", name="final_text_present"),
+        CheckConstraint("length(final_text_sha256) = 64", name="final_text_is_a_digest"),
+        CheckConstraint("length(audio_sha256) = 64", name="audio_is_a_digest"),
+        CheckConstraint("audio_bytes > 0", name="audio_bytes_positive"),
+        CheckConstraint("sample_rate > 0", name="sample_rate_positive"),
+        CheckConstraint("duration_seconds > 0", name="duration_positive"),
+        CheckConstraint("elapsed_ms >= 0", name="elapsed_not_negative"),
+        CheckConstraint("(local AND cost_usd = 0) OR NOT local", name="local_costs_nothing"),
+        Index("ix_speech_generations_voice", "voice_id"),
+        Index("ix_speech_generations_message", "message_id"),
+    )
+
+
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
@@ -1879,5 +1999,8 @@ SPECIFIED_TABLES = frozenset(
         "perception_runs",
         "perception_sources",
         "perception_handoffs",
+        # Local speech output, migration 0027 (22 September 2026).
+        "speech_voices",
+        "speech_generations",
     }
 )

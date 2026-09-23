@@ -141,6 +141,9 @@ def test_only_a_real_answer_marks_a_route_live() -> None:
         # Case B evidence already on record. It has answered in qualification,
         # which is not a live call on the production path.
         "qwen3-omni-30b-a3b-q4-k-m-llamacpp-audio",
+        # Admitted 22 September 2026 as the local speech-output route. It has
+        # spoken in acceptance, which is not a live call on the production path.
+        "qwen3-tts-12hz-1-7b-base-8bit-mlxaudio-speech",
         "haiku-4-5-20251001",
         "gpt-5-5-20260423",
     }

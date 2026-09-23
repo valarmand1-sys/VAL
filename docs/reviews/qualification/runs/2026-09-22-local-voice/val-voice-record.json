@@ -1,0 +1,27 @@
+{
+ "name": "val-local-v1",
+ "reference_path": "/Users/josepharmand/.val-voice/val-canonical-reference.wav",
+ "reference_sha256": "9e92121b28888e7ed0dce9a09e2472b0a282b7294e21887e849dad310ca371fa",
+ "reference_bytes": 395564,
+ "reference_sample_rate": 24000,
+ "reference_duration_seconds": 8.24,
+ "reference_text": "Good evening, my lord. I have finished the work, and everything is ready for you. I will remain here if you need anything further.",
+ "reference_text_sha256": "dcbcd4d3f37de8848994478d0dd1f176a8200c26ec1760044f33df43123a79b9",
+ "voice_description": "Adult British woman. Kind, intelligent, warm, gentle, feminine and lady-like. Refined, clear diction and calm, measured pacing. A trusted scholarly advisor with quiet confidence and subtle emotional warmth. Modern natural speech with a faint old-world poise, but never archaic or medieval in wording or performance. Avoid theatricality, exaggerated poshness, breathiness, childishness, coldness, or robotic delivery.",
+ "voice_description_sha256": "d5f56a129b8cdd4fa662bae294238197dd055c269387f8ebdce74330454658b7",
+ "designed_by_model": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+ "designed_by_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+ "designed_by_quantization": "8-bit MLX, group size 64, affine",
+ "designed_by_runtime": "mlx-audio 0.5.5",
+ "designed_generation": {
+  "temperature": 0.9,
+  "top_k": 50,
+  "top_p": 1.0,
+  "repetition_penalty": 1.05,
+  "max_tokens": 4096,
+  "kwargs_passed_to_generate": []
+ },
+ "designed_on": "2026-09-22",
+ "origin": "Generated locally by Qwen3-TTS VoiceDesign from the owner's frozen textual description of VAL's voice. No ElevenLabs audio, no Higgsfield audio, no third-party generated voice and no real person's voice was used as conditioning input.",
+ "identity_claim": "Independently designed from VAL's established textual voice identity. NOT claimed to be an acoustic clone of the historical ElevenLabs voice. Identity is not model-verified; the final judgement is the owner's listening judgement."
+}

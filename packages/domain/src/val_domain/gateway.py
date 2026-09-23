@@ -151,6 +151,13 @@ class CapabilityProfile(StrEnum):
     #: confers no perception. Nothing selected by this profile ever speaks as
     #: Val; its product is evidence.
     PERCEPTION = "perception"
+    #: Owner execution order, 22 September 2026. Local speech output: turning
+    #: Val's **already-final** text into a waveform. A floor of its own, and the
+    #: narrowest in the house — a route holding it may not carry conversation,
+    #: the blind position, classification, the strip, a title or perception, and
+    #: holding any of those confers no speech. Nothing selected by this profile
+    #: decides a single word of what is said.
+    SPEECH = "speech"
 
 
 class GatewayErrorKind(StrEnum):
@@ -194,6 +201,12 @@ class GatewayErrorKind(StrEnum):
     #: attempt — the turn **stops here**. It does not fall through to a paid
     #: image-capable Partner. Nothing is transmitted and nothing is charged.
     LOCAL_PERCEPTION_UNAVAILABLE = "local_perception_unavailable"
+    #: Owner execution order, 22 September 2026: Val's voice is local. When the
+    #: local speech route cannot produce it, the request **stops here**. No cloud
+    #: text-to-speech is called and ElevenLabs is never invoked automatically —
+    #: it may later be an explicit, owner-selected external voice service, but it
+    #: is not a fallback for this route.
+    LOCAL_SPEECH_UNAVAILABLE = "local_speech_unavailable"
 
 
 class QualificationTarget(Enum):

@@ -93,6 +93,7 @@ from val_domain.provider import (
     supports_streaming,
 )
 from val_domain.registry import active, by_id, fallback_for, stale_rates
+from val_domain.speech import SpeechProvider, VoiceConditioning
 from val_gateway.context import assemble
 from val_gateway.ledger import BudgetLedger, ExchangeEnvelopeRefusal, Refusal, Reservation
 from val_gateway.persona import PersonaLoader, PersonaProblem, PersonaUnavailableError
@@ -444,6 +445,8 @@ class Gateway:
         verify_provenance: Callable[[GatewayRequest], None] | None = None,
         cache_ttl: CacheTtl | None = None,
         perception: Sequence[PerceptionProvider] = (),
+        speech: SpeechProvider | None = None,
+        voice: VoiceConditioning | None = None,
     ) -> None:
         #: Owner ruling, 22 September 2026, extended the same evening: Val's
         #: local perception **specialists**, supplied by the composition root
@@ -456,6 +459,16 @@ class Gateway:
         #: Held here rather than reached for, because the core must not import a
         #: provider package to find out whether it can see or hear.
         self.perception: tuple[PerceptionProvider, ...] = tuple(perception)
+        #: Owner execution order, 22 September 2026: Val's local voice, wired
+        #: here for the same reason the adapters and the perception specialists
+        #: are — the core must not import a provider package to find out whether
+        #: it can speak. `None` means no speech route is wired, in which case a
+        #: request for speech fails closed rather than reaching for a cloud
+        #: voice service.
+        self.speech = speech
+        #: The governed voice she speaks in: the canonical locally designed
+        #: reference and its provenance, loaded once at startup.
+        self.voice = voice
         self._adapters = adapters
         self._record = recorder
         self._ledger = ledger

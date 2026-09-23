@@ -34,8 +34,21 @@ from val_domain.registry import declared_chain_violations
 #: perception runtime. Kept distinct from `llamacpp`, which is the keyed
 #: loopback *server* for candidate text work: the two are different binaries with
 #: different contracts, and one name for both would hide that.
+#: Owner execution order, 22 September 2026: `mlxaudio` — MLX-Audio in the
+#: house's dedicated speech runtime, a subprocess of this machine writing a WAV
+#: to this machine — is the fifth ruled LOCAL provider, admitted as Val's local
+#: speech-output provider. Like `mlxvlm` it is not a network provider at all.
 RULED_PROVIDERS = frozenset(
-    {"anthropic", "openai", "google", "lmstudio", "llamacpp", "llamacpp-omni", "mlxvlm"}
+    {
+        "anthropic",
+        "openai",
+        "google",
+        "lmstudio",
+        "llamacpp",
+        "llamacpp-omni",
+        "mlxvlm",
+        "mlxaudio",
+    }
 )
 #: Providers ruled LOCAL (16 September 2026): inference on this machine over
 #: the loopback interface, the request never sent to an external provider.
@@ -52,7 +65,7 @@ RULED_PROVIDERS = frozenset(
 #: available — a subprocess of this machine reading files from this machine.
 #: Admitting it widens no classification: Restricted stays refused here as
 #: everywhere, and perception is a capability floor of its own.
-LOCAL_PROVIDERS = frozenset({"lmstudio", "llamacpp", "llamacpp-omni", "mlxvlm"})
+LOCAL_PROVIDERS = frozenset({"lmstudio", "llamacpp", "llamacpp-omni", "mlxvlm", "mlxaudio"})
 
 #: Excluded pending verification, not permanently: unverifiable terms as of
 #: July 2026. A US-hosted SOC 2 / ZDR route or self-hosting can qualify later on

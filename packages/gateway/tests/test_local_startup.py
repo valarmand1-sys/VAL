@@ -56,16 +56,18 @@ def test_production_startup_now_requires_the_local_token(
     installed LaunchAgent, which is where it is.
     """
     # The set `start()` actually passes. Since 22 September 2026 it excludes
-    # perception routes, which have no `ProviderAdapter` and are not conversation
-    # routes — a perception provider never has to pretend to be a chat provider
-    # to get past that line. Everything else about this test is unchanged.
+    # perception and speech routes, which have no `ProviderAdapter` and are not
+    # conversation routes — a specialist never has to pretend to be a chat
+    # provider to get past that line. Everything else here is unchanged.
+    specialists = (CapabilityProfile.PERCEPTION, CapabilityProfile.SPEECH)
     production = {
         config.provider
         for config in active()
-        if not satisfies_profile(config, CapabilityProfile.PERCEPTION)
+        if not any(satisfies_profile(config, profile) for profile in specialists)
     }
     assert "lmstudio" in production, "the admitted local Partner route is in production"
     assert "mlxvlm" not in production, "the perception route is not a conversation adapter"
+    assert "mlxaudio" not in production, "the speech route is not a conversation adapter"
     # The candidates are still evaluation-only beside it, and still absent here.
     assert "lmstudio" in {config.provider for config in under_evaluation()}
     source = inspect.getsource(startup.start)

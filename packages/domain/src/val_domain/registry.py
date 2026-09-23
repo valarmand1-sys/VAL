@@ -1268,6 +1268,81 @@ REGISTRY: tuple[ModelConfig, ...] = (
         activated_on=date(2026, 9, 22),
         rates_verified_on=date(2026, 9, 22),
     ),
+    ModelConfig(
+        id=UUID("f2b4d8c6-31a7-4e59-b0d2-7c9645ae1308"),
+        slug="qwen3-tts-12hz-1-7b-base-8bit-mlxaudio-speech",
+        # OWNER EXECUTION ORDER, Lord Armand, 22 September 2026: Val's local
+        # SPEECH-OUTPUT provider. It speaks text that is already final; it
+        # decides nothing about what is said.
+        #
+        # **Val's local voice was designed, not cloned from anyone.** The
+        # canonical reference recording was generated on this machine by
+        # `mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit` at revision
+        # `f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee` from the owner's frozen
+        # textual description of Val's voice. No ElevenLabs audio, no Higgsfield
+        # audio, no third-party generated voice and no real person's voice was
+        # used as conditioning input — the earlier Base attempt was closed
+        # precisely because the only reference then available was ElevenLabs
+        # Output with no authorisation to use it as another model's input.
+        provider="mlxaudio",
+        model_identifier="mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit",
+        display_name="Qwen3-TTS 12Hz 1.7B Base (8-bit MLX, MLX-Audio — local speech output)",
+        # A TTS model has no conversational context window; these are the
+        # runtime's own generation bounds, recorded so the entry is complete
+        # rather than because anything routes conversation here.
+        context_window_tokens=4_096,
+        max_output_tokens=4_096,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # The runtime's own documented default, untouched — the acceptance
+        # generation ran under it and nothing was tuned after hearing the
+        # result. The rest of the frozen block (top-p 1.0, top-k 50, repetition
+        # penalty 1.05, 4,096 max tokens) is read back from the runtime and
+        # written onto every `speech_generations` row, rather than restated here
+        # where nothing transmits it.
+        temperature=0.9,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        # The speech profile alone. It carries no conversation, no blind
+        # position, no classification, no strip, no title and no perception:
+        # this route speaks Val's finished words and owns none of them.
+        capability_profiles=frozenset({CapabilityProfile.SPEECH}),
+        known_weaknesses=(
+            "voice identity is not model-verified: the local voice was designed from the "
+            "owner's textual description and is NOT claimed to be an acoustic clone of the "
+            "historical ElevenLabs voice. Final identity judgement is the owner's listening "
+            "judgement — 22 September 2026",
+            "admitted on one frozen sentence per model: the VoiceDesign reference and one "
+            "different-sentence Base generation. Nothing is established about long passages, "
+            "other languages, emotional range or interruption — 22 September 2026",
+        ),
+        fallback_slug=None,
+        admission=Admission.PROVISIONALLY_ADMITTED,
+        owner_authorization=(
+            "OWNER EXECUTION ORDER, Lord Armand, 22 September 2026: "
+            "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit at immutable revision "
+            "e7dd0585652209fa0d7783659aad4e8a324de11c is admitted to the production role "
+            "VAL LOCAL SPEECH-OUTPUT / TTS PROVIDER. Val's local voice was independently "
+            "created from her owner-defined textual voice identity using Qwen VoiceDesign "
+            "(mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit @ "
+            "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee), then stabilised for repeated local "
+            "speech through Qwen Base voice cloning from that locally generated reference. "
+            "NO ElevenLabs audio, NO Higgsfield audio, NO third-party generated voice and NO "
+            "real person's voice was used as conditioning input. This route is NOT cognition, "
+            "NOT perception, NOT transcription and NOT avatar animation; it owns no wording, "
+            "reasoning, identity, persona, memory, conversation state, policy or routing "
+            "authority. Val Core decides what is said; this route decides only how the "
+            "already-final text is spoken. The historical ElevenLabs voice is preserved as "
+            "external/historical VAL voice continuity and is never an automatic fallback."
+        ),
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 22),
+        rates_verified_on=date(2026, 9, 22),
+    ),
 )
 
 
