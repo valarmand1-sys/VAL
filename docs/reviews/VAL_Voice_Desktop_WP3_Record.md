@@ -285,7 +285,27 @@ retry**. The test asserts two tracks were handed out and the first was stopped �
 which is the whole of the rule: the device is not kept open across a mute to make
 unmuting faster.
 
-### 4.3 Mute while Val is speaking
+### 4.3 Lifecycle
+
+Voice goes **off** — device released, playback stopped, shortcut unbound — when the
+window goes away (`pagehide`, `beforeunload`), and when the **conversation changes**.
+The conversation rule is keyed on the conversation the window is showing, with one
+deliberate exception: a session started on a brand-new chat adopts the conversation
+its first spoken turn creates, rather than treating that arrival as a switch.
+
+A hidden or unfocused window is **not** a reason to mute (§16): he may be listening
+while working in another application, which is exactly what the global shortcut is
+for. So visibility is deliberately not listened to.
+
+No error path calls `getUserMedia` again automatically, anywhere.
+
+*Coverage note, stated rather than implied:* the controller's release-on-lifecycle
+behaviour is tested directly for both `conversation_changed` and
+`app_or_machine_suspending`. The one-line React effect that *invokes* it on a
+conversation change is not covered by an automated test — the app-level wiring is
+exercised by acceptance step I and by ordinary use.
+
+### 4.4 Mute while Val is speaking
 
 She keeps speaking. Mute controls his outgoing microphone only: it does not stop
 playback, cancel her answer, clear her queue or leave Voice mode. Held in the state
@@ -433,6 +453,12 @@ Four things, each recorded rather than quietly fixed:
    reported here rather than deleted with the test.
 3. **The classifier precedes recall assembly** (§2.6): stated as a property, with the
    reason the alternative was rejected.
+3b. **A latent hole in the non-deliberated send path.** `val_gateway.loop.send` — the
+   plain WP-0.7 path, which no service route reaches but which harnesses and tests
+   do — discarded the escalated egress decision that `assemble_turn` returns. A call
+   on that path that recalled content from a sealed conversation would have routed
+   without the seal. It now routes on what came back. Not reachable from the running
+   application, and closed rather than left for someone to find.
 4. **WP1 and WP2's voice test doubles now mirror the real door** (`spoken=True`), and
    their scripts no longer carry a classifier reply, because a spoken turn no longer
    makes that call. Where a test asserted the old two-call behaviour, it now asserts

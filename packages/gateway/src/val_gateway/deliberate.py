@@ -436,6 +436,9 @@ def send(
     decision = decide_egress(engine, opened.conversation.id, live=live_voice)
     if spoken and not decision.local_only:
         decision = sealed(LocalOnlyReason.VOICE_SESSION_ACTIVE)
+    # §18's local-only policy decision, as a diagnostic boundary. Inert unless a
+    # recorder is installed, like every other mark.
+    mark("egress_decided")
     if decision.local_only:
         # No classifier call and no strip call: both currently route to cloud
         # structured configurations, and a live-voice transcript does not leave

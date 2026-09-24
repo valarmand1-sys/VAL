@@ -492,7 +492,12 @@ def send(
             GatewayError(GatewayErrorKind.LOCAL_PERCEPTION_UNAVAILABLE, str(failure)),
         )
 
-    messages, recalled, _egress = assemble_turn(
+    # Owner ruling, 24 September 2026 (§2.6). The decision that comes back accounts
+    # for what recall brought in: this path takes no seal from its caller, but a
+    # request that recalled content from a sealed conversation is local-only, and it
+    # must be routed as such. Discarding this value would leave a hole in a privacy
+    # rule for the sake of one unused variable.
+    messages, recalled, egress = assemble_turn(
         engine,
         opened,
         recall_limit=recall_limit,
@@ -525,6 +530,7 @@ def send(
             # which route, never which checks: admission, eligibility, the
             # quality floor and the budget all run on their own account.
             configuration=visual.configuration,
+            egress=egress.egress,
         )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)

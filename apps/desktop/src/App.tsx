@@ -324,21 +324,47 @@ export function App(): React.JSX.Element {
         setVoiceSession(null);
       });
     };
-    const onHidden = () => {
-      // A hidden window is **not** a reason to mute: he may be listening while
-      // working elsewhere, and the global shortcut is there for exactly that. Only
-      // a real suspend releases, and the platform signals that as a page hide.
-      if (document.visibilityState === "hidden" && document.hidden && !windowVisible()) return;
-    };
+    // A hidden or unfocused window is **not** a reason to mute (§16): he may be
+    // listening while working in another application, which is exactly what the
+    // global shortcut is for. So visibility is deliberately not listened to here.
+    // Only the window actually going away releases.
     window.addEventListener("pagehide", release);
     window.addEventListener("beforeunload", release);
-    document.addEventListener("visibilitychange", onHidden);
     return () => {
       window.removeEventListener("pagehide", release);
       window.removeEventListener("beforeunload", release);
-      document.removeEventListener("visibilitychange", onHidden);
     };
   }, []);
+
+  // §16. **A conversation change turns Voice off**, releases the microphone, stops
+  // playback and leaves the shortcut unbound until he starts a session again. Keyed
+  // on the conversation the window is showing: opening another one, or starting a
+  // new one, is a different conversation from the one he turned Voice on for, and a
+  // live microphone must not follow him into it silently.
+  const voiceConversation = useRef<string | null>(null);
+  useEffect(() => {
+    const showing = detail?.conversation.id ?? null;
+    const controller = voiceController.current;
+    if (controller === null) {
+      voiceConversation.current = showing;
+      return;
+    }
+    if (voiceConversation.current === null) {
+      // The session was started before this conversation existed — a brand-new
+      // chat, whose conversation the first spoken turn creates. Adopt it rather
+      // than treating its arrival as a switch.
+      voiceConversation.current = showing;
+      return;
+    }
+    if (showing === voiceConversation.current) return;
+    voiceConversation.current = showing;
+    void controller.releaseForLifecycle("conversation_changed").then(() => {
+      voiceController.current = null;
+      setVoice(VOICE_OFF);
+      setVoiceSession(null);
+      setVoiceNotice("Voice was turned off because the conversation changed.");
+    });
+  }, [detail?.conversation.id]);
 
   const send = useCallback(
     async (content: string, projectOverride?: string, attached: PendingAttachment[] = []) => {
