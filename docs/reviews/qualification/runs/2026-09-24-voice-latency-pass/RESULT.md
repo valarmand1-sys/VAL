@@ -6,6 +6,14 @@ apart, as the order requires:
 **DIRECTLY OBSERVED** · **ARITHMETIC DERIVATION** · **HYPOTHESIS** ·
 **NOT DIRECTLY OBSERVABLE**
 
+**No stage in this record is an arithmetic residual.** Every stage figure is the
+interval between two marks that were both reached; a span with only one end is
+reported as absent and never as zero. The only arithmetic here is deltas,
+medians and percentages *between* observed figures — **ARITHMETIC DERIVATION**,
+labelled where it matters — and there is consequently no
+**UNATTRIBUTED RESIDUAL** to report. Nothing was named by subtracting one clock
+from an unrelated one.
+
 Production remains `gpt-oss-20b-mxfp4-mlx-lmstudio-partner` at **MEDIUM**. Persona
 v1.9 revision 8, voice `val-established-v1`, LOW still `NOT_ADMITTED`. Nothing
 about what Val is, how she reasons, what she sounds like or what the model sees was
@@ -393,9 +401,12 @@ boundaries:
 | Classification, 1.19 s | 1.186 s | Serial before the provider by construction; already under its own evidence-collection ruling. |
 | Resume window, 1.1 s | — | Designed: it is what makes a resumed sentence one turn. |
 
-**Everything Val's own code contributes, end to end, is now about 0.09 seconds**
-outside the resume window and the two provider calls: assembly 0.008, readiness
-0.015, preflight 0.043, segment boundary 0.096, dispatch and sink hand-off 0.003.
+**Everything Val's own code contributes, end to end, sums to 0.192 s** outside the
+resume window and the two provider calls — every term directly observed: persisting
+his message 0.007, reaching the classifier 0.007, classifier to assembly 0.002,
+assembly 0.008, assembly to readiness 0.011, readiness 0.015, exact preflight 0.043,
+preflight to dispatch 0.003, the speech-safe segment boundary 0.096, and the
+TTS-to-sink hand-off 0.000.
 
 ### The one next improvement, and it is an owner decision
 
