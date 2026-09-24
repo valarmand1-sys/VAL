@@ -1,0 +1,174 @@
+{
+ "measurement": "does warming absorb the cold load",
+ "order": "pre-WP3 latency pass \u00a714 \u2014 owner execution order 24 September 2026",
+ "started_at": "2026-09-24T13:26:05-0500",
+ "provider_inference_calls": 0,
+ "cost_usd": 0.0,
+ "a_no_warming": {
+  "runs": [
+   {
+    "head_start_s": null,
+    "turn_readiness_s": 8.734,
+    "turn_loaded_it": true,
+    "warming": null,
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   },
+   {
+    "head_start_s": null,
+    "turn_readiness_s": 5.163,
+    "turn_loaded_it": true,
+    "warming": null,
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   },
+   {
+    "head_start_s": null,
+    "turn_readiness_s": 5.18,
+    "turn_loaded_it": true,
+    "warming": null,
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   }
+  ],
+  "median_s": 5.18,
+  "min_s": 5.163,
+  "max_s": 8.734
+ },
+ "b_warming_3s_head_start": {
+  "runs": [
+   {
+    "head_start_s": 3.0,
+    "turn_readiness_s": 2.175,
+    "turn_loaded_it": false,
+    "warming": {
+     "readiness": {
+      "server_found_running": true,
+      "server_started": false,
+      "model_found_loaded": false,
+      "model_loaded": true,
+      "requested_context_tokens": 32768,
+      "loaded_context_tokens": 32768,
+      "base_url": "http://127.0.0.1:1234/v1"
+     },
+     "took_s": 5.168
+    },
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   },
+   {
+    "head_start_s": 3.0,
+    "turn_readiness_s": 2.262,
+    "turn_loaded_it": false,
+    "warming": {
+     "readiness": {
+      "server_found_running": true,
+      "server_started": false,
+      "model_found_loaded": false,
+      "model_loaded": true,
+      "requested_context_tokens": 32768,
+      "loaded_context_tokens": 32768,
+      "base_url": "http://127.0.0.1:1234/v1"
+     },
+     "took_s": 5.254
+    },
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   },
+   {
+    "head_start_s": 3.0,
+    "turn_readiness_s": 2.202,
+    "turn_loaded_it": false,
+    "warming": {
+     "readiness": {
+      "server_found_running": true,
+      "server_started": false,
+      "model_found_loaded": false,
+      "model_loaded": true,
+      "requested_context_tokens": 32768,
+      "loaded_context_tokens": 32768,
+      "base_url": "http://127.0.0.1:1234/v1"
+     },
+     "took_s": 5.195
+    },
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   }
+  ],
+  "median_s": 2.202,
+  "min_s": 2.175,
+  "max_s": 2.262
+ },
+ "c_warming_12s_head_start": {
+  "runs": [
+   {
+    "head_start_s": 12.0,
+    "turn_readiness_s": 0.021,
+    "turn_loaded_it": false,
+    "warming": {
+     "readiness": {
+      "server_found_running": true,
+      "server_started": false,
+      "model_found_loaded": false,
+      "model_loaded": true,
+      "requested_context_tokens": 32768,
+      "loaded_context_tokens": 32768,
+      "base_url": "http://127.0.0.1:1234/v1"
+     },
+     "took_s": 5.293
+    },
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   },
+   {
+    "head_start_s": 12.0,
+    "turn_readiness_s": 0.022,
+    "turn_loaded_it": false,
+    "warming": {
+     "readiness": {
+      "server_found_running": true,
+      "server_started": false,
+      "model_found_loaded": false,
+      "model_loaded": true,
+      "requested_context_tokens": 32768,
+      "loaded_context_tokens": 32768,
+      "base_url": "http://127.0.0.1:1234/v1"
+     },
+     "took_s": 5.032
+    },
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   },
+   {
+    "head_start_s": 12.0,
+    "turn_readiness_s": 0.02,
+    "turn_loaded_it": false,
+    "warming": {
+     "readiness": {
+      "server_found_running": true,
+      "server_started": false,
+      "model_found_loaded": false,
+      "model_loaded": true,
+      "requested_context_tokens": 32768,
+      "loaded_context_tokens": 32768,
+      "base_url": "http://127.0.0.1:1234/v1"
+     },
+     "took_s": 5.058
+    },
+    "resident_instances_afterwards": 1,
+    "loaded_context": 32768
+   }
+  ],
+  "median_s": 0.021,
+  "min_s": 0.02,
+  "max_s": 0.022
+ },
+ "findings": {
+  "cold_load_on_the_critical_path_s": 5.18,
+  "with_a_short_utterance_s": 2.202,
+  "with_an_ordinary_utterance_s": 0.021,
+  "absorbed_by_a_short_utterance_s": 2.978,
+  "absorbed_by_an_ordinary_utterance_s": 5.159,
+  "never_more_than_one_resident_instance": true
+ }
+}

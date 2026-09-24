@@ -1,0 +1,31 @@
+{
+ "measurement": "readiness stage, before and after, three runs each",
+ "order": "pre-WP3 latency pass \u00a714 \u2014 owner execution order 24 September 2026",
+ "started_at": "2026-09-24T13:17:56-0500",
+ "what_changed": "residency is observed through the server's own HTTP listing instead of spawning LM Studio's Node CLI; the CLI remains the fallback",
+ "before_cli": {
+  "runs_s": [
+   0.2449,
+   0.1449,
+   0.1426
+  ],
+  "median_s": 0.1449,
+  "min_s": 0.1426,
+  "max_s": 0.2449
+ },
+ "after_http": {
+  "runs_s": [
+   0.0131,
+   0.0083,
+   0.0073
+  ],
+  "median_s": 0.0083,
+  "min_s": 0.0073,
+  "max_s": 0.0131
+ },
+ "delta_median_ms": 136.6,
+ "delta_median_percent": 94.3,
+ "both_sources_agree_on_residency": true,
+ "provider_inference_calls": 0,
+ "cost_usd": 0.0
+}

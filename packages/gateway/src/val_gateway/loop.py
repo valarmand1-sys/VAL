@@ -100,6 +100,7 @@ from val_domain.perception import (
 from val_domain.project import AmbiguousProject, ExplicitNoProject, ProjectCandidate, ProjectScope
 from val_domain.provider import DeltaSink
 from val_domain.registry import active
+from val_domain.timings import mark
 from val_gateway import conversations
 from val_gateway.attachments import (
     AttachmentAct,
@@ -650,6 +651,7 @@ def assemble_turn(
     perception: TurnPerception | None = None,
 ) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...]]:
     """Steps 4-7: history and recall, assembled into the outbound messages."""
+    mark("assembly_start")
     # 4-6. This conversation's own history — never gated — then cross-conversation
     #    recall, behind the deterministic necessity gate (ruled 10 September 2026).
     #
@@ -803,6 +805,7 @@ def assemble_turn(
         audio_perceived_this_turn=len(heard),
         audio_earlier_in_conversation=earlier_audio,
     )
+    mark("record_state_assembled")
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
     excerpts = recall_block(recalled)
     # Owner ruling, 19 September 2026: CURRENT-TURN visual binding. The images
@@ -828,6 +831,7 @@ def assemble_turn(
         *((perception.block(),) if perception is not None else ()),
         *current,
     )
+    mark("assembly_end")
     return messages, recalled
 
 

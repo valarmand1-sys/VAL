@@ -111,6 +111,7 @@ from val_domain.gateway import (
 from val_domain.perception import PerceptionRefusedError, PerceptionUnavailableError
 from val_domain.project import ProjectScope, attribution_of, attribution_state_of
 from val_domain.provider import DeltaSink
+from val_domain.timings import mark
 from val_gateway import conversations
 from val_gateway.attachments import CandidateAttachment
 from val_gateway.candidate import CandidateGateway
@@ -327,6 +328,11 @@ def send(
             f"a candidate ({candidate.slug}) is exercised only through a CandidateGateway "
             "built for a scratch store; this gateway is the ordinary one.",
         )
+    # Diagnostic marks (latency pass §8). Inert unless a recorder is installed, and
+    # no production turn installs one. **`turn_start` is the definition of
+    # "request start"**: the first instruction of the deliberated send, before the
+    # owner's message is persisted and long before any provider is contacted.
+    mark("turn_start")
     opened = open_turn(
         engine,
         content,
@@ -337,6 +343,7 @@ def send(
         title=title,
         attachments=attachments,
     )
+    mark("message_persisted")
     if isinstance(opened, ClarificationNeeded):
         return opened
     _stage(on_stage, TurnStage.UNDERSTANDING)
@@ -390,7 +397,9 @@ def send(
         )
         if impossible is not None:
             return unanswered_or_raise(opened, impossible)
+    mark("classification_start")
     classified = _classify(gateway, content, opened.scope, classification, exchange=exchange)
+    mark("classification_end")
     verdict = classified.verdict
     record = record_classification(
         engine,

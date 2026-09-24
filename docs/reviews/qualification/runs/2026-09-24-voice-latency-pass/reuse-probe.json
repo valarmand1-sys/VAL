@@ -1,0 +1,56 @@
+{
+ "probe": "decisive cross-request reuse probe",
+ "order": "pre-WP3 latency pass \u00a76.1, owner execution order 24 September 2026",
+ "started_at": "2026-09-24T13:03:18-0500",
+ "byte_identical_confirmed_before_sending": true,
+ "request_sha256": "cb6a361f82fa2f2414684ca15fc4f787cd563aa54315e4385a7d53aca70bf62f",
+ "runtime": {
+  "supervisor_readiness": {
+   "server_found_running": true,
+   "server_started": false,
+   "model_found_loaded": true,
+   "model_loaded": false,
+   "requested_context_tokens": 32768,
+   "loaded_context_tokens": 32768,
+   "base_url": "http://127.0.0.1:1234/v1"
+  },
+  "model_identifier": "openai/gpt-oss-20b",
+  "loaded_context": 32768,
+  "lmstudio_sdk_version": "1.6.0b1"
+ },
+ "configuration": {
+  "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio",
+  "reasoning_effort": "medium"
+ },
+ "calls": [
+  {
+   "label": "probe_call_1",
+   "diagnostic_excluded_from_every_latency_comparison": true,
+   "request_sha256": "cb6a361f82fa2f2414684ca15fc4f787cd563aa54315e4385a7d53aca70bf62f",
+   "pre_generation_interval_s": 7.758,
+   "request_start_to_first_core_visible_text_s": 9.567,
+   "core_call_total_s": 15.584,
+   "prompt_tokens": 5752,
+   "output_tokens": 485,
+   "reasoning_tokens": 106,
+   "latency_ms": 15369
+  },
+  {
+   "label": "probe_call_2",
+   "diagnostic_excluded_from_every_latency_comparison": true,
+   "request_sha256": "cb6a361f82fa2f2414684ca15fc4f787cd563aa54315e4385a7d53aca70bf62f",
+   "pre_generation_interval_s": 7.622,
+   "request_start_to_first_core_visible_text_s": 14.255,
+   "core_call_total_s": 19.502,
+   "prompt_tokens": 5752,
+   "output_tokens": 742,
+   "reasoning_tokens": 408,
+   "latency_ms": 19293
+  }
+ ],
+ "pre_generation_interval_delta_s": 0.136,
+ "pre_generation_interval_delta_percent": 1.8,
+ "materiality_threshold_percent": 33.0,
+ "finding": "CROSS-REQUEST PREFIX REUSE NOT SUPPORTED ON THIS SERVING PATH",
+ "cost_usd": 0.0
+}

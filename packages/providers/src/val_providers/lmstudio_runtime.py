@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -54,6 +55,11 @@ SERVER_WAIT_SECONDS = 20.0
 
 #: How long a load of a twelve-gigabyte model may take before it is called failed.
 LOAD_TIMEOUT_SECONDS = 300.0
+
+#: LM Studio's own model listing, beside the OpenAI-compatible surface. It reports
+#: each model's `state` and `loaded_context_length`, which is everything the
+#: residency question needs — over HTTP, without spawning the CLI.
+NATIVE_MODELS_PATH = "/api/v0/models"
 
 #: How long the loaded instance stays resident with no traffic. Unloading is
 #: welcome — it returns memory to the owner's machine — precisely because this
@@ -88,11 +94,15 @@ class LMStudioRuntime:
         probe_timeout: float = 3.0,
     ) -> None:
         self._base = base_url.rstrip("/")
+        # The native listing sits beside `/v1`, not under it.
+        self._native_base = self._base[: -len("/v1")] if self._base.endswith("/v1") else self._base
         # The server requires a bearer token on every request (LM Studio 0.4.24
         # answers 401 to an unauthenticated probe, including on loopback). It is
         # carried, never logged, and never part of the provenance this returns.
         self._token = token
         self._runner = runner or _Runner()
+        # One load at a time, per runtime object. See `ensure_ready`.
+        self._loading = threading.Lock()
         self._lms = lms_path
         self._probe_timeout = probe_timeout
 
@@ -113,7 +123,47 @@ class LMStudioRuntime:
             return False
 
     def loaded(self) -> list[Mapping[str, object]]:
-        """Every loaded instance, as the runtime itself reports it."""
+        """Every loaded instance, as the runtime itself reports it.
+
+        The server's own listing first, the command-line tool second. Both ask the
+        same runtime the same question; the difference is that one is an HTTP
+        request on the loopback interface and the other spawns LM Studio's
+        Node-based CLI. Measured on this machine (latency pass §12): **4 ms
+        against 138 ms**, and this runs on the critical path of every turn.
+
+        The CLI remains the fallback, so nothing is weakened: if the HTTP listing
+        cannot answer — an older server, a changed surface, a malformed reply —
+        the subprocess is still there and the answer is the same.
+        """
+        served = self._loaded_over_http()
+        return served if served is not None else self._loaded_over_cli()
+
+    def _loaded_over_http(self) -> list[Mapping[str, object]] | None:
+        """The server's native listing, filtered to what is actually resident.
+
+        `None` means the listing could not be used, which is a reason to ask the
+        CLI — never a reason to report that nothing is loaded.
+        """
+        request = urllib.request.Request(  # noqa: S310 - http on loopback, fixed by the adapter
+            f"{self._native_base}{NATIVE_MODELS_PATH}",
+            headers={"Authorization": f"Bearer {self._token}"},
+        )
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        try:
+            with opener.open(request, timeout=self._probe_timeout) as response:
+                parsed = json.load(response)
+        except urllib.error.URLError, OSError, ValueError:
+            return None
+        rows = parsed.get("data") if isinstance(parsed, Mapping) else None
+        if not isinstance(rows, list):
+            return None
+        return [
+            row
+            for row in rows
+            if isinstance(row, Mapping) and str(row.get("state", "")) == "loaded"
+        ]
+
+    def _loaded_over_cli(self) -> list[Mapping[str, object]]:
         code, output = self._runner.run([str(self._lms), "ps", "--json"], timeout=20.0)
         if code != 0 or not output:
             return []
@@ -125,7 +175,9 @@ class LMStudioRuntime:
 
     def _instance(self, model_identifier: str) -> Mapping[str, object] | None:
         for row in self.loaded():
-            identity = {str(row.get(key, "")) for key in ("modelKey", "path", "identifier")}
+            # `id` is the server listing's name for the model; the other three are
+            # the CLI's. Both sources are read the same way.
+            identity = {str(row.get(key, "")) for key in ("modelKey", "path", "identifier", "id")}
             if model_identifier in identity:
                 return row
         return None
@@ -178,7 +230,24 @@ class LMStudioRuntime:
     # --- the one entry point ------------------------------------------------------
 
     def ensure_ready(self, config: ModelConfig) -> Mapping[str, object]:
-        """Make this configuration servable now. One bounded attempt at each step."""
+        """Make this configuration servable now. One bounded attempt at each step.
+
+        **Serialised.** Two callers asking at once used to issue two loads, and LM
+        Studio obliged: the exact preflight then found *two* loaded instances
+        answering to one model identifier and refused to guess between them,
+        failing closed onto the conservative byte bound and losing the exact
+        measurement the 16 September ruling makes a hard gate. Found by this
+        latency pass, when warming a session raced the turn that followed it — but
+        the defect was already reachable by two turns in flight together.
+
+        The second caller waits, then observes again and finds the model loaded.
+        The lock covers observation and action together, because a decision to load
+        taken before another caller's load finishes is the whole of the bug.
+        """
+        with self._loading:
+            return self._ensure_ready_locked(config)
+
+    def _ensure_ready_locked(self, config: ModelConfig) -> Mapping[str, object]:
         found_serving = self.serving()
         started = False
         if not found_serving:

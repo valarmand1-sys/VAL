@@ -1,0 +1,94 @@
+{
+ "investigation": "exact request differential, two successive A1 turns",
+ "order": "pre-WP3 latency pass \u00a75, owner execution order 24 September 2026",
+ "label": "CURRENT RECONSTRUCTION \u2014 the historical WP2 request bytes were not retained",
+ "provider_calls_made_by_this_script": 0,
+ "started_at": "2026-09-24T13:00:02-0500",
+ "runtime": {
+  "supervisor_readiness": {
+   "server_found_running": true,
+   "server_started": false,
+   "model_found_loaded": true,
+   "model_loaded": false,
+   "requested_context_tokens": 32768,
+   "loaded_context_tokens": 32768,
+   "base_url": "http://127.0.0.1:1234/v1"
+  },
+  "model_identifier": "openai/gpt-oss-20b",
+  "loaded_context": 32768,
+  "architecture": "gpt_oss",
+  "format": "safetensors",
+  "lmstudio_sdk_version": "1.6.0b1"
+ },
+ "persona": {
+  "semantic_version": "1.9",
+  "source_sha256": "33831189b493bef39ac96b54b7d17bbd5585815ef59190ab9a45646e7b2a5c25",
+  "characters": 23550
+ },
+ "diff": {
+  "identical": true,
+  "first_differing_byte_offset": null,
+  "first_differing_character": null,
+  "first_differing_token_index": null,
+  "component_containing_the_divergence": "NOT LOCATED",
+  "excerpt_around_the_divergence": null,
+  "serialized": {
+   "first_bytes": 27007,
+   "second_bytes": 27007,
+   "first_characters": 26930,
+   "first_sha256": "52c96d3d9f5eaf25fc7b56bfa6d5e014840b0faa01453cf482922625f70f1b6a",
+   "second_sha256": "52c96d3d9f5eaf25fc7b56bfa6d5e014840b0faa01453cf482922625f70f1b6a"
+  },
+  "tokens": {
+   "first_total": 5752,
+   "second_total": 5752,
+   "stable_prefix_tokens": null,
+   "stable_prefix_percent": null,
+   "tokens_after_the_divergence": null
+  },
+  "stable_prefix_bytes": null,
+  "stable_prefix_characters": null,
+  "stable_prefix_percent_of_characters": null
+ },
+ "composition": {
+  "method": "differences between real template renders through the runtime's own tokenizer; each component's figure therefore includes its template wrapper",
+  "total_prompt_tokens": 5752,
+  "template_scaffolding_with_empty_system": 63,
+  "system_prompt_render_total": 5047,
+  "persona_tokens_net_of_scaffolding": 4984,
+  "final_user_message_render_total": 705,
+  "record_state_envelope_alone_net": 637,
+  "owner_words_alone_net": 72,
+  "history_messages_in_this_turn": 0,
+  "turn_roles": [
+   "system",
+   "user"
+  ],
+  "turn_characters": [
+   23550,
+   3029
+  ],
+  "note_history": "This A1 turn is the first message of a fresh conversation, so there is no history to price. History is NOT SEPARATELY OBSERVABLE here because there is none.",
+  "persona_percent_of_prompt": 86.65,
+  "stable_prefix_is_persona_and_scaffolding": false
+ },
+ "diff_across_a_minute_boundary": {
+  "why": "the record-state clock is minute-granular, so this is the smallest real change two successive turns can produce",
+  "identical": false,
+  "first_differing_byte_offset": 25408,
+  "first_differing_character": 25333,
+  "first_differing_token_index": 5352,
+  "component_containing_the_divergence": "record-state envelope (the clock)",
+  "excerpt_around_the_divergence": {
+   "earlier": "ursday 24 September 2026, 13:00\",\n      \"timezone\": \"CDT (UTC-0500)\"\n    },\n    ",
+   "later": "ursday 24 September 2026, 13:01\",\n      \"timezone\": \"CDT (UTC-0500)\"\n    },\n    "
+  },
+  "stable_prefix_bytes": 25408,
+  "stable_prefix_characters": 25333,
+  "stable_prefix_tokens": 5352,
+  "total_tokens": 5752,
+  "stable_prefix_percent_of_tokens": 93.05,
+  "tokens_after_the_divergence": 400,
+  "the_divergence_is_after_the_persona": true
+ }
+}

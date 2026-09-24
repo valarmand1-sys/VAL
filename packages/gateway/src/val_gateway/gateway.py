@@ -94,6 +94,7 @@ from val_domain.provider import (
 )
 from val_domain.registry import active, by_id, fallback_for, stale_rates
 from val_domain.speech import SpeechProvider, VoiceConditioning
+from val_domain.timings import mark
 from val_gateway.context import assemble
 from val_gateway.ledger import BudgetLedger, ExchangeEnvelopeRefusal, Refusal, Reservation
 from val_gateway.persona import PersonaLoader, PersonaProblem, PersonaUnavailableError
@@ -484,6 +485,69 @@ class Gateway:
 
     # --- the entrances ---------------------------------------------------------
 
+    def warm_cognition(self) -> Mapping[str, object]:
+        """Bring the ordinary conversation route's local runtime up, early.
+
+        Latency pass §12. A local model carries a one-hour idle TTL, so the first
+        turn after an idle hour pays its load **on the critical path**: measured
+        9.143 s against 0.148 s when it was already resident. Doing the same
+        readiness call early — while the owner is still speaking, say — removes
+        that from the turn without changing anything about the turn.
+
+        It is the *same* supervisor call the turn makes, not a substitute for it:
+        the turn still asks, the turn's answer still governs, and this method
+        changes no routing, no eligibility, no policy and nothing the model sees.
+        A failure here is reported and swallowed, because the turn's own readiness
+        call is the one that must fail honestly if the runtime cannot be had.
+
+        Returns what it found and did, for the caller's record.
+        """
+        # Ranked the way an ordinary conversation turn ranks: admitted, satisfying
+        # the partner floor, cheapest first. Only a route with a local runtime has
+        # anything to bring up, so a cloud route is skipped rather than "warmed" —
+        # and warming the wrong route would be worse than doing nothing, which is
+        # what the first version of this method did (caught by its own test).
+        eligible = sorted(
+            (
+                config
+                for config in active()
+                if config.provider in self._adapters
+                and is_admitted(config)
+                and satisfies_profile(config, CapabilityProfile.PARTNER)
+            ),
+            key=lambda config: config.cost_per_mtok_in_usd,
+        )
+        if not eligible:
+            return {"warmed": False, "reason": "no admitted partner route is configured"}
+        chosen = next(
+            (
+                config
+                for config in eligible
+                if supports_local_runtime(self._adapters[config.provider])
+            ),
+            None,
+        )
+        if chosen is None:
+            return {
+                "warmed": False,
+                "reason": (
+                    "no admitted partner route has a local runtime to warm "
+                    f"(cheapest is {eligible[0].slug})"
+                ),
+            }
+        adapter = self._adapters[chosen.provider]
+        try:
+            readiness = cast(LocalRuntimeAdapter, adapter).ensure_runtime_ready(chosen)
+        except LocalRuntimeUnavailableError as failure:
+            # Not raised: the turn's own readiness call is the one that must fail
+            # honestly. Warming early is an optimisation, never a gate.
+            self._observe_block(
+                f"warming {chosen.slug} did not succeed: {failure}. The turn will ask again "
+                "and will fail honestly there if the runtime cannot be had."
+            )
+            return {"warmed": False, "slug": chosen.slug, "reason": str(failure)}
+        return {"warmed": True, "slug": chosen.slug, **dict(readiness)}
+
     def converse(
         self,
         messages: tuple[Message, ...],
@@ -835,7 +899,9 @@ class Gateway:
         if supports_local_runtime(adapter):
             local = cast(LocalRuntimeAdapter, adapter)
             try:
+                mark("runtime_ready_start")
                 readiness = local.ensure_runtime_ready(config)
+                mark("runtime_ready_end")
                 self._observe_block(
                     "local runtime ready: "
                     + ", ".join(f"{key}={value}" for key, value in readiness.items())
@@ -867,9 +933,11 @@ class Gateway:
             adapter, ContextInspectingAdapter
         ):
             try:
+                mark("exact_preflight_start")
                 feasibility = adapter.measure_context(
                     config, request.messages, request.system, request.max_output_tokens
                 )
+                mark("exact_preflight_end")
             except ContextInspectionUnavailableError as why:
                 _LOGGER.warning(
                     "local context measurement unavailable for %s (%s); failing closed on the "

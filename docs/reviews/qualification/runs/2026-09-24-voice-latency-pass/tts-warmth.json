@@ -1,0 +1,56 @@
+{
+ "measurement": "TTS cold/warm and GPT contention",
+ "order": "pre-WP3 latency pass \u00a710 \u2014 owner execution order 24 September 2026",
+ "started_at": "2026-09-24T13:11:09-0500",
+ "voice": "val-established-v1",
+ "voice_reference_sha256": "c5ebe0c7210bf332ab7bf6fda29683664f729cbe21c62f9ce405fc761b6b0e4b",
+ "phrase": "Good evening, my lord. The work is finished.",
+ "phrase_characters": 44,
+ "a_first_after_fresh_provider": {
+  "wall_clock_s": 2.946,
+  "audio_seconds": 2.72,
+  "audio_bytes": 130604,
+  "clone_prompt_sha256": "91e771021f5e7a38",
+  "cost_usd": 0.0,
+  "realtime_factor": 1.083
+ },
+ "b_immediate_repeats": [
+  {
+   "wall_clock_s": 2.961,
+   "audio_seconds": 2.64,
+   "audio_bytes": 126764,
+   "clone_prompt_sha256": "91e771021f5e7a38",
+   "cost_usd": 0.0,
+   "realtime_factor": 1.121
+  },
+  {
+   "wall_clock_s": 2.962,
+   "audio_seconds": 2.48,
+   "audio_bytes": 119084,
+   "clone_prompt_sha256": "91e771021f5e7a38",
+   "cost_usd": 0.0,
+   "realtime_factor": 1.194
+  }
+ ],
+ "c_during_gpt_generation": {
+  "wall_clock_s": 4.064,
+  "audio_seconds": 2.56,
+  "audio_bytes": 122924,
+  "clone_prompt_sha256": "91e771021f5e7a38",
+  "cost_usd": 0.0,
+  "realtime_factor": 1.587
+ },
+ "c_overlap_confirmed": true,
+ "c_generation": {
+  "pieces": 375,
+  "wall_clock_s": 16.614
+ },
+ "findings": {
+  "cold_first_call_s": 2.946,
+  "steady_state_s": 2.961,
+  "cold_penalty_s": -0.015,
+  "during_gpt_generation_s": 4.064,
+  "contention_penalty_s": 1.103,
+  "note": "Every call is a subprocess of the isolated mlx-audio runtime, so 'cold' here means the first call after this provider object existed, not a process that stays warm between calls."
+ }
+}

@@ -43,6 +43,7 @@ import json
 import threading
 import time
 from collections.abc import Callable
+from contextlib import nullcontext
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from typing import Protocol
@@ -50,8 +51,10 @@ from uuid import UUID
 
 from sqlalchemy import Engine, text
 
+from val_domain import timings
 from val_domain.provider import DeltaSink
 from val_domain.speech import DeliveryState
+from val_domain.timings import mark
 from val_domain.voice import (
     LiveRecognizer,
     ProvisionalText,
@@ -352,6 +355,7 @@ class VoiceSession:
         resume_grace_seconds: float = RESUME_GRACE_SECONDS,
         clock: Callable[[], float] = time.monotonic,
         speech: DeliveryFactory | None = None,
+        warm: Callable[[], object] | None = None,
     ) -> None:
         self._engine = engine
         self._recognizer = recognizer
@@ -383,6 +387,12 @@ class VoiceSession:
         #: Every barge-in this session performed, in milliseconds from the
         #: recognizer's event reaching delivery control to the sink stopping.
         self.cancellations: list[float] = []
+        #: How the cognition runtime is brought up early. A local model carries an
+        #: idle TTL, so the first turn after an idle hour otherwise pays its load
+        #: while the owner waits — measured 9.143 s (latency pass §12).
+        self._warm = warm
+        #: What warming found and did, for the record. `None` until it has run.
+        self.warmed: object | None = None
 
     # --- identity -------------------------------------------------------------------
 
@@ -445,6 +455,20 @@ class VoiceSession:
             raise
         with self._lock:
             self.state = VoiceSessionState.LISTENING
+        # The cognition runtime is brought up **now**, on its own thread, while he
+        # is still drawing breath — not when he stops talking. It is the same
+        # readiness call the turn makes, and the turn still makes it: this only
+        # moves the waiting off the moment he is waiting.
+        if self._warm is not None:
+            threading.Thread(target=self._warm_runtime, daemon=True).start()
+
+    def _warm_runtime(self) -> None:
+        if self._warm is None:
+            return
+        try:
+            self.warmed = self._warm()
+        except Exception as failure:  # reported, never fatal: warming is not a gate
+            self.warmed = {"warmed": False, "reason": f"{type(failure).__name__}: {failure}"}
 
     def close(self, reason: str = "closed by the caller") -> None:
         """Stop listening, settle the record, and release everything held."""
@@ -608,6 +632,7 @@ class VoiceSession:
                 self._journal(abandon, "abandoned", words=abandon.journalled_text)
             return
         with self._lock:
+            mark("transcript_final")
             settled = VoiceUtterance(
                 session_id=self._session_id or NO_SESSION,
                 utterance=index,
@@ -718,8 +743,15 @@ class VoiceSession:
                 return
             self._pending = None
             self._inflight = pending
-            worker = threading.Thread(target=self._run, args=(pending,), daemon=True)
+            # A plain thread starts with an empty context, so a diagnostic recorder
+            # installed by the caller would be invisible inside the turn. Carried
+            # explicitly rather than lost (latency pass §8); `None` in production,
+            # where nothing is recording.
+            worker = threading.Thread(
+                target=self._run, args=(pending, timings.current()), daemon=True
+            )
             self._worker = worker
+        mark("owner_turn_submitted")
         worker.start()
 
     def await_turn(self, timeout: float = 180.0) -> None:
@@ -742,8 +774,12 @@ class VoiceSession:
                 time.sleep(0.02)
         raise VoiceUnavailableError(f"the spoken turn did not settle within {timeout:.0f}s")
 
-    def _run(self, pending: _Pending) -> None:
+    def _run(self, pending: _Pending, recorder: timings.TurnTimings | None = None) -> None:
         """One settled utterance, through the ordinary Core path — and spoken."""
+        with timings.recording(recorder) if recorder is not None else nullcontext():
+            self._run_turn(pending)
+
+    def _run_turn(self, pending: _Pending) -> None:
         utterance = pending.utterance
         # Delivery is created before the turn is submitted, so Val can begin
         # speaking the first sentence while she is still writing the second. It

@@ -68,6 +68,7 @@ from val_domain.provider import (
     ProviderEvent,
     TextDelta,
 )
+from val_domain.timings import mark
 from val_providers.base import ProviderResult, normalize
 from val_providers.lmstudio_inspector import LMStudioContextInspector
 from val_providers.lmstudio_runtime import LMStudioRuntime
@@ -340,7 +341,9 @@ class LMStudioAdapter:
         kwargs = self._request(config, messages, system, max_output_tokens, output_schema)
         del cache_ttl  # no prompt-cache mechanism is requested of a local server
         try:
+            mark("provider_dispatch")
             completion = self._client.chat.completions.create(**kwargs)
+            mark("provider_chunk")
         except Exception as error:
             raise self._normalized(error) from error
         return self._result(config, completion)
@@ -371,10 +374,12 @@ class LMStudioAdapter:
         reported_model: str | None = None
         extras: dict[str, object] = {}
         try:
+            mark("provider_dispatch")
             chunks = self._client.chat.completions.create(
                 stream=True, stream_options={"include_usage": True}, **kwargs
             )
             for chunk in chunks:
+                mark("provider_chunk")
                 model = getattr(chunk, "model", None)
                 if isinstance(model, str) and model:
                     reported_model = model
@@ -391,6 +396,7 @@ class LMStudioAdapter:
                             reasoning_present = True
                         piece = getattr(delta, "content", None)
                         if piece:
+                            mark("provider_visible_text")
                             text_parts.append(piece)
                             yield TextDelta(piece)
                         refused = getattr(delta, "refusal", None)

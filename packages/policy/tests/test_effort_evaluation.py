@@ -103,3 +103,46 @@ def test_the_evaluation_entry_and_the_production_entry_are_separate_records() ->
     assert evaluation.provider == production.provider
     assert evaluation.context_window_tokens == production.context_window_tokens
     assert evaluation.reasoning_effort is production.reasoning_effort
+
+
+# --- the latency pass changed none of this — pre-WP3 pass §19 --------------------------
+
+
+def test_the_latency_pass_left_the_established_voice_alone() -> None:
+    """A latency change must not become a voice change."""
+    from val_domain.gateway import CapabilityProfile as Profile
+
+    speech = [
+        config
+        for config in active()
+        if is_admitted(config) and satisfies_profile(config, Profile.SPEECH)
+    ]
+    assert [config.model_identifier for config in speech] == [
+        "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit"
+    ]
+    assert len(speech) == 1, "one admitted voice, and it is the established one"
+
+
+def test_no_cloud_speech_route_exists_at_all() -> None:
+    """Neither recognition nor speech may reach a cloud service."""
+    from val_domain.registry import REGISTRY
+
+    for config in REGISTRY:
+        assert "eleven" not in config.model_identifier.lower()
+        assert "eleven" not in config.provider.lower()
+        assert "whisper" not in config.provider.lower(), (
+            "recognition is a local library, never a registered provider route"
+        )
+
+
+def test_the_local_partner_route_is_the_cheapest_and_is_therefore_what_a_turn_selects() -> None:
+    """Why warming the *cheapest* partner route is warming the one a turn uses."""
+    partner = [
+        config
+        for config in active()
+        if is_admitted(config) and satisfies_profile(config, CapabilityProfile.PARTNER)
+    ]
+    cheapest = min(partner, key=lambda config: config.cost_per_mtok_in_usd)
+    assert cheapest.slug == PRODUCTION
+    assert cheapest.cost_per_mtok_in_usd == 0.0
+    assert cheapest.context_window_tokens == 32_768

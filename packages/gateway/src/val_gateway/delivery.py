@@ -42,11 +42,13 @@ import queue
 import threading
 import time
 from collections.abc import Callable
+from contextlib import nullcontext
 from dataclasses import dataclass
 from uuid import UUID
 
 from sqlalchemy import Engine, text
 
+from val_domain import timings
 from val_domain.gateway import ModelConfig
 from val_domain.speech import (
     DeliveryState,
@@ -54,6 +56,7 @@ from val_domain.speech import (
     SpokenSegment,
     VoiceConditioning,
 )
+from val_domain.timings import mark
 from val_domain.voice import VoiceUnavailableError
 from val_policy.speech_segments import Segment, SpeechSegmenter, SpeechTextRefusedError
 
@@ -286,6 +289,7 @@ class SpeechDelivery:
         with self._lock:
             if self.first_delta_ms is None and delta:
                 self.first_delta_ms = int((self._now() - self.started_at) * 1000)
+                mark("speech_first_visible_text")
         try:
             ready = self.segmenter.feed(delta)
         except SpeechTextRefusedError as refused:
@@ -379,13 +383,24 @@ class SpeechDelivery:
         with self._lock:
             if self._closed:
                 return
+            mark("speech_segment_queued")
             self._queue.put(_Pending(segment=segment, queued_at=self._now()))
             if self._worker is None or not self._worker.is_alive():
-                self._worker = threading.Thread(target=self._speak, daemon=True)
+                # The recorder is carried across the thread boundary explicitly: a
+                # plain thread starts with an empty context, so a diagnostic
+                # installed by the caller would otherwise be invisible inside the
+                # voice worker. `None` in production, where nothing is recording.
+                self._worker = threading.Thread(
+                    target=self._speak, args=(timings.current(),), daemon=True
+                )
                 self._worker.start()
 
-    def _speak(self) -> None:
+    def _speak(self, recorder: timings.TurnTimings | None = None) -> None:
         """Take segments off the queue, give them to the local voice, deliver them."""
+        with timings.recording(recorder) if recorder is not None else nullcontext():
+            self._speak_queue()
+
+    def _speak_queue(self) -> None:
         while True:
             try:
                 # A short poll, not a semantic interval: it is how long `finish`
@@ -402,10 +417,12 @@ class SpeechDelivery:
             if self._is_closed():
                 return
             started = self._now()
+            mark("tts_synthesize_start")
             try:
                 result = self._speech.synthesize(  # type: ignore[attr-defined]
                     SpeechRequest(text=pending.segment.text, voice=self._voice)
                 )
+                mark("tts_synthesize_return")
             except Exception as failure:
                 self._fail(f"the local voice could not speak this segment: {failure}")
                 return
@@ -426,6 +443,7 @@ class SpeechDelivery:
             )
             first = not self.audible
             self.sink.play(spoken)
+            mark("audio_at_sink")
             with self._lock:
                 self.spoken.append(spoken)
                 if first and self.sink.first_audio_at is not None:

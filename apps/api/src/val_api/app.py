@@ -934,6 +934,9 @@ def create_app(
             # a house with no admitted speech route gets — honestly, rather than
             # by reaching for a cloud one.
             speech=speech_delivery_factory(),
+            # The cognition runtime comes up while he is still speaking, rather
+            # than after he stops. The turn's own readiness call still governs.
+            warm=gateway.warm_cognition,
         )
         try:
             live.start()
