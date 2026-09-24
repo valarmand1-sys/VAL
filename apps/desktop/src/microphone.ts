@@ -25,71 +25,34 @@ export const TARGET_SAMPLE_RATE = 16_000;
 export const CHUNK_SAMPLES = 320;
 
 /**
- * The worklet, as source. It runs on the audio thread, converts to the recognizer's
- * format, and posts bounded chunks. It keeps one small buffer and no history.
+ * Where the processor module is served from. **Same-origin, and deliberately not a
+ * `blob:` URL.**
  *
- * Resampling is a plain decimating average, which is enough for speech at these
- * rates and costs nothing: the alternative is a filter design exercise for audio
- * that whisper.cpp then resamples internally anyway.
+ * The processor itself lives in `public/pcm-worklet.js`, which the application
+ * serves at this path. It was first built as a string and loaded from a blob, and
+ * the desktop's Content Security Policy refused it — `default-src 'self'` with no
+ * `script-src`, so a blob-backed script has no source that permits it. That refusal
+ * was the policy working, and the fix is to stop needing the exception rather than
+ * to grant one: served from the app's own origin, the module satisfies
+ * `default-src 'self'` and **no policy change was required**.
+ *
+ * Permitting blob scripts would have widened what *any* injected string in this
+ * window could execute, which is a real loosening for a purely cosmetic benefit.
  */
-export const PCM_WORKLET_SOURCE = `
-class ValPcmProcessor extends AudioWorkletProcessor {
-  constructor(options) {
-    super();
-    const settings = (options && options.processorOptions) || {};
-    this.targetRate = settings.targetRate || ${TARGET_SAMPLE_RATE};
-    this.chunkSamples = settings.chunkSamples || ${CHUNK_SAMPLES};
-    this.ratio = sampleRate / this.targetRate;
-    this.pending = new Float32Array(this.chunkSamples);
-    this.held = 0;
-    this.position = 0;
-  }
-
-  process(inputs) {
-    const input = inputs[0];
-    if (!input || input.length === 0) return true;
-    const channel = input[0];
-    if (!channel) return true;
-    // Down-mix to mono by averaging whatever channels arrived.
-    const frames = channel.length;
-    for (let index = 0; index < frames; index += 1) {
-      let sum = 0;
-      for (let c = 0; c < input.length; c += 1) sum += input[c][index] || 0;
-      const mono = sum / input.length;
-      this.position += 1;
-      if (this.position < this.ratio) continue;
-      this.position -= this.ratio;
-      this.pending[this.held] = mono;
-      this.held += 1;
-      if (this.held === this.chunkSamples) {
-        const out = new Int16Array(this.chunkSamples);
-        for (let s = 0; s < this.chunkSamples; s += 1) {
-          const clamped = Math.max(-1, Math.min(1, this.pending[s]));
-          out[s] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff;
-        }
-        this.port.postMessage(out.buffer, [out.buffer]);
-        this.held = 0;
-      }
-    }
-    return true;
-  }
-}
-registerProcessor('val-pcm', ValPcmProcessor);
-`;
+export const WORKLET_MODULE_URL = "/pcm-worklet.js";
 
 /** What the capture layer needs from the platform, so a test can supply fakes. */
 export interface CapturePlatform {
   getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream>;
   createContext(): AudioContext;
-  createModuleUrl(source: string): string;
-  revokeModuleUrl(url: string): void;
+  /** Where the processor module is fetched from. A same-origin path, never a blob. */
+  workletModuleUrl: string;
 }
 
 export const browserPlatform: CapturePlatform = {
   getUserMedia: (constraints) => navigator.mediaDevices.getUserMedia(constraints),
   createContext: () => new AudioContext(),
-  createModuleUrl: (source) => URL.createObjectURL(new Blob([source], { type: "text/javascript" })),
-  revokeModuleUrl: (url) => URL.revokeObjectURL(url),
+  workletModuleUrl: WORKLET_MODULE_URL,
 };
 
 /**
@@ -133,7 +96,6 @@ export class MicrophoneCapture {
   private context: AudioContext | null = null;
   private source: MediaStreamAudioSourceNode | null = null;
   private worklet: AudioWorkletNode | null = null;
-  private moduleUrl: string | null = null;
   /** Set false before the release path runs, so no sample can enter after mute. */
   private accepting = false;
 
@@ -151,29 +113,37 @@ export class MicrophoneCapture {
   async open(): Promise<void> {
     if (this.live) return;
     try {
-      const stream = await this.platform.getUserMedia(CAPTURE_CONSTRAINTS);
+      // **Owned the instant it exists.** Owner acceptance, 24 September 2026: the
+      // worklet module load below failed under the desktop's CSP *after* the device
+      // had been granted, and because the stream was still only a local variable at
+      // that point, the release path in `catch` had nothing to stop — leaving a live
+      // track held by nothing, to be collected whenever the engine felt like it.
+      // §1.3 says a failure moves toward released, and "eventually, probably" is not
+      // that. Each resource is therefore assigned to the object as soon as it is
+      // created, so `release()` can take down whatever exists no matter where the
+      // failure happens.
+      this.stream = await this.platform.getUserMedia(CAPTURE_CONSTRAINTS);
       const context = this.platform.createContext();
-      const url = this.platform.createModuleUrl(PCM_WORKLET_SOURCE);
-      await context.audioWorklet.addModule(url);
+      this.context = context;
+      // Fetched from the application's own origin, which is what `default-src
+      // 'self'` permits. A `blob:` URL here is refused by the desktop's CSP, and
+      // that refusal is the policy working.
+      await context.audioWorklet.addModule(this.platform.workletModuleUrl);
       const worklet = new AudioWorkletNode(context, "val-pcm", {
         numberOfInputs: 1,
         numberOfOutputs: 0,
         processorOptions: { targetRate: TARGET_SAMPLE_RATE, chunkSamples: CHUNK_SAMPLES },
       });
+      this.worklet = worklet;
       worklet.port.onmessage = (event: MessageEvent) => {
         // Dropped the moment the owner mutes: the check is here as well as in the
         // release path, because a chunk already in flight must not be forwarded.
         if (!this.accepting) return;
         this.observer.onChunk(event.data as ArrayBuffer);
       };
-      const source = context.createMediaStreamSource(stream);
-      source.connect(worklet);
-
-      this.stream = stream;
-      this.context = context;
+      const source = context.createMediaStreamSource(this.stream);
       this.source = source;
-      this.worklet = worklet;
-      this.moduleUrl = url;
+      source.connect(worklet);
       this.accepting = true;
 
       if (!this.live) {
@@ -227,10 +197,6 @@ export class MicrophoneCapture {
     if (this.context !== null) {
       void this.context.close().catch(() => undefined);
       this.context = null;
-    }
-    if (this.moduleUrl !== null) {
-      this.platform.revokeModuleUrl(this.moduleUrl);
-      this.moduleUrl = null;
     }
     this.observer.onReleased();
   }

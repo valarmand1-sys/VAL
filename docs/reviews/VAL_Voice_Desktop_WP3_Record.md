@@ -554,7 +554,51 @@ rebuilt and reinstalled with it present, and the string was verified in the inst
 
 ---
 
-## 14. Owner acceptance — the sequence, one step at a time
+## 14. Owner acceptance, first attempt: step A FAILED, and three defects behind it
+
+He ran step A on the first installed build. Voice reached `Voice Starting…`, macOS
+presented the microphone prompt with the expected text, and startup then failed with
+the visible error **`Not allowed by CSP`**, returning to Voice Off.
+
+**The violated directive was `default-src 'self'`**, as the fallback for the script
+source, because the policy sets no `script-src`. **The blocked resource was the
+AudioWorklet processor module**, which the desktop built as a string and loaded from a
+`blob:` URL — and `blob:` is permitted in this policy for `img-src` and `media-src`
+only. Reproduced under the policy read verbatim out of `tauri.conf.json`:
+
+> Loading the script `blob:…` violates the following Content Security Policy
+> directive: **"default-src 'self'"**. Note that `'script-src-elem'` was not
+> explicitly set, so `'default-src'` is used as a fallback. The action has been
+> blocked.
+
+**The fix changed no policy at all.** The processor now lives in
+`apps/desktop/public/pcm-worklet.js`, which the application serves at
+`/pcm-worklet.js` — a same-origin script, which `default-src 'self'` already permits.
+Adding `script-src 'self' blob:` would have permitted *any* blob-backed script this
+window could construct; this needs no exception. The loopback boundary, the capability
+file and the native bridge are untouched.
+
+**Two further defects came out of testing that fix rather than reading it.** The
+extracted file still carried `${TARGET_SAMPLE_RATE}` as literal text — a
+`SyntaxError` at line 23 — so Voice would have failed again in the same place with a
+different message. And, more seriously: **the microphone was not released
+deterministically on the failure he hit.** The stream was acquired into a local
+variable and assigned to the object only after the module load, so `release()` in the
+`catch` found nothing to stop, and the granted track was left live, referenced only by
+a variable that had gone out of scope. His screenshot showed no active microphone, and
+that is consistent with the engine having collected it — but **§1.3 says a failure
+moves toward released, and "eventually, probably" is not that.** Every resource is now
+owned the instant it is created, and a regression test drives an `addModule` that
+throws `Not allowed by CSP` *after* the device is granted and asserts every track
+stopped, `released` reported before the failure, and never a live report. Reverting the
+assignment order makes that test fail, which was run to check.
+
+Full diagnosis, with the probe and both verifications:
+`docs/reviews/qualification/runs/2026-09-24-wp3-csp/RESULT.md`.
+
+---
+
+## 15. Owner acceptance — the sequence, one step at a time
 
 §20's sequence is his. It is not run here, not simulated, and not inferred. When he
 is ready, it proceeds A through I, one step at a time, and any orange-dot failure is

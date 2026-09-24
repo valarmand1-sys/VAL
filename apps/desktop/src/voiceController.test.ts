@@ -42,8 +42,7 @@ function capturePlatform(tracks: FakeTrack[], fail = false): CapturePlatform {
         createMediaStreamSource: () => ({ connect() {}, disconnect() {} }),
         close: async () => undefined,
       }) as unknown as AudioContext,
-    createModuleUrl: () => "blob:worklet",
-    revokeModuleUrl: () => undefined,
+    workletModuleUrl: "/pcm-worklet.js",
   };
 }
 

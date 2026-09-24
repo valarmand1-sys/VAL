@@ -13,10 +13,21 @@ import {
   CAPTURE_CONSTRAINTS,
   CHUNK_SAMPLES,
   MicrophoneCapture,
-  PCM_WORKLET_SOURCE,
   TARGET_SAMPLE_RATE,
+  WORKLET_MODULE_URL,
   type CapturePlatform,
 } from "./microphone";
+
+/** The processor as the application actually serves it. */
+const PROCESSOR = String(
+  Object.values(
+    import.meta.glob("../public/pcm-worklet.js", {
+      query: "?raw",
+      import: "default",
+      eager: true,
+    }),
+  )[0],
+);
 
 class FakeTrack {
   readyState: "live" | "ended" = "live";
@@ -69,7 +80,6 @@ interface Harness {
   context: FakeContext;
   tracks: FakeTrack[];
   worklet: FakeWorkletNode;
-  revoked: string[];
   constraints: MediaStreamConstraints[];
 }
 
@@ -77,7 +87,6 @@ function harness(tracks = 1): Harness {
   const made = Array.from({ length: tracks }, () => new FakeTrack());
   const context = new FakeContext();
   const worklet = new FakeWorkletNode();
-  const revoked: string[] = [];
   const constraints: MediaStreamConstraints[] = [];
   // The worklet node is constructed with `new AudioWorkletNode(...)`, so the fake
   // has to be reachable through the global the module uses.
@@ -92,10 +101,9 @@ function harness(tracks = 1): Harness {
       return new FakeStream(made) as unknown as MediaStream;
     },
     createContext: () => context as unknown as AudioContext,
-    createModuleUrl: () => "blob:worklet",
-    revokeModuleUrl: (url) => revoked.push(url),
+    workletModuleUrl: WORKLET_MODULE_URL,
   };
-  return { platform, context, tracks: made, worklet, revoked, constraints };
+  return { platform, context, tracks: made, worklet, constraints };
 }
 
 describe("acquiring the device", () => {
@@ -200,7 +208,7 @@ describe("mute releases the device", () => {
     expect(world.tracks[0]!.stops).toBe(1);
   });
 
-  it("disconnects the worklet and the source, closes the context, revokes the module", async () => {
+  it("disconnects the worklet and the source and closes the context", async () => {
     const world = harness();
     const capture = new MicrophoneCapture(
       { onChunk: () => undefined, onLive: () => undefined, onReleased: () => undefined, onFailure: () => undefined },
@@ -212,7 +220,6 @@ describe("mute releases the device", () => {
     expect(world.worklet.port.onmessage).toBeNull();
     expect(world.context.source.disconnects).toBe(1);
     expect(world.context.closed).toBe(1);
-    expect(world.revoked).toEqual(["blob:worklet"]);
   });
 
   it("accepts no further sample after release, even one already in flight", async () => {
@@ -252,7 +259,7 @@ describe("mute releases the device", () => {
 
 describe("nothing accumulates and nothing records", () => {
   it("uses an AudioWorklet and never MediaRecorder or ScriptProcessor", () => {
-    const source = PCM_WORKLET_SOURCE;
+    const source = PROCESSOR;
     expect(source).toContain("AudioWorkletProcessor");
     expect(source).not.toContain("MediaRecorder");
     expect(source).not.toContain("ScriptProcessorNode");
@@ -261,21 +268,21 @@ describe("nothing accumulates and nothing records", () => {
   it("holds one bounded chunk and no history", () => {
     // The worklet's buffer is exactly one chunk long; there is no growing array
     // and no session recording anywhere in it.
-    expect(PCM_WORKLET_SOURCE).toContain("new Float32Array(this.chunkSamples)");
-    expect(PCM_WORKLET_SOURCE).not.toMatch(/push\(/);
-    expect(PCM_WORKLET_SOURCE).not.toContain("concat");
+    expect(PROCESSOR).toContain("new Float32Array(this.chunkSamples)");
+    expect(PROCESSOR).not.toMatch(/push\(/);
+    expect(PROCESSOR).not.toContain("concat");
   });
 
   it("targets exactly the recognizer's contract", () => {
     expect(TARGET_SAMPLE_RATE).toBe(16_000);
     expect(CHUNK_SAMPLES).toBe(320); // 20 ms
-    expect(PCM_WORKLET_SOURCE).toContain("Int16Array");
+    expect(PROCESSOR).toContain("Int16Array");
   });
 
   it("transfers each chunk rather than copying it onward", () => {
     // `postMessage(buffer, [buffer])` transfers ownership, so the audio thread does
     // not keep a second copy of what it just sent.
-    expect(PCM_WORKLET_SOURCE).toContain("this.port.postMessage(out.buffer, [out.buffer])");
+    expect(PROCESSOR).toContain("this.port.postMessage(out.buffer, [out.buffer])");
   });
 
   it("calls getUserMedia in exactly one place in the whole application", async () => {
@@ -296,5 +303,125 @@ describe("nothing accumulates and nothing records", () => {
       if (path.endsWith(".test.ts")) continue;
       expect(String(source)).not.toContain("new MediaRecorder");
     }
+  });
+});
+
+
+describe("the Content Security Policy refusal that failed owner acceptance step A", () => {
+  // Owner acceptance, 24 September 2026. Voice reached `Voice Starting…`, macOS
+  // presented the microphone prompt correctly, and startup then failed with
+  // `Not allowed by CSP`. Reproduced under the application's exact policy:
+  //
+  //   Loading the script 'blob:…' violates the following Content Security Policy
+  //   directive: "default-src 'self'". Note that 'script-src-elem' was not
+  //   explicitly set, so 'default-src' is used as a fallback.
+  //
+  // The processor module was built as a string and loaded from a blob. These hold
+  // the fix in place: the module is served by the application, and no blob-backed
+  // script is created anywhere in the desktop.
+
+  it("fetches the processor from the application's own origin", () => {
+    expect(WORKLET_MODULE_URL).toBe("/pcm-worklet.js");
+    expect(WORKLET_MODULE_URL.startsWith("blob:")).toBe(false);
+    expect(WORKLET_MODULE_URL.startsWith("data:")).toBe(false);
+    expect(WORKLET_MODULE_URL.startsWith("http")).toBe(false);
+    // Relative to the app: satisfied by `default-src 'self'` with no exception.
+    expect(WORKLET_MODULE_URL.startsWith("/")).toBe(true);
+  });
+
+  it("asks the platform for that URL and for no blob", async () => {
+    const world = harness();
+    const capture = new MicrophoneCapture(
+      {
+        onChunk: () => undefined,
+        onLive: () => undefined,
+        onReleased: () => undefined,
+        onFailure: () => undefined,
+      },
+      world.platform,
+    );
+    await capture.open();
+    expect(world.context.addedModules).toEqual([WORKLET_MODULE_URL]);
+  });
+
+  it("releases a granted device when the worklet module is refused", async () => {
+    // **The defect the CSP failure hid.** The device had been granted, the module
+    // load then failed, and the release path had nothing to stop because the stream
+    // was still only a local variable. A live track held by nothing, released
+    // whenever the engine chose to collect it — which is not "fail closed".
+    const world = harness();
+    const refusing: CapturePlatform = {
+      ...world.platform,
+      createContext: () =>
+        ({
+          ...world.context,
+          audioWorklet: {
+            addModule: async () => {
+              throw new DOMException("Not allowed by CSP", "AbortError");
+            },
+          },
+          createMediaStreamSource: () => world.context.source,
+          close: async () => undefined,
+        }) as unknown as AudioContext,
+    };
+    const events: string[] = [];
+    const capture = new MicrophoneCapture(
+      {
+        onChunk: () => undefined,
+        onLive: () => events.push("live"),
+        onReleased: () => events.push("released"),
+        onFailure: (detail) => events.push(`failed:${detail}`),
+      },
+      refusing,
+    );
+    await capture.open();
+
+    // Every track the platform granted is stopped, deterministically.
+    expect(world.tracks[0]!.stops).toBe(1);
+    expect(world.tracks[0]!.readyState).toBe("ended");
+    expect(capture.live).toBe(false);
+    // Released **before** the failure is reported, and never reported as live.
+    expect(events).toEqual(["released", "failed:Not allowed by CSP"]);
+  });
+
+  it("creates no object URL for a script anywhere in the desktop", () => {
+    // Attachment previews legitimately use `createObjectURL` for images, video and
+    // audio, which `img-src`/`media-src` permit. A **script** built that way is
+    // what the policy refuses, so the assertion is about the type.
+    const modules = import.meta.glob("./*.ts", { query: "?raw", import: "default", eager: true });
+    for (const [path, source] of Object.entries(modules)) {
+      if (path.endsWith(".test.ts")) continue;
+      const text = String(source);
+      expect(text).not.toContain("text/javascript");
+      expect(text).not.toContain("application/javascript");
+    }
+  });
+
+  it("the served processor is valid JavaScript with no template interpolation left in it", () => {
+    // The second defect this fix uncovered. The processor began life as a template
+    // string in TypeScript, and extracting it into a file left `${TARGET_SAMPLE_RATE}`
+    // behind as literal text — a SyntaxError at line 23, found by loading the real
+    // built file under the real policy rather than by reading it.
+    expect(PROCESSOR).not.toContain("${");
+    expect(() => new Function(`${PROCESSOR.replace("registerProcessor", "void")}`)).not.toThrow();
+  });
+
+  it("the served fallbacks equal the constants the code passes", () => {
+    // `processorOptions` supplies both on every construction; these are the
+    // fallbacks, and they may not drift from the TypeScript constants.
+    expect(PROCESSOR).toContain(`|| ${TARGET_SAMPLE_RATE}`);
+    expect(PROCESSOR).toContain(`|| ${CHUNK_SAMPLES}`);
+  });
+
+  it("the processor the application serves registers the processor the code asks for", () => {
+    // The string and the file could drift apart; they cannot now, because there is
+    // only the file — and this checks the name the node is constructed with.
+    expect(PROCESSOR).toContain("registerProcessor('val-pcm'");
+    const modules = import.meta.glob("./microphone.ts", {
+      query: "?raw",
+      import: "default",
+      eager: true,
+    });
+    expect(String(Object.values(modules)[0])).toContain('"val-pcm"');
   });
 });
