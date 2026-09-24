@@ -77,6 +77,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 
 from val_domain.conversation import MessageRecord, StoredRole
+from val_domain.egress import Egress
 from val_domain.gateway import (
     Classification,
     ConversationProvenance,
@@ -452,6 +453,15 @@ class PriorRecordState:
     #: they were given, with their sources' provenance and status now — never
     #: the sources' content.
     grounded_answers: tuple[GroundedAnswer, ...] = ()
+    #: Owner ruling, 24 September 2026 (Voice work package 3 §1.5, §2.5), additive
+    #: and present **only** in a local-only conversation. Val is told that this
+    #: conversation does not leave the machine, and what that costs her here, so
+    #: that she can answer an owner asking for a web search truthfully instead of
+    #: attempting one and being refused by policy she cannot see. It is a statement
+    #: of what is available, not an instruction and not a second persona: the
+    #: enforcement is structural and happens whatever the model reads.
+    local_only: bool = False
+    local_only_reasons: tuple[str, ...] = ()
 
     def _revision_facts(self) -> dict[str, object]:
         facts: dict[str, object] = {}
@@ -570,9 +580,45 @@ class PriorRecordState:
                 if self.spoken_delivery
                 else {}
             ),
+            # Present only in a local-only conversation. Every other turn says
+            # nothing about egress, because "this conversation may leave the
+            # machine as usual" is the ordinary case and restating it on every
+            # turn would be context spent on nothing (the per-turn necessity
+            # rule, `01-architecture.md` §5.5).
+            **(
+                {
+                    "external_egress": {
+                        "state": "local_only",
+                        "reasons": list(self.local_only_reasons),
+                        "note": LOCAL_ONLY_NOTE,
+                    }
+                }
+                if self.local_only
+                else {}
+            ),
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
             "capability_state": dict(CAPABILITY_STATE),
         }
+
+
+#: What the local-only state means, said once rather than left to be inferred.
+#: Owner ruling, 24 September 2026. The point of telling Val is a narrow one: so
+#: that "search the web for that" gets a truthful answer about what is available
+#: here rather than an attempt that policy silently refuses. The consequence the
+#: owner accepted is stated plainly too (§1.7), because pretending the
+#: consequential machinery ran would be the same lie in a quieter voice.
+LOCAL_ONLY_NOTE = (
+    "This conversation is local-only: it has carried live microphone speech, or "
+    "content recalled from a conversation that did, or Lord Armand has Voice on now. "
+    "Nothing from it is transmitted off this machine, by his ruling of 24 September "
+    "2026. Two consequences are true here and he already knows them. Web search, "
+    "remote tools and any other external operation are unavailable in this "
+    "conversation — say so plainly if he asks for one, rather than attempting it. "
+    "And the consequentiality classification did not run for these turns, so the "
+    "blind-position machinery did not either: do not describe a view as having been "
+    "formed independently when it was not, and do not treat the absence of a "
+    "classification as a finding that a turn was ordinary."
+)
 
 
 #: What an unheard answer means, said once rather than left to be inferred. Owner
@@ -728,6 +774,7 @@ def assemble(
     scope: ProjectScope,
     turn: TurnReference | None = None,
     max_output_tokens: int = 4096,
+    egress: Egress = Egress.ORDINARY,
 ) -> GatewayRequest:
     """One normal Val conversational request, with her persona whole in it.
 
@@ -753,6 +800,11 @@ def assemble(
         # `ProjectScope` carries both and cannot disagree with itself.
         project_id=attribution_of(scope),
         project_attribution=attribution_state_of(scope),
+        # Owner ruling, 24 September 2026 (Voice work package 3 §1.5). Whether
+        # this request may leave the machine at all. Defaults to the governed
+        # behaviour; a sealed turn's caller passes the seal, and every call the
+        # turn makes carries the same one.
+        egress=egress,
         # WP-0.7 corrective round: one object rather than three ids that must
         # describe the same event and could be supplied one at a time. The
         # persona is folded in here because this is where it is known.

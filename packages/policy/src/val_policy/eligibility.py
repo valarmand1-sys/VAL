@@ -11,6 +11,7 @@ by Lord Armand, applied to `01-architecture.md` §5.4 first and reflected here
 second — never the other way around.
 """
 
+from val_domain.egress import Egress
 from val_domain.gateway import Classification, GatewayErrorKind, Hosting, ModelConfig
 from val_domain.registry import declared_chain_violations
 
@@ -139,6 +140,32 @@ def startup_violations(configs: list[ModelConfig]) -> list[str]:
             )
 
     return violations
+
+
+def egress_refusal_for(egress: Egress, config: ModelConfig) -> tuple[GatewayErrorKind, str] | None:
+    """Why this request may not be transmitted to this route, or None if it may.
+
+    Owner ruling, 24 September 2026 (Voice work package 3 §1.5). A local-only
+    request may be carried only by a configuration whose inference runs on this
+    machine. There is no approval path and no fallback: the ruling is that the
+    transcript does not leave, not that leaving needs a confirmation.
+
+    Checked against `Hosting`, which is the fact about *where the inference runs*,
+    and deliberately **not** against `Metering`, which is a fact about who pays.
+    A free cloud route would still be egress.
+    """
+    if egress is not Egress.LOCAL_ONLY:
+        return None
+    if config.hosting is Hosting.LOCAL:
+        return None
+    return (
+        GatewayErrorKind.LOCAL_ONLY_EGRESS_REFUSED,
+        f"this conversation is local-only and {config.slug} runs off this machine "
+        f"({config.hosting.value}). Live-voice content — the transcript itself, a later "
+        "turn in the same conversation, or anything recalled from it — is never "
+        "transmitted to an external provider (owner ruling, 24 September 2026). Nothing "
+        "was transmitted and nothing was charged.",
+    )
 
 
 def refusal_for(

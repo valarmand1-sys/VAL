@@ -66,13 +66,14 @@ from val_domain.deliberation import (
 _CLASSIFICATION_INSERT = text(
     "insert into classifications "
     "  (project_id, conversation_id, message_id, established, verdict, hard_exclusion, "
-    "   attempts, model_call_ids, resolving_model_call_id, resolution) "
+    "   attempts, model_call_ids, resolving_model_call_id, resolution, not_run_reason) "
     "values "
     "  (:project_id, :conversation_id, :message_id, :established, :verdict, "
-    "   :hard_exclusion, :attempts, :model_call_ids, :resolving_model_call_id, :resolution) "
+    "   :hard_exclusion, :attempts, :model_call_ids, :resolving_model_call_id, :resolution, "
+    "   :not_run_reason) "
     "returning id, project_id, conversation_id, message_id, established, verdict, "
     "          hard_exclusion, attempts, model_call_ids, resolving_model_call_id, "
-    "          resolution, created_at"
+    "          resolution, not_run_reason, created_at"
 )
 
 #: The anchoring message's conversation and the scope that message was written in —
@@ -331,6 +332,7 @@ def record_classification(
     model_call_ids: tuple[UUID, ...],
     resolving_model_call_id: UUID | None,
     resolution: str | None,
+    not_run_reason: str | None = None,
 ) -> ClassificationRecord:
     """Persist one turn's classification as evidence — established or not.
 
@@ -342,9 +344,25 @@ def record_classification(
     refused. `project_id` is derived from the anchoring conversation, the
     same doctrine as everywhere.
     """
-    if attempts < 1:
+    # Owner ruling, 24 September 2026 (Voice work package 3 §2.3). A local-only
+    # conversation may not call the cloud classifier, so a sealed turn's
+    # consequentiality is never assessed — and the record must say *that*, not a
+    # fabricated negative. Such a row states its reason and carries none of a
+    # run's traces; every other row is still held to having been attempted.
+    if not_run_reason is not None:
+        if not not_run_reason.strip():
+            raise IncoherentDeliberationError(
+                "a classification that did not run must say why; a bare absence is not evidence."
+            )
+        if attempts != 0 or verdict is not None or model_call_ids or resolution is not None:
+            raise IncoherentDeliberationError(
+                "a classification that did not run has no attempts, no verdict, no calls and "
+                "no failure resolution. Recording one alongside a not-run reason would claim "
+                "a classification that never happened."
+            )
+    elif attempts < 1:
         raise IncoherentDeliberationError("a classification that was never attempted is not one.")
-    if verdict is None and not (resolution or "").strip():
+    if not_run_reason is None and verdict is None and not (resolution or "").strip():
         raise IncoherentDeliberationError(
             "an unestablished classification must say why; a bare failure is not evidence."
         )
@@ -381,6 +399,7 @@ def record_classification(
                 "model_call_ids": list(model_call_ids),
                 "resolving_model_call_id": resolving_model_call_id,
                 "resolution": resolution,
+                "not_run_reason": not_run_reason,
             },
         ).one()
     return _classification_record_from(row)
@@ -393,7 +412,7 @@ def classifications_for(engine: Engine, conversation_id: UUID) -> tuple[Classifi
             text(
                 "select id, project_id, conversation_id, message_id, established, verdict, "
                 "       hard_exclusion, attempts, model_call_ids, resolving_model_call_id, "
-                "       resolution, created_at "
+                "       resolution, not_run_reason, created_at "
                 "  from classifications where conversation_id = :c order by created_at, id"
             ),
             {"c": conversation_id},
@@ -414,6 +433,7 @@ def _classification_record_from(row: Row[Any]) -> ClassificationRecord:
         model_call_ids=tuple(row.model_call_ids),
         resolving_model_call_id=row.resolving_model_call_id,
         resolution=row.resolution,
+        not_run_reason=row.not_run_reason,
         created_at=row.created_at,
     )
 

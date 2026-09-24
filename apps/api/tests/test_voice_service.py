@@ -12,6 +12,13 @@ Three things these tests hold that the desktop package will depend on:
 - the origin rules are exactly the service's existing ones. No new origin, no new
   bind, no upgrade, no token; a voice route is not a reason to loosen anything.
 
+**Amended 24 September 2026 (Voice work package 3 §2.3).** These scripts no longer
+carry a classifier reply, because a spoken turn no longer makes a classifier call:
+the owner ruled that a live-microphone transcript never leaves this machine, and the
+consequentiality classifier is a cloud structured route. The script is therefore the
+answer alone, and `test_a_spoken_turn_makes_no_classification_call` asserts the
+absence rather than leaving it to be inferred from a script that happens to fit.
+
 With no recognizer wired, every voice route says so plainly and reaches for
 nothing else — which is also what makes the rest of the service unchanged by this
 package's presence.
@@ -137,7 +144,11 @@ def test_without_a_recognizer_every_voice_route_says_so_and_reaches_for_nothing(
 
 
 def test_the_rest_of_the_service_is_untouched_by_this_package(store: Engine) -> None:
-    """A typed turn still works exactly as it did, with no recognizer in sight."""
+    """A typed turn still works exactly as it did, with no recognizer in sight.
+
+    Including its classifier call: an unsealed typed turn is classified exactly as
+    before the live-voice seal existed, which is what the two scripted replies say.
+    """
     adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Cobalt, my lord.")])
     with client(store, adapter) as reachable:
         assert reachable.get("/health").json()["status"] == "running"
@@ -217,7 +228,7 @@ def test_a_settled_utterance_becomes_one_canonical_turn_with_its_answer(
     recognizer = ScriptedRecognizer(
         batches=[[started(), guess("What time"), final("What time is dinner?")]]
     )
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
     with voice_client(store, adapter, recognizer) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
             "session"
@@ -254,7 +265,7 @@ def test_a_settled_utterance_becomes_one_canonical_turn_with_its_answer(
 
 def test_finalize_ends_the_utterance_without_waiting_for_silence(store: Engine) -> None:
     recognizer = ScriptedRecognizer(batches=[[started()], [final("That is all.")]])
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Very good.")])
+    adapter = ScriptedAdapter([ok("Very good.")])
     with voice_client(store, adapter, recognizer) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
             "session"
@@ -275,7 +286,7 @@ def test_marking_a_turn_delivered_is_a_call_the_delivering_layer_makes(
 ) -> None:
     """No audible delivery exists in this package, so nothing calls it yet."""
     recognizer = ScriptedRecognizer(batches=[[started(), final("Say that again.")]])
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Of course.")])
+    adapter = ScriptedAdapter([ok("Of course.")])
     with voice_client(store, adapter, recognizer) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
             "session"
@@ -321,7 +332,7 @@ def test_an_interrupted_guess_is_offered_back_labelled_and_never_as_a_message(
 ) -> None:
     """Read once after a restart: the words, marked `interrupted`."""
     recognizer = ScriptedRecognizer(batches=[[started(), final("First, a real turn.")]])
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Noted.")])
+    adapter = ScriptedAdapter([ok("Noted.")])
     with voice_client(store, adapter, recognizer) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
             "session"
@@ -495,7 +506,7 @@ def speaking_client(
 def test_a_spoken_turn_reports_its_delivery_through_the_service(store: Engine) -> None:
     """The desktop can see what was spoken, and what reached him."""
     recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
     voice_provider = ScriptedVoiceProvider()
     with speaking_client(store, adapter, recognizer, voice_provider) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
@@ -521,7 +532,7 @@ def test_a_spoken_turn_reports_its_delivery_through_the_service(store: Engine) -
 
 def test_the_delivery_of_one_answer_is_readable_by_message(store: Engine) -> None:
     recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
     with speaking_client(store, adapter, recognizer, ScriptedVoiceProvider()) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
             "session"
@@ -548,7 +559,7 @@ def test_the_caller_can_stop_her_speaking(store: Engine) -> None:
         "The barn is available on the fourteenth, my lord. The generator limit applies "
         "after six. Mrs. Hale asked whether we still want both days."
     )
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok(long_answer)])
+    adapter = ScriptedAdapter([ok(long_answer)])
     voice_provider = ScriptedVoiceProvider(release=threading.Event())
     with speaking_client(store, adapter, recognizer, voice_provider) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
@@ -607,7 +618,7 @@ def test_interrupting_a_session_that_is_not_speaking_is_harmless(store: Engine) 
 def test_a_house_with_no_voice_hears_and_does_not_speak(store: Engine) -> None:
     """No admitted speech route means a session that listens — honestly, and silently."""
     recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
     with voice_client(store, adapter, recognizer) as reachable:
         session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
             "session"
@@ -622,3 +633,206 @@ def test_a_house_with_no_voice_hears_and_does_not_speak(store: Engine) -> None:
     assert view["delivery"] is None
     assert turn["delivery"] is None, "nothing was spoken, so there is no delivery record"
     assert turn["delivered"] is False
+
+
+# =============================================================================
+# Work package 3 — the desktop's half: physical playback and the adoption route
+# =============================================================================
+
+
+def test_speech_reaches_the_desktop_once_and_is_then_gone(store: Engine) -> None:
+    """§11. The loopback hand-off, and the reason live speech stays ephemeral.
+
+    Handed over **once**: a second collection of the same segment finds nothing,
+    because the bytes left the service when the first response was written. There is
+    no route to fetch them again, which is what makes "released" a fact rather than
+    a policy.
+    """
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
+    voice_provider = ScriptedVoiceProvider()
+    with speaking_client(store, adapter, recognizer, voice_provider) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        view = _poll_until_answered(reachable, session)
+        assert view["turns"]
+
+        collected: list[dict[str, object]] = []
+        for _ in range(20):
+            offer = reachable.get(f"/voice/sessions/{session}/speech/next").json()
+            segment = offer["segment"]
+            if segment is not None:
+                collected.append(segment)
+            elif collected:
+                break
+            time.sleep(0.05)
+
+    assert collected, "no speech was ever offered to the desktop"
+    first = collected[0]
+    assert first["audio_format"] == "wav"
+    assert first["sample_rate"] == 24000
+    assert first["audio_bytes"] > 0
+    assert first["audio_base64"] != ""
+    # The text is exactly what the voice was asked to say — a contiguous slice of
+    # Val's visible answer, never a paraphrase of it.
+    assert first["text"] in " ".join(voice_provider.spoken)
+    assert first["segment_index"] >= 1
+    # And the service holds nothing afterwards: every offer was distinct.
+    indexes = [int(segment["segment_index"]) for segment in collected]
+    assert len(indexes) == len(set(indexes)), "a segment was handed over twice"
+
+
+def test_handing_over_is_recorded_and_is_not_a_claim_that_anything_was_heard(
+    store: Engine,
+) -> None:
+    """§11.1. `available_to_desktop` and `playback_started` are different facts."""
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
+    with speaking_client(store, adapter, recognizer, ScriptedVoiceProvider()) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        view = _poll_until_answered(reachable, session)
+        (turn,) = view["turns"]
+        # Val's answer, which is what speech is about — never the owner's message.
+        message_id = turn["answer"]["val_message"]["id"]
+        segment = None
+        for _ in range(20):
+            offer = reachable.get(f"/voice/sessions/{session}/speech/next").json()
+            if offer["segment"] is not None:
+                segment = offer["segment"]
+                break
+            time.sleep(0.05)
+        assert segment is not None
+
+        handed = reachable.get(f"/messages/{message_id}/playback").json()
+        assert [event["state"] for event in handed] == ["available_to_desktop"], (
+            "handing bytes to a desktop is not a claim that a speaker played them"
+        )
+
+        # Now the desktop reports what its output device actually did.
+        played = reachable.post(
+            f"/voice/sessions/{session}/speech/played",
+            json={
+                "message_id": message_id,
+                "segment_index": segment["segment_index"],
+                "state": "playback_started",
+                "elapsed_ms": 12,
+            },
+        )
+        assert played.status_code == 200
+        states = [event["state"] for event in played.json()]
+        assert states == ["available_to_desktop", "playback_started"]
+        assert played.json()[1]["elapsed_ms"] == 12
+        assert played.json()[1]["text"] == segment["text"], (
+            "the record says what was spoken; the desktop says what the device did"
+        )
+
+
+def test_a_desktop_cannot_claim_the_service_handed_it_something(store: Engine) -> None:
+    """`available_to_desktop` is the service's own act, and is refused here."""
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    with speaking_client(
+        store, ScriptedAdapter([ok("Eight.")]), recognizer, ScriptedVoiceProvider()
+    ) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        refused = reachable.post(
+            f"/voice/sessions/{session}/speech/played",
+            json={
+                "message_id": "01a0d000-0000-7000-8000-000000000000",
+                "segment_index": 1,
+                "state": "available_to_desktop",
+            },
+        )
+        assert refused.status_code == 422
+        assert "the service" in refused.json()["detail"]
+
+        unknown = reachable.post(
+            f"/voice/sessions/{session}/speech/played",
+            json={
+                "message_id": "01a0d000-0000-7000-8000-000000000000",
+                "segment_index": 1,
+                "state": "playback_teleported",
+            },
+        )
+        assert unknown.status_code == 422
+
+
+def test_reporting_playback_of_a_segment_never_handed_over_is_refused(store: Engine) -> None:
+    """A playback report about audio the house never sent is not evidence."""
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
+    with speaking_client(store, adapter, recognizer, ScriptedVoiceProvider()) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        view = _poll_until_answered(reachable, session)
+        (turn,) = view["turns"]
+        refused = reachable.post(
+            f"/voice/sessions/{session}/speech/played",
+            json={
+                "message_id": turn["answer"]["val_message"]["id"],
+                "segment_index": 99,
+                "state": "playback_started",
+            },
+        )
+        assert refused.status_code == 409
+        assert "never handed" in refused.json()["detail"]
+
+
+def test_with_no_voice_session_nothing_can_be_collected(store: Engine) -> None:
+    """§1.2. With Voice off no sink exists, so no generated speech can be played."""
+    recognizer = ScriptedRecognizer(batches=[])
+    with voice_client(store, ScriptedAdapter([]), recognizer) as reachable:
+        missing = reachable.get("/voice/sessions/01a0d000-0000-7000-8000-000000000000/speech/next")
+        assert missing.status_code == 404
+
+
+def test_adopting_a_recovered_fragment_becomes_an_ordinary_sealed_turn(store: Engine) -> None:
+    """§2.1's third route to canonical, through the service's own door."""
+    # The first turn is typed and unsealed, so it classifies as it always did.
+    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Noted, my lord.")])
+    with voice_client(store, adapter, ScriptedRecognizer(batches=[])) as reachable:
+        first = reachable.post(
+            "/turns", json={"content": "Opening a conversation.", "project": "Project Alpha"}
+        )
+        assert first.status_code == 200
+    # The typed turn above consumed the answer; a second client for the adoption.
+    adapter = ScriptedAdapter([ok("As you say, my lord.")])
+    with voice_client(store, adapter, ScriptedRecognizer(batches=[])) as reachable:
+        conversation = reachable.get("/conversations").json()[0]["id"]
+        adopted = reachable.post(
+            "/voice/adopt",
+            json={"conversation_id": conversation, "content": "Ask the cook about dinner."},
+        )
+        assert adopted.status_code == 200
+        assert adopted.json()["kind"] == "answered"
+
+    with store.connect() as connection:
+        seal = connection.execute(
+            text("select applied_by from conversation_egress_seals where conversation_id = :id"),
+            {"id": UUID(conversation)},
+        ).one()
+        classification = connection.execute(
+            text("select not_run_reason from classifications  order by created_at desc limit 1")
+        ).scalar_one()
+    assert seal.applied_by == "recovered_fragment_adopted"
+    assert classification is not None and "local-only" in classification

@@ -67,6 +67,7 @@ from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.exchange import ClarificationNeeded
 from val_gateway.loop import TruncatedTurn, Turn, UnansweredTurn
 from val_gateway.revisions import RevisionRefusedError, revise
+from val_policy.egress import LiveVoiceConversations
 
 #: How long after an utterance settles the house waits before submitting it, in
 #: case the owner was only drawing breath. Long enough to catch a resumed
@@ -100,6 +101,12 @@ class Submit(Protocol):
     is what lets Val begin speaking before she has finished writing. Optional, and
     ignored by a route that cannot stream: progressive speech is an improvement on
     the same turn, never a different turn.
+
+    `merged` says this text is two halves of one sentence joined before submission
+    — the resume-before-delivery case. It changes nothing about the turn; it names
+    which route to canonical the live-voice seal is being applied by (owner ruling,
+    24 September 2026, §2.1), so the seal row records how the text got there rather
+    than assuming the ordinary case.
     """
 
     def __call__(
@@ -108,6 +115,7 @@ class Submit(Protocol):
         conversation_id: UUID | None,
         *,
         on_delta: DeltaSink | None = None,
+        merged: bool = False,
     ) -> DeliberatedOutcome: ...
 
 
@@ -158,6 +166,13 @@ class Delivery(Protocol):
     def bind(self, message_id: UUID) -> None: ...
 
     def record_segments(self) -> int: ...
+
+    @property
+    def message_id(self) -> UUID | None:
+        """Val's answer this delivery is about, once it is bound. Work package 3
+        §11 needs it: a segment handed to the desktop must name which answer it
+        belongs to, or the physical record cannot be joined to the conversation."""
+        ...
 
 
 #: How the session obtains delivery for one answer. `None` — the default — is a
@@ -384,6 +399,13 @@ class VoiceSession:
         self._speech = speech
         #: Delivery of the answer to the turn now in flight, while it lasts.
         self._delivery: Delivery | None = None
+        #: The delivery that has just finished, kept until the next turn replaces it.
+        #: Owner execution order, 24 September 2026 (§11): the desktop collects
+        #: synthesised audio a poll at a time, and a segment produced in the last
+        #: instant of a turn would otherwise be discarded with the delivery before
+        #: the desktop had a chance to ask for it — losing the end of her sentence.
+        #: Held, not accumulated: exactly one, replaced when the next turn begins.
+        self._recent: Delivery | None = None
         #: Every barge-in this session performed, in milliseconds from the
         #: recognizer's event reaching delivery control to the sink stopping.
         self.cancellations: list[float] = []
@@ -495,6 +517,16 @@ class VoiceSession:
                 connection.execute(
                     _CLOSE_SESSION, {"id": session_id, "state": state.value, "reason": detail}
                 )
+        with self._lock:
+            # Voice off releases the hand-off as well as the recognizer: audio the
+            # desktop never collected is discarded rather than left waiting for a
+            # session that has ended (§5, §11).
+            recent, self._recent = self._recent, None
+        if recent is not None:
+            sink = getattr(recent, "sink", None)
+            stop = getattr(sink, "stop", None)
+            if callable(stop):
+                stop("the voice session ended")
 
     def _fail(self, detail: str) -> None:
         with self._lock:
@@ -516,6 +548,18 @@ class VoiceSession:
         """End the utterance in progress now, rather than waiting for silence."""
         self._recognizer.flush()
         self.advance()
+
+    @property
+    def speech_handover(self) -> Delivery | None:
+        """The delivery whose audio the desktop may still collect.
+
+        The one in flight, or the one that has just finished. Owner execution order,
+        24 September 2026 (§11): audio is collected a poll at a time, so the end of
+        an answer must remain collectable for a moment after the turn is over —
+        otherwise her last few words are synthesised and silently dropped.
+        """
+        with self._lock:
+            return self._delivery if self._delivery is not None else self._recent
 
     @property
     def delivery(self) -> Delivery | None:
@@ -787,11 +831,17 @@ class VoiceSession:
         delivery = None if self._speech is None else self._speech()
         with self._lock:
             self._delivery = delivery
+            # The previous turn's hand-off ends when this one begins: one delivery
+            # is collectable at a time, and an older one is released here.
+            self._recent = None
         try:
             outcome = self._submit(
                 utterance.text,
                 self.conversation_id,
                 on_delta=None if delivery is None else delivery.feed,
+                # Which route to canonical the seal is applied by: an ordinary
+                # settled utterance, or two halves joined inside the resume window.
+                merged=bool(utterance.merged_from),
             )
         except Exception as failure:
             if delivery is not None:
@@ -816,6 +866,12 @@ class VoiceSession:
         finally:
             with self._lock:
                 self._inflight = None
+                # The delivery leaves `_delivery` and stays collectable through
+                # `_recent`, so the last synthesised segment of an answer is not
+                # thrown away between the turn ending and the desktop's next poll.
+                if self._delivery is not None:
+                    self._recent = self._delivery
+                self._delivery = None
                 if self.state is VoiceSessionState.THINKING:
                     self.state = VoiceSessionState.LISTENING
 
@@ -875,6 +931,12 @@ class VoiceSession:
                 delivery.record_segments()
                 heard = delivery.audible
         with self._lock:
+            # The turn is finished and its delivery is no longer the one in flight —
+            # but its audio may not have been collected yet. Owner execution order,
+            # 24 September 2026 (§11): it stays collectable through `_recent` until
+            # the next turn begins, so the last segment of an answer is not dropped
+            # between `record_segments` and the desktop's next poll.
+            self._recent = self._delivery
             self._delivery = None
             self._turns.append(
                 VoiceTurn(
@@ -1061,6 +1123,29 @@ class VoiceSessions:
     def remove(self, key: UUID) -> VoiceSession | None:
         with self._lock:
             return self._sessions.pop(key, None)
+
+    def live_conversations(self) -> LiveVoiceConversations:
+        """Which conversations have Voice on right now — the seal's transient layer.
+
+        Owner ruling, 24 September 2026 (§2.1). A conversation with an open,
+        owner-started session is local-only for every request it makes while the
+        session lasts, typed or spoken, and whether or not anything has been said.
+        Read from live state rather than from a table on purpose: a durable row
+        saying "Voice is on" that outlived a crash would be exactly the stored
+        preference §4.2 forbids, and it could not be true anyway — a session dies
+        with the process that held its microphone.
+
+        A session that has not yet been attached to a conversation contributes
+        nothing here, because there is no conversation yet to seal; its first
+        spoken turn asserts the seal directly when it creates one.
+        """
+        with self._lock:
+            return LiveVoiceConversations(
+                session.conversation_id
+                for session in self._sessions.values()
+                if session.conversation_id is not None
+                and session.state is not VoiceSessionState.CLOSED
+            )
 
     def keys(self) -> tuple[UUID, ...]:
         with self._lock:

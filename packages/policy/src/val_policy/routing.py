@@ -33,6 +33,7 @@ no dynamic provider installation. Those are Layers 1, 3, and 5.
 from collections.abc import Callable, Iterable, Sequence
 from itertools import pairwise
 
+from val_domain.egress import Egress
 from val_domain.gateway import (
     Admission,
     CapabilityProfile,
@@ -41,6 +42,7 @@ from val_domain.gateway import (
     ModelConfig,
     TaskType,
 )
+from val_policy.eligibility import egress_refusal_for
 
 #: Admission states that may carry Layer 0 traffic. `QUALIFIED` is included
 #: because it is strictly stronger, not because anything holds it — nothing
@@ -98,6 +100,7 @@ def candidates(
     *,
     profile: CapabilityProfile,
     cost_bound: Callable[[ModelConfig], float],
+    egress: Egress = Egress.ORDINARY,
 ) -> list[ModelConfig]:
     """Every configuration that may carry this request, cheapest first.
 
@@ -122,6 +125,12 @@ def candidates(
         config
         for config in configs
         if is_admitted(config)
+        # Owner ruling, 24 September 2026 (§1.5). A local-only request never
+        # selects a route that runs off this machine, so the seal shapes routing
+        # rather than merely failing at the end of it — a sealed turn is answered
+        # locally, not refused. The same function the gateway's pre-dispatch guard
+        # uses decides it, so the filter and the guard cannot drift apart.
+        and egress_refusal_for(egress, config) is None
         and is_eligible(config, classification)
         and satisfies_profile(config, profile)
         and is_ready(config)
@@ -160,6 +169,7 @@ def attempt_order(
     profile: CapabilityProfile,
     cost_bound: Callable[[ModelConfig], float],
     on_tie: Callable[[str, str, float], None] | None = None,
+    egress: Egress = Egress.ORDINARY,
 ) -> list[ModelConfig]:
     """The order routes are tried: the primary, then its declared chain. Nothing else.
 
@@ -180,7 +190,8 @@ def attempt_order(
 
     Nothing is inherited. A declared fallback that is retired, unadmitted,
     ineligible for this content, **below the required capability profile**,
-    unready, or unaffordable does not appear in this list at all, because it
+    forbidden by the live-voice seal, unready, or unaffordable does not appear in
+    this list at all, because it
     appears only if it passed the same six filters on its own account — which is
     what keeps a partner route's declared structured fallback from ever serving
     a partner task (ruling, 7 September 2026) (`01-architecture.md` §5.4:
@@ -188,7 +199,13 @@ def attempt_order(
     not inherited.").
     """
     ranked = candidates(
-        configs, classification, is_ready, is_affordable, profile=profile, cost_bound=cost_bound
+        configs,
+        classification,
+        is_ready,
+        is_affordable,
+        profile=profile,
+        cost_bound=cost_bound,
+        egress=egress,
     )
     # Ties are visible only here, among the ranked candidates: the attempt
     # order that follows is the primary plus its declared chain, so a caller

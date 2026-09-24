@@ -13,6 +13,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from val_domain.egress import Egress
 from val_domain.project import ProjectAttribution
 
 
@@ -201,6 +202,13 @@ class GatewayErrorKind(StrEnum):
     #: attempt — the turn **stops here**. It does not fall through to a paid
     #: image-capable Partner. Nothing is transmitted and nothing is charged.
     LOCAL_PERCEPTION_UNAVAILABLE = "local_perception_unavailable"
+    #: Owner ruling, 24 September 2026 (Voice work package 3 §1.5). This request
+    #: is local-only — a live Voice session is open on its conversation, the
+    #: conversation holds live-microphone-derived text, or it carries content
+    #: recalled from one — and the route it reached runs off this machine. **Not
+    #: retryable on another route**: retrying is the thing forbidden, and there is
+    #: no approval path, because the ruling is that the transcript does not leave.
+    LOCAL_ONLY_EGRESS_REFUSED = "local_only_egress_refused"
     #: Owner execution order, 22 September 2026: Val's voice is local. When the
     #: local speech route cannot produce it, the request **stops here**. No cloud
     #: text-to-speech is called and ElevenLabs is never invoked automatically —
@@ -1013,6 +1021,18 @@ class GatewayRequest(BaseModel):
     #: exchange's total cost becomes reconstructable. A conversation call's
     #: exchange is its provenance; an explicit one must agree with it.
     exchange: TurnReference | None = None
+    #: Owner ruling, 24 September 2026 (Voice work package 3 §1.5). Whether this
+    #: request may be transmitted off this machine at all. `ORDINARY` is the
+    #: governed behaviour that existed before the ruling; `LOCAL_ONLY` means only
+    #: a configuration whose inference runs here may carry it, with no approval
+    #: path and no fallback. It is **not** a classification and changes nothing
+    #: about eligibility, recall or handling — see `val_domain.egress`.
+    egress: Egress = Egress.ORDINARY
+
+    @property
+    def local_only(self) -> bool:
+        """Whether the live-voice seal forbids transmitting this off the machine."""
+        return self.egress is Egress.LOCAL_ONLY
 
     @property
     def exchange_reference(self) -> TurnReference | None:

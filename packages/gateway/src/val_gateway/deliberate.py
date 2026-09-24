@@ -93,6 +93,7 @@ from val_domain.deliberation import (
     DeliberationRecord,
     Ordering,
 )
+from val_domain.egress import ORDINARY, EgressDecision, LocalOnlyReason, sealed
 from val_domain.gateway import (
     Classification,
     GatewayError,
@@ -138,7 +139,9 @@ from val_gateway.loop import (
 from val_gateway.memory import DEFAULT_LIMIT
 from val_gateway.persona import DatabasePersonaLoader
 from val_gateway.projects import ProjectSession
+from val_gateway.seal import SealRoute
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
+from val_policy.consequence import execution_refusal
 from val_policy.deliberation import (
     BLIND_POSITION_INSTRUCTION,
     BLIND_POSITION_OUTPUT_SCHEMA,
@@ -161,6 +164,7 @@ from val_policy.deliberation import (
     split_reconciled,
     validate_strip,
 )
+from val_policy.egress import LiveVoiceConversations, decide_egress
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 
 _LOGGER = logging.getLogger("val.deliberation")
@@ -309,6 +313,9 @@ def send(
     on_stage: StageSink | None = None,
     candidate: ModelConfig | None = None,
     attachments: tuple[CandidateAttachment, ...] = (),
+    live_voice: LiveVoiceConversations | None = None,
+    spoken: bool = False,
+    seal_route: SealRoute = SealRoute.UTTERANCE_FINALIZED,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -321,6 +328,22 @@ def send(
     blind position and the response, and nothing else — to a registered
     candidate through a `CandidateGateway`; a plain gateway refuses it before
     anything is persisted. Classification and strip route as always.
+
+    `live_voice` and `spoken` are the live-voice seal's two live inputs (owner
+    ruling, 24 September 2026, Voice work package 3 §1.5). `live_voice` names the
+    conversations that have an owner-started Voice session open right now — the
+    transient layer — and `spoken` says that *this* turn came from the microphone,
+    which a brand-new conversation could not otherwise know, because its
+    conversation does not exist until this turn creates it. Everything else the
+    seal needs is durable and read from the store.
+
+    **A sealed turn does not call the cloud classifier or the cloud strip route.**
+    It takes the ordinary conversation path on the local Partner route, and its
+    consequentiality is recorded as NOT RUN with the seal as the reason — never as
+    a fabricated `not_consequential`. That is the owner's knowing trade (§1.7):
+    the consequential machinery, web search and remote tools are unavailable in a
+    sealed conversation, in exchange for the guarantee that no live-voice
+    transcript ever leaves this machine.
     """
     if candidate is not None and not isinstance(gateway, CandidateGateway):
         raise GatewayError(
@@ -342,6 +365,10 @@ def send(
         conversation_id=conversation_id,
         title=title,
         attachments=attachments,
+        # Owner ruling, 24 September 2026 (§2.1). A spoken turn's message and its
+        # conversation's local-only seal are committed together, by `open_turn`,
+        # on one transaction. `seal_route` says which route to canonical this is.
+        seal=seal_route if spoken else None,
     )
     mark("message_persisted")
     if isinstance(opened, ClarificationNeeded):
@@ -397,6 +424,75 @@ def send(
         )
         if impossible is not None:
             return unanswered_or_raise(opened, impossible)
+    # Owner ruling, 24 September 2026 (Voice work package 3 §1.5, §2.1, §2.3).
+    # **The seal is decided once, here, and carried.** Every call this turn makes
+    # is governed by the same answer; recomputing it per call would let one of
+    # them disagree with the others, which is the one failure mode a privacy rule
+    # cannot survive. The transient layer — a live Voice session on this
+    # conversation — and the durable layer — live-microphone text already
+    # canonical here — are both read; a spoken turn asserts the transient layer
+    # directly, because a brand-new conversation did not exist to be looked up
+    # until this turn created it.
+    decision = decide_egress(engine, opened.conversation.id, live=live_voice)
+    if spoken and not decision.local_only:
+        decision = sealed(LocalOnlyReason.VOICE_SESSION_ACTIVE)
+    if decision.local_only:
+        # No classifier call and no strip call: both currently route to cloud
+        # structured configurations, and a live-voice transcript does not leave
+        # this machine to be classified. The record says the classification did
+        # **not run**, with the seal as its reason — never `not_consequential`,
+        # which would be a finding nobody made.
+        not_run = record_classification(
+            engine,
+            conversation_id=opened.conversation.id,
+            message_id=opened.user_message.id,
+            verdict=None,
+            hard_exclusion=None,
+            attempts=0,
+            model_call_ids=(),
+            resolving_model_call_id=None,
+            resolution=None,
+            not_run_reason=(
+                "local-only conversation (live-voice seal): "
+                f"{decision.because()}. The consequentiality classifier and the preference "
+                "strip route are cloud structured configurations, and live-voice content is "
+                "not transmitted off this machine to be classified (owner ruling, "
+                "24 September 2026)."
+            ),
+        )
+        _LOGGER.info(
+            "consequentiality classification NOT RUN for message %s: local-only conversation "
+            "(%s). consequential execution is BLOCKED: required safety gate unavailable under "
+            "local-only policy. %s",
+            opened.user_message.id,
+            decision.because(),
+            execution_refusal(not_run),
+        )
+        outcome = _ordinary(
+            engine,
+            gateway,
+            opened,
+            classification,
+            recall_limit,
+            max_output_tokens,
+            on_delta,
+            on_stage,
+            candidate=candidate,
+            visual=visual,
+            egress=decision,
+        )
+        if isinstance(outcome, UnansweredTurn):
+            return outcome
+        return DeliberatedTurn(
+            turn=outcome,
+            captured_as=None,
+            hard_exclusion=None,
+            blind=None,
+            deliberation=None,
+            blind_payload=None,
+            classification=not_run,
+        )
+
     mark("classification_start")
     classified = _classify(gateway, content, opened.scope, classification, exchange=exchange)
     mark("classification_end")
@@ -435,6 +531,7 @@ def send(
             on_stage,
             candidate=candidate,
             visual=visual,
+            egress=decision,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -536,7 +633,7 @@ def send(
 
     # 4. One configuration for both remaining calls (ruling, 19 August 2026).
     persona = DatabasePersonaLoader(engine).active()
-    messages, recalled = assemble_turn(
+    messages, recalled, _egress = assemble_turn(
         engine,
         opened,
         recall_limit=recall_limit,
@@ -813,7 +910,7 @@ def _known_material_cannot_fit(
     """The lower-bound impossibility test: the already-known ordinary prompt against
     the loaded window. `None` when it fits or cannot be measured (the exact preflight
     at each call then decides, failing closed on the conservative bound)."""
-    messages, _recalled = assemble_turn(engine, opened, recall_limit=recall_limit)
+    messages, _recalled, _egress = assemble_turn(engine, opened, recall_limit=recall_limit)
     feasibility = gateway.measure_candidate_context(
         messages,
         scope=opened.scope,
@@ -852,15 +949,21 @@ def _ordinary(
     on_stage: StageSink | None = None,
     candidate: ModelConfig | None = None,
     visual: VisualTurn | None = None,
+    egress: EgressDecision = ORDINARY,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """The WP-0.7 turn, from an already-opened state."""
     visual = visual or VisualTurn(classification=classification, configuration=None, bound=())
-    messages, recalled = assemble_turn(
+    # Owner ruling, 24 September 2026 (§2.6). **The seal travels with recall**, and
+    # `assemble_turn` returns the decision as it stands once this request's content
+    # is known: content recalled from a sealed conversation seals the request that
+    # carries it. Routing below uses what came back, not what went in.
+    messages, recalled, egress = assemble_turn(
         engine,
         opened,
         recall_limit=recall_limit,
         images=visual.images,
         perception=visual.perception,
+        egress=egress,
     )
     _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     turn = TurnReference(conversation_id=opened.conversation.id, message_id=opened.user_message.id)
@@ -874,6 +977,7 @@ def _ordinary(
                 configuration=candidate,
                 max_output_tokens=max_output_tokens,
                 on_delta=on_delta,
+                egress=egress.egress,
             )
         else:
             response = gateway.converse(
@@ -883,6 +987,10 @@ def _ordinary(
                 turn=turn,
                 max_output_tokens=max_output_tokens,
                 on_delta=on_delta,
+                # The seal, as decided for this turn and escalated for whatever
+                # recall brought in. A local-only request routes locally, and the
+                # gateway refuses it to any route that runs off this machine.
+                egress=egress.egress,
                 # Pinned to the route this turn's images were derived for; None
                 # on a text turn, where routing proceeds exactly as it always has.
                 configuration=visual.configuration,

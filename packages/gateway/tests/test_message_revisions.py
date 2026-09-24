@@ -177,7 +177,7 @@ def test_an_earlier_call_reconstructs_exactly_after_a_revision(store: Engine) ->
 
     # Reconstruct the second turn's request from the record, after the revision
     # and after a later turn: identical to what the adapter was handed.
-    reconstructed, _ = assemble_turn(
+    reconstructed, _, _ = assemble_turn(
         store,
         OpenedTurn(
             conversation=second.conversation, scope=second.scope, user_message=second.user_message
@@ -188,7 +188,7 @@ def test_an_earlier_call_reconstructs_exactly_after_a_revision(store: Engine) ->
     # The later turn received the corrected wording in A's position.
     later = _say.last_adapter  # type: ignore[attr-defined]
     del later
-    reconstructed_third, _ = assemble_turn(
+    reconstructed_third, _, _ = assemble_turn(
         store,
         OpenedTurn(
             conversation=third.conversation, scope=third.scope, user_message=third.user_message
@@ -210,7 +210,7 @@ def test_a_revision_recorded_while_a_turn_is_open_is_invisible_to_it(store: Engi
     # The revision lands after this turn's message was appended, before assembly.
     fact = revise(store, first.user_message.id, CORRECTED_A)
     assert fact.after_sequence == opened.user_message.sequence
-    messages, _ = assemble_turn(store, opened)
+    messages, _, _ = assemble_turn(store, opened)
     assert messages[0].content == ASK_A, "a fact recorded after the turn opened cannot reach it"
 
 

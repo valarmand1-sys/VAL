@@ -472,3 +472,56 @@ body {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* --- Voice — owner execution order, 24 September 2026, §9, §17 -----------------
+   Within the existing visual language: the controls sit in the composer beside
+   Attach media and Send, and the state is words rather than a colour. Colour is
+   never the only signal (§9), so the live microphone is marked by its label and by
+   a dot that also changes shape. */
+.voice-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-right: auto;
+}
+.voice-controls button {
+  font-size: 0.85em;
+  padding: 0.25rem 0.6rem;
+}
+.voice-controls .voice-on {
+  font-weight: 600;
+}
+.voice-controls .mic-live::before {
+  content: "● ";
+}
+.voice-controls .mic-muted::before {
+  content: "◌ ";
+}
+.voice-state {
+  font-size: 0.8em;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+.voice-shortcut {
+  opacity: 0.7;
+}
+/* The guess in progress. Deliberately unlike a message: it is speech being heard,
+   not something said, and the service keeps the two in separate fields so that
+   nothing renders one as the other. */
+.voice-provisional {
+  font-size: 0.95em;
+  font-style: italic;
+  opacity: 0.75;
+  margin: 0.4rem 0 0;
+}
+.voice-notice {
+  margin-top: 0.4rem;
+}
+.voice-measurements {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  font-size: 0.75em;
+  opacity: 0.7;
+  margin: 0.35rem 0 0;
+}

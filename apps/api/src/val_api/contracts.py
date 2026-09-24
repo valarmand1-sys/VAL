@@ -1054,6 +1054,104 @@ class LiveDeliveryView(BaseModel):
     cancellation_ms: float | None
 
 
+class SpokenAudioView(BaseModel):
+    """One synthesised segment on its way to the Mac's speakers.
+
+    Owner execution order, 24 September 2026 (§11). The audio travels as base64
+    inside this object rather than as a bare body, because the desktop needs the
+    segment's identity and its exact text with the bytes: it reports playback
+    against the index, and the text is what the record says was spoken.
+
+    **Ephemeral.** The service held these bytes only until this response was
+    written, and holds nothing afterwards. There is no path to fetch them again.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    message_id: UUID
+    segment_index: int
+    #: Exactly the text this audio speaks — a contiguous slice of Val's visible
+    #: answer, never a paraphrase of it.
+    text: str
+    audio_format: str
+    sample_rate: int
+    duration_seconds: float
+    audio_bytes: int
+    #: The waveform, base64-encoded for transport over the existing loopback JSON
+    #: contract. Not stored at either end beyond playing it.
+    audio_base64: str
+
+
+class SpeechOfferView(BaseModel):
+    """What the desktop should do about speech right now — one poll, two questions.
+
+    Owner execution order, 24 September 2026 (§11, §12). A desktop that asked only
+    "is a segment waiting?" would learn about an interruption one poll too late and
+    keep a buffer sounding after Val had been told to stop. So the same answer
+    carries the instruction to stop.
+
+    `stop` is true when delivery was interrupted, failed, or is no longer active
+    with audio still unplayed. It means **halt the buffer now and discard the
+    queue**, which is the physical half of barge-in.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    #: `not_started`, `started`, `completed`, `interrupted`, `failed`, or `none`
+    #: when no answer is being delivered at all.
+    delivery_state: str
+    stop: bool
+    #: Why, when `stop` is true. Carried so the desktop can record the same reason
+    #: the house recorded.
+    reason: str | None = None
+    segment: SpokenAudioView | None = None
+
+
+class PlaybackReport(BaseModel):
+    """What the desktop's output device actually did with one segment."""
+
+    model_config = ConfigDict(frozen=True)
+
+    message_id: UUID
+    segment_index: int
+    #: `playback_started`, `playback_completed`, `playback_interrupted` or
+    #: `playback_failed`. `available_to_desktop` is the service's own to record and
+    #: is refused here: a desktop cannot report that the service handed it something.
+    state: str
+    #: Milliseconds from the desktop collecting the segment to this state.
+    elapsed_ms: int | None = None
+    reason: str | None = None
+
+
+class PlaybackEventView(BaseModel):
+    """One physical-playback transition, from the append-only record."""
+
+    model_config = ConfigDict(frozen=True)
+
+    segment_index: int
+    event: int
+    state: str
+    text: str
+    elapsed_ms: int | None
+    reason: str | None
+
+
+class AdoptedFragmentRequest(BaseModel):
+    """A guess a restart found open, which the owner has chosen to adopt.
+
+    Owner execution order, 24 September 2026 (§2.1's third route to canonical).
+    The words are the owner's own, offered back to him as a guess and adopted
+    deliberately — never promoted by the house. They are live-microphone-derived
+    text, so adopting them applies the conversation's local-only seal in the same
+    transaction as the message they become.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    conversation_id: UUID
+    content: str
+
+
 class InterruptedUtteranceView(BaseModel):
     """A guess a crash left open. **Provisional, and labelled so.**
 

@@ -314,6 +314,102 @@ export interface Health {
   warnings: string[];
 }
 
+// --- live voice: work package 3 ------------------------------------------------
+// The service contracts, mirrored exactly. The desktop owns the microphone and the
+// speakers; the service owns recognition, cognition and speech. Nothing here can
+// start a device — these are requests about a session the owner already started.
+
+export interface VoiceRecognizerView {
+  recognizer: string;
+  recognizer_version: string;
+  recognizer_commit: string;
+  asr_model: string;
+  asr_model_sha256: string;
+  vad_model: string;
+  vad_model_sha256: string;
+}
+
+export interface VoiceTurnView {
+  message_id: string;
+  conversation_id: string;
+  text: string;
+  utterance: number;
+  endpoint_reason: string;
+  provisional_events: number;
+  merged_from: number[];
+  revised_to: string | null;
+  merge_refused: string | null;
+  delivered: boolean;
+  answer: TurnResponse;
+}
+
+export interface LiveDeliveryView {
+  state: string;
+  audible: boolean;
+  active: boolean;
+  segments_delivered: number;
+  delivered_characters: number;
+  cancellation_ms: number | null;
+}
+
+export interface VoiceSessionView {
+  session: string;
+  voice_session_id: string | null;
+  conversation_id: string | null;
+  state: string;
+  utterance: number;
+  // The rolling guess. Never rendered as conversation: it is shown as speech in
+  // progress and replaced, exactly as the service's own contract insists.
+  provisional: string;
+  hearing: boolean;
+  pending: string;
+  turns: VoiceTurnView[];
+  recognizer: VoiceRecognizerView;
+  endpoint: Record<string, number>;
+  error: string | null;
+  speaking: LiveDeliveryView | null;
+  cancellations_ms: number[];
+}
+
+// One synthesised segment, on its way to the Mac's speakers. Ephemeral at both
+// ends: the service released it when it answered, and the player releases it when
+// it has been decoded.
+export interface SpokenAudioView {
+  message_id: string;
+  segment_index: number;
+  text: string;
+  audio_format: string;
+  sample_rate: number;
+  duration_seconds: number;
+  audio_bytes: number;
+  audio_base64: string;
+}
+
+// One poll, two questions (§11, §12): is a segment waiting, and should what is
+// already playing stop? The second is why the physical interruption does not wait
+// for the next session poll.
+export interface SpeechOfferView {
+  delivery_state: string;
+  stop: boolean;
+  reason: string | null;
+  segment: SpokenAudioView | null;
+}
+
+export interface PlaybackEventView {
+  segment_index: number;
+  event: number;
+  state: string;
+  text: string;
+  elapsed_ms: number | null;
+  reason: string | null;
+}
+
+export type PlaybackState =
+  | "playback_started"
+  | "playback_completed"
+  | "playback_interrupted"
+  | "playback_failed";
+
 export class ApiRefusal extends Error {
   readonly status: number;
   readonly detail: unknown;
@@ -387,6 +483,55 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  // --- live voice ---------------------------------------------------------------
+  // Opening a session does not open a microphone: the service owns no device, and
+  // the desktop acquires one only from the owner's own gesture.
+  openVoiceSession: (body: { conversation_id?: string; project?: string; no_project?: boolean }) =>
+    request<VoiceSessionView>("/voice/sessions", { method: "POST", body: JSON.stringify(body) }),
+  voiceSession: (session: string) => request<VoiceSessionView>(`/voice/sessions/${session}`),
+  closeVoiceSession: (session: string) =>
+    request<VoiceSessionView>(`/voice/sessions/${session}/close`, { method: "POST" }),
+  interruptVoice: (session: string) =>
+    request<VoiceSessionView>(`/voice/sessions/${session}/interrupt`, { method: "POST" }),
+  finalizeVoice: (session: string) =>
+    request<VoiceSessionView>(`/voice/sessions/${session}/finalize`, { method: "POST" }),
+  deliveredVoiceTurn: (session: string, messageId: string) =>
+    request<VoiceSessionView>(`/voice/sessions/${session}/delivered/${messageId}`, {
+      method: "POST",
+    }),
+  // Raw PCM, as an octet-stream body. Never a file, never a form, never base64 on
+  // the way in: bounded live audio handed straight to the recognizer.
+  sendVoiceAudio: async (session: string, pcm: ArrayBuffer): Promise<void> => {
+    const response = await fetch(`${API_BASE}/voice/sessions/${session}/audio`, {
+      method: "POST",
+      headers: { "Content-Type": "application/octet-stream" },
+      body: pcm,
+    });
+    if (!response.ok) throw new ApiRefusal(response.status, await response.text());
+  },
+  // A null `segment` means nothing is waiting, which is not the same as delivery
+  // having ended; `stop` is the instruction to halt what is already sounding.
+  collectSpeech: (session: string) =>
+    request<SpeechOfferView>(`/voice/sessions/${session}/speech/next`),
+  reportPlayback: (
+    session: string,
+    body: {
+      message_id: string;
+      segment_index: number;
+      state: PlaybackState;
+      elapsed_ms?: number;
+      reason?: string;
+    },
+  ) =>
+    request<PlaybackEventView[]>(`/voice/sessions/${session}/speech/played`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  messagePlayback: (messageId: string) =>
+    request<PlaybackEventView[]>(`/messages/${messageId}/playback`),
+  // A guess a restart found open, adopted by the owner as his own words.
+  adoptVoiceFragment: (body: { conversation_id: string; content: string }) =>
+    request<TurnResponse>("/voice/adopt", { method: "POST", body: JSON.stringify(body) }),
   health: () => request<Health>("/health"),
   projects: (query: { archived?: boolean } = {}) =>
     request<ProjectView[]>(query.archived ? "/projects?archived=true" : "/projects"),

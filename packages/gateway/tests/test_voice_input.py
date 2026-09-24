@@ -57,6 +57,7 @@ from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.loop import Turn
 from val_gateway.projects import load_catalogue
+from val_gateway.seal import SealRoute
 from val_gateway.voice import (
     RESUME_GRACE_SECONDS,
     VoiceSession,
@@ -194,7 +195,7 @@ def a_session(
     Deliberately not a stand-in: requirement I is that a spoken turn goes through
     normal Val Core, and the only way to hold that is to put normal Val Core here.
     """
-    provider = adapter or ScriptedAdapter([classifier_says("not_consequential"), ok("Quite so.")])
+    provider = adapter or ScriptedAdapter([ok("Quite so.")])
     hands = clock or Clock()
 
     def submit(
@@ -202,7 +203,13 @@ def a_session(
         existing: UUID | None,
         *,
         on_delta: Callable[[str], None] | None = None,
+        merged: bool = False,
     ) -> DeliberatedOutcome:
+        # Mirrors the service's own voice door exactly (owner ruling, 24 September
+        # 2026, Voice work package 3 §1.5): a spoken turn is submitted `spoken`,
+        # which seals its conversation in the same transaction as the message and
+        # takes the classifier and strip calls off the path. A double that omitted
+        # it would be testing a voice turn the application no longer performs.
         return deliberated_send(
             engine,
             build_gateway(engine, provider),
@@ -219,6 +226,8 @@ def a_session(
             # session that speaks can begin before she has finished writing. WP1's
             # sessions pass nothing and behave exactly as they did.
             on_delta=on_delta,
+            spoken=True,
+            seal_route=SealRoute.RESUME_MERGE if merged else SealRoute.UTTERANCE_FINALIZED,
         )
 
     session = VoiceSession(
@@ -380,14 +389,23 @@ def test_h_one_finalized_utterance_creates_exactly_one_canonical_message(
 
 
 def test_i_the_spoken_turn_goes_through_normal_val_core(store: Engine) -> None:
-    """I. Classification, persona, routing, persistence — the ordinary path.
+    """I. Persona, routing, persistence — the ordinary path, and one exception to it.
 
     A voice-specific route would show up here as a missing classification row:
     every deliberated turn has one, and a turn that skipped Core would not.
+
+    **Amended 24 September 2026 (Voice work package 3 §1.5, §2.3).** The row is
+    still here, and it now says the classification did **not run**. The owner ruled
+    that a live microphone transcript never leaves this machine; the consequentiality
+    classifier is a cloud structured route; so a spoken turn no longer makes that
+    call, and the turn makes exactly one call — the local response. The assertion
+    that a classifier reply was consumed has become the assertion that none was,
+    which is the stronger of the two: it fails both if Core is bypassed and if the
+    transcript reaches the classifier.
     """
     recognizer = ScriptedRecognizer(batches=[[started(1), final(1, "What time is dinner?")]])
     conversation = a_conversation(store)
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    adapter = ScriptedAdapter([ok("Eight, my lord.")])
     session, _, clock = a_session(store, recognizer, adapter=adapter, conversation_id=conversation)
 
     session.feed(MARKER)
@@ -406,10 +424,23 @@ def test_i_the_spoken_turn_goes_through_normal_val_core(store: Engine) -> None:
                 {"id": conversation},
             )
         }
-    assert classifications == 1, "the ordinary classifier ran on the spoken turn"
+        recorded = connection.execute(
+            text(
+                "select established, verdict, attempts, not_run_reason "
+                "  from classifications where message_id = :id"
+            ),
+            {"id": turn.message_id},
+        ).one()
+    assert classifications == 1, "the turn's classification is on record either way"
+    assert recorded.not_run_reason is not None, "and it says the classification did not run"
+    assert "local-only" in recorded.not_run_reason
+    assert (recorded.established, recorded.verdict, recorded.attempts) == (False, None, 0), (
+        "a classification that did not run claims no verdict and no attempt"
+    )
     assert "conversation" in tasks, "the response call is on record as an ordinary conversation"
+    assert "classification" not in tasks, "and no classification call was made at all"
     assert messages_of(store, conversation)[-1] == "Eight, my lord."
-    assert len(adapter.sent) == 2, "classification then response — the ordinary two calls"
+    assert len(adapter.sent) == 1, "the response alone: a sealed turn makes one call"
 
 
 def test_j_provenance_records_input_mode_voice_and_the_exact_recognizer(
@@ -526,7 +557,7 @@ def test_m_a_guess_never_reaches_the_cognition_context(store: Engine) -> None:
         ]
     )
     conversation = a_conversation(store)
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("As you wish.")])
+    adapter = ScriptedAdapter([ok("As you wish.")])
     session, _, clock = a_session(store, recognizer, adapter=adapter, conversation_id=conversation)
 
     session.feed(MARKER)
@@ -773,14 +804,9 @@ def test_r_once_val_has_delivered_the_next_utterance_is_its_own_turn(
         ]
     )
     conversation = a_conversation(store)
-    adapter = ScriptedAdapter(
-        [
-            classifier_says("not_consequential"),
-            ok("At once, my lord."),
-            classifier_says("not_consequential"),
-            ok("And the wine, my lord."),
-        ]
-    )
+    # Two spoken turns, two answers, and no classifier reply between them: a
+    # sealed conversation makes no classifier call at all (§2.3).
+    adapter = ScriptedAdapter([ok("At once, my lord."), ok("And the wine, my lord.")])
     session, _, clock = a_session(store, recognizer, adapter=adapter, conversation_id=conversation)
 
     session.feed(MARKER)
@@ -805,6 +831,17 @@ def test_r_a_turn_anchoring_a_decision_is_never_rewritten_to_fake_continuity(
 
     The resumed speech becomes its own turn, and the refusal is on the record
     rather than swallowed.
+
+    **Amended 24 September 2026 (Voice work package 3 §1.7).** The anchoring blind
+    position is now written directly by this test rather than produced by the turn,
+    because a spoken turn can no longer produce one: a sealed conversation makes no
+    classifier call, so the consequential machinery does not run in it, which is the
+    consequence the owner knowingly accepted. The behaviour under test is unchanged
+    and is what matters — **a message anchoring a recorded decision is never
+    rewritten to make a resumed sentence look continuous** — and the durable state
+    that triggers it is constructed here instead of being arrived at. The refusal is
+    kept as a guard whose production reachability from voice is currently nil; that
+    is reported to the owner rather than being quietly deleted with the test.
     """
     recognizer = ScriptedRecognizer(
         batches=[
@@ -813,12 +850,42 @@ def test_r_a_turn_anchoring_a_decision_is_never_rewritten_to_fake_continuity(
         ]
     )
     conversation = a_conversation(store)
-    adapter = ScriptedAdapter(full_script())
+    adapter = ScriptedAdapter([ok("On the wide shot, my lord.")])
     session, _, clock = a_session(store, recognizer, adapter=adapter, conversation_id=conversation)
 
     session.feed(MARKER)
     settle(session, clock)
     (first,) = session.snapshot().turns
+    with store.begin() as connection:
+        # The durable state whose consequence is under test: this message anchors
+        # an enforced blind position. Anchored to the call the turn really made and
+        # the persona really active, so nothing here is a dangling reference.
+        call_id = connection.execute(
+            text(
+                "select id from model_calls where conversation_id = :id "
+                " order by created_at desc limit 1"
+            ),
+            {"id": conversation},
+        ).scalar_one()
+        persona_id = connection.execute(
+            text("select id from personas where is_active")
+        ).scalar_one()
+        connection.execute(
+            text(
+                "insert into blind_positions (conversation_id, message_id, model_call_id, "
+                "  persona_id, position, confidence, reasoning, stripped_content, ordering, "
+                "  classification, classified_by) "
+                "values (:conversation, :message, :call, :persona, 'Open wide.', 'medium', "
+                "  'Because the room is the subject.', 'How should it open?', 'enforced', "
+                "  'consequential', 'automatic')"
+            ),
+            {
+                "conversation": conversation,
+                "message": first.message_id,
+                "call": call_id,
+                "persona": persona_id,
+            },
+        )
     with store.connect() as connection:
         blinds = connection.execute(
             text("select count(*) from blind_positions where message_id = :id"),
@@ -873,7 +940,13 @@ def test_s_the_classifier_sees_settled_text_and_never_a_guess(store: Engine) -> 
 
 
 def test_t_typed_turns_are_completely_unchanged(store: Engine) -> None:
-    """T. Nothing about a typed turn learned that microphones exist."""
+    """T. Nothing about a typed turn learned that microphones exist.
+
+    Including its classification: an ordinary typed turn in an unsealed
+    conversation still classifies on its cloud structured route, exactly as before
+    the live-voice seal existed (§2.7's clean boundary). The two scripted replies
+    are that fact, and the assertion below checks the record rather than the script.
+    """
     adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Cobalt, my lord.")])
     outcome = deliberated_send(
         store,
@@ -889,8 +962,17 @@ def test_t_typed_turns_are_completely_unchanged(store: Engine) -> None:
             {"id": outcome.turn.user_message.id},
         ).scalar_one()
         sessions = connection.execute(text("select count(*) from voice_sessions")).scalar_one()
+        classification = connection.execute(
+            text(
+                "select established, verdict, not_run_reason from classifications "
+                " where message_id = :id"
+            ),
+            {"id": outcome.turn.user_message.id},
+        ).one()
     assert provenance == 0, "a typed message gains no voice provenance"
     assert sessions == 0, "and opens no voice session"
+    assert classification.not_run_reason is None, "and its classification ran, as it always did"
+    assert (classification.established, classification.verdict) == (True, "not_consequential")
 
 
 def test_u_no_cloud_speech_recognition_is_reachable_from_this_path() -> None:

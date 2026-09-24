@@ -177,18 +177,32 @@ latency comparison**, nothing in the owner's conversation history.
 because reuse of a 93 % stable prefix would be far larger than that and ordinary
 run-to-run noise on this machine is far smaller.
 
-### **CROSS-REQUEST PREFIX REUSE NOT SUPPORTED ON THIS SERVING PATH**
+### **NO USEFUL CROSS-REQUEST PREFIX REUSE WAS OBSERVED UNDER THE TESTED CURRENT SERVING CONFIGURATION**
 
-DIRECTLY OBSERVED. The ~7.6–9.4 s pre-generation interval is paid on every
-independent request, and the 93 % stable prefix buys nothing today.
+DIRECTLY OBSERVED. The ~7.6–9.4 s pre-generation interval was paid on every
+independent request measured here, and the 93 % stable prefix bought nothing
+under the configuration tested.
+
+**Corrected 24 September 2026 (WP3 §0.1).** This section first read
+"CROSS-REQUEST PREFIX REUSE NOT SUPPORTED ON THIS SERVING PATH", which claims
+more than the evidence carries. What was measured is an *absence of useful
+reuse* in one configuration — the loaded model, its load settings, this server
+build, independent requests over the OpenAI-compatible surface. That is not
+evidence that LM Studio, MLX or the underlying runtime is **incapable** of
+prompt or KV reuse, and no such incapacity is claimed. A different serving mode,
+load configuration or session shape was not tested and may behave differently.
+The `reuse-probe.json` artifact is preserved exactly as the probe produced it,
+carrying the original over-strong wording in its `finding` field; where the two
+differ, this record governs.
 
 The WP2 statement that "the warm-up did not materially reduce the pre-generation
-interval" is confirmed, and the reason is now established rather than hypothesised.
-The earlier phrasing "LM Studio did not reuse a prefix cache" was a HYPOTHESIS; it
-is now DIRECTLY OBSERVED for independent requests on this path. **Prefill itself
-remains NOT DIRECTLY OBSERVABLE** — the server reports no separate prefill figure,
-and no prefill number is derived by subtraction. The correct term stays
-**pre-generation interval**.
+interval" is confirmed. The earlier phrasing "LM Studio did not reuse a prefix
+cache" was a HYPOTHESIS; what is now DIRECTLY OBSERVED is the absence of a
+useful reduction between two byte-identical independent requests in the tested
+configuration — which is a fact about the measurement, not about the runtime's
+capabilities. **Prefill itself remains NOT DIRECTLY OBSERVABLE** — the server
+reports no separate prefill figure, and no prefill number is derived by
+subtraction. The correct term stays **pre-generation interval**.
 
 ---
 
@@ -395,7 +409,7 @@ boundaries:
 
 | contributor | median | why it is not mine |
 |---|---|---|
-| **Pre-generation, ~9.0 s** | 8.982 s | 5,752 prompt tokens processed with **no cross-request reuse on this serving path** (§6.1, observed). 93 % of those tokens are a stable prefix that is reused by nothing. |
+| **Pre-generation, ~9.0 s** | 8.982 s | 5,752 prompt tokens processed with **no useful cross-request reuse observed in the tested configuration** (§6.1). 93 % of those tokens are a stable prefix that nothing reused there. |
 | **Hidden reasoning before the first visible word, ~6.1 s** | 6.124 s | A property of MEDIUM effort. LOW is parked and remains NOT_ADMITTED; its correction-preservation regression stands. |
 | **TTS of the first segment, ~2.7 s** | 2.666 s | Synthesis at roughly real time, with a measured 1.1 s contention penalty while GPT-OSS generates. No cold cost exists to remove. |
 | Classification, 1.19 s | 1.186 s | Serial before the provider by construction; already under its own evidence-collection ruling. |
@@ -412,9 +426,9 @@ TTS-to-sink hand-off 0.000.
 
 **Cross-request prompt reuse for the 93 % stable prefix.** It is by far the largest
 single contributor (~9 s per turn), the prefix is already correctly positioned for
-it, and it is unavailable today because this serving path does not do it for
-independent requests. Obtaining it requires one of the changes §12 reserves to Lord
-Armand:
+it, and no useful reuse appeared in the configuration tested here. Whether a
+different serving mode or load configuration would provide it was not established
+either way. Pursuing it requires one of the changes §12 reserves to Lord Armand:
 
 - a **serving-configuration or serving-mode change** that enables prompt/KV reuse,
   if LM Studio offers one this pass did not find; or

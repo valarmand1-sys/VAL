@@ -24,7 +24,7 @@ to acquire one.
 from __future__ import annotations
 
 import json
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from binascii import Error as BinasciiError
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
@@ -37,6 +37,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import Engine, text
 
 from val_api.contracts import (
+    AdoptedFragmentRequest,
     BlindPositionView,
     CandidateView,
     ClassificationReviewView,
@@ -58,6 +59,8 @@ from val_api.contracts import (
     ManualDeliberationRequest,
     MessageView,
     MoveRequest,
+    PlaybackEventView,
+    PlaybackReport,
     ProjectCreateRequest,
     ProjectView,
     QueuedExchangeView,
@@ -69,7 +72,9 @@ from val_api.contracts import (
     RevisionRequest,
     RevisionView,
     ScopeTransitionView,
+    SpeechOfferView,
     SpeechView,
+    SpokenAudioView,
     TurnAnswered,
     TurnClarification,
     TurnRequest,
@@ -139,6 +144,13 @@ from val_gateway.persistence import (
     spend_by_task_type,
     uncosted_calls_this_month,
 )
+from val_gateway.playback import (
+    DesktopSink,
+    PlaybackEvent,
+    PlaybackState,
+    playback_of,
+    record_playback,
+)
 from val_gateway.projects import (
     ProjectCreationRefusedError,
     create_project,
@@ -146,6 +158,7 @@ from val_gateway.projects import (
     project_listing,
 )
 from val_gateway.revisions import RevisionRefusedError, retract, revise
+from val_gateway.seal import SealRoute
 from val_gateway.speech import register_voice, speak_message
 from val_gateway.voice import NO_SESSION, VoiceSession, VoiceSessions, interrupted
 from val_policy.attachments import AdmissionRefusedError
@@ -556,6 +569,12 @@ def create_app(
                 title=request.title,
                 max_output_tokens=request.max_output_tokens,
                 attachments=_candidates(request),
+                # Owner ruling, 24 September 2026 (§2.1's transient layer). A
+                # **typed** turn in a conversation whose Voice session is open is
+                # local-only too, from the moment Voice was turned on. `spoken`
+                # stays false: this is not microphone-derived text, so it does not
+                # durably seal anything by itself.
+                live_voice=sessions.live_conversations(),
             )
         except AdmissionRefusedError as refused:
             # Ruling, 19 September 2026: a file that could not be admitted
@@ -632,7 +651,15 @@ def create_app(
         been sent (`val_api.streaming`).
         """
         return StreamingResponse(
-            turn_event_stream(engine, gateway, request, render_turn, _candidates(request)),
+            turn_event_stream(
+                engine,
+                gateway,
+                request,
+                render_turn,
+                _candidates(request),
+                # The seal's transient layer reaches the streaming door too.
+                live_voice=sessions.live_conversations(),
+            ),
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )
@@ -803,7 +830,19 @@ def create_app(
         provider, voice = gateway.speech, gateway.voice
 
         def build() -> SpeechDelivery:
-            return SpeechDelivery(engine, speech=provider, voice=voice, configuration=configuration)
+            # Owner execution order, 24 September 2026 (§11). The sink is the one
+            # that can hand audio to the desktop that owns the Mac's speakers.
+            # Everything work package 2 proved about delivery truth holds
+            # unchanged — `DesktopSink` extends the ephemeral sink rather than
+            # replacing it — and what is added is the hand-off and the separate
+            # record of what the speakers then did.
+            return SpeechDelivery(
+                engine,
+                speech=provider,
+                voice=voice,
+                configuration=configuration,
+                sink=DesktopSink(),
+            )
 
         return build
 
@@ -900,6 +939,7 @@ def create_app(
             conversation_id: UUID | None,
             *,
             on_delta: Callable[[str], None] | None = None,
+            merged: bool = False,
         ) -> DeliberatedOutcome:
             """The ordinary door. A spoken turn is an ordinary turn.
 
@@ -922,6 +962,15 @@ def create_app(
                 # speaking the first sentence while she writes the second. The
                 # turn is otherwise identical to a typed one.
                 on_delta=on_delta,
+                # Owner ruling, 24 September 2026 (Voice work package 3 §1.5,
+                # §2.1). **This door is the microphone's door.** `spoken` is not
+                # inferred from anything: it is true because of where this closure
+                # lives, which is why a typed turn cannot reach it and a spoken
+                # turn cannot avoid it. The conversation's local-only seal is
+                # written in the same transaction as the message it creates.
+                spoken=True,
+                seal_route=(SealRoute.RESUME_MERGE if merged else SealRoute.UTTERANCE_FINALIZED),
+                live_voice=sessions.live_conversations(),
             )
 
         live = VoiceSession(
@@ -1010,6 +1059,166 @@ def create_app(
                 status_code=404, detail="this message has no speech delivery on record"
             )
         return found
+
+    def _playback_view(event: PlaybackEvent) -> PlaybackEventView:
+        return PlaybackEventView(
+            segment_index=event.segment_index,
+            event=event.event,
+            state=event.state.value,
+            text=event.text,
+            elapsed_ms=event.elapsed_ms,
+            reason=event.reason,
+        )
+
+    @app.get("/voice/sessions/{session}/speech/next")
+    def collect_speech(session: UUID) -> SpeechOfferView:
+        """What the desktop should do about speech right now.
+
+        Owner execution order, 24 September 2026 (§11, §12). **One poll, two
+        questions**: is a synthesised segment waiting to be played, and should what
+        is already playing stop? A desktop that asked only the first would keep a
+        buffer sounding for a poll interval after Val had been interrupted, which is
+        precisely the failure barge-in must not have.
+
+        A segment handed over here **leaves the service**: the bytes are released
+        the moment this response is written, and there is no route to fetch them
+        again. That is what keeps live speech ephemeral rather than uncollected.
+        """
+        live = voice_session_or_404(session)
+        # The delivery in flight, or the one that has just finished: the last
+        # segment of an answer must stay collectable for a moment after the turn
+        # ends, or her final words are synthesised and dropped (§11).
+        speaking = live.speech_handover
+        if speaking is None:
+            return SpeechOfferView(delivery_state="none", stop=False)
+        state = speaking.state.value
+        sink = getattr(speaking, "sink", None)
+        # Stop when delivery ended other than by completing. `active` is False for a
+        # completed answer too, which is why the state decides rather than the flag.
+        stopped_because = getattr(sink, "stopped_because", None)
+        should_stop = state in ("interrupted", "failed") or (
+            stopped_because is not None and state != "completed"
+        )
+        reason = None
+        if should_stop:
+            reason = getattr(speaking, "reason", None) or stopped_because or "delivery ended"
+        if not isinstance(sink, DesktopSink):
+            return SpeechOfferView(delivery_state=state, stop=should_stop, reason=reason)
+        offer = sink.collect()
+        if offer is None:
+            return SpeechOfferView(delivery_state=state, stop=should_stop, reason=reason)
+        message_id = speaking.message_id
+        if message_id is not None:
+            # The service's own half of the record: this segment became available
+            # to the desktop. It is **not** a claim that anything was heard.
+            record_playback(
+                engine,
+                message_id=message_id,
+                segment_index=offer.segment_index,
+                state=PlaybackState.AVAILABLE_TO_DESKTOP,
+                spoken_text=offer.text,
+                voice_session_id=live.session_id,
+            )
+        return SpeechOfferView(
+            delivery_state=state,
+            stop=should_stop,
+            reason=reason,
+            segment=SpokenAudioView(
+                message_id=message_id if message_id is not None else UUID(int=0),
+                segment_index=offer.segment_index,
+                text=offer.text,
+                audio_format=offer.audio_format,
+                sample_rate=offer.sample_rate,
+                duration_seconds=offer.duration_seconds,
+                audio_bytes=len(offer.audio),
+                audio_base64=b64encode(offer.audio).decode("ascii"),
+            ),
+        )
+
+    @app.post("/voice/sessions/{session}/speech/played")
+    def report_playback(session: UUID, report: PlaybackReport) -> list[PlaybackEventView]:
+        """What the Mac's speakers actually did with one segment.
+
+        The physical boundary §11.1 requires, and the only place it can come from:
+        the service cannot observe an output device, so it records what the desktop
+        reports and never guesses. `available_to_desktop` is refused here — that one
+        is the service's own fact about its own hand-off, and a desktop claiming it
+        would be reporting someone else's act.
+        """
+        live = voice_session_or_404(session)
+        try:
+            state = PlaybackState(report.state)
+        except ValueError as unknown:
+            raise HTTPException(
+                status_code=422, detail=f"unknown playback state {report.state!r}"
+            ) from unknown
+        if state is PlaybackState.AVAILABLE_TO_DESKTOP:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "available_to_desktop is the service's own record of handing the segment "
+                    "over; a desktop reports what its output device did, not what the service did"
+                ),
+            )
+        offered = [
+            event
+            for event in playback_of(engine, report.message_id)
+            if event.segment_index == report.segment_index
+        ]
+        if not offered:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "this segment was never handed to a desktop, so nothing can be reported "
+                    "about playing it"
+                ),
+            )
+        record_playback(
+            engine,
+            message_id=report.message_id,
+            segment_index=report.segment_index,
+            state=state,
+            # The text this segment actually spoke, taken from the record of the
+            # hand-off rather than from the report: the desktop reports what its
+            # device did, and the house says what the words were.
+            spoken_text=offered[0].text,
+            voice_session_id=live.session_id,
+            elapsed_ms=report.elapsed_ms,
+            reason=report.reason,
+        )
+        return [_playback_view(event) for event in playback_of(engine, report.message_id)]
+
+    @app.get("/messages/{message_id}/playback")
+    def message_playback(message_id: UUID) -> list[PlaybackEventView]:
+        """Every physical-playback transition for one answer, from the record."""
+        return [_playback_view(event) for event in playback_of(engine, message_id)]
+
+    @app.post("/voice/adopt")
+    def adopt_recovered_fragment(request: AdoptedFragmentRequest) -> TurnResponse:
+        """Adopt a guess a restart found open, as the owner's own words.
+
+        Owner execution order, 24 September 2026 (§2.1). The third route to
+        canonical, and it seals exactly as the other two do: the words are
+        live-microphone-derived, so the conversation becomes local-only in the same
+        transaction as the message they become. Nothing here promotes a fragment by
+        itself — the owner's call to this route *is* the adoption.
+        """
+        try:
+            outcome = deliberated_send(
+                engine,
+                gateway,
+                request.content,
+                catalogue=load_catalogue(engine),
+                conversation_id=request.conversation_id,
+                spoken=True,
+                seal_route=SealRoute.RECOVERED_FRAGMENT_ADOPTED,
+                live_voice=sessions.live_conversations(),
+            )
+        except RestrictedContentRefusedError as refusal:
+            raise HTTPException(status_code=403, detail=str(refusal)) from refusal
+        except ConversationRemovedError as removed:
+            raise HTTPException(status_code=409, detail=str(removed)) from removed
+        return render_turn(outcome)
 
     @app.post("/voice/sessions/{session}/close")
     def close_voice_session(session: UUID) -> VoiceSessionView:

@@ -29,8 +29,27 @@ import type {
   ReviewConclusion,
   ReviewProgressView,
   TurnClarification,
+  VoiceSessionView,
 } from "./api";
 import { Attachments } from "./attachments";
+import {
+  NO_TIMINGS,
+  VoiceController,
+  type VoiceTimings,
+} from "./voiceController";
+import {
+  MUTE_SHORTCUT_LABEL,
+  registerMuteShortcut,
+  tauriBinding,
+  unregisterMuteShortcut,
+  type ShortcutBinding,
+} from "./voiceShortcut";
+import {
+  VOICE_OFF,
+  describeVoice,
+  micControlLabel,
+  type VoiceStatus,
+} from "./voiceState";
 import type { Inline } from "./markdown";
 import { parseMarkdown } from "./markdown";
 import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST, StreamRefused } from "./api";
@@ -110,6 +129,16 @@ export function App(): React.JSX.Element {
   // Ephemeral until sent: selecting a file writes nothing anywhere.
   const [pending, setPending] = useState<PendingAttachment[]>([]);
   const [busy, setBusy] = useState(false);
+  // Live voice — owner execution order, 24 September 2026. **Voice is off here on
+  // every mount**, which is the whole of §1.3: launch, restart, relaunch after a
+  // crash and a machine wake all arrive at this line. Nothing persists a "Voice was
+  // on" preference, so there is nothing for a restore to read.
+  const [voice, setVoice] = useState<VoiceStatus>(VOICE_OFF);
+  const [voiceSession, setVoiceSession] = useState<VoiceSessionView | null>(null);
+  const [voiceTimings, setVoiceTimings] = useState<VoiceTimings>(NO_TIMINGS);
+  const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
+  const voiceController = useRef<VoiceController | null>(null);
+  const shortcutBinding = useRef<ShortcutBinding | null>(null);
   // Whether archived rows are listed. Display scoping only — the flag carries
   // no evidentiary meaning (§2.1 amendment, 31 August 2026), and everything
   // outside the two listings is archive-blind.
@@ -227,6 +256,89 @@ export function App(): React.JSX.Element {
       cancelAnimationFrame(second);
     };
   }, [streaming]);
+
+  // Voice — owner execution order, 24 September 2026, §5, §6, §7, §8.
+  //
+  // Every one of these is called from an owner gesture handler and from nowhere
+  // else. There is no effect that starts Voice, no timer, no resume, and no retry
+  // that reacquires a device: the controller refuses anything but an owner gesture,
+  // and these are the gestures.
+  const voiceOn = useCallback(async () => {
+    if (voiceController.current !== null) return;
+    setVoiceNotice(null);
+    const binding = shortcutBinding.current ?? (await tauriBinding());
+    shortcutBinding.current = binding;
+    const controller = new VoiceController({
+      hooks: {
+        onStatus: (status) => {
+          setVoice(status);
+          if (status.failure !== null) setVoiceNotice(status.failure);
+        },
+        onSession: (view) => setVoiceSession(view),
+        onTimings: (measured) => setVoiceTimings(measured),
+        onTurnSettled: (view) => {
+          const settled = view.turns.at(-1);
+          if (settled === undefined) return;
+          // The canonical turn is in the store; show the conversation it belongs to.
+          void openConversation(settled.conversation_id).catch(() => undefined);
+        },
+      },
+      registerShortcut: async (toggle) => {
+        const outcome = await registerMuteShortcut(binding, toggle);
+        if (outcome.detail !== null) setVoiceNotice(outcome.detail);
+        return outcome.registered;
+      },
+      unregisterShortcut: () => unregisterMuteShortcut(binding),
+    });
+    voiceController.current = controller;
+    // The same scope rule a typed turn uses, from the same function: a continued
+    // conversation sends only its id, a new one in an entered project sends the
+    // project, and an unassigned one says so explicitly. Voice is not a second
+    // scoping model (§1.6).
+    await controller.start(turnScopeFields(entry, detail?.conversation ?? null));
+  }, [detail, entry, openConversation]);
+
+  const voiceOff = useCallback(async () => {
+    const controller = voiceController.current;
+    if (controller === null) return;
+    await controller.stop();
+    voiceController.current = null;
+    setVoiceSession(null);
+    setVoice(VOICE_OFF);
+  }, []);
+
+  const toggleMute = useCallback(async () => {
+    await voiceController.current?.toggleMute();
+  }, []);
+
+  // §16. A conversation change, a window closing, and the machine suspending all
+  // release the device and turn Voice off. None of them mutes-and-hopes, and none
+  // of them can reacquire anything afterwards.
+  useEffect(() => {
+    const release = () => {
+      const controller = voiceController.current;
+      if (controller === null) return;
+      void controller.releaseForLifecycle("app_or_machine_suspending").then(() => {
+        voiceController.current = null;
+        setVoice(VOICE_OFF);
+        setVoiceSession(null);
+      });
+    };
+    const onHidden = () => {
+      // A hidden window is **not** a reason to mute: he may be listening while
+      // working elsewhere, and the global shortcut is there for exactly that. Only
+      // a real suspend releases, and the platform signals that as a page hide.
+      if (document.visibilityState === "hidden" && document.hidden && !windowVisible()) return;
+    };
+    window.addEventListener("pagehide", release);
+    window.addEventListener("beforeunload", release);
+    document.addEventListener("visibilitychange", onHidden);
+    return () => {
+      window.removeEventListener("pagehide", release);
+      window.removeEventListener("beforeunload", release);
+      document.removeEventListener("visibilitychange", onHidden);
+    };
+  }, []);
 
   const send = useCallback(
     async (content: string, projectOverride?: string, attached: PendingAttachment[] = []) => {
@@ -549,11 +661,72 @@ export function App(): React.JSX.Element {
                 }}
               />
             </label>
+            {/* Voice — owner execution order, 24 September 2026, §5, §9, §17.
+                Beside Attach media and Send, in the composer he already uses: Voice
+                is a way of saying a turn, not a separate screen or a second
+                conversation. The label reports **actual** state, never requested
+                state, and never by colour alone. */}
+            <div className="voice-controls" role="group" aria-label="Voice">
+              <button
+                type="button"
+                className={voice.session === "off" ? "voice-off" : "voice-on"}
+                aria-pressed={voice.session !== "off"}
+                onClick={() => {
+                  // The one door to a microphone in this application: his click.
+                  if (voice.session === "off") void voiceOn();
+                  else void voiceOff();
+                }}
+                disabled={voice.session === "starting" || voice.session === "stopping"}
+              >
+                {voice.session === "off" ? "Voice on" : "Voice off"}
+              </button>
+              {(voice.session === "active_mic_live" || voice.session === "active_muted") && (
+                <button
+                  type="button"
+                  className={voice.mic === "live" ? "mic-live" : "mic-muted"}
+                  aria-label={micControlLabel(voice)}
+                  aria-pressed={voice.mic !== "live"}
+                  onClick={() => void toggleMute()}
+                  disabled={voice.mic === "acquiring"}
+                >
+                  {voice.mic === "acquiring"
+                    ? "Unmuting…"
+                    : voice.mic === "live"
+                      ? "Mute"
+                      : "Unmute"}
+                </button>
+              )}
+              <span className="voice-state" aria-live="polite">
+                {describeVoice(voice)}
+                {voice.session !== "off" && voice.shortcutRegistered && (
+                  <span className="voice-shortcut"> · {MUTE_SHORTCUT_LABEL} mutes</span>
+                )}
+              </span>
+            </div>
             <button type="submit" disabled={busy || detail?.conversation.removed === true}>
               {busy ? "…" : "Send"}
             </button>
           </div>
         </form>
+
+        {/* What the microphone is hearing, as a guess in progress. Deliberately
+            outside the conversation: a provisional transcript is not a message, and
+            the service keeps the two in separate fields precisely so that nothing
+            renders one as the other. */}
+        {voiceSession !== null && voiceSession.provisional !== "" && (
+          <p className="voice-provisional" aria-live="polite">
+            <span className="visually-hidden">Hearing: </span>
+            {voiceSession.provisional}
+          </p>
+        )}
+        {/* The three owner-facing voice measurements the order names (§7, §18). Shown
+            rather than only logged, because the unmute figure is a promise about his
+            microphone and he should be able to see it. */}
+        {voice.session !== "off" && <VoiceMeasurements timings={voiceTimings} />}
+        {voiceNotice !== null && <div className="notice voice-notice">{voiceNotice}</div>}
+        {voiceSession !== null && voiceSession.error !== null && (
+          <div className="notice voice-notice">{voiceSession.error}</div>
+        )}
 
         <footer className="signals">
           {costs !== null && (
@@ -675,6 +848,38 @@ async function asAttachmentInput(pending: PendingAttachment): Promise<Attachment
 // 2026). Every piece of the message's own text becomes a React text node, so
 // nothing here can inject markup or execute a script, and no link or image is
 // rendered from model output. The stored message is untouched.
+// The voice intervals the owner cares about — owner execution order, §7 and §18.
+//
+// Each is a difference between two moments this window observed, and each is shown
+// **only once both ends exist**: an interval with one end is not a duration, and a
+// dash says so rather than a zero pretending to be a measurement.
+function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element | null {
+  const { timings } = props;
+  const span = (from: number | null, to: number | null): string =>
+    from === null || to === null ? "—" : `${Math.round(to - from)} ms`;
+  const unmute = span(timings.unmuteGestureAt, timings.unmuteTrackLiveAt);
+  const ready = span(timings.unmuteGestureAt, timings.unmuteFirstChunkAt);
+  const audible = span(timings.speechEndAt, timings.firstAudibleAt);
+  const silence = span(timings.bargeInAt, timings.silenceAt);
+  if (unmute === "—" && ready === "—" && audible === "—" && silence === "—") return null;
+  return (
+    <p className="voice-measurements">
+      <span title="From your unmute gesture to a live microphone track.">
+        unmute → live {unmute}
+      </span>
+      <span title="From your unmute gesture to the first audio chunk actually accepted.">
+        unmute → capturing {ready}
+      </span>
+      <span title="From the settled transcript to the first sound from the speakers in this window.">
+        transcript → audible {audible}
+      </span>
+      <span title="From your barge-in to the playing buffer being stopped in this window.">
+        barge-in → silence {silence}
+      </span>
+    </p>
+  );
+}
+
 function Prose(props: { text: string }): React.JSX.Element {
   const spans = (parts: Inline[]): React.JSX.Element[] =>
     parts.map((span, index) => {

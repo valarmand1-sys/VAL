@@ -79,6 +79,7 @@ from val_domain.conversation import (
     StoredRole,
     WorkingThread,
 )
+from val_domain.egress import ORDINARY, EgressDecision
 from val_domain.gateway import (
     CapabilityProfile,
     Classification,
@@ -133,7 +134,9 @@ from val_gateway.memory import (
 )
 from val_gateway.perception import TurnPerception, perceive_turn, record_handoff
 from val_gateway.projects import ProjectSession
+from val_gateway.seal import SealRoute, apply_seal
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
+from val_policy.egress import escalate_for_recall
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.recall_gate import ThreadContext, gate_house_recall, gate_recall
 from val_policy.restricted import preflight, refusal_message
@@ -489,7 +492,7 @@ def send(
             GatewayError(GatewayErrorKind.LOCAL_PERCEPTION_UNAVAILABLE, str(failure)),
         )
 
-    messages, recalled = assemble_turn(
+    messages, recalled, _egress = assemble_turn(
         engine,
         opened,
         recall_limit=recall_limit,
@@ -544,8 +547,18 @@ def open_turn(
     conversation_id: UUID | None = None,
     title: str | None = None,
     attachments: tuple[CandidateAttachment, ...] = (),
+    seal: SealRoute | None = None,
 ) -> OpenedTurn | ClarificationNeeded:
-    """Steps 1-3: preflight what was typed, resolve scope, persist the message."""
+    """Steps 1-3: preflight what was typed, resolve scope, persist the message.
+
+    `seal` (owner ruling, 24 September 2026, Voice work package 3 §2.1) says that
+    this message is live-microphone-derived text becoming canonical, and by which
+    route. When it is set, the conversation's local-only seal is written **in the
+    same transaction as the message**, so no observable state exists in which the
+    spoken message is in the store and the seal is not — including the moment
+    immediately after Voice is turned off, when the transient layer has ended and
+    an ordinary typed turn would otherwise be free to route to a cloud provider.
+    """
     # 1. Restricted, on what the user just typed, before anything is stored.
     #    The assembled request is checked again at step 8; this one is so that
     #    obvious Restricted material is refused before it becomes history.
@@ -618,11 +631,17 @@ def open_turn(
     #    the message. A refused admission never reaches this line, so it leaves no
     #    blob, no attachment, no association, no processing event, and no message.
     acts: tuple[AttachmentAct, ...] = ()
-    if attachments:
+    if attachments or seal is not None:
 
         def _commit(connection: Connection, message_id: UUID) -> None:
             nonlocal acts
-            acts = commit_acts(connection, message_id, attachments, admitted)
+            if attachments:
+                acts = commit_acts(connection, message_id, attachments, admitted)
+            if seal is not None:
+                # The atomicity rule, and the reason this is a callback rather
+                # than a line after the append: it runs on the transaction that
+                # is writing the message.
+                apply_seal(connection, conversation.id, message_id, route=seal)
 
         user_message = conversations.append(
             engine, conversation.id, role=StoredRole.USER, content=content, also=_commit
@@ -649,8 +668,22 @@ def assemble_turn(
     recall_limit: int = DEFAULT_LIMIT,
     images: tuple[ImagePart, ...] = (),
     perception: TurnPerception | None = None,
-) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...]]:
-    """Steps 4-7: history and recall, assembled into the outbound messages."""
+    egress: EgressDecision = ORDINARY,
+) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...], EgressDecision]:
+    """Steps 4-7: history and recall, assembled into the outbound messages.
+
+    Returns the messages, what recall selected, and **the egress decision as it
+    stands once this request's content is known** (owner ruling, 24 September 2026,
+    Voice work package 3 §2.6). The third value is the caller's authority for
+    routing: content recalled from a sealed conversation seals the request that
+    carries it, and that can only be known here, where the recall has just been
+    assembled in. A caller that routed on the decision it passed *in* would be
+    routing on a request it had not finished building.
+
+    Sealed conversations are not excluded from recall. A voice conversation is
+    remembered exactly as a typed one is (§1.6); what changes is that remembering
+    it makes the remembering request local-only too.
+    """
     mark("assembly_start")
     # 4-6. This conversation's own history — never gated — then cross-conversation
     #    recall, behind the deterministic necessity gate (ruled 10 September 2026).
@@ -778,6 +811,11 @@ def assemble_turn(
     #    recalled excerpts, if any → the record-state envelope → the current
     #    turn. The current message is already the last thing in `history`.
     prior_count = sum(1 for record in history if record.role.value in ("user", "val")) - 1
+    # §2.6, at the one point that can decide it: the recall for this request has
+    # just been chosen, so this is where the request learns whether it carries
+    # sealed content. The envelope below states the result, and the caller routes
+    # on it.
+    egress = escalate_for_recall(engine, egress, (item.conversation_id for item in recalled))
     state = PriorRecordState(
         current_local_time=current_local_time,
         current_timezone=now.strftime("%Z (UTC%z)"),
@@ -804,6 +842,9 @@ def assemble_turn(
         audio_state=audio_state,
         audio_perceived_this_turn=len(heard),
         audio_earlier_in_conversation=earlier_audio,
+        # Present in the document only when it is true, and then with its grounds.
+        local_only=egress.local_only,
+        local_only_reasons=tuple(reason.value for reason in egress.reasons),
     )
     mark("record_state_assembled")
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
@@ -832,7 +873,7 @@ def assemble_turn(
         *current,
     )
     mark("assembly_end")
-    return messages, recalled
+    return messages, recalled, egress
 
 
 def revision_facts(

@@ -146,6 +146,17 @@ class ClassificationRecord:
     resolving_model_call_id: UUID | None
     resolution: str | None
     created_at: datetime
+    #: Owner ruling, 24 September 2026 (Voice work package 3 §2.3). Why the
+    #: classification did not run at all — a local-only conversation may not call
+    #: the cloud classifier. Present on exactly the rows that record that, and a
+    #: row with it carries no attempts, no verdict and no calls: absence and a
+    #: negative result are different states, and this is how the record says so.
+    not_run_reason: str | None = None
+
+    @property
+    def ran(self) -> bool:
+        """Whether the classification was attempted at all."""
+        return self.not_run_reason is None
 
 
 @dataclass(frozen=True)

@@ -32,7 +32,6 @@ from sqlalchemy import Engine, text
 from test_deliberation_machinery import (
     ScriptedAdapter,
     build_gateway,
-    classifier_says,
     clean_personas,
     ok,
     store,
@@ -67,6 +66,7 @@ from val_gateway.delivery import (
     short_deliveries,
 )
 from val_gateway.loop import spoken_delivery_facts
+from val_gateway.seal import SealRoute
 from val_gateway.voice import RESUME_GRACE_SECONDS, VoiceSession
 from val_policy.deliberation import RECONCILIATION_VERDICT_MARKER
 from val_policy.project_resolution import ProjectSignals
@@ -763,7 +763,7 @@ def _a_speaking_session(
     conversation: UUID,
     speech: Callable[[], SpeechDelivery],
 ) -> tuple[VoiceSession, ScriptedAdapter, Clock]:
-    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok(ANSWER)])
+    adapter = ScriptedAdapter([ok(ANSWER)])
     clock = Clock()
 
     def submit(
@@ -771,7 +771,13 @@ def _a_speaking_session(
         existing: UUID | None,
         *,
         on_delta: Callable[[str], None] | None = None,
+        merged: bool = False,
     ) -> DeliberatedOutcome:
+        # Mirrors the service's own voice door exactly (owner ruling, 24 September
+        # 2026, Voice work package 3 §1.5): a spoken turn is submitted `spoken`,
+        # which seals its conversation in the same transaction as the message and
+        # takes the classifier and strip calls off the path. A double that omitted
+        # it would be testing a voice turn the application no longer performs.
         return deliberated_send(
             engine,
             build_gateway(engine, adapter),
@@ -784,6 +790,8 @@ def _a_speaking_session(
             else ProjectSignals(explicit_selection="Project Alpha"),
             conversation_id=existing,
             on_delta=on_delta,
+            spoken=True,
+            seal_route=SealRoute.RESUME_MERGE if merged else SealRoute.UTTERANCE_FINALIZED,
         )
 
     session = VoiceSession(

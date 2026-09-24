@@ -749,11 +749,31 @@ class Classification(Base):
         PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=True
     )
     resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+    #: Voice work package 3, 24 September 2026 (migration 0030). Why the
+    #: classification did not run at all. A sealed conversation may not call the
+    #: cloud classifier, so a sealed turn's consequentiality is never assessed —
+    #: and "never assessed" is not "assessed and found ordinary". Present on
+    #: exactly the rows that record a decision not to run.
+    not_run_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     __table_args__ = (
         # A verdict exists exactly when the classification was established.
         CheckConstraint("established = (verdict IS NOT NULL)", name="established_iff_verdict"),
-        CheckConstraint("attempts >= 1", name="classification_attempted_at_least_once"),
+        # Attempted at least once, or positively stating that it was not. The
+        # original form of this check was `attempts >= 1` alone, which was true of
+        # every row that could then exist.
+        CheckConstraint(
+            "attempts >= 1 OR not_run_reason IS NOT NULL",
+            name="attempted_once_or_says_it_did_not",
+        ),
+        # And a row that did not run carries none of a run's traces, so the
+        # column is a state rather than a comment.
+        CheckConstraint(
+            "not_run_reason IS NULL OR ("
+            "attempts = 0 AND verdict IS NULL AND established = false "
+            "AND resolving_model_call_id IS NULL AND cardinality(model_call_ids) = 0)",
+            name="not_run_claims_nothing",
+        ),
     )
 
 
@@ -2243,6 +2263,111 @@ class SpeechDelivery(Base):
     )
 
 
+class SpeechPlayback(Base):
+    """What the speakers actually did. Append-only.
+
+    Work package 2 recorded delivery as far as an in-process sink. Bytes handed to
+    a desktop are not sound in a room, and work package 3's whole subject is the
+    difference: this table keeps `available_to_desktop`, `playback_started`,
+    `playback_completed`, `playback_interrupted` and `playback_failed` apart, one
+    row per transition, so a segment that was offered and never played can never
+    later read as heard.
+    """
+
+    __tablename__ = "speech_playbacks"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    recorded_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    voice_session_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("voice_sessions.id", ondelete="NO ACTION"), nullable=True
+    )
+    segment_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    event: Mapped[int] = mapped_column(Integer, nullable=False)
+    state: Mapped[str] = mapped_column(Text, nullable=False)
+    text_spoken: Mapped[str] = mapped_column("text", Text, nullable=False)
+    elapsed_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("message_id", "segment_index", "event", name="uq_speech_playbacks_event"),
+        CheckConstraint(
+            "state IN ('available_to_desktop', 'playback_started', 'playback_completed', "
+            "'playback_interrupted', 'playback_failed')",
+            name="state_is_known",
+        ),
+        CheckConstraint(
+            "(state IN ('playback_interrupted', 'playback_failed')) = (reason IS NOT NULL)",
+            name="a_state_and_its_reason_agree",
+        ),
+        CheckConstraint("event > 0", name="event_is_counted_from_one"),
+        CheckConstraint("segment_index > 0", name="segment_index_is_counted_from_one"),
+        CheckConstraint("elapsed_ms IS NULL OR elapsed_ms >= 0", name="elapsed_is_not_negative"),
+        Index("ix_speech_playbacks_message", "message_id"),
+    )
+
+
+class ConversationEgressSeal(Base):
+    """This conversation's content may not leave the machine. Append-only.
+
+    Owner ruling, 24 September 2026 (Voice work package 3 §1.5). One row per
+    conversation that has ever carried live-microphone-derived canonical text,
+    written **in the same transaction as that message**, so there is no observable
+    state in which the message exists and the seal does not.
+
+    Deliberately a sidecar rather than a column on `conversations`: the seal is
+    evidence about what happened, not a setting, and there is no unseal control —
+    which is why UPDATE and DELETE are both refused by trigger. Equally
+    deliberately not `Classification.RESTRICTED`: Restricted would strand a spoken
+    turn with no eligible route, or force local eligibility to be widened to
+    Restricted, which is a reserved owner ruling nobody has made. Only egress
+    differs for a spoken turn, so only egress is recorded here.
+
+    No transcript column and no audio column: the words are in `messages`, exactly
+    where a typed turn's are.
+    """
+
+    __tablename__ = "conversation_egress_seals"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    #: The canonical message that caused the seal — the conversation's first
+    #: live-microphone-derived text. Kept so the row answers *why*, and so the
+    #: atomicity rule stays checkable after the fact.
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: Which route to canonical applied it: an ordinary finalized utterance, the
+    #: resume-before-delivery merge, or an owner-adopted recovered fragment.
+    applied_by: Mapped[str] = mapped_column(Text, nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("conversation_id", name="uq_conversation_egress_seals_conversation"),
+        CheckConstraint(
+            "applied_by IN ('utterance_finalized', 'resume_merge', 'recovered_fragment_adopted')",
+            name="applied_by_is_a_known_route",
+        ),
+        CheckConstraint("length(reason) > 0", name="a_seal_says_why"),
+        Index("ix_conversation_egress_seals_message", "message_id"),
+    )
+
+
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
@@ -2286,5 +2411,8 @@ SPECIFIED_TABLES = frozenset(
         "voice_recovery_journal",
         # What the owner actually heard, migration 0029 (23 September 2026).
         "speech_deliveries",
+        # The live-voice seal and physical playback, migration 0030 (24 September 2026).
+        "conversation_egress_seals",
+        "speech_playbacks",
     }
 )

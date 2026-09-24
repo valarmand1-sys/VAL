@@ -201,7 +201,9 @@ def test_a_warming_failure_does_not_stop_the_session_hearing_him(store: Engine) 
     recognizer = ScriptedRecognizer(batches=[[started(1), final(1, "Are you there?")]])
     submitted: list[str] = []
 
-    def submit(content: str, existing: UUID | None, *, on_delta: object = None) -> object:
+    def submit(
+        content: str, existing: UUID | None, *, on_delta: object = None, merged: bool = False
+    ) -> object:
         submitted.append(content)
         raise AssertionError("stop here: the turn was reached, which is the point")
 

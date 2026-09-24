@@ -177,6 +177,11 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "model_call_ids",
         "resolving_model_call_id",
         "resolution",
+        # Voice work package 3, 24 September 2026 (migration 0030): a sealed turn
+        # may not call the cloud classifier, so its consequentiality was never
+        # assessed. Absence and a negative result are different states, and this
+        # column is how the record says which one this row is.
+        "not_run_reason",
     ),
     # §2.2 model_call_cache_usage — ruling, 8 September 2026: the prompt-cache
     # evidence sidecar; model_calls itself is unchanged.
@@ -464,6 +469,36 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "first_audio_ms",
         "elapsed_ms",
     ),
+    # What the speakers actually did — Voice work package 3, 24 September 2026
+    # (migration 0030). Bytes handed to a desktop are not sound in a room, and the
+    # two are separate states here. **No audio column: the bytes are ephemeral and
+    # this is a record of what happened to them, not a copy of them.**
+    "speech_playbacks": (
+        "id",
+        "recorded_at",
+        "message_id",
+        "voice_session_id",
+        "segment_index",
+        "event",
+        "state",
+        "text",
+        "elapsed_ms",
+        "reason",
+    ),
+    # The live-voice seal — Voice work package 3, 24 September 2026 (migration
+    # 0030). One row per conversation that has ever carried live-microphone-derived
+    # canonical text; written in the same transaction as that message. Read it as
+    # the privacy claim it is: **no audio column, and no transcript column** — the
+    # seal names the conversation and the message, and the words live in `messages`
+    # exactly as a typed turn's do.
+    "conversation_egress_seals": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "message_id",
+        "applied_by",
+        "reason",
+    ),
     # Live voice input — Voice mode work package 1, 23 September 2026.
     # Transcribed by hand like everything else here. Read these three column
     # lists as the privacy claim they are: **no audio column of any type appears
@@ -542,6 +577,10 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("classifications", "hard_exclusion"),
         ("classifications", "resolving_model_call_id"),
         ("classifications", "resolution"),
+        ("classifications", "not_run_reason"),
+        ("speech_playbacks", "voice_session_id"),
+        ("speech_playbacks", "elapsed_ms"),
+        ("speech_playbacks", "reason"),
         # Ruling, 7 September 2026: the determination exists iff the label is
         # not_consequential; tuning fields exist iff the conclusion needs them.
         ("classification_labels", "exclusion_determination"),

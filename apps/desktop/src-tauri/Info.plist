@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Owner execution order, 24 September 2026 (Voice work package 3 §5, §20 A).
+         macOS will not present the microphone prompt at all without this string, and
+         a WKWebView that calls getUserMedia in an application that has not declared
+         the purpose is refused. The words are what Lord Armand will read in the
+         system dialog, so they say exactly what the microphone is for and what
+         becomes of the sound: it is transcribed on this machine and never kept. -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Val listens only while you turn Voice on. Your speech is transcribed on this Mac and the audio is never recorded, stored or sent anywhere.</string>
+</dict>
+</plist>

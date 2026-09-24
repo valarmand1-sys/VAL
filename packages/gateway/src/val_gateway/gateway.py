@@ -54,6 +54,7 @@ from datetime import date
 from typing import cast
 from uuid import UUID
 
+from val_domain.egress import Egress
 from val_domain.gateway import (
     Admission,
     CacheTtl,
@@ -65,6 +66,7 @@ from val_domain.gateway import (
     GatewayErrorKind,
     GatewayRequest,
     GatewayResponse,
+    Hosting,
     Message,
     Metering,
     ModelConfig,
@@ -109,7 +111,7 @@ from val_policy.budget import (
     no_affordable_route_message,
     output_cap_overrun,
 )
-from val_policy.eligibility import refusal_for, startup_violations
+from val_policy.eligibility import egress_refusal_for, refusal_for, startup_violations
 from val_policy.restricted import preflight, refusal_message
 from val_policy.routing import (
     attempt_order,
@@ -558,8 +560,13 @@ class Gateway:
         max_output_tokens: int = 4096,
         configuration: ModelConfig | None = None,
         on_delta: DeltaSink | None = None,
+        egress: Egress = Egress.ORDINARY,
     ) -> GatewayResponse:
         """Talk to Val. The persona is loaded, assembled whole, and attributed.
+
+        `egress` is the live-voice seal (owner ruling, 24 September 2026): pass
+        `LOCAL_ONLY` and this call may be carried only by a configuration whose
+        inference runs on this machine, with no fallback and no approval path.
 
         `on_delta` (Val Core Phase 1, 11 September 2026) is a sink owned by the
         caller inside Val Core — the loop or the deliberation orchestrator —
@@ -609,6 +616,7 @@ class Gateway:
             scope=scope,
             turn=turn,
             max_output_tokens=max_output_tokens,
+            egress=egress,
         )
         if configuration is None:
             return self._execute(request, on_delta=on_delta)
@@ -687,6 +695,9 @@ class Gateway:
             # rates — the reservation figure — never the input rate alone.
             cost_bound=lambda config: maximum_cost(config, parts, request.max_output_tokens),
             on_tie=self._report_tie,
+            # Owner ruling, 24 September 2026: a local-only request is routed
+            # locally rather than routed anywhere and then refused.
+            egress=request.egress,
         )
         if not order:
             raise GatewayError(
@@ -875,6 +886,22 @@ class Gateway:
         on_delta: DeltaSink | None = None,
     ) -> GatewayResponse:
         """Reserve, call, settle. Every exit leaves the reservation resolved."""
+        # Owner ruling, 24 September 2026 (Voice work package 3 §1.5). **The
+        # narrowest door every provider call passes through.** `_execute` already
+        # declines to route a local-only request to a cloud configuration, and
+        # `candidates` filters it out of the order; this is the check that holds
+        # when a caller arrives by another entrance — `complete_with_configuration`
+        # and the candidate lane among them — because a rule enforced only at the
+        # place that happens to be convenient is not structural. It runs before
+        # eligibility, before the adapter is looked up, before a runtime is asked
+        # to come up and before anything is reserved, so a refused call transmits
+        # nothing and charges nothing.
+        egress_refusal = egress_refusal_for(request.egress, config)
+        if egress_refusal is not None:
+            kind, detail = egress_refusal
+            # No row is written: a row would assert a call that never happened.
+            raise GatewayError(kind, detail)
+
         refusal = refusal_for(request.classification, config)
         if refusal is not None:
             kind, detail = refusal
@@ -1698,6 +1725,28 @@ class Gateway:
         fits in what is left of the budget" is the difference between a decision
         Lord Armand must make and one he can wait out.
         """
+        # Owner ruling, 24 September 2026. A local-only request that found no
+        # route is a different situation from an ineligible one, and saying so is
+        # the difference between "the house cannot answer this here" and "the
+        # house will not answer this at all".
+        if request.local_only:
+            local = [
+                config
+                for config in active()
+                if is_admitted(config)
+                and config.hosting is Hosting.LOCAL
+                and is_eligible(config, request.classification)
+                and satisfies_profile(config, required_profile(request.task_type))
+            ]
+            if not local:
+                return (
+                    "This conversation is local-only, because live-voice content is in it or "
+                    "was recalled into it, and no configuration that runs on this machine is "
+                    f"admitted, eligible and qualified for the "
+                    f"{required_profile(request.task_type).value} capability profile this "
+                    "work requires. Nothing was transmitted: the transcript does not leave "
+                    "this machine to obtain an answer (owner ruling, 24 September 2026)."
+                )
         eligible = [
             config
             for config in active()

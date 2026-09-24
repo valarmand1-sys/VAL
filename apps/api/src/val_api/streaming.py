@@ -56,6 +56,7 @@ from val_gateway.exchange import RestrictedContentRefusedError
 from val_gateway.gateway import Gateway
 from val_gateway.loop import TruncatedTurn, Turn
 from val_gateway.projects import load_catalogue
+from val_policy.egress import LiveVoiceConversations
 from val_policy.project_resolution import ProjectSignals
 
 _LOGGER = logging.getLogger("val.api.stream")
@@ -94,11 +95,17 @@ def turn_event_stream(
     request: TurnRequest,
     render: Callable[[DeliberatedOutcome], BaseModel],
     attachments: tuple[CandidateAttachment, ...] = (),
+    live_voice: LiveVoiceConversations | None = None,
 ) -> Iterator[bytes]:
     """Run one deliberated turn on a worker thread; yield its events as they happen.
 
     `render` is the plain route's own outcome-to-response function, so the
     settled payload is identical in shape and content to `POST /turns`.
+
+    `live_voice` carries the live-voice seal's transient layer (owner ruling,
+    24 September 2026, §2.1) exactly as the plain route does — a typed turn in a
+    conversation with Voice on is local-only too, and the streaming door is not an
+    exception to that.
     """
     started = time.monotonic()
     events: queue.Queue[_Delta | _Stage | _Done | _Failed] = queue.Queue()
@@ -120,6 +127,7 @@ def turn_event_stream(
                 on_delta=lambda text: events.put(_Delta(text)),
                 on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
                 attachments=attachments,
+                live_voice=live_voice,
             )
         except BaseException as error:
             events.put(_Failed(error))

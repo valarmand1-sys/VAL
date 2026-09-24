@@ -75,7 +75,19 @@ def test_a_repeated_mark_keeps_its_whole_series() -> None:
         for _ in range(3):
             mark("provider_dispatch")
     assert recorder.count("provider_dispatch") == 3
-    assert recorder.first("provider_dispatch") != recorder.last("provider_dispatch") or True
+    # `first` and `last` name the two ends of the series, not one entry twice.
+    # Asserted against the recorded marks rather than against the clock:
+    # comparing two instants for inequality would depend on the resolution of
+    # `time.monotonic`, and the assertion originally written here escaped that
+    # by ending in `or True`, which nothing could fail (replaced 24 September
+    # 2026, WP3 §0.1).
+    series = [
+        at - recorder.started_at for name, at in recorder.marks if name == "provider_dispatch"
+    ]
+    assert len(series) == 3
+    assert recorder.first("provider_dispatch") == series[0]
+    assert recorder.last("provider_dispatch") == series[-1]
+    assert recorder.last("provider_dispatch") >= recorder.first("provider_dispatch")
 
 
 def test_two_turns_in_flight_do_not_write_into_one_recorder() -> None:

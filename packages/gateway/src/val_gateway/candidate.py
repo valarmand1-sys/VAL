@@ -47,6 +47,7 @@ from uuid import UUID
 
 from sqlalchemy import Engine
 
+from val_domain.egress import Egress
 from val_domain.gateway import (
     Admission,
     CacheTtl,
@@ -123,8 +124,15 @@ class CandidateGateway(Gateway):
         classification: Classification = Classification.PROTECTED,
         max_output_tokens: int = 4096,
         on_delta: DeltaSink | None = None,
+        egress: Egress = Egress.ORDINARY,
     ) -> GatewayResponse:
-        """`converse`, pinned to a candidate: the same assembly, the same checks, one exchanged."""
+        """`converse`, pinned to a candidate: the same assembly, the same checks, one exchanged.
+
+        The live-voice seal reaches this lane too (owner ruling, 24 September 2026).
+        The evaluation lane is not a door around a privacy rule: a local-only request
+        pinned to a candidate that runs off this machine is refused before dispatch,
+        exactly as it would be on the ordinary path.
+        """
         if self._persona_loader is None:
             raise PersonaUnavailableError(
                 PersonaProblem.NONE_ACTIVE,
@@ -140,6 +148,7 @@ class CandidateGateway(Gateway):
             scope=scope,
             turn=turn,
             max_output_tokens=max_output_tokens,
+            egress=egress,
         )
         self._refuse_restricted(request)
         self._refuse_incoherent_provenance(request)
