@@ -114,10 +114,12 @@ from val_gateway.attachments import (
 )
 from val_gateway.context import (
     PriorRecordState,
+    ShortSpokenAnswer,
     recall_block,
     record_state_block,
     select_conversation,
 )
+from val_gateway.delivery import short_deliveries
 from val_gateway.exchange import ClarificationNeeded, RestrictedContentRefusedError, resolve_scope
 from val_gateway.gateway import Gateway
 from val_gateway.grounding import grounded_answers, record_answer_sources
@@ -665,6 +667,12 @@ def assemble_turn(
     turns, selection = select_conversation(history)
     prior, current = turns[:-1], turns[-1:]
     corrected_after_answer, withdrawn_after = revision_facts(thread, selection.retained_from)
+    # Owner execution order, 23 September 2026 (§11): what he actually heard of
+    # Val's earlier answers, when speech ended one of them short. Empty on every
+    # conversation that has never been spoken aloud, which is most of them.
+    spoken_short = spoken_delivery_facts(
+        engine, thread, selection.retained_from, opened.conversation.id
+    )
     # Ruling, 13 September 2026: which retained Val answers were grounded in House
     # Recall when given, and in which sources — provenance only, no content.
     grounded = grounded_answers(engine, thread, selection.retained_from)
@@ -782,6 +790,7 @@ def assemble_turn(
         house_recall_detail=house.detail,
         corrected_after_answer=corrected_after_answer,
         withdrawn_after_positions=withdrawn_after,
+        spoken_delivery=spoken_short,
         grounded_answers=grounded,
         # Owner ruling, 19 September 2026: current-turn visual binding, stated
         # deterministically. `earlier` counts this conversation's attachment
@@ -867,6 +876,46 @@ def revision_facts(
                     sum(1 for kept in prior if kept.record.sequence < message.record.sequence)
                 )
     return tuple(corrected), tuple(withdrawn)
+
+
+def spoken_delivery_facts(
+    engine: Engine, thread: WorkingThread, retained_from: int, conversation_id: UUID
+) -> tuple[ShortSpokenAnswer, ...]:
+    """Retained answers of Val's that the owner did not hear in full.
+
+    Owner execution order, 23 September 2026 (work package 2 §11). Positions count
+    the retained prior messages of this request from 1, oldest first — the same
+    counting `revision_facts` uses. An answer outside the retained span describes
+    nothing in this request and is not stated.
+
+    **Nothing is rewritten to produce this.** Val's message stays exactly what she
+    wrote; the delivery record says how much of it was spoken, and this turns the
+    two into one fact the next turn can act on.
+    """
+    short = {record.message_id: record for record in short_deliveries(engine, conversation_id)}
+    if not short:
+        return ()
+    conversational = tuple(
+        message
+        for message in thread.live()
+        if message.record.role in (StoredRole.USER, StoredRole.VAL)
+    )
+    prior = conversational[retained_from:][:-1]
+    facts: list[ShortSpokenAnswer] = []
+    for index, message in enumerate(prior):
+        found = short.get(message.record.id)
+        if found is None or message.record.role is not StoredRole.VAL:
+            continue
+        facts.append(
+            ShortSpokenAnswer(
+                answer_position=index + 1,
+                state=found.state.value,
+                heard_characters=found.delivered_characters,
+                generated_characters=found.total_characters,
+                reason=found.reason,
+            )
+        )
+    return tuple(facts)
 
 
 def unanswered_or_raise(opened: OpenedTurn, failure: GatewayError) -> UnansweredTurn:

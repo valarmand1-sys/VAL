@@ -45,10 +45,13 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
+from typing import Protocol
 from uuid import UUID
 
 from sqlalchemy import Engine, text
 
+from val_domain.provider import DeltaSink
+from val_domain.speech import DeliveryState
 from val_domain.voice import (
     LiveRecognizer,
     ProvisionalText,
@@ -82,12 +85,81 @@ JOURNAL_MIN_CHARACTERS = 8
 NO_SESSION = UUID(int=0)
 
 
-#: How a settled utterance becomes a turn. Injected rather than called directly so
-#: this module states exactly what it needs from Core — text in, outcome out — and
-#: so a test can hold the boundary without a provider. The *implementation* passed
-#: in is always the ordinary deliberated send; there is no voice-specific route to
-#: pass instead.
-Submit = Callable[[str, UUID | None], DeliberatedOutcome]
+class Submit(Protocol):
+    """How a settled utterance becomes a turn.
+
+    Injected rather than called directly so this module states exactly what it
+    needs from Core — text in, outcome out — and so a test can hold the boundary
+    without a provider. The *implementation* passed in is always the ordinary
+    deliberated send; there is no voice-specific route to pass instead.
+
+    `on_delta` is Core's visible output as it is produced (Val Core Phase 1), which
+    is what lets Val begin speaking before she has finished writing. Optional, and
+    ignored by a route that cannot stream: progressive speech is an improvement on
+    the same turn, never a different turn.
+    """
+
+    def __call__(
+        self,
+        content: str,
+        conversation_id: UUID | None,
+        *,
+        on_delta: DeltaSink | None = None,
+    ) -> DeliberatedOutcome: ...
+
+
+class Delivery(Protocol):
+    """Speech delivery for one answer, as the session needs to see it.
+
+    A protocol rather than the class, so the session depends on *what delivery
+    must be able to do* — take visible text, say whether he has begun hearing
+    her, and stop — and not on how it speaks.
+    """
+
+    @property
+    def audible(self) -> bool:
+        """Has any audio reached the ear? **The delivered boundary.**"""
+        ...
+
+    @property
+    def active(self) -> bool:
+        """Is delivery live, so that owner speech now is barge-in?"""
+        ...
+
+    @property
+    def state(self) -> DeliveryState:
+        """How far delivery got: not_started, started, completed, interrupted, failed."""
+        ...
+
+    @property
+    def delivered_prefix(self) -> str:
+        """Exactly the words that reached the ear, in order."""
+        ...
+
+    @property
+    def segments_delivered(self) -> int:
+        """How many speech-safe pieces were handed over."""
+        ...
+
+    @property
+    def cancellation_ms(self) -> float | None:
+        """Service-side: signal to sink stopped. `None` if never interrupted."""
+        ...
+
+    def feed(self, delta: str) -> None: ...
+
+    def finish(self, settled_text: str | None = None) -> None: ...
+
+    def interrupt(self, reason: str = ...) -> float: ...
+
+    def bind(self, message_id: UUID) -> None: ...
+
+    def record_segments(self) -> int: ...
+
+
+#: How the session obtains delivery for one answer. `None` — the default — is a
+#: session that hears and does not speak, which is exactly work package 1.
+DeliveryFactory = Callable[[], Delivery]
 
 
 @dataclass(frozen=True)
@@ -97,8 +169,12 @@ class VoiceTurn:
     utterance: VoiceUtterance
     outcome: DeliberatedOutcome
     conversation_id: UUID
+    #: **The owner's** message — the canonical turn this utterance became.
     message_id: UUID
-    provisional_events: int
+    #: **Val's** answer, when she gave one. Delivery is about her words, not his,
+    #: so anything asking what was spoken keys on this and never on `message_id`.
+    answer_message_id: UUID | None = None
+    provisional_events: int = 0
     #: Set when the owner resumed after submission and the canonical wording was
     #: corrected through the revision machinery rather than by a second turn.
     revised_to: str | None = None
@@ -275,6 +351,7 @@ class VoiceSession:
         conversation_id: UUID | None = None,
         resume_grace_seconds: float = RESUME_GRACE_SECONDS,
         clock: Callable[[], float] = time.monotonic,
+        speech: DeliveryFactory | None = None,
     ) -> None:
         self._engine = engine
         self._recognizer = recognizer
@@ -298,6 +375,14 @@ class VoiceSession:
         self._inflight: _Pending | None = None
         self._turns: list[VoiceTurn] = []
         self._worker: threading.Thread | None = None
+        #: How this session speaks, if it speaks at all. `None` is work package 1's
+        #: session exactly: it hears, and says nothing aloud.
+        self._speech = speech
+        #: Delivery of the answer to the turn now in flight, while it lasts.
+        self._delivery: Delivery | None = None
+        #: Every barge-in this session performed, in milliseconds from the
+        #: recognizer's event reaching delivery control to the sink stopping.
+        self.cancellations: list[float] = []
 
     # --- identity -------------------------------------------------------------------
 
@@ -408,6 +493,28 @@ class VoiceSession:
         self._recognizer.flush()
         self.advance()
 
+    @property
+    def delivery(self) -> Delivery | None:
+        """Speech delivery for the answer being spoken now, if one is."""
+        with self._lock:
+            return self._delivery
+
+    def interrupt_delivery(self, reason: str = "the caller signalled barge-in") -> float | None:
+        """Stop Val speaking now, from outside the recognizer's own observation.
+
+        The same act `_began` performs when the recognizer hears him: the capture
+        layer that will hear him first (work package 3) reaches it through here.
+        Returns the service-side cancellation interval in milliseconds, or `None`
+        when nothing was being spoken.
+        """
+        with self._lock:
+            delivering = self._delivery
+        if delivering is None or not delivering.active:
+            return None
+        elapsed = delivering.interrupt(reason)
+        self.cancellations.append(elapsed)
+        return elapsed
+
     def deliver(self, message_id: UUID) -> None:
         """The caller has delivered this turn's answer to the owner.
 
@@ -453,6 +560,14 @@ class VoiceSession:
             self._utterances = max(self._utterances + 1, event.session)
             self._current = _Utterance(index=self._utterances, speech_start_at=event.at)
             self.state = VoiceSessionState.HEARING
+            delivering = self._delivery
+        # **Barge-in.** He is speaking while Val is delivering, so she stops. The
+        # sink is stopped first and the record follows: what matters is that she
+        # is not talking over him. Nothing already executed is undone — speech
+        # stopping is not a time machine — and the exact prefix he heard goes on
+        # the record rather than being reconstructed later.
+        if delivering is not None and delivering.active:
+            self.cancellations.append(delivering.interrupt("the owner began speaking"))
 
     def _guessed(self, event: RecognizerEvent) -> None:
         """A revised guess: held in memory, and journalled on a throttle."""
@@ -528,7 +643,14 @@ class VoiceSession:
             self.state = VoiceSessionState.LISTENING
 
     def _mergeable(self) -> VoiceTurn | None:
-        """The most recent turn whose answer the owner has not yet been given."""
+        """The most recent turn whose answer the owner has not yet been given.
+
+        Delivery is consulted as well as the flag: once the first audio has
+        reached the ear he has begun to hear her, and what he says next is a reply
+        rather than the rest of his own sentence (§12).
+        """
+        if self._delivery is not None and self._delivery.audible:
+            return None
         return next(
             (
                 turn
@@ -621,17 +743,30 @@ class VoiceSession:
         raise VoiceUnavailableError(f"the spoken turn did not settle within {timeout:.0f}s")
 
     def _run(self, pending: _Pending) -> None:
-        """One settled utterance, through the ordinary Core path."""
+        """One settled utterance, through the ordinary Core path — and spoken."""
         utterance = pending.utterance
+        # Delivery is created before the turn is submitted, so Val can begin
+        # speaking the first sentence while she is still writing the second. It
+        # receives only Core's visible output, through Core's own delta sink.
+        delivery = None if self._speech is None else self._speech()
+        with self._lock:
+            self._delivery = delivery
         try:
-            outcome = self._submit(utterance.text, self.conversation_id)
+            outcome = self._submit(
+                utterance.text,
+                self.conversation_id,
+                on_delta=None if delivery is None else delivery.feed,
+            )
         except Exception as failure:
+            if delivery is not None:
+                delivery.interrupt("the turn failed before it could be spoken")
             self._fail(f"the spoken turn could not be submitted: {failure}")
             with self._lock:
                 self._inflight = None
+                self._delivery = None
             return
         try:
-            self._record(pending, outcome)
+            self._record(pending, outcome, delivery)
         except Exception as failure:
             # The turn itself succeeded and is in the conversation; its
             # provenance did not get written. That is a state the owner must be
@@ -648,12 +783,17 @@ class VoiceSession:
                 if self.state is VoiceSessionState.THINKING:
                     self.state = VoiceSessionState.LISTENING
 
-    def _record(self, pending: _Pending, outcome: DeliberatedOutcome) -> None:
-        """The provenance sidecar and the journal's supersession, after the turn."""
+    def _record(
+        self, pending: _Pending, outcome: DeliberatedOutcome, delivery: Delivery | None = None
+    ) -> None:
+        """The provenance sidecar, the journal's supersession, and what was heard."""
         conversation_id, message_id = _identify(outcome)
         if conversation_id is None or message_id is None:
             # A clarification, or a refusal before anything was written: no
-            # canonical turn exists, so there is no provenance to record.
+            # canonical turn exists, so there is no provenance to record — and no
+            # message for a delivery to be about.
+            if delivery is not None:
+                delivery.interrupt("the turn produced no message to speak")
             return
         with self._lock:
             self.conversation_id = conversation_id
@@ -673,14 +813,44 @@ class VoiceSession:
                 },
             )
         self._supersede(utterance, message_id)
+
+        # Speech, settled. `bind` names the persisted message so the delivery
+        # record can exist at all; `finish` flushes the exact remaining suffix and
+        # waits for the voice; `record_segments` writes the ephemeral rows. An
+        # interrupted delivery has already closed itself, and `finish` on it does
+        # nothing — which is why a barge-in's record is not overwritten here.
+        heard = False
+        answer_message_id: UUID | None = None
+        answered = _answered(outcome)
+        if answered is not None:
+            answer_message_id = answered[0]
+        if delivery is not None:
+            answer = answered
+            if answer is None:
+                # No persisted answer of Val's: a truncated fragment is not
+                # something she said, and an unanswered turn has nothing to say.
+                # Delivery ends with the reason and leaves no record, because
+                # there is no assistant message for a record to be about.
+                delivery.interrupt("the turn produced no answer of Val's to speak")
+            else:
+                val_message_id, val_text = answer
+                delivery.bind(val_message_id)
+                delivery.finish(val_text)
+                delivery.record_segments()
+                heard = delivery.audible
         with self._lock:
+            self._delivery = None
             self._turns.append(
                 VoiceTurn(
                     utterance=replace(utterance, session_id=session_id),
                     outcome=outcome,
                     conversation_id=conversation_id,
                     message_id=message_id,
+                    answer_message_id=answer_message_id,
                     provisional_events=pending.provisional_events,
+                    # **The delivered boundary is the first audio**, and it has
+                    # already been crossed by the time this row is written.
+                    delivered=heard,
                 )
             )
 
@@ -797,6 +967,21 @@ class VoiceSession:
 
     def __exit__(self, *_: object) -> None:
         self.close()
+
+
+def _answered(outcome: DeliberatedOutcome) -> tuple[UUID, str] | None:
+    """Val's persisted answer for this turn — its id and its exact words.
+
+    `None` when there is none to speak: a clarification, an unanswered turn, or a
+    truncated fragment, which Core deliberately does not persist as her reply. A
+    fragment she did not finish saying is not something to say aloud.
+    """
+    if isinstance(outcome, ClarificationNeeded | UnansweredTurn):
+        return None
+    settled = outcome.turn
+    if isinstance(settled, TruncatedTurn):
+        return None
+    return settled.val_message.id, settled.val_message.content
 
 
 def _identify(outcome: DeliberatedOutcome) -> tuple[UUID | None, UUID | None]:

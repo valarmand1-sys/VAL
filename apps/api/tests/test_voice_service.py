@@ -19,10 +19,12 @@ package's presence.
 
 from __future__ import annotations
 
+import hashlib
+import threading
 import time
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -30,11 +32,13 @@ from sqlalchemy import Engine, text
 from test_service import OpenLedger, ScriptedAdapter, classifier_says, client, ok
 
 from val_api.app import create_app
+from val_domain.speech import VoiceConditioning, digest_of
 from val_domain.voice import EndpointConfiguration, RecognizerEvent, RecognizerIdentity
 from val_gateway.gateway import Gateway
 from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader
 from val_gateway.provenance import verifier
+from val_gateway.speech import register_voice
 
 PCM = b"\x33\x44" * 160
 
@@ -398,3 +402,223 @@ def _poll_until_answered(
             pytest.fail(f"the session failed: {view['error']}")
         time.sleep(0.05)
     pytest.fail("the turn never settled")
+
+
+# --- speech delivery, through the service — work package 2 ----------------------------
+
+
+@dataclass
+class ScriptedVoiceProvider:
+    """The local voice, standing still. Records exactly what it was asked to say."""
+
+    spoken: list[str] = field(default_factory=list)
+    model_revision: str = "e7dd0585652209fa0d7783659aad4e8a324de11c"
+    quantization: str = "8-bit MLX, group size 64, affine"
+    release: threading.Event | None = None
+    started: threading.Event = field(default_factory=threading.Event)
+
+    def synthesize(self, request: object) -> object:
+        from val_domain.speech import SpeechResult
+
+        self.started.set()
+        if self.release is not None:
+            self.release.wait(timeout=10)
+        said = request.text  # type: ignore[attr-defined]
+        self.spoken.append(said)
+        return SpeechResult(
+            audio=b"RIFF" + hashlib.sha256(said.encode()).digest(),
+            sample_rate=24000,
+            duration_seconds=max(0.4, len(said) / 16),
+            provider="mlxaudio",
+            model_identifier="mlx-community/Qwen3-TTS-12Hz-1.7B-Base-8bit",
+            model_revision=self.model_revision,
+            quantization=self.quantization,
+            runtime="mlx-audio",
+            runtime_version="0.5.5",
+            generation={},
+            clone_prompt_sha256="9" * 64,
+            elapsed_seconds=0.01,
+            cost_usd=0.0,
+            local=True,
+        )
+
+
+REFERENCE = b"RIFF" + b"\x00" * 60 + b"the established reference"
+
+
+def a_governed_voice() -> VoiceConditioning:
+    return VoiceConditioning(
+        name="val-established-v1",
+        reference_audio=REFERENCE,
+        reference_sha256=digest_of(REFERENCE),
+        reference_text="Good evening, my lord.",
+        voice_description="Adult British woman. Kind, intelligent, warm.",
+        designed_by_model="mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+        designed_by_revision="f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+    )
+
+
+def speaking_client(
+    engine: Engine,
+    adapter: ScriptedAdapter,
+    recognizer: ScriptedRecognizer,
+    voice_provider: ScriptedVoiceProvider,
+) -> TestClient:
+    """The real application, with a voice wired as the composition root wires one."""
+    voice = a_governed_voice()
+    register_voice(
+        engine,
+        voice,
+        described={
+            "reference_sample_rate": 24000,
+            "reference_duration_seconds": 18.756,
+            "designed_by_quantization": "8-bit MLX",
+            "designed_by_runtime": "mlx-audio 0.5.5",
+            "designed_generation": {},
+            "origin": "owner-authorised established reference",
+            "identity_claim": "not model-verified",
+        },
+    )
+    gateway = Gateway(
+        adapters={"anthropic": adapter, "openai": adapter, "lmstudio": adapter},
+        recorder=lambda record: record_call(engine, record),
+        ledger=OpenLedger(),
+        observe_block=lambda message: None,
+        persona_loader=DatabasePersonaLoader(engine),
+        verify_provenance=verifier(engine),
+        speech=voice_provider,  # type: ignore[arg-type]
+        voice=voice,
+    )
+    return TestClient(create_app(engine, gateway, warnings=[], recognizers=lambda: recognizer))
+
+
+def test_a_spoken_turn_reports_its_delivery_through_the_service(store: Engine) -> None:
+    """The desktop can see what was spoken, and what reached him."""
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    voice_provider = ScriptedVoiceProvider()
+    with speaking_client(store, adapter, recognizer, voice_provider) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        view = _poll_until_answered(reachable, session)
+
+    (turn,) = view["turns"]
+    assert voice_provider.spoken == ["Eight, my lord."], "her exact words, and only hers"
+    assert turn["delivered"] is True, "audible delivery began, so the boundary was crossed"
+    delivery = turn["delivery"]
+    assert delivery is not None
+    assert delivery["state"] == "completed"
+    assert delivery["delivered_prefix"] == "Eight, my lord."
+    assert delivery["delivered_characters"] == len("Eight, my lord.")
+    assert delivery["segments_delivered"] == delivery["segments_total"] == 1
+
+
+def test_the_delivery_of_one_answer_is_readable_by_message(store: Engine) -> None:
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    with speaking_client(store, adapter, recognizer, ScriptedVoiceProvider()) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        view = _poll_until_answered(reachable, session)
+        message_id = view["turns"][0]["answer"]["val_message"]["id"]
+        found = reachable.get(f"/messages/{message_id}/delivery")
+        missing = reachable.get(f"/messages/{uuid4()}/delivery")
+
+    assert found.status_code == 200
+    assert found.json()["state"] == "completed"
+    assert missing.status_code == 404
+
+
+def test_the_caller_can_stop_her_speaking(store: Engine) -> None:
+    """Barge-in from the capture layer that will hear him first (work package 3)."""
+    recognizer = ScriptedRecognizer(batches=[[started(), final("Tell me about the barn.")]])
+    long_answer = (
+        "The barn is available on the fourteenth, my lord. The generator limit applies "
+        "after six. Mrs. Hale asked whether we still want both days."
+    )
+    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok(long_answer)])
+    voice_provider = ScriptedVoiceProvider(release=threading.Event())
+    with speaking_client(store, adapter, recognizer, voice_provider) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        # The desktop polls, and polling is what moves the session on: the resume
+        # window has to pass before the utterance is submitted at all.
+        polling = threading.Event()
+
+        def poll() -> None:
+            while not polling.is_set():
+                reachable.get(f"/voice/sessions/{session}")
+                time.sleep(0.05)
+
+        poller = threading.Thread(target=poll, daemon=True)
+        poller.start()
+        try:
+            assert voice_provider.started.wait(timeout=60), "the voice has a segment in hand"
+            cut = reachable.post(f"/voice/sessions/{session}/interrupt").json()
+            voice_provider.release.set()  # type: ignore[union-attr]
+            after = _poll_until_answered(reachable, session, attempts=1200)
+        finally:
+            polling.set()
+            poller.join(timeout=5)
+
+    assert cut["delivery"] is not None
+    assert cut["delivery"]["state"] == "interrupted"
+    assert cut["cancellations_ms"], "the service-side interval is reported"
+    assert cut["cancellations_ms"][0] <= 300.0, "within the service-side target"
+    (turn,) = after["turns"]
+    assert turn["delivery"]["state"] == "interrupted"
+    assert turn["delivery"]["reason"] == "the caller signalled barge-in"
+    assert turn["delivery"]["delivered_characters"] < len(long_answer), "he heard part of it"
+
+
+def test_interrupting_a_session_that_is_not_speaking_is_harmless(store: Engine) -> None:
+    recognizer = ScriptedRecognizer()
+    with speaking_client(
+        store, ScriptedAdapter([]), recognizer, ScriptedVoiceProvider()
+    ) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        quiet = reachable.post(f"/voice/sessions/{session}/interrupt")
+    assert quiet.status_code == 200
+    assert quiet.json()["delivery"] is None
+    assert quiet.json()["cancellations_ms"] == []
+
+
+def test_a_house_with_no_voice_hears_and_does_not_speak(store: Engine) -> None:
+    """No admitted speech route means a session that listens — honestly, and silently."""
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = ScriptedAdapter([classifier_says("not_consequential"), ok("Eight, my lord.")])
+    with voice_client(store, adapter, recognizer) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        view = _poll_until_answered(reachable, session)
+    (turn,) = view["turns"]
+    assert view["delivery"] is None
+    assert turn["delivery"] is None, "nothing was spoken, so there is no delivery record"
+    assert turn["delivered"] is False

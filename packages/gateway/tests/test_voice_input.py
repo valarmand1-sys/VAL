@@ -24,7 +24,7 @@ The hard invariants, in the order the acceptance list gives them:
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
@@ -197,7 +197,12 @@ def a_session(
     provider = adapter or ScriptedAdapter([classifier_says("not_consequential"), ok("Quite so.")])
     hands = clock or Clock()
 
-    def submit(content: str, existing: UUID | None) -> DeliberatedOutcome:
+    def submit(
+        content: str,
+        existing: UUID | None,
+        *,
+        on_delta: Callable[[str], None] | None = None,
+    ) -> DeliberatedOutcome:
         return deliberated_send(
             engine,
             build_gateway(engine, provider),
@@ -210,6 +215,10 @@ def a_session(
             if existing is not None
             else ProjectSignals(explicit_selection="Project Alpha"),
             conversation_id=existing,
+            # Work package 2: Core's visible output as it is produced, so a
+            # session that speaks can begin before she has finished writing. WP1's
+            # sessions pass nothing and behave exactly as they did.
+            on_delta=on_delta,
         )
 
     session = VoiceSession(

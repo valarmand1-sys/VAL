@@ -235,9 +235,15 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
     with_targets = [entry for entry in under_evaluation() if entry.qualification_targets]
     # ...and again on 17 September 2026 for the Category-A Mistral challenger.
     # ...and on 18 September 2026 for Gemma 4 31B on the second LOCAL provider.
+    # ...and on 23 September 2026 (Voice work package 2 §2) for the admitted
+    # artifact at LOW effort, registered so a bounded latency measurement could put
+    # the two efforts on one identical request path. Like every entry in this list
+    # it carries a target only because the candidate lane needs one to open: it
+    # admits nothing, serves nothing, and is unreachable from routing.
     assert sorted(entry.slug for entry in with_targets) == [
         "gemma-4-31b-q6k-llamacpp",
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
+        "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
         "mistral-small-3-2-24b-8bit-mlx-lmstudio",
         "qwen3-8-27b-mlx-6bit-lmstudio",
     ]

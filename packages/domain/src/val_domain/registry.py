@@ -855,6 +855,47 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 16),
     ),
     ModelConfig(
+        id=UUID("de3c53f0-7db1-4d1a-8fa5-52381e8a7f96"),
+        slug="gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+        # Owner execution order, 23 September 2026 (Voice mode work package 2 §2):
+        # the SAME artifact, quantization, runtime, loaded context, output ceiling
+        # and eligibility as the two entries above, at **low** reasoning effort,
+        # registered FOR EVALUATION ONLY so a bounded latency measurement can put
+        # the two efforts on one identical request path.
+        #
+        # **This exists to be measured, not to serve.** No capability profile, so
+        # nothing in production routing can select it; `NOT_ADMITTED`, so the
+        # candidate lane is its only door. Production text cognition remains
+        # `gpt-oss-20b-mxfp4-mlx-lmstudio-partner` at MEDIUM, and this entry
+        # changes nothing about that — a faster configuration is not a better one,
+        # and which effort Val thinks at is the owner's ruling to make.
+        provider="lmstudio",
+        model_identifier="openai/gpt-oss-20b",
+        display_name="GPT-OSS 20B (MXFP4, Apple MLX, LM Studio — low effort, evaluation only)",
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        # The one field that differs from the entries above. That is the point of
+        # the entry: it is the only way to hold everything else identical.
+        reasoning_effort=ReasoningEffort.LOW,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        # Unchanged: a measurement widens no eligibility.
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        # As on the 16 September evaluation entry: a target only because the
+        # candidate lane needs one to open. It admits nothing and is no evidence.
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        activated_on=date(2026, 9, 23),
+        rates_verified_on=date(2026, 9, 23),
+    ),
+    ModelConfig(
         id=UUID("3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"),
         slug="gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
         # OWNER ADMISSION RULING, Lord Armand, 21 September 2026: the production

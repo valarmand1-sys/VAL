@@ -39,6 +39,12 @@ PARTNER_CANDIDATES: set[str] = {
     "mistral-small-3-2-24b-8bit-mlx-lmstudio",
     # 18 September 2026 (owner ruling): Gemma 4 31B on the second LOCAL provider.
     "gemma-4-31b-q6k-llamacpp",
+    # 23 September 2026 (owner execution order, Voice work package 2 §2): the
+    # SAME admitted artifact at **low** reasoning effort, registered for
+    # evaluation only so a bounded latency measurement can put the two efforts
+    # on one identical request path. It serves nothing; production text
+    # cognition stays MEDIUM.
+    "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
 }
 
 
@@ -59,6 +65,9 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
             "qwen3-8-27b-mlx-6bit-lmstudio": date(2026, 9, 16),
             "mistral-small-3-2-24b-8bit-mlx-lmstudio": date(2026, 9, 17),
             "gemma-4-31b-q6k-llamacpp": date(2026, 9, 18),
+            # 23 September 2026: the admitted artifact at low effort, for the
+            # bounded latency measurement of Voice work package 2.
+            "gpt-oss-20b-mxfp4-mlx-lmstudio-low": date(2026, 9, 23),
         }
         is_local = config.provider in ("lmstudio", "llamacpp")
         expected = local_dates[config.slug] if is_local else date(2026, 9, 10)

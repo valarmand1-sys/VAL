@@ -976,7 +976,10 @@ class VoiceTurnView(BaseModel):
     merged_from: list[int]
     revised_to: str | None
     merge_refused: str | None
+    #: True once audible delivery of this answer has begun (work package 2 §12).
     delivered: bool
+    #: What delivery did, from the record, when this answer was spoken at all.
+    delivery: DeliveryView | None = None
     #: The answer, in the same shape `POST /turns` returns, so a caller has one
     #: way to read a turn whether it was typed or spoken.
     answer: TurnResponse
@@ -1007,6 +1010,48 @@ class VoiceSessionView(BaseModel):
     error: str | None
     recognizer: dict[str, str]
     endpoint: dict[str, float]
+    #: Present while Val is speaking an answer, absent otherwise.
+    delivery: LiveDeliveryView | None = None
+    #: Every barge-in this session performed, in milliseconds, service-side.
+    cancellations_ms: list[float] = Field(default_factory=list)
+
+
+class DeliveryView(BaseModel):
+    """What speech delivery actually did for one answer.
+
+    From the append-only record, newest event first. `delivered_prefix` is exactly
+    what the owner heard — never the whole answer, and never a guess at where he
+    stopped listening.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    message_id: UUID
+    state: Literal["not_started", "started", "completed", "interrupted", "failed"]
+    delivered_prefix: str
+    delivered_characters: int
+    segments_delivered: int
+    segments_total: int | None
+    reason: str | None
+    events: int
+
+
+class LiveDeliveryView(BaseModel):
+    """Speech delivery for the answer being spoken now, as the session sees it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    state: str
+    #: True from the **first** piece of audio, which is the delivered boundary:
+    #: after it, new owner speech is a fresh turn rather than a continuation.
+    audible: bool
+    active: bool
+    segments_delivered: int
+    delivered_characters: int
+    #: Service-side only: from the recognizer's speech_start reaching delivery
+    #: control to the sink stopping. **Not** a claim about when a physical speaker
+    #: falls silent, which needs the speakers and belongs to work package 3.
+    cancellation_ms: float | None
 
 
 class InterruptedUtteranceView(BaseModel):

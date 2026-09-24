@@ -46,6 +46,7 @@ from val_api.contracts import (
     CostView,
     DeliberationGlimpse,
     DeliberationView,
+    DeliveryView,
     DisagreementSignal,
     ExecutionEventRequest,
     ExecutionEventView,
@@ -53,6 +54,7 @@ from val_api.contracts import (
     InterruptedUtteranceView,
     LabelledExchangeView,
     LabelRequest,
+    LiveDeliveryView,
     ManualDeliberationRequest,
     MessageView,
     MoveRequest,
@@ -121,6 +123,7 @@ from val_gateway.deliberation import (
     last_disagreement_at,
     record_deliberation,
 )
+from val_gateway.delivery import SpeechDelivery, delivery_for
 from val_gateway.exchange import ClarificationNeeded, RestrictedContentRefusedError
 from val_gateway.execution import (
     IncoherentEventError,
@@ -786,14 +789,48 @@ def create_app(
     # Audio arrives as `application/octet-stream` and goes straight to the
     # recognizer. It is not stored, not buffered here, and not written anywhere.
 
+    def speech_delivery_factory() -> Callable[[], SpeechDelivery] | None:
+        """How a voice session obtains speech, or `None` when the house has none.
+
+        The admitted speech route is selected by the profile it declares, never by
+        name, exactly as every other capability floor is. A missing runtime or a
+        missing governed voice means a session that hears and does not speak —
+        stated, and never a reason to call a cloud voice service.
+        """
+        configuration = speech_configuration()
+        if configuration is None or gateway.speech is None or gateway.voice is None:
+            return None
+        provider, voice = gateway.speech, gateway.voice
+
+        def build() -> SpeechDelivery:
+            return SpeechDelivery(engine, speech=provider, voice=voice, configuration=configuration)
+
+        return build
+
     def voice_session_or_404(session: UUID) -> VoiceSession:
         live = sessions.get(session)
         if live is None:
             raise HTTPException(status_code=404, detail="no such voice session")
         return live
 
+    def render_delivery(message_id: UUID) -> DeliveryView | None:
+        found = delivery_for(engine, message_id)
+        if found is None:
+            return None
+        return DeliveryView(
+            message_id=found.message_id,
+            state=found.state.value,
+            delivered_prefix=found.delivered_prefix,
+            delivered_characters=found.delivered_characters,
+            segments_delivered=found.segments_delivered,
+            segments_total=found.segments_total,
+            reason=found.reason,
+            events=found.events,
+        )
+
     def render_voice(session: UUID, live: VoiceSession) -> VoiceSessionView:
         view = live.snapshot()
+        speaking = live.delivery
         return VoiceSessionView(
             session=session,
             voice_session_id=None if view.session_id == NO_SESSION else view.session_id,
@@ -815,6 +852,12 @@ def create_app(
                     revised_to=turn.revised_to,
                     merge_refused=turn.merge_refused,
                     delivered=turn.delivered,
+                    # Keyed on **Val's** answer: delivery is about her words.
+                    delivery=(
+                        None
+                        if turn.answer_message_id is None
+                        else render_delivery(turn.answer_message_id)
+                    ),
                     answer=render_turn(turn.outcome),
                 )
                 for turn in view.turns
@@ -822,6 +865,19 @@ def create_app(
             error=view.error,
             recognizer=view.recognizer,
             endpoint={key: float(value) for key, value in view.endpoint.items()},
+            delivery=(
+                None
+                if speaking is None
+                else LiveDeliveryView(
+                    state=speaking.state.value,
+                    audible=speaking.audible,
+                    active=speaking.active,
+                    segments_delivered=speaking.segments_delivered,
+                    delivered_characters=len(speaking.delivered_prefix),
+                    cancellation_ms=speaking.cancellation_ms,
+                )
+            ),
+            cancellations_ms=list(live.cancellations),
         )
 
     @app.post("/voice/sessions", status_code=201)
@@ -839,7 +895,12 @@ def create_app(
             explicit_selection=request.project, explicit_no_project=request.no_project
         )
 
-        def submit(content: str, conversation_id: UUID | None) -> DeliberatedOutcome:
+        def submit(
+            content: str,
+            conversation_id: UUID | None,
+            *,
+            on_delta: Callable[[str], None] | None = None,
+        ) -> DeliberatedOutcome:
             """The ordinary door. A spoken turn is an ordinary turn.
 
             The session's project signals are a statement made when it was
@@ -857,6 +918,10 @@ def create_app(
                 catalogue=load_catalogue(engine),
                 signals=None if conversation_id is not None else signals,
                 conversation_id=conversation_id,
+                # Core's visible output as it is produced, so Val can begin
+                # speaking the first sentence while she writes the second. The
+                # turn is otherwise identical to a typed one.
+                on_delta=on_delta,
             )
 
         live = VoiceSession(
@@ -864,6 +929,11 @@ def create_app(
             recognizers(),
             submit=submit,
             conversation_id=request.conversation_id,
+            # How this session speaks, when the house has a voice to speak with.
+            # `None` is a session that hears and says nothing aloud, which is what
+            # a house with no admitted speech route gets — honestly, rather than
+            # by reaching for a cloud one.
+            speech=speech_delivery_factory(),
         )
         try:
             live.start()
@@ -914,6 +984,29 @@ def create_app(
         live = voice_session_or_404(session)
         live.deliver(message_id)
         return render_voice(session, live)
+
+    @app.post("/voice/sessions/{session}/interrupt")
+    def interrupt_voice_delivery(session: UUID) -> VoiceSessionView:
+        """Stop Val speaking now — barge-in, from a caller that heard him start.
+
+        The recognizer already does this by itself when it reports the owner
+        speaking while delivery is live; this is the same act available to the
+        capture layer that will hear him first (work package 3). Nothing already
+        executed is undone, and the exact delivered prefix goes on the record.
+        """
+        live = voice_session_or_404(session)
+        live.interrupt_delivery("the caller signalled barge-in")
+        return render_voice(session, live)
+
+    @app.get("/messages/{message_id}/delivery")
+    def message_delivery(message_id: UUID) -> DeliveryView:
+        """What speech delivery did for this answer, from the append-only record."""
+        found = render_delivery(message_id)
+        if found is None:
+            raise HTTPException(
+                status_code=404, detail="this message has no speech delivery on record"
+            )
+        return found
 
     @app.post("/voice/sessions/{session}/close")
     def close_voice_session(session: UUID) -> VoiceSessionView:

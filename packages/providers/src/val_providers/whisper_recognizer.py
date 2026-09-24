@@ -105,23 +105,61 @@ def digest_of_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-#: Digests are computed once per process and remembered. A model file does not
-#: change under a running house, and half a gigabyte of hashing per voice session
-#: would be a cost paid for nothing.
-_verified: dict[Path, str] = {}
+def fingerprint(path: Path) -> tuple[int, int, int, int, int]:
+    """The file's observed identity, as the operating system reports it.
+
+    Five fields, each earning its place (owner execution order, work package 2 §4.1):
+
+      * `st_dev` and `st_ino` — *which file this is*. A replacement written
+        elsewhere and renamed over the path is a different inode, so
+        rename-over substitution cannot inherit a cached result.
+      * `st_size` — the obvious change.
+      * `st_mtime_ns` — the obvious change to content.
+      * `st_ctime_ns` — the one that closes the gap. An in-place edit whose size
+        and modification time are then restored still moves the inode change
+        time, and nothing in user space can put it back.
+
+    Path alone is not identity, and size and mtime alone are forgeable by anyone
+    with `touch`.
+    """
+    stat = path.stat()
+    return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns)
+
+
+#: A digest is remembered only against the exact file it was computed from, so a
+#: half-gigabyte model is hashed once while it stays that same unchanged file —
+#: and is rehashed the moment it does not.
+_verified: dict[Path, tuple[tuple[int, int, int, int, int], str]] = {}
 
 
 def verify(path: Path, expected: str) -> None:
-    """Refuse a model that is not the admitted one."""
-    if _verified.get(path) == expected:
+    """Refuse a model that is not the admitted one.
+
+    The cache is keyed on the file's stat fingerprint as well as its path and the
+    admitted digest. **A file replaced after a successful verification is hashed
+    again**, which is what the module's stated guarantee has always claimed and
+    what it did not previously do: the earlier cache was keyed on the path alone,
+    so a substitution after the first session was accepted without being read.
+    """
+    observed = fingerprint(path)
+    remembered = _verified.get(path)
+    if remembered is not None and remembered == (observed, expected):
         return
     actual = digest_of_file(path)
     if actual != expected:
+        # Forget the path entirely rather than remembering a refusal: the next
+        # attempt should read the file, not trust a recorded verdict about it.
+        _verified.pop(path, None)
         raise VoiceUnavailableError(
             f"{path.name} is not the admitted model: expected {expected}, found {actual}. "
             "Nothing was transcribed and no cloud recognizer was called."
         )
-    _verified[path] = actual
+    # Re-stat after hashing: if the file changed while it was being read, the
+    # fingerprint recorded would describe neither version, and remembering it
+    # would cache a digest for a file that no longer exists in that state.
+    settled = fingerprint(path)
+    if settled == observed:
+        _verified[path] = (observed, actual)
 
 
 class WhisperRecognizer:

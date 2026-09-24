@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
 
@@ -166,4 +167,85 @@ class SpeechProvider(Protocol):
 
     def available(self) -> str | None:
         """Why local speech cannot run at all, or `None`."""
+        ...
+
+
+# =============================================================================
+# Delivery — what the owner actually heard. Voice work package 2, 23 Sept 2026.
+# =============================================================================
+
+
+class DeliveryState(StrEnum):
+    """How far speech delivery got, in the five states the order distinguishes.
+
+    Kept distinct on purpose. Core can finish writing text the owner never hears,
+    and nothing in the house may later behave as though the unheard part was
+    delivered — so `completed` and `interrupted` are different facts, and neither
+    is a synonym for `started`.
+    """
+
+    #: Speech was prepared and no audio has reached the sink.
+    NOT_STARTED = "not_started"
+    #: The first audio has been handed over. **This is the delivered boundary.**
+    STARTED = "started"
+    #: Every segment of the answer was delivered.
+    COMPLETED = "completed"
+    #: The owner spoke over her, or the caller stopped delivery.
+    INTERRUPTED = "interrupted"
+    #: Speech itself failed. The text still stands; it was simply not spoken.
+    FAILED = "failed"
+
+
+@dataclass(frozen=True)
+class SpokenSegment:
+    """One speech-safe piece of Val's answer, as audio, on its way to the ear.
+
+    Carries the bytes because delivery needs them **now**; carries no path,
+    because ordinary live speech is generated, delivered and released. The digest,
+    duration and byte count survive the bytes and remain true about them.
+    """
+
+    index: int
+    #: Exactly the text submitted to the voice — a contiguous slice of Val's
+    #: visible answer, never a paraphrase of it.
+    text: str
+    #: Why the segmenter cut here: `sentence`, `clause`, `long_sentence`, `flush`.
+    reason: str
+    audio: bytes
+    audio_sha256: str
+    sample_rate: int
+    duration_seconds: float
+    #: How long the local voice took to produce this piece.
+    generated_ms: int
+    clone_prompt_sha256: str = ""
+
+    @property
+    def audio_bytes(self) -> int:
+        return len(self.audio)
+
+
+@runtime_checkable
+class SpeechSink(Protocol):
+    """Where spoken audio goes. **The only place live audio is allowed to be.**
+
+    Deliberately small, and deliberately not a file: an implementation that wrote
+    a waveform to disk would turn live conversation into an archive of the
+    household's talk, which §10 forbids. The production sink for this package
+    holds the current piece in memory and releases it.
+    """
+
+    def begin(self) -> None:
+        """Delivery of one answer is starting. No audio yet."""
+        ...
+
+    def play(self, segment: SpokenSegment) -> None:
+        """Hand over one piece of audio. Returns when the sink has taken it."""
+        ...
+
+    def finish(self) -> None:
+        """Every piece has been handed over."""
+        ...
+
+    def stop(self, reason: str) -> None:
+        """Stop now, discard anything queued, and release what is held."""
         ...

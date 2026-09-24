@@ -439,6 +439,30 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "local",
         "cost_usd",
         "elapsed_ms",
+        # Voice work package 2, 23 September 2026 (migration 0029): live speech is
+        # generated, delivered and released, so a row may name no file — and says
+        # which it is rather than leaving a reader to guess. `segment_index` and
+        # `segment_reason` are the progressive-delivery pieces; NULL on every row
+        # written before that date, which were whole-utterance generations.
+        "audio_retained",
+        "segment_index",
+        "segment_reason",
+    ),
+    # What the owner actually heard — one row per transition, append-only.
+    "speech_deliveries": (
+        "id",
+        "recorded_at",
+        "message_id",
+        "voice_session_id",
+        "event",
+        "state",
+        "delivered_prefix",
+        "delivered_characters",
+        "segments_delivered",
+        "segments_total",
+        "reason",
+        "first_audio_ms",
+        "elapsed_ms",
     ),
     # Live voice input — Voice mode work package 1, 23 September 2026.
     # Transcribed by hand like everything else here. Read these three column
@@ -616,6 +640,18 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("voice_sessions", "closed_at"),
         ("voice_sessions", "closed_reason"),
         ("voice_recovery_journal", "superseded_by_message_id"),
+        # Voice work package 2, 23 September 2026. An ephemeral live utterance
+        # names no file; a whole-utterance generation has no segment number; a
+        # delivery still in progress does not yet know its segment count; and a
+        # reason exists exactly for `interrupted` and `failed`.
+        ("speech_generations", "audio_path"),
+        ("speech_generations", "segment_index"),
+        ("speech_generations", "segment_reason"),
+        ("speech_deliveries", "voice_session_id"),
+        ("speech_deliveries", "segments_total"),
+        ("speech_deliveries", "reason"),
+        ("speech_deliveries", "first_audio_ms"),
+        ("speech_deliveries", "elapsed_ms"),
     }
 )
 

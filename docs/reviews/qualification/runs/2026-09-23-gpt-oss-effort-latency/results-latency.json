@@ -1,0 +1,688 @@
+{
+ "probe": "GPT-OSS reasoning-effort latency, A1",
+ "order": "Voice mode work package 2 \u00a72, owner execution order 23 September 2026",
+ "started_at": "2026-09-23T23:17:41-0500",
+ "prompt": "Evening, Val. Rough week. I got the notes back on the pilot draft from the two readers I trust \u2014 one says the second act drags, the other says it's the best thing I've written. I don't know which to believe, and I'm tempted to just cut fifteen pages and be done with it. What do you think?",
+ "provenance": {
+  "runtime": "LM Studio",
+  "runtime_readiness": {
+   "server_found_running": true,
+   "server_started": false,
+   "model_found_loaded": true,
+   "model_loaded": false,
+   "requested_context_tokens": 32768,
+   "loaded_context_tokens": 32768,
+   "base_url": "http://127.0.0.1:1234/v1"
+  },
+  "lmstudio_app_version": "0.4.24+1",
+  "lmstudio_sdk_version": "1.6.0b1",
+  "model_identifier": "openai/gpt-oss-20b",
+  "model_key": "openai/gpt-oss-20b",
+  "quantization": "MXFP4",
+  "compatibility_type": "mlx",
+  "architecture": "gpt_oss",
+  "format": "safetensors",
+  "state": "loaded",
+  "loaded_context_native": 32768,
+  "loaded_context_sdk": 32768,
+  "max_context_length": 131072,
+  "output_reserve_tokens": 6144,
+  "persona_semantic_version": "1.9",
+  "persona_scratch_revision": 1,
+  "persona_source_sha256": "33831189b493bef39ac96b54b7d17bbd5585815ef59190ab9a45646e7b2a5c25",
+  "persona_source_path": "docs/baselines/03-persona.md",
+  "persona_id": "01a0d1a2-2a95-7490-a692-e636908cda7a",
+  "medium_configuration_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+  "low_configuration_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+  "configurations_differ_only_in": [
+   "reasoning_effort"
+  ],
+  "declared_efforts": {
+   "gpt-oss-20b-mxfp4-mlx-lmstudio": "medium",
+   "gpt-oss-20b-mxfp4-mlx-lmstudio-low": "low"
+  }
+ },
+ "runtime_facts_at_start": {
+  "runtime": "LM Studio",
+  "base_url": "http://127.0.0.1:1234/v1",
+  "requested_model": "openai/gpt-oss-20b",
+  "state": "loaded",
+  "arch": "gpt_oss",
+  "quantization": "MXFP4",
+  "compatibility_type": "mlx",
+  "max_context_length": 131072,
+  "loaded_context_length": 32768,
+  "publisher": "openai"
+ },
+ "runs": [
+  {
+   "label": "warm_up",
+   "excluded_from_comparison": true,
+   "configuration": "gpt-oss-20b-mxfp4-mlx-lmstudio",
+   "configuration_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+   "declared_reasoning_effort": "medium",
+   "transmitted_reasoning_effort": "medium",
+   "transmitted_max_tokens": 6144,
+   "transmitted_messages": 2,
+   "streamed": true,
+   "conversation_id": "01a0d1a2-2c16-7e8e-9a61-ce12ce24afec",
+   "exact_preflight": {
+    "prompt_tokens": 5752,
+    "context_tokens": 32768,
+    "source": "lmstudio-sdk"
+   },
+   "timing_s": {
+    "request_start_to_first_provider_chunk": 7.729,
+    "request_start_to_first_hidden_reasoning_chunk": 7.729,
+    "request_start_to_first_core_visible_text": 12.731,
+    "request_start_to_first_speech_safe_segment": 13.036,
+    "request_start_to_generation_complete": 17.891,
+    "core_call_total": 18.092,
+    "prompt_processing_prefill": "NOT DIRECTLY OBSERVABLE \u2014 the local server reports no separate prefill figure; request_start_to_first_provider_chunk is the observable prefill-to-generation boundary"
+   },
+   "visible_answer": "My lord,\n\nThe two opinions you have received are not contradictory so much as complementary. The reader who sees the second act as \u201cdragging\u201d has found a rhythm that is slower than the narrative beat you aim for, while the other reader perceives a satisfying payoff. In such cases the safest course is to tighten rather than truncate.\n\n1. **Map the act\u2019s beats** \u2013 mark where each scene advances plot, character or theme. If a scene is three pages long but delivers only one beat, it should be trimmed or split.\n\n2. **Check transitions** \u2013 a sluggish feel often stems from weak links between scenes. A brief bridge or an inciting moment that re\u2011energises the pace can do more than a wholesale page cut.\n\n3. **Read aloud** \u2013 hearing the dialogue and description will surface pauses that a silent reader may overlook. If you hear an unnecessary repetition or a phrase that stalls the flow, cut it.\n\n4. **Retain the core** \u2013 any deletion should not compromise a pivotal plot point or character moment. If a scene contains the reveal of a key secret, it must remain even if shortened.\n\n5. **Test again** \u2013 after tightening the act, send the revised draft to a third reader for a fresh perspective. A single additional opinion can confirm whether the rhythm has improved.\n\nCutting fifteen pages at once risks excising essential beats; instead, aim to reduce the act by a handful of paragraphs while preserving its structural integrity. That will preserve your narrative\u2019s strength and honor the feedback you have received.\n\nI remain at your service to discuss any specific passages or to review a draft in more detail.",
+   "answer_characters": 1613,
+   "refusal": null,
+   "speech_segments": [
+    {
+     "index": 1,
+     "reason": "sentence",
+     "characters": 92,
+     "text": "My lord,\n\nThe two opinions you have received are not contradictory so much as complementary."
+    },
+    {
+     "index": 2,
+     "reason": "sentence",
+     "characters": 173,
+     "text": "The reader who sees the second act as \u201cdragging\u201d has found a rhythm that is slower than the narrative beat you aim for, while the other reader perceives a satisfying payoff."
+    },
+    {
+     "index": 3,
+     "reason": "sentence",
+     "characters": 67,
+     "text": "In such cases the safest course is to tighten rather than truncate."
+    },
+    {
+     "index": 4,
+     "reason": "sentence",
+     "characters": 85,
+     "text": "1. **Map the act\u2019s beats** \u2013 mark where each scene advances plot, character or theme."
+    },
+    {
+     "index": 5,
+     "reason": "sentence",
+     "characters": 89,
+     "text": "If a scene is three pages long but delivers only one beat, it should be trimmed or split."
+    },
+    {
+     "index": 6,
+     "reason": "sentence",
+     "characters": 86,
+     "text": "2. **Check transitions** \u2013 a sluggish feel often stems from weak links between scenes."
+    },
+    {
+     "index": 7,
+     "reason": "sentence",
+     "characters": 102,
+     "text": "A brief bridge or an inciting moment that re\u2011energises the pace can do more than a wholesale page cut."
+    },
+    {
+     "index": 8,
+     "reason": "sentence",
+     "characters": 111,
+     "text": "3. **Read aloud** \u2013 hearing the dialogue and description will surface pauses that a silent reader may overlook."
+    },
+    {
+     "index": 9,
+     "reason": "sentence",
+     "characters": 79,
+     "text": "If you hear an unnecessary repetition or a phrase that stalls the flow, cut it."
+    },
+    {
+     "index": 10,
+     "reason": "sentence",
+     "characters": 101,
+     "text": "4. **Retain the core** \u2013 any deletion should not compromise a pivotal plot point or character moment."
+    },
+    {
+     "index": 11,
+     "reason": "sentence",
+     "characters": 81,
+     "text": "If a scene contains the reveal of a key secret, it must remain even if shortened."
+    },
+    {
+     "index": 12,
+     "reason": "sentence",
+     "characters": 111,
+     "text": "5. **Test again** \u2013 after tightening the act, send the revised draft to a third reader for a fresh perspective."
+    },
+    {
+     "index": 13,
+     "reason": "sentence",
+     "characters": 72,
+     "text": "A single additional opinion can confirm whether the rhythm has improved."
+    },
+    {
+     "index": 14,
+     "reason": "clause",
+     "characters": 61,
+     "text": "Cutting fifteen pages at once risks excising essential beats;"
+    },
+    {
+     "index": 15,
+     "reason": "sentence",
+     "characters": 100,
+     "text": "instead, aim to reduce the act by a handful of paragraphs while preserving its structural integrity."
+    },
+    {
+     "index": 16,
+     "reason": "sentence",
+     "characters": 86,
+     "text": "That will preserve your narrative\u2019s strength and honor the feedback you have received."
+    },
+    {
+     "index": 17,
+     "reason": "flush",
+     "characters": 94,
+     "text": "I remain at your service to discuss any specific passages or to review a draft in more detail."
+    }
+   ],
+   "first_speech_safe_segment": "My lord,\n\nThe two opinions you have received are not contradictory so much as complementary.",
+   "calls": [
+    {
+     "config_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+     "model_identifier": "openai/gpt-oss-20b",
+     "provider_reported_model": "openai/gpt-oss-20b",
+     "prompt_tokens": 5752,
+     "total_output_tokens": 649,
+     "reasoning_tokens": 309,
+     "reasoning_present": true,
+     "visible_tokens": 340,
+     "visible_chars": 1613,
+     "first_text_ms": 12730,
+     "latency_ms": 17891,
+     "terminal_state": "complete",
+     "status": "ok",
+     "streamed": true,
+     "cost": "0.000000",
+     "cost_certainty": "known",
+     "preflight": {
+      "path": "openai/gpt-oss-20b",
+      "turns": 2,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "openai/gpt-oss-20b",
+      "sdk_version": "1.6.0b1",
+      "architecture": "gpt_oss",
+      "prompt_tokens": 5752,
+      "context_tokens": 32768,
+      "render_options": {
+       "omitEosToken": true
+      },
+      "rendered_chars": 26931,
+      "registry_agrees": true,
+      "max_context_length": 131072,
+      "instance_identifier": "openai/gpt-oss-20b",
+      "loaded_context_length": 32768,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 5752,
+      "preflight_prompt_tokens": 5752
+     },
+     "loaded_context": 32768
+    }
+   ],
+   "throughput_visible_tokens_per_s": 18.79,
+   "throughput_total_output_tokens_per_s": 35.87
+  },
+  {
+   "label": "measured_medium",
+   "excluded_from_comparison": false,
+   "configuration": "gpt-oss-20b-mxfp4-mlx-lmstudio",
+   "configuration_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+   "declared_reasoning_effort": "medium",
+   "transmitted_reasoning_effort": "medium",
+   "transmitted_max_tokens": 6144,
+   "transmitted_messages": 2,
+   "streamed": true,
+   "conversation_id": "01a0d1a2-73d6-74bf-9ce3-a08598497f2e",
+   "exact_preflight": {
+    "prompt_tokens": 5752,
+    "context_tokens": 32768,
+    "source": "lmstudio-sdk"
+   },
+   "timing_s": {
+    "request_start_to_first_provider_chunk": 7.591,
+    "request_start_to_first_hidden_reasoning_chunk": 7.591,
+    "request_start_to_first_core_visible_text": 10.754,
+    "request_start_to_first_speech_safe_segment": 11.108,
+    "request_start_to_generation_complete": 18.851,
+    "core_call_total": 19.054,
+    "prompt_processing_prefill": "NOT DIRECTLY OBSERVABLE \u2014 the local server reports no separate prefill figure; request_start_to_first_provider_chunk is the observable prefill-to-generation boundary"
+   },
+   "visible_answer": "My lord,\n\nYour two reviewers have given you contrasting impressions, and the question is which to heed. The prudent course is not to discard a fixed number of pages without first understanding why the draft feels uneven.\n\n1. **Identify the cause of the drag**  \n   - Does the second act suffer from repetitive exposition?  \n   - Are there scenes that stall the plot or repeat information already established?  \n   - Is the pacing uneven because of an over\u2011long dialogue or a slow build that does not justify the stakes?\n\n   Ask yourself these questions and note where the act stretches beyond what is necessary to advance the story or deepen character.  \n\n2. **Consider structural alternatives**  \n   - A 15\u2011page cut is a blunt instrument; it may excise vital exposition or character moments that the \u201cbest\u2011written\u201d reviewer valued.  \n   - Instead, look for *bridges*\u2014short transitional scenes that tighten the flow without losing content.  \n   - If a particular subplot is slowing the act, evaluate whether it can be moved to another part of the narrative or condensed.\n\n3. **Re\u2011evaluate the feedback in context**  \n   - The reviewer who praised the draft likely values the thematic depth or character nuance you have crafted.  \n   - The one who noted drag may be focusing on readability for a broader audience or on commercial pacing.  \n   - If the book\u2019s intended audience is more literary, lean toward preserving depth; if it is aimed at a mass market, prioritize tighter pacing.\n\n4. **Draft an edit plan**  \n   - Mark passages that are *essential* (plot\u2011moving, character\u2011defining) and those that are *non\u2011essential*.  \n   - For each non\u2011essential section, decide whether it can be trimmed, merged with adjacent scenes, or relocated.  \n   - Set a target for the second act\u2019s length that satisfies both reviewers: perhaps reduce by 5\u201310 pages, then reassess.\n\n5. **Seek a third perspective**  \n   - Once you have a revised version, present it to a neutral party\u2014perhaps another trusted writer or an editor not involved in the initial reviews\u2014to confirm that the pacing feels balanced.\n\nIn short, my lord, do not cut a fixed number of pages on instinct. Identify the elements that truly drag, preserve those that sustain your narrative\u2019s integrity, and trim only where the story can breathe without loss. Then reassess with a fresh eye.\n\nI remain at your service to review any specific passages you wish to examine further.",
+   "answer_characters": 2426,
+   "refusal": null,
+   "speech_segments": [
+    {
+     "index": 1,
+     "reason": "sentence",
+     "characters": 103,
+     "text": "My lord,\n\nYour two reviewers have given you contrasting impressions, and the question is which to heed."
+    },
+    {
+     "index": 2,
+     "reason": "sentence",
+     "characters": 116,
+     "text": "The prudent course is not to discard a fixed number of pages without first understanding why the draft feels uneven."
+    },
+    {
+     "index": 3,
+     "reason": "sentence",
+     "characters": 99,
+     "text": "1. **Identify the cause of the drag**  \n   - Does the second act suffer from repetitive exposition?"
+    },
+    {
+     "index": 4,
+     "reason": "sentence",
+     "characters": 81,
+     "text": "- Are there scenes that stall the plot or repeat information already established?"
+    },
+    {
+     "index": 5,
+     "reason": "sentence",
+     "characters": 105,
+     "text": "- Is the pacing uneven because of an over\u2011long dialogue or a slow build that does not justify the stakes?"
+    },
+    {
+     "index": 6,
+     "reason": "sentence",
+     "characters": 128,
+     "text": "Ask yourself these questions and note where the act stretches beyond what is necessary to advance the story or deepen character."
+    },
+    {
+     "index": 7,
+     "reason": "clause",
+     "characters": 83,
+     "text": "2. **Consider structural alternatives**  \n   - A 15\u2011page cut is a blunt instrument;"
+    },
+    {
+     "index": 8,
+     "reason": "sentence",
+     "characters": 92,
+     "text": "it may excise vital exposition or character moments that the \u201cbest\u2011written\u201d reviewer valued."
+    },
+    {
+     "index": 9,
+     "reason": "sentence",
+     "characters": 101,
+     "text": "- Instead, look for *bridges*\u2014short transitional scenes that tighten the flow without losing content."
+    },
+    {
+     "index": 10,
+     "reason": "sentence",
+     "characters": 125,
+     "text": "- If a particular subplot is slowing the act, evaluate whether it can be moved to another part of the narrative or condensed."
+    },
+    {
+     "index": 11,
+     "reason": "sentence",
+     "characters": 155,
+     "text": "3. **Re\u2011evaluate the feedback in context**  \n   - The reviewer who praised the draft likely values the thematic depth or character nuance you have crafted."
+    },
+    {
+     "index": 12,
+     "reason": "sentence",
+     "characters": 103,
+     "text": "- The one who noted drag may be focusing on readability for a broader audience or on commercial pacing."
+    },
+    {
+     "index": 13,
+     "reason": "clause",
+     "characters": 81,
+     "text": "- If the book\u2019s intended audience is more literary, lean toward preserving depth;"
+    },
+    {
+     "index": 14,
+     "reason": "sentence",
+     "characters": 59,
+     "text": "if it is aimed at a mass market, prioritize tighter pacing."
+    },
+    {
+     "index": 15,
+     "reason": "sentence",
+     "characters": 137,
+     "text": "4. **Draft an edit plan**  \n   - Mark passages that are *essential* (plot\u2011moving, character\u2011defining) and those that are *non\u2011essential*."
+    },
+    {
+     "index": 16,
+     "reason": "sentence",
+     "characters": 110,
+     "text": "- For each non\u2011essential section, decide whether it can be trimmed, merged with adjacent scenes, or relocated."
+    },
+    {
+     "index": 17,
+     "reason": "clause",
+     "characters": 73,
+     "text": "- Set a target for the second act\u2019s length that satisfies both reviewers:"
+    },
+    {
+     "index": 18,
+     "reason": "sentence",
+     "characters": 44,
+     "text": "perhaps reduce by 5\u201310 pages, then reassess."
+    },
+    {
+     "index": 19,
+     "reason": "long_sentence",
+     "characters": 71,
+     "text": "5. **Seek a third perspective**  \n   - Once you have a revised version,"
+    },
+    {
+     "index": 20,
+     "reason": "sentence",
+     "characters": 152,
+     "text": "present it to a neutral party\u2014perhaps another trusted writer or an editor not involved in the initial reviews\u2014to confirm that the pacing feels balanced."
+    },
+    {
+     "index": 21,
+     "reason": "sentence",
+     "characters": 66,
+     "text": "In short, my lord, do not cut a fixed number of pages on instinct."
+    },
+    {
+     "index": 22,
+     "reason": "sentence",
+     "characters": 150,
+     "text": "Identify the elements that truly drag, preserve those that sustain your narrative\u2019s integrity, and trim only where the story can breathe without loss."
+    },
+    {
+     "index": 23,
+     "reason": "flush",
+     "characters": 118,
+     "text": "Then reassess with a fresh eye.\n\nI remain at your service to review any specific passages you wish to examine further."
+    }
+   ],
+   "first_speech_safe_segment": "My lord,\n\nYour two reviewers have given you contrasting impressions, and the question is which to heed.",
+   "calls": [
+    {
+     "config_id": "aac13204-3b27-477d-8bc4-ced543f61ae3",
+     "model_identifier": "openai/gpt-oss-20b",
+     "provider_reported_model": "openai/gpt-oss-20b",
+     "prompt_tokens": 5752,
+     "total_output_tokens": 714,
+     "reasoning_tokens": 195,
+     "reasoning_present": true,
+     "visible_tokens": 519,
+     "visible_chars": 2426,
+     "first_text_ms": 10754,
+     "latency_ms": 18851,
+     "terminal_state": "complete",
+     "status": "ok",
+     "streamed": true,
+     "cost": "0.000000",
+     "cost_certainty": "known",
+     "preflight": {
+      "path": "openai/gpt-oss-20b",
+      "turns": 2,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "openai/gpt-oss-20b",
+      "sdk_version": "1.6.0b1",
+      "architecture": "gpt_oss",
+      "prompt_tokens": 5752,
+      "context_tokens": 32768,
+      "render_options": {
+       "omitEosToken": true
+      },
+      "rendered_chars": 26931,
+      "registry_agrees": true,
+      "max_context_length": 131072,
+      "instance_identifier": "openai/gpt-oss-20b",
+      "loaded_context_length": 32768,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 5752,
+      "preflight_prompt_tokens": 5752
+     },
+     "loaded_context": 32768
+    }
+   ],
+   "throughput_visible_tokens_per_s": 27.24,
+   "throughput_total_output_tokens_per_s": 37.47
+  },
+  {
+   "label": "measured_low",
+   "excluded_from_comparison": false,
+   "configuration": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+   "configuration_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "declared_reasoning_effort": "low",
+   "transmitted_reasoning_effort": "low",
+   "transmitted_max_tokens": 6144,
+   "transmitted_messages": 2,
+   "streamed": true,
+   "conversation_id": "01a0d1a2-be66-74d4-a751-11f91db12601",
+   "exact_preflight": {
+    "prompt_tokens": 5752,
+    "context_tokens": 32768,
+    "source": "lmstudio-sdk"
+   },
+   "timing_s": {
+    "request_start_to_first_provider_chunk": 7.661,
+    "request_start_to_first_hidden_reasoning_chunk": 7.661,
+    "request_start_to_first_core_visible_text": 8.013,
+    "request_start_to_first_speech_safe_segment": 8.206,
+    "request_start_to_generation_complete": 13.487,
+    "core_call_total": 13.691,
+    "prompt_processing_prefill": "NOT DIRECTLY OBSERVABLE \u2014 the local server reports no separate prefill figure; request_start_to_first_provider_chunk is the observable prefill-to-generation boundary"
+   },
+   "visible_answer": "My lord,\n\nThe two reports you have received are a common dilemma. The reader who praises the work has identified what makes it compelling, while the one noting a drag in Act Two points to an area that may weaken the narrative\u2019s momentum. Neither perspective is inherently more trustworthy; each reflects a different focus.\n\n1. **Examine the specific criticism** \u2013 Identify the passages the second\u2011act reviewer finds slow. Are they dialogue\u2011heavy, exposition\u2011laden, or structurally redundant? If the problematic sections simply repeat what has already been established, trimming them could restore pacing without sacrificing plot.\n\n2. **Maintain narrative integrity** \u2013 The fifteen pages you consider cutting may contain essential beats (character development, thematic reinforcement, or plot resolution). Remove only what is truly extraneous. A good rule is: if a scene can be understood without the material, it is likely unnecessary.\n\n3. **Seek a third opinion** \u2013 A neutral reader can confirm whether the pacing issue is structural or merely a stylistic preference. Their feedback may reveal that the drag stems from an over\u2011detailed exposition that could be condensed rather than omitted.\n\n4. **Test the edit** \u2013 Draft a revised version with the cut sections removed, then read Act Two aloud. If the flow feels smoother and the reader\u2019s engagement rises, you have likely addressed the core concern.\n\nIn short, do not rely solely on one review. Use the feedback to isolate precisely what must change, then edit judiciously. Cutting fifteen pages wholesale risks losing the very qualities that make your draft strong, but a targeted trim guided by specific criticism can improve pacing while preserving substance. Proceed with the latter approach, and if uncertainty remains, bring a third eye to the draft.\n\nI remain at your service.",
+   "answer_characters": 1836,
+   "refusal": null,
+   "speech_segments": [
+    {
+     "index": 1,
+     "reason": "sentence",
+     "characters": 65,
+     "text": "My lord,\n\nThe two reports you have received are a common dilemma."
+    },
+    {
+     "index": 2,
+     "reason": "sentence",
+     "characters": 171,
+     "text": "The reader who praises the work has identified what makes it compelling, while the one noting a drag in Act Two points to an area that may weaken the narrative\u2019s momentum."
+    },
+    {
+     "index": 3,
+     "reason": "clause",
+     "characters": 51,
+     "text": "Neither perspective is inherently more trustworthy;"
+    },
+    {
+     "index": 4,
+     "reason": "sentence",
+     "characters": 131,
+     "text": "each reflects a different focus.\n\n1. **Examine the specific criticism** \u2013 Identify the passages the second\u2011act reviewer finds slow."
+    },
+    {
+     "index": 5,
+     "reason": "sentence",
+     "characters": 69,
+     "text": "Are they dialogue\u2011heavy, exposition\u2011laden, or structurally redundant?"
+    },
+    {
+     "index": 6,
+     "reason": "sentence",
+     "characters": 137,
+     "text": "If the problematic sections simply repeat what has already been established, trimming them could restore pacing without sacrificing plot."
+    },
+    {
+     "index": 7,
+     "reason": "sentence",
+     "characters": 173,
+     "text": "2. **Maintain narrative integrity** \u2013 The fifteen pages you consider cutting may contain essential beats (character development, thematic reinforcement, or plot resolution)."
+    },
+    {
+     "index": 8,
+     "reason": "clause",
+     "characters": 53,
+     "text": "Remove only what is truly extraneous. A good rule is:"
+    },
+    {
+     "index": 9,
+     "reason": "sentence",
+     "characters": 76,
+     "text": "if a scene can be understood without the material, it is likely unnecessary."
+    },
+    {
+     "index": 10,
+     "reason": "sentence",
+     "characters": 131,
+     "text": "3. **Seek a third opinion** \u2013 A neutral reader can confirm whether the pacing issue is structural or merely a stylistic preference."
+    },
+    {
+     "index": 11,
+     "reason": "sentence",
+     "characters": 123,
+     "text": "Their feedback may reveal that the drag stems from an over\u2011detailed exposition that could be condensed rather than omitted."
+    },
+    {
+     "index": 12,
+     "reason": "sentence",
+     "characters": 102,
+     "text": "4. **Test the edit** \u2013 Draft a revised version with the cut sections removed, then read Act Two aloud."
+    },
+    {
+     "index": 13,
+     "reason": "sentence",
+     "characters": 105,
+     "text": "If the flow feels smoother and the reader\u2019s engagement rises, you have likely addressed the core concern."
+    },
+    {
+     "index": 14,
+     "reason": "sentence",
+     "characters": 43,
+     "text": "In short, do not rely solely on one review."
+    },
+    {
+     "index": 15,
+     "reason": "sentence",
+     "characters": 78,
+     "text": "Use the feedback to isolate precisely what must change, then edit judiciously."
+    },
+    {
+     "index": 16,
+     "reason": "sentence",
+     "characters": 188,
+     "text": "Cutting fifteen pages wholesale risks losing the very qualities that make your draft strong, but a targeted trim guided by specific criticism can improve pacing while preserving substance."
+    },
+    {
+     "index": 17,
+     "reason": "sentence",
+     "characters": 93,
+     "text": "Proceed with the latter approach, and if uncertainty remains, bring a third eye to the draft."
+    },
+    {
+     "index": 18,
+     "reason": "flush",
+     "characters": 25,
+     "text": "I remain at your service."
+    }
+   ],
+   "first_speech_safe_segment": "My lord,\n\nThe two reports you have received are a common dilemma.",
+   "calls": [
+    {
+     "config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "model_identifier": "openai/gpt-oss-20b",
+     "provider_reported_model": "openai/gpt-oss-20b",
+     "prompt_tokens": 5752,
+     "total_output_tokens": 381,
+     "reasoning_tokens": 20,
+     "reasoning_present": true,
+     "visible_tokens": 361,
+     "visible_chars": 1836,
+     "first_text_ms": 8013,
+     "latency_ms": 13487,
+     "terminal_state": "complete",
+     "status": "ok",
+     "streamed": true,
+     "cost": "0.000000",
+     "cost_certainty": "known",
+     "preflight": {
+      "path": "openai/gpt-oss-20b",
+      "turns": 2,
+      "format": "safetensors",
+      "source": "lmstudio-sdk",
+      "api_host": "127.0.0.1:1234",
+      "model_key": "openai/gpt-oss-20b",
+      "sdk_version": "1.6.0b1",
+      "architecture": "gpt_oss",
+      "prompt_tokens": 5752,
+      "context_tokens": 32768,
+      "render_options": {
+       "omitEosToken": true
+      },
+      "rendered_chars": 26931,
+      "registry_agrees": true,
+      "max_context_length": 131072,
+      "instance_identifier": "openai/gpt-oss-20b",
+      "loaded_context_length": 32768,
+      "registry_context_tokens": 32768
+     },
+     "parity": {
+      "exact": true,
+      "difference": 0,
+      "server_prompt_tokens": 5752,
+      "preflight_prompt_tokens": 5752
+     },
+     "loaded_context": 32768
+    }
+   ],
+   "throughput_visible_tokens_per_s": 26.37,
+   "throughput_total_output_tokens_per_s": 27.83
+  }
+ ],
+ "comparison": {
+  "first_core_visible_text": {
+   "medium": 10.754,
+   "low": 8.013,
+   "faster_by_s": 2.741,
+   "faster_by_percent": 25.5
+  },
+  "first_speech_safe_segment": {
+   "medium": 11.108,
+   "low": 8.206,
+   "faster_by_s": 2.902,
+   "faster_by_percent": 26.1
+  },
+  "total": {
+   "medium": 19.054,
+   "low": 13.691,
+   "faster_by_s": 5.363,
+   "faster_by_percent": 28.1
+  },
+  "reasoning_tokens": {
+   "medium": 195,
+   "low": 20
+  },
+  "visible_tokens": {
+   "medium": 519,
+   "low": 361
+  },
+  "decision_relevant_conditions_met": [
+   "first Core-visible text at least 25% faster",
+   "first speech-safe boundary at least 25% faster"
+  ],
+  "section_2_5_triggered": true
+ },
+ "production_unchanged": "Production text cognition remains gpt-oss-20b-mxfp4-mlx-lmstudio-partner at MEDIUM. This probe measures latency and decides nothing.",
+ "cost_usd": 0.0
+}

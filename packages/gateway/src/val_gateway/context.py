@@ -330,6 +330,23 @@ def conversation_messages(
 
 
 @dataclass(frozen=True)
+class ShortSpokenAnswer:
+    """An answer Val wrote in full that the owner did not hear in full.
+
+    Positions count this conversation's retained messages in this request from 1,
+    oldest first — the same counting the revision facts use, so one reading serves
+    the whole envelope.
+    """
+
+    answer_position: int
+    #: `interrupted`, `failed` or `not_started`, from the append-only record.
+    state: str
+    heard_characters: int
+    generated_characters: int
+    reason: str | None = None
+
+
+@dataclass(frozen=True)
 class PriorRecordState:
     """The prior context actually available to one response call, typed.
 
@@ -420,6 +437,14 @@ class PriorRecordState:
     #: on this machine.
     visual_perceived_this_turn: int = 0
     visual_earlier_in_conversation: int = 0
+    #: Owner execution order, 23 September 2026 (work package 2 §11), additive and
+    #: present only when this conversation actually has one. An answer Val
+    #: generated in full that the owner **did not hear in full**, because he spoke
+    #: over her or because speech failed. Core cannot rewrite her message to make
+    #: the record tidy, and it must not let the next turn assume he heard the part
+    #: that was never spoken — so the fact is stated, with how much of it reached
+    #: him, and the model is told what that means.
+    spoken_delivery: tuple[ShortSpokenAnswer, ...] = ()
     corrected_after_answer: tuple[tuple[int, int], ...] = ()
     withdrawn_after_positions: tuple[int, ...] = ()
     #: Grounding continuity (ruling, 13 September 2026), additive and present
@@ -523,9 +548,45 @@ class PriorRecordState:
                 if self.audio_state != "none"
                 else {}
             ),
+            # Present only when an answer in this conversation went unheard. A
+            # field restating "he heard everything" on every turn would be context
+            # spent on nothing (the per-turn necessity rule, `01-architecture.md` §5.5).
+            **(
+                {
+                    "spoken_delivery": {
+                        "note": SPOKEN_DELIVERY_NOTE,
+                        "answers": [
+                            {
+                                "answer_position": answer.answer_position,
+                                "state": answer.state,
+                                "heard_characters": answer.heard_characters,
+                                "generated_characters": answer.generated_characters,
+                                **({"reason": answer.reason} if answer.reason else {}),
+                            }
+                            for answer in self.spoken_delivery
+                        ],
+                    }
+                }
+                if self.spoken_delivery
+                else {}
+            ),
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
             "capability_state": dict(CAPABILITY_STATE),
         }
+
+
+#: What an unheard answer means, said once rather than left to be inferred. Owner
+#: execution order, 23 September 2026 (§11): the words are in the record because
+#: Val wrote them, and the owner did not hear all of them because he spoke over
+#: her. Both facts are true, and the second one governs what she may assume he knows.
+SPOKEN_DELIVERY_NOTE = (
+    "One or more of your earlier answers in this conversation was spoken aloud and "
+    "was not heard in full: the text below is in the record because you wrote it, "
+    "and `heard_characters` is how much of it actually reached Lord Armand before "
+    "delivery stopped. Do not assume he knows the part he did not hear. If it "
+    "matters, say it again plainly rather than referring back to it as something "
+    "already settled between you."
+)
 
 
 #: What the visual signal means, said once in the envelope rather than assumed.

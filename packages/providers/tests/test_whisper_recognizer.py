@@ -16,12 +16,14 @@ the contract is what CI can hold on a machine with no Metal and no models.
 from __future__ import annotations
 
 import json
+import os
 import struct
 from pathlib import Path
 
 import pytest
 
 from val_domain.voice import EndpointConfiguration, LiveRecognizer, VoiceUnavailableError
+from val_providers import whisper_recognizer
 from val_providers.whisper_recognizer import (
     ASR_MODEL_SHA256,
     FRAME_CONTROL,
@@ -173,14 +175,135 @@ def test_a_substituted_model_is_refused_before_anything_listens(tmp_path: Path) 
         verify(file, "0" * 64)
 
 
-def test_the_admitted_digest_is_accepted_and_remembered(tmp_path: Path) -> None:
-    """Half a gigabyte of hashing once per process, not once per session."""
+def test_an_unchanged_file_reuses_the_remembered_digest(tmp_path: Path) -> None:
+    """Half a gigabyte of hashing once, while it stays the same unchanged file.
+
+    Proved by counting reads rather than by timing: a second `verify` of a file
+    nothing has touched must not open it again.
+    """
+    file = tmp_path / "model.bin"
+    file.write_bytes(b"the admitted model")
+    digest = digest_of_file(file)
+
+    reads: list[Path] = []
+    real = whisper_recognizer.digest_of_file
+
+    def counted(path: Path) -> str:
+        reads.append(path)
+        return real(path)
+
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(whisper_recognizer, "digest_of_file", counted)
+    try:
+        verify(file, digest)
+        assert len(reads) == 1, "the first verification reads the file"
+        verify(file, digest)
+        verify(file, digest)
+        assert len(reads) == 1, "and a file nothing has touched is not read again"
+        assert whisper_recognizer.fingerprint(file) == _cached_fingerprint(file)
+    finally:
+        monkeypatch.undo()
+
+
+def test_a_file_replaced_after_caching_is_rehashed_and_refused(tmp_path: Path) -> None:
+    """**The defect this replaces.** The earlier test ended in a bare tuple
+    expression — `verify(file, digest), "..."` — which asserts nothing at all, and
+    the behaviour it appeared to bless was the wrong one: the cache was keyed on
+    the path, so a model swapped after the first session was accepted unread.
+
+    Here the substitution keeps the same size *and* restores the modification time,
+    so the weaker fingerprints a path-plus-size-plus-mtime cache would use are
+    all unchanged. `st_ctime_ns` is what catches it.
+    """
     file = tmp_path / "model.bin"
     file.write_bytes(b"the admitted model")
     digest = digest_of_file(file)
     verify(file, digest)
-    file.write_bytes(b"changed underneath")
-    verify(file, digest), "remembered for this process; a model file does not change under us"
+    before = file.stat()
+
+    # Same length, different content, and the modification time put back.
+    file.write_bytes(b"a DIFFERENT model!")
+    os.utime(file, ns=(before.st_atime_ns, before.st_mtime_ns))
+    after = file.stat()
+    assert after.st_size == before.st_size, "the size is unchanged"
+    assert after.st_mtime_ns == before.st_mtime_ns, "and so is the modification time"
+    assert after.st_ctime_ns != before.st_ctime_ns, (
+        "the inode change time moved, and nothing in user space can put it back"
+    )
+
+    with pytest.raises(VoiceUnavailableError, match="is not the admitted model"):
+        verify(file, digest)
+    with pytest.raises(VoiceUnavailableError, match="is not the admitted model"):
+        verify(file, digest), "and the refusal is not itself cached"
+
+
+def test_a_rename_over_replacement_is_caught_through_inode_identity(
+    tmp_path: Path,
+) -> None:
+    """A new file moved into place is a different inode, cached result or not."""
+    file = tmp_path / "model.bin"
+    file.write_bytes(b"the admitted model")
+    digest = digest_of_file(file)
+    verify(file, digest)
+    first_inode = file.stat().st_ino
+
+    replacement = tmp_path / "replacement.bin"
+    replacement.write_bytes(b"a DIFFERENT model!")
+    replacement.replace(file)
+    assert file.stat().st_ino != first_inode, "a different file now occupies the path"
+
+    with pytest.raises(VoiceUnavailableError, match="is not the admitted model"):
+        verify(file, digest)
+
+
+def test_a_size_change_and_an_mtime_change_each_invalidate_the_cache(
+    tmp_path: Path,
+) -> None:
+    """Each field on its own, so none of them is decoration."""
+    file = tmp_path / "model.bin"
+    file.write_bytes(b"the admitted model")
+    digest = digest_of_file(file)
+
+    verify(file, digest)
+    file.write_bytes(b"the admitted model, but longer")
+    with pytest.raises(VoiceUnavailableError):
+        verify(file, digest), "a size change is read again"
+
+    file.write_bytes(b"the admitted model")
+    verify(file, digest)
+    stat = file.stat()
+    os.utime(file, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))
+    reads: list[Path] = []
+    real = whisper_recognizer.digest_of_file
+    patch = pytest.MonkeyPatch()
+    patch.setattr(whisper_recognizer, "digest_of_file", lambda p: reads.append(p) or real(p))
+    try:
+        verify(file, digest)
+    finally:
+        patch.undo()
+    assert reads == [file], "an mtime change alone is enough to read it again"
+
+
+def test_a_digest_mismatch_starts_no_recognizer_process(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Refused before anything listens, on a file that was cached and then swapped."""
+    recognizer = installed(tmp_path)
+    verify(recognizer._asr_model, digest_of_file(recognizer._asr_model))
+    started: list[object] = []
+    monkeypatch.setattr(
+        "val_providers.whisper_recognizer.subprocess.Popen",
+        lambda *a, **k: started.append(a) or FakeProcess(),
+    )
+    with pytest.raises(VoiceUnavailableError, match="is not the admitted model"):
+        recognizer.start()
+    assert started == [], "no recognizer process was started"
+
+
+def _cached_fingerprint(path: Path) -> tuple[int, int, int, int, int]:
+    """The fingerprint the module actually remembered, for the reuse assertion."""
+    remembered = whisper_recognizer._verified[path]
+    return remembered[0]
 
 
 def test_starting_refuses_when_a_model_is_not_the_admitted_one(

@@ -166,8 +166,13 @@ def test_the_local_entries_are_distinct_evaluation_only_entries() -> None:
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
         "qwen3-8-27b-mlx-6bit-lmstudio",
         "mistral-small-3-2-24b-8bit-mlx-lmstudio",
+        # Pin moved 23 September 2026 (owner execution order, Voice work package
+        # 2 §2): a fifth local entry, the admitted artifact at **low** effort,
+        # evaluation only. It exists to be measured against MEDIUM on one
+        # identical request path and serves nothing.
+        "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
     }
-    assert len({c.id for c in candidates}) == 3
+    assert len({c.id for c in candidates}) == 4
     assert all(c.admission is Admission.NOT_ADMITTED for c in candidates)
     assert all(not c.capability_profiles for c in candidates)
 

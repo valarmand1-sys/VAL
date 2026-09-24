@@ -48,6 +48,10 @@ CANDIDATES = (
     # 17 September 2026 (owner ruling): the Category-A Mistral challenger,
     # evaluation only, target PARTNER, no profile.
     "mistral-small-3-2-24b-8bit-mlx-lmstudio",
+    # 23 September 2026 (owner execution order, Voice work package 2 §2): the
+    # admitted artifact at LOW reasoning effort, evaluation only, target PARTNER,
+    # no profile. It exists to be measured against MEDIUM and serves nothing.
+    "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
     # 18 September 2026 (owner ruling): Gemma 4 31B on the llama.cpp provider,
     # evaluation only, target PARTNER, no profile.
     "gemma-4-31b-q6k-llamacpp",

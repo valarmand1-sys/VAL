@@ -1944,7 +1944,18 @@ class SpeechGeneration(Base):
     #: the voice did not drift between them.
     clone_prompt_sha256: Mapped[str] = mapped_column(Text, nullable=False)
     audio_sha256: Mapped[str] = mapped_column(Text, nullable=False)
-    audio_path: Mapped[str] = mapped_column(Text, nullable=False)
+    #: NULL for ordinary live speech, which is generated, delivered and released
+    #: (work package 2 §10). `audio_retained` says which, and a check constraint
+    #: holds the two together so a row can neither claim a file that does not
+    #: exist nor hide one that does.
+    audio_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    audio_retained: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("true")
+    )
+    #: Progressive delivery makes one generation per speech-safe segment. NULL is a
+    #: whole-utterance generation, which is every row written before 23 September 2026.
+    segment_index: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    segment_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     audio_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
     sample_rate: Mapped[int] = mapped_column(Integer, nullable=False)
     duration_seconds: Mapped[Decimal] = mapped_column(Numeric(10, 3), nullable=False)
@@ -1961,8 +1972,26 @@ class SpeechGeneration(Base):
         CheckConstraint("duration_seconds > 0", name="duration_positive"),
         CheckConstraint("elapsed_ms >= 0", name="elapsed_not_negative"),
         CheckConstraint("(local AND cost_usd = 0) OR NOT local", name="local_costs_nothing"),
+        CheckConstraint(
+            "audio_retained = (audio_path IS NOT NULL)", name="retained_names_its_file"
+        ),
+        CheckConstraint(
+            "segment_index IS NULL OR segment_index > 0",
+            name="segment_index_is_counted_from_one",
+        ),
+        CheckConstraint(
+            "(segment_index IS NULL) = (segment_reason IS NULL)",
+            name="a_segment_says_why_it_ended",
+        ),
         Index("ix_speech_generations_voice", "voice_id"),
         Index("ix_speech_generations_message", "message_id"),
+        Index(
+            "uq_speech_generations_message_segment",
+            "message_id",
+            "segment_index",
+            unique=True,
+            postgresql_where=text("message_id IS NOT NULL AND segment_index IS NOT NULL"),
+        ),
     )
 
 
@@ -2137,6 +2166,83 @@ class VoiceRecoveryJournalEntry(Base):
     )
 
 
+class SpeechDelivery(Base):
+    """One transition in what the owner actually heard. Append-only.
+
+    Core can finish writing text he never hears, because he interrupts her. This
+    table is the difference between *what Val generated* and *what delivery
+    delivered* — one row per transition, each carrying the exact prefix delivered
+    at that moment. A delivery's state is its highest-numbered row; there is no
+    UPDATE, so `interrupted` cannot quietly become `completed`.
+
+    The original assistant message is never rewritten to make the record tidy.
+    """
+
+    __tablename__ = "speech_deliveries"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    recorded_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    #: NULL for a house-internal delivery — an acceptance run — which reads
+    #: differently from a delivery with no session at all.
+    voice_session_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("voice_sessions.id", ondelete="NO ACTION"), nullable=True
+    )
+    event: Mapped[int] = mapped_column(Integer, nullable=False)
+    state: Mapped[str] = mapped_column(Text, nullable=False)
+    #: **The exact prefix he heard**, and its length. An interrupted answer is
+    #: truthfully half-heard, and the half is written down rather than
+    #: reconstructed later from a guess.
+    delivered_prefix: Mapped[str] = mapped_column(Text, nullable=False, server_default="")
+    delivered_characters: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    segments_delivered: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
+    #: NULL while Val is still writing: the number is not known yet, and 0 would
+    #: be a claim rather than an absence.
+    segments_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    #: Required for `interrupted` and `failed`, forbidden otherwise, so a state and
+    #: its reason cannot disagree.
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    first_audio_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    elapsed_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("message_id", "event", name="uq_speech_deliveries_event"),
+        CheckConstraint(
+            "state IN ('not_started', 'started', 'completed', 'interrupted', 'failed')",
+            name="state_is_known",
+        ),
+        CheckConstraint(
+            "(state IN ('interrupted', 'failed')) = (reason IS NOT NULL)",
+            name="a_state_and_its_reason_agree",
+        ),
+        CheckConstraint("event > 0", name="event_is_counted_from_one"),
+        CheckConstraint(
+            "delivered_characters >= 0 AND segments_delivered >= 0",
+            name="counts_are_not_negative",
+        ),
+        CheckConstraint(
+            "segments_total IS NULL OR segments_total >= segments_delivered",
+            name="segments_delivered_fit_the_total",
+        ),
+        CheckConstraint(
+            "length(delivered_prefix) = delivered_characters",
+            name="the_prefix_and_its_length_agree",
+        ),
+        CheckConstraint(
+            "state <> 'not_started' OR (delivered_characters = 0 AND segments_delivered = 0)",
+            name="nothing_delivered_before_start",
+        ),
+        Index("ix_speech_deliveries_message", "message_id"),
+        Index("ix_speech_deliveries_session", "voice_session_id"),
+    )
+
+
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
@@ -2178,5 +2284,7 @@ SPECIFIED_TABLES = frozenset(
         "voice_sessions",
         "voice_message_provenance",
         "voice_recovery_journal",
+        # What the owner actually heard, migration 0029 (23 September 2026).
+        "speech_deliveries",
     }
 )

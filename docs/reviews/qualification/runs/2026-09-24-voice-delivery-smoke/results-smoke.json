@@ -1,0 +1,466 @@
+{
+ "smoke": "service-side Voice delivery and concurrent machine fit",
+ "order": "Voice mode work package 2 \u00a715 and \u00a717, owner execution order 23 September 2026",
+ "started_at": "2026-09-24T01:57:38-0500",
+ "fixture": {
+  "path": "infrastructure/voice/fixtures/frozen-utterance.wav",
+  "bytes": 83244
+ },
+ "startup_warnings": [],
+ "voice": "val-established-v1",
+ "voice_reference_sha256": "c5ebe0c7210bf332ab7bf6fda29683664f729cbe21c62f9ce405fc761b6b0e4b",
+ "memory_before": {
+  "free_gb": 31.03,
+  "free_percent": 64.6,
+  "wired_gb": 3.0,
+  "swap_used_mb": 1900.6
+ },
+ "turns": [
+  {
+   "turn": 1,
+   "owner_transcript": "And so, my fellow Americans,",
+   "val_text": "Good evening. It appears your remarks were cut off\u2014may I ask what matter of the house you wish to address?",
+   "delivery_state": "completed",
+   "segments_spoken": [
+    "Good evening.",
+    "It appears your remarks were cut off\u2014may I ask what matter of the house you wish to address?"
+   ],
+   "segment_reasons": [
+    "sentence",
+    "flush"
+   ],
+   "segments_reconstruct_the_answer": true,
+   "delivered_prefix_equals_answer": true,
+   "timings_ms": {
+    "first_core_visible_text": 28648,
+    "first_audio_ready_at_the_delivery_boundary": 37226,
+    "first_core_visible_text_to_first_audio": 8578,
+    "end_of_input_fixture_to_first_audio": 38708,
+    "delivery_elapsed": 41274
+   },
+   "audio_seconds_delivered": 6.0,
+   "sink_holding_bytes_afterwards": 0,
+   "record": {
+    "state": "completed",
+    "delivered_characters": 106,
+    "segments_delivered": 2,
+    "segments_total": 2,
+    "events": 3
+   }
+  },
+  {
+   "turn": 2,
+   "delivery_state": "interrupted",
+   "interruption_reason": "the owner began speaking",
+   "val_generated_characters": 136,
+   "heard_characters": 75,
+   "heard_prefix": "My lord, you have quoted a line that often begins an address to the nation.",
+   "service_side_cancellation_ms": [
+    0.008333008736371994
+   ],
+   "segments_spoken": [
+    "My lord, you have quoted a line that often begins an address to the nation."
+   ],
+   "sink_holding_bytes_afterwards": 0,
+   "record": {
+    "state": "interrupted",
+    "delivered_characters": 75,
+    "segments_delivered": 1,
+    "segments_total": 2,
+    "reason": "the owner began speaking",
+    "events": 3
+   }
+  }
+ ],
+ "next_turn_is_told": [
+  {
+   "state": "interrupted",
+   "heard_characters": 75,
+   "generated_characters": 136,
+   "reason": "the owner began speaking"
+  }
+ ],
+ "machine_fit": {
+  "memory_before": {
+   "free_gb": 31.03,
+   "free_percent": 64.6,
+   "wired_gb": 3.0,
+   "swap_used_mb": 1900.6
+  },
+  "memory_after": {
+   "free_gb": 29.78,
+   "free_percent": 62.0,
+   "wired_gb": 2.97,
+   "swap_used_mb": 1900.6
+  },
+  "lowest_free_percent": 25.1,
+  "highest_swap_used_mb": 1900.6,
+  "swap_before_mb": 1900.6,
+  "swap_after_mb": 1900.6,
+  "new_swap_mb": 0.0,
+  "samples": 32
+ },
+ "speech_generations": [
+  {
+   "segment_index": 1,
+   "segment_reason": "sentence",
+   "audio_path": null,
+   "audio_retained": false,
+   "digest_length": 64,
+   "audio_bytes": 61484,
+   "cost_usd": "0.000000",
+   "local": true,
+   "message_id": "01a0d235-14fa-7285-9691-28fbf4639b04"
+  },
+  {
+   "segment_index": 2,
+   "segment_reason": "flush",
+   "audio_path": null,
+   "audio_retained": false,
+   "digest_length": 64,
+   "audio_bytes": 226604,
+   "cost_usd": "0.000000",
+   "local": true,
+   "message_id": "01a0d235-14fa-7285-9691-28fbf4639b04"
+  },
+  {
+   "segment_index": 1,
+   "segment_reason": "sentence",
+   "audio_path": null,
+   "audio_retained": false,
+   "digest_length": 64,
+   "audio_bytes": 226604,
+   "cost_usd": "0.000000",
+   "local": true,
+   "message_id": "01a0d235-85cf-798a-98a3-d7f49e84f731"
+  }
+ ],
+ "speech_deliveries": [
+  {
+   "message_id": "01a0d235-14fa-7285-9691-28fbf4639b04",
+   "event": 1,
+   "state": "not_started",
+   "delivered_characters": 0,
+   "segments_delivered": 0,
+   "segments_total": null,
+   "reason": null
+  },
+  {
+   "message_id": "01a0d235-14fa-7285-9691-28fbf4639b04",
+   "event": 2,
+   "state": "started",
+   "delivered_characters": 13,
+   "segments_delivered": 1,
+   "segments_total": 2,
+   "reason": null
+  },
+  {
+   "message_id": "01a0d235-14fa-7285-9691-28fbf4639b04",
+   "event": 3,
+   "state": "completed",
+   "delivered_characters": 106,
+   "segments_delivered": 2,
+   "segments_total": 2,
+   "reason": null
+  },
+  {
+   "message_id": "01a0d235-85cf-798a-98a3-d7f49e84f731",
+   "event": 1,
+   "state": "not_started",
+   "delivered_characters": 0,
+   "segments_delivered": 0,
+   "segments_total": null,
+   "reason": null
+  },
+  {
+   "message_id": "01a0d235-85cf-798a-98a3-d7f49e84f731",
+   "event": 2,
+   "state": "started",
+   "delivered_characters": 75,
+   "segments_delivered": 1,
+   "segments_total": 2,
+   "reason": null
+  },
+  {
+   "message_id": "01a0d235-85cf-798a-98a3-d7f49e84f731",
+   "event": 3,
+   "state": "interrupted",
+   "delivered_characters": 75,
+   "segments_delivered": 1,
+   "segments_total": 2,
+   "reason": "the owner began speaking"
+  }
+ ],
+ "model_calls": [
+  {
+   "provider": "anthropic",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "task_type": "classification",
+   "cost": "0.000846",
+   "latency_ms": 1192,
+   "status": "ok"
+  },
+  {
+   "provider": "lmstudio",
+   "model_identifier": "openai/gpt-oss-20b",
+   "task_type": "conversation",
+   "cost": "0.000000",
+   "latency_ms": 19977,
+   "status": "ok"
+  },
+  {
+   "provider": "anthropic",
+   "model_identifier": "claude-haiku-4-5-20251001",
+   "task_type": "classification",
+   "cost": "0.000846",
+   "latency_ms": 1210,
+   "status": "ok"
+  },
+  {
+   "provider": "lmstudio",
+   "model_identifier": "openai/gpt-oss-20b",
+   "task_type": "conversation",
+   "cost": "0.000000",
+   "latency_ms": 13266,
+   "status": "ok"
+  }
+ ],
+ "provider_cost_usd": 0.001692,
+ "negative_proof": {
+  "columns_scanned_for_owner_audio": 135,
+  "columns_containing_the_fixture": [],
+  "audio_paths_written": [],
+  "every_generation_is_ephemeral": true,
+  "local_speech_cost_usd": 0.0,
+  "cloud_stt_calls": 0,
+  "cloud_tts_calls": 0,
+  "elevenlabs_generation_calls": 0,
+  "voice_design_runs": 0
+ },
+ "memory_samples": [
+  {
+   "free_gb": 31.02,
+   "free_percent": 64.6,
+   "wired_gb": 3.0,
+   "swap_used_mb": 1900.6,
+   "at": 405848.84
+  },
+  {
+   "free_gb": 30.0,
+   "free_percent": 62.5,
+   "wired_gb": 3.53,
+   "swap_used_mb": 1900.6,
+   "at": 405850.86
+  },
+  {
+   "free_gb": 29.82,
+   "free_percent": 62.1,
+   "wired_gb": 3.63,
+   "swap_used_mb": 1900.6,
+   "at": 405852.88
+  },
+  {
+   "free_gb": 29.48,
+   "free_percent": 61.4,
+   "wired_gb": 3.63,
+   "swap_used_mb": 1900.6,
+   "at": 405854.9
+  },
+  {
+   "free_gb": 28.34,
+   "free_percent": 59.1,
+   "wired_gb": 3.73,
+   "swap_used_mb": 1900.6,
+   "at": 405856.92
+  },
+  {
+   "free_gb": 22.72,
+   "free_percent": 47.3,
+   "wired_gb": 3.52,
+   "swap_used_mb": 1900.6,
+   "at": 405858.93
+  },
+  {
+   "free_gb": 16.14,
+   "free_percent": 33.6,
+   "wired_gb": 16.83,
+   "swap_used_mb": 1900.6,
+   "at": 405860.96
+  },
+  {
+   "free_gb": 16.13,
+   "free_percent": 33.6,
+   "wired_gb": 16.92,
+   "swap_used_mb": 1900.6,
+   "at": 405862.98
+  },
+  {
+   "free_gb": 16.22,
+   "free_percent": 33.8,
+   "wired_gb": 16.86,
+   "swap_used_mb": 1900.6,
+   "at": 405865.0
+  },
+  {
+   "free_gb": 16.16,
+   "free_percent": 33.7,
+   "wired_gb": 17.0,
+   "swap_used_mb": 1900.6,
+   "at": 405867.02
+  },
+  {
+   "free_gb": 16.89,
+   "free_percent": 35.2,
+   "wired_gb": 16.27,
+   "swap_used_mb": 1900.6,
+   "at": 405869.04
+  },
+  {
+   "free_gb": 16.94,
+   "free_percent": 35.3,
+   "wired_gb": 16.17,
+   "swap_used_mb": 1900.6,
+   "at": 405871.06
+  },
+  {
+   "free_gb": 16.75,
+   "free_percent": 34.9,
+   "wired_gb": 16.42,
+   "swap_used_mb": 1900.6,
+   "at": 405873.07
+  },
+  {
+   "free_gb": 16.76,
+   "free_percent": 34.9,
+   "wired_gb": 16.25,
+   "swap_used_mb": 1900.6,
+   "at": 405875.09
+  },
+  {
+   "free_gb": 17.08,
+   "free_percent": 35.6,
+   "wired_gb": 15.92,
+   "swap_used_mb": 1900.6,
+   "at": 405877.11
+  },
+  {
+   "free_gb": 17.07,
+   "free_percent": 35.6,
+   "wired_gb": 16.1,
+   "swap_used_mb": 1900.6,
+   "at": 405879.13
+  },
+  {
+   "free_gb": 16.47,
+   "free_percent": 34.3,
+   "wired_gb": 16.25,
+   "swap_used_mb": 1900.6,
+   "at": 405881.15
+  },
+  {
+   "free_gb": 22.06,
+   "free_percent": 46.0,
+   "wired_gb": 4.88,
+   "swap_used_mb": 1900.6,
+   "at": 405883.16
+  },
+  {
+   "free_gb": 21.61,
+   "free_percent": 45.0,
+   "wired_gb": 5.72,
+   "swap_used_mb": 1900.6,
+   "at": 405885.17
+  },
+  {
+   "free_gb": 14.13,
+   "free_percent": 29.4,
+   "wired_gb": 4.51,
+   "swap_used_mb": 1900.6,
+   "at": 405887.28
+  },
+  {
+   "free_gb": 21.32,
+   "free_percent": 44.4,
+   "wired_gb": 3.66,
+   "swap_used_mb": 1900.6,
+   "at": 405889.29
+  },
+  {
+   "free_gb": 12.07,
+   "free_percent": 25.1,
+   "wired_gb": 13.9,
+   "swap_used_mb": 1900.6,
+   "at": 405891.3
+  },
+  {
+   "free_gb": 24.29,
+   "free_percent": 50.6,
+   "wired_gb": 3.83,
+   "swap_used_mb": 1900.6,
+   "at": 405893.32
+  },
+  {
+   "free_gb": 24.39,
+   "free_percent": 50.8,
+   "wired_gb": 3.55,
+   "swap_used_mb": 1900.6,
+   "at": 405895.33
+  },
+  {
+   "free_gb": 23.08,
+   "free_percent": 48.1,
+   "wired_gb": 17.21,
+   "swap_used_mb": 1900.6,
+   "at": 405897.35
+  },
+  {
+   "free_gb": 23.17,
+   "free_percent": 48.3,
+   "wired_gb": 17.12,
+   "swap_used_mb": 1900.6,
+   "at": 405899.37
+  },
+  {
+   "free_gb": 23.07,
+   "free_percent": 48.1,
+   "wired_gb": 17.06,
+   "swap_used_mb": 1900.6,
+   "at": 405901.39
+  },
+  {
+   "free_gb": 22.91,
+   "free_percent": 47.7,
+   "wired_gb": 17.16,
+   "swap_used_mb": 1900.6,
+   "at": 405903.41
+  },
+  {
+   "free_gb": 23.63,
+   "free_percent": 49.2,
+   "wired_gb": 16.58,
+   "swap_used_mb": 1900.6,
+   "at": 405905.42
+  },
+  {
+   "free_gb": 23.68,
+   "free_percent": 49.3,
+   "wired_gb": 16.42,
+   "swap_used_mb": 1900.6,
+   "at": 405907.44
+  },
+  {
+   "free_gb": 22.35,
+   "free_percent": 46.6,
+   "wired_gb": 16.46,
+   "swap_used_mb": 1900.6,
+   "at": 405909.45
+  },
+  {
+   "free_gb": 15.05,
+   "free_percent": 31.4,
+   "wired_gb": 12.17,
+   "swap_used_mb": 1900.6,
+   "at": 405911.47
+  }
+ ]
+}
