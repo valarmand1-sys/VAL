@@ -132,3 +132,29 @@ assembles every request whole; reuse never crosses a divergence; isolation fixtu
 pass; prime output never enters any record; execution history records it; model,
 artifact, MEDIUM, persona, route, context, local-only semantics unchanged; LOW
 NOT_ADMITTED; no upgrade; resources fine; the deployed code is the code measured.
+
+## 6. Deployment and post-deployment verification
+
+**Deployed 25 September 2026, 17:40 CDT**, source `6cb3901` (CI run 36197347337 green on
+all six jobs): live store migrated `0030 → 0031` (`model_call_task_type` gains
+`prefix_prime`), service restarted and healthy. Rollback state recorded beforehand:
+source `dd44430`, live head `0030`, production model not loaded (it previously loaded at
+the default parallel 4). Desktop code unchanged; no rebuild.
+
+**Verified on the production runtime itself** — the scratch service on the scratch
+store, addressing `openai/gpt-oss-20b`, so no owner record was touched
+(`matrix-P-postdeploy.json`). The model was loaded by the new readiness code as
+`openai/gpt-oss-20b`, **parallel 1**, 32,768 context, one instance.
+
+| Turn | request-ready → first output | dispatch → first output | speech end → his message | speech end → playback |
+|---|---|---|---|---|
+| 1 (model cold) | 10.06 s | 7.74 s | 2.13 s | 17.74 s |
+| 2 | **0.59 s** | 0.50 s | 2.17 s | 10.77 s |
+| 3 | **1.62 s** | 1.54 s | 2.07 s | 12.59 s |
+| 4 | **1.61 s** | 1.52 s | 2.08 s | 13.47 s |
+
+LM Studio's own log: real turns `5048/5873` and `5048/5863` tokens from cache; primes
+`5048/5059`. The first prime stood aside for his waiting request on the cold turn and
+was established afterwards (6.68 s); later ones cost 0.45 s. Seven `prefix_prime` rows,
+all persona-attributed, none attached to a conversation, $0; no prime text in any
+message. **The improvement survived deployment; no rollback.**

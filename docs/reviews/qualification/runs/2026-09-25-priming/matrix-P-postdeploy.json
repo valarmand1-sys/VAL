@@ -1,0 +1,188 @@
+{
+ "condition": "P-production-postdeploy",
+ "priming": "on",
+ "lead_s": 1.0,
+ "rows": [
+  {
+   "turn": "P-production-postdeploy turn 1",
+   "request_ready_to_first_user_facing_text_ms": 13109.2,
+   "dispatch_to_first_provider_output_ms": 7739.6,
+   "first_output_to_user_facing_text_ms": 3045.9,
+   "cognition_dispatch_to_answer_text_complete_ms": 10785.5,
+   "readiness_ms": 2085.8,
+   "first_tts_ms": 2536.6,
+   "speech_end_to_owner_message_read_ms": 2127.3,
+   "owner_message_to_playback_ms": 15607.7,
+   "speech_end_to_playback_ms": 17735.0,
+   "endpoint_from_speech_end_ms": 757.1,
+   "request_ready_wall": 1790376062.6618
+  },
+  {
+   "turn": "P-production-postdeploy turn 2",
+   "request_ready_to_first_user_facing_text_ms": 5183.0,
+   "dispatch_to_first_provider_output_ms": 498.1,
+   "first_output_to_user_facing_text_ms": 4597.7,
+   "cognition_dispatch_to_answer_text_complete_ms": 5095.8,
+   "readiness_ms": 17.9,
+   "first_tts_ms": 3307.6,
+   "speech_end_to_owner_message_read_ms": 2167.3,
+   "owner_message_to_playback_ms": 8605.6,
+   "speech_end_to_playback_ms": 10772.9,
+   "endpoint_from_speech_end_ms": 788.1,
+   "request_ready_wall": 1790376091.1464
+  },
+  {
+   "turn": "P-production-postdeploy turn 3",
+   "request_ready_to_first_user_facing_text_ms": 7625.6,
+   "dispatch_to_first_provider_output_ms": 1541.6,
+   "first_output_to_user_facing_text_ms": 6002.1,
+   "cognition_dispatch_to_answer_text_complete_ms": 7543.7,
+   "readiness_ms": 16.3,
+   "first_tts_ms": 2884.8,
+   "speech_end_to_owner_message_read_ms": 2071.8,
+   "owner_message_to_playback_ms": 10517.2,
+   "speech_end_to_playback_ms": 12589.0,
+   "endpoint_from_speech_end_ms": 715.2,
+   "request_ready_wall": 1790376123.1074
+  },
+  {
+   "turn": "P-production-postdeploy turn 4",
+   "request_ready_to_first_user_facing_text_ms": 8205.8,
+   "dispatch_to_first_provider_output_ms": 1523.8,
+   "first_output_to_user_facing_text_ms": 6600.5,
+   "cognition_dispatch_to_answer_text_complete_ms": 8124.3,
+   "readiness_ms": 16.8,
+   "first_tts_ms": 3022.3,
+   "speech_end_to_owner_message_read_ms": 2081.5,
+   "owner_message_to_playback_ms": 11392.9,
+   "speech_end_to_playback_ms": 13474.4,
+   "endpoint_from_speech_end_ms": 777.0,
+   "request_ready_wall": 1790376144.6593
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 3.223,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "reason": "an owner request is waiting; maintenance never starts ahead of it"
+   },
+   "wall": 1790376064.777
+  },
+  {
+   "kind": "refresh",
+   "seconds": 6.68,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dabb-1129-7b33-a4a7-138f60dc57f1",
+    "seconds": 6.351
+   },
+   "wall": 1790376087.854
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.461,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dabb-1b82-7229-8c1a-80774d5735c9",
+    "seconds": 0.284
+   },
+   "wall": 1790376090.502
+  },
+  {
+   "kind": "refresh",
+   "seconds": 1.542,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dabb-68c0-7edb-beb6-e8c61494857b",
+    "seconds": 1.299
+   },
+   "wall": 1790376110.276
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.466,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dabb-9857-77aa-9338-c9a2cebe6d76",
+    "seconds": 0.286
+   },
+   "wall": 1790376122.458
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.446,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dabb-c65f-77d4-b36b-0e2d11cf9698",
+    "seconds": 0.287
+   },
+   "wall": 1790376134.243
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.453,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dabb-ec7e-7ee3-90f5-73a0cffbe094",
+    "seconds": 0.285
+   },
+   "wall": 1790376144.003
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.451,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dabc-284a-74c4-8692-be1f1d669194",
+    "seconds": 0.283
+   },
+   "wall": 1790376159.309
+  }
+ ]
+}
