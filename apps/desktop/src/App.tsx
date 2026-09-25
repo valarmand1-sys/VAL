@@ -32,6 +32,7 @@ import type {
   VoiceSessionView,
 } from "./api";
 import { Attachments } from "./attachments";
+import { latestIssuedWins } from "./conversationReads";
 import {
   NO_TIMINGS,
   VoiceController,
@@ -119,6 +120,10 @@ export function App(): React.JSX.Element {
   const turnClock = useRef<{ startedAt: number; clock: TurnClock } | null>(null);
   const [conversations, setConversations] = useState<ConversationView[]>([]);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
+  // Every read of a conversation goes through here, so a read that returns after a
+  // newer one was shown can never put the older conversation back (owner
+  // diagnostic, 25 September 2026: a spoken turn now reads twice, and they race).
+  const reads = useRef(latestIssuedWins<ConversationDetail>((next) => setDetail(next)));
   const [warnings, setWarnings] = useState<string[]>([]);
   const [costs, setCosts] = useState<CostView | null>(null);
   const [lastDisagreement, setLastDisagreement] = useState<string | null>(null);
@@ -204,8 +209,8 @@ export function App(): React.JSX.Element {
   }, [refreshConversations, showArchived]);
 
   const openConversation = useCallback(async (id: string) => {
-    setDetail(await api.conversation(id));
-    setClarification(null);
+    const outcome = await reads.current.read(() => api.conversation(id));
+    if (outcome.applied) setClarification(null);
   }, []);
 
   // Entering a project, or leaving to everything. Entering is the one intentional
@@ -214,6 +219,7 @@ export function App(): React.JSX.Element {
     async (next: Scope) => {
       setScope(next);
       setEntry(next.kind === "project" ? enterProject(next.project) : newChatEntry());
+      reads.current.invalidate();
       setDetail(null);
       setClarification(null);
       await refreshConversations(next);
@@ -223,6 +229,7 @@ export function App(): React.JSX.Element {
 
   const newChat = useCallback(() => {
     setView("conversation");
+    reads.current.invalidate();
     setDetail(null);
     setClarification(null);
     setScope({ kind: "all" });
@@ -258,6 +265,29 @@ export function App(): React.JSX.Element {
     };
   }, [streaming]);
 
+  // His words on screen, measured (owner diagnostic, 25 September 2026). The effect
+  // runs after React has committed the thread to the DOM, so `domAt` is when the
+  // message was in the document; two animation frames later is the nearest this
+  // window can come to a paint, and is labelled as that rather than as one.
+  useEffect(() => {
+    const controller = voiceController.current;
+    const expected = controller?.committedMessage ?? null;
+    if (controller === null || expected === null || detail === null) return;
+    if (!detail.messages.some((message) => message.id === expected)) return;
+    const domAt = performance.now();
+    controller.noteOwnerMessageShown(expected, domAt, null);
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        controller.noteOwnerMessageShown(expected, domAt, performance.now());
+      });
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [detail]);
+
   // Voice — owner execution order, 24 September 2026, §5, §6, §7, §8.
   //
   // Every one of these is called from an owner gesture handler and from nowhere
@@ -277,10 +307,14 @@ export function App(): React.JSX.Element {
         },
         onSession: (view) => setVoiceSession(view),
         onTimings: (measured) => setVoiceTimings(measured),
+        // His words, the moment they are canonical — before she has thought at all.
+        onOwnerMessageCommitted: (committed) => {
+          void openConversation(committed.conversation_id).catch(() => undefined);
+        },
+        // Her answer, once it exists. The same read path, so it cannot race the first.
         onTurnSettled: (view) => {
           const settled = view.turns.at(-1);
           if (settled === undefined) return;
-          // The canonical turn is in the store; show the conversation it belongs to.
           void openConversation(settled.conversation_id).catch(() => undefined);
         },
       },
@@ -556,6 +590,7 @@ export function App(): React.JSX.Element {
                 void (async () => {
                   if (!(await mayLeaveConversation())) return;
                   setView("conversation");
+                  reads.current.invalidate();
                   setDetail(null);
                   setClarification(null);
                   setEntry(enterProject(scope.project));
@@ -938,7 +973,10 @@ function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element 
   const ready = span(timings.unmuteGestureAt, timings.unmuteFirstChunkAt);
   const audible = span(timings.speechEndAt, timings.firstAudibleAt);
   const silence = span(timings.bargeInAt, timings.silenceAt);
-  if (unmute === "—" && ready === "—" && audible === "—" && silence === "—") return null;
+  const shown = span(timings.speechEndAt, timings.ownerShownAt);
+  const read = span(timings.committedSeenAt, timings.ownerShownAt);
+  if (unmute === "—" && ready === "—" && audible === "—" && silence === "—" && shown === "—")
+    return null;
   return (
     <p className="voice-measurements">
       <span title="From your unmute gesture to a live microphone track.">
@@ -947,8 +985,23 @@ function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element 
       <span title="From your unmute gesture to the first audio chunk actually accepted.">
         unmute → capturing {ready}
       </span>
-      <span title="From the settled transcript to the first sound from the speakers in this window.">
-        transcript → audible {audible}
+      <span
+        title={
+          "From when this window first saw your settled transcript to the React commit " +
+          "that put your words in the thread. The part after the service reported them " +
+          "is shown in brackets. A document fact, not a claim about the screen."
+        }
+      >
+        transcript → your words shown {shown} ({read})
+      </span>
+      <span
+        title={
+          "From when this window first saw your settled transcript to when it started " +
+          "playing her first segment. A software event in this window, not a measurement " +
+          "of sound leaving the speakers."
+        }
+      >
+        transcript → playback start {audible}
       </span>
       <span title="From your barge-in to the playing buffer being stopped in this window.">
         barge-in → silence {silence}
@@ -999,7 +1052,7 @@ function Prose(props: { text: string }): React.JSX.Element {
   );
 }
 
-function Thread(props: {
+export function Thread(props: {
   detail: ConversationDetail;
   projects: ProjectView[];
   onRecorded: () => void;

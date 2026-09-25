@@ -191,6 +191,20 @@ class RecognizerEvent:
     gap_before_seconds: float | None = None
     voiced_seconds: float = 0.0
     seconds: float = 0.0
+    #: Owner diagnostic, 25 September 2026. Which stretch of the helper's input
+    #: stream an utterance was, in samples since it began listening — its first
+    #: sample, its length, the first window the VAD was confident of, and how much
+    #: of the stream had arrived. Counts for continuity, never audio.
+    first_sample: int = 0
+    samples: int = 0
+    run_start_sample: int = 0
+    received_samples: int = 0
+    #: When **this process** read the event off the helper's stdout, on its own
+    #: monotonic clock. Not from the payload: the helper's clock is its own, and on
+    #: this machine two processes' monotonic clocks do not share an origin, so the
+    #: helper's `at` and `endpoint_at` are comparable with each other and with
+    #: nothing here. Zero when the event did not come through an adapter that notes it.
+    received_at: float = 0.0
 
     @classmethod
     def of(cls, payload: dict[str, object]) -> RecognizerEvent:
@@ -216,6 +230,10 @@ class RecognizerEvent:
             ),
             voiced_seconds=_instant(payload.get("voiced_seconds")),
             seconds=_instant(payload.get("seconds")),
+            first_sample=_count(payload.get("first_sample")),
+            samples=_count(payload.get("samples")),
+            run_start_sample=_count(payload.get("run_start_sample")),
+            received_samples=_count(payload.get("received_samples")),
         )
 
 

@@ -169,6 +169,9 @@ from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 
 _LOGGER = logging.getLogger("val.deliberation")
 
+#: Told `(conversation_id, message_id)` once the owner's message is committed.
+PersistedSink = Callable[[UUID, UUID], None]
+
 #: Output caps for the machinery calls. The classifier and blind position emit
 #: small JSON; the strip must return the message's own text twice over in the
 #: worst case, so its cap scales with nothing hidden — a message longer than
@@ -316,6 +319,7 @@ def send(
     live_voice: LiveVoiceConversations | None = None,
     spoken: bool = False,
     seal_route: SealRoute = SealRoute.UTTERANCE_FINALIZED,
+    on_persisted: PersistedSink | None = None,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -328,6 +332,14 @@ def send(
     blind position and the response, and nothing else — to a registered
     candidate through a `CandidateGateway`; a plain gateway refuses it before
     anything is persisted. Classification and strip route as always.
+
+    `on_persisted` is told the conversation and message ids **the moment the owner's
+    message is committed** — before classification, recall, assembly or any provider
+    call (owner diagnostic, 25 September 2026). A spoken turn has no composer to echo
+    what he said, so without it the interface had no way to learn his words were in
+    the store until her answer was, and showed him nothing for the whole of her
+    thinking. Presentation only: it changes nothing about the turn, and a sink that
+    fails is logged and ignored rather than allowed to cost him the answer.
 
     `live_voice` and `spoken` are the live-voice seal's two live inputs (owner
     ruling, 24 September 2026, Voice work package 3 §1.5). `live_voice` names the
@@ -373,6 +385,11 @@ def send(
     mark("message_persisted")
     if isinstance(opened, ClarificationNeeded):
         return opened
+    if on_persisted is not None:
+        try:
+            on_persisted(opened.conversation.id, opened.user_message.id)
+        except Exception:  # presentation must never cost the turn
+            _LOGGER.exception("the persisted-message sink failed; the turn continues")
     _stage(on_stage, TurnStage.UNDERSTANDING)
 
     # Owner ruling, 19 September 2026 (Track C §12). The turn's images are

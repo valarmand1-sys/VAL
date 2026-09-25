@@ -1,0 +1,393 @@
+{
+  "label": "after-repair",
+  "phrase": "Good evening, Val.",
+  "helper_sha256": "ee9578b7013dd52170da3df97605762902ba3f63b9b423c7e10843a77f5aa1fa",
+  "endpoint": {
+    "threshold": 0.5,
+    "min_speech_ms": 220,
+    "min_silence_ms": 650,
+    "speech_pad_ms": 80,
+    "max_utterance_s": 30.0
+  },
+  "macos": "26.6.2",
+  "cases": [
+    {
+      "case": "Daniel: already listening, low-energy onset",
+      "fixture": {
+        "lead_in_ms": 1500.0,
+        "noise_dbfs_rms": -60.0,
+        "first_word_onset_ramp_ms": 150,
+        "first_word_onset_start_db": -24,
+        "speech_ms": 1453.7,
+        "true_onset_sample_16k": 24000
+      },
+      "worklet": {
+        "input_samples": 213776,
+        "quanta": 1671,
+        "chunks": 222,
+        "output_samples": 71040,
+        "expected_output_samples": 71040,
+        "continuous": true
+      },
+      "splits": [
+        {
+          "payload_chunk_counts": [
+            1
+          ],
+          "samples_fed": 71040,
+          "windows": 138,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.429,
+          "first_confident_window_start": 24576,
+          "true_onset_to_first_confident_window_ms": 36.0,
+          "admission_window_end": 28160,
+          "true_onset_to_admission_ms": 260.0,
+          "recognizer_input_first_sample": 23296,
+          "recognizer_input_samples": 35584,
+          "recognizer_input_ms": 2224.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "ecb44dc34b201c57949c9793fab794bea58691e335c812272605f5dd4a48439d",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 44.0,
+          "whisper_final_text": "Good evening, Val."
+        },
+        {
+          "payload_chunk_counts": [
+            4,
+            1,
+            7,
+            2
+          ],
+          "samples_fed": 71040,
+          "windows": 138,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.413,
+          "first_confident_window_start": 24576,
+          "true_onset_to_first_confident_window_ms": 36.0,
+          "admission_window_end": 28160,
+          "true_onset_to_admission_ms": 260.0,
+          "recognizer_input_first_sample": 23296,
+          "recognizer_input_samples": 35584,
+          "recognizer_input_ms": 2224.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "ecb44dc34b201c57949c9793fab794bea58691e335c812272605f5dd4a48439d",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 44.0,
+          "whisper_final_text": "Good evening, Val."
+        },
+        {
+          "payload_chunk_counts": [
+            50
+          ],
+          "samples_fed": 71040,
+          "windows": 138,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.416,
+          "first_confident_window_start": 24576,
+          "true_onset_to_first_confident_window_ms": 36.0,
+          "admission_window_end": 28160,
+          "true_onset_to_admission_ms": 260.0,
+          "recognizer_input_first_sample": 23296,
+          "recognizer_input_samples": 35584,
+          "recognizer_input_ms": 2224.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "ecb44dc34b201c57949c9793fab794bea58691e335c812272605f5dd4a48439d",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 44.0,
+          "whisper_final_text": "Good evening, Val."
+        }
+      ],
+      "recognizer_input_identical_across_payload_splits": true,
+      "complete_valid_input": {
+        "first_sample": 22720,
+        "samples": 25818,
+        "unchanged_whisper_small_text": "Good evening, Val."
+      }
+    },
+    {
+      "case": "Daniel: already listening, natural onset",
+      "fixture": {
+        "lead_in_ms": 1500.0,
+        "noise_dbfs_rms": -60.0,
+        "first_word_onset_ramp_ms": 0,
+        "first_word_onset_start_db": 0.0,
+        "speech_ms": 1453.7,
+        "true_onset_sample_16k": 24000
+      },
+      "worklet": {
+        "input_samples": 213776,
+        "quanta": 1671,
+        "chunks": 222,
+        "output_samples": 71040,
+        "expected_output_samples": 71040,
+        "continuous": true
+      },
+      "splits": [
+        {
+          "payload_chunk_counts": [
+            1
+          ],
+          "samples_fed": 71040,
+          "windows": 138,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.417,
+          "first_confident_window_start": 24064,
+          "true_onset_to_first_confident_window_ms": 4.0,
+          "admission_window_end": 27648,
+          "true_onset_to_admission_ms": 228.0,
+          "recognizer_input_first_sample": 22784,
+          "recognizer_input_samples": 36096,
+          "recognizer_input_ms": 2256.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "d42a995f1795ce6163cd5f19092d3c546387148d83a6fd9cb25ee7129530fbb6",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 76.0,
+          "whisper_final_text": "Good evening, Val."
+        }
+      ],
+      "recognizer_input_identical_across_payload_splits": true,
+      "complete_valid_input": {
+        "first_sample": 22720,
+        "samples": 25818,
+        "unchanged_whisper_small_text": "Good evening, Val."
+      }
+    },
+    {
+      "case": "Daniel: speech from capture sample zero",
+      "fixture": {
+        "lead_in_ms": 0.0,
+        "noise_dbfs_rms": -60.0,
+        "first_word_onset_ramp_ms": 150,
+        "first_word_onset_start_db": -24,
+        "speech_ms": 1453.7,
+        "true_onset_sample_16k": 0
+      },
+      "worklet": {
+        "input_samples": 141776,
+        "quanta": 1108,
+        "chunks": 147,
+        "output_samples": 47040,
+        "expected_output_samples": 47040,
+        "continuous": true
+      },
+      "splits": [
+        {
+          "payload_chunk_counts": [
+            1
+          ],
+          "samples_fed": 47040,
+          "windows": 91,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.416,
+          "first_confident_window_start": 1536,
+          "true_onset_to_first_confident_window_ms": 96.0,
+          "admission_window_end": 5120,
+          "true_onset_to_admission_ms": 320.0,
+          "recognizer_input_first_sample": 256,
+          "recognizer_input_samples": 34560,
+          "recognizer_input_ms": 2160.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "2f407baac0eb5cfdb2204afbabe15757fad6e14a964df0298cb1d97a5b29f207",
+          "opening_audio_lost_ms": 16.0,
+          "pre_roll_before_true_onset_ms": 0.0,
+          "whisper_final_text": "Good evening, Val."
+        }
+      ],
+      "recognizer_input_identical_across_payload_splits": true,
+      "complete_valid_input": {
+        "first_sample": 0,
+        "samples": 24538,
+        "unchanged_whisper_small_text": "Good evening, Val."
+      }
+    },
+    {
+      "case": "Samantha: already listening, low-energy onset",
+      "fixture": {
+        "lead_in_ms": 1500.0,
+        "noise_dbfs_rms": -60.0,
+        "first_word_onset_ramp_ms": 150,
+        "first_word_onset_start_db": -24,
+        "speech_ms": 1176.2,
+        "true_onset_sample_16k": 24000
+      },
+      "worklet": {
+        "input_samples": 200458,
+        "quanta": 1567,
+        "chunks": 208,
+        "output_samples": 66560,
+        "expected_output_samples": 66560,
+        "continuous": true
+      },
+      "splits": [
+        {
+          "payload_chunk_counts": [
+            1
+          ],
+          "samples_fed": 66560,
+          "windows": 130,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.33,
+          "first_confident_window_start": 24576,
+          "true_onset_to_first_confident_window_ms": 36.0,
+          "admission_window_end": 28160,
+          "true_onset_to_admission_ms": 260.0,
+          "recognizer_input_first_sample": 23296,
+          "recognizer_input_samples": 30464,
+          "recognizer_input_ms": 1904.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "c985ee6498636dc3121eb007939ee1f564265976ddabd5d7c6ae3e957b99870c",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 44.0,
+          "whisper_final_text": "Good evening, Val."
+        },
+        {
+          "payload_chunk_counts": [
+            4,
+            1,
+            7,
+            2
+          ],
+          "samples_fed": 66560,
+          "windows": 130,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.318,
+          "first_confident_window_start": 24576,
+          "true_onset_to_first_confident_window_ms": 36.0,
+          "admission_window_end": 28160,
+          "true_onset_to_admission_ms": 260.0,
+          "recognizer_input_first_sample": 23296,
+          "recognizer_input_samples": 30464,
+          "recognizer_input_ms": 1904.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "c985ee6498636dc3121eb007939ee1f564265976ddabd5d7c6ae3e957b99870c",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 44.0,
+          "whisper_final_text": "Good evening, Val."
+        },
+        {
+          "payload_chunk_counts": [
+            50
+          ],
+          "samples_fed": 66560,
+          "windows": 130,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.315,
+          "first_confident_window_start": 24576,
+          "true_onset_to_first_confident_window_ms": 36.0,
+          "admission_window_end": 28160,
+          "true_onset_to_admission_ms": 260.0,
+          "recognizer_input_first_sample": 23296,
+          "recognizer_input_samples": 30464,
+          "recognizer_input_ms": 1904.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "c985ee6498636dc3121eb007939ee1f564265976ddabd5d7c6ae3e957b99870c",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 44.0,
+          "whisper_final_text": "Good evening, Val."
+        }
+      ],
+      "recognizer_input_identical_across_payload_splits": true,
+      "complete_valid_input": {
+        "first_sample": 22720,
+        "samples": 21379,
+        "unchanged_whisper_small_text": "Good evening, Val."
+      }
+    },
+    {
+      "case": "Samantha: already listening, natural onset",
+      "fixture": {
+        "lead_in_ms": 1500.0,
+        "noise_dbfs_rms": -60.0,
+        "first_word_onset_ramp_ms": 0,
+        "first_word_onset_start_db": 0.0,
+        "speech_ms": 1176.2,
+        "true_onset_sample_16k": 24000
+      },
+      "worklet": {
+        "input_samples": 200458,
+        "quanta": 1567,
+        "chunks": 208,
+        "output_samples": 66560,
+        "expected_output_samples": 66560,
+        "continuous": true
+      },
+      "splits": [
+        {
+          "payload_chunk_counts": [
+            1
+          ],
+          "samples_fed": 66560,
+          "windows": 130,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.317,
+          "first_confident_window_start": 24576,
+          "true_onset_to_first_confident_window_ms": 36.0,
+          "admission_window_end": 28160,
+          "true_onset_to_admission_ms": 260.0,
+          "recognizer_input_first_sample": 23296,
+          "recognizer_input_samples": 30464,
+          "recognizer_input_ms": 1904.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "2ab9cc0aeb96b8c135e75141658d41ddf88c82c17e032968942c2b72491cb318",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 44.0,
+          "whisper_final_text": "Good evening, Val."
+        }
+      ],
+      "recognizer_input_identical_across_payload_splits": true,
+      "complete_valid_input": {
+        "first_sample": 22720,
+        "samples": 21379,
+        "unchanged_whisper_small_text": "Good evening, Val."
+      }
+    },
+    {
+      "case": "Samantha: speech from capture sample zero",
+      "fixture": {
+        "lead_in_ms": 0.0,
+        "noise_dbfs_rms": -60.0,
+        "first_word_onset_ramp_ms": 150,
+        "first_word_onset_start_db": -24,
+        "speech_ms": 1176.2,
+        "true_onset_sample_16k": 0
+      },
+      "worklet": {
+        "input_samples": 128458,
+        "quanta": 1004,
+        "chunks": 133,
+        "output_samples": 42560,
+        "expected_output_samples": 42560,
+        "continuous": true
+      },
+      "splits": [
+        {
+          "payload_chunk_counts": [
+            1
+          ],
+          "samples_fed": 42560,
+          "windows": 83,
+          "utterances_finalized": 1,
+          "elapsed_s": 0.316,
+          "first_confident_window_start": 512,
+          "true_onset_to_first_confident_window_ms": 32.0,
+          "admission_window_end": 4096,
+          "true_onset_to_admission_ms": 256.0,
+          "recognizer_input_first_sample": 0,
+          "recognizer_input_samples": 29696,
+          "recognizer_input_ms": 1856.0,
+          "recognizer_input_is_contiguous_slice_of_stream": true,
+          "recognizer_input_sha256": "12f10b1ef2ae1d76d5d225ba6d11be799fe1d25e1b71907ead43be24371eff2e",
+          "opening_audio_lost_ms": 0.0,
+          "pre_roll_before_true_onset_ms": 0.0,
+          "whisper_final_text": "Good evening, Val."
+        }
+      ],
+      "recognizer_input_identical_across_payload_splits": true,
+      "complete_valid_input": {
+        "first_sample": 0,
+        "samples": 20099,
+        "unchanged_whisper_small_text": "Good evening, Val."
+      }
+    }
+  ]
+}

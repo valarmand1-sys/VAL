@@ -1014,6 +1014,21 @@ class VoiceSessionView(BaseModel):
     delivery: LiveDeliveryView | None = None
     #: Every barge-in this session performed, in milliseconds, service-side.
     cancellations_ms: list[float] = Field(default_factory=list)
+    #: His most recent spoken message, **canonical in the store**, answered or not.
+    #: Set by the commit itself, before any provider is contacted, so the desktop
+    #: can show him his words while she is still thinking (owner diagnostic, 25
+    #: September 2026). `turns` still gains the exchange only once it is answered.
+    committed: VoiceCommittedView | None = None
+
+
+class VoiceCommittedView(BaseModel):
+    """A spoken owner message that exists in the conversation's record."""
+
+    model_config = ConfigDict(frozen=True)
+
+    conversation_id: UUID
+    message_id: UUID
+    utterance: int
 
 
 class DeliveryView(BaseModel):

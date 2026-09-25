@@ -291,7 +291,15 @@ class Listener:
         self.params.no_context = True
         self.params.suppress_blank = True
         self.params.suppress_nst = True
+        self.configure(endpoint)
 
+    def configure(self, endpoint: dict[str, float]) -> None:
+        """The endpoint machine's settings and its empty state — no library, no model.
+
+        Separate from `__init__` only so the admission logic can be exercised with
+        scripted VAD decisions in the voice runtime's tests; production constructs a
+        `Listener` exactly as before, and nothing about decoding is set here.
+        """
         self.threshold = float(endpoint["threshold"])
         self.min_speech = float(endpoint["min_speech_ms"]) / 1000.0
         self.min_silence = float(endpoint["min_silence_ms"]) / 1000.0
@@ -301,6 +309,16 @@ class Listener:
         self.pending = np.zeros(0, dtype=np.float32)  # not yet windowed
         self.utterance = np.zeros(0, dtype=np.float32)  # the live utterance
         self.padding = np.zeros(0, dtype=np.float32)  # pre-speech padding ring
+        #: The confident run that has not yet been admitted as speech. Kept whole:
+        #: it is the opening of the utterance (owner diagnostic, 25 September 2026).
+        self.run = np.zeros(0, dtype=np.float32)
+        #: Stream positions, in samples since this helper started listening, so the
+        #: record can say exactly which stretch of the stream an utterance was — a
+        #: count, never audio. `windowed` is the end of the last window the VAD saw.
+        self.received = 0
+        self.windowed = 0
+        self.first_sample = 0
+        self.run_start_sample = 0
         #: When the previous utterance settled, and the gap before this one began —
         #: durations only, for the endpoint diagnostics (WP3 repair pass §2).
         self.settled_at = 0.0
@@ -349,10 +367,12 @@ class Listener:
     def feed(self, samples: np.ndarray) -> None:
         """One block of PCM, advanced through the endpoint machine."""
         self.pending = np.concatenate([self.pending, samples])
+        self.received += samples.size
         per_window = VAD_WINDOW / SAMPLE_RATE
 
         while self.pending.size >= VAD_WINDOW:
             window, self.pending = self.pending[:VAD_WINDOW], self.pending[VAD_WINDOW:]
+            self.windowed += VAD_WINDOW
             probs = self.probabilities(window)
             speaking = bool(probs) and max(probs) >= self.threshold
 
@@ -370,17 +390,33 @@ class Listener:
                     self.finalize("maximum_length")
                     continue
                 self.maybe_provisional()
+            elif speaking:
+                # A confident window, not yet enough of them to call it speech. It is
+                # **kept**, whole: if the run is admitted, this is how the utterance
+                # begins. Owner diagnostic, 25 September 2026 — "Good evening, Val."
+                # arrived as "evening Val." three times in three, because this branch
+                # used to keep only the last `speech_pad_ms` of everything, the run
+                # included, and so discarded the first 148 to 240 ms of confident speech
+                # before Whisper ever saw it. Measured on a controlled fixture through
+                # the shipped worklet and this unmodified file; the same unchanged
+                # Whisper Small given the whole utterance heard "Good".
+                if self.run.size == 0:
+                    self.run_start_sample = self.windowed - VAD_WINDOW
+                self.run = np.concatenate([self.run, window])
+                self.speech_run += per_window
+                if self.speech_run >= self.min_speech:
+                    self.begin()
             else:
-                # Keep only the padding the configuration asks for, so an
-                # utterance starts a little before its first confident frame.
+                # Not speech. A run that never reached admission becomes ordinary
+                # context, and only the padding the configuration asks for is kept —
+                # so an utterance starts `speech_pad_ms` before its **first confident
+                # frame**, which is what the governed setting says and what the code
+                # did not do.
                 keep = int(self.pad * SAMPLE_RATE)
-                self.padding = np.concatenate([self.padding, window])[-keep:] if keep else window
-                if speaking:
-                    self.speech_run += per_window
-                    if self.speech_run >= self.min_speech:
-                        self.begin()
-                else:
-                    self.speech_run = 0.0
+                context = np.concatenate([self.padding, self.run, window])
+                self.padding = context[-keep:] if keep else np.zeros(0, dtype=np.float32)
+                self.run = np.zeros(0, dtype=np.float32)
+                self.speech_run = 0.0
 
     def begin(self) -> None:
         # Owner acceptance repair, 25 September 2026 (WP3 §2, §5). The gap since the
@@ -388,15 +424,29 @@ class Listener:
         # one could not: whether endpoints are firing inside ordinary speech, and at
         # what pause length. A **duration**, never audio.
         self.gap_before = round(time.monotonic() - self.settled_at, 3) if self.settled_at else None
-        self.voiced = 0.0
+        # The admitting run is speech the VAD was confident of, so it counts as voiced.
+        self.voiced = self.speech_run
         self.in_speech = True
         self.silence_run = 0.0
         self.utterances += 1
-        self.utterance = np.concatenate([self.padding, self.utterance])
+        # Pad, then the whole confident run: the utterance starts `speech_pad_ms`
+        # before the first confident frame, never after the admitting one.
+        self.first_sample = self.run_start_sample - self.padding.size
+        self.utterance = np.concatenate([self.padding, self.run, self.utterance])
         self.padding = np.zeros(0, dtype=np.float32)
+        self.run = np.zeros(0, dtype=np.float32)
         self.provisional_at = 0
         self.provisional_cost_ms = 0.0
-        emit(event="speech_start", session=self.utterances, at=time.monotonic())
+        emit(
+            event="speech_start",
+            session=self.utterances,
+            at=time.monotonic(),
+            # Where in the stream, in samples: the utterance's first sample, the
+            # first confident window, and the end of the window that admitted it.
+            first_sample=self.first_sample,
+            run_start_sample=self.run_start_sample,
+            admitted_sample=self.windowed,
+        )
 
     def maybe_provisional(self) -> None:
         spoken_ms = self.utterance.size / SAMPLE_RATE * 1000
@@ -422,26 +472,33 @@ class Listener:
     def finalize(self, reason: str) -> None:
         """Settle the utterance, report it, and release the audio at once."""
         audio, self.utterance = self.utterance, np.zeros(0, dtype=np.float32)
+        # The silence that actually ended this utterance, and the gap before it
+        # began. Both are durations in seconds: no audio, no waveform, no content.
+        # Read **before** the counters are cleared — the first version read the
+        # silence after zeroing it, and so reported 0.000 s for every utterance of
+        # his diagnostic (owner diagnostic, 25 September 2026).
+        ended_by_silence = round(self.silence_run, 3)
+        voiced = round(self.voiced, 3)
+        gap_before = self.gap_before
         self.in_speech = False
         self.speech_run = 0.0
         self.silence_run = 0.0
         self.padding = np.zeros(0, dtype=np.float32)
+        self.run = np.zeros(0, dtype=np.float32)
         endpoint_at = time.monotonic()
-        # The silence that actually ended this utterance, and the gap before it
-        # began. Both are durations in seconds: no audio, no waveform, no content.
-        ended_by_silence = round(self.silence_run, 3)
-        gap_before = self.gap_before
         self.settled_at = endpoint_at
-        emit(
-            event="speech_end",
-            session=self.utterances,
-            reason=reason,
-            at=endpoint_at,
-            silence_seconds=ended_by_silence,
-            gap_before_seconds=gap_before,
-            voiced_seconds=round(self.voiced, 3),
-            seconds=round(audio.size / SAMPLE_RATE, 3),
-        )
+        extent = {
+            "silence_seconds": ended_by_silence,
+            "gap_before_seconds": gap_before,
+            "voiced_seconds": voiced,
+            "seconds": round(audio.size / SAMPLE_RATE, 3),
+            # Which stretch of the stream went to the recognizer, and how much of the
+            # stream had arrived: counts, for continuity, never the samples.
+            "first_sample": self.first_sample,
+            "samples": int(audio.size),
+            "received_samples": self.received,
+        }
+        emit(event="speech_end", session=self.utterances, reason=reason, at=endpoint_at, **extent)
         text = ""
         try:
             text = self.transcribe(audio)
@@ -460,15 +517,18 @@ class Listener:
             endpoint_at=endpoint_at,
             at=time.monotonic(),
             # Beside the words, the evidence for admitting them: how much of this
-            # utterance the VAD called speech, and what ended it.
-            voiced_seconds=round(self.voiced, 3),
-            silence_seconds=round(self.silence_run, 3),
+            # utterance the VAD called speech, what ended it, and where it was.
+            **extent,
         )
 
     def reset(self) -> None:
         self.utterance = np.zeros(0, dtype=np.float32)
+        # Forgotten audio leaves the stream position where it was: what was received
+        # was received, and the next window starts after what is still pending.
+        self.windowed += self.pending.size
         self.pending = np.zeros(0, dtype=np.float32)
         self.padding = np.zeros(0, dtype=np.float32)
+        self.run = np.zeros(0, dtype=np.float32)
         self.in_speech = False
         self.speech_run = 0.0
         self.silence_run = 0.0

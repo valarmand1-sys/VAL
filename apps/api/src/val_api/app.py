@@ -24,10 +24,12 @@ to acquire one.
 from __future__ import annotations
 
 import json
+import time
 from base64 import b64decode, b64encode
 from binascii import Error as BinasciiError
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Mapping
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -35,6 +37,7 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from sqlalchemy import Engine, text
+from starlette.concurrency import run_in_threadpool
 
 from val_api.contracts import (
     AdoptedFragmentRequest,
@@ -81,6 +84,7 @@ from val_api.contracts import (
     TurnResponse,
     TurnTruncated,
     TurnUnanswered,
+    VoiceCommittedView,
     VoiceSessionRequest,
     VoiceSessionView,
     VoiceTurnView,
@@ -211,6 +215,11 @@ def create_app(
     #: a live session *is* process state — it holds a subprocess and volatile
     #: audio buffers — and could not be resumed from a store if it tried.
     sessions = VoiceSessions()
+    if recognizers is not None:
+        # A window that went away without its close request reaching here leaves a
+        # session nobody asks about; it is closed rather than kept listening
+        # (owner diagnostic, 25 September 2026).
+        sessions.start_reaper()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -917,7 +926,25 @@ def create_app(
                 )
             ),
             cancellations_ms=list(live.cancellations),
+            committed=(
+                None
+                if view.committed is None
+                else VoiceCommittedView(
+                    conversation_id=view.committed.conversation_id,
+                    message_id=view.committed.message_id,
+                    utterance=view.committed.utterance,
+                )
+            ),
         )
+
+    def timed_warm(run: Callable[[], Mapping[str, object]]) -> dict[str, object]:
+        """One warm-up, with when it began and how long it took, for the log."""
+        began = datetime.now(UTC)
+        clock = time.monotonic()
+        report = dict(run())
+        report["began"] = began.isoformat(timespec="milliseconds")
+        report["seconds"] = round(time.monotonic() - clock, 3)
+        return report
 
     @app.post("/voice/sessions", status_code=201)
     def open_voice_session(request: VoiceSessionRequest) -> VoiceSessionView:
@@ -940,6 +967,7 @@ def create_app(
             *,
             on_delta: Callable[[str], None] | None = None,
             merged: bool = False,
+            on_persisted: Callable[[UUID, UUID], None] | None = None,
         ) -> DeliberatedOutcome:
             """The ordinary door. A spoken turn is an ordinary turn.
 
@@ -971,6 +999,9 @@ def create_app(
                 spoken=True,
                 seal_route=(SealRoute.RESUME_MERGE if merged else SealRoute.UTTERANCE_FINALIZED),
                 live_voice=sessions.live_conversations(),
+                # His words are canonical: the session is told at once, so the next
+                # poll shows the desktop a message to read while she is thinking.
+                on_persisted=on_persisted,
             )
 
         live = VoiceSession(
@@ -983,14 +1014,16 @@ def create_app(
             # a house with no admitted speech route gets — honestly, rather than
             # by reaching for a cloud one.
             speech=speech_delivery_factory(),
-            # Both of the things his first answer would otherwise wait for, brought
-            # up while he is still speaking: the cognition runtime (latency pass §12)
-            # and the voice model (owner acceptance, 25 September 2026 — four seconds
-            # of weights coming off disk, measured in his own run). The turn's own
-            # readiness call still governs, and neither warming is a gate.
+            # Optional work, done early and never ahead of him (owner diagnostic, 25
+            # September 2026, §8, §9). The cognition runtime's readiness — no
+            # inference; any load it does is the one his first turn would do itself —
+            # and a load-only speech process that exits, leaving the model's files in
+            # the operating system's cache (6.708 s cold against 2.727 s cached,
+            # measured for one phrase; not a claim about the room). Real speech stops
+            # a speech warm-up still running. Each is timed on the record.
             warm=lambda: {
-                "cognition": gateway.warm_cognition(),
-                "voice": gateway.warm_voice(),
+                "cognition": timed_warm(gateway.warm_cognition),
+                "voice": timed_warm(gateway.warm_voice),
             },
         )
         try:
@@ -1011,7 +1044,15 @@ def create_app(
         live = voice_session_or_404(session)
         pcm = await request.body()
         try:
-            live.feed(pcm)
+            # **Off the event loop** (owner diagnostic, 25 September 2026). Handing
+            # audio to the recognizer is synchronous work — a pipe write that waits
+            # when the helper is busy decoding, and journal writes to the store — and
+            # this route is `async`, so it used to do that work on the one loop every
+            # request shares. While it did, nothing else returned: not a poll, and
+            # not the conversation read that shows him his own words. A test holds
+            # one hand-over open and requires a conversation read to return meanwhile.
+            # Order is unaffected: the desktop sends one block at a time.
+            await run_in_threadpool(live.feed, pcm)
         except VoiceUnavailableError as unavailable:
             raise HTTPException(status_code=409, detail=str(unavailable)) from unavailable
         return render_voice(session, live)

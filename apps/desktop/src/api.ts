@@ -367,8 +367,19 @@ export interface VoiceSessionView {
   recognizer: VoiceRecognizerView;
   endpoint: Record<string, number>;
   error: string | null;
-  speaking: LiveDeliveryView | null;
+  // Present while Val is speaking an answer. Named as the service names it: this
+  // was `speaking`, a field the service never sent.
+  delivery: LiveDeliveryView | null;
   cancellations_ms: number[];
+  // His most recent spoken message, canonical in the store, answered or not — set
+  // by the commit itself, before cognition (owner diagnostic, 25 September 2026).
+  committed: VoiceCommittedView | null;
+}
+
+export interface VoiceCommittedView {
+  conversation_id: string;
+  message_id: string;
+  utterance: number;
 }
 
 // One synthesised segment, on its way to the Mac's speakers. Ephemeral at both
@@ -489,8 +500,15 @@ export const api = {
   openVoiceSession: (body: { conversation_id?: string; project?: string; no_project?: boolean }) =>
     request<VoiceSessionView>("/voice/sessions", { method: "POST", body: JSON.stringify(body) }),
   voiceSession: (session: string) => request<VoiceSessionView>(`/voice/sessions/${session}`),
+  // `keepalive`, so the request outlives a window that is closing (owner diagnostic,
+  // 25 September 2026: three of his four sessions were never closed, because the
+  // window went away before an ordinary request could be sent). No body and no
+  // headers, so it is a simple request and needs no preflight to leave.
   closeVoiceSession: (session: string) =>
-    request<VoiceSessionView>(`/voice/sessions/${session}/close`, { method: "POST" }),
+    request<VoiceSessionView>(`/voice/sessions/${session}/close`, {
+      method: "POST",
+      keepalive: true,
+    }),
   interruptVoice: (session: string) =>
     request<VoiceSessionView>(`/voice/sessions/${session}/interrupt`, { method: "POST" }),
   finalizeVoice: (session: string) =>

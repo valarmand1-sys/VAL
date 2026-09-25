@@ -203,6 +203,7 @@ def spoken_session(
         *,
         on_delta: Callable[[str], None] | None = None,
         merged: bool = False,
+        on_persisted: Callable[[UUID, UUID], None] | None = None,
     ) -> DeliberatedOutcome:
         return deliberated_send(
             engine,
@@ -214,6 +215,7 @@ def spoken_session(
             else ProjectSignals(explicit_selection="Project Alpha"),
             conversation_id=existing,
             on_delta=on_delta,
+            on_persisted=on_persisted,
             spoken=True,
             seal_route=SealRoute.RESUME_MERGE if merged else SealRoute.UTTERANCE_FINALIZED,
             live_voice=live.live_conversations(),
@@ -663,6 +665,7 @@ def test_the_resume_merge_route_applies_the_seal(store: Engine) -> None:
         *,
         on_delta: Callable[[str], None] | None = None,
         merged: bool = False,
+        on_persisted: Callable[[UUID, UUID], None] | None = None,
     ) -> DeliberatedOutcome:
         assert merged, "this is the resume-merge case"
         return deliberated_send(
@@ -672,6 +675,7 @@ def test_the_resume_merge_route_applies_the_seal(store: Engine) -> None:
             catalogue=load_catalogue(store),
             conversation_id=existing,
             on_delta=on_delta,
+            on_persisted=on_persisted,
             spoken=True,
             seal_route=SealRoute.RESUME_MERGE if merged else SealRoute.UTTERANCE_FINALIZED,
             live_voice=sessions.live_conversations(),
@@ -758,6 +762,7 @@ def test_the_seal_is_one_fact_per_conversation_however_many_turns_are_spoken(
         *,
         on_delta: Callable[[str], None] | None = None,
         merged: bool = False,
+        on_persisted: Callable[[UUID, UUID], None] | None = None,
     ) -> DeliberatedOutcome:
         return deliberated_send(
             store,
@@ -766,6 +771,7 @@ def test_the_seal_is_one_fact_per_conversation_however_many_turns_are_spoken(
             catalogue=load_catalogue(store),
             conversation_id=existing,
             on_delta=on_delta,
+            on_persisted=on_persisted,
             spoken=True,
             live_voice=sessions.live_conversations(),
         )

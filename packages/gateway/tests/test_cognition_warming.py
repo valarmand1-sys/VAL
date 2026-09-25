@@ -202,7 +202,12 @@ def test_a_warming_failure_does_not_stop_the_session_hearing_him(store: Engine) 
     submitted: list[str] = []
 
     def submit(
-        content: str, existing: UUID | None, *, on_delta: object = None, merged: bool = False
+        content: str,
+        existing: UUID | None,
+        *,
+        on_delta: object = None,
+        merged: bool = False,
+        on_persisted: object = None,
     ) -> object:
         submitted.append(content)
         raise AssertionError("stop here: the turn was reached, which is the point")
@@ -227,3 +232,43 @@ def test_a_warming_failure_does_not_stop_the_session_hearing_him(store: Engine) 
     session.await_turn(timeout=15.0)
     assert submitted == ["Are you there?"], "the session heard him and submitted the turn"
     session.close()
+
+
+# --- warming never ahead of real work (owner diagnostic, 25 September 2026, §8) ----------
+
+
+def test_warming_asks_for_exactly_the_configuration_a_spoken_turn_then_asks_for(
+    store: Engine,
+) -> None:
+    """The structural half of §8's proof for cognition.
+
+    Warming sends no inference: it calls the runtime's readiness method and nothing
+    else (`test_warming_sends_nothing_to_any_provider`). The one thing it shares with
+    a real turn is the runtime's load lock, so a turn arriving mid-warm can wait —
+    and that wait is legitimate only when the warm-up is performing **the turn's own
+    initialization**. So the configuration warmed must be the one the spoken turn's
+    readiness call names, chosen by the turn's own ordering under the turn's own
+    local-only egress, not merely one that coincides with it today. The runtime
+    re-observes under the lock, so the turn then finds the model loaded and does not
+    load it again (`test_two_callers_at_once_produce_one_load_and_not_two`).
+    """
+    from val_gateway.deliberate import send as deliberated_send
+    from val_gateway.projects import load_catalogue
+
+    adapter = LocalAdapter([ok("Good evening, my lord.")])
+    gateway = a_gateway(store, adapter)
+
+    warmed = gateway.warm_cognition()
+    deliberated_send(
+        store,
+        gateway,
+        "Good evening, Val.",
+        catalogue=load_catalogue(store),
+        conversation_id=a_conversation(store),
+        spoken=True,
+    )
+
+    assert warmed["warmed"] is True
+    assert adapter.warmed == [PRODUCTION, PRODUCTION], (
+        "warming and the spoken turn asked the runtime for the same configuration"
+    )

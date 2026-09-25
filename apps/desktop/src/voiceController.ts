@@ -18,7 +18,12 @@
 // **Voice off releases everything.** Microphone, playback, service session, global
 // shortcut. In that order, and idempotently.
 
-import type { PlaybackState, SpokenAudioView, VoiceSessionView } from "./api";
+import type {
+  PlaybackState,
+  SpokenAudioView,
+  VoiceCommittedView,
+  VoiceSessionView,
+} from "./api";
 import { api, describeFailure } from "./api";
 import {
   MicrophoneCapture,
@@ -72,6 +77,16 @@ export interface VoiceTimings {
    */
   bargeInAt: number | null;
   silenceAt: number | null;
+  /**
+   * Owner diagnostic, 25 September 2026: his words, from the service to the screen.
+   * `committedSeenAt` is when a poll first returned his committed message;
+   * `ownerShownAt` is the React commit that put it in the thread (a DOM fact); and
+   * `ownerFramesAt` is two animation frames after that — the nearest this window
+   * can come to a paint, and **not** a claim that the screen showed it.
+   */
+  committedSeenAt: number | null;
+  ownerShownAt: number | null;
+  ownerFramesAt: number | null;
 }
 
 export const NO_TIMINGS: VoiceTimings = {
@@ -83,6 +98,9 @@ export const NO_TIMINGS: VoiceTimings = {
   firstAudibleAt: null,
   bargeInAt: null,
   silenceAt: null,
+  committedSeenAt: null,
+  ownerShownAt: null,
+  ownerFramesAt: null,
 };
 
 export interface VoiceControllerHooks {
@@ -90,16 +108,24 @@ export interface VoiceControllerHooks {
   onSession(view: VoiceSessionView | null): void;
   onTimings(timings: VoiceTimings): void;
   /**
-   * The conversation should be re-read from the store.
+   * An answered exchange exists: the conversation should be re-read from the store.
    *
-   * **Owner acceptance, 24 September 2026 (§4.1 B).** This used to fire only once a
-   * turn had an *answer*, so his own words stayed invisible for the whole of
-   * cognition — fifteen seconds in the room, during which he reasonably concluded
-   * nothing had happened and spoke again. His message was in the store 1.1 s after
-   * he stopped speaking; the interface simply was not showing it. It now fires as
-   * soon as a canonical turn exists, and again when its answer arrives.
+   * **Owner acceptance, 24 September 2026 (§4.1 B), and its correction.** That pass
+   * said this hook now fired "as soon as a canonical turn exists". It did not, and
+   * could not: it keyed on the session's `turns`, which the service filled only
+   * once her answer was written and spoken, so an "asked" state never occurred. His
+   * diagnostic of 25 September found the same invisible wait. What shows his words
+   * now is `onOwnerMessageCommitted`, driven by the commit itself; this hook is the
+   * second read, for her answer.
    */
   onTurnSettled(view: VoiceSessionView): void;
+  /**
+   * His spoken words are canonical in the store — re-read the conversation now,
+   * while she is still thinking. Fired once per committed message, from the
+   * service's `committed` field, which the commit itself sets before any provider
+   * is contacted (owner diagnostic, 25 September 2026).
+   */
+  onOwnerMessageCommitted?(committed: VoiceCommittedView): void;
 }
 
 export interface VoiceControllerOptions {
@@ -130,6 +156,8 @@ export class VoiceController {
   private lastDeliveredMessage: string | null = null;
   /** The turn state the desktop was last told to render, so it is told once each. */
   private lastShown: string | null = null;
+  /** The committed owner message the desktop was last told to show. */
+  private lastCommitted: string | null = null;
   private collecting = false;
   private polling = false;
   private readonly now: () => number;
@@ -353,10 +381,19 @@ export class VoiceController {
       this.options.hooks.onSession(view);
       this.noteSpeechEnd(view);
       this.applyActivity(view);
-      // **As soon as it is canonical, not as soon as it is answered.** Keyed on the
-      // turn's identity and on whether it has been answered, so the conversation is
-      // re-read twice per turn — when his words land, and when hers do — and not on
-      // every poll.
+      // **His words, the moment they are canonical.** The service sets `committed`
+      // from inside the turn when his message is written, before cognition begins;
+      // the conversation is read then, once per message, and not on every poll.
+      const committed = view.committed ?? null;
+      if (committed !== null && committed.message_id !== this.lastCommitted) {
+        this.lastCommitted = committed.message_id;
+        if (this.timings.committedSeenAt === null) {
+          this.timings = { ...this.timings, committedSeenAt: this.now() };
+          this.options.hooks.onTimings(this.timings);
+        }
+        this.options.hooks.onOwnerMessageCommitted?.(committed);
+      }
+      // And hers, once the exchange is answered.
       const settled = view.turns.at(-1);
       if (settled !== undefined) {
         const state = `${settled.message_id}:${settled.answer === null ? "asked" : "answered"}`;
@@ -396,14 +433,41 @@ export class VoiceController {
       utterance: view.utterance,
       speechEndAt: this.now(),
       firstAudibleAt: null,
+      committedSeenAt: null,
+      ownerShownAt: null,
+      ownerFramesAt: null,
     };
     this.options.hooks.onTimings(this.timings);
+  }
+
+  /**
+   * The thread has rendered his committed message: `domAt` is the React commit that
+   * contained it, `framesAt` two animation frames later. Ignored for any message but
+   * the one last committed, and recorded once, so a later re-render cannot move it.
+   */
+  noteOwnerMessageShown(messageId: string, domAt: number, framesAt: number | null): void {
+    if (messageId !== this.lastCommitted || this.timings.committedSeenAt === null) return;
+    if (this.timings.ownerShownAt !== null && framesAt === null) return;
+    this.timings = {
+      ...this.timings,
+      ownerShownAt: this.timings.ownerShownAt ?? domAt,
+      ownerFramesAt: this.timings.ownerFramesAt ?? framesAt,
+    };
+    this.options.hooks.onTimings(this.timings);
+  }
+
+  /** The message the desktop was last told to show, for the thread to look for. */
+  get committedMessage(): string | null {
+    return this.lastCommitted;
   }
 
   private applyActivity(view: VoiceSessionView): void {
     // Presentation, from what the service says is true. Never a guess, and never a
     // claim about the microphone: `withActivity` cannot change `mic`.
-    const speaking = view.speaking?.active === true;
+    // `delivery`, as the service's contract names it. This read `speaking` — a field
+    // the service has never sent — so the service's own word that she was speaking
+    // never reached this line (found in the owner diagnostic pass, 25 September 2026).
+    const speaking = view.delivery?.active === true;
     if (speaking) {
       this.apply(withActivity(this.status, "speaking"));
       return;
@@ -513,6 +577,21 @@ export class VoiceController {
     this.microphone = null;
     this.player?.close();
     this.player = null;
+    // The service is told **before anything is awaited**. On a closing window the
+    // first await can be the last thing that runs, and the close used to come after
+    // the shortcut's unregistration — which is how three of his four diagnostic
+    // sessions were left open on the service (owner diagnostic, 25 September 2026).
+    const session = this.session;
+    this.session = null;
+    const closing =
+      session === null
+        ? Promise.resolve()
+        : api.closeVoiceSession(session).then(
+            () => undefined,
+            // The device is already released, which is the part that matters here;
+            // and a session the service never hears about is reaped there.
+            () => undefined,
+          );
     if (this.pollHandle !== null) {
       this.unschedule(this.pollHandle);
       this.pollHandle = null;
@@ -523,15 +602,7 @@ export class VoiceController {
     }
     const unregister = this.options.unregisterShortcut;
     if (unregister !== undefined) await unregister().catch(() => undefined);
-    const session = this.session;
-    this.session = null;
-    if (session !== null) {
-      try {
-        await api.closeVoiceSession(session);
-      } catch {
-        // The device is already released, which is the part that matters here.
-      }
-    }
+    await closing;
     this.view = null;
     this.options.hooks.onSession(null);
     this.apply(stopped(this.status));

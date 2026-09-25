@@ -40,6 +40,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import threading
 import time
 from pathlib import Path
 
@@ -122,6 +123,21 @@ class _Runner:
         )
         return completed.returncode, completed.stdout, completed.stderr
 
+    def start(self, argv: list[str]) -> subprocess.Popen[str]:
+        """The same interpreter and runner, started without waiting — so it can be stopped."""
+        return subprocess.Popen(  # noqa: S603 - fixed interpreter, fixed script, no shell
+            argv,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            shell=False,
+        )
+
+
+#: How long a stopped warm-up is given to exit before it is killed outright.
+PREEMPT_GRACE_SECONDS = 2.0
+
 
 class QwenTTSSpeech:
     """Val's local speech provider. Final text in, a waveform out."""
@@ -143,6 +159,15 @@ class QwenTTSSpeech:
         self._voice_dir = voice_dir
         self._runner = runner or _Runner()
         self._timeout = timeout
+        #: Owner diagnostic, 25 September 2026 (§8): **optional warming never takes
+        #: priority over real speech.** The warm-up process in flight, if any; how many
+        #: real syntheses are running; and how long the last preemption took, for the
+        #: record. All three are guarded by one lock.
+        self._warm_lock = threading.Lock()
+        self._warming: subprocess.Popen[str] | None = None
+        self._preempted: set[int] = set()
+        self._speaking = 0
+        self.last_preemption: dict[str, object] | None = None
 
     # --- availability -------------------------------------------------------------
 
@@ -179,6 +204,44 @@ class QwenTTSSpeech:
         if unavailable is not None:
             raise SpeechUnavailableError(unavailable)
 
+        # Real speech first: a warm-up still loading is stopped, and gone, before
+        # this synthesis starts its own process — and none may start while it runs.
+        with self._warm_lock:
+            self._speaking += 1
+        try:
+            self._preempt_warming()
+            return self._synthesize(request, text)
+        finally:
+            with self._warm_lock:
+                self._speaking -= 1
+
+    def _preempt_warming(self) -> None:
+        """Stop an optional warm-up and wait until its process has exited.
+
+        Terminating the process is the release: its memory, its open model files and
+        its share of the machine go with it. Waiting for the exit — not merely asking
+        for it — is what makes that true before real speech begins, and a process
+        that ignores the request is killed.
+        """
+        with self._warm_lock:
+            process = self._warming
+            if process is None or process.poll() is not None:
+                return
+            self._preempted.add(process.pid)
+        started = time.monotonic()
+        process.terminate()
+        try:
+            process.wait(timeout=PREEMPT_GRACE_SECONDS)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=PREEMPT_GRACE_SECONDS)
+        self.last_preemption = {
+            "pid": process.pid,
+            "returncode": process.returncode,
+            "waited_ms": round((time.monotonic() - started) * 1000, 1),
+        }
+
+    def _synthesize(self, request: SpeechRequest, text: str) -> SpeechResult:
         started = time.monotonic()
         try:
             report, audio = self._attempt(request, text)
@@ -223,24 +286,53 @@ class QwenTTSSpeech:
         once the file was in the page cache — about four seconds, sitting directly in
         front of his first answer.
 
-        This is the same shape as the cognition warming the latency pass established:
-        done early, on the session's own thread, while he is still speaking, and
-        **never a gate** — a failure is reported and the turn proceeds exactly as it
-        would have. It produces no audio, writes no file and records no provenance,
-        because Val has not spoken and there is nothing to attribute.
+        **What it is, exactly** (owner diagnostic, 25 September 2026, §9): a separate
+        process that loads the model and exits. It does not stay resident and nothing
+        is "loaded while he talks" for later use — each synthesis still starts its own
+        process and loads its own copy. What it buys is that the weights have just
+        been read, so the operating system's file cache is warm when the first real
+        synthesis reads them; that is where the measured difference came from.
+
+        **Optional, and never ahead of real speech** (§8). It does not start while a
+        real synthesis is running, and a real synthesis that begins while it is still
+        loading stops it and waits for the process to exit first. It is never a gate:
+        a failure is reported and the turn proceeds exactly as it would have. It
+        produces no audio, writes no file and records no provenance.
         """
         unavailable = self.available()
         if unavailable is not None:
             return {"warmed": False, "reason": unavailable}
         payload = json.dumps({"mode": "warm", "model_path": str(self._model_path), "out_path": ""})
         started = time.monotonic()
+        with self._warm_lock:
+            if self._speaking:
+                return {"warmed": False, "reason": "real speech is running; nothing to warm"}
+            try:
+                process = self._runner.start([str(self._python), str(RUNNER)])
+            except OSError as failure:
+                return {"warmed": False, "reason": f"the voice runtime could not start: {failure}"}
+            self._warming = process
         try:
-            code, out, err = self._runner.run(
-                [str(self._python), str(RUNNER)], payload, self._timeout
-            )
+            out, err = process.communicate(payload, timeout=self._timeout)
         except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate()
             return {"warmed": False, "reason": "the voice runtime did not load in time"}
+        finally:
+            with self._warm_lock:
+                if self._warming is process:
+                    self._warming = None
+                preempted = process.pid in self._preempted
+                self._preempted.discard(process.pid)
         elapsed = round(time.monotonic() - started, 3)
+        if preempted:
+            return {
+                "warmed": False,
+                "preempted": True,
+                "reason": "real speech began; the warm-up was stopped so it could not delay it",
+                "elapsed_seconds": elapsed,
+            }
+        code = process.returncode
         if code != 0:
             return {"warmed": False, "reason": (err or out or "the voice runtime failed").strip()}
         try:

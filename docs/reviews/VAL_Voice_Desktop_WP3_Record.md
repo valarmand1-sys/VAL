@@ -603,3 +603,58 @@ Full diagnosis, with the probe and both verifications:
 §20's sequence is his. It is not run here, not simulated, and not inferred. When he
 is ready, it proceeds A through I, one step at a time, and any orange-dot failure is
 a **defect** to be fixed and the step repeated — not reinterpreted.
+
+---
+
+## 16. Handoff — the owner diagnostic pass of 25 September 2026
+
+**WP3 remains PARTIAL.** Full reconstruction and evidence:
+`docs/reviews/qualification/runs/2026-09-25-wp3-onset/RESULT.md` (evidence index §103).
+The previous passes' records are left as they were written.
+
+**Starting state of this pass, as the owner set it down:**
+
+- Step A remains banked.
+- Step B remains unaccepted.
+- the stale unlimited resume merge was repaired.
+- self-trigger was not reproduced in the controlled run.
+- historical "Hello." source remains unresolved.
+- owner-message presentation entered this pass failed/open.
+- the missing opening word entered this pass under pipeline-versus-recognizer isolation.
+- Whisper Small had NOT been replaced.
+- LOW remained NOT_ADMITTED.
+- owner-facing latency entered this pass failed/open.
+- warming entered this pass under scheduling review.
+- Avatar remained blocked behind WP3.
+
+**Historical owner evidence, as reconstructed.** Three sessions on the `91693d9` build,
+each canonicalising "Good evening, Val." as `evening Val.`; run 3 reproduces his
+`17612 ms`. His message was invisible because the desktop never read it before the
+answer — the previous repair's trigger could not fire early — not because a read was
+held. None of the three sessions was closed. Whether his own "Good" reached Whisper
+and what made his wait feel like a minute are **UNRESOLVED** on retained evidence.
+
+**Repaired and automatically verified (source, not yet physically accepted):**
+
+- his committed message is exposed from inside the turn and read at once; the service
+  returns it while cognition is held; the thread renders it while the session says
+  `thinking`; stale reads cannot remove or duplicate it;
+- the audio route no longer holds the event loop;
+- opening speech preserved: the pad now precedes the first confident window, as the
+  governed setting says — no configuration changed; the unchanged Whisper Small hears
+  "Good" on complete input, so **no ASR decision is pending**;
+- endpoint diagnostics correct and complete; every spoken turn logs a content-free
+  timeline; warm-ups log when they ran;
+- real speech preempts a running speech warm-up and waits for it to exit; cognition
+  warming targets the turn's own first route;
+- abandoned sessions are closed (desktop `keepalive` close first; service reaper at
+  120 s);
+- the desktop reads the service's `delivery` field.
+
+**Pending physical owner acceptance:** Step B (his words visible while she thinks; one
+utterance, one turn; "Good evening, Val." transcribed whole); the physical metric END OF
+OWNER SPEECH → FIRST PHYSICAL AUDIBLE VAL SPEECH; everything after Step B in §15's
+sequence. **Not done and not begun:** Avatar; any ASR change; LOW.
+
+**Continuation point:** the single owner step named in this pass's return, on the
+installed build that contains these repairs — never on an older bundle.

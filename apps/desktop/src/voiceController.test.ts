@@ -87,7 +87,8 @@ const SESSION = {
   },
   endpoint: {},
   error: null,
-  speaking: null,
+  delivery: null,
+  committed: null,
   cancellations_ms: [],
 };
 
@@ -422,5 +423,34 @@ describe("the metrics measure one turn, not a whole session", () => {
     const second = controller.measured;
     expect(second.bargeInAt).toBe(45_000);
     expect((second.silenceAt ?? 0) - (second.bargeInAt ?? 0)).toBeLessThan(50);
+  });
+});
+
+describe("a closing window still closes its service session", () => {
+  // Owner diagnostic, 25 September 2026: three of his four sessions were never closed
+  // on the service. The close came after an awaited step, and a closing window may
+  // never get past its first await.
+  it("sends the close before anything is awaited", async () => {
+    const never = new Promise<void>(() => undefined);
+    const controller = new VoiceController({
+      hooks: {
+        onStatus: () => undefined,
+        onSession: () => undefined,
+        onTimings: () => undefined,
+        onTurnSettled: () => undefined,
+      },
+      capture: capturePlatform([]),
+      speaker: speakerPlatform,
+      now: () => 0,
+      registerShortcut: async () => true,
+      // The window is going away: this await never comes back.
+      unregisterShortcut: () => never,
+      scheduleInterval: () => 1,
+      clearScheduled: () => undefined,
+    });
+    await controller.start({ no_project: true });
+    void controller.releaseForLifecycle("app_or_machine_suspending");
+    await Promise.resolve();
+    expect(api.closeVoiceSession).toHaveBeenCalledTimes(1);
   });
 });

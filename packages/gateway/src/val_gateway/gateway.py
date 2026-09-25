@@ -101,6 +101,7 @@ from val_gateway.context import assemble
 from val_gateway.ledger import BudgetLedger, ExchangeEnvelopeRefusal, Refusal, Reservation
 from val_gateway.persona import PersonaLoader, PersonaProblem, PersonaUnavailableError
 from val_policy.budget import (
+    CONVERSATION_MAX_OUTPUT_TOKENS,
     admits,
     ceiling_message,
     effective_rates,
@@ -492,8 +493,15 @@ class Gateway:
 
         Owner acceptance, 25 September 2026 (WP3 Step B §9). Each synthesis is its own
         subprocess, so the first of a session pays for reading the weights off disk:
-        **6.708 s** for a 1.68 s phrase against **2.727 s** warm, sitting directly in
-        front of his first spoken answer. Loading while he is still talking removes it.
+        **6.708 s** for a 1.68 s phrase against **2.727 s** once they were cached.
+
+        **Described exactly** (owner diagnostic, 25 September 2026, §9, which corrected
+        "loading while he is still talking removes it"): this starts a separate process
+        that loads the model and **exits**. Nothing stays resident; the first real
+        synthesis still starts its own process and loads its own copy. What is paid
+        early is reading the files, which leaves them in the operating system's cache.
+        The measured saving is for one phrase on this machine and is not a claim about
+        what he will hear in the room. A real synthesis stops a warm-up still running.
 
         Not a gate, exactly like `warm_cognition`: a failure is reported and the first
         answer proceeds as it would have. Nothing is spoken and nothing is recorded —
@@ -528,37 +536,40 @@ class Gateway:
 
         Returns what it found and did, for the caller's record.
         """
-        # Ranked the way an ordinary conversation turn ranks: admitted, satisfying
-        # the partner floor, cheapest first. Only a route with a local runtime has
-        # anything to bring up, so a cloud route is skipped rather than "warmed" —
-        # and warming the wrong route would be worse than doing nothing, which is
-        # what the first version of this method did (caught by its own test).
-        eligible = sorted(
-            (
-                config
-                for config in active()
-                if config.provider in self._adapters
-                and is_admitted(config)
-                and satisfies_profile(config, CapabilityProfile.PARTNER)
-            ),
-            key=lambda config: config.cost_per_mtok_in_usd,
+        # **The route a spoken turn will try first, chosen the way that turn chooses
+        # it** (owner diagnostic, 25 September 2026, §8). Warming is optional work,
+        # and the only thing it shares with a real turn is the runtime's load lock:
+        # a turn that arrives while warming holds it waits. That wait is legitimate
+        # only if the warm-up is doing **exactly the initialization the turn itself
+        # requires** — so the warm-up must pick the turn's own first route, not a
+        # route that happens to coincide with it. The first version ranked by input
+        # rate among all partner routes and then looked for a local runtime; that
+        # agreed with the turn only because one local partner route exists. This is
+        # the turn's own ordering, under the turn's own egress: a Voice session makes
+        # its conversation local-only for as long as it is open, so every turn it
+        # carries routes `LOCAL_ONLY`. The runtime re-observes residency under the
+        # lock, so the turn then finds the model loaded and does not load it again.
+        order = attempt_order(
+            active(),
+            Classification.PROTECTED,
+            is_ready=lambda config: config.provider in self._adapters,
+            # No request exists yet to measure; a local route is unmetered, and the
+            # turn's own admission and fit checks still run when it is made.
+            is_affordable=lambda config: True,
+            resolve_fallback=fallback_for,
+            profile=required_profile(TaskType.CONVERSATION),
+            cost_bound=lambda config: maximum_cost(config, (), CONVERSATION_MAX_OUTPUT_TOKENS),
+            egress=Egress.LOCAL_ONLY,
         )
-        if not eligible:
+        if not order:
             return {"warmed": False, "reason": "no admitted partner route is configured"}
-        chosen = next(
-            (
-                config
-                for config in eligible
-                if supports_local_runtime(self._adapters[config.provider])
-            ),
-            None,
-        )
-        if chosen is None:
+        chosen = order[0]
+        if not supports_local_runtime(self._adapters[chosen.provider]):
             return {
                 "warmed": False,
                 "reason": (
                     "no admitted partner route has a local runtime to warm "
-                    f"(cheapest is {eligible[0].slug})"
+                    f"(a spoken turn would try {chosen.slug} first)"
                 ),
             }
         adapter = self._adapters[chosen.provider]

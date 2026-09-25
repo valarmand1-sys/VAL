@@ -34,7 +34,9 @@ import queue
 import struct
 import subprocess
 import threading
+import time
 from collections.abc import Iterator
+from dataclasses import replace
 from pathlib import Path
 
 from val_domain.voice import (
@@ -286,7 +288,10 @@ class WhisperRecognizer:
             except ValueError:
                 continue
             if isinstance(payload, dict):
-                self._events.put(RecognizerEvent.of(payload))
+                # Stamped on arrival, on this process's clock — the only way a
+                # helper boundary can be placed on the service's timeline.
+                received = time.monotonic()
+                self._events.put(replace(RecognizerEvent.of(payload), received_at=received))
 
     def _await(self, kind: str, timeout: float) -> RecognizerEvent:
         """Wait for one particular event, keeping anything that arrives first."""

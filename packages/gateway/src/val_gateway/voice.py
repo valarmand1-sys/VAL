@@ -44,9 +44,8 @@ import logging
 import threading
 import time
 from collections.abc import Callable
-from contextlib import nullcontext
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Protocol
 from uuid import UUID
 
@@ -105,6 +104,11 @@ class Submit(Protocol):
     ignored by a route that cannot stream: progressive speech is an improvement on
     the same turn, never a different turn.
 
+    `on_persisted` is told `(conversation_id, message_id)` the moment his words are
+    committed as a canonical message — before any provider is contacted — so the
+    interface can show him he was heard while she is still thinking (owner
+    diagnostic, 25 September 2026). The ordinary deliberated send honours it.
+
     `merged` says this text is two halves of one sentence joined before submission
     — the resume-before-delivery case. It changes nothing about the turn; it names
     which route to canonical the live-voice seal is being applied by (owner ruling,
@@ -119,6 +123,7 @@ class Submit(Protocol):
         *,
         on_delta: DeltaSink | None = None,
         merged: bool = False,
+        on_persisted: Callable[[UUID, UUID], None] | None = None,
     ) -> DeliberatedOutcome: ...
 
 
@@ -220,6 +225,22 @@ class VoiceTurn:
 
 
 @dataclass(frozen=True)
+class VoiceCommitted:
+    """His spoken words, canonical in the store — whether or not she has answered.
+
+    Owner diagnostic, 25 September 2026. The session used to learn that a spoken
+    turn existed only when `submit` returned, which is after her answer was written
+    and her voice had finished synthesising it; the interface keyed on that and so
+    showed him nothing of his own words for the whole of her thinking. This is set
+    by the commit itself, from inside the turn, and is what the desktop re-reads on.
+    """
+
+    conversation_id: UUID
+    message_id: UUID
+    utterance: int
+
+
+@dataclass(frozen=True)
 class VoiceSessionView:
     """What a session looks like from outside, for the desktop to poll.
 
@@ -239,6 +260,8 @@ class VoiceSessionView:
     error: str | None
     recognizer: dict[str, str]
     endpoint: dict[str, float | int]
+    #: The owner's most recently committed spoken message, answered or not.
+    committed: VoiceCommitted | None = None
 
 
 @dataclass
@@ -261,6 +284,11 @@ class _Pending:
     utterance: VoiceUtterance
     provisional_events: int
     settled_at: float
+    #: Where this utterance ended and when the service heard about it, on the
+    #: service's monotonic clock, plus the helper's extent counts — the timeline's
+    #: opening boundaries. Durations and counts only. `None` for a merged pending
+    #: whose halves are described by the later one's evidence.
+    evidence: dict[str, object] | None = None
 
 
 # --- the durable record ----------------------------------------------------------------
@@ -408,6 +436,7 @@ class VoiceSession:
         self._pending: _Pending | None = None
         self._inflight: _Pending | None = None
         self._turns: list[VoiceTurn] = []
+        self._committed: VoiceCommitted | None = None
         self._worker: threading.Thread | None = None
         #: How this session speaks, if it speaks at all. `None` is work package 1's
         #: session exactly: it hears, and says nothing aloud.
@@ -509,10 +538,23 @@ class VoiceSession:
         """
         if self._warm is None:
             return
+        # When each warm-up began and ended, on the wall clock, so a turn's timeline
+        # can be laid against it (owner diagnostic, 25 September 2026, §7.2: his first
+        # turn came straight after Voice On, and whether it waited behind warming
+        # could not be settled because nothing recorded when warming ran).
+        began = datetime.now(UTC)
+        clock = time.monotonic()
+        _LOGGER.info("voice warm: began %s", began.isoformat(timespec="milliseconds"))
         try:
             self.warmed = self._warm()
         except Exception as failure:  # reported, never fatal: warming is not a gate
             self.warmed = {"warmed": False, "reason": f"{type(failure).__name__}: {failure}"}
+        _LOGGER.info(
+            "voice warm: ended %s after %.3fs: %s",
+            datetime.now(UTC).isoformat(timespec="milliseconds"),
+            time.monotonic() - clock,
+            json.dumps(self.warmed, default=str),
+        )
 
     def close(self, reason: str = "closed by the caller") -> None:
         """Stop listening, settle the record, and release everything held."""
@@ -688,16 +730,14 @@ class VoiceSession:
         # run — the run they were added for — could not be measured. They reach here
         # now, and they are logged, because nothing else records them and an unrecorded
         # measurement is not evidence. Durations only: no audio, no content.
-        _LOGGER.info(
-            "voice endpoint: utterance=%s reason=%s voiced=%.3fs silence=%.3fs "
-            "gap_before=%s length=%.3fs",
-            event.session,
-            event.reason or "silence",
-            event.voiced_seconds,
-            event.silence_seconds,
-            "unknown" if event.gap_before_seconds is None else f"{event.gap_before_seconds:.3f}s",
-            event.seconds,
-        )
+        #
+        # Owner diagnostic, 25 September 2026: that line reported `silence=0.000s` and
+        # `length=0.000s` for all three of his runs. The helper read the silence after
+        # clearing it, and the length and gap were never on the `final` event this
+        # logs. Both are repaired, and the line now also says which stretch of the
+        # stream went to Whisper, in samples, so a lost opening is visible as a number.
+        evidence = _endpoint_evidence(event)
+        _LOGGER.info("voice endpoint: utterance=%s %s", event.session, json.dumps(evidence))
         merge_into_submitted = False
         with self._lock:
             current, self._current = self._current, None
@@ -734,6 +774,7 @@ class VoiceSession:
                     utterance=waiting.utterance.merged_with(settled),
                     provisional_events=waiting.provisional_events + events,
                     settled_at=self._now(),
+                    evidence=evidence,
                 )
                 self.state = VoiceSessionState.THINKING
                 return
@@ -742,7 +783,10 @@ class VoiceSession:
             merge_into_submitted = self._mergeable(settled) is not None
             if not merge_into_submitted:
                 self._pending = _Pending(
-                    utterance=settled, provisional_events=events, settled_at=self._now()
+                    utterance=settled,
+                    provisional_events=events,
+                    settled_at=self._now(),
+                    evidence=evidence,
                 )
                 self.state = VoiceSessionState.THINKING
                 return
@@ -903,6 +947,8 @@ class VoiceSession:
                 return
             self._pending = None
             self._inflight = pending
+            if pending.evidence is not None:
+                pending.evidence["submitted_mono"] = time.monotonic()
             # A plain thread starts with an empty context, so a diagnostic recorder
             # installed by the caller would be invisible inside the turn. Carried
             # explicitly rather than lost (latency pass §8); `None` in production,
@@ -935,9 +981,47 @@ class VoiceSession:
         raise VoiceUnavailableError(f"the spoken turn did not settle within {timeout:.0f}s")
 
     def _run(self, pending: _Pending, recorder: timings.TurnTimings | None = None) -> None:
-        """One settled utterance, through the ordinary Core path — and spoken."""
-        with timings.recording(recorder) if recorder is not None else nullcontext():
+        """One settled utterance, through the ordinary Core path — and spoken.
+
+        **Every spoken turn records its marks now** (owner diagnostic, 25 September
+        2026). His run could not be reconstructed because nothing on the service kept
+        a clock: the log carries no timestamps and the turn's marks were thrown away
+        unrecorded. The stopwatch is the existing one — in memory, marks only, no
+        content — and the turn ends by writing one line of it to the log, anchored to
+        the wall clock so it can be laid beside the store's own timestamps.
+        """
+        live = recorder if recorder is not None else _turn_stopwatch(pending.evidence)
+        with timings.recording(live):
             self._run_turn(pending)
+        self._log_timeline(pending, live)
+
+    def _log_timeline(self, pending: _Pending, recorder: timings.TurnTimings) -> None:
+        """One line per spoken turn: every boundary, in ms from the endpoint."""
+        anchor = recorder.started_at
+        summary: dict[str, dict[str, float | int]] = {}
+        for name, at in recorder.marks:
+            offset = round((at - anchor) * 1000, 1)
+            entry = summary.setdefault(name, {"first_ms": offset, "count": 0})
+            entry["last_ms"] = offset
+            entry["count"] = int(entry["count"]) + 1
+        wall = datetime.now(UTC) - timedelta(seconds=time.monotonic() - anchor)
+        with self._lock:
+            committed = self._committed
+        _LOGGER.info(
+            "voice turn timeline: %s",
+            json.dumps(
+                {
+                    "utterance": pending.utterance.utterance,
+                    "anchor": _anchor_name(pending.evidence),
+                    "anchor_wall": wall.isoformat(timespec="milliseconds"),
+                    "conversation_id": None
+                    if committed is None
+                    else str(committed.conversation_id),
+                    "message_id": None if committed is None else str(committed.message_id),
+                    "marks": summary,
+                }
+            ),
+        )
 
     def _run_turn(self, pending: _Pending) -> None:
         utterance = pending.utterance
@@ -958,6 +1042,10 @@ class VoiceSession:
                 # Which route to canonical the seal is applied by: an ordinary
                 # settled utterance, or two halves joined inside the resume window.
                 merged=bool(utterance.merged_from),
+                # His words are in the store now: say so, before she thinks.
+                on_persisted=lambda conversation, message: self._persisted(
+                    utterance.utterance, conversation, message
+                ),
             )
         except Exception as failure:
             if delivery is not None:
@@ -990,6 +1078,18 @@ class VoiceSession:
                 self._delivery = None
                 if self.state is VoiceSessionState.THINKING:
                     self.state = VoiceSessionState.LISTENING
+
+    def _persisted(self, utterance: int, conversation_id: UUID, message_id: UUID) -> None:
+        """His message is committed: visible to the next poll, before any answer."""
+        mark("owner_message_committed")
+        with self._lock:
+            if self.conversation_id is None:
+                # A brand-new chat's conversation exists from this commit onwards,
+                # and the desktop cannot read a conversation it has not been told of.
+                self.conversation_id = conversation_id
+            self._committed = VoiceCommitted(
+                conversation_id=conversation_id, message_id=message_id, utterance=utterance
+            )
 
     def _record(
         self, pending: _Pending, outcome: DeliberatedOutcome, delivery: Delivery | None = None
@@ -1176,6 +1276,7 @@ class VoiceSession:
                 error=self.error,
                 recognizer=self._recognizer.identity.as_record(),
                 endpoint=self.endpoint.as_record(),
+                committed=self._committed,
             )
 
     def __enter__(self) -> VoiceSession:
@@ -1184,6 +1285,71 @@ class VoiceSession:
 
     def __exit__(self, *_: object) -> None:
         self.close()
+
+
+def _endpoint_evidence(event: RecognizerEvent) -> dict[str, object]:
+    """Where an utterance ended, placed on this process's clock, and its extent.
+
+    The helper reports its endpoint and the moment it finished decoding on **its
+    own** monotonic clock, which on this machine does not share an origin with this
+    process's. What this process knows is when it read the event (`received_at`).
+    The endpoint on this clock is therefore `received_at - (at - endpoint_at)`: the
+    decode interval measured inside the helper, subtracted from the receipt. The
+    pipe's own latency is not observed and is left in — a few milliseconds of
+    uncertainty, stated rather than hidden.
+    """
+    processed = time.monotonic()
+    received = event.received_at or None
+    decode = (
+        event.at - event.endpoint_at
+        if event.at and event.endpoint_at and event.at >= event.endpoint_at
+        else None
+    )
+    endpoint = received - decode if received is not None and decode is not None else None
+    return {
+        "reason": event.reason or "silence",
+        "endpoint_mono": endpoint,
+        "final_received_mono": received,
+        "final_processed_mono": processed,
+        "decode_ms": None if decode is None else round(decode * 1000, 1),
+        "voiced_s": event.voiced_seconds,
+        "silence_s": event.silence_seconds,
+        "gap_before_s": event.gap_before_seconds,
+        "utterance_s": event.seconds,
+        "first_sample": event.first_sample,
+        "samples": event.samples,
+        "run_start_sample": event.run_start_sample,
+        "received_samples": event.received_samples,
+    }
+
+
+def _anchor_name(evidence: dict[str, object] | None) -> str:
+    """Which boundary a turn's timeline is measured from — named, never assumed."""
+    if evidence and isinstance(evidence.get("endpoint_mono"), float):
+        return "endpoint"
+    if evidence and isinstance(evidence.get("final_received_mono"), float):
+        return "transcript_final_received"
+    if evidence and isinstance(evidence.get("final_processed_mono"), float):
+        return "transcript_final_processed"
+    return "turn_start"
+
+
+def _turn_stopwatch(evidence: dict[str, object] | None) -> timings.TurnTimings:
+    """A turn's stopwatch, started at the endpoint and seeded with what preceded it."""
+    seeds: list[tuple[str, float]] = []
+    for name, key in (
+        ("endpoint", "endpoint_mono"),
+        ("transcript_final_received", "final_received_mono"),
+        ("transcript_final_processed", "final_processed_mono"),
+        ("owner_turn_submitted", "submitted_mono"),
+    ):
+        value = (evidence or {}).get(key)
+        if isinstance(value, float):
+            seeds.append((name, value))
+    anchor = seeds[0][1] if seeds else time.monotonic()
+    stopwatch = timings.TurnTimings(started_at=anchor)
+    stopwatch.marks.extend(sorted(seeds, key=lambda seed: seed[1]))
+    return stopwatch
 
 
 def _answered(outcome: DeliberatedOutcome) -> tuple[UUID, str] | None:
@@ -1217,6 +1383,13 @@ def _identify(outcome: DeliberatedOutcome) -> tuple[UUID | None, UUID | None]:
     return settled.conversation.id, settled.user_message.id
 
 
+#: How long a session may go unasked-about before it is treated as abandoned. The
+#: desktop polls a live session every 120 ms and posts audio continuously while the
+#: microphone is live, so two minutes of nothing is a window that has gone — and is
+#: generous enough that a throttled background window is not mistaken for one.
+ABANDONED_AFTER_SECONDS = 120.0
+
+
 class VoiceSessions:
     """The sessions this process is listening with.
 
@@ -1227,21 +1400,72 @@ class VoiceSessions:
     journal, labelled as the guess it was.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
         self._sessions: dict[UUID, VoiceSession] = {}
+        #: When the desktop last asked about each session — any poll, any audio.
+        self._seen: dict[UUID, float] = {}
         self._lock = threading.Lock()
+        self._clock = clock
+        self._reaper: threading.Thread | None = None
 
     def add(self, key: UUID, session: VoiceSession) -> None:
         with self._lock:
             self._sessions[key] = session
+            self._seen[key] = self._clock()
 
     def get(self, key: UUID) -> VoiceSession | None:
+        """The session, and a note that the desktop is still there to ask for it."""
         with self._lock:
-            return self._sessions.get(key)
+            found = self._sessions.get(key)
+            if found is not None:
+                self._seen[key] = self._clock()
+            return found
 
     def remove(self, key: UUID) -> VoiceSession | None:
         with self._lock:
+            self._seen.pop(key, None)
             return self._sessions.pop(key, None)
+
+    def reap(self, idle_seconds: float = ABANDONED_AFTER_SECONDS) -> list[UUID]:
+        """Close every session nothing has asked about for `idle_seconds`.
+
+        Owner diagnostic, 25 September 2026. Three of the four sessions of his
+        diagnostic were never closed: the window went away and its close request did
+        not reach the service, and nothing here noticed. An hour later the service
+        still held their recognizers — three helper processes, about 600 MB each —
+        and the record still called them `listening`. The desktop asks about a live
+        session several times a second; a session nobody has asked about for two
+        minutes belongs to a window that is gone. It is closed with that reason on
+        the record, which is the direction every failure here moves: toward off.
+        """
+        now = self._clock()
+        with self._lock:
+            stale = [key for key, seen in self._seen.items() if now - seen > idle_seconds]
+            abandoned = [(key, self._sessions.pop(key)) for key in stale if key in self._sessions]
+            for key in stale:
+                self._seen.pop(key, None)
+        for _, session in abandoned:
+            session.close(
+                f"the desktop stopped asking for this session for over {idle_seconds:.0f}s: "
+                "its window has gone, so Voice is off"
+            )
+        return [key for key, _ in abandoned]
+
+    def start_reaper(self, every_seconds: float = 10.0) -> None:
+        """Reap abandoned sessions on a daemon thread, for the life of the process."""
+        if self._reaper is not None:
+            return
+
+        def loop() -> None:
+            while True:
+                time.sleep(every_seconds)
+                try:
+                    self.reap()
+                except Exception:  # a reaping failure must never stop the reaper
+                    _LOGGER.exception("reaping abandoned voice sessions failed")
+
+        self._reaper = threading.Thread(target=loop, name="voice-session-reaper", daemon=True)
+        self._reaper.start()
 
     def live_conversations(self) -> LiveVoiceConversations:
         """Which conversations have Voice on right now — the seal's transient layer.
@@ -1274,5 +1498,6 @@ class VoiceSessions:
         with self._lock:
             live = list(self._sessions.values())
             self._sessions.clear()
+            self._seen.clear()
         for session in live:
             session.close(reason)

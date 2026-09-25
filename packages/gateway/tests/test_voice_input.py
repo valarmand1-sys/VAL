@@ -210,6 +210,7 @@ def a_session(
         *,
         on_delta: Callable[[str], None] | None = None,
         merged: bool = False,
+        on_persisted: Callable[[UUID, UUID], None] | None = None,
     ) -> DeliberatedOutcome:
         # Mirrors the service's own voice door exactly (owner ruling, 24 September
         # 2026, Voice work package 3 §1.5): a spoken turn is submitted `spoken`,
@@ -232,6 +233,7 @@ def a_session(
             # session that speaks can begin before she has finished writing. WP1's
             # sessions pass nothing and behave exactly as they did.
             on_delta=on_delta,
+            on_persisted=on_persisted,
             spoken=True,
             seal_route=SealRoute.RESUME_MERGE if merged else SealRoute.UTTERANCE_FINALIZED,
         )
