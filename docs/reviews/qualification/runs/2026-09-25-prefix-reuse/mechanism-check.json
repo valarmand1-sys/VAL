@@ -1,0 +1,223 @@
+{
+ "engine_package": "/Users/josepharmand/.lmstudio/extensions/backends/vendor/_amphibian/app-mlx-generate-mac14-arm64@34/lib/python3.11/site-packages/mlx_engine",
+ "model": "/Users/josepharmand/.lmstudio/models/mlx-community/gpt-oss-20b-MXFP4-Q8",
+ "context": 32768,
+ "runs": [
+  {
+   "mode": "batched (production: parallel 4)",
+   "max_seq_nums": 4,
+   "model_kit": "BatchedModelKit",
+   "load_s": 5.784,
+   "requests": [
+    {
+     "request": "A1 first request (establishes cache)",
+     "prompt_tokens": 5182,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 0,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5182,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.891,
+     "request_s": 7.123,
+     "generated_tokens": 16
+    },
+    {
+     "request": "B1 different conversation, same persona, changed suffix",
+     "prompt_tokens": 5185,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5074,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5185,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.505,
+     "request_s": 6.737,
+     "generated_tokens": 16
+    },
+    {
+     "request": "A2 same conversation, next turn",
+     "prompt_tokens": 5206,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5048,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5206,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.592,
+     "request_s": 6.824,
+     "generated_tokens": 16
+    },
+    {
+     "request": "C1 another new conversation, changed suffix",
+     "prompt_tokens": 5183,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5074,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5183,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.502,
+     "request_s": 6.732,
+     "generated_tokens": 16
+    },
+    {
+     "request": "M1 persona mutated by one word",
+     "prompt_tokens": 5183,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 91,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5183,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.525,
+     "request_s": 6.762,
+     "generated_tokens": 16
+    },
+    {
+     "request": "A2 again, fully identical (diagnostic only)",
+     "prompt_tokens": 5206,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5206,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5206,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.575,
+     "request_s": 6.806,
+     "generated_tokens": 16
+    }
+   ]
+  },
+  {
+   "mode": "sequential (parallel 1)",
+   "max_seq_nums": 1,
+   "model_kit": "ModelKit",
+   "load_s": 5.02,
+   "requests": [
+    {
+     "request": "A1 first request (establishes cache)",
+     "prompt_tokens": 5182,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 0,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5182,
+       "from_cache": 0
+      },
+      {
+       "prompt_tokens": 5181,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 8.662,
+     "request_s": 8.891,
+     "generated_tokens": 16
+    },
+    {
+     "request": "B1 different conversation, same persona, changed suffix",
+     "prompt_tokens": 5185,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5074,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5185,
+       "from_cache": 0
+      },
+      {
+       "prompt_tokens": 5184,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.486,
+     "request_s": 6.715,
+     "generated_tokens": 16
+    },
+    {
+     "request": "A2 same conversation, next turn",
+     "prompt_tokens": 5206,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5048,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5206,
+       "from_cache": 0
+      },
+      {
+       "prompt_tokens": 5205,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.451,
+     "request_s": 6.68,
+     "generated_tokens": 16
+    },
+    {
+     "request": "C1 another new conversation, changed suffix",
+     "prompt_tokens": 5183,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5074,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5183,
+       "from_cache": 0
+      },
+      {
+       "prompt_tokens": 5182,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.463,
+     "request_s": 6.698,
+     "generated_tokens": 16
+    },
+    {
+     "request": "M1 persona mutated by one word",
+     "prompt_tokens": 5183,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 91,
+     "claim_B_engine_took_from_cache": 0,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5183,
+       "from_cache": 0
+      },
+      {
+       "prompt_tokens": 5182,
+       "from_cache": 0
+      }
+     ],
+     "first_token_s": 6.501,
+     "request_s": 6.734,
+     "generated_tokens": 16
+    },
+    {
+     "request": "A2 again, fully identical (diagnostic only)",
+     "prompt_tokens": 5206,
+     "claim_A_longest_shared_leading_tokens_with_any_earlier": 5206,
+     "claim_B_engine_took_from_cache": 5195,
+     "engine_lookups": [
+      {
+       "prompt_tokens": 5206,
+       "from_cache": 5195
+      }
+     ],
+     "first_token_s": 0.179,
+     "request_s": 0.411,
+     "generated_tokens": 16
+    }
+   ]
+  }
+ ]
+}

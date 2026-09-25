@@ -697,3 +697,31 @@ found on either critical path.
 (prefix reuse on the admitted runtime; a resident speech process; model residency; the
 text presentation boundary). Avatar remains blocked behind WP3; LOW and Whisper are not
 reopened.
+
+---
+
+## 18. Handoff — prompt-prefix reuse pass, 25 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-25-prefix-reuse/RESULT.md`
+(evidence index §105). §16 and §17 stand as written; `60e4e81` made no latency
+optimisation and none is claimed.
+
+**Result: UNSUPPORTED — production unchanged.** On the installed stack (LM Studio
+0.4.24+1, MLX engine 1.11.0), no serving setting gives cross-request reuse of VAL's
+persona prefix for real turns. Measured with LM Studio's own engine in a separate,
+isolated process: requests sharing ~97% of their tokens with an earlier one reused
+**none**, in both the production batched mode and sequential mode. The reasons:
+- GPT-OSS's sliding-window cache cannot be trimmed back to a shared prefix.
+- The engine's checkpoints sit 11 tokens before a prompt's end, never at the persona
+  boundary.
+
+No cache control is exposed.
+
+**The one demonstrated route, not taken:** a VAL-issued priming request that places a
+checkpoint on the persona boundary, under sequential serving, cut first-token time
+from ~6.5 s to ~0.41 s on changed-suffix requests in isolation. It is a new class of
+model call and a concurrency change, not a serving setting, so it needs its own ruling.
+
+**Held, unchanged:** resident speech process (~1.3 s per synthesis); longer model
+residency; answer-text timing policy. **Open:** Step B performance acceptance; physical
+latency under the three-interval panel; C / E / G; conversation switch. Avatar blocked.

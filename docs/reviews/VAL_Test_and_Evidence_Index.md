@@ -1420,3 +1420,13 @@ Full record: `docs/reviews/VAL_Voice_Input_WP1_Record.md`.
 **Text and voice together:** the desktop reads her answer when every segment has been synthesised — a shared boundary, not a design. For one segment that is her first audio; for longer answers her voice leads her text by 2.9–6.4 s. Left unchanged, and returned as the owner's decision.
 
 **Changed:** three owner-facing intervals on the panel, labelled for what they measure and posted to the service log; Voice Off follows a turn in flight so her answer is not stranded; `open_turn` marked. **No latency repair, and no measured improvement claimed.** The remaining latency is provider/runtime workload, and the ways to reduce it — prefix reuse on the admitted runtime, a resident speech process, model residency — are returned for his ruling.
+
+## 105. Prompt-prefix reuse is not available on the installed stack — 25 September 2026
+
+**WP3 remains PARTIAL; production unchanged.** Record: `docs/reviews/qualification/runs/2026-09-25-prefix-reuse/RESULT.md`. Installed: LM Studio 0.4.24+1, `mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0`, `openai/gpt-oss-20b` (`mlx-community/gpt-oss-20b-MXFP4-Q8`), production loaded at 32,768 tokens with the default parallel 4 (`BatchedModelKit`). No cache control is exposed.
+
+**Isolation:** not a second LM Studio instance — production resolves its instance by model key, and a duplicate once made its exact preflight fail closed — but LM Studio's own engine package, unmodified, run by its own vendored interpreter in a separate process with its own model copy and cache.
+
+**Measured, active production persona, Core's message order, MEDIUM:** changed-suffix requests sharing 5,048–5,074 of ~5,185 leading tokens with an earlier request took **0 tokens from cache in both batched and sequential modes** (~6.5 s to first token every time). The only reuse was a fully identical request in sequential mode (5,195 tokens, 0.18 s): diagnostic only. The cause is read from the installed source — GPT-OSS's `RotatingKVCache` (window 128) cannot be trimmed back, and the engine checkpoints 11 tokens before a prompt's end, never at the persona boundary. Both candidates were rejected before the full benchmark.
+
+**For information:** a VAL-issued priming request placing a checkpoint on the persona boundary made the same changed-suffix requests reuse 5,048 tokens and start in ~0.41 s. It is a new class of model call under sequential serving, dependent on an engine internal — returned for a ruling, not deployed.
