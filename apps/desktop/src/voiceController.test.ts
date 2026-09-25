@@ -89,6 +89,7 @@ const SESSION = {
   error: null,
   delivery: null,
   committed: null,
+  speech_end: null,
   cancellations_ms: [],
 };
 
@@ -452,5 +453,97 @@ describe("a closing window still closes its service session", () => {
     void controller.releaseForLifecycle("app_or_machine_suspending");
     await Promise.resolve();
     expect(api.closeVoiceSession).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("owner-facing intervals — Step B retest, 25 September 2026", () => {
+  function controllerAt(clock: { now: number }) {
+    return new VoiceController({
+      hooks: {
+        onStatus: () => undefined,
+        onSession: () => undefined,
+        onTimings: () => undefined,
+        onTurnSettled: () => undefined,
+      },
+      capture: capturePlatform([new FakeTrack()]),
+      speaker: speakerPlatform,
+      now: () => clock.now,
+      scheduleInterval: () => 1,
+      clearScheduled: () => undefined,
+    });
+  }
+  const committed = { conversation_id: "c-1", message_id: "m-1", utterance: 1 };
+
+  it("starts at speech end as the service estimates it, not at the poll", async () => {
+    const clock = { now: 0 };
+    const controller = controllerAt(clock);
+    await controller.start({ no_project: true });
+    const poll = (controller as unknown as { poll(): Promise<void> }).poll.bind(controller);
+    clock.now = 10_000;
+    vi.spyOn(api, "voiceSession").mockResolvedValue({
+      ...SESSION,
+      utterance: 1,
+      pending: "Good evening, Val.",
+      speech_end: { utterance: 1, ms_ago: 870 },
+    } as never);
+    await poll();
+    expect(controller.measured.speechEndEstimateAt).toBe(9_130);
+    // A later poll does not move it.
+    clock.now = 10_500;
+    await poll();
+    expect(controller.measured.speechEndEstimateAt).toBe(9_130);
+  });
+
+  it("reports the turn's intervals to the service once, when both ends exist", async () => {
+    const clock = { now: 0 };
+    const controller = controllerAt(clock);
+    const reported = vi.spyOn(api, "reportVoiceTimings").mockResolvedValue(undefined);
+    await controller.start({ no_project: true });
+    const poll = (controller as unknown as { poll(): Promise<void> }).poll.bind(controller);
+    clock.now = 10_000;
+    vi.spyOn(api, "voiceSession").mockResolvedValue({
+      ...SESSION,
+      utterance: 1,
+      pending: "Good evening, Val.",
+      state: "thinking",
+      speech_end: { utterance: 1, ms_ago: 1_000 },
+      committed,
+    } as never);
+    vi.spyOn(api, "conversation").mockResolvedValue({} as never);
+    await poll();
+    controller.noteOwnerMessageShown("m-1", 11_200, null);
+    expect(reported).not.toHaveBeenCalled(); // no playback yet
+    const observer = (controller as unknown as {
+      speakerObserver(): { onStarted(segment: unknown): void };
+    }).speakerObserver();
+    clock.now = 24_000;
+    observer.onStarted({ messageId: "a-1", segmentIndex: 1, text: "", audio: new ArrayBuffer(0) });
+    observer.onStarted({ messageId: "a-1", segmentIndex: 2, text: "", audio: new ArrayBuffer(0) });
+    expect(reported).toHaveBeenCalledTimes(1);
+    expect(reported.mock.calls[0]![1]).toEqual({
+      utterance: 1,
+      speech_end_to_owner_message_dom_ms: 2_200,
+      owner_message_dom_to_playback_start_ms: 12_800,
+      speech_end_to_playback_start_ms: 15_000,
+      committed_seen_to_owner_message_dom_ms: 1_200,
+    });
+  });
+
+  it("knows which committed message Voice Off would otherwise strand", async () => {
+    const clock = { now: 0 };
+    const controller = controllerAt(clock);
+    await controller.start({ no_project: true });
+    const poll = (controller as unknown as { poll(): Promise<void> }).poll.bind(controller);
+    vi.spyOn(api, "conversation").mockResolvedValue({} as never);
+    vi.spyOn(api, "voiceSession").mockResolvedValue({ ...SESSION, committed } as never);
+    await poll();
+    expect(controller.awaitingAnswer).toEqual(committed);
+    vi.spyOn(api, "voiceSession").mockResolvedValue({
+      ...SESSION,
+      committed,
+      turns: [{ message_id: "m-1", conversation_id: "c-1", answer: {} }],
+    } as never);
+    await poll();
+    expect(controller.awaitingAnswer).toBeNull();
   });
 });

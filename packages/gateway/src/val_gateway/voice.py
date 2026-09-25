@@ -262,6 +262,10 @@ class VoiceSessionView:
     endpoint: dict[str, float | int]
     #: The owner's most recently committed spoken message, answered or not.
     committed: VoiceCommitted | None = None
+    #: The most recent settled utterance's index and when its speech ended, on this
+    #: process's monotonic clock: the endpoint less the silence that confirmed it.
+    #: A VAD-derived estimate, never an acoustic observation (WP3 Step B latency pass).
+    speech_end: tuple[int, float] | None = None
 
 
 @dataclass
@@ -437,6 +441,7 @@ class VoiceSession:
         self._inflight: _Pending | None = None
         self._turns: list[VoiceTurn] = []
         self._committed: VoiceCommitted | None = None
+        self._speech_end: tuple[int, float] | None = None
         self._worker: threading.Thread | None = None
         #: How this session speaks, if it speaks at all. `None` is work package 1's
         #: session exactly: it hears, and says nothing aloud.
@@ -738,6 +743,10 @@ class VoiceSession:
         # stream went to Whisper, in samples, so a lost opening is visible as a number.
         evidence = _endpoint_evidence(event)
         _LOGGER.info("voice endpoint: utterance=%s %s", event.session, json.dumps(evidence))
+        endpoint = evidence.get("endpoint_mono")
+        if isinstance(endpoint, float) and event.text.strip():
+            with self._lock:
+                self._speech_end = (event.session, endpoint - event.silence_seconds)
         merge_into_submitted = False
         with self._lock:
             current, self._current = self._current, None
@@ -1277,6 +1286,7 @@ class VoiceSession:
                 recognizer=self._recognizer.identity.as_record(),
                 endpoint=self.endpoint.as_record(),
                 committed=self._committed,
+                speech_end=self._speech_end,
             )
 
     def __enter__(self) -> VoiceSession:

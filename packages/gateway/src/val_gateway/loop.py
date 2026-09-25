@@ -626,9 +626,13 @@ def open_turn(
         # **Forward-only.** A switch starts a new conversation and never rewrites
         # the one being left — whose `project_id` is immutable in the database
         # anyway (migration `0008`).
+        mark("scope_resolved")
         conversation = conversations.create(
             engine, scope=scope, title=title or _title_from(content)
         )
+        # Owner Step B retest, 25 September 2026: his commit took 1.213 s where four
+        # reproductions took 7-50 ms, and nothing said which part. Now each part does.
+        mark("conversation_created")
 
     # 3. The user's message becomes history now, before any provider is involved —
     #    and, since 19 September 2026, so does every attachment admitted with it.
@@ -637,6 +641,7 @@ def open_turn(
     #    the message. A refused admission never reaches this line, so it leaves no
     #    blob, no attachment, no association, no processing event, and no message.
     acts: tuple[AttachmentAct, ...] = ()
+    mark("message_append_start")
     if attachments or seal is not None:
 
         def _commit(connection: Connection, message_id: UUID) -> None:

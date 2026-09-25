@@ -92,3 +92,13 @@ export function moveConfirmation(destination: string): string {
     "were written in, and the move is recorded; nothing is rewritten."
   );
 }
+
+/**
+ * Whether Val has answered after this message of his — the thread already holds a
+ * message of hers later in the conversation. Used to stop following a turn that
+ * was in flight when Voice ended (owner Step B retest, 25 September 2026, §11.2).
+ */
+export function answeredAfter(messages: MessageView[], messageId: string): boolean {
+  const at = messages.findIndex((message) => message.id === messageId);
+  return at >= 0 && messages.slice(at + 1).some((message) => message.role === "val");
+}

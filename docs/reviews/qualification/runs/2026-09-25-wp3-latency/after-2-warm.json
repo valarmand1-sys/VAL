@@ -1,0 +1,32 @@
+{
+ "label": "after-2 resident model",
+ "session": "ee8f0ac9-4d08-4383-a57c-9dbf716b011a",
+ "speech_end_wall": 1790349259.401989,
+ "ms_from_speech_end": {
+  "voice_on": -2668.3,
+  "session_opened": -2434.5,
+  "pending_seen": 957.4,
+  "committed_seen": 2083.1,
+  "owner_read_issued": 2083.2,
+  "owner_read_returned": 2092.3,
+  "owner_message_in_applied_read": 2092.3,
+  "first_audio_received": 15126.1,
+  "playback_started": 15129.1,
+  "playback_completed": 16976.2,
+  "answered_turn_seen": 18291.5,
+  "answer_read_issued": 18291.6,
+  "answer_read_returned": 18299.5,
+  "answer_text_in_applied_read": 18299.5
+ },
+ "owner_facing": {
+  "A_speech_end_to_owner_message_read_returned": 2092.3,
+  "B_owner_message_read_returned_to_playback_start": 13036.8,
+  "C_speech_end_to_playback_start": 15129.1,
+  "answer_text_read_returned_minus_playback_start": 3170.4
+ },
+ "requests": {
+  "audio": 1168,
+  "poll": 185,
+  "speech": 219
+ }
+}

@@ -374,6 +374,19 @@ export interface VoiceSessionView {
   // His most recent spoken message, canonical in the store, answered or not — set
   // by the commit itself, before cognition (owner diagnostic, 25 September 2026).
   committed: VoiceCommittedView | null;
+  // When his most recent settled utterance's speech ended, as milliseconds before this
+  // response was written: the endpoint less the silence that confirmed it. A
+  // VAD-derived estimate, never an acoustic observation.
+  speech_end: { utterance: number; ms_ago: number } | null;
+}
+
+// The desktop's owner-facing intervals for one turn, sent to be kept in the log.
+export interface DesktopTimingReport {
+  utterance: number;
+  speech_end_to_owner_message_dom_ms: number | null;
+  owner_message_dom_to_playback_start_ms: number | null;
+  speech_end_to_playback_start_ms: number | null;
+  committed_seen_to_owner_message_dom_ms: number | null;
 }
 
 export interface VoiceCommittedView {
@@ -509,6 +522,12 @@ export const api = {
       method: "POST",
       keepalive: true,
     }),
+  reportVoiceTimings: (session: string, report: DesktopTimingReport) =>
+    fetch(`${API_BASE}/voice/sessions/${session}/timings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(report),
+    }).then(() => undefined),
   interruptVoice: (session: string) =>
     request<VoiceSessionView>(`/voice/sessions/${session}/interrupt`, { method: "POST" }),
   finalizeVoice: (session: string) =>

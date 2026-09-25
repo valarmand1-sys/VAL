@@ -24,6 +24,7 @@ to acquire one.
 from __future__ import annotations
 
 import json
+import logging
 import time
 from base64 import b64decode, b64encode
 from binascii import Error as BinasciiError
@@ -51,6 +52,7 @@ from val_api.contracts import (
     DeliberationGlimpse,
     DeliberationView,
     DeliveryView,
+    DesktopTimingReport,
     DisagreementSignal,
     ExecutionEventRequest,
     ExecutionEventView,
@@ -75,6 +77,7 @@ from val_api.contracts import (
     RevisionRequest,
     RevisionView,
     ScopeTransitionView,
+    SpeechEndView,
     SpeechOfferView,
     SpeechView,
     SpokenAudioView,
@@ -169,6 +172,8 @@ from val_policy.attachments import AdmissionRefusedError
 from val_policy.project_resolution import ProjectSignals
 from val_policy.routing import is_admitted, satisfies_profile
 from val_providers.qwen_tts_speech import VOICE_RECORD
+
+_LOGGER = logging.getLogger("val.api")
 
 
 def _revision_http_error(refused: RevisionRefusedError) -> HTTPException:
@@ -935,6 +940,14 @@ def create_app(
                     utterance=view.committed.utterance,
                 )
             ),
+            speech_end=(
+                None
+                if view.speech_end is None
+                else SpeechEndView(
+                    utterance=view.speech_end[0],
+                    ms_ago=round((time.monotonic() - view.speech_end[1]) * 1000, 1),
+                )
+            ),
         )
 
     def timed_warm(run: Callable[[], Mapping[str, object]]) -> dict[str, object]:
@@ -1061,6 +1074,13 @@ def create_app(
     def poll_voice_session(session: UUID) -> VoiceSessionView:
         """The guess, the state, and any turns this session has produced."""
         return render_voice(session, voice_session_or_404(session))
+
+    @app.post("/voice/sessions/{session}/timings", status_code=204)
+    def report_desktop_timings(session: UUID, report: DesktopTimingReport) -> Response:
+        """The desktop's owner-facing intervals for one turn, kept in the log."""
+        voice_session_or_404(session)
+        _LOGGER.info("voice desktop timing: %s", report.model_dump_json())
+        return Response(status_code=204)
 
     @app.post("/voice/sessions/{session}/finalize")
     def finalize_voice_session(session: UUID) -> VoiceSessionView:

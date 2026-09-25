@@ -76,6 +76,7 @@ function session(overrides: Partial<VoiceSessionView>): VoiceSessionView {
     delivery: null,
     cancellations_ms: [],
     committed: null,
+    speech_end: null,
     ...overrides,
   };
 }

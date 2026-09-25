@@ -1019,6 +1019,39 @@ class VoiceSessionView(BaseModel):
     #: can show him his words while she is still thinking (owner diagnostic, 25
     #: September 2026). `turns` still gains the exchange only once it is answered.
     committed: VoiceCommittedView | None = None
+    #: The most recent settled utterance, and how many milliseconds before this response
+    #: was written its speech ended — the endpoint less the silence that confirmed
+    #: it. **A VAD-derived estimate**, never an acoustic observation; the desktop
+    #: uses it to start its owner-facing intervals at speech end (Step B latency pass).
+    speech_end: SpeechEndView | None = None
+
+
+class SpeechEndView(BaseModel):
+    """When his speech ended, as the recognizer's endpoint estimates it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    utterance: int
+    ms_ago: float
+
+
+class DesktopTimingReport(BaseModel):
+    """The desktop's own measured intervals for one spoken turn — numbers only.
+
+    Owner Step B retest, 25 September 2026. The owner-facing intervals end in the
+    desktop (a DOM commit, a playback start), which the service cannot observe; his
+    run left them on a panel and nowhere else. They are posted here to be logged,
+    so the next comparison with his experience has them. No text, no audio: any
+    field that is not one of these numbers is refused.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    utterance: int
+    speech_end_to_owner_message_dom_ms: float | None = None
+    owner_message_dom_to_playback_start_ms: float | None = None
+    speech_end_to_playback_start_ms: float | None = None
+    committed_seen_to_owner_message_dom_ms: float | None = None
 
 
 class VoiceCommittedView(BaseModel):

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import type { MessageView, ProjectView, RevisionView } from "./api";
 import {
+  answeredAfter,
   answerStateLine,
   canEdit,
   canRemove,
@@ -114,5 +115,16 @@ describe("scope transition words", () => {
   it("never claims the move rewrote earlier messages", () => {
     expect(moveConfirmation("Project Beta")).toContain("Earlier messages keep the scope");
     expect(moveConfirmation("Project Beta")).toContain("nothing is rewritten");
+  });
+});
+
+describe("answeredAfter — Voice Off never strands her answer", () => {
+  const m = (id: string, role: "user" | "val", sequence: number) =>
+    ({ id, role, content: "", sequence, created_at: "" }) as never;
+  it("is false until a message of hers follows his", () => {
+    expect(answeredAfter([m("his", "user", 1)], "his")).toBe(false);
+    expect(answeredAfter([m("her0", "val", 1), m("his", "user", 2)], "his")).toBe(false);
+    expect(answeredAfter([m("his", "user", 1), m("hers", "val", 2)], "his")).toBe(true);
+    expect(answeredAfter([], "his")).toBe(false);
   });
 });

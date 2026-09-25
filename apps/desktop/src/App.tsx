@@ -29,6 +29,7 @@ import type {
   ReviewConclusion,
   ReviewProgressView,
   TurnClarification,
+  VoiceCommittedView,
   VoiceSessionView,
 } from "./api";
 import { Attachments } from "./attachments";
@@ -66,6 +67,7 @@ import {
   resolutionOf,
 } from "./presentation";
 import {
+  answeredAfter,
   answerStateLine,
   canEdit,
   canRemove,
@@ -98,6 +100,9 @@ interface Streaming {
   text: string;
   stage: TurnStage | null;
 }
+
+/** How long Voice Off keeps following a turn that was still being answered. */
+const FOLLOW_ANSWER_LIMIT_MS = 180_000;
 
 function windowVisible(): boolean {
   return typeof document === "undefined" || document.visibilityState === "visible";
@@ -333,14 +338,43 @@ export function App(): React.JSX.Element {
     await controller.start(turnScopeFields(entry, detail?.conversation ?? null));
   }, [detail, entry, openConversation]);
 
+  // **Voice ending never strands her answer** (owner Step B retest, §11.2). A turn
+  // committed before Voice went off still completes on the service, but nothing
+  // would read it: the reads were driven by the session's polling, which ended with
+  // Voice. So the conversation is followed — once a second, through the same read
+  // rule, for at most three minutes — until her answer is in it, and no longer than
+  // he stays in that conversation or Voice stays off.
+  const detailShown = useRef<ConversationDetail | null>(null);
+  useEffect(() => {
+    detailShown.current = detail;
+  }, [detail]);
+  const followAnswer = useCallback(
+    (awaiting: VoiceCommittedView) => {
+      const deadline = performance.now() + FOLLOW_ANSWER_LIMIT_MS;
+      const stillWanted = () =>
+        voiceController.current === null &&
+        detailShown.current?.conversation.id === awaiting.conversation_id &&
+        !answeredAfter(detailShown.current.messages, awaiting.message_id);
+      const tick = async () => {
+        if (!stillWanted()) return;
+        await openConversation(awaiting.conversation_id).catch(() => undefined);
+        if (performance.now() < deadline) window.setTimeout(() => void tick(), 1000);
+      };
+      window.setTimeout(() => void tick(), 1000);
+    },
+    [openConversation],
+  );
+
   const voiceOff = useCallback(async () => {
     const controller = voiceController.current;
     if (controller === null) return;
+    const awaiting = controller.awaitingAnswer;
     await controller.stop();
     voiceController.current = null;
     setVoiceSession(null);
     setVoice(VOICE_OFF);
-  }, []);
+    if (awaiting !== null) followAnswer(awaiting);
+  }, [followAnswer]);
 
   const toggleMute = useCallback(async () => {
     await voiceController.current?.toggleMute();
@@ -965,7 +999,7 @@ async function asAttachmentInput(pending: PendingAttachment): Promise<Attachment
 // Each is a difference between two moments this window observed, and each is shown
 // **only once both ends exist**: an interval with one end is not a duration, and a
 // dash says so rather than a zero pretending to be a measurement.
-function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element | null {
+export function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element | null {
   const { timings } = props;
   const span = (from: number | null, to: number | null): string =>
     from === null || to === null ? "—" : `${Math.round(to - from)} ms`;
@@ -973,9 +1007,14 @@ function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element 
   const ready = span(timings.unmuteGestureAt, timings.unmuteFirstChunkAt);
   const audible = span(timings.speechEndAt, timings.firstAudibleAt);
   const silence = span(timings.bargeInAt, timings.silenceAt);
-  const shown = span(timings.speechEndAt, timings.ownerShownAt);
-  const read = span(timings.committedSeenAt, timings.ownerShownAt);
-  if (unmute === "—" && ready === "—" && audible === "—" && silence === "—" && shown === "—")
+  // The three owner-facing intervals (Step B retest §13.1), each named for what it
+  // actually measures, and "unavailable" rather than a guess when an end is missing.
+  const between = (from: number | null, to: number | null): string =>
+    from === null || to === null ? "unavailable" : `${Math.round(to - from)} ms`;
+  const heard = between(timings.speechEndEstimateAt, timings.ownerShownAt);
+  const answered = between(timings.ownerShownAt, timings.firstAudibleAt);
+  const whole = between(timings.speechEndEstimateAt, timings.firstAudibleAt);
+  if (unmute === "—" && ready === "—" && audible === "—" && silence === "—" && timings.utterance === null)
     return null;
   return (
     <p className="voice-measurements">
@@ -987,21 +1026,29 @@ function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element 
       </span>
       <span
         title={
-          "From when this window first saw your settled transcript to the React commit " +
-          "that put your words in the thread. The part after the service reported them " +
-          "is shown in brackets. A document fact, not a claim about the screen."
+          "From the end of your speech, as estimated from the recognizer's endpoint, to " +
+          "the React commit that put your words in the thread. A document fact, not an " +
+          "observed paint; the speech end is an estimate, not an acoustic measurement."
         }
       >
-        transcript → your words shown {shown} ({read})
+        speech end (est.) → your words in thread {heard}
       </span>
       <span
         title={
-          "From when this window first saw your settled transcript to when it started " +
-          "playing her first segment. A software event in this window, not a measurement " +
-          "of sound leaving the speakers."
+          "From the React commit that put your words in the thread to this window " +
+          "starting her first segment. Playback start is a software event, not sound " +
+          "leaving the speakers."
         }
       >
-        transcript → playback start {audible}
+        your words in thread → her playback start {answered}
+      </span>
+      <span
+        title={
+          "From the end of your speech (estimated from the endpoint) to this window " +
+          "starting her first segment — the whole wait, in software terms."
+        }
+      >
+        speech end (est.) → her playback start {whole}
       </span>
       <span title="From your barge-in to the playing buffer being stopped in this window.">
         barge-in → silence {silence}

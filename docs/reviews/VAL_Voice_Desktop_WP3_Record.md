@@ -658,3 +658,42 @@ sequence. **Not done and not begun:** Avatar; any ASR change; LOW.
 
 **Continuation point:** the single owner step named in this pass's return, on the
 installed build that contains these repairs — never on an older bundle.
+
+---
+
+## 17. Handoff — Step B retest on `912b44f`, 25 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-25-wp3-latency/RESULT.md`
+(evidence index §104). §16 stands as written.
+
+**Physical owner evidence, banked for this turn:** the exact transcript `Good evening,
+Val.` (the opening word preserved); his message shown before her answer; no phantom
+message of his; her short spoken reply arriving with her visible answer; her pace
+acceptable. **To preserve:** in this short turn her text and voice arrived together and
+did not feel like delayed read-aloud. No permanent text/voice synchronisation policy
+has been set.
+
+**Failed / open:** ~10–12 s from his speech to his message (his estimate); ~45–60 s
+from his message to her reply (his estimate); speech end to first response overall;
+exact physical first-audible latency; Step B performance acceptance.
+
+**What the record shows for that run:** 3.1–4.1 s to his message (read returned) and
+12.8–13.8 s from it to her playback start. The session, Voice On to Voice Off, lasted
+32.9 s, so the record cannot hold a 45–60 s interval inside it; the difference is
+UNRESOLVED and is not rewritten. The response path is dominated by provider workload:
+~8 s of prompt processing on every turn with no prefix reuse, 1.6–5.3 s of reasoning,
+and ~2.7 s of first-segment speech synthesis, of which ~1.3 s is per-process start-up
+and model load. His commit took 1.2 s against 3–50 ms reproduced (UNRESOLVED, now
+marked). Text and voice arrived together because both waited on the same boundary, all
+segments synthesised; for longer answers that boundary puts her voice ahead of her text.
+
+**Implementation state (source, automated only):** the panel shows the three
+owner-facing intervals and posts them to the log; Voice Off follows a turn in flight so
+her answer is not stranded; the commit's parts are marked. **No latency repair was
+made**, because no software-removable delay larger than a few hundred milliseconds was
+found on either critical path.
+
+**Continuation point:** the owner's ruling on the decision boundary in the record
+(prefix reuse on the admitted runtime; a resident speech process; model residency; the
+text presentation boundary). Avatar remains blocked behind WP3; LOW and Whisper are not
+reopened.

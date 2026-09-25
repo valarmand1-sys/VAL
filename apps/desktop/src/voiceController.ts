@@ -87,6 +87,13 @@ export interface VoiceTimings {
   committedSeenAt: number | null;
   ownerShownAt: number | null;
   ownerFramesAt: number | null;
+  /**
+   * When his speech ended, **estimated** from the recognizer's endpoint: the
+   * service says how long ago (endpoint less the confirming silence), and this is
+   * the time the poll carrying that arrived, less it. Not an acoustic observation,
+   * and it carries the poll's own transit as error (owner Step B retest, §13.1).
+   */
+  speechEndEstimateAt: number | null;
 }
 
 export const NO_TIMINGS: VoiceTimings = {
@@ -101,6 +108,7 @@ export const NO_TIMINGS: VoiceTimings = {
   committedSeenAt: null,
   ownerShownAt: null,
   ownerFramesAt: null,
+  speechEndEstimateAt: null,
 };
 
 export interface VoiceControllerHooks {
@@ -158,6 +166,8 @@ export class VoiceController {
   private lastShown: string | null = null;
   /** The committed owner message the desktop was last told to show. */
   private lastCommitted: string | null = null;
+  /** The utterance whose intervals have been reported, so each is sent once. */
+  private reportedUtterance: number | null = null;
   private collecting = false;
   private polling = false;
   private readonly now: () => number;
@@ -380,6 +390,7 @@ export class VoiceController {
       this.view = view;
       this.options.hooks.onSession(view);
       this.noteSpeechEnd(view);
+      this.noteSpeechEndEstimate(view, this.now());
       this.applyActivity(view);
       // **His words, the moment they are canonical.** The service sets `committed`
       // from inside the turn when his message is written, before cognition begins;
@@ -436,8 +447,54 @@ export class VoiceController {
       committedSeenAt: null,
       ownerShownAt: null,
       ownerFramesAt: null,
+      speechEndEstimateAt: null,
     };
+    this.reportedUtterance = null;
     this.options.hooks.onTimings(this.timings);
+  }
+
+  /** Speech end for the current utterance, from the service's endpoint estimate. */
+  private noteSpeechEndEstimate(view: VoiceSessionView, receivedAt: number): void {
+    const ended = view.speech_end ?? null;
+    if (ended === null || ended.utterance !== this.timings.utterance) return;
+    if (this.timings.speechEndEstimateAt !== null) return;
+    this.timings = { ...this.timings, speechEndEstimateAt: receivedAt - ended.ms_ago };
+    this.options.hooks.onTimings(this.timings);
+  }
+
+  /**
+   * The turn's owner-facing intervals, sent once to the service to be logged — his
+   * run left them on the panel and nowhere else. Sent when both ends exist.
+   */
+  private maybeReportTimings(): void {
+    const t = this.timings;
+    const session = this.session;
+    if (session === null || t.utterance === null || this.reportedUtterance === t.utterance) return;
+    if (t.ownerShownAt === null || t.firstAudibleAt === null) return;
+    this.reportedUtterance = t.utterance;
+    const between = (from: number | null, to: number | null) =>
+      from === null || to === null ? null : Math.round(to - from);
+    void api
+      .reportVoiceTimings(session, {
+        utterance: t.utterance,
+        speech_end_to_owner_message_dom_ms: between(t.speechEndEstimateAt, t.ownerShownAt),
+        owner_message_dom_to_playback_start_ms: between(t.ownerShownAt, t.firstAudibleAt),
+        speech_end_to_playback_start_ms: between(t.speechEndEstimateAt, t.firstAudibleAt),
+        committed_seen_to_owner_message_dom_ms: between(t.committedSeenAt, t.ownerShownAt),
+      })
+      .catch(() => undefined);
+  }
+
+  /**
+   * His committed message that has no answered turn yet — what Voice Off must not
+   * strand. `null` when everything he said has been answered, or nothing was said.
+   */
+  get awaitingAnswer(): VoiceCommittedView | null {
+    const view = this.view;
+    const committed = view?.committed ?? null;
+    if (view === null || committed === null) return null;
+    const answered = view.turns.some((turn) => turn.message_id === committed.message_id);
+    return answered ? null : committed;
   }
 
   /**
@@ -454,6 +511,7 @@ export class VoiceController {
       ownerFramesAt: this.timings.ownerFramesAt ?? framesAt,
     };
     this.options.hooks.onTimings(this.timings);
+    this.maybeReportTimings();
   }
 
   /** The message the desktop was last told to show, for the thread to look for. */
@@ -542,6 +600,7 @@ export class VoiceController {
         if (this.timings.firstAudibleAt === null) {
           this.timings = { ...this.timings, firstAudibleAt: this.now() };
           this.options.hooks.onTimings(this.timings);
+          this.maybeReportTimings();
         }
         this.apply(withActivity(this.status, "speaking"));
         report(segment, "playback_started");
