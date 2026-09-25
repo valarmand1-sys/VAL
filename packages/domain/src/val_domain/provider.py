@@ -314,6 +314,38 @@ def supports_local_runtime(adapter: object) -> bool:
     return callable(getattr(adapter, "ensure_runtime_ready", None))
 
 
+@dataclass(frozen=True)
+class PrefixPrimePlan:
+    """How to leave the computation of a stable prompt prefix in a local runtime.
+
+    Owner order, 25 September 2026 (priming-cache pass). `filler` is the content of
+    the one user message the prime sends after the system prompt — chosen, by token
+    identity through the runtime's own rendering, so the runtime's checkpoint lands
+    exactly on `boundary_tokens`: the system block and the opening of the next user
+    message, which every real turn renders identically. `refused` names why no prime
+    may be sent, in which case nothing else is set and ordinary cognition proceeds.
+    """
+
+    filler: str = ""
+    boundary_tokens: int = 0
+    prime_tokens: int = 0
+    boundary_sha256: str = ""
+    engine: str = ""
+    refused: str | None = None
+
+
+@runtime_checkable
+class PrefixPrimingAdapter(Protocol):
+    """An adapter that can plan a prefix prime for a configuration it serves."""
+
+    def plan_prefix_prime(self, config: ModelConfig, system: str) -> PrefixPrimePlan: ...
+
+
+def supports_prefix_priming(adapter: object) -> bool:
+    """Whether this adapter can plan a prefix prime — by implementing it."""
+    return callable(getattr(adapter, "plan_prefix_prime", None))
+
+
 def supports_streaming(adapter: object) -> bool:
     """Whether this adapter declares the streaming capability.
 

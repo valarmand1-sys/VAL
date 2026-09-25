@@ -1,0 +1,188 @@
+{
+ "condition": "C3-cold-model",
+ "priming": "on",
+ "lead_s": 1.0,
+ "rows": [
+  {
+   "turn": "C3-cold-model turn 1",
+   "request_ready_to_first_user_facing_text_ms": 13812.6,
+   "dispatch_to_first_provider_output_ms": 7958.5,
+   "first_output_to_user_facing_text_ms": 3577.5,
+   "cognition_dispatch_to_answer_text_complete_ms": 11536.0,
+   "readiness_ms": 2139.7,
+   "first_tts_ms": 2696.6,
+   "speech_end_to_owner_message_read_ms": 2150.7,
+   "owner_message_to_playback_ms": 16459.6,
+   "speech_end_to_playback_ms": 18610.3,
+   "endpoint_from_speech_end_ms": 751.1,
+   "request_ready_wall": 1790373539.5779
+  },
+  {
+   "turn": "C3-cold-model turn 2",
+   "request_ready_to_first_user_facing_text_ms": 5185.7,
+   "dispatch_to_first_provider_output_ms": 1534.1,
+   "first_output_to_user_facing_text_ms": 3565.6,
+   "cognition_dispatch_to_answer_text_complete_ms": 5099.7,
+   "readiness_ms": 13.9,
+   "first_tts_ms": 6399.1,
+   "speech_end_to_owner_message_read_ms": 2070.6,
+   "owner_message_to_playback_ms": 12158.4,
+   "speech_end_to_playback_ms": 14229.0,
+   "endpoint_from_speech_end_ms": 791.6,
+   "request_ready_wall": 1790373569.8011
+  },
+  {
+   "turn": "C3-cold-model turn 3",
+   "request_ready_to_first_user_facing_text_ms": 4157.6,
+   "dispatch_to_first_provider_output_ms": 1572.2,
+   "first_output_to_user_facing_text_ms": 2501.5,
+   "cognition_dispatch_to_answer_text_complete_ms": 4073.7,
+   "readiness_ms": 17.2,
+   "first_tts_ms": 3340.9,
+   "speech_end_to_owner_message_read_ms": 2074.4,
+   "owner_message_to_playback_ms": 7639.7,
+   "speech_end_to_playback_ms": 9714.1,
+   "endpoint_from_speech_end_ms": 719.2,
+   "request_ready_wall": 1790373613.5168
+  },
+  {
+   "turn": "C3-cold-model turn 4",
+   "request_ready_to_first_user_facing_text_ms": 5638.9,
+   "dispatch_to_first_provider_output_ms": 1610.6,
+   "first_output_to_user_facing_text_ms": 3944.2,
+   "cognition_dispatch_to_answer_text_complete_ms": 5554.8,
+   "readiness_ms": 16.1,
+   "first_tts_ms": 3277.8,
+   "speech_end_to_owner_message_read_ms": 2068.6,
+   "owner_message_to_playback_ms": 9148.6,
+   "speech_end_to_playback_ms": 11217.2,
+   "endpoint_from_speech_end_ms": 776.8,
+   "request_ready_wall": 1790373640.3956
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 6.648,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "reason": "an owner request is waiting; maintenance never starts ahead of it"
+   },
+   "wall": 1790373541.811
+  },
+  {
+   "kind": "refresh",
+   "seconds": 6.847,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da94-96ac-7822-88ad-a9ccc4331489",
+    "seconds": 6.502
+   },
+   "wall": 1790373566.132
+  },
+  {
+   "kind": "initial",
+   "seconds": 1.192,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da94-9772-72c2-8f8d-052f21e804db",
+    "seconds": 1.023
+   },
+   "wall": 1790373566.325
+  },
+  {
+   "kind": "refresh",
+   "seconds": 1.917,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da95-0298-7412-abb4-a57973a98a94",
+    "seconds": 1.644
+   },
+   "wall": 1790373593.755
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.461,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da95-4008-7b12-95a1-a432198af945",
+    "seconds": 0.291
+   },
+   "wall": 1790373609.482
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.461,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da95-8a98-771f-aa5c-9f1ed9324ea4",
+    "seconds": 0.289
+   },
+   "wall": 1790373628.572
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.481,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da95-a612-7d60-93ec-92d33a29ab69",
+    "seconds": 0.305
+   },
+   "wall": 1790373635.605
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.558,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da95-ef2d-732e-82c1-3a6ee49e9877",
+    "seconds": 0.303
+   },
+   "wall": 1790373654.32
+  }
+ ]
+}

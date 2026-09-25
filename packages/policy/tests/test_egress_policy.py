@@ -216,6 +216,11 @@ def test_nothing_currently_executes_on_the_classification() -> None:
         TaskType.STRIP,
         TaskType.BLIND_POSITION,
         TaskType.TITLE,
+        # Checked against the execution gate, 25 September 2026, as this test asks:
+        # a prefix prime computes the persona into the local runtime's memory and
+        # discards its one token. It has no effect outside that memory — no message,
+        # no record but its own call row, no executor — so it is not an action.
+        TaskType.PREFIX_PRIME,
     }, "a new task type may be an action; check it against the execution gate"
 
 

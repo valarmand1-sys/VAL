@@ -105,6 +105,10 @@ def test_no_tool_or_mcp_registration_exists_at_all() -> None:
         "strip",
         "blind_position",
         "title",
+        # Checked against the device-authority rule, 25 September 2026, as asked: a
+        # prefix prime is a local model call that computes the persona and discards
+        # its one token. It is not a tool, reaches no device and no model can call it.
+        "prefix_prime",
     }, "a new task type may be a tool; check it against the device-authority rule"
 
     root = Path(__file__).resolve().parents[3]

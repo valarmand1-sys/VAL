@@ -34,6 +34,11 @@ class TaskType(StrEnum):
     STRIP = "strip"
     BLIND_POSITION = "blind_position"
     TITLE = "title"
+    #: Owner order, 25 September 2026 (priming-cache pass §3, §9): a local
+    #: infrastructure call that leaves the computation of Val's persona in the local
+    #: runtime's memory so later turns reuse it. Not a turn, not an answer, not
+    #: memory; attached to no conversation. Recorded because every invocation is.
+    PREFIX_PRIME = "prefix_prime"
 
 
 class CallStatus(StrEnum):

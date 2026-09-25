@@ -70,6 +70,7 @@ from val_domain.gateway import (
     Message,
     Metering,
     ModelConfig,
+    PersonaAttribution,
     PricingFeature,
     TaskType,
     TerminalState,
@@ -77,6 +78,7 @@ from val_domain.gateway import (
 )
 from val_domain.perception import PerceptionProvider
 from val_domain.project import (
+    ExplicitNoProject,
     ProjectAttribution,
     ProjectScope,
 )
@@ -87,11 +89,13 @@ from val_domain.provider import (
     DeltaSink,
     LocalRuntimeAdapter,
     LocalRuntimeUnavailableError,
+    PrefixPrimingAdapter,
     ProviderAdapter,
     ProviderResult,
     TextDelta,
     supports_context_inspection,
     supports_local_runtime,
+    supports_prefix_priming,
     supports_streaming,
 )
 from val_domain.registry import active, by_id, fallback_for, stale_rates
@@ -519,6 +523,125 @@ class Gateway:
             return {"warmed": False, "reason": f"{type(failure).__name__}: {failure}"}
         return dict(report) if isinstance(report, Mapping) else {"warmed": False}
 
+    def _spoken_turn_route(self) -> ModelConfig | None:
+        """The route a spoken turn will try first, chosen the way that turn chooses it."""
+        order = attempt_order(
+            active(),
+            Classification.PROTECTED,
+            is_ready=lambda config: config.provider in self._adapters,
+            is_affordable=lambda config: True,
+            resolve_fallback=fallback_for,
+            profile=required_profile(TaskType.CONVERSATION),
+            cost_bound=lambda config: maximum_cost(config, (), CONVERSATION_MAX_OUTPUT_TOKENS),
+            egress=Egress.LOCAL_ONLY,
+        )
+        return order[0] if order else None
+
+    def prime_prefix(self, still_wanted: Callable[[], bool] = lambda: True) -> Mapping[str, object]:
+        """Leave the computation of Val's persona in the local runtime, for later turns.
+
+        Owner order, 25 September 2026 (priming-cache pass). **A local infrastructure
+        model call**: the persona, whole and verbatim as every turn sends it, and one
+        short user message sized so the runtime's checkpoint lands exactly on the
+        boundary every real turn renders identically. Later turns — which Core still
+        assembles completely, every time — find that computation already done and
+        process only what follows it. Measured through LM Studio on an isolated
+        instance: first output ~0.7 s against ~7 s on turns whose suffixes differ.
+
+        It is governed like any call: it goes through `_attempt`, so it is budgeted,
+        preflighted, attributed to the persona revision and **recorded** as
+        `prefix_prime`, attached to no conversation. Its one generated token is
+        discarded here; nothing it produces reaches a message, recall or memory.
+
+        **Never ahead of him.** `still_wanted` is asked after the runtime is ready and
+        immediately before the call is sent; if a real owner request is waiting by
+        then, nothing is sent. Once sent it runs to completion — it computes exactly
+        the prefix his request would otherwise compute itself, so waiting for it is
+        never longer than doing that work from nothing.
+        """
+        config = self._spoken_turn_route()
+        if config is None:
+            return {"primed": False, "outcome": "skipped", "reason": "no admitted partner route"}
+        adapter = self._adapters[config.provider]
+        if not supports_prefix_priming(adapter) or not supports_local_runtime(adapter):
+            return {
+                "primed": False,
+                "outcome": "skipped",
+                "slug": config.slug,
+                "reason": "this route's runtime cannot be primed",
+            }
+        if self._persona_loader is None:
+            return {"primed": False, "outcome": "skipped", "reason": "no persona loader"}
+        try:
+            cast(LocalRuntimeAdapter, adapter).ensure_runtime_ready(config)
+        except LocalRuntimeUnavailableError as failure:
+            return {
+                "primed": False,
+                "outcome": "failed",
+                "slug": config.slug,
+                "reason": str(failure),
+            }
+        # Planning asks the runtime to render and tokenize; that is optional work too,
+        # and on a sequential instance it competes with his request. Qualification
+        # found it adding ~3 s to a cold first turn, so it waits its turn as well.
+        if not still_wanted():
+            return {
+                "primed": False,
+                "outcome": "skipped",
+                "slug": config.slug,
+                "reason": "an owner request is waiting; maintenance never starts ahead of it",
+            }
+        persona = self._persona_loader.active()
+        plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(config, persona.content)
+        if plan.refused is not None:
+            return {
+                "primed": False,
+                "outcome": "skipped",
+                "slug": config.slug,
+                "engine": plan.engine,
+                "reason": plan.refused,
+            }
+        if not still_wanted():
+            return {
+                "primed": False,
+                "outcome": "skipped",
+                "slug": config.slug,
+                "reason": "an owner request is waiting; maintenance never starts ahead of it",
+            }
+        request = assemble(
+            persona,
+            (Message(role="user", content=plan.filler),),
+            task_type=TaskType.PREFIX_PRIME,
+            scope=ExplicitNoProject(),
+            max_output_tokens=1,
+            egress=Egress.LOCAL_ONLY,
+        ).model_copy(
+            # It carries the persona whole, so it names the revision it carried —
+            # the same rule as every persona-bearing call that is not a turn.
+            update={"persona": PersonaAttribution(persona_id=persona.id)}
+        )
+        started = time.monotonic()
+        try:
+            response = self._attempt(request, config, content_parts(request))
+        except GatewayError as failure:
+            return {
+                "primed": False,
+                "outcome": "failed",
+                "slug": config.slug,
+                "reason": f"{failure.kind.value}: {failure}",
+            }
+        return {
+            "primed": True,
+            "outcome": "established",
+            "slug": config.slug,
+            "engine": plan.engine,
+            "boundary_tokens": plan.boundary_tokens,
+            "boundary_sha256": plan.boundary_sha256,
+            "prime_tokens": plan.prime_tokens,
+            "model_call_id": str(response.model_call_id),
+            "seconds": round(time.monotonic() - started, 3),
+        }
+
     def warm_cognition(self) -> Mapping[str, object]:
         """Bring the ordinary conversation route's local runtime up, early.
 
@@ -549,21 +672,9 @@ class Gateway:
         # its conversation local-only for as long as it is open, so every turn it
         # carries routes `LOCAL_ONLY`. The runtime re-observes residency under the
         # lock, so the turn then finds the model loaded and does not load it again.
-        order = attempt_order(
-            active(),
-            Classification.PROTECTED,
-            is_ready=lambda config: config.provider in self._adapters,
-            # No request exists yet to measure; a local route is unmetered, and the
-            # turn's own admission and fit checks still run when it is made.
-            is_affordable=lambda config: True,
-            resolve_fallback=fallback_for,
-            profile=required_profile(TaskType.CONVERSATION),
-            cost_bound=lambda config: maximum_cost(config, (), CONVERSATION_MAX_OUTPUT_TOKENS),
-            egress=Egress.LOCAL_ONLY,
-        )
-        if not order:
+        chosen = self._spoken_turn_route()
+        if chosen is None:
             return {"warmed": False, "reason": "no admitted partner route is configured"}
-        chosen = order[0]
         if not supports_local_runtime(self._adapters[chosen.provider]):
             return {
                 "warmed": False,

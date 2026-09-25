@@ -1,0 +1,193 @@
+{
+ "condition": "C-prime-before-request",
+ "priming": "on",
+ "lead_s": 8.0,
+ "rows": [
+  {
+   "turn": "C-prime-before-request turn 1",
+   "request_ready_to_first_user_facing_text_ms": 4132.8,
+   "dispatch_to_first_provider_output_ms": 1606.8,
+   "first_output_to_user_facing_text_ms": 2417.1,
+   "cognition_dispatch_to_answer_text_complete_ms": 4023.9,
+   "readiness_ms": 17.2,
+   "first_tts_ms": 2605.7,
+   "speech_end_to_owner_message_read_ms": 2124.7,
+   "owner_message_to_playback_ms": 6768.2,
+   "speech_end_to_playback_ms": 8892.9,
+   "endpoint_from_speech_end_ms": 830.5,
+   "request_ready_wall": 1790372828.7078
+  },
+  {
+   "turn": "C-prime-before-request turn 2",
+   "request_ready_to_first_user_facing_text_ms": 7541.6,
+   "dispatch_to_first_provider_output_ms": 631.9,
+   "first_output_to_user_facing_text_ms": 6823.0,
+   "cognition_dispatch_to_answer_text_complete_ms": 7454.9,
+   "readiness_ms": 14.4,
+   "first_tts_ms": 4007.5,
+   "speech_end_to_owner_message_read_ms": 2159.8,
+   "owner_message_to_playback_ms": 11826.5,
+   "speech_end_to_playback_ms": 13986.3,
+   "endpoint_from_speech_end_ms": 787.8,
+   "request_ready_wall": 1790372855.0512002
+  },
+  {
+   "turn": "C-prime-before-request turn 3",
+   "request_ready_to_first_user_facing_text_ms": 5264.4,
+   "dispatch_to_first_provider_output_ms": 1614.8,
+   "first_output_to_user_facing_text_ms": 3570.5,
+   "cognition_dispatch_to_answer_text_complete_ms": 5185.3,
+   "readiness_ms": 16.4,
+   "first_tts_ms": 3433.5,
+   "speech_end_to_owner_message_read_ms": 2031.0,
+   "owner_message_to_playback_ms": 8818.6,
+   "speech_end_to_playback_ms": 10849.6,
+   "endpoint_from_speech_end_ms": 718.2,
+   "request_ready_wall": 1790372914.3099
+  },
+  {
+   "turn": "C-prime-before-request turn 4",
+   "request_ready_to_first_user_facing_text_ms": 5908.7,
+   "dispatch_to_first_provider_output_ms": 1600.5,
+   "first_output_to_user_facing_text_ms": 4222.4,
+   "cognition_dispatch_to_answer_text_complete_ms": 5822.9,
+   "readiness_ms": 16.2,
+   "first_tts_ms": 2994.0,
+   "speech_end_to_owner_message_read_ms": 2148.1,
+   "owner_message_to_playback_ms": 9062.2,
+   "speech_end_to_playback_ms": 11210.3,
+   "endpoint_from_speech_end_ms": 751.8,
+   "request_ready_wall": 1790372942.4338002
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 6.978,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da89-447a-7206-8f43-3e25e155237e",
+    "seconds": 6.654
+   },
+   "wall": 1790372824.194
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.409,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da89-680a-7622-a30c-10da79c44146",
+    "seconds": 0.24
+   },
+   "wall": 1790372833.293
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.475,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da89-913a-72ea-a789-bfdc1ce9d71b",
+    "seconds": 0.299
+   },
+   "wall": 1790372843.837
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.459,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da89-e2d0-76fb-9fdd-ef349cfc0f47",
+    "seconds": 0.295
+   },
+   "wall": 1790372864.723
+  },
+  {
+   "kind": "initial",
+   "seconds": 1.698,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da8a-7e42-72d0-bde0-6ae7e163cfe5",
+    "seconds": 1.44
+   },
+   "wall": 1790372904.517
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.421,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da8a-bb0d-7082-9503-2e04678f5143",
+    "seconds": 0.242
+   },
+   "wall": 1790372920.079
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.448,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da8a-e431-7a48-83b3-4071bbc4626e",
+    "seconds": 0.289
+   },
+   "wall": 1790372930.612
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.385,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da8b-2c80-79f7-9638-691589a6665c",
+    "seconds": 0.233
+   },
+   "wall": 1790372949.122
+  }
+ ]
+}

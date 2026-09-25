@@ -25,7 +25,7 @@ import pytest
 
 from val_domain.provider import LocalRuntimeUnavailableError
 from val_domain.registry import by_slug
-from val_providers.lmstudio_runtime import IDLE_TTL_SECONDS, LMStudioRuntime
+from val_providers.lmstudio_runtime import IDLE_TTL_SECONDS, SERVING_PARALLEL, LMStudioRuntime
 
 CONFIG = by_slug("gpt-oss-20b-mxfp4-mlx-lmstudio-partner")
 assert CONFIG is not None
@@ -196,6 +196,11 @@ def test_nothing_but_the_runtime_s_own_documented_verbs_is_ever_run() -> None:
                 CONFIG.model_identifier,
                 str(CONFIG.context_window_tokens),
                 str(IDLE_TTL_SECONDS),
+                # Owner order, 25 September 2026: sequential serving, so the persona
+                # prefix can be reused. A fixed constant of this module, not a value
+                # anything outside it supplies — the set stays closed.
+                "--parallel",
+                str(SERVING_PARALLEL),
             }, f"unexpected argument {argument!r}"
 
 

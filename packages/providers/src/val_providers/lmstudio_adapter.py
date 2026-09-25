@@ -45,6 +45,7 @@ only a live loopback call proves it (`docs/reviews/qualification/runs/`).
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from collections.abc import Iterator, Mapping
 from typing import Any, Literal
@@ -65,6 +66,7 @@ from val_domain.gateway import (
 from val_domain.provider import (
     ContextFeasibility,
     ContextInspectionUnavailableError,
+    PrefixPrimePlan,
     ProviderEvent,
     TextDelta,
 )
@@ -72,6 +74,14 @@ from val_domain.timings import mark
 from val_providers.base import ProviderResult, normalize
 from val_providers.lmstudio_inspector import LMStudioContextInspector
 from val_providers.lmstudio_runtime import LMStudioRuntime
+
+#: The engine a prefix prime was qualified on (owner order, 25 September 2026), and
+#: the one fact of its behaviour the prime depends on: its sequential kit stores a
+#: checkpoint this many tokens before the end of each prompt. Measured through LM
+#: Studio on an isolated instance; bound to exactly this engine and package.
+PRIME_QUALIFIED_ENGINE = ("mlx-llm-mac-arm64-apple-metal-advsimd", "1.11.0")
+PRIME_QUALIFIED_PACKAGE = "_amphibian/app-mlx-generate-mac14-arm64@34"
+PRIME_CHECKPOINT_TAIL_TOKENS = 11
 
 _LOGGER = logging.getLogger("val.providers.lmstudio")
 
@@ -234,6 +244,9 @@ class LMStudioAdapter:
         #: here by default because an adapter that can reach this server can also
         #: bring it up; injected in tests.
         self._runtime = runtime or LMStudioRuntime(self._base_url, token)
+        #: Prefix-prime plans, by instance, persona digest and engine: the filler that
+        #: lands the checkpoint on the boundary does not change while those do not.
+        self._prime_plans: dict[tuple[str, str, str], PrefixPrimePlan] = {}
 
     # --- bringing the runtime up (owner ruling, 21 September 2026) ------------
 
@@ -246,6 +259,94 @@ class LMStudioAdapter:
         record, and carries no credential.
         """
         return self._runtime.ensure_ready(config)
+
+    # --- prefix priming (owner order, 25 September 2026) ----------------------
+
+    def plan_prefix_prime(self, config: ModelConfig, system: str) -> PrefixPrimePlan:
+        """How to place the runtime's checkpoint on the persona boundary — or why not.
+
+        Declaring `val_domain.provider.PrefixPrimingAdapter` by implementing it. The
+        installed engine's sequential kit stores a checkpoint of each prompt
+        `PRIME_CHECKPOINT_TAIL_TOKENS` before its end and reuses a stored checkpoint
+        only when it is an exact token prefix of a later prompt. So the prime is the
+        system prompt and one short user message whose length puts that checkpoint
+        exactly on the boundary every real turn shares: the runtime's header, the
+        persona, and the tokens opening the next user message.
+
+        Three refusals, each leaving ordinary uncached cognition untouched:
+
+        - **the engine is not the qualified one** — the checkpoint distance is that
+          engine's behaviour, not a published contract, so it is bound to the exact
+          engine and vendored package it was measured on (§7);
+        - **the instance does not serve sequentially** — the batched kit cannot use
+          the checkpoint, and a prime there would be wasted work;
+        - **no filler lands the checkpoint on the boundary by token identity** in
+          the runtime's own rendering.
+
+        Correctness never depends on these checks: the engine reuses only an exact
+        token prefix, so a misplaced checkpoint can cost speed and never meaning.
+        """
+        engine = self._runtime.engine_identity()
+        label = "" if engine is None else f"{engine['name']}@{engine['version']}"
+        if (
+            engine is None
+            or (
+                engine["name"],
+                engine["version"],
+            )
+            != PRIME_QUALIFIED_ENGINE
+            or PRIME_QUALIFIED_PACKAGE not in engine.get("vendor_packages", [])
+        ):
+            return PrefixPrimePlan(
+                engine=label,
+                refused=(
+                    f"the selected engine ({label or 'unreadable'}) is not the one the prefix "
+                    f"prime was qualified on ({'@'.join(PRIME_QUALIFIED_ENGINE)}, "
+                    f"{PRIME_QUALIFIED_PACKAGE})"
+                ),
+            )
+        parallel = self._runtime.serving_parallel(config.model_identifier)
+        if parallel != 1:
+            return PrefixPrimePlan(
+                engine=label,
+                refused=f"the loaded instance serves {parallel} at once, not sequentially",
+            )
+        if self._inspector is None:
+            return PrefixPrimePlan(engine=label, refused="no runtime inspector is available")
+        key = (config.model_identifier, hashlib.sha256(system.encode()).hexdigest(), label)
+        remembered = self._prime_plans.get(key)
+        if remembered is not None:
+            return remembered
+        try:
+            opening = self._inspector.opening_tokens(config.model_identifier, system)
+            for words in range(1, 64):
+                filler = " ".join(["ok"] * words)
+                prime = self._inspector.tokens(
+                    config.model_identifier,
+                    _chat_turns((Message(role="user", content=filler),), system),
+                )
+                if len(prime) - PRIME_CHECKPOINT_TAIL_TOKENS > len(opening):
+                    break
+                if (
+                    len(prime) - PRIME_CHECKPOINT_TAIL_TOKENS == len(opening)
+                    and prime[: len(opening)] == opening
+                ):
+                    self._prime_plans[key] = PrefixPrimePlan(
+                        filler=filler,
+                        boundary_tokens=len(opening),
+                        prime_tokens=len(prime),
+                        boundary_sha256=hashlib.sha256(
+                            ",".join(str(token) for token in opening).encode()
+                        ).hexdigest(),
+                        engine=label,
+                    )
+                    return self._prime_plans[key]
+        except ContextInspectionUnavailableError as unavailable:
+            return PrefixPrimePlan(engine=label, refused=str(unavailable))
+        return PrefixPrimePlan(
+            engine=label,
+            refused="no filler places the runtime's checkpoint on the boundary by token identity",
+        )
 
     # --- exact context measurement (ruling, 16 September 2026) ----------------
 

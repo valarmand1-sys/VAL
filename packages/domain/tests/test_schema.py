@@ -713,6 +713,8 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
         "strip",
         "blind_position",
         "title",
+        # Owner order, 25 September 2026: the local persona prefix prime (migration 0031).
+        "prefix_prime",
     ),
     "model_call_status": ("ok", "error", "refused"),
     # Amendments, 17 August 2026

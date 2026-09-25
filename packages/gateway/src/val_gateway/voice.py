@@ -418,6 +418,7 @@ class VoiceSession:
         clock: Callable[[], float] = time.monotonic,
         speech: DeliveryFactory | None = None,
         warm: Callable[[], object] | None = None,
+        prime: Callable[[Callable[[], bool]], object] | None = None,
     ) -> None:
         self._engine = engine
         self._recognizer = recognizer
@@ -464,6 +465,17 @@ class VoiceSession:
         self._warm = warm
         #: What warming found and did, for the record. `None` until it has run.
         self.warmed: object | None = None
+        #: How the local runtime's persona prefix is primed and refreshed (owner
+        #: order, 25 September 2026). Optional maintenance: it never starts while a
+        #: request of his is waiting, and one run at a time.
+        self._prime = prime
+        self._maintaining = threading.Lock()
+        #: True from the moment a turn is submitted until its cognition returns —
+        #: the span in which his request is with the model or about to be.
+        self._cognition_busy = False
+        #: Every maintenance run this session made, in order, for the record.
+        self.primes: list[object] = []
+        self._initial_prime_started = False
 
     # --- identity -------------------------------------------------------------------
 
@@ -798,6 +810,15 @@ class VoiceSession:
                     evidence=evidence,
                 )
                 self.state = VoiceSessionState.THINKING
+                if not self._initial_prime_started:
+                    # **The session's first prime starts here**, when his first
+                    # utterance has settled: the recognizer's work is done and only
+                    # the resume window remains, which is a timer and not work.
+                    # Started at Voice On instead, it overlapped his speaking and
+                    # slowed the final decode from ~0.1 s to ~0.6 s — his own words
+                    # half a second later (priming-cache pass, 25 September 2026).
+                    self._initial_prime_started = True
+                    self._maintain("initial", during_resume_window=True)
                 return
         self._merge_after_submission(settled, events)
         with self._lock:
@@ -956,6 +977,7 @@ class VoiceSession:
                 return
             self._pending = None
             self._inflight = pending
+            self._cognition_busy = True
             if pending.evidence is not None:
                 pending.evidence["submitted_mono"] = time.monotonic()
             # A plain thread starts with an empty context, so a diagnostic recorder
@@ -1003,6 +1025,12 @@ class VoiceSession:
         with timings.recording(live):
             self._run_turn(pending)
         self._log_timeline(pending, live)
+        # The turn is over — answered, and her voice synthesised — so the prime is
+        # refreshed now: a fraction of a second while the runtime still holds it, and
+        # never while any part of his turn is running. Qualification found a refresh
+        # sent while her first sentence was still being synthesised slowing that
+        # synthesis from 2.6 s to 7.6 s (priming-cache pass, 25 September 2026).
+        self._maintain("refresh")
 
     def _log_timeline(self, pending: _Pending, recorder: timings.TurnTimings) -> None:
         """One line per spoken turn: every boundary, in ms from the endpoint."""
@@ -1057,6 +1085,8 @@ class VoiceSession:
                 ),
             )
         except Exception as failure:
+            with self._lock:
+                self._cognition_busy = False
             if delivery is not None:
                 delivery.interrupt("the turn failed before it could be spoken")
             self._fail(f"the spoken turn could not be submitted: {failure}")
@@ -1064,6 +1094,8 @@ class VoiceSession:
                 self._inflight = None
                 self._delivery = None
             return
+        with self._lock:
+            self._cognition_busy = False
         try:
             self._record(pending, outcome, delivery)
         except Exception as failure:
@@ -1087,6 +1119,57 @@ class VoiceSession:
                 self._delivery = None
                 if self.state is VoiceSessionState.THINKING:
                     self.state = VoiceSessionState.LISTENING
+
+    def _owner_waiting(self) -> bool:
+        """Whether any part of his turn is under way: waiting, thinking, or being voiced.
+
+        A settled utterance in its resume window, a turn whose cognition is running,
+        or a turn whose answer is still being synthesised. Maintenance starts in none
+        of them.
+        """
+        with self._lock:
+            return self._pending is not None or self._cognition_busy or self._inflight is not None
+
+    def _maintain(self, kind: str, *, during_resume_window: bool = False) -> None:
+        """Prime or refresh the persona prefix on its own thread — never ahead of him.
+
+        Not started at all while a request of his is waiting; asked again by the
+        gateway immediately before the call is sent; one run at a time. What it did
+        is logged, content-free, and the call itself is in the execution record.
+        """
+        prime = self._prime
+
+        def waiting() -> bool:
+            # In the resume window his utterance has settled but is not yet a
+            # request; the first prime may run then, and stands aside the moment
+            # the request is submitted.
+            if during_resume_window:
+                with self._lock:
+                    return self._cognition_busy or self._inflight is not None
+            return self._owner_waiting()
+
+        if prime is None or waiting():
+            return
+        if not self._maintaining.acquire(blocking=False):
+            return
+
+        def run() -> None:
+            began = time.monotonic()
+            try:
+                result = prime(lambda: not waiting())
+            except Exception as failure:  # maintenance is never fatal
+                result = {
+                    "primed": False,
+                    "outcome": "failed",
+                    "reason": f"{type(failure).__name__}",
+                }
+            finally:
+                self._maintaining.release()
+            record = {"kind": kind, "seconds": round(time.monotonic() - began, 3), "result": result}
+            self.primes.append(record)
+            _LOGGER.info("voice prime: %s", json.dumps(record, default=str))
+
+        threading.Thread(target=run, name=f"voice-prime-{kind}", daemon=True).start()
 
     def _persisted(self, utterance: int, conversation_id: UUID, message_id: UUID) -> None:
         """His message is committed: visible to the next poll, before any answer."""

@@ -79,6 +79,8 @@ _REQUIRED_PROFILE: dict[TaskType, CapabilityProfile] = {
     TaskType.CLASSIFICATION: CapabilityProfile.STRUCTURED,
     TaskType.STRIP: CapabilityProfile.STRIP,
     TaskType.TITLE: CapabilityProfile.STRUCTURED,
+    # The prime is sent to the Partner route it accelerates, and to nothing else.
+    TaskType.PREFIX_PRIME: CapabilityProfile.PARTNER,
 }
 
 

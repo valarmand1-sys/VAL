@@ -725,3 +725,42 @@ model call and a concurrency change, not a serving setting, so it needs its own 
 **Held, unchanged:** resident speech process (~1.3 s per synthesis); longer model
 residency; answer-text timing policy. **Open:** Step B performance acceptance; physical
 latency under the three-interval panel; C / E / G; conversation switch. Avatar blocked.
+
+---
+
+## 19. Handoff — prefix priming qualified and deployed, 25 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-25-priming/RESULT.md`
+(evidence index §106). §16–§18 stand as written.
+
+**What changed in production:**
+- The local Partner model is loaded with `--parallel 1` (the engine's sequential kit).
+- A Voice session sends a **`prefix_prime`** call: the persona plus a short filler,
+  placed so the runtime's checkpoint lands exactly on the persona boundary (5,048
+  tokens). It is sent when his first utterance settles and after every finished turn,
+  and never while any part of his turn is under way.
+- The call is recorded in `model_calls` (migration `0031`), attached to no
+  conversation, and its one generated token is discarded.
+- It is bound to the exact engine it was qualified on (`mlx-llm…@1.11.0`,
+  `app-mlx-generate…@34`). Any other engine, or a batched instance, means no prime.
+
+**Qualified through LM Studio on an isolated clone, against current production (12
+governing trials each):**
+
+| | production | primed |
+|---|---|---|
+| request-ready → first model output (median) | 8.02 s | **1.64 s** (ranges do not overlap) |
+| speech end → playback (median) | 18.03 s | **13.18 s** |
+| speech end → his message | 2.08 s | 2.08 s (unchanged) |
+
+No first-turn regression: a cold cache matches production, and a cold model is
+slightly faster. Reuse never crossed a divergence (a one-word persona change reused 0).
+The cache stays in memory only.
+
+**Preserved:** exact transcript, opening word, his message before her answer, no
+phantom turn, the established voice and pace. The prime touches cognition serving and
+nothing on the input or presentation path; those tests pass unchanged.
+
+**Pending physical acceptance:** the smallest Voice retest, read from the three-interval
+panel. **Held:** resident speech process (~1.3 s per synthesis); model residency; answer-
+text timing. Avatar blocked; LOW NOT_ADMITTED; Whisper unchanged.

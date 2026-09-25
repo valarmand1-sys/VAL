@@ -139,7 +139,7 @@ These three tables are the point of the layer.
 | `cost` | Computed at call time from the config's rates. Never recomputed later. **Nullable on the same terms.** |
 | `cost_certainty` | `known` \| `unknown`. **Nullable** only on rows written before this amendment. |
 | `project_id` | Nullable, matching `conversations` |
-| `task_type` | Enumerated. Layer 0 values: `conversation`, `classification`, `strip`, `blind_position`, `title` |
+| `task_type` | Enumerated. Layer 0 values: `conversation`, `classification`, `strip`, `blind_position`, `title`; **`prefix_prime`** added by owner order of 25 September 2026 (migration `0031`) — a local infrastructure call that leaves the computation of the persona in the local runtime so later turns reuse it; it attaches to no conversation or message, carries the persona attribution, and its one generated token is discarded |
 | `conversation_id`, `message_id` | Nullable |
 | `persona_id` | **WP-0.5, 17 August 2026.** Which persona revision was assembled into this call's context. Nullable: rows written before a persona existed, and paths that legitimately assemble none, are not calls to attribute. **19 August 2026:** `blind_position` calls carry the persona and therefore attribute it — once a persona is assembled, a NULL here would mean "assembled and failed to attribute," which is a false record, not a missing feature. |
 | `latency_ms`, `provider_request_id` | |

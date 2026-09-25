@@ -1,0 +1,193 @@
+{
+ "condition": "C-final2",
+ "priming": "on",
+ "lead_s": 1.0,
+ "rows": [
+  {
+   "turn": "C-final2 turn 1",
+   "request_ready_to_first_user_facing_text_ms": 10790.6,
+   "dispatch_to_first_provider_output_ms": 1600.5,
+   "first_output_to_user_facing_text_ms": 3122.9,
+   "cognition_dispatch_to_answer_text_complete_ms": 4723.4,
+   "readiness_ms": 10.3,
+   "first_tts_ms": 2650.2,
+   "speech_end_to_owner_message_read_ms": 2054.6,
+   "owner_message_to_playback_ms": 13424.5,
+   "speech_end_to_playback_ms": 15479.1,
+   "endpoint_from_speech_end_ms": 756.5,
+   "request_ready_wall": 1790373977.2786999
+  },
+  {
+   "turn": "C-final2 turn 2",
+   "request_ready_to_first_user_facing_text_ms": 7769.4,
+   "dispatch_to_first_provider_output_ms": 528.8,
+   "first_output_to_user_facing_text_ms": 7160.0,
+   "cognition_dispatch_to_answer_text_complete_ms": 7688.8,
+   "readiness_ms": 15.1,
+   "first_tts_ms": 4751.8,
+   "speech_end_to_owner_message_read_ms": 2083.3,
+   "owner_message_to_playback_ms": 12846.9,
+   "speech_end_to_playback_ms": 14930.2,
+   "endpoint_from_speech_end_ms": 787.9,
+   "request_ready_wall": 1790374003.5376
+  },
+  {
+   "turn": "C-final2 turn 3",
+   "request_ready_to_first_user_facing_text_ms": 6542.1,
+   "dispatch_to_first_provider_output_ms": 1563.6,
+   "first_output_to_user_facing_text_ms": 4896.6,
+   "cognition_dispatch_to_answer_text_complete_ms": 6460.2,
+   "readiness_ms": 18.2,
+   "first_tts_ms": 3175.2,
+   "speech_end_to_owner_message_read_ms": 2083.2,
+   "owner_message_to_playback_ms": 9705.1,
+   "speech_end_to_playback_ms": 11788.3,
+   "endpoint_from_speech_end_ms": 717.9,
+   "request_ready_wall": 1790374044.7929
+  },
+  {
+   "turn": "C-final2 turn 4",
+   "request_ready_to_first_user_facing_text_ms": 7695.1,
+   "dispatch_to_first_provider_output_ms": 1541.8,
+   "first_output_to_user_facing_text_ms": 6074.3,
+   "cognition_dispatch_to_answer_text_complete_ms": 7616.1,
+   "readiness_ms": 14.9,
+   "first_tts_ms": 3726.3,
+   "speech_end_to_owner_message_read_ms": 2082.6,
+   "owner_message_to_playback_ms": 11713.7,
+   "speech_end_to_playback_ms": 13796.3,
+   "endpoint_from_speech_end_ms": 767.7,
+   "request_ready_wall": 1790374066.0995
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 7.193,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9a-f470-7b07-834e-ba3fcce5eb67",
+    "seconds": 6.678
+   },
+   "wall": 1790373983.351
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.491,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9b-1ee5-7211-8e9a-a127994ea402",
+    "seconds": 0.32
+   },
+   "wall": 1790373994.216
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.485,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9b-40d4-72e8-8c52-eb1e6ea65df6",
+    "seconds": 0.31
+   },
+   "wall": 1790374002.902
+  },
+  {
+   "kind": "refresh",
+   "seconds": 1.445,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9b-a250-7bcd-9af8-15e880fcc980",
+    "seconds": 1.189
+   },
+   "wall": 1790374027.862
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.483,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9b-e1fe-79db-b750-f4534c984d79",
+    "seconds": 0.302
+   },
+   "wall": 1790374044.162
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.47,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9c-0cc0-79cb-8fdc-37b236a07e9e",
+    "seconds": 0.3
+   },
+   "wall": 1790374055.109
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.491,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9c-3542-7e37-aceb-1e16c744e289",
+    "seconds": 0.309
+   },
+   "wall": 1790374065.477
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.467,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "91b5232100a2f327415eb522b44cd12a2bd87df1ecc7097958b865a315e54883",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0da9c-74b6-729a-91cf-23877b3d0133",
+    "seconds": 0.3
+   },
+   "wall": 1790374081.721
+  }
+ ]
+}

@@ -43,6 +43,7 @@ import urllib.error
 import urllib.request
 from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import Any
 
 from val_domain.gateway import ModelConfig
 from val_domain.provider import LocalRuntimeUnavailableError
@@ -65,6 +66,19 @@ NATIVE_MODELS_PATH = "/api/v0/models"
 #: welcome — it returns memory to the owner's machine — precisely because this
 #: module loads it again, named window and all, the next time Val thinks.
 IDLE_TTL_SECONDS = 3600
+
+#: How many predictions the admitted instance serves at once. Owner order, 25
+#: September 2026 (priming-cache pass): **one**. At LM Studio's default of four the MLX
+#: engine serves the model with its batched kit, whose cache is keyed on prompt *and*
+#: generated tokens and can never hand a later turn the computation of the persona
+#: they share; at one it uses its sequential kit, which can, once a prefix prime has
+#: placed a checkpoint at the persona boundary. Measured through LM Studio on an
+#: isolated instance: first output 0.70-0.80 s against ~7 s on changed-suffix turns.
+SERVING_PARALLEL = 1
+
+#: The LM Studio file that names the engine selected for each model format.
+BACKEND_PREFERENCES = Path.home() / ".lmstudio" / ".internal" / "backend-preferences-v1.json"
+BACKENDS = Path.home() / ".lmstudio" / "extensions" / "backends"
 
 
 class _Runner:
@@ -182,6 +196,50 @@ class LMStudioRuntime:
                 return row
         return None
 
+    def serving_parallel(self, model_identifier: str) -> int | None:
+        """How many predictions the loaded instance serves at once, or `None`.
+
+        Only the command-line listing reports it (the server's HTTP listing does not),
+        so this spawns `lms ps` — which is why it is read on the prime's path and never
+        on a turn's.
+        """
+        for row in self._loaded_over_cli():
+            identity = {str(row.get(key, "")) for key in ("modelKey", "path", "identifier", "id")}
+            if model_identifier in identity:
+                value = row.get("parallel")
+                return value if isinstance(value, int) else None
+        return None
+
+    @staticmethod
+    def engine_identity(
+        preferences: Path = BACKEND_PREFERENCES, backends: Path = BACKENDS
+    ) -> dict[str, Any] | None:
+        """The engine LM Studio has selected for safetensors models, as it records it.
+
+        Name, version and the vendored generation package it runs — the package whose
+        cache behaviour a prefix prime depends on. `None` when it cannot be read.
+        """
+        try:
+            selected = next(
+                row
+                for row in json.loads(preferences.read_text())
+                if isinstance(row, Mapping) and row.get("model_format") == "safetensors"
+            )
+            name, version = str(selected["name"]), str(selected["version"])
+            manifest = json.loads(
+                (backends / f"{name}-{version}" / "backend-manifest.json").read_text()
+            )
+        except OSError, ValueError, KeyError, StopIteration:
+            return None
+        packages = manifest.get("vendor_lib_package_names", [])
+        return {
+            "name": name,
+            "version": version,
+            "vendor_packages": sorted(str(item) for item in packages)
+            if isinstance(packages, list)
+            else [],
+        }
+
     @staticmethod
     def _context_of(instance: Mapping[str, object]) -> int:
         for key in ("contextLength", "loadedContextLength", "loaded_context_length"):
@@ -217,6 +275,8 @@ class LMStudioRuntime:
                 str(context_tokens),
                 "--ttl",
                 str(IDLE_TTL_SECONDS),
+                "--parallel",
+                str(SERVING_PARALLEL),
                 "--yes",
             ],
             timeout=LOAD_TIMEOUT_SECONDS,

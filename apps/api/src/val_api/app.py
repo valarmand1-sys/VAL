@@ -1038,6 +1038,10 @@ def create_app(
                 "cognition": timed_warm(gateway.warm_cognition),
                 "voice": timed_warm(gateway.warm_voice),
             },
+            # The persona prefix, primed at Voice On and refreshed after each turn, so
+            # later turns do not recompute it (owner order, 25 September 2026). Never
+            # started while a request of his is waiting; recorded as `prefix_prime`.
+            prime=gateway.prime_prefix,
         )
         try:
             live.start()

@@ -1,0 +1,161 @@
+{
+ "condition": "A-r3",
+ "priming": "on",
+ "lead_s": 1.0,
+ "rows": [
+  {
+   "turn": "A-r3 turn 1",
+   "request_ready_to_first_user_facing_text_ms": 10121.0,
+   "dispatch_to_first_provider_output_ms": 8134.3,
+   "first_output_to_user_facing_text_ms": 1868.8,
+   "cognition_dispatch_to_answer_text_complete_ms": 10003.1,
+   "readiness_ms": 15.2,
+   "first_tts_ms": 2557.1,
+   "speech_end_to_owner_message_read_ms": 2067.5,
+   "owner_message_to_playback_ms": 12659.6,
+   "speech_end_to_playback_ms": 14727.1,
+   "endpoint_from_speech_end_ms": 752.8,
+   "request_ready_wall": 1790374913.294
+  },
+  {
+   "turn": "A-r3 turn 2",
+   "request_ready_to_first_user_facing_text_ms": 13474.2,
+   "dispatch_to_first_provider_output_ms": 7927.2,
+   "first_output_to_user_facing_text_ms": 5474.6,
+   "cognition_dispatch_to_answer_text_complete_ms": 13401.8,
+   "readiness_ms": 13.0,
+   "first_tts_ms": 5244.7,
+   "speech_end_to_owner_message_read_ms": 2090.1,
+   "owner_message_to_playback_ms": 19274.5,
+   "speech_end_to_playback_ms": 21364.6,
+   "endpoint_from_speech_end_ms": 786.7,
+   "request_ready_wall": 1790374938.8481
+  },
+  {
+   "turn": "A-r3 turn 3",
+   "request_ready_to_first_user_facing_text_ms": 14181.6,
+   "dispatch_to_first_provider_output_ms": 8745.2,
+   "first_output_to_user_facing_text_ms": 5356.8,
+   "cognition_dispatch_to_answer_text_complete_ms": 14102.0,
+   "readiness_ms": 15.9,
+   "first_tts_ms": 3283.8,
+   "speech_end_to_owner_message_read_ms": 2082.5,
+   "owner_message_to_playback_ms": 17639.0,
+   "speech_end_to_playback_ms": 19721.5,
+   "endpoint_from_speech_end_ms": 719.8,
+   "request_ready_wall": 1790375004.8464
+  },
+  {
+   "turn": "A-r3 turn 4",
+   "request_ready_to_first_user_facing_text_ms": 11930.0,
+   "dispatch_to_first_provider_output_ms": 7880.8,
+   "first_output_to_user_facing_text_ms": 3962.1,
+   "cognition_dispatch_to_answer_text_complete_ms": 11842.9,
+   "readiness_ms": 13.3,
+   "first_tts_ms": 3087.5,
+   "speech_end_to_owner_message_read_ms": 2078.5,
+   "owner_message_to_playback_ms": 15217.0,
+   "speech_end_to_playback_ms": 17295.5,
+   "endpoint_from_speech_end_ms": 770.4,
+   "request_ready_wall": 1790375039.0175998
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 0.178,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790374912.352
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.168,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790374929.176
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.181,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790374937.927
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.255,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790374989.735
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.177,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790375003.915
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.166,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790375026.391
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.18,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790375038.075
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.244,
+   "result": {
+    "primed": false,
+    "outcome": "skipped",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "reason": "the loaded instance serves 4 at once, not sequentially"
+   },
+   "wall": 1790375058.342
+  }
+ ]
+}

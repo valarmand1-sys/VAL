@@ -83,6 +83,7 @@ class _LoadedHandle(Protocol):
     def get_context_length(self) -> int: ...
     def apply_prompt_template(self, history: object, opts: Mapping[str, bool]) -> str: ...
     def count_tokens(self, input: str) -> int: ...
+    def tokenize(self, input: str) -> object: ...
 
 
 class _LoadedModels(Protocol):
@@ -293,6 +294,68 @@ class LMStudioContextInspector:
                 "turns": len(turns),
             },
         )
+
+    def tokens(self, model_identifier: str, turns: Sequence[Mapping[str, str]]) -> list[int]:
+        """The exact token sequence the runtime would process for these turns.
+
+        LM Studio's own template and tokenizer, as `measure` uses them — but the ids
+        rather than their count, so a prefix prime can be placed on a boundary by
+        token identity rather than by string equality (priming-cache pass §6).
+        """
+        _, handle = self.loaded_instance(model_identifier)
+        try:
+            rendered = handle.apply_prompt_template(_chat_of(turns), dict(INGRESS_RENDER_OPTIONS))
+            return [int(token) for token in handle.tokenize(rendered)]  # type: ignore[attr-defined]
+        except ContextInspectionUnavailableError:
+            raise
+        except Exception as error:
+            raise ContextInspectionUnavailableError(
+                f"lmstudio inspector: the runtime refused to tokenize: {type(error).__name__}"
+            ) from error
+
+    def opening_tokens(self, model_identifier: str, system: str) -> list[int]:
+        """The tokens of the system block and the opening of the next user message.
+
+        Everything a turn renders before its first user message's content: the
+        runtime's own header, the persona, and the role tokens that open the next
+        message. It is rendered with a marker as that content and cut at the marker,
+        so it is the runtime's own rendering and never a reconstruction.
+        """
+        marker = "\u0001"
+        _, handle = self.loaded_instance(model_identifier)
+        try:
+            rendered = handle.apply_prompt_template(
+                _chat_of(
+                    [{"role": "system", "content": system}, {"role": "user", "content": marker}]
+                ),
+                dict(INGRESS_RENDER_OPTIONS),
+            )
+            opening = rendered[: rendered.index(marker)]
+            return [int(token) for token in handle.tokenize(opening)]  # type: ignore[attr-defined]
+        except ContextInspectionUnavailableError:
+            raise
+        except Exception as error:
+            raise ContextInspectionUnavailableError(
+                f"lmstudio inspector: the opening could not be rendered: {type(error).__name__}"
+            ) from error
+
+
+def _chat_of(turns: Sequence[Mapping[str, str]]) -> lmstudio.Chat:
+    """The SDK chat for these wire turns, through its supported entry points only."""
+    chat = lmstudio.Chat()
+    for turn in turns:
+        role, content = turn["role"], turn["content"]
+        if role == "system":
+            chat.add_system_prompt(content)
+        elif role == "user":
+            chat.add_user_message(content)
+        elif role == "assistant":
+            chat.add_assistant_response(content)
+        else:
+            raise ContextInspectionUnavailableError(
+                f"lmstudio inspector: unsupported role {role!r} in the request"
+            )
+    return chat
 
 
 def _optional_str(value: object) -> str | None:

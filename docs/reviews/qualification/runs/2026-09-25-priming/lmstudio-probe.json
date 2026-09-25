@@ -1,0 +1,138 @@
+{
+ "stable_boundary_tokens": 5048,
+ "filler_words": 8,
+ "prompt_tokens": {
+  "R1": 5163,
+  "R2": 5166
+ },
+ "claim_A_common_prefix_R1_R2": 5074,
+ "minimum_prime_max_tokens": 1,
+ "stable_entry_evicted_after_ordinary_turns": 3,
+ "claim_A_mutated_common_prefix_with_boundary": 91,
+ "rows": [
+  {
+   "request": "R1 unprimed (sequential control)",
+   "engine_cached": 0,
+   "engine_prompt_tokens": 5163,
+   "usage_prompt_tokens": 5163,
+   "usage_cached_tokens": null,
+   "first_output_s": 6.988,
+   "request_s": 7.089,
+   "max_tokens": 24
+  },
+  {
+   "request": "prime max_tokens=0",
+   "refused": "APIError"
+  },
+  {
+   "request": "prime max_tokens=1",
+   "engine_cached": 0,
+   "engine_prompt_tokens": 5059,
+   "usage_prompt_tokens": 5059,
+   "usage_cached_tokens": null,
+   "first_output_s": 6.419,
+   "request_s": 6.419,
+   "max_tokens": 1
+  },
+  {
+   "request": "R2 changed suffix, new conversation",
+   "engine_cached": 5048,
+   "engine_prompt_tokens": 5166,
+   "usage_prompt_tokens": 5166,
+   "usage_cached_tokens": null,
+   "first_output_s": 0.698,
+   "request_s": 0.788,
+   "max_tokens": 24
+  },
+  {
+   "request": "R3 changed suffix, other project",
+   "engine_cached": 5048,
+   "engine_prompt_tokens": 5166,
+   "usage_prompt_tokens": 5166,
+   "usage_cached_tokens": null,
+   "first_output_s": 0.721,
+   "request_s": 0.795,
+   "max_tokens": 24
+  },
+  {
+   "request": "R4 same conversation, next turn",
+   "engine_cached": 5048,
+   "engine_prompt_tokens": 5187,
+   "usage_prompt_tokens": 5187,
+   "usage_cached_tokens": null,
+   "first_output_s": 0.795,
+   "request_s": 0.898,
+   "max_tokens": 24
+  },
+  {
+   "request": "refresh (prime again, hot)",
+   "engine_cached": 5048,
+   "engine_prompt_tokens": 5059,
+   "usage_prompt_tokens": 5059,
+   "usage_cached_tokens": null,
+   "first_output_s": 0.217,
+   "request_s": 0.218,
+   "max_tokens": 1
+  },
+  {
+   "request": "eviction probe turn 1",
+   "engine_cached": 5048,
+   "engine_prompt_tokens": 5164,
+   "usage_prompt_tokens": 5164,
+   "usage_cached_tokens": null,
+   "first_output_s": 0.68,
+   "request_s": 0.8,
+   "max_tokens": 24
+  },
+  {
+   "request": "eviction probe turn 2",
+   "engine_cached": 5048,
+   "engine_prompt_tokens": 5164,
+   "usage_prompt_tokens": 5164,
+   "usage_cached_tokens": null,
+   "first_output_s": 0.675,
+   "request_s": 0.794,
+   "max_tokens": 24
+  },
+  {
+   "request": "eviction probe turn 3",
+   "engine_cached": 0,
+   "engine_prompt_tokens": 5164,
+   "usage_prompt_tokens": 5164,
+   "usage_cached_tokens": null,
+   "first_output_s": 6.801,
+   "request_s": 6.951,
+   "max_tokens": 24
+  },
+  {
+   "request": "re-prime",
+   "engine_cached": 0,
+   "engine_prompt_tokens": 5059,
+   "usage_prompt_tokens": 5059,
+   "usage_cached_tokens": null,
+   "first_output_s": 6.442,
+   "request_s": 6.442,
+   "max_tokens": 1
+  },
+  {
+   "request": "persona changed by one word",
+   "engine_cached": 0,
+   "engine_prompt_tokens": 5164,
+   "usage_prompt_tokens": 5164,
+   "usage_cached_tokens": null,
+   "first_output_s": 6.852,
+   "request_s": 6.97,
+   "max_tokens": 24
+  },
+  {
+   "request": "ordinary request after mutation (prime still valid?)",
+   "engine_cached": 5048,
+   "engine_prompt_tokens": 5166,
+   "usage_prompt_tokens": 5166,
+   "usage_cached_tokens": null,
+   "first_output_s": 0.688,
+   "request_s": 0.779,
+   "max_tokens": 24
+  }
+ ]
+}
