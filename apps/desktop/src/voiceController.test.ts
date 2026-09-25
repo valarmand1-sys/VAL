@@ -320,3 +320,101 @@ describe("Voice off and lifecycle", () => {
     expect(world.tracks[0]!.stops).toBe(1);
   });
 });
+
+describe("the metrics measure one turn, not a whole session", () => {
+  // Owner acceptance, 24 September 2026. The window displayed
+  //   transcript -> audible  23210 ms
+  //   barge-in   -> silence  49891 ms
+  // Neither was a latency. `speechEndAt`, `firstAudibleAt` and `bargeInAt` were all
+  // set once per session and never again, while `silenceAt` was overwritten by the
+  // last stop — so each figure spanned from one turn's beginning to a later turn's
+  // end. These hold the repair: a pair of marks can only come from one event.
+
+  function view(overrides: Partial<typeof SESSION>): typeof SESSION {
+    return { ...SESSION, ...overrides } as typeof SESSION;
+  }
+
+  it("takes a fresh transcript mark for each utterance", async () => {
+    const seen: number[] = [];
+    let clock = 0;
+    const controller = new VoiceController({
+      hooks: {
+        onStatus: () => undefined,
+        onSession: () => undefined,
+        onTimings: (timings) => {
+          if (timings.speechEndAt !== null) seen.push(timings.speechEndAt);
+        },
+        onTurnSettled: () => undefined,
+      },
+      capture: capturePlatform([new FakeTrack()]),
+      speaker: speakerPlatform,
+      now: () => clock,
+      scheduleInterval: () => 1,
+      clearScheduled: () => undefined,
+    });
+    await controller.start({ no_project: true });
+
+    const poll = (controller as unknown as { poll(): Promise<void> }).poll.bind(controller);
+
+    clock = 1_000;
+    vi.spyOn(api, "voiceSession").mockResolvedValue(
+      view({ utterance: 1, pending: "first thing" }) as never,
+    );
+    await poll();
+    // The same utterance polled again must not move the mark.
+    clock = 1_500;
+    await poll();
+    // A new utterance must.
+    clock = 9_000;
+    vi.spyOn(api, "voiceSession").mockResolvedValue(
+      view({ utterance: 2, pending: "second thing" }) as never,
+    );
+    await poll();
+
+    expect(seen).toEqual([1_000, 9_000]);
+    expect(controller.measured.utterance).toBe(2);
+    // And the audible mark was cleared with it, so it cannot pair across turns.
+    expect(controller.measured.firstAudibleAt).toBeNull();
+  });
+
+  it("pairs each barge-in with its own silence", async () => {
+    let clock = 0;
+    const controller = new VoiceController({
+      hooks: {
+        onStatus: () => undefined,
+        onSession: () => undefined,
+        onTimings: () => undefined,
+        onTurnSettled: () => undefined,
+      },
+      capture: capturePlatform([new FakeTrack()]),
+      speaker: speakerPlatform,
+      now: () => clock,
+      scheduleInterval: () => 1,
+      clearScheduled: () => undefined,
+    });
+    await controller.start({ no_project: true });
+    const collect = (controller as unknown as { collectSpeech(): Promise<void> }).collectSpeech.bind(
+      controller,
+    );
+
+    vi.spyOn(api, "collectSpeech").mockResolvedValue({
+      delivery_state: "interrupted",
+      stop: true,
+      reason: "the owner spoke",
+      segment: null,
+    } as never);
+
+    clock = 5_000;
+    await collect();
+    const first = controller.measured;
+    expect(first.bargeInAt).toBe(5_000);
+    expect((first.silenceAt ?? 0) - (first.bargeInAt ?? 0)).toBeLessThan(50);
+
+    // A second interruption, forty seconds later, must not be paired with the first.
+    clock = 45_000;
+    await collect();
+    const second = controller.measured;
+    expect(second.bargeInAt).toBe(45_000);
+    expect((second.silenceAt ?? 0) - (second.bargeInAt ?? 0)).toBeLessThan(50);
+  });
+});

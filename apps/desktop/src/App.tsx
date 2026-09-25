@@ -45,6 +45,7 @@ import {
   type ShortcutBinding,
 } from "./voiceShortcut";
 import {
+  LEAVING_VOICE_CONFIRMATION,
   VOICE_OFF,
   describeVoice,
   micControlLabel,
@@ -311,6 +312,23 @@ export function App(): React.JSX.Element {
     await voiceController.current?.toggleMute();
   }, []);
 
+  /**
+   * Ask before a conversation change ends Voice — owner acceptance, §5.
+   *
+   * The release is the ruling and is unchanged: Voice never carries its microphone
+   * or its session silently into another conversation. What changes is that he is
+   * asked **first** rather than told afterwards. Cancelling leaves the conversation,
+   * the Voice session and the microphone exactly as they were; confirming ends Voice
+   * through the ordinary governed path — device released, playback stopped, shortcut
+   * unbound — and only then does the navigation proceed.
+   */
+  const mayLeaveConversation = useCallback(async (): Promise<boolean> => {
+    if (voiceController.current === null || voice.session === "off") return true;
+    if (!window.confirm(LEAVING_VOICE_CONFIRMATION)) return false;
+    await voiceOff();
+    return true;
+  }, [voice.session, voiceOff]);
+
   // §16. A conversation change, a window closing, and the machine suspending all
   // release the device and turn Voice off. None of them mutes-and-hopes, and none
   // of them can reacquire anything afterwards.
@@ -358,11 +376,18 @@ export function App(): React.JSX.Element {
     }
     if (showing === voiceConversation.current) return;
     voiceConversation.current = showing;
+    // The safety net, not the ordinary path. Every navigation that changes the
+    // active conversation now asks him first (`mayLeaveConversation`) and ends Voice
+    // through the governed path before moving. This catches a change that arrived by
+    // some other route — and it still fails closed, because a live microphone must
+    // not follow him into another conversation whatever brought him there.
     void controller.releaseForLifecycle("conversation_changed").then(() => {
       voiceController.current = null;
       setVoice(VOICE_OFF);
       setVoiceSession(null);
-      setVoiceNotice("Voice was turned off because the conversation changed.");
+      setVoiceNotice(
+        "Voice was turned off and the microphone released, because the conversation changed.",
+      );
     });
   }, [detail?.conversation.id]);
 
@@ -457,7 +482,12 @@ export function App(): React.JSX.Element {
             <li>
               <button
                 className={scope.kind === "all" ? "selected" : ""}
-                onClick={() => void chooseScope({ kind: "all" })}
+                onClick={() => {
+                  void (async () => {
+                    if (!(await mayLeaveConversation())) return;
+                    await chooseScope({ kind: "all" });
+                  })();
+                }}
               >
                 Everything
               </button>
@@ -468,7 +498,12 @@ export function App(): React.JSX.Element {
                   className={
                     scope.kind === "project" && scope.project.id === project.id ? "selected" : ""
                   }
-                  onClick={() => void chooseScope({ kind: "project", project })}
+                  onClick={() => {
+                    void (async () => {
+                      if (!(await mayLeaveConversation())) return;
+                      await chooseScope({ kind: "project", project });
+                    })();
+                  }}
                 >
                   {project.name}
                   {project.archived && <span className="archived-tag"> (archived)</span>}
@@ -489,7 +524,12 @@ export function App(): React.JSX.Element {
               <li key={conversation.id}>
                 <button
                   className={detail?.conversation.id === conversation.id ? "selected" : ""}
-                  onClick={() => void openConversation(conversation.id)}
+                  onClick={() => {
+                    void (async () => {
+                      if (!(await mayLeaveConversation())) return;
+                      await openConversation(conversation.id);
+                    })();
+                  }}
                 >
                   {conversation.title}
                   {conversation.archived && <span className="archived-tag"> (archived)</span>}
@@ -498,17 +538,28 @@ export function App(): React.JSX.Element {
               </li>
             ))}
           </ul>
-          <button className="new-conversation" onClick={newChat}>
+          <button
+            className="new-conversation"
+            onClick={() => {
+              void (async () => {
+                if (!(await mayLeaveConversation())) return;
+                newChat();
+              })();
+            }}
+          >
             New chat
           </button>
           {scope.kind === "project" && (
             <button
               className="new-conversation"
               onClick={() => {
-                setView("conversation");
-                setDetail(null);
-                setClarification(null);
-                setEntry(enterProject(scope.project));
+                void (async () => {
+                  if (!(await mayLeaveConversation())) return;
+                  setView("conversation");
+                  setDetail(null);
+                  setClarification(null);
+                  setEntry(enterProject(scope.project));
+                })();
               }}
             >
               New conversation in {scope.project.name}

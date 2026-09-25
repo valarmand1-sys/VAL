@@ -1,0 +1,5984 @@
+{
+ "measurement": "production-shaped voice latency baseline",
+ "order": "pre-WP3 latency pass \u00a78, \u00a79, \u00a711 \u2014 owner execution order 24 September 2026",
+ "started_at": "2026-09-24T19:10:58-0500",
+ "trials": 3,
+ "fixture": "infrastructure/voice/fixtures/frozen-utterance.wav",
+ "startup_warnings": [],
+ "runs": [
+  {
+   "trial": 1,
+   "owner_transcript": "And so, my fellow Americans,",
+   "val_characters": 141,
+   "segments": [
+    "My lord, your words echo across the halls of House Armand.",
+    "How may I assist in turning that sentiment into a concrete matter for our house?"
+   ],
+   "delivery_state": "completed",
+   "delivery_record": "completed",
+   "warmed": {
+    "warmed": true,
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "server_found_running": true,
+    "server_started": false,
+    "model_found_loaded": true,
+    "model_loaded": false,
+    "requested_context_tokens": 32768,
+    "loaded_context_tokens": 32768,
+    "base_url": "http://127.0.0.1:1234/v1"
+   },
+   "at_seconds": {
+    "input_fixture_speech_end": 0.118,
+    "transcript_final": 0.462,
+    "owner_turn_submitted": 1.585,
+    "turn_start": 1.592,
+    "message_persisted": 1.608,
+    "classification_start": null,
+    "classification_end": null,
+    "assembly_start": 1.613,
+    "assembly_end": 1.629,
+    "runtime_ready_start": 1.642,
+    "runtime_ready_end": 1.661,
+    "exact_preflight_start": 1.661,
+    "exact_preflight_end": 1.9,
+    "provider_dispatch": 1.908,
+    "provider_chunk": 11.261,
+    "provider_visible_text": 17.821,
+    "speech_first_visible_text": 17.821,
+    "speech_segment_queued": 18.035,
+    "tts_synthesize_start": 18.035,
+    "tts_synthesize_return": 23.329,
+    "audio_at_sink": 23.329
+   },
+   "spans_seconds": {
+    "input_speech_end_to_turn_start": 1.475,
+    "turn_start_to_message_persisted": 0.016,
+    "turn_start_to_classification_start": null,
+    "classification_duration": null,
+    "classification_end_to_assembly_start": null,
+    "assembly_duration": 0.016,
+    "assembly_end_to_runtime_ready_start": 0.013,
+    "runtime_ready_duration": 0.019,
+    "exact_preflight_duration": 0.239,
+    "preflight_end_to_provider_dispatch": 0.008,
+    "provider_dispatch_to_first_chunk": 9.352,
+    "first_chunk_to_first_visible_text": 6.56,
+    "first_visible_text_to_segment_queued": 0.214,
+    "segment_queued_to_tts_start": 0.0,
+    "tts_synthesize_duration": 5.294,
+    "tts_return_to_audio_at_sink": 0.0
+   },
+   "mark_counts": {
+    "provider_dispatch": 1,
+    "exact_preflight_start": 1,
+    "runtime_ready_start": 1,
+    "classification_start": 0,
+    "speech_segment_queued": 2,
+    "tts_synthesize_start": 2,
+    "audio_at_sink": 2
+   },
+   "end_of_speech_to_first_audio_s": 23.211,
+   "first_visible_text_to_first_audio_s": 5.508,
+   "model_calls": [
+    {
+     "provider": "lmstudio",
+     "task_type": "conversation",
+     "cost": "0.000000",
+     "latency_ms": 16233
+    }
+   ],
+   "all_marks": {
+    "marks": [
+     {
+      "name": "input_fixture_speech_end",
+      "at_s": 0.1176
+     },
+     {
+      "name": "transcript_final",
+      "at_s": 0.4624
+     },
+     {
+      "name": "owner_turn_submitted",
+      "at_s": 1.5855
+     },
+     {
+      "name": "turn_start",
+      "at_s": 1.5922
+     },
+     {
+      "name": "message_persisted",
+      "at_s": 1.6077
+     },
+     {
+      "name": "egress_decided",
+      "at_s": 1.6088
+     },
+     {
+      "name": "assembly_start",
+      "at_s": 1.6129
+     },
+     {
+      "name": "record_state_assembled",
+      "at_s": 1.6291
+     },
+     {
+      "name": "assembly_end",
+      "at_s": 1.6293
+     },
+     {
+      "name": "runtime_ready_start",
+      "at_s": 1.6419
+     },
+     {
+      "name": "runtime_ready_end",
+      "at_s": 1.6606
+     },
+     {
+      "name": "exact_preflight_start",
+      "at_s": 1.6609
+     },
+     {
+      "name": "exact_preflight_end",
+      "at_s": 1.8997
+     },
+     {
+      "name": "provider_dispatch",
+      "at_s": 1.9081
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.2605
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.2874
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.2877
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.3034
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.3194
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.3356
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.3531
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.3532
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.3533
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.385
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.4022
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.4024
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.4346
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.4672
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.4673
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5002
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5004
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5005
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5006
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5326
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.533
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5667
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5668
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.5995
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6159
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6324
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6488
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6649
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6979
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.698
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7465
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.763
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7957
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8122
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.829
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8456
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8618
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8781
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.911
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9271
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9433
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9433
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9595
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9596
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9758
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.992
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.026
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0417
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0419
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.042
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0421
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0737
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0899
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1061
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1064
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1223
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1386
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1718
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1721
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1881
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1884
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2041
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2205
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2372
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2534
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2857
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3182
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3513
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3514
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3676
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4006
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4339
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4341
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4499
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4675
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.468
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4832
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4834
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4997
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5314
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5484
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5647
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5651
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.631
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6314
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.647
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6795
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7115
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7116
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7118
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7119
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7276
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7438
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7608
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7766
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7768
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7932
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.81
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8426
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8745
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8912
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8915
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9233
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9401
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9563
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9728
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0068
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0076
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0078
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0227
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0389
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0393
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0552
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.088
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1373
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1374
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1537
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1538
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1538
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1539
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1861
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2032
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2198
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2359
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.236
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2362
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2363
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2677
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3004
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3502
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3504
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3825
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3989
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4168
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4322
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4485
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4487
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4488
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4652
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4656
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4818
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.514
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5143
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5316
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5318
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.563
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5791
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6115
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6771
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6772
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6773
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7104
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7263
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7265
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7591
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7754
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7921
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7922
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8085
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8249
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.825
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8412
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8414
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8741
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9233
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9237
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9559
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9723
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9727
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9886
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0218
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0546
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0704
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0867
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0869
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.087
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1033
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1035
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1036
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.12
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.137
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1372
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1858
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1862
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2026
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2191
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2514
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2843
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2846
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3337
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3348
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3655
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3816
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4157
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4316
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4479
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4967
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5288
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5616
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5617
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5786
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5788
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5789
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5951
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6116
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6116
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6283
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.645
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6783
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6784
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6947
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6948
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7109
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7273
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7603
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7767
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8096
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8429
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.859
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8751
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8916
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8917
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9079
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9243
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9574
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9575
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9738
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9738
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9902
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0066
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0066
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0067
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0394
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0395
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0558
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.072
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1051
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1214
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1218
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1371
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1539
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1721
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1891
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2056
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2058
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2059
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2224
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2229
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2388
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2708
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2872
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2874
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3197
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3368
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3858
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3861
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4031
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4033
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4355
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4676
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4677
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4845
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5009
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5011
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5504
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5822
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6158
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6322
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6481
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6483
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6861
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7303
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7305
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7634
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7634
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7635
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7823
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7969
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7971
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7972
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8133
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8299
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8472
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8633
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8634
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8792
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9127
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9131
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9451
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.962
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.995
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0281
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0443
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0607
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0937
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.11
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1101
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1265
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1267
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1753
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1755
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1916
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2247
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2249
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2414
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2578
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.258
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2581
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2745
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2905
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2907
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3068
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3251
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3405
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3569
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3571
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3896
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3897
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4396
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4561
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5058
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5223
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5224
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5583
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.573
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6055
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6223
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6383
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6386
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6703
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6704
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6867
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6869
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7029
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7031
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7192
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7358
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.736
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7523
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7529
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7848
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.8188
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.819
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.851
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.8842
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.933
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9331
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9496
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.966
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9663
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9827
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9997
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0167
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0169
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0171
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.033
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0492
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0494
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0652
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0814
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0988
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1475
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1477
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1641
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1969
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1972
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2301
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2458
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2786
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2792
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2805
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.295
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.328
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3442
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3613
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3778
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3937
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4104
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4263
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4425
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4427
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4755
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4922
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5246
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5248
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.525
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5252
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5253
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5255
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5256
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5258
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5259
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.526
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5262
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5263
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8207
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.8207
+     },
+     {
+      "name": "speech_first_visible_text",
+      "at_s": 17.8208
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8536
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.8536
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8539
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.8539
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8858
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.8859
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9184
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.9184
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9186
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.9186
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9515
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.9515
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9517
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.9517
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9843
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.9843
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9845
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.9845
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9847
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 17.9847
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0016
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0016
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0183
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0184
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0344
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0344
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0346
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0346
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 18.0347
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0351
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0351
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 18.0352
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0511
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0512
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0513
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0513
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.067
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.067
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0836
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.0836
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1165
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1166
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1396
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1396
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1397
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1397
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1398
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1398
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1398
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1399
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1399
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1399
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.14
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.14
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.14
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.14
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1401
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1401
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1401
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1401
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1402
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.1402
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1403
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1406
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1411
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 18.1555
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 23.3288
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 23.3289
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 23.3317
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 26.9076
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 26.9077
+     }
+    ],
+    "elapsed_s": 26.9077
+   }
+  },
+  {
+   "trial": 2,
+   "owner_transcript": "And so, my fellow Americans,",
+   "val_characters": 185,
+   "segments": [
+    "My lord, the line you have begun\u2014\u201cAnd so, my fellow Americans\u201d\u2014appears to be incomplete.",
+    "Could you please clarify what point or matter you wish to bring before me?",
+    "I am ready to attend."
+   ],
+   "delivery_state": "completed",
+   "delivery_record": "completed",
+   "warmed": {
+    "warmed": true,
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "server_found_running": true,
+    "server_started": false,
+    "model_found_loaded": true,
+    "model_loaded": false,
+    "requested_context_tokens": 32768,
+    "loaded_context_tokens": 32768,
+    "base_url": "http://127.0.0.1:1234/v1"
+   },
+   "at_seconds": {
+    "input_fixture_speech_end": 0.121,
+    "transcript_final": 0.479,
+    "owner_turn_submitted": 1.597,
+    "turn_start": 1.6,
+    "message_persisted": 1.605,
+    "classification_start": null,
+    "classification_end": null,
+    "assembly_start": 1.609,
+    "assembly_end": 1.615,
+    "runtime_ready_start": 1.626,
+    "runtime_ready_end": 1.64,
+    "exact_preflight_start": 1.64,
+    "exact_preflight_end": 1.684,
+    "provider_dispatch": 1.687,
+    "provider_chunk": 11.612,
+    "provider_visible_text": 18.961,
+    "speech_first_visible_text": 18.962,
+    "speech_segment_queued": 19.279,
+    "tts_synthesize_start": 19.28,
+    "tts_synthesize_return": 25.085,
+    "audio_at_sink": 25.085
+   },
+   "spans_seconds": {
+    "input_speech_end_to_turn_start": 1.479,
+    "turn_start_to_message_persisted": 0.005,
+    "turn_start_to_classification_start": null,
+    "classification_duration": null,
+    "classification_end_to_assembly_start": null,
+    "assembly_duration": 0.007,
+    "assembly_end_to_runtime_ready_start": 0.011,
+    "runtime_ready_duration": 0.014,
+    "exact_preflight_duration": 0.044,
+    "preflight_end_to_provider_dispatch": 0.003,
+    "provider_dispatch_to_first_chunk": 9.926,
+    "first_chunk_to_first_visible_text": 7.349,
+    "first_visible_text_to_segment_queued": 0.318,
+    "segment_queued_to_tts_start": 0.001,
+    "tts_synthesize_duration": 5.805,
+    "tts_return_to_audio_at_sink": 0.0
+   },
+   "mark_counts": {
+    "provider_dispatch": 1,
+    "exact_preflight_start": 1,
+    "runtime_ready_start": 1,
+    "classification_start": 0,
+    "speech_segment_queued": 3,
+    "tts_synthesize_start": 3,
+    "audio_at_sink": 3
+   },
+   "end_of_speech_to_first_audio_s": 24.964,
+   "first_visible_text_to_first_audio_s": 6.124,
+   "model_calls": [
+    {
+     "provider": "lmstudio",
+     "task_type": "conversation",
+     "cost": "0.000000",
+     "latency_ms": 17769
+    },
+    {
+     "provider": "lmstudio",
+     "task_type": "conversation",
+     "cost": "0.000000",
+     "latency_ms": 16233
+    }
+   ],
+   "all_marks": {
+    "marks": [
+     {
+      "name": "input_fixture_speech_end",
+      "at_s": 0.121
+     },
+     {
+      "name": "transcript_final",
+      "at_s": 0.4792
+     },
+     {
+      "name": "owner_turn_submitted",
+      "at_s": 1.5969
+     },
+     {
+      "name": "turn_start",
+      "at_s": 1.5996
+     },
+     {
+      "name": "message_persisted",
+      "at_s": 1.6051
+     },
+     {
+      "name": "egress_decided",
+      "at_s": 1.6061
+     },
+     {
+      "name": "assembly_start",
+      "at_s": 1.6085
+     },
+     {
+      "name": "record_state_assembled",
+      "at_s": 1.6149
+     },
+     {
+      "name": "assembly_end",
+      "at_s": 1.615
+     },
+     {
+      "name": "runtime_ready_start",
+      "at_s": 1.6258
+     },
+     {
+      "name": "runtime_ready_end",
+      "at_s": 1.6398
+     },
+     {
+      "name": "exact_preflight_start",
+      "at_s": 1.6399
+     },
+     {
+      "name": "exact_preflight_end",
+      "at_s": 1.684
+     },
+     {
+      "name": "provider_dispatch",
+      "at_s": 1.6868
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6125
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6128
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.613
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6791
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6791
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6792
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.6958
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7123
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7124
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7126
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7284
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7286
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7287
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7288
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7444
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7937
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.81
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8101
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8104
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8432
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8608
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8769
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9261
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9263
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9423
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9426
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9428
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9925
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9931
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0087
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0234
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0565
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0568
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0729
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0731
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1221
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1223
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1226
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1382
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1714
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1879
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.204
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2868
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3033
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3035
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3194
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.352
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3522
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3683
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3857
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4018
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4177
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4178
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.418
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4342
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4507
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4672
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5006
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5337
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5341
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5669
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5672
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5988
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6153
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6165
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6167
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6479
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6655
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.682
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6988
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.699
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7311
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7471
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7639
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7801
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7803
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8295
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8298
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8458
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8634
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8797
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9289
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9292
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.945
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9452
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9778
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0109
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0111
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0273
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0436
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0601
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0603
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0773
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0939
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0941
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0942
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0943
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1101
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1261
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1263
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.143
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1603
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1764
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1766
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2086
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2424
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2596
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2756
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2919
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.292
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3259
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3261
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3262
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.342
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3756
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.392
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3922
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4399
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.456
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4729
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4923
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4927
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5218
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.572
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5884
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5886
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6047
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6209
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6381
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6715
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7043
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7207
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7209
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7211
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7372
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7867
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7868
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8197
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8368
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8369
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.837
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8371
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8531
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8861
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8862
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8863
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9196
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.936
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.936
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9525
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0021
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0186
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0187
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0847
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0848
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1018
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1181
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.134
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1674
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2005
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2167
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.217
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2518
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2521
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2523
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2672
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2675
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2999
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3166
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3332
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3491
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3498
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3668
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4312
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4641
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4643
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4807
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5141
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5307
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5472
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5649
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5807
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5809
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5971
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5973
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5974
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5975
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6135
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6503
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6812
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6982
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6984
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6985
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6987
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6989
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7303
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7803
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7806
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7811
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7968
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8133
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8135
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8795
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8961
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.929
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9453
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9455
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9948
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0112
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0608
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.061
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0611
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0772
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0955
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1104
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1271
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1273
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1609
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1766
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1933
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2095
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2098
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.21
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2266
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2764
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2766
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3097
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3099
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3258
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3424
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3427
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3428
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3431
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.391
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4092
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4094
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4411
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4413
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4414
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4576
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.475
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.509
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5098
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5429
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5589
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5766
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6265
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6771
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7098
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7099
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7262
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7427
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7595
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7596
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.776
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7925
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7925
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8088
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8259
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8424
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8425
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.859
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.876
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.894
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9597
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9925
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0074
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0075
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0076
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.043
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0594
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0597
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.0929
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1088
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1399
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.14
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1401
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1592
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1732
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1746
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.1895
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2393
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2395
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2565
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2896
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3066
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.307
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3229
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.323
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3231
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3414
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3553
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3719
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3886
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4211
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.454
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4715
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4879
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5213
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5692
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5743
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6094
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6097
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6099
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.61
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6262
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6263
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6265
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6267
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.66
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6775
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.694
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7103
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7266
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7269
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7601
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7766
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.8095
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.8423
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.8425
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.8426
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.859
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.8919
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9089
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9258
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9421
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9423
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9579
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9753
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.9927
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0085
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0401
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0747
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0749
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.0898
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1246
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1399
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.14
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1566
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.19
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.1902
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2059
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.206
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2224
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2228
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2553
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2555
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2736
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.2893
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3059
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3222
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3223
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3384
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3715
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3881
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.3882
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.421
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4377
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.4874
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5376
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.554
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5704
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5706
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.5868
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6033
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6035
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6198
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.62
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6201
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6365
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6534
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6708
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.671
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.6872
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.7039
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.7202
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.7528
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.786
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8027
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8029
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8521
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.8686
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9016
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9018
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9182
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9346
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9349
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.951
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.968
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 17.9856
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.001
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0179
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0183
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0526
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0527
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.0702
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1031
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1196
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1528
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1694
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.1694
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.186
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.2192
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.2193
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.2525
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.2525
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.2693
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.319
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.3355
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.3689
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.3691
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.3854
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.4185
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.4351
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.4686
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.5016
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.5181
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.5182
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.5345
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.5509
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.551
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.5671
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.5673
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6002
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6003
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6005
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6006
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6007
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6008
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6009
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.601
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6011
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6013
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6014
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6015
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6016
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.6017
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.9615
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.9615
+     },
+     {
+      "name": "speech_first_visible_text",
+      "at_s": 18.9615
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.9617
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.9617
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.9618
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.9619
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 18.9949
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 18.995
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.012
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.012
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0456
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0456
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0621
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0622
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0623
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0623
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0624
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0625
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0626
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0626
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0963
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0964
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0966
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0966
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.0967
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.0967
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.1129
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.113
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.1292
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.1292
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.1629
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.1629
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.1631
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.1631
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.1793
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.1793
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.1795
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.1795
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.1974
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.1974
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.2127
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.2127
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.2459
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.246
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.2461
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.2461
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.2794
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.2794
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 19.2795
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.2799
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.2799
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 19.28
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.2968
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.2968
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.3622
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.3622
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.3787
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.3787
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.3957
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.3957
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4122
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4122
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4552
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4552
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4553
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4553
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4553
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4553
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4554
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4554
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4554
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4554
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4555
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4555
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4556
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4556
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4556
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4556
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4557
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4557
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 19.4557
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4558
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4559
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4559
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4559
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.456
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.456
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.456
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.456
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4561
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 19.4561
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4561
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4562
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 19.4563
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 19.4717
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 25.085
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 25.0851
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 25.0869
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 28.5904
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 28.5905
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 28.5905
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 31.2828
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 31.2828
+     }
+    ],
+    "elapsed_s": 31.2828
+   }
+  },
+  {
+   "trial": 3,
+   "owner_transcript": "And so, my fellow Americans,",
+   "val_characters": 185,
+   "segments": [
+    "My lord, the line you have begun\u2014\u201cAnd so, my fellow Americans\u201d\u2014appears to be incomplete.",
+    "Could you please clarify what point or matter you wish to bring before me?",
+    "I am ready to attend."
+   ],
+   "delivery_state": "completed",
+   "delivery_record": "completed",
+   "warmed": {
+    "warmed": true,
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "server_found_running": true,
+    "server_started": false,
+    "model_found_loaded": true,
+    "model_loaded": false,
+    "requested_context_tokens": 32768,
+    "loaded_context_tokens": 32768,
+    "base_url": "http://127.0.0.1:1234/v1"
+   },
+   "at_seconds": {
+    "input_fixture_speech_end": 0.12,
+    "transcript_final": 0.474,
+    "owner_turn_submitted": 1.591,
+    "turn_start": 1.595,
+    "message_persisted": 1.602,
+    "classification_start": null,
+    "classification_end": null,
+    "assembly_start": 1.605,
+    "assembly_end": 1.612,
+    "runtime_ready_start": 1.624,
+    "runtime_ready_end": 1.642,
+    "exact_preflight_start": 1.642,
+    "exact_preflight_end": 1.686,
+    "provider_dispatch": 1.69,
+    "provider_chunk": 11.79,
+    "provider_visible_text": 16.253,
+    "speech_first_visible_text": 16.253,
+    "speech_segment_queued": 16.57,
+    "tts_synthesize_start": 16.57,
+    "tts_synthesize_return": 22.566,
+    "audio_at_sink": 22.566
+   },
+   "spans_seconds": {
+    "input_speech_end_to_turn_start": 1.475,
+    "turn_start_to_message_persisted": 0.007,
+    "turn_start_to_classification_start": null,
+    "classification_duration": null,
+    "classification_end_to_assembly_start": null,
+    "assembly_duration": 0.007,
+    "assembly_end_to_runtime_ready_start": 0.012,
+    "runtime_ready_duration": 0.018,
+    "exact_preflight_duration": 0.044,
+    "preflight_end_to_provider_dispatch": 0.004,
+    "provider_dispatch_to_first_chunk": 10.1,
+    "first_chunk_to_first_visible_text": 4.463,
+    "first_visible_text_to_segment_queued": 0.317,
+    "segment_queued_to_tts_start": 0.0,
+    "tts_synthesize_duration": 5.995,
+    "tts_return_to_audio_at_sink": 0.0
+   },
+   "mark_counts": {
+    "provider_dispatch": 1,
+    "exact_preflight_start": 1,
+    "runtime_ready_start": 1,
+    "classification_start": 0,
+    "speech_segment_queued": 3,
+    "tts_synthesize_start": 3,
+    "audio_at_sink": 3
+   },
+   "end_of_speech_to_first_audio_s": 22.446,
+   "first_visible_text_to_first_audio_s": 6.313,
+   "model_calls": [
+    {
+     "provider": "lmstudio",
+     "task_type": "conversation",
+     "cost": "0.000000",
+     "latency_ms": 15056
+    },
+    {
+     "provider": "lmstudio",
+     "task_type": "conversation",
+     "cost": "0.000000",
+     "latency_ms": 17769
+    },
+    {
+     "provider": "lmstudio",
+     "task_type": "conversation",
+     "cost": "0.000000",
+     "latency_ms": 16233
+    }
+   ],
+   "all_marks": {
+    "marks": [
+     {
+      "name": "input_fixture_speech_end",
+      "at_s": 0.1196
+     },
+     {
+      "name": "transcript_final",
+      "at_s": 0.4744
+     },
+     {
+      "name": "owner_turn_submitted",
+      "at_s": 1.5911
+     },
+     {
+      "name": "turn_start",
+      "at_s": 1.5949
+     },
+     {
+      "name": "message_persisted",
+      "at_s": 1.6021
+     },
+     {
+      "name": "egress_decided",
+      "at_s": 1.603
+     },
+     {
+      "name": "assembly_start",
+      "at_s": 1.6048
+     },
+     {
+      "name": "record_state_assembled",
+      "at_s": 1.6116
+     },
+     {
+      "name": "assembly_end",
+      "at_s": 1.6118
+     },
+     {
+      "name": "runtime_ready_start",
+      "at_s": 1.6237
+     },
+     {
+      "name": "runtime_ready_end",
+      "at_s": 1.6418
+     },
+     {
+      "name": "exact_preflight_start",
+      "at_s": 1.6419
+     },
+     {
+      "name": "exact_preflight_end",
+      "at_s": 1.686
+     },
+     {
+      "name": "provider_dispatch",
+      "at_s": 1.6896
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.7901
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8068
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8069
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8396
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8398
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.84
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8564
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8566
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8567
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8892
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.8893
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9057
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9221
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.939
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9392
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9557
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 11.9558
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0047
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0215
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0381
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0539
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.0709
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.071
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1043
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1537
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1538
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.1538
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2365
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2366
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2366
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2367
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2692
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.2853
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3026
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3192
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3363
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3364
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3365
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3691
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3691
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.3692
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4022
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4022
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4186
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4352
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.4683
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.485
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5181
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5345
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5525
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5527
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5681
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.5839
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.601
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6012
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6013
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6014
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6348
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6676
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.6845
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7009
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7169
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7336
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7836
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7838
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7841
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.7843
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8337
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8501
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8502
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.8661
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9327
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9327
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9328
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9658
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9828
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 12.9994
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0326
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.0987
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1149
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1313
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1314
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1479
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.1807
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2312
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2643
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2645
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2805
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2806
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2968
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.297
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2972
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.2973
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3466
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.363
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.3962
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4125
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4126
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4129
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4131
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4459
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4463
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4466
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4619
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.4789
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5115
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5117
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5119
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5282
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5285
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5442
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5609
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.5938
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.594
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.627
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6271
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.6442
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7102
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7274
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7431
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7599
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.7936
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.794
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.827
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8271
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8435
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8601
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8766
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8937
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.8938
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9101
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9267
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9429
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9602
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9768
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9768
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 13.9938
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0267
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0434
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0933
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.0934
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1094
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1094
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1428
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1762
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.1927
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2264
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2425
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2753
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2919
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2921
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.2922
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3085
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3253
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3588
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.359
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3591
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3752
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3755
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3757
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.3914
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4087
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4247
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.425
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4413
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.4912
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5077
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5244
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5406
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.5575
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.607
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6072
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6235
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6565
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6734
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6738
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6745
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6748
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.6898
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7063
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7232
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7567
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7733
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.7942
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8408
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8409
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.857
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.8731
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.9393
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.956
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 14.989
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0051
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0052
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0222
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0224
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0226
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0227
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0713
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.0882
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1212
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.137
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1371
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1372
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1372
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1709
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.171
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1712
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.1873
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2034
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.237
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2372
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2374
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2536
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2538
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.27
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.2864
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3195
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3197
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3533
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3535
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.3694
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4366
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4529
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.469
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.4863
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5194
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5196
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5527
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5688
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.5854
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6027
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6201
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6365
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6368
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.637
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6697
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.6699
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7021
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7022
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7191
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7193
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7538
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7704
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.7869
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8045
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8215
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8377
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8541
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8705
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.8873
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.904
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9041
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9041
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9042
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9042
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9042
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9043
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9043
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9044
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9044
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9045
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 15.9045
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.253
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.253
+     },
+     {
+      "name": "speech_first_visible_text",
+      "at_s": 16.253
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2533
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.2533
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2534
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.2535
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.2879
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.288
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3027
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3027
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3361
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3361
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.353
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3531
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3531
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3531
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3532
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3532
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3533
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3533
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.387
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.387
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3873
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3873
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.3874
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.3874
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4035
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.4036
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4206
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.4207
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4536
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.4536
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4538
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.4538
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.4698
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.4698
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.47
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.47
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.487
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.487
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5032
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.5032
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5364
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.5364
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5366
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.5366
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5699
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.5699
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 16.57
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5703
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.5703
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 16.5704
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.5876
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.5877
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.654
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.654
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6705
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.6705
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.6874
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.6874
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7043
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7043
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7446
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7446
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7447
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7447
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7447
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7448
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7448
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7448
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7449
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7449
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7449
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7449
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.745
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.745
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.745
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.745
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7451
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7451
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 16.7451
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7452
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7452
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7452
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7452
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7453
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7453
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7454
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7454
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7454
+     },
+     {
+      "name": "provider_visible_text",
+      "at_s": 16.7454
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7455
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7455
+     },
+     {
+      "name": "provider_chunk",
+      "at_s": 16.7456
+     },
+     {
+      "name": "speech_segment_queued",
+      "at_s": 16.7555
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 22.5656
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 22.5657
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 22.5673
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 26.0764
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 26.0765
+     },
+     {
+      "name": "tts_synthesize_start",
+      "at_s": 26.0765
+     },
+     {
+      "name": "tts_synthesize_return",
+      "at_s": 28.7518
+     },
+     {
+      "name": "audio_at_sink",
+      "at_s": 28.7519
+     }
+    ],
+    "elapsed_s": 28.7519
+   }
+  }
+ ],
+ "medians": {
+  "input_speech_end_to_turn_start": 1.475,
+  "turn_start_to_message_persisted": 0.007,
+  "turn_start_to_classification_start": null,
+  "classification_duration": null,
+  "classification_end_to_assembly_start": null,
+  "assembly_duration": 0.007,
+  "assembly_end_to_runtime_ready_start": 0.012,
+  "runtime_ready_duration": 0.018,
+  "exact_preflight_duration": 0.044,
+  "preflight_end_to_provider_dispatch": 0.004,
+  "provider_dispatch_to_first_chunk": 9.926,
+  "first_chunk_to_first_visible_text": 6.56,
+  "first_visible_text_to_segment_queued": 0.317,
+  "segment_queued_to_tts_start": 0.0,
+  "tts_synthesize_duration": 5.805,
+  "tts_return_to_audio_at_sink": 0.0,
+  "end_of_speech_to_first_audio_s": 23.211,
+  "first_visible_text_to_first_audio_s": 6.124
+ },
+ "total_provider_cost_usd": 0.0
+}

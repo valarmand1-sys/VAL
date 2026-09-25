@@ -24,6 +24,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from sqlalchemy import Engine
+from sqlalchemy.exc import SQLAlchemyError
 
 from val_domain.gateway import CacheTtl, CapabilityProfile
 from val_domain.perception import PerceptionProvider
@@ -40,6 +41,7 @@ from val_gateway.memory import (
 from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_gateway.provenance import verifier
+from val_gateway.speech import register_voice
 from val_policy.routing import is_admitted, satisfies_profile
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
@@ -52,7 +54,11 @@ from val_providers.lmstudio_inspector import LMStudioContextInspector, inspector
 from val_providers.mlxvlm_perception import MLXVLMPerception
 from val_providers.omni_audio_perception import OmniAudioPerception
 from val_providers.openai_adapter import OpenAIAdapter
-from val_providers.qwen_tts_speech import QwenTTSSpeech, load_canonical_voice
+from val_providers.qwen_tts_speech import (
+    QwenTTSSpeech,
+    canonical_voice_description,
+    load_canonical_voice,
+)
 from val_providers.whisper_recognizer import WhisperRecognizer
 
 #: Where each provider's key is read from. A provider absent from this mapping
@@ -381,10 +387,35 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         else:
             try:
                 voice = load_canonical_voice()
+                # Owner acceptance repair, 25 September 2026 (WP3 §3). **Registered
+                # here, once, idempotently on the reference digest.**
+                #
+                # In his acceptance two replies were silent and the session ended in
+                # error: "the governed voice has no `speech_voices` row, so a spoken
+                # segment cannot be attributed to it". The delivery tests had always
+                # passed because their fixtures registered the voice; the running
+                # application never did, so the live store had no row and provenance
+                # could not be written for anything it spoke. The gap was invisible
+                # precisely because the tests provisioned what production did not.
+                #
+                # Every field comes from the governed record on disk — the same record
+                # the conditioning itself is read from — so nothing is fabricated and
+                # no voice identity is invented. Re-registering the same reference is
+                # the same row.
+                register_voice(engine, voice, described=canonical_voice_description())
             except SpeechUnavailableError as missing:
                 warnings.append(
                     f"the local speech route is admitted and Val has no governed voice: "
                     f"{missing}. Speech will fail closed until one is designed."
+                )
+            except SQLAlchemyError as unrecorded:
+                # The voice exists and could not be registered. Speech would fail
+                # closed later with a less useful message, so it is said now.
+                voice = None
+                warnings.append(
+                    f"Val's governed voice could not be registered in the store: "
+                    f"{unrecorded}. Speech will fail closed and say so; nothing will be "
+                    "spoken without provenance."
                 )
 
     # Val's ears (owner execution order, 23 September 2026). A *factory*, because

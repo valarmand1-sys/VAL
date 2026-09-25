@@ -1,0 +1,64 @@
+{
+ "probe": "does unordered delivery end utterances early?",
+ "endpoint": {
+  "threshold": 0.5,
+  "min_speech_ms": 220,
+  "min_silence_ms": 650,
+  "speech_pad_ms": 80,
+  "max_utterance_s": 30.0
+ },
+ "note": "A pause of 400 ms is comfortably under the configured 650 ms minimum silence, so a correctly ordered stream must NOT end the utterance there.",
+ "owner_audio_involved": false,
+ "pause_400ms": {
+  "in_order": {
+   "transcript": "And so, my fellow Americans.",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  },
+  "a_block_arrives_2_late": {
+   "transcript": "Oh my god",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  },
+  "a_block_arrives_4_late": {
+   "transcript": "Oh my god.",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  }
+ },
+ "pause_500ms": {
+  "in_order": {
+   "transcript": "And so, my fellow Americans.",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  },
+  "a_block_arrives_2_late": {
+   "transcript": "Oh my god",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  },
+  "a_block_arrives_4_late": {
+   "transcript": "Oh my god.",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  }
+ }
+}

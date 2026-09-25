@@ -29,6 +29,9 @@ class ValPcmProcessor extends AudioWorkletProcessor {
     this.pending = new Float32Array(this.chunkSamples);
     this.held = 0;
     this.position = 0;
+    //: The bin being averaged into the next output sample.
+    this.binTotal = 0;
+    this.binCount = 0;
   }
 
   process(inputs) {
@@ -42,10 +45,21 @@ class ValPcmProcessor extends AudioWorkletProcessor {
       let sum = 0;
       for (let c = 0; c < input.length; c += 1) sum += input[c][index] || 0;
       const mono = sum / input.length;
+      // **Average every sample in the bin, then take the average.** Not "keep one
+      // sample and discard the rest", which is what this did until the WP3 repair
+      // pass — picking folds everything above 8 kHz straight back into the speech
+      // band. Measured on a 10 kHz tone at 48 kHz, picking put 3.9x more aliased
+      // energy at 6 kHz than averaging does. A box average is a crude low-pass, and
+      // crude is enough here — whisper.cpp resamples internally anyway — but
+      // discarding two samples in three is not a filter at all.
+      this.binTotal += mono;
+      this.binCount += 1;
       this.position += 1;
       if (this.position < this.ratio) continue;
       this.position -= this.ratio;
-      this.pending[this.held] = mono;
+      this.pending[this.held] = this.binTotal / this.binCount;
+      this.binTotal = 0;
+      this.binCount = 0;
       this.held += 1;
       if (this.held === this.chunkSamples) {
         const out = new Int16Array(this.chunkSamples);

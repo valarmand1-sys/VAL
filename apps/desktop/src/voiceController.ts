@@ -21,6 +21,7 @@
 import type { PlaybackState, SpokenAudioView, VoiceSessionView } from "./api";
 import { api, describeFailure } from "./api";
 import { MicrophoneCapture, type CapturePlatform } from "./microphone";
+import { OrderedPcmSender, type SenderReport } from "./pcmSender";
 import { SpeechPlayer, decodeSegmentAudio, type SpeakerPlatform, type SegmentAudio } from "./speaker";
 import {
   VOICE_OFF,
@@ -37,15 +38,34 @@ export const POLL_INTERVAL_MS = 120;
 /** How often it asks whether a spoken segment is waiting to be played. */
 export const SPEECH_POLL_INTERVAL_MS = 80;
 
+/**
+ * What this window observed, **for one turn**.
+ *
+ * Owner acceptance repair, 25 September 2026 (WP3 §4). These were per-*session*
+ * before, and set once: `speechEndAt` kept the session's first transcript,
+ * `firstAudibleAt` its first audio, and `bargeInAt` its first interruption, while
+ * `silenceAt` was overwritten by whichever came last. So the figures shown in the
+ * room — `transcript → audible 23210 ms`, `barge-in → silence 49891 ms` — were not
+ * latencies at all. They were the span from one turn's beginning to a later turn's
+ * end. **Each interval is now a pair of marks from the same event.**
+ */
 export interface VoiceTimings {
   /** Owner's unmute gesture → a live track → the first chunk accepted (§7). */
   unmuteGestureAt: number | null;
   unmuteTrackLiveAt: number | null;
   unmuteFirstChunkAt: number | null;
-  /** Owner speech end (the service's final transcript) → first audible speech (§18). */
+  /**
+   * When this window first observed the service holding a settled transcript for
+   * **this** utterance, and when the first audio of the answer to it was scheduled.
+   * Reset together, so they can only ever describe one turn.
+   */
+  utterance: number | null;
   speechEndAt: number | null;
   firstAudibleAt: number | null;
-  /** Owner barge-in → physical silence (§12). */
+  /**
+   * The most recent interruption: when the stop instruction was observed, and when
+   * the playing buffer had been stopped. Both written by the same event.
+   */
   bargeInAt: number | null;
   silenceAt: number | null;
 }
@@ -54,6 +74,7 @@ export const NO_TIMINGS: VoiceTimings = {
   unmuteGestureAt: null,
   unmuteTrackLiveAt: null,
   unmuteFirstChunkAt: null,
+  utterance: null,
   speechEndAt: null,
   firstAudibleAt: null,
   bargeInAt: null,
@@ -86,6 +107,8 @@ export class VoiceController {
   private session: string | null = null;
   private view: VoiceSessionView | null = null;
   private microphone: MicrophoneCapture | null = null;
+  /** One sender, one request in flight, strict order (WP3 repair pass §2). */
+  private sender: OrderedPcmSender | null = null;
   private player: SpeechPlayer | null = null;
   private pollHandle: number | null = null;
   private speechHandle: number | null = null;
@@ -169,6 +192,11 @@ export class VoiceController {
     // The state moves first so nothing can be forwarded while the device comes
     // down; the capture layer's own `accepting` flag is the second guard.
     this.apply(next(this.status, { kind: "owner_pressed_mute" }));
+    // Nothing unsent survives a mute: audio captured before the release is stale
+    // the moment the device is gone, and sending it afterwards would be sending
+    // audio from a microphone the owner had already closed.
+    this.sender?.close();
+    this.sender = null;
     this.microphone?.release();
     this.microphone = null;
   }
@@ -232,7 +260,9 @@ export class VoiceController {
             this.timings = { ...this.timings, unmuteFirstChunkAt: this.now() };
             this.options.hooks.onTimings(this.timings);
           }
-          void this.forward(pcm);
+          // Offered to the ordered sender, never sent from here: the audio's order
+          // is the audio, and fifty racing requests a second destroyed it.
+          this.sender?.offer(pcm);
         },
         onLive: () => {
           if (this.timings.unmuteGestureAt !== null && this.timings.unmuteTrackLiveAt === null) {
@@ -251,22 +281,31 @@ export class VoiceController {
       },
       this.options.capture,
     );
+    this.openSender();
     this.microphone = capture;
     await capture.open();
   }
 
-  private async forward(pcm: ArrayBuffer): Promise<void> {
-    const session = this.session;
-    if (session === null) return;
-    if (this.status.mic !== "live") return;
-    try {
-      await api.sendVoiceAudio(session, pcm);
-    } catch (failure) {
-      this.apply(
-        next(this.status, { kind: "transport_failed", detail: describeFailure(failure) }),
-      );
-      await this.releaseEverything();
-    }
+  /** A fresh ordered sender for this acquisition. */
+  private openSender(): void {
+    this.sender?.close();
+    this.sender = new OrderedPcmSender(
+      async (payload) => {
+        const session = this.session;
+        if (session === null) return;
+        if (this.status.mic !== "live") return;
+        await api.sendVoiceAudio(session, payload);
+      },
+      (detail) => {
+        this.apply(next(this.status, { kind: "transport_failed", detail }));
+        void this.releaseEverything();
+      },
+    );
+  }
+
+  /** What the sender did this session — ordered, coalesced, and counted. */
+  get transport(): SenderReport | null {
+    return this.sender === null ? null : this.sender.measured;
   }
 
   private startPolling(): void {
@@ -311,8 +350,17 @@ export class VoiceController {
    */
   private noteSpeechEnd(view: VoiceSessionView): void {
     if (view.pending === "") return;
-    if (this.timings.speechEndAt !== null) return;
-    this.timings = { ...this.timings, speechEndAt: this.now(), firstAudibleAt: null };
+    // **Per utterance, not per session.** The service's `utterance` index is what
+    // makes this turn a different turn; without it the first transcript of the
+    // session was paired with the last audio of the session, which is how a 23-second
+    // figure appeared for an interval nobody had measured.
+    if (this.timings.utterance === view.utterance) return;
+    this.timings = {
+      ...this.timings,
+      utterance: view.utterance,
+      speechEndAt: this.now(),
+      firstAudibleAt: null,
+    };
     this.options.hooks.onTimings(this.timings);
   }
 
@@ -347,9 +395,13 @@ export class VoiceController {
       if (offer.stop) {
         // The physical half of barge-in, and the reason this poll asks both
         // questions: the buffer stops here rather than a session-poll later.
-        this.timings = { ...this.timings, bargeInAt: this.timings.bargeInAt ?? this.now() };
+        // Both marks from this one event: the stop instruction as it was observed,
+        // and the moment the playing buffer had been stopped. Keeping the session's
+        // *first* barge-in here — which is what `?? this.now()` did — is what
+        // produced the 49,891 ms figure he saw, an interval spanning several turns.
+        const observed = this.now();
         this.player.stop(offer.reason ?? "delivery ended");
-        this.timings = { ...this.timings, silenceAt: this.now() };
+        this.timings = { ...this.timings, bargeInAt: observed, silenceAt: this.now() };
         this.options.hooks.onTimings(this.timings);
         this.player = new SpeechPlayer(this.speakerObserver(), this.options.speaker);
         return;
@@ -419,6 +471,8 @@ export class VoiceController {
   }
 
   private async releaseEverything(): Promise<void> {
+    this.sender?.close();
+    this.sender = null;
     this.microphone?.release();
     this.microphone = null;
     this.player?.close();

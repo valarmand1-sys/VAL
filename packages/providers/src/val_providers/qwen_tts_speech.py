@@ -296,6 +296,35 @@ class QwenTTSSpeech:
 VOICE_RECORD = VOICE_DIR / "val-voice.json"
 
 
+def canonical_voice_description(record: Path = VOICE_RECORD) -> dict[str, object]:
+    """The governed voice record's own descriptive metadata, as written when it was designed.
+
+    Owner acceptance repair, 25 September 2026 (WP3 §3). The composition root needs
+    these fields to register the voice in the store, and **they are read from the
+    record rather than restated anywhere**: the reference's sample rate and duration,
+    what designed it and how, its origin, and the identity claim in its own words.
+    Nothing here is invented, defaulted or inferred — a record missing a field is a
+    record that cannot be registered, and it says so.
+    """
+    if not record.is_file():
+        raise SpeechUnavailableError(f"Val has no governed local voice: {record} does not exist")
+    try:
+        described = json.loads(record.read_text())
+        return {
+            "reference_sample_rate": int(described["reference_sample_rate"]),
+            "reference_duration_seconds": float(described["reference_duration_seconds"]),
+            "designed_by_quantization": str(described["designed_by_quantization"]),
+            "designed_by_runtime": str(described["designed_by_runtime"]),
+            "designed_generation": described["designed_generation"],
+            "origin": str(described["origin"]),
+            "identity_claim": str(described["identity_claim"]),
+        }
+    except (OSError, ValueError, KeyError, TypeError) as broken:
+        raise SpeechUnavailableError(
+            f"the governed voice record at {record} is incomplete: {broken}"
+        ) from broken
+
+
 def load_canonical_voice(record: Path = VOICE_RECORD) -> VoiceConditioning:
     """Val's governed local voice, read from disk.
 

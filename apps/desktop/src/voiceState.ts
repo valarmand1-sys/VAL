@@ -219,3 +219,15 @@ export function micControlLabel(status: VoiceStatus): string {
   if (status.mic === "acquiring") return "Unmuting…";
   return status.mic === "live" ? "Mute microphone" : "Unmute microphone";
 }
+
+
+/**
+ * What Lord Armand is asked before a conversation change ends Voice — §5.
+ *
+ * Owner acceptance, 24 September 2026. The release itself is the ruling and stays:
+ * Voice must never carry its microphone or its session silently into another
+ * conversation. What he objected to was being told afterwards. So the change is
+ * intercepted **before** it happens, and this is the question.
+ */
+export const LEAVING_VOICE_CONFIRMATION =
+  "Switching conversations will end Voice and release the microphone. Continue?";

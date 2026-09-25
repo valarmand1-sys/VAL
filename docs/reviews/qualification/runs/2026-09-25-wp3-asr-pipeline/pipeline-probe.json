@@ -1,0 +1,77 @@
+{
+ "probe": "capture pipeline against the production recognizer",
+ "recognizer": "whisper.cpp v1.9.4 927cfce3, ggml-small.en, Silero v6.2.0, CPU",
+ "endpoint": {
+  "threshold": 0.5,
+  "min_speech_ms": 220,
+  "min_silence_ms": 650,
+  "speech_pad_ms": 80,
+  "max_utterance_s": 30.0
+ },
+ "fixture": "frozen-utterance.wav",
+ "fixture_seconds": 2.6,
+ "expected": "And so, my fellow Americans,",
+ "owner_audio_involved": false,
+ "baseline": {
+  "transcript": "And so, my fellow Americans,",
+  "utterances": 1,
+  "endpoints": [
+   "silence"
+  ],
+  "speech_starts": 1
+ },
+ "chunk_reordering": {
+  "a_block_arrives_1_late": {
+   "transcript": "And so am I fellow Americans!",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  },
+  "a_block_arrives_2_late": {
+   "transcript": "So much homework!",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  },
+  "a_block_arrives_4_late": {
+   "transcript": "I'm so wanted to follow the winner!",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1
+  }
+ },
+ "resampling": {
+  "device_rate": 48000,
+  "original_energy_4k_8k": 853.01,
+  "picked": {
+   "transcript": "And so, my fellow Americans,",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1,
+   "energy_4k_8k": 410.856
+  },
+  "averaged": {
+   "transcript": "And so, my fellow Americans,",
+   "utterances": 1,
+   "endpoints": [
+    "silence"
+   ],
+   "speech_starts": 1,
+   "energy_4k_8k": 452.582
+  }
+ },
+ "aliasing_probe": {
+  "tone_hz": 10000,
+  "folds_to_hz": 6000,
+  "picked_energy_at_6k": 23998499.353,
+  "averaged_energy_at_6k": 6141550.26
+ }
+}

@@ -301,6 +301,10 @@ class Listener:
         self.pending = np.zeros(0, dtype=np.float32)  # not yet windowed
         self.utterance = np.zeros(0, dtype=np.float32)  # the live utterance
         self.padding = np.zeros(0, dtype=np.float32)  # pre-speech padding ring
+        #: When the previous utterance settled, and the gap before this one began —
+        #: durations only, for the endpoint diagnostics (WP3 repair pass §2).
+        self.settled_at = 0.0
+        self.gap_before: float | None = None
         self.in_speech = False
         self.speech_run = 0.0
         self.silence_run = 0.0
@@ -374,6 +378,13 @@ class Listener:
                     self.speech_run = 0.0
 
     def begin(self) -> None:
+        # Owner acceptance repair, 25 September 2026 (WP3 §2, §5). The gap since the
+        # previous utterance settled, so the next acceptance can measure what this
+        # one could not: whether endpoints are firing inside ordinary speech, and at
+        # what pause length. A **duration**, never audio.
+        self.gap_before = (
+            round(time.monotonic() - self.settled_at, 3) if self.settled_at else None
+        )
         self.in_speech = True
         self.silence_run = 0.0
         self.utterances += 1
@@ -412,11 +423,18 @@ class Listener:
         self.silence_run = 0.0
         self.padding = np.zeros(0, dtype=np.float32)
         endpoint_at = time.monotonic()
+        # The silence that actually ended this utterance, and the gap before it
+        # began. Both are durations in seconds: no audio, no waveform, no content.
+        ended_by_silence = round(self.silence_run, 3)
+        gap_before = self.gap_before
+        self.settled_at = endpoint_at
         emit(
             event="speech_end",
             session=self.utterances,
             reason=reason,
             at=endpoint_at,
+            silence_seconds=ended_by_silence,
+            gap_before_seconds=gap_before,
             seconds=round(audio.size / SAMPLE_RATE, 3),
         )
         text = ""

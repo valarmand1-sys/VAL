@@ -66,7 +66,7 @@ from val_domain.voice import (
 from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.exchange import ClarificationNeeded
 from val_gateway.loop import TruncatedTurn, Turn, UnansweredTurn
-from val_gateway.revisions import RevisionRefusedError, revise
+from val_gateway.revisions import RevisionRefusedError, retract
 from val_policy.egress import LiveVoiceConversations
 
 #: How long after an utterance settles the house waits before submitting it, in
@@ -195,7 +195,15 @@ class VoiceTurn:
     provisional_events: int = 0
     #: Set when the owner resumed after submission and the canonical wording was
     #: corrected through the revision machinery rather than by a second turn.
+    #: **Superseded by `superseded_by` since the WP3 repair pass** — kept because
+    #: historical turns carry it and it still describes what happened to them.
     revised_to: str | None = None
+    #: Owner acceptance repair, 25 September 2026 (WP3 §1.1). The owner resumed
+    #: before delivery, so this exchange was **withdrawn** — his fragment and the
+    #: answer to it, both preserved in the record with their evidence and cost — and
+    #: the joined wording was submitted as a new turn. This holds that joined
+    #: wording. The obsolete answer never became Val's authoritative answer to it.
+    superseded_by: str | None = None
     #: Why a post-submission merge was refused, when one was. Kept because a
     #: refusal is a fact about the record, not an error to swallow.
     merge_refused: str | None = None
@@ -724,34 +732,72 @@ class VoiceSession:
             (
                 turn
                 for turn in reversed(self._turns)
-                if not turn.delivered and turn.revised_to is None and turn.merge_refused is None
+                if not turn.delivered
+                and turn.revised_to is None
+                and turn.superseded_by is None
+                and turn.merge_refused is None
             ),
             None,
         )
 
     def _merge_after_submission(self, settled: VoiceUtterance, events: int) -> None:
-        """Correct an already-submitted turn Val has not yet delivered.
+        """Supersede an already-submitted turn Val has not yet delivered.
 
-        Append-only, through the existing revision machinery. The original
-        `messages` row stays exactly what was first heard; the correction is a new
-        `message_revisions` row, and later turns read the corrected wording.
+        **Owner acceptance repair, 25 September 2026 (WP3 §1.1).** This used to
+        *revise* the owner's message and leave Val's answer in place, marked as
+        having answered the earlier wording. That is the right doctrine for a
+        correction Lord Armand chose to make; it is the wrong one here, because he
+        chose nothing — the house split one sentence in two, answered the first
+        half, and then relabelled his words underneath an answer to something else.
+        In his acceptance every one of five spoken turns ended that way.
 
-        Refused — and honestly recorded as refused — when the message anchors an
-        enforced blind position or a deliberation. Continuity would there mean
-        rewriting the words a recorded decision was made about, so the resumed
-        speech stays a separate turn instead.
+        So the exchange is **superseded** instead:
+
+        1. the obsolete answer's speech is stopped before a word of it can be
+           spoken — available because `_mergeable` only returns a turn whose
+           delivery has not become audible;
+        2. the exchange is **withdrawn** through the existing retraction machinery
+           — his fragment and the answer to it both stay in the record, marked,
+           with every classification, cost and measurement attached to them
+           untouched, exactly as Remove does;
+        3. the joined wording is submitted as a **new** turn, which gets its own
+           answer and its own delivery.
+
+        The consequence is the invariant §1.1 asks for, in its strongest form: a
+        voice answer is never bound to wording that changed afterwards, because a
+        voice turn's message is never revised after the fact at all. An obsolete
+        call that really ran stays on `model_calls` as the historical fact it is,
+        and no longer masquerades as the answer to what he actually said.
         """
         with self._lock:
             recent = self._mergeable()
+            delivery = self._delivery if self._delivery is not None else self._recent
         if recent is None:
             return
         combined = f"{recent.utterance.text.rstrip()} {settled.text.lstrip()}".strip()
+
+        # 1. Nothing of the obsolete answer is spoken. Checked against the message it
+        #    belongs to, so a later turn's delivery is never stopped by mistake.
+        if delivery is not None and delivery.message_id == recent.answer_message_id:
+            delivery.interrupt("the owner was still speaking; this answer is superseded")
+
+        # 2. Withdraw the exchange. A retraction deletes no evidence and invalidates
+        #    none; it takes the pair out of the working conversation and out of both
+        #    recall paths, which is what stops the obsolete answer being treated as
+        #    current by anything downstream.
         try:
-            revise(self._engine, recent.message_id, combined, note="resumed before delivery")
+            retract(
+                self._engine,
+                recent.message_id,
+                note=(
+                    "superseded: the owner resumed before delivery, so this half-heard "
+                    "utterance and the answer to it are withdrawn in favour of the "
+                    "complete wording"
+                ),
+            )
         except RevisionRefusedError as refused:
-            # The turn anchors a recorded decision. Continuity is not available
-            # here and is not faked: the resumed speech becomes its own turn, and
-            # the refusal stays on the record rather than disappearing.
+            # Already withdrawn, or refused for a recorded reason. Nothing is faked:
+            # the resumed speech becomes its own turn and the refusal is on record.
             note = f"{refused.reason}: {refused}"
             with self._lock:
                 self._turns = [
@@ -764,18 +810,25 @@ class VoiceSession:
                     utterance=settled, provisional_events=events, settled_at=self._now()
                 )
             return
+
+        # 3. The complete wording becomes a new turn, through the ordinary door.
         with self._lock:
             self._turns = [
-                replace(
-                    turn,
-                    revised_to=combined,
-                    utterance=turn.utterance.merged_with(settled),
-                    provisional_events=turn.provisional_events + events,
-                )
+                replace(turn, superseded_by=combined)
                 if turn.message_id == recent.message_id
                 else turn
                 for turn in self._turns
             ]
+            self._pending = _Pending(
+                utterance=replace(
+                    settled,
+                    text=combined,
+                    merged_from=(*recent.utterance.merged_from, recent.utterance.utterance),
+                ),
+                provisional_events=recent.provisional_events + events,
+                settled_at=self._now(),
+            )
+            self.state = VoiceSessionState.THINKING
 
     def _submit_if_due(self) -> None:
         """Submit a pending utterance once the resume window has passed."""

@@ -758,13 +758,22 @@ def test_r_resuming_inside_the_window_gives_one_intended_owner_turn(
     assert merged == [1], "the record says which breath was absorbed"
 
 
-def test_r_resuming_after_submission_corrects_the_wording_append_only(
+def test_r_resuming_after_submission_supersedes_the_half_heard_exchange(
     store: Engine,
 ) -> None:
     """R, the harder half: submitted, not yet delivered, and he carries on.
 
-    The `messages` row stays exactly what was first heard. The correction is a
-    new `message_revisions` row — no UPDATE, no deletion, no second visible turn.
+    **Amended 25 September 2026 (owner acceptance, WP3 §1.1).** This used to assert
+    that the owner's message was *revised* and Val's answer left standing, marked as
+    having answered the earlier wording. Owner acceptance showed what that does in
+    the room: every one of five spoken turns had its words relabelled underneath an
+    answer to something else, because the house — not he — had split one sentence in
+    two and answered the first half.
+
+    So the exchange is superseded instead: the obsolete answer is never spoken, the
+    pair is **withdrawn** with all its evidence intact, and the complete wording is
+    submitted as a new turn. The `messages` row is still never rewritten — what
+    changes is that the answer is never bound to wording that moved underneath it.
     """
     recognizer = ScriptedRecognizer(
         batches=[
@@ -773,24 +782,55 @@ def test_r_resuming_after_submission_corrects_the_wording_append_only(
         ]
     )
     conversation = a_conversation(store)
-    session, _, clock = a_session(store, recognizer, conversation_id=conversation)
+    adapter = ScriptedAdapter([ok("At once, my lord."), ok("I will tell her, my lord.")])
+    session, _, clock = a_session(store, recognizer, adapter=adapter, conversation_id=conversation)
 
     session.feed(MARKER)
     settle(session, clock)  # the turn is submitted and answered
     (first,) = session.snapshot().turns
 
     session.feed(MARKER)  # he resumes; Val has not spoken aloud
-    session.advance()
+    settle(session, clock)
 
-    (turn,) = session.snapshot().turns
     combined = "Ask the cook about dinner and tell her the guests are late."
-    assert turn.revised_to == combined
-    assert turn.message_id == first.message_id, "the same turn, corrected — not a second one"
+    turns = session.snapshot().turns
+    superseded = next(turn for turn in turns if turn.message_id == first.message_id)
+    assert superseded.superseded_by == combined, "the half-heard exchange is superseded"
+    assert superseded.revised_to is None, "and not relabelled under the old answer"
 
+    fresh = next(turn for turn in turns if turn.message_id != first.message_id)
+    assert fresh.utterance.text == combined, "the complete wording became its own turn"
+    assert fresh.answer_message_id is not None, "and it was answered on its own account"
+
+    # The original row is untouched, and no revision was ever written.
     said = messages_of(store, conversation)
-    assert "Ask the cook about dinner" in said[0]
     assert said[0] == "Ask the cook about dinner", "the original row is untouched"
-    assert revisions_of(store, first.message_id) == [combined]
+    # A retraction's row carries no content; a revision's does. There is no content.
+    assert revisions_of(store, first.message_id) == [None], "no revision relabelled his words"
+
+    # The pair is withdrawn — preserved, marked, and out of the working conversation.
+    with store.connect() as connection:
+        kinds = [
+            row.kind
+            for row in connection.execute(
+                text(
+                    "select kind from message_revisions where message_id = :id "
+                    " order by revision_number"
+                ),
+                {"id": first.message_id},
+            )
+        ]
+        # Exactly as assembly reads it: a withdrawn message and the answer to a
+        # withdrawn message both leave the working conversation.
+        live = connection.execute(
+            text(
+                "select count(*) from messages_current where conversation_id = :c "
+                "  and state <> 'withdrawn' and coalesce(answered_state, '') <> 'withdrawn'"
+            ),
+            {"c": conversation},
+        ).scalar_one()
+    assert kinds == ["retraction"], "withdrawn, not rewritten"
+    assert live == 2, "the working conversation holds the complete turn and its answer"
 
 
 def test_r_once_val_has_delivered_the_next_utterance_is_its_own_turn(
@@ -896,11 +936,24 @@ def test_r_a_turn_anchoring_a_decision_is_never_rewritten_to_fake_continuity(
     session.feed(MARKER)
     session.advance()
 
+    # **Amended 25 September 2026 (WP3 §1.1).** The rule this test was written for —
+    # a message anchoring a recorded decision refuses *revision* — is unchanged and
+    # still holds. What changed is that the voice path no longer asks for a revision:
+    # it withdraws the exchange, which the same doctrine permits precisely because a
+    # retraction rewrites nothing and "never invalidates evidence valid when
+    # produced". So the words a decision was made about are still never rewritten,
+    # and the blind position still stands exactly as it was.
     turn = session.snapshot().turns[0]
     assert turn.revised_to is None, "the wording was not rewritten"
-    assert turn.merge_refused is not None and "deliberated" in turn.merge_refused
-    assert revisions_of(store, first.message_id) == [], "no revision was recorded"
-    assert session.snapshot().pending == "And keep it short.", "it becomes its own turn instead"
+    assert turn.superseded_by is not None, "the half-heard exchange was superseded"
+    assert revisions_of(store, first.message_id) == [None], "a retraction, not a revision"
+    with store.connect() as connection:
+        surviving = connection.execute(
+            text("select position, ordering from blind_positions where message_id = :id"),
+            {"id": first.message_id},
+        ).one()
+    assert surviving.position == "Open wide.", "the recorded position is untouched"
+    assert surviving.ordering == "enforced", "and still says how it was formed"
 
 
 # =============================================================================
