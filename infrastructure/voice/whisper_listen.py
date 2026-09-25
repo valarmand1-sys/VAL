@@ -382,9 +382,7 @@ class Listener:
         # previous utterance settled, so the next acceptance can measure what this
         # one could not: whether endpoints are firing inside ordinary speech, and at
         # what pause length. A **duration**, never audio.
-        self.gap_before = (
-            round(time.monotonic() - self.settled_at, 3) if self.settled_at else None
-        )
+        self.gap_before = round(time.monotonic() - self.settled_at, 3) if self.settled_at else None
         self.in_speech = True
         self.silence_run = 0.0
         self.utterances += 1
