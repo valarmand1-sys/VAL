@@ -212,6 +212,14 @@ class SpeechDelivery:
         self.first_delta_ms: int | None = None
         self.first_audio_ms: int | None = None
         self.elapsed_ms: int | None = None
+        #: Owner acceptance, 25 September 2026 (WP3 Step B §9.1, §27). **When the first
+        #: segment's synthesis began, and whether cognition had finished by then.**
+        #: His report was that Val read out already-complete text, and the question
+        #: "does segment 1 start before the answer is finished?" needs an answer from
+        #: the record rather than from an argument about the code. Measured from the
+        #: same origin as the two figures above.
+        self.first_tts_start_ms: int | None = None
+        self.cognition_complete_ms: int | None = None
         #: Recorded for the §13.1 measurement: the interval from the barge-in
         #: signal arriving here to the sink being stopped.
         self.cancellation_ms: float | None = None
@@ -301,6 +309,10 @@ class SpeechDelivery:
     def finish(self, settled_text: str | None = None) -> None:
         """Val has stopped writing: flush the exact suffix and wait for the voice.
 
+        The moment cognition completed is recorded here, because this is where Core
+        says so — and §9.1's invariant is a comparison between that moment and the
+        first segment's synthesis start.
+
         `settled_text` is her persisted answer, and it is authoritative. Two cases
         it settles, both of which a stream alone cannot:
 
@@ -315,6 +327,11 @@ class SpeechDelivery:
             whitespace, delivery **fails with that named reason** rather than
             speaking words the record does not hold.
         """
+        if self.cognition_complete_ms is None:
+            # Core has stopped writing. Recorded before anything else here, so the
+            # comparison in §9.1 is against the moment itself rather than the moment
+            # plus whatever this method then does.
+            self.cognition_complete_ms = round((self._now() - self.started_at) * 1000)
         if self._is_closed():
             return
         if settled_text is not None:
@@ -400,6 +417,18 @@ class SpeechDelivery:
         with timings.recording(recorder) if recorder is not None else nullcontext():
             self._speak_queue()
 
+    @property
+    def first_segment_began_before_the_answer_was_finished(self) -> bool | None:
+        """Whether synthesis of segment 1 started before cognition completed.
+
+        `None` while either boundary is unknown — an interval with one end is not an
+        interval, and a `False` that merely meant "not measured yet" would be the kind
+        of small untruth this record exists to prevent.
+        """
+        if self.first_tts_start_ms is None or self.cognition_complete_ms is None:
+            return None
+        return self.first_tts_start_ms < self.cognition_complete_ms
+
     def _speak_queue(self) -> None:
         while True:
             try:
@@ -417,6 +446,11 @@ class SpeechDelivery:
             if self._is_closed():
                 return
             started = self._now()
+            if self.first_tts_start_ms is None:
+                # The first segment's synthesis. Recorded against the same origin as
+                # the other two figures, so §9.1's question — did this begin before
+                # the answer was finished? — is answered by the record.
+                self.first_tts_start_ms = round((started - self.started_at) * 1000)
             mark("tts_synthesize_start")
             try:
                 result = self._speech.synthesize(  # type: ignore[attr-defined]

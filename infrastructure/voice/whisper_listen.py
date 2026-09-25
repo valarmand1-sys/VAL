@@ -305,6 +305,10 @@ class Listener:
         #: durations only, for the endpoint diagnostics (WP3 repair pass §2).
         self.settled_at = 0.0
         self.gap_before: float | None = None
+        #: How much of the current utterance the VAD actually called speech. The
+        #: evidence that separates a short word from a hallucination on room noise
+        #: (WP3 Step B §7): a duration, never audio, never content.
+        self.voiced = 0.0
         self.in_speech = False
         self.speech_run = 0.0
         self.silence_run = 0.0
@@ -355,6 +359,7 @@ class Listener:
             if self.in_speech:
                 self.utterance = np.concatenate([self.utterance, window])
                 if speaking:
+                    self.voiced += per_window
                     self.silence_run = 0.0
                 else:
                     self.silence_run += per_window
@@ -383,6 +388,7 @@ class Listener:
         # one could not: whether endpoints are firing inside ordinary speech, and at
         # what pause length. A **duration**, never audio.
         self.gap_before = round(time.monotonic() - self.settled_at, 3) if self.settled_at else None
+        self.voiced = 0.0
         self.in_speech = True
         self.silence_run = 0.0
         self.utterances += 1
@@ -433,6 +439,7 @@ class Listener:
             at=endpoint_at,
             silence_seconds=ended_by_silence,
             gap_before_seconds=gap_before,
+            voiced_seconds=round(self.voiced, 3),
             seconds=round(audio.size / SAMPLE_RATE, 3),
         )
         text = ""
@@ -452,6 +459,10 @@ class Listener:
             reason=reason,
             endpoint_at=endpoint_at,
             at=time.monotonic(),
+            # Beside the words, the evidence for admitting them: how much of this
+            # utterance the VAD called speech, and what ended it.
+            voiced_seconds=round(self.voiced, 3),
+            silence_seconds=round(self.silence_run, 3),
         )
 
     def reset(self) -> None:

@@ -181,6 +181,16 @@ class RecognizerEvent:
     at: float = 0.0
     endpoint_at: float = 0.0
     detail: str = ""
+    #: Owner acceptance, 25 September 2026 (WP3 Step B §10). The endpoint evidence,
+    #: as durations and never as audio: how much silence ended this utterance, how
+    #: long the gap before it was, how much of it the VAD actually called speech, and
+    #: how long it ran. The repair pass added these to the helper and **stopped one
+    #: boundary short** — this type dropped them, so the run they were built for
+    #: could not record them. They are carried now.
+    silence_seconds: float = 0.0
+    gap_before_seconds: float | None = None
+    voiced_seconds: float = 0.0
+    seconds: float = 0.0
 
     @classmethod
     def of(cls, payload: dict[str, object]) -> RecognizerEvent:
@@ -198,6 +208,14 @@ class RecognizerEvent:
             at=_instant(payload.get("at")),
             endpoint_at=_instant(payload.get("endpoint_at")),
             detail=_word(payload.get("detail")),
+            silence_seconds=_instant(payload.get("silence_seconds")),
+            gap_before_seconds=(
+                None
+                if payload.get("gap_before_seconds") is None
+                else _instant(payload.get("gap_before_seconds"))
+            ),
+            voiced_seconds=_instant(payload.get("voiced_seconds")),
+            seconds=_instant(payload.get("seconds")),
         )
 
 

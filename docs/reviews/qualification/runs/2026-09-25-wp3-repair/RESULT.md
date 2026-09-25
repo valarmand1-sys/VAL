@@ -381,3 +381,198 @@ The effect-level release stays as the safety net for a change arriving by anothe
 route, and a structural test asserts every navigation call site sits behind the
 guard, because a handler that forgot it would not show up in a rendered test nobody
 clicked.
+
+
+---
+
+# Owner acceptance Step B — 25 September 2026
+
+Step A passed. Step B failed, and the retained evidence from this run reconstructs it
+completely. **The endpoint diagnostics the repair pass added did not survive their own
+run** — see §B.7 — but the recovery journal, which does survive, turned out to carry
+the decisive facts.
+
+## B.1 The run, from the store
+
+Session `01a0d631-3190…`, conversation `01a0d630-f496…`, opened 20:31:50.45.
+
+| moment | event |
+|---|---|
+| 20:32:07.71 | **owner msg 1 committed** — "I'm testing your system." (utterance 1) |
+| 20:32:23.31 | answer msg 2 — **15.6 s of cognition** |
+| 20:32:29.78 | Val's first audio; `first_audio_ms` **22,016**; segment 1 = "Good evening, my lord." |
+| 20:32:31.06 | delivery **interrupted** at 22 characters, "the owner began speaking" |
+| 20:32:31.23 | **owner msg 3** — "Now please tell me exactly what you heard me say." (utterance 2) |
+| 20:32:45.03 | **utterance 4's first provisional** — "evening Val" |
+| 20:32:46.51 | utterance 4 provisional — "evening Val, I'm testing your system." |
+| 20:32:47.97 | utterance 4 provisional — "…Please tell me exactly" |
+| 20:32:48.61 | answer msg 4; **its delivery interrupted at 0 characters** |
+| 20:32:48.64 | **owner msg 5** — "Hello." (utterance 3) |
+| 20:32:50.32 | utterance 4 provisional — "Good evening Val. I'm testing your system. Please tell me ex…" |
+| 20:33:00.20 | answer msg 6; audio 20:33:02.95 → 20:33:08.05, **two segments** |
+| 20:33:06.01 | **owner msg 7** — the merged string, `merged_from {2}` (utterance 4) |
+| 20:33:20.90 | answer msg 8; audio 20:33:23.95 → 20:33:36.59, **three segments** |
+
+**Internal utterances: 2 from attempt #1 (utterances 1 and 2), 1 from attempt #2
+(utterance 4), plus utterance 3 which is neither** — see §B.4. Canonical owner
+messages: **4**. Val answers: **4**. Two intended utterances.
+
+**One correction to the account.** The journal places attempt #2's recognized speech
+at **20:32:45.0 – 20:32:50.3**, about **14 s** after attempt #1's second utterance
+ended (~20:32:30.1), not thirty. His experience of a long silence is not in doubt —
+he could see nothing, for the reason in §B.2 — but the measured gap is fourteen
+seconds, and the repair is sized against the measurement.
+
+## B.2 Why nothing appeared: presentation, not settlement
+
+**The first turn was committed at 20:32:07.71 and answered at 20:32:23.31 — both
+before attempt #2 began at 20:32:45.** So §4.1's class **B**.
+
+The desktop re-read the conversation only when a turn had an **answer**
+(`settled.answer !== null`). His own words therefore stayed invisible for the whole of
+cognition — 15.6 s on this turn — and he reasonably concluded nothing had happened.
+
+**§4.0 is eliminated.** The trailing silence did reach the service: the turn settled
+1.1 s after the endpoint, which is exactly the resume grace and nothing more. The
+ordered sender did not hold it. Progression is driven by the desktop's 120 ms poll
+(`snapshot` → `advance`) and by incoming audio; neither needs further owner speech.
+
+**Repaired.** The conversation is re-read as soon as a canonical turn exists, and again
+when its answer arrives — keyed on the turn's identity so it happens twice per turn and
+not on every poll.
+
+## B.3 The cross-attempt merge, and its exact cause
+
+`_mergeable` had **no time bound of any kind**. It asked only whether the turn had been
+*delivered* — and msg 3's answer was interrupted at **0 characters**, so `delivered`
+stayed false and that turn remained eligible for ever.
+
+Fourteen seconds later, utterance 4 merged into it. The lineage of the string he
+flagged is exactly:
+
+| component | utterance | recognised | source |
+|---|---|---|---|
+| `Now please tell me exactly what you heard me say.` | **2** (attempt #1, second half) | settled ~20:32:30.1, committed 20:32:31.23 as msg 3 | the stale fragment |
+| `Good evening Val. I'm testing your system. Please tell me exactly what you heard me say.` | **4** (attempt #2, complete) | 20:32:45.0 – 20:32:50.3 | his deliberate retry |
+
+joined in that order — the old tail **in front of** the new complete attempt, which is
+precisely what §6 forbids.
+
+**Repaired.** A resumed utterance may join a submitted turn only if the pause between
+them is within **the configured resume window** — measured from the previous
+utterance's endpoint to the next one's first voiced frame, both the recognizer's own
+monotonic marks. The pause here was ~14 s against a 1.1 s window. A session-clock
+fallback bounds the case where a recognizer reports no marks, so a markless recognizer
+cannot unlock what was previously unbounded. Four regression tests; the two that matter
+fail against the old code, which was checked by mutation.
+
+## B.4 "Hello." — what can and cannot be established
+
+**Not a hallucination on silence or noise.** Driven through the production recognizer:
+
+| material | RMS | VAD speech starts | utterances | text |
+|---|---|---|---|---|
+| digital silence, 3 s | 0.0 | **0** | 0 | — |
+| noise, 3 s | 0.002 | **0** | 0 | — |
+| noise, 3 s | 0.010 | **0** | 0 | — |
+| noise, 3 s | 0.050 | **0** | 0 | — |
+| noise with gaps | 0.027 | **0** | 0 | — |
+| real speech, 0.4 s | 0.033 | 0 | 0 | — |
+| real speech, 0.8 s | 0.095 | 1 | 0 | — |
+| the whole fixture | 0.194 | 1 | 1 | `And so, my fellow Americans,` (voiced 1.664 s) |
+
+**The Silero VAD never triggered on any synthetic non-speech**, so whisper.cpp is never
+invoked on it. The admission rule §7 contemplates would therefore have prevented
+nothing here, and adding it would be theatre: it is **not** implemented.
+
+**Not stale state either.** The journal holds "Hello." as utterance 3's own provisional,
+not a replay of another utterance's text.
+
+So the microphone captured something the VAD classified as **speech**. Its window is
+bounded by the utterance ordering — after utterance 2's endpoint (~20:32:30.1) and
+before utterance 4 began (~20:32:44) — and **Val was audible for the first ~0.96 s of
+that window** (20:32:29.78 → 20:32:31.06).
+
+> **Which acoustic source it was: NOT RECONSTRUCTIBLE FROM RETAINED EVIDENCE.** The
+> audio was correctly ephemeral. That it overlapped her playback is not evidence that
+> it was her, and his statement that he did not speak does not distinguish her voice
+> from other room or system audio. The `gap_before` measurement that would have pinned
+> the window existed in this build's helper and was **discarded by the event type**
+> before anything could record it (§B.7).
+
+## B.5 Physical speech: already progressive, and the cost is elsewhere
+
+Per-segment synthesis, from `speech_generations`:
+
+| answer | segment | text | synthesis | audio |
+|---|---|---|---|---|
+| msg 2 | 1 | "Good evening, my lord." | **6,708 ms** | 1.68 s |
+| msg 6 | 1 | "Good evening, my lord." | 2,727 ms | 1.28 s |
+| msg 6 | 2 | "How may I assist you today?" | 2,942 ms | 2.16 s |
+| msg 8 | 1 | "I have no record of hearing your words…" | 3,305 ms | 2.80 s |
+| msg 8 | 2 | "The house's logs show that no spoken input…" | 4,865 ms | 4.80 s |
+| msg 8 | 3 | "If you wish, please repeat what you said…" | 3,223 ms | 2.96 s |
+
+**Segment-1 synthesis already begins before cognition completes** — by 0.3 s on msg 2
+and 0.05 s on msg 6 — so the pipeline is progressive. The margin is negligible because
+~6.6 s of hidden reasoning precedes any visible text and the answers are short, so the
+whole answer lands within a fraction of a second of its first sentence. That is why it
+reads as delayed read-aloud: **the visible text is complete before the first audio
+because synthesis of the first segment takes 2.7–6.7 s after it.**
+
+**Inter-segment gaps were 0.007 s, 1.66 s and 2.07 s — not 45–90 s.** The minute-scale
+waits he experienced were **new answer cycles** to the extra turns: Val's audible
+moments were 20:32:29.8 (interrupted), 20:33:02.9 and 20:33:23.9, which is 33 s and
+21 s apart, each gap being cognition for a new message.
+
+**Repaired, and measured.** The first synthesis of a session cost **6,708 ms against
+2,727 ms** warm — about four seconds of weights coming off disk, since each synthesis
+is its own subprocess. The runner gains a **load-only warm mode** that generates no
+audio, writes no file and records no provenance, and a Voice session warms the voice
+alongside the cognition runtime while he is still speaking. Neither warming is a gate.
+And the progressive boundary is now **recorded** rather than argued: delivery keeps the
+first segment's synthesis start and the cognition-complete moment, and a test asserts
+segment 1 begins before the answer is finished — with the honest counter-case that a
+route which cannot stream records `False` rather than looking identical.
+
+## B.6 False barge-in: not demonstrated
+
+Both interruptions are explained without it:
+
+- **20:32:31.06**, while Val was audible: caused by utterance 2 — **his own words**,
+  the second half of his own sentence. Genuine barge-in.
+- **20:32:48.62**: caused by utterance 3 being submitted. Val had **no audio playing**
+  — that delivery was interrupted at 0 characters, and her previous playback had ended
+  17 s earlier. So this was not her voice being heard.
+
+**No canonical owner message is established to have originated from audio captured
+while Val was physically speaking.** Utterance 3's window overlaps her playback by at
+most ~0.96 s of a ~14 s window, and which source it was is not reconstructible.
+
+Counts and their explanation: **2 intended utterances → 4 canonical messages → 4
+answers.** The two extra messages are (a) attempt #1 split in two by an endpoint firing
+inside his sentence, and (b) utterance 3, whose acoustic source is not established.
+
+## B.7 A defect in my own diagnostic
+
+The repair pass taught the helper to report the silence that ended each utterance and
+the gap before it began. **`RecognizerEvent.of` dropped both fields**, so the run they
+were built for could not be measured, and §10's measured pause values are
+**NOT RECONSTRUCTIBLE FROM RETAINED EVIDENCE** for this run.
+
+Now: the event carries `silence_seconds`, `gap_before_seconds`, `voiced_seconds` and
+`seconds`; the helper additionally reports how much of each utterance the **VAD** called
+speech; and every settled utterance logs all four to the service log, which is retained.
+The next run measures what this one could not.
+
+**The endpoint is still not changed.** `min_silence_ms` remains 650. The measurement
+that would justify changing it is the one that was lost, and it exists now.
+
+## B.8 What the platform applied to the microphone
+
+The constraints request `echoCancellation`, `noiseSuppression` and `autoGainControl`.
+**Whether WKWebView granted them was not observable from this run.** The desktop now
+reads the live track's own `getSettings()` and records it — as `null` where the platform
+states nothing, because "did not say" and "said no" are different facts, and the
+acceptance question turns on which. The reporting is best-effort by construction: a
+platform that throws yields nulls and **never** takes capture down, which is asserted.

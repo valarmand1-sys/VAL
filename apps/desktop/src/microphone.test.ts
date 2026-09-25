@@ -15,6 +15,7 @@ import {
   MicrophoneCapture,
   TARGET_SAMPLE_RATE,
   WORKLET_MODULE_URL,
+  type AppliedCaptureSettings,
   type CapturePlatform,
 } from "./microphone";
 
@@ -42,6 +43,10 @@ class FakeTrack {
 class FakeStream {
   constructor(readonly tracks: FakeTrack[]) {}
   getTracks(): FakeTrack[] {
+    return this.tracks;
+  }
+  /** A real stream reports its audio tracks and their applied settings. */
+  getAudioTracks(): FakeTrack[] {
     return this.tracks;
   }
 }
@@ -423,5 +428,77 @@ describe("the Content Security Policy refusal that failed owner acceptance step 
       eager: true,
     });
     expect(String(Object.values(modules)[0])).toContain('"val-pcm"');
+  });
+});
+
+describe("what the platform actually applied (§25)", () => {
+  it("reports the track's own settings where the platform states them", async () => {
+    const world = harness();
+    // A platform that answers, as WKWebView does where it implements getSettings.
+    const stated = {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: false,
+      sampleRate: 48000,
+      channelCount: 1,
+    };
+    (world.tracks[0] as unknown as { getSettings: () => unknown }).getSettings = () => stated;
+    let applied: unknown = null;
+    const capture = new MicrophoneCapture(
+      {
+        onChunk: () => undefined,
+        onLive: (settings) => {
+          applied = settings;
+        },
+        onReleased: () => undefined,
+        onFailure: () => undefined,
+      },
+      world.platform,
+    );
+    await capture.open();
+    expect(applied).toEqual(stated);
+  });
+
+  it("records not-stated rather than false when the platform says nothing", async () => {
+    const world = harness();
+    let applied: AppliedCaptureSettings | null = null;
+    const capture = new MicrophoneCapture(
+      {
+        onChunk: () => undefined,
+        onLive: (settings) => {
+          applied = settings;
+        },
+        onReleased: () => undefined,
+        onFailure: () => undefined,
+      },
+      world.platform,
+    );
+    await capture.open();
+    // **Null, not false.** "The platform did not say" and "the platform said no" are
+    // different facts, and the acceptance question turns on which one it is.
+    expect(applied).not.toBeNull();
+    expect(applied!.echoCancellation).toBeNull();
+    expect(applied!.sampleRate).toBeNull();
+  });
+
+  it("never takes the microphone down to report a setting", async () => {
+    const world = harness();
+    (world.tracks[0] as unknown as { getSettings: () => unknown }).getSettings = () => {
+      throw new Error("this platform refuses to say");
+    };
+    const events: string[] = [];
+    const capture = new MicrophoneCapture(
+      {
+        onChunk: () => undefined,
+        onLive: () => events.push("live"),
+        onReleased: () => events.push("released"),
+        onFailure: (detail) => events.push(`failed:${detail}`),
+      },
+      world.platform,
+    );
+    await capture.open();
+    // A diagnostic that could end capture would be worse than no diagnostic.
+    expect(events).toEqual(["live"]);
+    expect(capture.live).toBe(true);
   });
 });

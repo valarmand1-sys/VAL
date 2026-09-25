@@ -40,6 +40,7 @@ falsify evidence that was valid when it was produced.
 from __future__ import annotations
 
 import json
+import logging
 import threading
 import time
 from collections.abc import Callable
@@ -68,6 +69,8 @@ from val_gateway.exchange import ClarificationNeeded
 from val_gateway.loop import TruncatedTurn, Turn, UnansweredTurn
 from val_gateway.revisions import RevisionRefusedError, retract
 from val_policy.egress import LiveVoiceConversations
+
+_LOGGER = logging.getLogger("val.voice")
 
 #: How long after an utterance settles the house waits before submitting it, in
 #: case the owner was only drawing breath. Long enough to catch a resumed
@@ -210,6 +213,10 @@ class VoiceTurn:
     #: True once the caller has delivered this answer to the owner. Until then a
     #: resumed utterance may still be merged into it.
     delivered: bool = False
+    #: The session clock when this turn was submitted. The fallback bound on how long
+    #: a turn may remain mergeable when the recognizer reported no marks of its own
+    #: (owner acceptance, 25 September 2026).
+    submitted_at: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -493,6 +500,13 @@ class VoiceSession:
             threading.Thread(target=self._warm_runtime, daemon=True).start()
 
     def _warm_runtime(self) -> None:
+        """Bring up what the first turn would otherwise wait for.
+
+        Two things now: the cognition runtime (latency pass §12) and the voice model
+        (owner acceptance, 25 September 2026 — 6.708 s against 2.727 s for the same
+        phrase, the difference being the weights coming off disk). Neither is a gate:
+        both are reported and swallowed, and the turn asks for itself regardless.
+        """
         if self._warm is None:
             return
         try:
@@ -667,6 +681,23 @@ class VoiceSession:
 
     def _settled(self, event: RecognizerEvent) -> None:
         """A final transcription: a new pending turn, or a resumed one."""
+        # Owner acceptance, 25 September 2026 (WP3 Step B §10). **The endpoint evidence,
+        # written where it survives the run.** The repair pass taught the helper to
+        # report the silence that ended each utterance and the gap before it began, and
+        # stopped one boundary short: the event type dropped the fields, so his Step B
+        # run — the run they were added for — could not be measured. They reach here
+        # now, and they are logged, because nothing else records them and an unrecorded
+        # measurement is not evidence. Durations only: no audio, no content.
+        _LOGGER.info(
+            "voice endpoint: utterance=%s reason=%s voiced=%.3fs silence=%.3fs "
+            "gap_before=%s length=%.3fs",
+            event.session,
+            event.reason or "silence",
+            event.voiced_seconds,
+            event.silence_seconds,
+            "unknown" if event.gap_before_seconds is None else f"{event.gap_before_seconds:.3f}s",
+            event.seconds,
+        )
         merge_into_submitted = False
         with self._lock:
             current, self._current = self._current, None
@@ -708,7 +739,7 @@ class VoiceSession:
                 return
             # Nothing waiting. If a turn has been submitted and Val has not yet
             # delivered it, this is the same intended utterance arriving late.
-            merge_into_submitted = self._mergeable() is not None
+            merge_into_submitted = self._mergeable(settled) is not None
             if not merge_into_submitted:
                 self._pending = _Pending(
                     utterance=settled, provisional_events=events, settled_at=self._now()
@@ -719,16 +750,33 @@ class VoiceSession:
         with self._lock:
             self.state = VoiceSessionState.LISTENING
 
-    def _mergeable(self) -> VoiceTurn | None:
-        """The most recent turn whose answer the owner has not yet been given.
+    def _mergeable(self, resumed: VoiceUtterance | None = None) -> VoiceTurn | None:
+        """The turn a resumed utterance may still be joining, or None.
 
-        Delivery is consulted as well as the flag: once the first audio has
-        reached the ear he has begun to hear her, and what he says next is a reply
-        rather than the rest of his own sentence (§12).
+        Two conditions, and the second was missing until owner acceptance found it.
+
+        **He must not have begun to hear her.** Once the first audio has reached the
+        ear, what he says next is a reply rather than the rest of his own sentence
+        (§12).
+
+        **And the pause must be short enough to be a pause.** Owner acceptance,
+        24 September 2026: a fragment whose answer was interrupted before any audio
+        stayed `delivered = False` for ever, so it remained mergeable indefinitely —
+        and **thirty-five seconds later** a fresh, deliberate attempt was appended to
+        it, producing his own words in the wrong order with the stale fragment first.
+        The resume mechanism exists to bridge an endpoint that fired inside one
+        sentence, so the bridge is bounded by **the configured resume window**: if he
+        began speaking again more than that long after the previous utterance ended,
+        it is a new turn, whatever state its answer is in.
+
+        `resumed` is the utterance asking to merge. It is optional only because the
+        two callers ask at different moments; without it the time bound cannot be
+        applied, so the caller that omits it gets the delivery check alone and must
+        not use the result to merge.
         """
         if self._delivery is not None and self._delivery.audible:
             return None
-        return next(
+        candidate = next(
             (
                 turn
                 for turn in reversed(self._turns)
@@ -739,6 +787,21 @@ class VoiceSession:
             ),
             None,
         )
+        if candidate is None or resumed is None:
+            return candidate
+        # The pause between his two stretches of speech: from the previous utterance's
+        # endpoint to this one's first voiced frame, both the recognizer's own
+        # monotonic marks.
+        pause = resumed.speech_start_at - candidate.utterance.endpoint_at
+        if resumed.speech_start_at and candidate.utterance.endpoint_at:
+            return None if pause > self._grace else candidate
+        # **A recognizer that reported no marks does not thereby unlock an unbounded
+        # merge.** Falling back to the session's own clock: how long this turn has been
+        # waiting for an answer he has not heard. It is a looser measure than the pause
+        # — it includes cognition — so it is given the grace twice over, and it still
+        # bounds what was previously unbounded.
+        waited = self._now() - candidate.submitted_at
+        return None if waited > self._grace * 2 else candidate
 
     def _merge_after_submission(self, settled: VoiceUtterance, events: int) -> None:
         """Supersede an already-submitted turn Val has not yet delivered.
@@ -770,7 +833,7 @@ class VoiceSession:
         and no longer masquerades as the answer to what he actually said.
         """
         with self._lock:
-            recent = self._mergeable()
+            recent = self._mergeable(settled)
             delivery = self._delivery if self._delivery is not None else self._recent
         if recent is None:
             return
@@ -1002,6 +1065,9 @@ class VoiceSession:
                     # **The delivered boundary is the first audio**, and it has
                     # already been crossed by the time this row is written.
                     delivered=heard,
+                    # When it was submitted, on the session's own clock: the fallback
+                    # bound on how long it may remain mergeable.
+                    submitted_at=pending.settled_at,
                 )
             )
 

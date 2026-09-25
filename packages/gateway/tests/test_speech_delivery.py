@@ -804,3 +804,88 @@ def _a_speaking_session(
     )
     session.start()
     return session, adapter, clock
+
+
+# =============================================================================
+# The progressive invariant, after owner acceptance Step B
+# =============================================================================
+
+
+def test_the_first_segment_is_synthesised_before_the_answer_is_finished(
+    store: Engine,
+) -> None:
+    """§9.1. Speech must not wait for the whole answer — proved from the record.
+
+    Owner acceptance, 24 September 2026: he could read the complete reply before Val
+    began to speak it, and described the result as delayed read-aloud. The question
+    that settles whether the pipeline is progressive is narrow — **did synthesis of
+    segment 1 begin before cognition finished?** — and until now nothing recorded it,
+    so it could only be argued from the code.
+
+    Here a stream arrives in pieces with a complete sentence early, and the assertion
+    is against the two marks the delivery now keeps.
+    """
+    voice_provider = ScriptedVoice()
+    register_the_voice(store, a_voice())
+    delivery = a_delivery(store, voice_provider)
+
+    # A complete first sentence, then a long tail still being written.
+    delivery.feed("Good evening, my lord. ")
+    # The synthesis worker takes the first segment while the rest is still arriving.
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline and delivery.first_tts_start_ms is None:
+        time.sleep(0.01)
+    assert delivery.first_tts_start_ms is not None, "segment 1 was never synthesised"
+    assert delivery.cognition_complete_ms is None, (
+        "synthesis began while Core was still writing, which is the invariant"
+    )
+
+    delivery.feed("The two readers disagree because they are answering different questions.")
+    delivery.finish(
+        "Good evening, my lord. The two readers disagree because they are answering "
+        "different questions."
+    )
+
+    assert delivery.cognition_complete_ms is not None
+    assert delivery.first_segment_began_before_the_answer_was_finished is True, (
+        "the first segment's synthesis must start before the answer is complete"
+    )
+    assert delivery.first_tts_start_ms < delivery.cognition_complete_ms
+
+
+def test_the_progressive_boundary_is_absent_rather_than_false_when_unmeasured(
+    store: Engine,
+) -> None:
+    """An interval with one end is not an interval, and must not read as a failure."""
+    voice_provider = ScriptedVoice()
+    register_the_voice(store, a_voice())
+    delivery = a_delivery(store, voice_provider)
+    assert delivery.first_segment_began_before_the_answer_was_finished is None
+    delivery.feed("Good evening, my lord. ")
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline and delivery.first_tts_start_ms is None:
+        time.sleep(0.01)
+    # One end only: still None, never False.
+    assert delivery.first_segment_began_before_the_answer_was_finished is None
+
+
+def test_a_route_that_cannot_stream_still_speaks_and_says_so_in_the_record(
+    store: Engine,
+) -> None:
+    """The honest case: no delta arrived, so nothing was progressive — and it shows.
+
+    Work package 2's rule is unchanged: a route that cannot stream still speaks, from
+    the persisted answer. What this adds is that the record distinguishes it from a
+    progressive delivery rather than letting both look alike.
+    """
+    voice_provider = ScriptedVoice()
+    register_the_voice(store, a_voice())
+    delivery = a_delivery(store, voice_provider)
+
+    delivery.finish("Good evening, my lord.")  # no deltas at all
+
+    assert delivery.cognition_complete_ms is not None
+    assert delivery.first_tts_start_ms is not None
+    assert delivery.first_segment_began_before_the_answer_was_finished is False, (
+        "a non-streaming route is read-aloud, and the record says so plainly"
+    )

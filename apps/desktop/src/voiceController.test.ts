@@ -34,7 +34,10 @@ function capturePlatform(tracks: FakeTrack[], fail = false): CapturePlatform {
       if (fail) throw new Error("the device is not there");
       const track = new FakeTrack();
       tracks.push(track);
-      return { getTracks: () => [track] } as unknown as MediaStream;
+      return {
+        getTracks: () => [track],
+        getAudioTracks: () => [track],
+      } as unknown as MediaStream;
     },
     createContext: () =>
       ({
@@ -224,7 +227,10 @@ describe("mute and unmute", () => {
           if (attempts === 1) {
             const track = new FakeTrack();
             tracks.push(track);
-            return { getTracks: () => [track] } as unknown as MediaStream;
+            return {
+              getTracks: () => [track],
+              getAudioTracks: () => [track],
+            } as unknown as MediaStream;
           }
           throw new Error("the device vanished");
         },

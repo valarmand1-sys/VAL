@@ -983,9 +983,15 @@ def create_app(
             # a house with no admitted speech route gets — honestly, rather than
             # by reaching for a cloud one.
             speech=speech_delivery_factory(),
-            # The cognition runtime comes up while he is still speaking, rather
-            # than after he stops. The turn's own readiness call still governs.
-            warm=gateway.warm_cognition,
+            # Both of the things his first answer would otherwise wait for, brought
+            # up while he is still speaking: the cognition runtime (latency pass §12)
+            # and the voice model (owner acceptance, 25 September 2026 — four seconds
+            # of weights coming off disk, measured in his own run). The turn's own
+            # readiness call still governs, and neither warming is a gate.
+            warm=lambda: {
+                "cognition": gateway.warm_cognition(),
+                "voice": gateway.warm_voice(),
+            },
         )
         try:
             live.start()

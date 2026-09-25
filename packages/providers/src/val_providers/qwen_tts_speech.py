@@ -214,6 +214,46 @@ class QwenTTSSpeech:
 
     # --- one attempt --------------------------------------------------------------
 
+    def warm(self) -> dict[str, object]:
+        """Load the voice model and generate nothing.
+
+        Owner acceptance, 25 September 2026 (WP3 Step B §9). Each synthesis is its own
+        subprocess, so the first one of a session pays for reading the weights off
+        disk. Measured in his run: **6.708 s** for a 1.68 s phrase against **2.727 s**
+        once the file was in the page cache — about four seconds, sitting directly in
+        front of his first answer.
+
+        This is the same shape as the cognition warming the latency pass established:
+        done early, on the session's own thread, while he is still speaking, and
+        **never a gate** — a failure is reported and the turn proceeds exactly as it
+        would have. It produces no audio, writes no file and records no provenance,
+        because Val has not spoken and there is nothing to attribute.
+        """
+        unavailable = self.available()
+        if unavailable is not None:
+            return {"warmed": False, "reason": unavailable}
+        payload = json.dumps({"mode": "warm", "model_path": str(self._model_path), "out_path": ""})
+        started = time.monotonic()
+        try:
+            code, out, err = self._runner.run(
+                [str(self._python), str(RUNNER)], payload, self._timeout
+            )
+        except subprocess.TimeoutExpired:
+            return {"warmed": False, "reason": "the voice runtime did not load in time"}
+        elapsed = round(time.monotonic() - started, 3)
+        if code != 0:
+            return {"warmed": False, "reason": (err or out or "the voice runtime failed").strip()}
+        try:
+            report = json.loads(out.strip().splitlines()[-1])
+        except ValueError, IndexError:
+            return {"warmed": False, "reason": "the voice runtime reported nothing readable"}
+        return {
+            "warmed": bool(report.get("warmed")),
+            "load_seconds": report.get("load_seconds"),
+            "elapsed_seconds": elapsed,
+            "spoke_nothing": True,
+        }
+
     def _attempt(self, request: SpeechRequest, text: str) -> tuple[dict[str, object], bytes]:
         workspace = Path(tempfile.mkdtemp(prefix="val-speech-"))
         os.chmod(workspace, 0o700)

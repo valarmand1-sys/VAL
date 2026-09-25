@@ -117,6 +117,20 @@ def main() -> int:
         },
     }
 
+    if mode == "warm":
+        # Owner acceptance, 25 September 2026 (WP3 Step B §9). **Load and nothing
+        # else.** Each synthesis is its own subprocess, so the first one of a session
+        # pays for reading the weights off disk: measured 6.708 s for a 1.68 s phrase
+        # against 2.727 s once the file was in the page cache. Loading early — while
+        # the owner is still speaking — removes that from his first answer.
+        #
+        # It generates no audio, writes no file and produces no provenance, because
+        # there is nothing to attribute: Val has not spoken. That is the whole reason
+        # this is a mode rather than a discarded synthesis.
+        report["warmed"] = True
+        print(json.dumps(report))
+        return 0
+
     if mode == "design":
         if getattr(model.config, "tts_model_type", None) != "voice_design":
             return _fail("this artifact is not a VoiceDesign model", kind="refused")

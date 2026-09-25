@@ -146,8 +146,10 @@ class Clock:
         self.now += seconds
 
 
-def started(index: int) -> RecognizerEvent:
-    return RecognizerEvent(kind="speech_start", session=index, at=0.0)
+def started(index: int, at: float = 0.0) -> RecognizerEvent:
+    """`at` is the recognizer's own monotonic mark. Supplied where a test cares about
+    the pause between two stretches of speech, which is what bounds a resume merge."""
+    return RecognizerEvent(kind="speech_start", session=index, at=at)
 
 
 def guess(index: int, words: str) -> RecognizerEvent:
@@ -158,8 +160,12 @@ def ended(index: int) -> RecognizerEvent:
     return RecognizerEvent(kind="speech_end", session=index, reason="silence")
 
 
-def final(index: int, words: str, reason: str = "silence") -> RecognizerEvent:
-    return RecognizerEvent(kind="final", session=index, text=words, reason=reason)
+def final(
+    index: int, words: str, reason: str = "silence", at: float = 0.0, endpoint_at: float = 0.0
+) -> RecognizerEvent:
+    return RecognizerEvent(
+        kind="final", session=index, text=words, reason=reason, at=at, endpoint_at=endpoint_at
+    )
 
 
 #: A block of the canonical PCM with a distinctive byte pattern, so the

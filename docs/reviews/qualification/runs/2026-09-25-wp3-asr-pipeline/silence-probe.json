@@ -1,0 +1,126 @@
+{
+ "probe": "what the production recognizer produces from non-speech",
+ "endpoint": {
+  "threshold": 0.5,
+  "min_speech_ms": 220,
+  "min_silence_ms": 650,
+  "speech_pad_ms": 80,
+  "max_utterance_s": 30.0
+ },
+ "owner_audio_involved": false,
+ "block_samples": 320,
+ "digital_silence_3s": {
+  "seconds_in": 3.0,
+  "peak": 0.0,
+  "rms": 0.0,
+  "transcript": "",
+  "utterances": 0,
+  "endpoints": [],
+  "speech_starts": 0,
+  "voiced_seconds": [],
+  "silence_seconds": [],
+  "gap_before_seconds": [],
+  "final_voiced_seconds": []
+ },
+ "noise_0.002_3s": {
+  "seconds_in": 3.0,
+  "peak": 0.0089,
+  "rms": 0.002,
+  "transcript": "",
+  "utterances": 0,
+  "endpoints": [],
+  "speech_starts": 0,
+  "voiced_seconds": [],
+  "silence_seconds": [],
+  "gap_before_seconds": [],
+  "final_voiced_seconds": []
+ },
+ "noise_0.01_3s": {
+  "seconds_in": 3.0,
+  "peak": 0.0482,
+  "rms": 0.01,
+  "transcript": "",
+  "utterances": 0,
+  "endpoints": [],
+  "speech_starts": 0,
+  "voiced_seconds": [],
+  "silence_seconds": [],
+  "gap_before_seconds": [],
+  "final_voiced_seconds": []
+ },
+ "noise_0.05_3s": {
+  "seconds_in": 3.0,
+  "peak": 0.2205,
+  "rms": 0.04974,
+  "transcript": "",
+  "utterances": 0,
+  "endpoints": [],
+  "speech_starts": 0,
+  "voiced_seconds": [],
+  "silence_seconds": [],
+  "gap_before_seconds": [],
+  "final_voiced_seconds": []
+ },
+ "noise_0.05_with_gaps": {
+  "seconds_in": 2.8,
+  "peak": 0.2255,
+  "rms": 0.02695,
+  "transcript": "",
+  "utterances": 0,
+  "endpoints": [],
+  "speech_starts": 0,
+  "voiced_seconds": [],
+  "silence_seconds": [],
+  "gap_before_seconds": [],
+  "final_voiced_seconds": []
+ },
+ "real_speech_0.4s": {
+  "seconds_in": 1.9,
+  "peak": 0.5631,
+  "rms": 0.03299,
+  "transcript": "",
+  "utterances": 0,
+  "endpoints": [],
+  "speech_starts": 0,
+  "voiced_seconds": [],
+  "silence_seconds": [],
+  "gap_before_seconds": [],
+  "final_voiced_seconds": []
+ },
+ "real_speech_0.8s": {
+  "seconds_in": 2.3,
+  "peak": 0.7827,
+  "rms": 0.09475,
+  "transcript": "",
+  "utterances": 0,
+  "endpoints": [],
+  "speech_starts": 1,
+  "voiced_seconds": [],
+  "silence_seconds": [],
+  "gap_before_seconds": [],
+  "final_voiced_seconds": []
+ },
+ "real_speech_whole": {
+  "seconds_in": 2.6,
+  "peak": 0.7827,
+  "rms": 0.19381,
+  "transcript": "And so, my fellow Americans,",
+  "utterances": 1,
+  "endpoints": [
+   "silence"
+  ],
+  "speech_starts": 1,
+  "voiced_seconds": [
+   1.664
+  ],
+  "silence_seconds": [
+   0.0
+  ],
+  "gap_before_seconds": [
+   null
+  ],
+  "final_voiced_seconds": [
+   1.664
+  ]
+ }
+}

@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import select
 import struct
 import subprocess
 import sys
@@ -98,9 +99,17 @@ def listen(blocks: list[np.ndarray], *, endpoint: dict | None = None) -> dict:
     for _ in range(80):
         send(FRAME_AUDIO, silence.astype("<i2").tobytes())
     send(FRAME_CONTROL, json.dumps({"action": "flush"}).encode())
-    deadline = time.monotonic() + 90
+    # **Read with a deadline.** Silence produces no `final` at all — the VAD never
+    # begins an utterance — so a blocking read would wait for ever for something that
+    # is correctly never coming. That absence is itself an answer, and this is how the
+    # probe collects it instead of hanging.
+    deadline = time.monotonic() + 30
     finals: list[dict] = []
     while time.monotonic() < deadline:
+        remaining = max(0.05, deadline - time.monotonic())
+        ready, _, _ = select.select([process.stdout], [], [], remaining)
+        if not ready:
+            break
         line = process.stdout.readline()
         if not line:
             break
@@ -114,11 +123,19 @@ def listen(blocks: list[np.ndarray], *, endpoint: dict | None = None) -> dict:
         process.wait(timeout=20)
     except subprocess.TimeoutExpired:
         process.kill()
+    ends = [e for e in events if e.get("event") == "speech_end"]
     return {
         "transcript": " ".join((f.get("text") or "").strip() for f in finals).strip(),
         "utterances": sum(1 for e in events if e.get("event") == "final"),
-        "endpoints": [e.get("reason") for e in events if e.get("event") == "speech_end"],
+        "endpoints": [e.get("reason") for e in ends],
         "speech_starts": sum(1 for e in events if e.get("event") == "speech_start"),
+        # The endpoint evidence the repair pass added and this build now carries:
+        # how much of each utterance the VAD called speech, what silence ended it,
+        # and the gap before it. Durations, never audio.
+        "voiced_seconds": [e.get("voiced_seconds") for e in ends],
+        "silence_seconds": [e.get("silence_seconds") for e in ends],
+        "gap_before_seconds": [e.get("gap_before_seconds") for e in ends],
+        "final_voiced_seconds": [f.get("voiced_seconds") for f in finals],
     }
 
 

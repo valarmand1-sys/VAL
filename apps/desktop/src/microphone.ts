@@ -73,11 +73,54 @@ export const CAPTURE_CONSTRAINTS: MediaStreamConstraints = {
   video: false,
 };
 
+/**
+ * What the platform actually applied to the track — owner acceptance, §25.
+ *
+ * The constraints below *request* echo cancellation. Whether WKWebView granted it is
+ * a different fact, and the acceptance question "did Val's own voice reach the
+ * microphone?" cannot be reasoned about without it. `getSettings()` is the platform's
+ * own answer where it exposes one; a platform that says nothing yields `null`, which
+ * is recorded as not stated rather than as false.
+ */
+export interface AppliedCaptureSettings {
+  /** A boolean where the platform states one; some report a mode string instead. */
+  echoCancellation: boolean | string | null;
+  noiseSuppression: boolean | string | null;
+  autoGainControl: boolean | string | null;
+  sampleRate: number | null;
+  channelCount: number | null;
+}
+
+export function appliedSettings(stream: MediaStream): AppliedCaptureSettings {
+  // **A diagnostic may never take the microphone down.** Everything here is
+  // best-effort: a platform that does not implement `getAudioTracks` or
+  // `getSettings`, or throws from either, yields nulls — recorded as "not stated"
+  // rather than as false, and never as a failure to capture.
+  let settings: MediaTrackSettings = {};
+  try {
+    const tracks = typeof stream.getAudioTracks === "function" ? stream.getAudioTracks() : [];
+    const [track] = tracks;
+    if (track !== undefined && typeof track.getSettings === "function") {
+      settings = track.getSettings();
+    }
+  } catch {
+    settings = {};
+  }
+  const stated = <T,>(value: T | undefined): T | null => (value === undefined ? null : value);
+  return {
+    echoCancellation: stated(settings.echoCancellation),
+    noiseSuppression: stated(settings.noiseSuppression),
+    autoGainControl: stated(settings.autoGainControl),
+    sampleRate: stated(settings.sampleRate),
+    channelCount: stated(settings.channelCount),
+  };
+}
+
 export interface MicrophoneObserver {
   /** One bounded chunk of 16 kHz mono int16 PCM, on its way to the service. */
   onChunk(pcm: ArrayBuffer): void;
-  /** The hardware is really capturing now. */
-  onLive(): void;
+  /** The hardware is really capturing now, with what the platform actually applied. */
+  onLive(applied: AppliedCaptureSettings): void;
   /** The hardware is really released now. */
   onReleased(): void;
   onFailure(detail: string): void;
@@ -153,7 +196,7 @@ export class MicrophoneCapture {
         this.observer.onFailure("the microphone stream carried no live track");
         return;
       }
-      this.observer.onLive();
+      this.observer.onLive(appliedSettings(this.stream));
     } catch (failure) {
       this.release();
       this.observer.onFailure(

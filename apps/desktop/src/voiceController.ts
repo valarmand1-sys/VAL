@@ -20,7 +20,11 @@
 
 import type { PlaybackState, SpokenAudioView, VoiceSessionView } from "./api";
 import { api, describeFailure } from "./api";
-import { MicrophoneCapture, type CapturePlatform } from "./microphone";
+import {
+  MicrophoneCapture,
+  type AppliedCaptureSettings,
+  type CapturePlatform,
+} from "./microphone";
 import { OrderedPcmSender, type SenderReport } from "./pcmSender";
 import { SpeechPlayer, decodeSegmentAudio, type SpeakerPlatform, type SegmentAudio } from "./speaker";
 import {
@@ -85,7 +89,16 @@ export interface VoiceControllerHooks {
   onStatus(status: VoiceStatus): void;
   onSession(view: VoiceSessionView | null): void;
   onTimings(timings: VoiceTimings): void;
-  /** A settled turn the desktop should show in the conversation. */
+  /**
+   * The conversation should be re-read from the store.
+   *
+   * **Owner acceptance, 24 September 2026 (§4.1 B).** This used to fire only once a
+   * turn had an *answer*, so his own words stayed invisible for the whole of
+   * cognition — fifteen seconds in the room, during which he reasonably concluded
+   * nothing had happened and spoke again. His message was in the store 1.1 s after
+   * he stopped speaking; the interface simply was not showing it. It now fires as
+   * soon as a canonical turn exists, and again when its answer arrives.
+   */
   onTurnSettled(view: VoiceSessionView): void;
 }
 
@@ -109,10 +122,14 @@ export class VoiceController {
   private microphone: MicrophoneCapture | null = null;
   /** One sender, one request in flight, strict order (WP3 repair pass §2). */
   private sender: OrderedPcmSender | null = null;
+  /** What the platform applied to the live track, once it has said (§25). */
+  private applied: AppliedCaptureSettings | null = null;
   private player: SpeechPlayer | null = null;
   private pollHandle: number | null = null;
   private speechHandle: number | null = null;
   private lastDeliveredMessage: string | null = null;
+  /** The turn state the desktop was last told to render, so it is told once each. */
+  private lastShown: string | null = null;
   private collecting = false;
   private polling = false;
   private readonly now: () => number;
@@ -264,7 +281,11 @@ export class VoiceController {
           // is the audio, and fifty racing requests a second destroyed it.
           this.sender?.offer(pcm);
         },
-        onLive: () => {
+        onLive: (applied) => {
+          // §25: what the platform actually applied, recorded rather than assumed.
+          // The next acceptance run can say whether echo cancellation was in force.
+          this.applied = applied;
+          console.info("val.voice.capture", JSON.stringify(applied));
           if (this.timings.unmuteGestureAt !== null && this.timings.unmuteTrackLiveAt === null) {
             this.timings = { ...this.timings, unmuteTrackLiveAt: this.now() };
             this.options.hooks.onTimings(this.timings);
@@ -303,6 +324,11 @@ export class VoiceController {
     );
   }
 
+  /** What the platform applied to the microphone, or null until it says. */
+  get captureSettings(): AppliedCaptureSettings | null {
+    return this.applied;
+  }
+
   /** What the sender did this session — ordered, coalesced, and counted. */
   get transport(): SenderReport | null {
     return this.sender === null ? null : this.sender.measured;
@@ -327,8 +353,18 @@ export class VoiceController {
       this.options.hooks.onSession(view);
       this.noteSpeechEnd(view);
       this.applyActivity(view);
+      // **As soon as it is canonical, not as soon as it is answered.** Keyed on the
+      // turn's identity and on whether it has been answered, so the conversation is
+      // re-read twice per turn — when his words land, and when hers do — and not on
+      // every poll.
       const settled = view.turns.at(-1);
-      if (settled !== undefined && settled.answer !== null) this.options.hooks.onTurnSettled(view);
+      if (settled !== undefined) {
+        const state = `${settled.message_id}:${settled.answer === null ? "asked" : "answered"}`;
+        if (state !== this.lastShown) {
+          this.lastShown = state;
+          this.options.hooks.onTurnSettled(view);
+        }
+      }
     } catch (failure) {
       this.apply(
         next(this.status, { kind: "transport_failed", detail: describeFailure(failure) }),

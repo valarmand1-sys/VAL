@@ -487,6 +487,30 @@ class Gateway:
 
     # --- the entrances ---------------------------------------------------------
 
+    def warm_voice(self) -> Mapping[str, object]:
+        """Load the speech model early, and generate nothing.
+
+        Owner acceptance, 25 September 2026 (WP3 Step B §9). Each synthesis is its own
+        subprocess, so the first of a session pays for reading the weights off disk:
+        **6.708 s** for a 1.68 s phrase against **2.727 s** warm, sitting directly in
+        front of his first spoken answer. Loading while he is still talking removes it.
+
+        Not a gate, exactly like `warm_cognition`: a failure is reported and the first
+        answer proceeds as it would have. Nothing is spoken and nothing is recorded —
+        Val has not said anything, so there is nothing to attribute.
+        """
+        speech = self.speech
+        if speech is None:
+            return {"warmed": False, "reason": "this house has no admitted speech route"}
+        warm = getattr(speech, "warm", None)
+        if not callable(warm):
+            return {"warmed": False, "reason": "this speech provider cannot be warmed"}
+        try:
+            report = warm()
+        except Exception as failure:  # reported, never fatal
+            return {"warmed": False, "reason": f"{type(failure).__name__}: {failure}"}
+        return dict(report) if isinstance(report, Mapping) else {"warmed": False}
+
     def warm_cognition(self) -> Mapping[str, object]:
         """Bring the ordinary conversation route's local runtime up, early.
 
