@@ -924,9 +924,10 @@ acceptance are **not** inferred from this timing report.
 
 - **Service:** process 14780, started on `642cb35`'s code; `e866a09` changed only the
   desktop.
-- **Desktop:** the report fields prove `b6c8937` or later. The installed binary is
-  `e866a09`'s, and Val was not running at install time. Which build this window ran
-  is **not provable from the records**: the desktop reports no build identity.
+- **Desktop:** `e866a09` (DERIVED). The bundle was installed at 22:58:41 (its change
+  time) while Val was not running, the deployment check found it the only launchable
+  copy, and the session opened at 23:03:28. The report fields independently prove
+  `b6c8937` or later. The desktop itself reports no build identity.
 - **Runtime:** `openai/gpt-oss-20b`, parallel 1.
 
 **What happened:**
