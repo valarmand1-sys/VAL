@@ -1,0 +1,28 @@
+{
+ "model": "openai/gpt-oss-20b",
+ "repeats": 3,
+ "seconds_to_first_chunk": {
+  "alone": [
+   0.106,
+   0.231,
+   0.23
+  ],
+  "long_alone": [
+   6.541,
+   6.626,
+   6.611
+  ],
+  "behind": [
+   4.645,
+   4.719,
+   4.769
+  ],
+  "aborted": [
+   4.59,
+   4.56,
+   4.669
+  ],
+  "long_after_abort_exit": []
+ },
+ "measured_at": "2026-09-25T20:34:01-0500"
+}

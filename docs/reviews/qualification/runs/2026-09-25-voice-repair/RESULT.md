@@ -29,10 +29,28 @@ produces the failure below for any answer with more than one segment.
 | his words → her playback start (panel) | 9,033 ms | 13,243 ms |
 | segments in her answer | 2 | 3 |
 
-Her text: read only when the turn was appended, after `delivery.finish` — after the
-**last** segment had been synthesised. With two and three segments, that is mid-way
-through and near the end of her speech. NOT RECORDED: the exact per-segment playback
-times (the build did not report them); the paint of her text.
+**Deployment at the time (OBSERVED):** desktop `60e4e81` (built 10:20, the last desktop
+change, so the intended build); service restarted 17:40 CDT on `6cb3901`, the priming
+deployment; `openai/gpt-oss-20b` loaded at parallel 1, 32,768 context; both turns reused
+the 5,048-token persona prefix (LM Studio's log, `5048/…`).
+
+**Her voice and her text, per segment** (service clock; `speech_playbacks` rows are the
+desktop's own reports, `speech_deliveries` the delivery's transitions; text time
+DERIVED as delivery `completed` + at most one 120 ms poll + a ~15 ms read, since the old
+build read her answer only when the turn was appended):
+
+| | turn 1 (answer written 23:20:38.586) | turn 2 (answer written 23:21:05.548) |
+|---|---|---|
+| segment 1 playback | 41.320 – 42.916 | 07.847 – 08.885 |
+| segment 2 playback | 43.914 – 45.595 (1.0 s silence before) | 10.786 – 13.346 (1.9 s silence before) |
+| segment 3 playback | — | 13.896 – 16.938 (0.55 s silence before) |
+| delivery completed | 44.037 | 13.920 |
+| her text shown (DERIVED) | ~44.05 – 44.17: 2.7–2.9 s after she began, during segment 2 | ~13.93 – 14.06: 6.1–6.2 s after she began, during the last segment |
+
+His report — about half-way through the first answer, near the end of the second —
+matches the record. Her answer had been written **2.7 s and 2.3 s before her first
+playback**, so it could have been shown with her voice. NOT RECORDED: the paint of her
+text; the DOM moment of her text (the old panel measured only his words).
 
 **C. Synthetic qualification (this pass).** Below, labelled as such.
 
@@ -109,8 +127,42 @@ split sentences) and the time to her first model output (already reused).
 
 **Priming** retained unchanged: every turn reused the prefix (first output ≤ 1.92 s);
 refreshes cost 0.46–0.51 s, and twice per condition 6.7–6.9 s when the runtime had
-evicted the entry. Every refresh ended ≥ 3 s before the next request; none overlapped
-a turn. Eviction after longer turns is observed and not repaired here.
+evicted the entry. Every refresh ended ≥ 3 s before the next request in these runs.
+
+## 4a. When he speaks during a refresh (§6)
+
+**Why the entry is evicted** (read from the installed engine, `mlx_engine` @34 and its
+`mlx_lm.LRUPromptCache(max_size=10)`): snapshots are ordered by **insertion only** — a
+read does not renew one — and a prime that finds its checkpoint cached stores nothing.
+Each spoken turn inserts one conversation checkpoint and two full snapshots; when the
+checkpoints outnumber the snapshots the oldest checkpoint goes, and that is the
+persona's. It therefore lasts about five turns (typed turns count too) from when it was
+last *computed*, whatever the refresh does; the refresh then pays the full prefill.
+
+**Cancelling does not free the runtime** (`abort_probe.py`, three repeats): a short
+request 2 s into an uncached 6.6 s prefill waited 4.65–4.77 s; with the prefill's
+connection closed first, 4.56–4.67 s. LM Studio finishes the prefill regardless.
+
+**What his turn waits** (`collision_probe.py`, the production instance while idle,
+three repeats, seconds from his request to first output):
+
+| his turn arrives | wait |
+|---|---|
+| persona evicted, no refresh | 6.57–6.58 |
+| 0.5 s into a full re-prime | 6.24–6.27 |
+| 2 s into it | 4.75–4.76 |
+| 4 s into it | 2.74–2.76 |
+| 6 s into it | 0.74–0.75 |
+| persona held | 0.19–0.32 |
+
+The refresh after an eviction computes exactly what his next turn would otherwise
+compute itself, so arriving during it is **never worse** than having no refresh and is
+better by however long it has run. The policy stays as built: never started while any
+part of his turn is under way, not cancelled once sent (cancellation buys nothing),
+and a held refresh (0.46 s) is the only time he could wait for work his turn did not
+need. The one cost not re-measured here: a full re-prime overlapping his speech slowed
+Whisper's final decode by ~0.5 s in the priming pass — within the 1.1 s resume grace,
+so it would delay his provisional words, not his message.
 
 **Machine** (sampled once a second): the resident worker held 3,195 MB, the same as
 each one-shot run (3,188 MB), for the length of the session instead of a sentence;
@@ -131,4 +183,5 @@ offsets and gaps for his physical test.
 Files: `measure-before.json`, `measure-after.json` (every turn and segment),
 `service-timelines.log` (the service's content-free timeline, prime and warm lines
 from both runs; the full service logs were not kept), `tts-resident-probe.json`
-(one-shot against resident synthesis of the same phrases, before implementation).
+(one-shot against resident synthesis of the same phrases, before implementation),
+`abort-probe.json` and `collision-probe.json` (§4a).

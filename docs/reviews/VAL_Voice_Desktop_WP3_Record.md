@@ -773,7 +773,9 @@ text timing. Avatar blocked; LOW NOT_ADMITTED; Whisper unchanged.
 (evidence index §107). §16–§19 stand as written.
 
 **His physical failure (OBSERVED):** his words took 2.1 s to appear, her voice began
-9.0 s and 13.2 s after his words, and her text arrived after she had begun speaking.
+9.0 s and 13.2 s after his words, and her text arrived after she had begun speaking —
+2.7–2.9 s after she began (during her second segment) and 6.1–6.2 s after (during her
+last), reconstructed from the desktop's own playback reports in `speech_playbacks`.
 Cause of the last: the desktop read her answer only when the turn was appended, after
 **every** segment had been synthesised — about when she started for a one-segment
 reply (his earlier satisfactory run), mid-way or later for two or three segments.
@@ -797,7 +799,7 @@ live service.
 sentence synthesis median 2.92 → 2.02 s; speech end → first playback median 10.29 →
 9.13 s (first turn after Voice On 8.8–10.1 → 6.4–8.9 s); silent gaps 10.6 s → 0.6 s
 in total; her text ready before her voice 0/9 → 9/9 turns; text offset up to +17 s →
-0 for every segment. Priming retained unchanged; no refresh overlapped a turn.
+0 for every segment. Priming retained unchanged. The persona entry is evicted by the engine's insertion-ordered cache about every five turns; the refresh that follows costs ~6.6 s, and if he speaks during it his turn waits only for its remainder — measured never worse than no refresh (6.2 s at 0.5 s in, 0.75 s at 6 s in, against 6.6 s). Cancelling it does not free the runtime, so it is not cancelled.
 
 **Remaining dominant cost:** MEDIUM's hidden reasoning before visible text (1.1–6.3 s
 in these runs, 9.1 s in his), then first-sentence synthesis under contention with
