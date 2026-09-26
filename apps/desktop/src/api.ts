@@ -566,6 +566,8 @@ export const api = {
       state: PlaybackState;
       elapsed_ms?: number;
       reason?: string;
+      // How long ago the device did this, for a report held until her answer was known.
+      observed_ms_ago?: number;
     },
   ) =>
     request<PlaybackEventView[]>(`/voice/sessions/${session}/speech/played`, {

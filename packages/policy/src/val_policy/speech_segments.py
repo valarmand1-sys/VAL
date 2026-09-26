@@ -30,6 +30,15 @@ Three kinds of boundary, in the order the order names them:
 A first segment is allowed to be short so Val begins speaking promptly; later ones
 are held to a longer minimum, because a stream of three-word utterances is a
 worse thing to listen to than one unhurried sentence.
+
+**The first segment's own long-sentence rule** (owner order, 25 September 2026,
+targeted voice latency). Nothing can be heard until the first segment has been
+synthesised whole, and synthesis time grows with its length: his 13-second turn
+spent 3.85 s voicing a 121-character opening sentence. So the first segment alone
+takes the long-sentence cut much sooner — past `FIRST_SOFT_LIMIT` characters, at
+its earliest comma, semicolon or dash that leaves at least `FIRST_CLAUSE_MINIMUM`
+characters — while the rest of the sentence is synthesised as she speaks the first
+part. Only at a pause a reader would make; never mid-word; later segments unchanged.
 """
 
 from __future__ import annotations
@@ -53,6 +62,14 @@ FIRST_MINIMUM = 12
 #: Every later segment must reach this, so a full stop after two words does not
 #: produce its own utterance.
 LATER_MINIMUM = 40
+
+#: The first segment's long-sentence threshold: past this many characters without a
+#: sentence ending, it is cut at its earliest pause (targeted voice latency order).
+FIRST_SOFT_LIMIT = 60
+
+#: A first-segment pause cut must leave at least this much — so "My lord," is never
+#: spoken alone.
+FIRST_CLAUSE_MINIMUM = 24
 
 #: Text that must never reach speech. Core withholds the verdict block from the
 #: streaming sink and discards hidden reasoning at the adapter boundary; this is
@@ -101,6 +118,10 @@ _LAST_WORD = re.compile(r"([A-Za-z.]+)$")
 #: the en dash and the spaced hyphen are here because a quotation may not.
 _CLAUSE_MARKS = (", ", "; ", " \u2014 ", " \u2013 ", " - ")
 
+#: The first segment's pauses: the same marks, and the unspaced em dash Val writes
+#: ("cadence\u2014roughly"), cut after the dash.
+_FIRST_MARKS = (*_CLAUSE_MARKS, "\u2014")
+
 
 class SpeechTextRefusedError(Exception):
     """Text that must not be spoken reached the segmenter.
@@ -124,7 +145,7 @@ class Segment:
     start: int
     end: int
     text: str
-    #: `sentence`, `clause`, `long_sentence` or `flush`.
+    #: `sentence`, `clause`, `first_pause`, `long_sentence` or `flush`.
     reason: str
 
     @property
@@ -168,11 +189,15 @@ class SpeechSegmenter:
         hard_limit: int = HARD_LIMIT,
         first_minimum: int = FIRST_MINIMUM,
         later_minimum: int = LATER_MINIMUM,
+        first_soft_limit: int = FIRST_SOFT_LIMIT,
+        first_clause_minimum: int = FIRST_CLAUSE_MINIMUM,
     ) -> None:
         self.soft_limit = soft_limit
         self.hard_limit = hard_limit
         self.first_minimum = first_minimum
         self.later_minimum = later_minimum
+        self.first_soft_limit = first_soft_limit
+        self.first_clause_minimum = first_clause_minimum
         #: Everything Core has made visible so far, exactly as it arrived.
         self.source = ""
         #: How much of `source` has already been emitted. The invariant lives here.
@@ -291,7 +316,23 @@ class SpeechSegmenter:
                 continue
             return end, reason
 
-        # 2. A sentence that has grown too long to keep waiting on.
+        # 2. The first segment, grown past its own threshold: its earliest pause.
+        if not self.segments and len(pending) >= self.first_soft_limit:
+            earliest: int | None = None
+            for mark in _FIRST_MARKS:
+                place = pending.find(mark, self.first_clause_minimum)
+                if place < 0:
+                    continue
+                end = place + len(mark.rstrip())
+                # A completed pause only: something must follow it.
+                if self.emitted + end >= len(self.source):
+                    continue
+                if earliest is None or end < earliest:
+                    earliest = end
+            if earliest is not None:
+                return self.emitted + earliest, "first_pause"
+
+        # 3. A sentence that has grown too long to keep waiting on.
         if len(pending) >= self.soft_limit:
             window = pending[: self.hard_limit]
             for mark in _CLAUSE_MARKS:

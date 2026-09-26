@@ -1185,6 +1185,9 @@ class PlaybackReport(BaseModel):
     #: Milliseconds from the desktop collecting the segment to this state.
     elapsed_ms: int | None = None
     reason: str | None = None
+    #: How long ago the device did this, when the report was held back because the
+    #: segment was voiced before her answer was written and so had no answer to name.
+    observed_ms_ago: int | None = Field(default=None, ge=0, le=600_000)
 
 
 class PlaybackEventView(BaseModel):

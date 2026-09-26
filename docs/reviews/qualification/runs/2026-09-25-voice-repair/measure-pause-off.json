@@ -1,0 +1,1325 @@
+{
+ "condition": "pause-off",
+ "checkout": "/Users/josepharmand/Projects/val",
+ "revision": "b8ce92470500b386243e1985a736db3f822da967",
+ "dirty": true,
+ "sessions": [
+  {
+   "label": "pause-off session 1",
+   "session": "c3216873-df96-486f-b8be-9f40650b44c6",
+   "voice_on_to_first_speech_start_ms": 1389.5,
+   "turns": [
+    {
+     "phrase": "Good evening, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 967.0,
+      "words_provisional_after": 967.0,
+      "committed_seen": 2080.4,
+      "owner_message_canonical": 2093.7,
+      "answered_seen": 5002.4,
+      "answer_read_via_answered": 5015.5,
+      "turn_appended": 7774.1,
+      "answer_read_via_turn": 7784.8,
+      "first_playback_start": 6158.6
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "duration_s": 1.28,
+       "arrived_ms": 6158.6,
+       "playback_start_ms": 6158.6,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1626.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 36,
+       "text": "What shall we turn our attention to?",
+       "duration_s": 2.0,
+       "arrived_ms": 7623.6,
+       "playback_start_ms": 7623.6,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": 185.0,
+       "text_offset_before_ms": 161.1,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "How quickly are you supposed to answer me after I finish speaking?",
+     "speech_end_to": {
+      "endpoint_seen": 1026.2,
+      "words_provisional_after": 1026.2,
+      "committed_seen": 2171.3,
+      "owner_message_canonical": 2180.3,
+      "answered_seen": 9901.6,
+      "answer_read_via_answered": 9916.6,
+      "turn_appended": 19321.7,
+      "answer_read_via_turn": 19332.4,
+      "first_playback_start": 11492.6
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 93,
+       "text": "My lord, the conversation runs entirely on this machine, so there is no network delay to add.",
+       "duration_s": 5.6,
+       "arrived_ms": 11492.6,
+       "playback_start_ms": 11492.6,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 7839.8,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 55,
+       "text": "I begin processing as soon as your words are confirmed,",
+       "duration_s": 2.8,
+       "arrived_ms": 13120.8,
+       "playback_start_ms": 17092.6,
+       "waited_for_previous_ms": 3971.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 2239.8,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 163,
+       "text": "and from the last measured instance in this session the interval between the end of your speech and my first spoken reply has been roughly six to thirteen seconds.",
+       "duration_s": 9.2,
+       "arrived_ms": 16739.3,
+       "playback_start_ms": 19892.6,
+       "waited_for_previous_ms": 3153.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -560.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 100,
+       "text": "I cannot promise an exact figure, but that is the typical time for my responses in this local setup.",
+       "duration_s": 5.44,
+       "arrived_ms": 19155.7,
+       "playback_start_ms": 29092.6,
+       "waited_for_previous_ms": 9936.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -9760.2,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "That last one felt slow. Is it my internet connection, and could you time yourself so we can see?",
+     "speech_end_to": {
+      "endpoint_seen": 1009.8,
+      "words_provisional_after": 1009.8,
+      "committed_seen": 2150.0,
+      "owner_message_canonical": 2163.2,
+      "answered_seen": 9251.6,
+      "answer_read_via_answered": 9263.6,
+      "turn_appended": 19892.4,
+      "answer_read_via_turn": 19907.8,
+      "first_playback_start": 10113.8
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 44,
+       "text": "My lord, the conversation is entirely local;",
+       "duration_s": 3.28,
+       "arrived_ms": 10113.8,
+       "playback_start_ms": 10113.8,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 9794.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 39,
+       "text": "no network traffic leaves this machine.",
+       "duration_s": 2.24,
+       "arrived_ms": 11570.0,
+       "playback_start_ms": 13393.8,
+       "waited_for_previous_ms": 1823.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 6514.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 155,
+       "text": "The delay you noticed comes from the time it takes for your voice to be recognised, for me to process the content, and then for my words to be spoken back.",
+       "duration_s": 7.92,
+       "arrived_ms": 14782.6,
+       "playback_start_ms": 15633.8,
+       "waited_for_previous_ms": 851.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 4274.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 132,
+       "text": "In this session the measured interval from the end of your speech to my first spoken reply has been roughly six to thirteen seconds.",
+       "duration_s": 6.96,
+       "arrived_ms": 17636.2,
+       "playback_start_ms": 23553.8,
+       "waited_for_previous_ms": 5917.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -3645.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 79,
+       "text": "I cannot promise a tighter bound, but that is the typical range for this setup.",
+       "duration_s": 4.8,
+       "arrived_ms": 19808.1,
+       "playback_start_ms": 30513.8,
+       "waited_for_previous_ms": 10705.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -10605.9,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "pause-off session 2",
+   "session": "23b7e39f-0f20-4c43-a775-e709dab9fdf0",
+   "voice_on_to_first_speech_start_ms": 1257.4,
+   "turns": [
+    {
+     "phrase": "Good evening, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 1004.1,
+      "words_provisional_after": 1004.1,
+      "committed_seen": 2147.0,
+      "owner_message_canonical": 2157.1,
+      "answered_seen": 5691.6,
+      "answer_read_via_answered": 5700.4,
+      "turn_appended": 8351.2,
+      "answer_read_via_turn": 8362.4,
+      "first_playback_start": 6840.0
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "duration_s": 1.28,
+       "arrived_ms": 6840.0,
+       "playback_start_ms": 6840.0,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1522.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 36,
+       "text": "What shall we turn our attention to?",
+       "duration_s": 2.08,
+       "arrived_ms": 8270.7,
+       "playback_start_ms": 8270.7,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": 150.7,
+       "text_offset_before_ms": 91.7,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "How quickly are you supposed to answer me after I finish speaking?",
+     "speech_end_to": {
+      "endpoint_seen": 1010.7,
+      "words_provisional_after": 1010.7,
+      "committed_seen": 2153.5,
+      "owner_message_canonical": 2165.9,
+      "answered_seen": 11402.7,
+      "answer_read_via_answered": 11418.0,
+      "turn_appended": 19423.9,
+      "answer_read_via_turn": 19436.6,
+      "first_playback_start": 12681.0
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 48,
+       "text": "My lord, there is no set response time promised.",
+       "duration_s": 3.84,
+       "arrived_ms": 12681.0,
+       "playback_start_ms": 12681.0,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 6755.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 56,
+       "text": "I begin to reply as soon as I have processed your words.",
+       "duration_s": 3.2,
+       "arrived_ms": 14468.6,
+       "playback_start_ms": 16521.0,
+       "waited_for_previous_ms": 2052.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 2915.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 152,
+       "text": "The interval from the end of your speech to my first spoken word is roughly six to thirteen seconds, but that figure is an observation, not a guarantee.",
+       "duration_s": 8.24,
+       "arrived_ms": 17714.6,
+       "playback_start_ms": 19721.0,
+       "waited_for_previous_ms": 2006.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -284.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 42,
+       "text": "I do not have any timing promise to offer.",
+       "duration_s": 2.4,
+       "arrived_ms": 19258.7,
+       "playback_start_ms": 27961.0,
+       "waited_for_previous_ms": 8702.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -8524.4,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "That last one felt slow. Is it my internet connection, and could you time yourself so we can see?",
+     "speech_end_to": {
+      "endpoint_seen": 1040.8,
+      "words_provisional_after": 1040.8,
+      "committed_seen": 2184.8,
+      "owner_message_canonical": 2197.0,
+      "answered_seen": 11568.5,
+      "answer_read_via_answered": 11579.0,
+      "turn_appended": 26903.7,
+      "answer_read_via_turn": 26915.1,
+      "first_playback_start": 12510.0
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 67,
+       "text": "My lord, the delay you perceived was not caused by your connection.",
+       "duration_s": 4.48,
+       "arrived_ms": 12510.0,
+       "playback_start_ms": 12510.0,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 14405.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 107,
+       "text": "The conversation is local\u2011only; all speech recognition, reasoning, and synthesis occur on the same machine.",
+       "duration_s": 6.24,
+       "arrived_ms": 15121.2,
+       "playback_start_ms": 16990.0,
+       "waited_for_previous_ms": 1868.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 9925.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 154,
+       "text": "The measured interval from the end of your last spoken word to my first spoken phrase, recorded on 25\u202fSeptember\u202f2026, was roughly six to thirteen seconds.",
+       "duration_s": 10.16,
+       "arrived_ms": 19056.6,
+       "playback_start_ms": 23230.0,
+       "waited_for_previous_ms": 4173.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 3685.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 91,
+       "text": "That figure is an observation of this particular session and does not constitute a promise;",
+       "duration_s": 5.12,
+       "arrived_ms": 21382.6,
+       "playback_start_ms": 33390.0,
+       "waited_for_previous_ms": 12007.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -6474.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 100,
+       "text": "it reflects the time needed for recognition, internal reasoning, and voice synthesis on this device.",
+       "duration_s": 5.76,
+       "arrived_ms": 23882.6,
+       "playback_start_ms": 38510.0,
+       "waited_for_previous_ms": 14627.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -11594.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 6,
+       "chars": 122,
+       "text": "I cannot provide a real\u2011time stopwatch measurement in the moment, but that range gives you an idea of the typical latency.",
+       "duration_s": 6.8,
+       "arrived_ms": 26718.7,
+       "playback_start_ms": 44270.0,
+       "waited_for_previous_ms": 17551.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -17354.9,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "pause-off session 3",
+   "session": "6f3e8e8d-3c00-468c-99e8-d426b1a420bc",
+   "voice_on_to_first_speech_start_ms": 1235.3,
+   "turns": [
+    {
+     "phrase": "Good evening, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 955.7,
+      "words_provisional_after": 955.7,
+      "committed_seen": 2093.4,
+      "owner_message_canonical": 2100.7,
+      "answered_seen": 6814.1,
+      "answer_read_via_answered": 6823.2,
+      "turn_appended": 9753.1,
+      "answer_read_via_turn": 9761.6,
+      "first_playback_start": 8147.0
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "duration_s": 1.6,
+       "arrived_ms": 8147.0,
+       "playback_start_ms": 8147.0,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1614.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 42,
+       "text": "What matter shall we attend to this night?",
+       "duration_s": 2.24,
+       "arrived_ms": 9623.6,
+       "playback_start_ms": 9747.0,
+       "waited_for_previous_ms": 123.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 14.6,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "How quickly are you supposed to answer me after I finish speaking?",
+     "speech_end_to": {
+      "endpoint_seen": 1030.6,
+      "words_provisional_after": 1030.6,
+      "committed_seen": 2050.2,
+      "owner_message_canonical": 2068.7,
+      "answered_seen": 10928.1,
+      "answer_read_via_answered": 10941.3,
+      "turn_appended": 17377.1,
+      "answer_read_via_turn": 17393.1,
+      "first_playback_start": 12655.4
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 72,
+       "text": "My lord, I begin my reply within a few seconds of the end of your words.",
+       "duration_s": 4.72,
+       "arrived_ms": 12655.4,
+       "playback_start_ms": 12655.4,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 4737.7,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 127,
+       "text": "In our present session that has been roughly six to thirteen seconds from when you finished speaking to my first spoken phrase.",
+       "duration_s": 6.08,
+       "arrived_ms": 15316.7,
+       "playback_start_ms": 17375.4,
+       "waited_for_previous_ms": 2058.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 17.7,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 69,
+       "text": "I do not maintain a formal promise, but that is the typical interval.",
+       "duration_s": 4.0,
+       "arrived_ms": 17277.7,
+       "playback_start_ms": 23455.4,
+       "waited_for_previous_ms": 6177.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -6062.3,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "That last one felt slow. Is it my internet connection, and could you time yourself so we can see?",
+     "speech_end_to": {
+      "endpoint_seen": 1028.3,
+      "words_provisional_after": 1028.3,
+      "committed_seen": 2170.9,
+      "owner_message_canonical": 2185.5,
+      "answered_seen": 12872.0,
+      "answer_read_via_answered": 12887.1,
+      "turn_appended": 41751.0,
+      "answer_read_via_turn": 41762.7,
+      "first_playback_start": 10763.2
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 68,
+       "text": "My lord, the delay you noticed is not caused by an external network.",
+       "duration_s": 4.48,
+       "arrived_ms": 10763.2,
+       "playback_start_ms": 10763.2,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 30999.5,
+       "text_offset_after_ms": 2123.8
+      },
+      {
+       "index": 2,
+       "chars": 65,
+       "text": "This conversation runs entirely within the house\u2019s local machine;",
+       "duration_s": 3.76,
+       "arrived_ms": 13572.8,
+       "playback_start_ms": 15243.2,
+       "waited_for_previous_ms": 1670.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 26519.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 110,
+       "text": "no messages leave that device, and there is no internet\u2011based lookup or external service to slow the exchange.",
+       "duration_s": 6.56,
+       "arrived_ms": 16372.6,
+       "playback_start_ms": 19003.2,
+       "waited_for_previous_ms": 2630.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 22759.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 49,
+       "text": "The latency I experience consists of three parts:",
+       "duration_s": 3.68,
+       "arrived_ms": 18273.0,
+       "playback_start_ms": 25563.2,
+       "waited_for_previous_ms": 7290.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 16199.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 83,
+       "text": "1. **Speech recognition** \u2013 your words are transcribed by the local Whisper engine;",
+       "duration_s": 5.76,
+       "arrived_ms": 20779.0,
+       "playback_start_ms": 29243.2,
+       "waited_for_previous_ms": 8464.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 12519.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 6,
+       "chars": 170,
+       "text": "this takes a fraction of a second.\n2. **Internal deliberation** \u2013 I parse the request, consult any available records (none are present for this query), and draft a reply.",
+       "duration_s": 10.32,
+       "arrived_ms": 24646.1,
+       "playback_start_ms": 35003.2,
+       "waited_for_previous_ms": 10357.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 6759.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 7,
+       "chars": 66,
+       "text": "That step usually takes two to three seconds in our current build.",
+       "duration_s": 3.36,
+       "arrived_ms": 26445.2,
+       "playback_start_ms": 45323.2,
+       "waited_for_previous_ms": 18878.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -3560.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 8,
+       "chars": 78,
+       "text": "3. **Speech synthesis** \u2013 my voice is rendered locally and spoken back to you;",
+       "duration_s": 5.36,
+       "arrived_ms": 28866.6,
+       "playback_start_ms": 48683.2,
+       "waited_for_previous_ms": 19816.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -6920.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 9,
+       "chars": 57,
+       "text": "this is essentially instantaneous once the text is ready.",
+       "duration_s": 3.44,
+       "arrived_ms": 30652.6,
+       "playback_start_ms": 54043.2,
+       "waited_for_previous_ms": 23390.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -12280.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 10,
+       "chars": 168,
+       "text": "In practice, from the moment your last word ends to the first spoken phrase of my reply, we have measured a span of roughly **six to thirteen seconds** on this machine.",
+       "duration_s": 8.48,
+       "arrived_ms": 33991.9,
+       "playback_start_ms": 57483.2,
+       "waited_for_previous_ms": 23491.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -15720.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 11,
+       "chars": 41,
+       "text": "That figure is the best estimate we have;",
+       "duration_s": 2.16,
+       "arrived_ms": 35374.6,
+       "playback_start_ms": 65963.2,
+       "waited_for_previous_ms": 30588.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -24200.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 12,
+       "chars": 150,
+       "text": "I cannot promise a tighter bound because the exact duration depends on the instantaneous load of the local processor and the microphone input latency.",
+       "duration_s": 8.4,
+       "arrived_ms": 38751.2,
+       "playback_start_ms": 68123.2,
+       "waited_for_previous_ms": 29372.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -26360.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 13,
+       "chars": 135,
+       "text": "If you wish, I can log that interval for our own records, but I cannot extend or reduce it beyond the constraints of this local system.",
+       "duration_s": 7.12,
+       "arrived_ms": 41631.4,
+       "playback_start_ms": 76523.2,
+       "waited_for_previous_ms": 34891.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -34760.5,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "service_components": [
+  {
+   "anchor_wall": "2026-09-26T02:49:43.589+00:00",
+   "request_ready_to_first_output_ms": 2033.0,
+   "first_output_to_visible_text_ms": 866.2,
+   "request_ready_to_first_speech_text_ms": 2899.2,
+   "first_tts_ms": 1193.4,
+   "cognition_complete_ms": 22.0,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:49:58.964+00:00",
+   "request_ready_to_first_output_ms": 2151.9,
+   "first_output_to_visible_text_ms": 3957.3,
+   "request_ready_to_first_speech_text_ms": 6109.2,
+   "first_tts_ms": 3028.2,
+   "cognition_complete_ms": 12.2,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:50:41.692+00:00",
+   "request_ready_to_first_output_ms": 2268.5,
+   "first_output_to_visible_text_ms": 3090.7,
+   "request_ready_to_first_speech_text_ms": 5359.2,
+   "first_tts_ms": 2504.7,
+   "cognition_complete_ms": 10.9,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:51:25.233+00:00",
+   "request_ready_to_first_output_ms": 1990.1,
+   "first_output_to_visible_text_ms": 1554.5,
+   "request_ready_to_first_speech_text_ms": 3544.6,
+   "first_tts_ms": 1197.7,
+   "cognition_complete_ms": 10.5,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:51:41.236+00:00",
+   "request_ready_to_first_output_ms": 2130.4,
+   "first_output_to_visible_text_ms": 5936.1,
+   "request_ready_to_first_speech_text_ms": 8066.5,
+   "first_tts_ms": 2342.3,
+   "cognition_complete_ms": 15.1,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:52:19.758+00:00",
+   "request_ready_to_first_output_ms": 2286.7,
+   "first_output_to_visible_text_ms": 4666.0,
+   "request_ready_to_first_speech_text_ms": 6952.7,
+   "first_tts_ms": 3157.7,
+   "cognition_complete_ms": 6.9,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:53:19.192+00:00",
+   "request_ready_to_first_output_ms": 1975.2,
+   "first_output_to_visible_text_ms": 2759.1,
+   "request_ready_to_first_speech_text_ms": 4734.3,
+   "first_tts_ms": 1279.0,
+   "cognition_complete_ms": 4.3,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:53:36.974+00:00",
+   "request_ready_to_first_output_ms": 2142.1,
+   "first_output_to_visible_text_ms": 5772.2,
+   "request_ready_to_first_speech_text_ms": 7914.3,
+   "first_tts_ms": 2438.5,
+   "cognition_complete_ms": 8.2,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T02:54:12.704+00:00",
+   "request_ready_to_first_output_ms": 2158.3,
+   "first_output_to_visible_text_ms": 2789.9,
+   "request_ready_to_first_speech_text_ms": 4948.2,
+   "first_tts_ms": 3476.7,
+   "cognition_complete_ms": 3.9,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 0.805,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0db9e-5f3c-74dc-88d5-403a41f64401",
+    "seconds": 0.464
+   },
+   "wall": 1790390984.515
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.477,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0db9e-785a-7e4e-a452-3fec37ecd2b5",
+    "seconds": 0.315
+   },
+   "wall": 1790390990.95
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.583,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0db9e-e1f5-7d2f-b2e1-562eea23fbb7",
+    "seconds": 0.329
+   },
+   "wall": 1790391017.976
+  },
+  {
+   "kind": "refresh",
+   "seconds": 6.581,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0db9f-a30e-76db-b0e7-3be28ab43425",
+    "seconds": 6.412
+   },
+   "wall": 1790391067.41
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.477,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0db9f-eb02-73d4-8278-68259a1fb8c2",
+    "seconds": 0.301
+   },
+   "wall": 1790391085.834
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.495,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dba0-081d-7c7f-87cf-3b839d47b0fc",
+    "seconds": 0.323
+   },
+   "wall": 1790391093.281
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.631,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dba0-71e4-7738-a1db-ace7fb722ed8",
+    "seconds": 0.379
+   },
+   "wall": 1790391120.359
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.561,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dba1-258d-758c-8f3f-a01df2572ab4",
+    "seconds": 0.309
+   },
+   "wall": 1790391166.352
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.47,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dba1-a827-797a-98a9-02bae2aaf065",
+    "seconds": 0.296
+   },
+   "wall": 1790391199.786
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.496,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dba1-ca77-7696-96b7-394abfb5bbe1",
+    "seconds": 0.335
+   },
+   "wall": 1790391208.57
+  },
+  {
+   "kind": "refresh",
+   "seconds": 6.561,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dba2-4581-7fa3-afad-e10580e4cc19",
+    "seconds": 6.389
+   },
+   "wall": 1790391240.073
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.559,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "8d9426f578374b2cf8aad3db0ced1993e5808613c21f24b6bf6de8354e74e077",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dba3-18fa-799c-b549-49a20e087b73",
+    "seconds": 0.312
+   },
+   "wall": 1790391294.207
+  }
+ ],
+ "machine": {
+  "samples": 345,
+  "min_free_percent": 27,
+  "swap_used_mb_first": 1325.5,
+  "swap_used_mb_last": 1325.5,
+  "max_resident_speech_rss_mb": 3195.9,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "measured_at": "2026-09-25T21:55:41",
+ "serve": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-25-voice-repair/serve_variant.py",
+ "first_pause": "off",
+ "dialogue": [
+  [
+   "01a0db9e-6082-7c4b-b5a2-a79ddb3b4d2b",
+   "1",
+   "user",
+   "Good evening, Val."
+  ],
+  [
+   "01a0db9e-6082-7c4b-b5a2-a79ddb3b4d2b",
+   "2",
+   "val",
+   "Good evening, my lord. What shall we turn our attention to?"
+  ],
+  [
+   "01a0db9e-6082-7c4b-b5a2-a79ddb3b4d2b",
+   "3",
+   "user",
+   "How quickly are you supposed to answer me after I finish speaking?"
+  ],
+  [
+   "01a0db9e-6082-7c4b-b5a2-a79ddb3b4d2b",
+   "4",
+   "val",
+   "My lord, the conversation runs entirely on this machine, so there is no network delay to add. I begin processing as soon as your words are confirmed, and from the last measured instance in this session the interval between the end of your speech and my first spoken reply has been roughly six to thirteen seconds. I cannot promise an exact figure, but that is the typical time for my responses in this local setup."
+  ],
+  [
+   "01a0db9e-6082-7c4b-b5a2-a79ddb3b4d2b",
+   "5",
+   "user",
+   "That last one felt slow. Is it my internet connection? And could you time yourself so we can see?"
+  ],
+  [
+   "01a0db9e-6082-7c4b-b5a2-a79ddb3b4d2b",
+   "6",
+   "val",
+   "My lord, the conversation is entirely local; no network traffic leaves this machine. The delay you noticed comes from the time it takes for your voice to be recognised, for me to process the content, and then for my words to be spoken back. In this session the measured interval from the end of your speech to my first spoken reply has been roughly six to thirteen seconds. I cannot promise a tighter bound, but that is the typical range for this setup."
+  ],
+  [
+   "01a0db9f-ed8c-747f-a57a-0c8acb31acb2",
+   "1",
+   "user",
+   "Good evening, Val."
+  ],
+  [
+   "01a0db9f-ed8c-747f-a57a-0c8acb31acb2",
+   "2",
+   "val",
+   "Good evening, my lord. What shall we turn our attention to?"
+  ],
+  [
+   "01a0db9f-ed8c-747f-a57a-0c8acb31acb2",
+   "3",
+   "user",
+   "How quickly are you supposed to answer me after I finish speaking?"
+  ],
+  [
+   "01a0db9f-ed8c-747f-a57a-0c8acb31acb2",
+   "4",
+   "val",
+   "My lord, there is no set response time promised. I begin to reply as soon as I have processed your words. The interval from the end of your speech to my first spoken word is roughly six to thirteen seconds, but that figure is an observation, not a guarantee. I do not have any timing promise to offer."
+  ],
+  [
+   "01a0db9f-ed8c-747f-a57a-0c8acb31acb2",
+   "5",
+   "user",
+   "That last one felt slow. Is it my internet connection? And could you time yourself so we can see?"
+  ],
+  [
+   "01a0db9f-ed8c-747f-a57a-0c8acb31acb2",
+   "6",
+   "val",
+   "My lord, the delay you perceived was not caused by your connection. The conversation is local\u2011only; all speech recognition, reasoning, and synthesis occur on the same machine. The measured interval from the end of your last spoken word to my first spoken phrase, recorded on 25\u202fSeptember\u202f2026, was roughly six to thirteen seconds. That figure is an observation of this particular session and does not constitute a promise; it reflects the time needed for recognition, internal reasoning, and voice synthesis on this device. I cannot provide a real\u2011time stopwatch measurement in the moment, but that range gives you an idea of the typical latency."
+  ],
+  [
+   "01a0dba1-aab1-7b14-ae6e-8bd744716591",
+   "1",
+   "user",
+   "Good evening, Val."
+  ],
+  [
+   "01a0dba1-aab1-7b14-ae6e-8bd744716591",
+   "2",
+   "val",
+   "Good evening, my lord. What matter shall we attend to this night?"
+  ],
+  [
+   "01a0dba1-aab1-7b14-ae6e-8bd744716591",
+   "3",
+   "user",
+   "How quickly are you supposed to answer me after I finish speaking?"
+  ],
+  [
+   "01a0dba1-aab1-7b14-ae6e-8bd744716591",
+   "4",
+   "val",
+   "My lord, I begin my reply within a few seconds of the end of your words. In our present session that has been roughly six to thirteen seconds from when you finished speaking to my first spoken phrase. I do not maintain a formal promise, but that is the typical interval."
+  ],
+  [
+   "01a0dba1-aab1-7b14-ae6e-8bd744716591",
+   "5",
+   "user",
+   "That last one felt slow. Is it my internet connection? And could you time yourself so we can see?"
+  ],
+  [
+   "01a0dba1-aab1-7b14-ae6e-8bd744716591",
+   "6",
+   "val",
+   "My lord, the delay you noticed is not caused by an external network. This conversation runs entirely within the house\u2019s local machine; no messages leave that device, and there is no internet\u2011based lookup or external service to slow the exchange."
+  ],
+  [
+   ""
+  ],
+  [
+   "The latency I experience consists of three parts:"
+  ],
+  [
+   ""
+  ],
+  [
+   "1. **Speech recognition** \u2013 your words are transcribed by the local Whisper engine; this takes a fraction of a second."
+  ],
+  [
+   "2. **Internal deliberation** \u2013 I parse the request, consult any available records (none are present for this query), and draft a reply. That step usually takes two to three seconds in our current build."
+  ],
+  [
+   "3. **Speech synthesis** \u2013 my voice is rendered locally and spoken back to you; this is essentially instantaneous once the text is ready."
+  ],
+  [
+   ""
+  ],
+  [
+   "In practice, from the moment your last word ends to the first spoken phrase of my reply, we have measured a span of roughly **six to thirteen seconds** on this machine. That figure is the best estimate we have; I cannot promise a tighter bound because the exact duration depends on the instantaneous load of the local processor and the microphone input latency."
+  ],
+  [
+   ""
+  ],
+  [
+   "If you wish, I can log that interval for our own records, but I cannot extend or reduce it beyond the constraints of this local system."
+  ]
+ ]
+}

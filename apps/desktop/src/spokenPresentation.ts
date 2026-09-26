@@ -14,6 +14,15 @@
 // slices of the visible answer, in order, covering it exactly, so what is revealed is
 // always a prefix of the canonical message and reconciles into it without duplicates.
 //
+// **One record per answer** (targeted voice latency order, 25 September 2026). In his
+// successful session he spoke while she was still thinking; his words were committed
+// as a new turn while her previous answer was still being spoken, for 44 s. A single
+// "current answer" ended the one she was speaking — marking its remaining text "not
+// spoken" while she spoke it — and let its later segments be absorbed into the new
+// turn. Each answer now keeps its own record: a new turn ends nothing, a segment
+// belongs to the answer that took it when it was offered (its `key`), and an answer
+// waiting behind another's playback is not "stalled".
+//
 // Failure is explicit rather than silent: an interruption, a failed or stalled
 // delivery, or Voice ending reveals the rest at once, marked as not spoken — generated
 // text is never stranded, and never presented as heard.
@@ -21,16 +30,19 @@
 /** The id a segment carries when it was voiced before her answer was written. */
 export const UNBOUND_MESSAGE = "00000000-0000-0000-0000-000000000000";
 
-/** No playback progress for this long, with text waiting, means speech has stalled. */
+/** No playback activity at all for this long, with text waiting, means speech has stalled. */
 export const STALL_MS = 12_000;
 
+/** How many answers are remembered; the oldest finished ones are forgotten first. */
+const REMEMBERED = 6;
+
 export type SpokenState =
-  | "awaiting" // her answer exists; no segment has started playing yet
+  | "awaiting" // her answer exists; no segment of it has started playing yet
   | "speaking" // segments are playing; text follows them
   | "complete" // every segment has started: the whole answer is shown
   | "interrupted" // stopped — barge-in; the rest was not spoken
   | "failed" // synthesis or playback failed; the rest was not spoken
-  | "stalled" // no progress for STALL_MS; the rest is shown, not yet spoken
+  | "stalled" // no playback activity for STALL_MS; the rest is shown, not yet spoken
   | "released"; // Voice ended; the rest was not spoken
 
 export interface SpokenSegment {
@@ -42,10 +54,14 @@ export interface SpokenSegment {
 }
 
 export interface SpokenAnswer {
+  /** This window's own handle for the answer, carried by each of its segments. */
+  key: number;
   /** Her message, once known; `null` while every segment so far was voiced unbound. */
   messageId: string | null;
-  /** His message this answers — what keeps a late segment out of the wrong turn. */
+  /** His message this answers. */
   turn: string | null;
+  /** The service's utterance number of his message, for the timing report. */
+  utterance: number | null;
   state: SpokenState;
   /** The segments that have started playing, in order. */
   segments: SpokenSegment[];
@@ -53,7 +69,6 @@ export interface SpokenAnswer {
   revealed: string;
   offered: number;
   allOffered: boolean;
-  lastProgressAt: number;
 }
 
 export interface Presented {
@@ -81,20 +96,27 @@ const NOTES: Partial<Record<SpokenState, string>> = {
   released: "Not spoken — Voice ended.",
 };
 
-export function isTerminal(answer: SpokenAnswer | null): boolean {
-  return answer !== null && TERMINAL.has(answer.state);
+export function isTerminal(answer: SpokenAnswer | null | undefined): boolean {
+  return answer !== null && answer !== undefined && TERMINAL.has(answer.state);
 }
 
 /**
- * How one message should be displayed, given the spoken answer being paced.
+ * How one message should be displayed, given the spoken answers being paced.
  *
- * Anything other than the paced answer is shown whole, exactly as before: ordinary
+ * Anything that is not a paced answer is shown whole, exactly as before: ordinary
  * text presentation is unchanged. If the revealed text is somehow not a prefix of the
  * canonical content, the whole message is shown — never a mangled one.
  */
-export function present(content: string, messageId: string, answer: SpokenAnswer | null): Presented {
+export function present(
+  content: string,
+  messageId: string,
+  answers: readonly SpokenAnswer[] | SpokenAnswer | null,
+): Presented {
   const whole: Presented = { shown: content, unspoken: "", pacing: false, note: null };
-  if (answer === null || answer.messageId !== messageId) return whole;
+  const list: readonly SpokenAnswer[] =
+    answers === null ? [] : Array.isArray(answers) ? answers : [answers as SpokenAnswer];
+  const answer = list.find((candidate) => candidate.messageId === messageId);
+  if (answer === undefined) return whole;
   if (!content.startsWith(answer.revealed)) return whole;
   if (answer.state === "complete") return whole;
   if (answer.state === "awaiting" || answer.state === "speaking") {
@@ -114,119 +136,136 @@ export function present(content: string, messageId: string, answer: SpokenAnswer
  * none is a clock guess, except the stall check, which only ever reveals *more*.
  */
 export class SpokenPresentation {
-  private answer: SpokenAnswer | null = null;
+  private list: SpokenAnswer[] = [];
+  private nextKey = 1;
+  /** Any segment offered, started or ended, of any answer: the stall clock. */
+  private lastActivityAt: number;
 
   constructor(
-    private readonly onChange: (answer: SpokenAnswer | null) => void,
+    private readonly onChange: (answers: SpokenAnswer[]) => void,
     private readonly now: () => number,
-  ) {}
-
-  get current(): SpokenAnswer | null {
-    return this.answer;
+  ) {
+    this.lastActivityAt = now();
   }
 
-  /** His message is committed: a new turn. Anything still pacing ends, unspoken. */
-  turn(ownerMessageId: string): void {
-    if (this.answer !== null && this.answer.turn === ownerMessageId) return;
-    if (this.answer !== null && !isTerminal(this.answer)) this.finish("released");
-    this.answer = {
+  /** Every remembered answer, oldest first — copies, for rendering. */
+  get answers(): SpokenAnswer[] {
+    return this.list.map(copy);
+  }
+
+  /** The newest answer: the one his most recent turn will be given. */
+  get current(): SpokenAnswer | null {
+    return this.list.at(-1) ?? null;
+  }
+
+  byKey(key: number | undefined): SpokenAnswer | null {
+    return this.list.find((answer) => answer.key === key) ?? null;
+  }
+
+  /** Her message a segment belongs to, as far as this window knows it yet. */
+  messageIdOf(key: number | undefined): string | null {
+    return this.byKey(key)?.messageId ?? null;
+  }
+
+  /** His message is committed: a new turn. **It ends nothing already being spoken.** */
+  turn(ownerMessageId: string, utterance: number | null = null): void {
+    if (this.list.some((answer) => answer.turn === ownerMessageId)) return;
+    this.list.push({
+      key: this.nextKey++,
       messageId: null,
       turn: ownerMessageId,
+      utterance,
       state: "awaiting",
       segments: [],
       revealed: "",
       offered: 0,
       allOffered: false,
-      lastProgressAt: this.now(),
-    };
+    });
+    this.lastActivityAt = this.now();
+    this.forget();
     this.emit();
   }
 
   /** Her answer to that turn is written: its id, for the thread to pace. */
   answered(ownerMessageId: string, messageId: string): void {
-    if (this.answer === null || this.answer.turn !== ownerMessageId) this.turn(ownerMessageId);
-    const answer = this.answer as SpokenAnswer;
+    let answer = this.list.find((candidate) => candidate.turn === ownerMessageId);
+    if (answer === undefined) {
+      this.turn(ownerMessageId);
+      answer = this.list.at(-1) as SpokenAnswer;
+    }
     if (answer.messageId === messageId) return;
-    answer.messageId = messageId;
-    answer.lastProgressAt = this.now();
-    this.emit();
-  }
-
-  /** Whether a segment belongs to the answer being paced (or may be adopted by it). */
-  belongs(messageId: string): boolean {
-    const answer = this.answer;
-    if (answer === null || isTerminal(answer)) return false;
-    return messageId === UNBOUND_MESSAGE || answer.messageId === null || answer.messageId === messageId;
-  }
-
-  offered(messageId: string): void {
-    if (!this.belongs(messageId)) return;
-    const answer = this.answer as SpokenAnswer;
-    if (messageId !== UNBOUND_MESSAGE && answer.messageId === null) answer.messageId = messageId;
-    answer.offered += 1;
-    answer.lastProgressAt = this.now();
+    // Never two answers under one id.
+    if (answer.messageId === null && !this.list.some((other) => other.messageId === messageId)) {
+      answer.messageId = messageId;
+      this.lastActivityAt = this.now();
+      this.emit();
+    }
   }
 
   /**
-   * Whether a delivery's reported state concerns the answer being paced. The service
-   * repeats a delivery's state on every poll until the next delivery replaces it, so
-   * the previous answer's `completed` or stop is still being reported while his next
-   * turn is thought about — and must not land on the new answer.
+   * A segment has been collected: which answer takes it, or `null` if none may —
+   * a segment of an answer that has ended is neither played nor revealed.
+   *
+   * An unbound segment was voiced before her answer was written, which only the
+   * newest turn's delivery can do. A bound one belongs to the answer with that id;
+   * one no answer here has seen is adopted by the newest answer still unnamed.
    */
-  concerns(deliveryMessageId: string | null): boolean {
-    const answer = this.answer;
-    if (answer === null || isTerminal(answer)) return false;
-    if (deliveryMessageId === null || deliveryMessageId === UNBOUND_MESSAGE) {
-      // An unwritten answer's delivery: only one that has already handed us audio.
-      return answer.messageId === null && answer.offered > 0;
-    }
-    return answer.messageId === deliveryMessageId;
+  offered(messageId: string): number | null {
+    const answer = this.route(messageId);
+    if (answer === null) return null;
+    if (messageId !== UNBOUND_MESSAGE && answer.messageId === null) answer.messageId = messageId;
+    answer.offered += 1;
+    this.lastActivityAt = this.now();
+    return answer.key;
+  }
+
+  /** Whether a segment would be taken (without taking it). */
+  belongs(messageId: string): boolean {
+    return this.route(messageId) !== null;
   }
 
   /** The delivery of this answer says every segment has been handed over. */
   allOffered(deliveryMessageId: string | null): void {
-    if (!this.concerns(deliveryMessageId)) return;
-    const answer = this.answer as SpokenAnswer;
+    const answer = this.concerned(deliveryMessageId);
+    if (answer === null) return;
     answer.allOffered = true;
-    this.completeIfDone();
+    this.completeIfDone(answer);
   }
 
   /** The delivery of this answer stopped: interrupted, or failed. */
   stopped(deliveryMessageId: string | null, failed: boolean): void {
-    if (!this.concerns(deliveryMessageId)) return;
-    this.finish(failed ? "failed" : "interrupted");
+    const answer = this.concerned(deliveryMessageId);
+    if (answer === null) return;
+    this.finish(answer, failed ? "failed" : "interrupted");
   }
 
-  started(messageId: string, index: number, text: string): number | null {
-    if (!this.belongs(messageId)) return null;
-    const answer = this.answer as SpokenAnswer;
-    if (messageId !== UNBOUND_MESSAGE && answer.messageId === null) answer.messageId = messageId;
+  started(key: number | undefined, index: number, text: string): number | null {
+    const answer = this.byKey(key);
+    if (answer === null || isTerminal(answer)) return null;
     if (answer.segments.some((segment) => segment.index === index)) return null;
     const at = this.now();
     answer.segments.push({ index, text, startedAt: at, endedAt: null, shownAt: null });
     answer.revealed += text;
     answer.state = "speaking";
-    answer.lastProgressAt = at;
+    this.lastActivityAt = at;
     this.emit();
-    this.completeIfDone();
+    this.completeIfDone(answer);
     return at;
   }
 
-  ended(messageId: string, index: number): void {
-    const answer = this.answer;
+  ended(key: number | undefined, index: number): void {
+    const answer = this.byKey(key);
     if (answer === null) return;
-    if (messageId !== UNBOUND_MESSAGE && answer.messageId !== null && answer.messageId !== messageId) {
-      return;
-    }
     const segment = answer.segments.find((item) => item.index === index);
-    if (segment !== undefined && segment.endedAt === null) segment.endedAt = this.now();
-    answer.lastProgressAt = this.now();
+    const at = this.now();
+    if (segment !== undefined && segment.endedAt === null) segment.endedAt = at;
+    this.lastActivityAt = at;
   }
 
   /** The thread's React commit that first showed this many revealed characters. */
   shown(messageId: string, revealedLength: number, at: number): void {
-    const answer = this.answer;
-    if (answer === null || answer.messageId !== messageId) return;
+    const answer = this.list.find((candidate) => candidate.messageId === messageId);
+    if (answer === undefined) return;
     let covered = 0;
     for (const segment of answer.segments) {
       covered += segment.text.length;
@@ -234,39 +273,43 @@ export class SpokenPresentation {
     }
   }
 
-  interrupted(): void {
-    this.finish("interrupted");
+  /** A segment's playback failed: that answer's remaining text is shown, not spoken. */
+  failed(key?: number): void {
+    const answer = key === undefined ? this.current : this.byKey(key);
+    if (answer !== null) this.finish(answer, "failed");
   }
 
-  failed(): void {
-    this.finish("failed");
-  }
-
+  /** Voice ended: every answer still being paced shows the rest, not spoken. */
   released(): void {
-    this.finish("released");
+    for (const answer of this.list) this.finish(answer, "released");
   }
 
-  /** Called on every session poll: a delivery that has stopped moving reveals the rest. */
+  /**
+   * Called on every session poll. Only a silence of the whole output — no segment of
+   * any answer offered, started or ended for `STALL_MS`, and none still playing —
+   * stalls an answer. One waiting its turn behind another's playback is not stalled.
+   */
   checkStall(): void {
-    const answer = this.answer;
-    if (answer === null || isTerminal(answer) || answer.messageId === null) return;
-    // A segment still playing is progress, however long the sentence: only a wait
-    // for the *next* segment to begin can be a stall.
-    const last = answer.segments.at(-1);
-    if (last !== undefined && last.endedAt === null) return;
-    if (this.now() - answer.lastProgressAt >= STALL_MS) this.finish("stalled");
+    const playing = this.list.some(
+      (answer) =>
+        !isTerminal(answer) && answer.segments.some((segment) => segment.endedAt === null),
+    );
+    if (playing || this.now() - this.lastActivityAt < STALL_MS) return;
+    for (const answer of this.list) {
+      if (answer.messageId !== null) this.finish(answer, "stalled");
+    }
   }
 
   /** Text reveal less playback start, per segment, in ms — where the DOM has confirmed it. */
-  offsets(): number[] {
-    return (this.answer?.segments ?? [])
+  offsets(key?: number): number[] {
+    return (this.pick(key)?.segments ?? [])
       .filter((segment) => segment.shownAt !== null)
       .map((segment) => Math.round((segment.shownAt as number) - segment.startedAt));
   }
 
   /** The silence between consecutive segments: next start less previous end, in ms. */
-  gaps(): number[] {
-    const segments = this.answer?.segments ?? [];
+  gaps(key?: number): number[] {
+    const segments = this.pick(key)?.segments ?? [];
     const out: number[] = [];
     for (let i = 1; i < segments.length; i += 1) {
       const previous = segments[i - 1] as SpokenSegment;
@@ -276,24 +319,73 @@ export class SpokenPresentation {
     return out;
   }
 
-  private completeIfDone(): void {
-    const answer = this.answer;
-    if (answer === null || isTerminal(answer)) return;
+  private pick(key?: number): SpokenAnswer | null {
+    return key === undefined ? this.current : this.byKey(key);
+  }
+
+  private route(messageId: string): SpokenAnswer | null {
+    if (messageId === UNBOUND_MESSAGE) {
+      const newest = this.current;
+      return newest !== null && !isTerminal(newest) ? newest : null;
+    }
+    const named = this.list.find((answer) => answer.messageId === messageId);
+    if (named !== undefined) return isTerminal(named) ? null : named;
+    for (let i = this.list.length - 1; i >= 0; i -= 1) {
+      const answer = this.list[i] as SpokenAnswer;
+      if (answer.messageId === null && !isTerminal(answer)) return answer;
+    }
+    return null;
+  }
+
+  /**
+   * The answer a delivery state is about. The service repeats a delivery's state on
+   * every poll until the next delivery replaces it, so the previous answer's
+   * `completed` or stop must never land on the new one.
+   */
+  private concerned(deliveryMessageId: string | null): SpokenAnswer | null {
+    if (deliveryMessageId === null || deliveryMessageId === UNBOUND_MESSAGE) {
+      // An unwritten answer's delivery: only the newest, and only once it has
+      // handed this window audio.
+      const newest = this.current;
+      return newest !== null &&
+        !isTerminal(newest) &&
+        newest.messageId === null &&
+        newest.offered > 0
+        ? newest
+        : null;
+    }
+    const answer = this.list.find((candidate) => candidate.messageId === deliveryMessageId);
+    return answer !== undefined && !isTerminal(answer) ? answer : null;
+  }
+
+  private completeIfDone(answer: SpokenAnswer): void {
+    if (isTerminal(answer)) return;
     if (answer.allOffered && answer.segments.length >= answer.offered && answer.offered > 0) {
       answer.state = "complete";
       this.emit();
     }
   }
 
-  private finish(state: SpokenState): void {
-    const answer = this.answer;
-    if (answer === null || isTerminal(answer)) return;
+  private finish(answer: SpokenAnswer, state: SpokenState): void {
+    if (isTerminal(answer)) return;
     answer.state = state;
     this.emit();
   }
 
-  private emit(): void {
-    const answer = this.answer;
-    this.onChange(answer === null ? null : { ...answer, segments: [...answer.segments] });
+  /** Forget the oldest finished answers beyond `REMEMBERED`. */
+  private forget(): void {
+    while (this.list.length > REMEMBERED) {
+      const index = this.list.findIndex((answer) => isTerminal(answer));
+      if (index < 0) break;
+      this.list.splice(index, 1);
+    }
   }
+
+  private emit(): void {
+    this.onChange(this.answers);
+  }
+}
+
+function copy(answer: SpokenAnswer): SpokenAnswer {
+  return { ...answer, segments: answer.segments.map((segment) => ({ ...segment })) };
 }

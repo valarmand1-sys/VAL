@@ -39,6 +39,7 @@ from sqlalchemy import Engine, text
 from test_service import OpenLedger, ScriptedAdapter, classifier_says, client, ok
 
 from val_api.app import create_app
+from val_domain.provider import ProviderEvent, TextDelta
 from val_domain.speech import VoiceConditioning, digest_of
 from val_domain.voice import EndpointConfiguration, RecognizerEvent, RecognizerIdentity
 from val_gateway.gateway import Gateway
@@ -841,3 +842,81 @@ def test_adopting_a_recovered_fragment_becomes_an_ordinary_sealed_turn(store: En
         ).scalar_one()
     assert seal.applied_by == "recovered_fragment_adopted"
     assert classification is not None and "local-only" in classification
+
+
+def test_a_segment_voiced_before_her_answer_is_written_is_still_recorded(store: Engine) -> None:
+    """Targeted voice latency order, 25 September 2026.
+
+    In his session the first segments of two long answers were voiced before the
+    answers were written. The desktop played them, but the service had recorded no
+    hand-off (there was no message to record it against), so both playback reports
+    were refused and the record showed those answers starting at their second segment.
+    The hand-off is now recorded, with the time it happened, once the answer is named,
+    and a report held back by the desktop carries how long ago the device acted.
+    """
+    from datetime import datetime, timedelta
+
+    collected = threading.Event()
+
+    @dataclass
+    class FirstSentenceThenPause(ScriptedAdapter):
+        """Streams her first sentence, then waits until it has been collected."""
+
+        def stream(self, *args: object, **kwargs: object) -> Iterator[ProviderEvent]:
+            result = self.complete(*args, **kwargs)  # type: ignore[arg-type]
+            first, rest = "Eight, my lord. ", result.text[len("Eight, my lord. ") :]
+            yield TextDelta(first)
+            collected.wait(10)
+            yield TextDelta(rest)
+            yield result
+
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = FirstSentenceThenPause([ok("Eight, my lord. And the table is laid for two.")])
+    voice_provider = ScriptedVoiceProvider()
+    with speaking_client(store, adapter, recognizer, voice_provider) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        unbound = None
+        for _ in range(100):
+            reachable.get(f"/voice/sessions/{session}")  # as the desktop polls both
+            offer = reachable.get(f"/voice/sessions/{session}/speech/next").json()
+            if offer["segment"] is not None:
+                unbound = offer
+                break
+            time.sleep(0.05)
+        collected.set()
+        assert unbound is not None, "a segment was handed over"
+        view = _poll_until_answered(reachable, session)
+        answer_id = view["turns"][0]["answer"]["val_message"]["id"]
+        assert unbound["segment"]["message_id"] == "00000000-0000-0000-0000-000000000000"
+        reachable.get(f"/voice/sessions/{session}/speech/next")  # the record catches up
+        played = reachable.post(
+            f"/voice/sessions/{session}/speech/played",
+            json={
+                "message_id": answer_id,
+                "segment_index": unbound["segment"]["segment_index"],
+                "state": "playback_started",
+                "observed_ms_ago": 1500,
+            },
+        )
+        assert played.status_code == 200, played.text
+        states = [event["state"] for event in played.json()]
+        assert states[:2] == ["available_to_desktop", "playback_started"]
+        with store.connect() as connection:
+            rows = connection.execute(
+                text(
+                    "select state, recorded_at from speech_playbacks "
+                    "where message_id = :m order by event"
+                ),
+                {"m": answer_id},
+            ).all()
+        started_at = next(row.recorded_at for row in rows if row.state == "playback_started")
+        assert started_at < datetime.now(started_at.tzinfo) - timedelta(milliseconds=1000), (
+            "recorded when the device acted, not when the report arrived"
+        )

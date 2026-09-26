@@ -596,9 +596,79 @@ class PriorRecordState:
                 if self.local_only
                 else {}
             ),
+            # Present only in a conversation he has spoken in or has Voice on in now:
+            # the facts about the spoken path, so that "how fast should you be?" is
+            # answered from the house's record rather than invented (targeted voice
+            # latency order, 25 September 2026). Never on a typed-only conversation.
+            **(
+                {"spoken_path": dict(SPOKEN_PATH)}
+                if SPOKEN_PATH_REASONS & set(self.local_only_reasons)
+                else {}
+            ),
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
             "capability_state": dict(CAPABILITY_STATE),
         }
+
+
+#: The seal reasons that mean he has spoken in this conversation or has Voice on in
+#: it now. A conversation sealed only because it recalled sealed content is not one.
+SPOKEN_PATH_REASONS = frozenset({"voice_session_active", "conversation_sealed"})
+
+#: The spoken path, as system fact — targeted voice latency order, 25 September 2026.
+#:
+#: In his session of that evening Val told him she was "designed to generate a reply
+#: within about one second", that a delay was "usually due to network or local
+#: processing load rather than the model itself", advised a wired connection, a GPU
+#: and a lower microphone sample rate, and offered to "record a brief demonstration
+#: of the model's response time". None of it had a source: no response time is
+#: promised anywhere, nothing in the path uses a network, the measured delay is
+#: mostly her own model's work, and she has no means of measuring or recording
+#: anything. The persona is not the place for this and is unchanged; this is the
+#: record-state's job — what is true of the build, stated where she reads it. The
+#: figures are a dated house measurement (the voice-repair records of that day),
+#: never live telemetry, and are labelled so.
+SPOKEN_PATH: Mapping[str, object] = MappingProxyType(
+    {
+        "runs_on": "this Mac only; no stage sends this conversation over a network",
+        "stages": [
+            "his speech is recognised locally (Whisper)",
+            "a short confirming silence, then his words become his message",
+            "you reason and write (this local model; your reasoning is not shown)",
+            "your words are voiced locally, phrase by phrase, as you write them",
+        ],
+        "response_time_promise": "none",
+        "measured": (
+            "from the house's own test runs of 25 September 2026 on this Mac — not "
+            "this conversation and not any turn of it, and not a promise: from the end "
+            "of his speech to your first spoken word, about 6 to 13 seconds."
+        ),
+        "measured_stages": [
+            "his words confirmed as finished and written: about 2 seconds after he "
+            "stops (a pause is waited out so a sentence he continues is not cut in two)",
+            "your model's first output: about 1.7 seconds after that",
+            "your reasoning before your first visible words: about 1 to 9 seconds, "
+            "varying with the question — the largest and least predictable part",
+            "voicing your first phrase: about 1 to 4 seconds, longer for a longer first phrase",
+        ],
+        "can_it_be_faster": (
+            "unknown to you: parts of this path have been shortened by changes to the "
+            "house's software, and whether and how much more is possible is for Lord "
+            "Armand and the house to establish — neither promise it nor rule it out"
+        ),
+        "timing_measurement": "unavailable",
+        "note": (
+            "How this spoken conversation reaches him, as system fact. No response "
+            "time is promised: do not state one. 'measured' comes from the house's "
+            "test runs, not from this conversation: you have no reading of how long "
+            "this turn or any turn of it took, so do not describe one. Nothing travels "
+            "over a network, so network speed is not a cause, and nothing here is "
+            "evidence about his hardware or load. You cannot measure, time, record or "
+            "demonstrate your own response speed (timing_measurement: unavailable): if "
+            "he asks you to, tell him plainly that you cannot. These are the only "
+            "timing figures you have: do not supply others, for any stage."
+        ),
+    }
+)
 
 
 #: What the local-only state means, said once rather than left to be inferred.

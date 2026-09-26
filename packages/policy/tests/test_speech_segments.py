@@ -136,12 +136,24 @@ def test_an_abbreviation_a_decimal_and_an_initial_are_not_sentence_ends() -> Non
 
 
 def test_a_sentence_with_no_full_stop_is_still_cut_before_the_hard_limit() -> None:
-    """A runaway sentence cannot hold speech silent indefinitely."""
-    segments = segment_all(RUNAWAY)
+    """A runaway sentence cannot hold speech silent indefinitely.
+
+    Amended 25 September 2026 (targeted voice latency order), and why: a runaway
+    *first* sentence is now cut sooner, at its first pause, by the first segment's
+    own rule. The original assertion is kept word for word with that rule switched
+    off, so the long-sentence rule itself is still held; the default path is held to
+    the same guarantee with either reason.
+    """
+    segments = segment_all(RUNAWAY, first_soft_limit=10**6)
     assert len(segments) >= 2, "it was cut"
     assert segments[0].reason == "long_sentence"
     assert segments[0].end <= HARD_LIMIT
     assert _joined(segments) == "".join(RUNAWAY.split())
+
+    default = segment_all(RUNAWAY)
+    assert len(default) >= 2 and default[0].reason in ("first_pause", "long_sentence")
+    assert default[0].end <= HARD_LIMIT
+    assert _joined(default) == "".join(RUNAWAY.split())
 
 
 def test_a_clause_mark_is_a_boundary_a_reader_pauses_at() -> None:
@@ -252,3 +264,64 @@ def test_speech_cannot_be_fed_after_it_is_flushed() -> None:
 
 def _joined(segments: list[Segment]) -> str:
     return "".join("".join(s.text.split()) for s in segments)
+
+
+# --- the first segment's own pause rule (targeted voice latency order, 25 Sept 2026) ---
+
+
+def streamed(text: str, step: int = 4) -> list[Segment]:
+    """As Core delivers it: a few characters at a time, then the flush."""
+    segmenter = SpeechSegmenter()
+    for index in range(0, len(text), step):
+        segmenter.feed(text[index : index + step])
+    segmenter.flush()
+    assert segmenter.reconstructs(), "the exactness invariant holds under the new cut"
+    return segmenter.segments
+
+
+HIS_THIRTEEN_SECONDS = (
+    "My lord, the voice model is tuned for a natural conversational pace \u2013 roughly the "
+    "cadence of an ordinary spoken exchange. In practice, the system is designed to reply."
+)
+
+
+def test_a_long_first_sentence_is_cut_at_its_first_pause_as_it_streams() -> None:
+    """His 13-second turn: 3.85 s went on voicing a 121-character opening whole."""
+    segments = streamed(HIS_THIRTEEN_SECONDS)
+    assert segments[0].text == (
+        "My lord, the voice model is tuned for a natural conversational pace \u2013"
+    )
+    assert segments[0].reason == "first_pause"
+    assert segments[1].text == "roughly the cadence of an ordinary spoken exchange."
+    assert segments[1].reason == "sentence", "later segments keep their own rules"
+
+
+def test_the_unspaced_em_dash_val_writes_is_a_pause() -> None:
+    text = (
+        "My lord, the voice model is already tuned for a natural conversational cadence\u2014"
+        "roughly as quickly as the machine allows. More follows here."
+    )
+    assert streamed(text)[0].text.endswith("cadence\u2014")
+
+
+def test_a_short_opening_is_never_cut_and_a_vocative_is_never_spoken_alone() -> None:
+    assert [s.text for s in streamed("Good evening, my lord. How may I assist you tonight?")] == [
+        "Good evening, my lord.",
+        "How may I assist you tonight?",
+    ]
+    first = streamed(
+        "My lord, the delay you noted is not a fault of the voice model itself but rather "
+        "a matter of processing latency. Nothing more."
+    )[0]
+    assert first.reason == "sentence", "no pause past the minimum: the sentence stays whole"
+    assert first.text != "My lord,"
+
+
+def test_only_the_first_segment_takes_the_early_pause() -> None:
+    text = (
+        "Indeed, my lord. The second sentence runs on for quite some time, with a comma here, "
+        "and another there, before it finally ends. Done."
+    )
+    segments = streamed(text)
+    assert segments[0].text == "Indeed, my lord."
+    assert segments[1].reason == "sentence", "a later long sentence is not cut early"

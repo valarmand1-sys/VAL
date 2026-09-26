@@ -799,7 +799,7 @@ live service.
 sentence synthesis median 2.92 → 2.02 s; speech end → first playback median 10.29 →
 9.13 s (first turn after Voice On 8.8–10.1 → 6.4–8.9 s); silent gaps 10.6 s → 0.6 s
 in total; her text ready before her voice 0/9 → 9/9 turns; text offset up to +17 s →
-0 for every segment. Priming retained unchanged. The persona entry is evicted by the engine's insertion-ordered cache about every five turns; the refresh that follows costs ~6.6 s, and if he speaks during it his turn waits only for its remainder — measured never worse than no refresh (6.2 s at 0.5 s in, 0.75 s at 6 s in, against 6.6 s). Cancelling it does not free the runtime, so it is not cancelled.
+0 for every segment. Priming retained unchanged. The persona entry is evicted about every five turns (from reading the engine's source: its prompt cache orders by insertion only); the refresh that follows costs ~6.6 s. In a one-token probe, a request arriving during it waited for its first streamed event no longer than with no refresh (6.2 s at 0.5 s in, 0.75 s at 6 s in, against 6.6 s), and closing the client did not shorten the next request's wait — neither establishes that maintenance never worsens a complete spoken turn, nor what the server computed after the client went (wording corrected under the targeted order, §5).
 
 **Remaining dominant cost:** MEDIUM's hidden reasoning before visible text (1.1–6.3 s
 in these runs, 9.1 s in his), then first-sentence synthesis under contention with
@@ -807,3 +807,56 @@ cognition (up to 4.2 s). **Unverified:** paint and sound in the room.
 
 **Pending physical acceptance:** the smallest Voice retest (below). **Held:** C / E / G,
 conversation-switch acceptance, Avatar; LOW NOT_ADMITTED; Whisper unchanged.
+
+---
+
+## 21. Handoff — targeted voice latency order, 25 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-25-voice-repair/TARGETED.md`
+(evidence index §108). §20's follow-up (physical reconstruction, maintenance probes)
+was completion of the **earlier** order; this entry is the targeted order's.
+
+**His successful session** (conversation `01a0db46…`, desktop and service `b6c8937`)
+**as measured:** speech end → playback 7.1, 10.8, 7.4 and **12.6 s** (the "about 13
+seconds" answer).
+
+The 12.6 s answer:
+
+| part | time |
+|---|---|
+| confirmation and resume grace | ~1.3 s |
+| request overhead | 0.1 s |
+| first output | 1.74 s |
+| hidden reasoning | 4.57 s |
+| **synthesis of a 121-character first sentence spoken whole** | 3.85 s |
+| playback | 0.06 s |
+
+There was no maintenance wait in any turn.
+
+**Changed:**
+
+- **First segment:** the first segment alone is now cut at its first natural pause
+  once past 60 characters. Probe: 0.9–1.3 s sooner on such openings; it engaged in
+  none of the six measured answers, so no end-to-end gain is claimed.
+- **Presentation defects fixed:** found when his next turn was committed while she
+  was still speaking.
+  - Her remaining text was marked "not spoken" while she spoke it.
+  - Segments were routed to the wrong answer.
+  - Timing figures were paired with the wrong turn.
+- **Record gap closed:** a segment voiced before her answer was written now gets its
+  hand-off and playback recorded.
+- **Self-knowledge correction:** a record-state `spoken_path` block, present only in
+  spoken conversations; the persona is unchanged. Three paraphrased checks: none of
+  the invented one-second promise, network diagnosis or recording offer recurred. The
+  residual is speculative hardware talk on hypothetical questions.
+
+**Probe wording corrected** per the continuation.
+
+**Remaining:**
+
+- Hidden reasoning is model work.
+- First output 1.6–2.3 s per turn because history is recomputed. Smallest decision:
+  a conversation-level prime, which the priming ruling excluded.
+- Turn-taking while she thinks.
+
+**Pending physical acceptance.**

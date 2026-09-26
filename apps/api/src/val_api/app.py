@@ -30,7 +30,7 @@ from base64 import b64decode, b64encode
 from binascii import Error as BinasciiError
 from collections.abc import AsyncIterator, Callable, Mapping
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -221,6 +221,35 @@ def create_app(
     #: audio buffers — and could not be resumed from a store if it tried.
     # When the last Voice session ends, the resident speech worker is stopped with it.
     sessions = VoiceSessions(on_empty=gateway.release_voice)
+    #: Segments handed to a desktop before her answer was written, per session: there
+    #: was no message to record the hand-off against yet. Written, with the time it
+    #: happened, once the delivery names its answer (targeted voice latency order).
+    unbound_handoffs: dict[UUID, list[tuple[object, int, str, datetime]]] = {}
+
+    def settle_handoffs(session: UUID, live: VoiceSession) -> None:
+        waiting = unbound_handoffs.get(session)
+        if not waiting:
+            return
+        still: list[tuple[object, int, str, datetime]] = []
+        for delivery, index, spoken, at in waiting:
+            named = getattr(delivery, "message_id", None)
+            if named is None:
+                still.append((delivery, index, spoken, at))
+                continue
+            record_playback(
+                engine,
+                message_id=named,
+                segment_index=index,
+                state=PlaybackState.AVAILABLE_TO_DESKTOP,
+                spoken_text=spoken,
+                voice_session_id=live.session_id,
+                observed_at=at,
+            )
+        if still:
+            unbound_handoffs[session] = still
+        else:
+            unbound_handoffs.pop(session, None)
+
     if recognizers is not None:
         # A window that went away without its close request reaching here leaves a
         # session nobody asks about; it is closed rather than kept listening
@@ -1165,6 +1194,7 @@ def create_app(
         again. That is what keeps live speech ephemeral rather than uncollected.
         """
         live = voice_session_or_404(session)
+        settle_handoffs(session, live)
         # The delivery in flight, or the one that has just finished: the last
         # segment of an answer must stay collectable for a moment after the turn
         # ends, or her final words are synthesised and dropped (§11).
@@ -1193,7 +1223,12 @@ def create_app(
                 delivery_state=state, stop=should_stop, reason=reason, message_id=speaks
             )
         message_id = speaking.message_id
-        if message_id is not None:
+        if message_id is None:
+            # Voiced before her answer was written: recorded once it is.
+            unbound_handoffs.setdefault(session, []).append(
+                (speaking, offer.segment_index, offer.text, datetime.now(UTC))
+            )
+        else:
             # The service's own half of the record: this segment became available
             # to the desktop. It is **not** a claim that anything was heard.
             record_playback(
@@ -1232,6 +1267,7 @@ def create_app(
         would be reporting someone else's act.
         """
         live = voice_session_or_404(session)
+        settle_handoffs(session, live)
         try:
             state = PlaybackState(report.state)
         except ValueError as unknown:
@@ -1271,6 +1307,9 @@ def create_app(
             voice_session_id=live.session_id,
             elapsed_ms=report.elapsed_ms,
             reason=report.reason,
+            observed_at=None
+            if report.observed_ms_ago is None
+            else datetime.now(UTC) - timedelta(milliseconds=report.observed_ms_ago),
         )
         return [_playback_view(event) for event in playback_of(engine, report.message_id)]
 

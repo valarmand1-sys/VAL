@@ -138,10 +138,10 @@ let root: Root;
 
 function mount() {
   let setShown: (value: ConversationDetail | null) => void = () => undefined;
-  let setSpoken: (value: SpokenAnswer | null) => void = () => undefined;
+  let setSpoken: (value: SpokenAnswer[]) => void = () => undefined;
   function Screen(): React.JSX.Element | null {
     const [shown, set] = useState<ConversationDetail | null>(null);
-    const [spoken, spokenSet] = useState<SpokenAnswer | null>(null);
+    const [spoken, spokenSet] = useState<SpokenAnswer[]>([]);
     setShown = set;
     setSpoken = spokenSet;
     if (shown === null) return null;
@@ -165,7 +165,7 @@ function mount() {
       onTimings: () => undefined,
       onOwnerMessageCommitted: (committed) => void reads.read(() => api.conversation(committed.conversation_id)),
       onAnswerAvailable: (answered) => void reads.read(() => api.conversation(answered.conversation_id)),
-      onSpoken: (answer) => setSpoken(answer),
+      onSpoken: (answers) => setSpoken(answers),
       onTurnSettled: (view) => void reads.read(() => api.conversation(view.turns.at(-1)!.conversation_id)),
     },
     capture,
@@ -277,6 +277,70 @@ describe("her answer is shown as she speaks it", () => {
     await act(async () => controller.stop());
     expect(text()).toContain(ANSWER.trim());
     expect(text()).toContain("Not spoken — Voice ended.");
+  });
+});
+
+describe("his next words committed while she is still speaking (his session of 25 Sept)", () => {
+  const LATER = "0f0f0f0f-0003-7000-8000-000000000005";
+  it("does not mark the answer she is speaking as unspoken, and does not report the wrong turn", async () => {
+    const { controller, poll, collect } = mount();
+    const reported = vi.spyOn(api, "reportVoiceTimings").mockResolvedValue(undefined);
+    await controller.start({ no_project: true });
+    await act(async () => poll());
+    vi.spyOn(api, "collectSpeech").mockResolvedValue(segment(0, FIRST) as never);
+    await act(async () => collect());
+    await settle();
+    vi.spyOn(api, "collectSpeech").mockResolvedValue(segment(1, SECOND) as never);
+    await act(async () => collect());
+    await settle();
+    // His queued utterance is committed now, while her second segment waits to play.
+    vi.spyOn(api, "voiceSession").mockResolvedValue(
+      session({
+        utterance: 2,
+        pending: "",
+        committed: { conversation_id: CONVERSATION, message_id: LATER, utterance: 2 },
+      }) as never,
+    );
+    await act(async () => poll());
+    expect(text()).not.toContain("Not spoken");
+    expect(text()).not.toContain("I am listening");
+    // Her second segment still plays, and appears as it does.
+    await act(async () => playing[0]!.onended?.());
+    await settle();
+    expect(text()).toContain("I am listening");
+    expect(text()).not.toContain("Not spoken");
+    // No owner-facing interval pairs his new words with her earlier answer.
+    const paired = reported.mock.calls.filter(([, body]) => body.utterance === 2);
+    expect(paired.every(([, body]) => body.speech_end_to_playback_start_ms === null)).toBe(true);
+    await controller.stop();
+  });
+});
+
+describe("a segment voiced before her answer was written", () => {
+  it("is reported under her answer's id once it is known, never under the placeholder", async () => {
+    const { controller, poll, collect } = mount();
+    const played = vi.spyOn(api, "reportPlayback").mockResolvedValue(undefined as never);
+    await controller.start({ no_project: true });
+    // His words are committed; her answer is not yet written.
+    vi.spyOn(api, "voiceSession").mockResolvedValue(session({ answered: null }) as never);
+    await act(async () => poll());
+    const unbound = segment(0, FIRST);
+    unbound.segment!.message_id = "00000000-0000-0000-0000-000000000000";
+    unbound.message_id = null;
+    vi.spyOn(api, "collectSpeech").mockResolvedValue(unbound as never);
+    await act(async () => collect());
+    await settle();
+    expect(played).not.toHaveBeenCalled();
+    // Her answer is announced: the held report goes out under its id.
+    vi.spyOn(api, "voiceSession").mockResolvedValue(session({}) as never);
+    await act(async () => poll());
+    expect(played).toHaveBeenCalledTimes(1);
+    const [, body] = played.mock.calls[0]!;
+    expect(body.message_id).toBe(HERS);
+    expect(body.state).toBe("playback_started");
+    expect(body.observed_ms_ago).toBeGreaterThanOrEqual(0);
+    expect(text()).toContain("Good evening, my lord.");
+    await controller.stop();
   });
 });
 

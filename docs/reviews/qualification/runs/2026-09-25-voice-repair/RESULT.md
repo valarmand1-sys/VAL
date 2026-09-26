@@ -131,20 +131,33 @@ evicted the entry. Every refresh ended ≥ 3 s before the next request in these 
 
 ## 4a. When he speaks during a refresh (§6)
 
-**Why the entry is evicted** (read from the installed engine, `mlx_engine` @34 and its
-`mlx_lm.LRUPromptCache(max_size=10)`): snapshots are ordered by **insertion only** — a
+*Wording corrected 25 September 2026 (targeted voice latency order, §5): the first
+version of this section overstated what the two probes show. What follows says what
+each source establishes, and nothing more; the probes were not rerun.*
+
+**Why the entry is evicted — from reading the engine's source, not from the probes**
+(`mlx_engine/cache_wrapper.py` in `app-mlx-generate-mac14-arm64@34` and the vendored
+`mlx_lm.models.cache.LRUPromptCache(max_size=10)`): snapshots are ordered by **insertion only** — a
 read does not renew one — and a prime that finds its checkpoint cached stores nothing.
 Each spoken turn inserts one conversation checkpoint and two full snapshots; when the
 checkpoints outnumber the snapshots the oldest checkpoint goes, and that is the
 persona's. It therefore lasts about five turns (typed turns count too) from when it was
 last *computed*, whatever the refresh does; the refresh then pays the full prefill.
 
-**Cancelling does not free the runtime** (`abort_probe.py`, three repeats): a short
-request 2 s into an uncached 6.6 s prefill waited 4.65–4.77 s; with the prefill's
-connection closed first, 4.56–4.67 s. LM Studio finishes the prefill regardless.
+**Closing the client did not shorten the next request's wait** (`abort_probe.py`,
+three repeats): a short request sent 2 s into an uncached ~6.6 s request waited
+4.65–4.77 s for its first streamed event; with the first request's client killed just
+before it was sent, 4.56–4.67 s. That is all this shows. Whether the server went on
+computing the aborted request is not observed here: the figures are consistent with it,
+but a direct claim about server-side execution needs evidence this probe does not
+collect.
 
-**What his turn waits** (`collision_probe.py`, the production instance while idle,
-three repeats, seconds from his request to first output):
+**Time to first streamed event behind a re-prime** (`collision_probe.py`, the
+production instance while idle, three repeats). Both probes return at the first SSE
+`data:` line without reading its payload, so every figure is **time to the first
+streamed event**, not proven to be generated output (the JSON key
+`seconds_from_his_request_to_first_output` overstates it). Each request asks for one
+token, over a persona the runtime has never seen:
 
 | his turn arrives | wait |
 |---|---|
@@ -155,14 +168,15 @@ three repeats, seconds from his request to first output):
 | 6 s into it | 0.74–0.75 |
 | persona held | 0.19–0.32 |
 
-The refresh after an eviction computes exactly what his next turn would otherwise
-compute itself, so arriving during it is **never worse** than having no refresh and is
-better by however long it has run. The policy stays as built: never started while any
-part of his turn is under way, not cancelled once sent (cancellation buys nothing),
-and a held refresh (0.46 s) is the only time he could wait for work his turn did not
-need. The one cost not re-measured here: a full re-prime overlapping his speech slowed
-Whisper's final decode by ~0.5 s in the priming pass — within the 1.1 s resume grace,
-so it would delay his provisional words, not his message.
+Within this probe, a request arriving during the re-prime never waited longer than
+the same request with no re-prime, and waited less the longer the re-prime had run —
+consistent with the re-prime doing the persona work the request would otherwise do.
+**It does not establish** that maintenance never worsens a complete spoken turn:
+one-token requests are not a Voice turn, and the probe measured neither recognition
+nor synthesis under contention (the priming pass saw a full re-prime slow Whisper's
+final decode by ~0.5 s). The policy stays as built — never started while any part of
+his turn is under way, not cancelled once sent — because nothing measured here showed
+cancellation shortening a wait, not because harm under contention has been excluded.
 
 **Machine** (sampled once a second): the resident worker held 3,195 MB, the same as
 each one-shot run (3,188 MB), for the length of the session instead of a sentence;

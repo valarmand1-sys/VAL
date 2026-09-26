@@ -32,6 +32,8 @@ export interface SegmentAudio {
   segmentIndex: number;
   text: string;
   audio: ArrayBuffer;
+  /** Which of her answers this segment belongs to, in the window's own terms. */
+  answerKey?: number;
 }
 
 export interface SpeakerObserver {

@@ -31,8 +31,10 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 condition, checkout, sessions, out = sys.argv[1], Path(sys.argv[2]), int(sys.argv[3]), Path(sys.argv[4])
-SERVE = checkout / "docs/reviews/qualification/runs/2026-09-25-priming/serve_scratch.py"
-PHRASES = [
+SERVE = Path(os.environ["VAL_MEASURE_SERVE"]) if "VAL_MEASURE_SERVE" in os.environ else (
+    checkout / "docs/reviews/qualification/runs/2026-09-25-priming/serve_scratch.py"
+)
+PHRASES = json.loads(os.environ["VAL_MEASURE_PHRASES"]) if "VAL_MEASURE_PHRASES" in os.environ else [
     "Good evening, Val.",
     "I'm testing your voice right now. How do I sound to you?",
     "Tell me, in a few sentences, what you would like us to work on this week.",
@@ -105,6 +107,13 @@ finally:
     server.send_signal(signal.SIGINT)
     server.wait(timeout=30)
 
+# The scratch conversation's text (synthetic; never the owner's store), for reading
+# what she said — the self-knowledge check reads her answers, not only their timing.
+dialogue = subprocess.run(
+    ["psql", "-h", "localhost", "-p", "5433", "-d", "val_test", "-At", "-F", "\t", "-c",
+     "select conversation_id, sequence, role, content from messages order by created_at"],
+    capture_output=True, text=True,
+).stdout.splitlines()
 lines = log_path.read_text().splitlines()
 timelines = [json.loads(line.split("voice turn timeline: ", 1)[1])
              for line in lines if "voice turn timeline: " in line]
@@ -153,6 +162,9 @@ report = {
         "resident_alive_after_close": bool(samples and any(p["serve"] for p in samples[-1]["speech_processes"])),
     },
     "measured_at": datetime.now().isoformat(timespec="seconds"),
+    "serve": str(SERVE),
+    "first_pause": os.environ.get("VAL_SCRATCH_FIRST_PAUSE", "on"),
+    "dialogue": [line.split("\t", 3) for line in dialogue],
 }
 out.write_text(json.dumps(report, indent=1) + "\n")
 for run in runs:

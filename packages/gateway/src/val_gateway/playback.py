@@ -182,8 +182,10 @@ class DesktopSink(EphemeralSink):
 #: Append-only, like every other record of what actually happened.
 _APPEND = text(
     "insert into speech_playbacks "
-    "  (message_id, voice_session_id, segment_index, event, state, text, elapsed_ms, reason) "
-    "select :message_id, :voice_session_id, :segment_index, "
+    "  (recorded_at, message_id, voice_session_id, segment_index, event, state, text, "
+    "   elapsed_ms, reason) "
+    "select coalesce(cast(:observed_at as timestamptz), now()), "
+    "       :message_id, :voice_session_id, :segment_index, "
     "       coalesce(max(event), 0) + 1, :state, :text, :elapsed_ms, :reason "
     "  from speech_playbacks where message_id = :message_id and segment_index = :segment_index "
     "returning id, event"
@@ -200,8 +202,15 @@ def record_playback(
     voice_session_id: UUID | None = None,
     elapsed_ms: int | None = None,
     reason: str | None = None,
+    observed_at: datetime | None = None,
 ) -> int:
     """Append one physical-playback transition and return its event number.
+
+    `observed_at` is when the transition happened, for one recorded late: a segment
+    handed over, or played, before her answer was written has no message to be
+    recorded against until it is, and is then written with the time it happened
+    rather than the time the record caught up (targeted voice latency order,
+    25 September 2026). Absent, the record's own clock says when.
 
     The event number is computed inside the insert from the rows that exist, so two
     reports arriving together cannot claim the same number — the unique constraint
@@ -218,6 +227,7 @@ def record_playback(
                 "text": spoken_text,
                 "elapsed_ms": elapsed_ms,
                 "reason": reason,
+                "observed_at": observed_at,
             },
         ).one()
     return int(row.event)

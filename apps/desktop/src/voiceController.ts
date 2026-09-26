@@ -31,7 +31,12 @@ import {
   type CapturePlatform,
 } from "./microphone";
 import { OrderedPcmSender, type SenderReport } from "./pcmSender";
-import { isTerminal, SpokenPresentation, type SpokenAnswer } from "./spokenPresentation";
+import {
+  isTerminal,
+  SpokenPresentation,
+  UNBOUND_MESSAGE,
+  type SpokenAnswer,
+} from "./spokenPresentation";
 import { SpeechPlayer, decodeSegmentAudio, type SpeakerPlatform, type SegmentAudio } from "./speaker";
 import {
   VOICE_OFF,
@@ -143,8 +148,8 @@ export interface VoiceControllerHooks {
    * shows it paced to her playback through `onSpoken`, never all at once ahead of her.
    */
   onAnswerAvailable?(answered: VoiceCommittedView): void;
-  /** The spoken answer being paced: which text is revealed, and in what state. */
-  onSpoken?(answer: SpokenAnswer | null): void;
+  /** The spoken answers being paced: which text is revealed, and in what state. */
+  onSpoken?(answers: SpokenAnswer[]): void;
 }
 
 export interface VoiceControllerOptions {
@@ -179,8 +184,22 @@ export class VoiceController {
   private lastCommitted: string | null = null;
   /** The utterance whose intervals have been reported, so each is sent once. */
   private reportedUtterance: number | null = null;
-  /** The answer whose segment figures have been reported. */
-  private reportedSegments: string | null = null;
+  /** Answers whose segment figures have been reported, by key. */
+  private reportedSegments = new Set<number>();
+  /** His committed message for the utterance being timed: the only turn it pairs with. */
+  private timingTurn: string | null = null;
+  /**
+   * Playback reports about segments voiced before her answer was written: held until
+   * this window learns which answer they belong to, then sent with how long ago each
+   * happened (targeted voice latency order — his session's first segments of two long
+   * answers were played and their reports refused, leaving no record of them).
+   */
+  private heldReports: Array<{
+    segment: SegmentAudio;
+    state: PlaybackState;
+    reason: string | undefined;
+    at: number;
+  }> = [];
   /** Her answer the desktop was last told to read. */
   private lastAnswered: string | null = null;
   /** Her words, paced to her speech (Voice-mode repair §4). */
@@ -193,9 +212,9 @@ export class VoiceController {
 
   constructor(private readonly options: VoiceControllerOptions) {
     this.now = options.now ?? (() => performance.now());
-    this.spoken = new SpokenPresentation((answer) => {
-      this.options.hooks.onSpoken?.(answer);
-      if (isTerminal(answer)) this.reportSegments();
+    this.spoken = new SpokenPresentation((answers) => {
+      this.options.hooks.onSpoken?.(answers);
+      for (const answer of answers) if (isTerminal(answer)) this.reportSegments(answer);
     }, this.now);
     this.schedule =
       options.scheduleInterval ??
@@ -419,17 +438,25 @@ export class VoiceController {
       const committed = view.committed ?? null;
       if (committed !== null && committed.message_id !== this.lastCommitted) {
         this.lastCommitted = committed.message_id;
-        if (this.timings.committedSeenAt === null) {
+        // Paired only with **its own** utterance. His next utterance can settle while
+        // this one's answer is still being thought about or spoken, and the panel then
+        // paired the new utterance's speech end with the previous message.
+        if (committed.utterance === this.timings.utterance && this.timings.committedSeenAt === null) {
+          this.timingTurn = committed.message_id;
           this.timings = { ...this.timings, committedSeenAt: this.now() };
           this.options.hooks.onTimings(this.timings);
         }
-        this.spoken.turn(committed.message_id);
+        this.spoken.turn(committed.message_id, committed.utterance);
         this.options.hooks.onOwnerMessageCommitted?.(committed);
       }
       const answered = view.answered ?? null;
       if (answered !== null && answered.message_id !== this.lastAnswered) {
         this.lastAnswered = answered.message_id;
-        if (committed !== null) this.spoken.answered(committed.message_id, answered.message_id);
+        const turn = committed !== null && committed.utterance === answered.utterance
+          ? committed.message_id
+          : this.spoken.answers.find((answer) => answer.utterance === answered.utterance)?.turn;
+        if (turn !== undefined && turn !== null) this.spoken.answered(turn, answered.message_id);
+        this.sendHeldReports();
         this.options.hooks.onAnswerAvailable?.(answered);
       }
       this.spoken.checkStall();
@@ -479,6 +506,7 @@ export class VoiceController {
       speechEndEstimateAt: null,
       provisionalShownAt: null,
     };
+    this.timingTurn = null;
     this.reportedUtterance = null;
     this.options.hooks.onTimings(this.timings);
   }
@@ -528,28 +556,28 @@ export class VoiceController {
   }
 
   /** Once per answer, when its pacing ends: text/audio offsets and inter-segment gaps. */
-  private reportSegments(): void {
+  private reportSegments(answer: SpokenAnswer): void {
     const session = this.session;
-    const answer = this.spoken.current;
-    const key = answer?.messageId ?? null;
-    if (session === null || answer === null || key === null || this.reportedSegments === key) return;
-    if (this.timings.utterance === null) return;
-    this.reportedSegments = key;
+    if (session === null || answer.utterance === null || this.reportedSegments.has(answer.key)) return;
+    if (answer.segments.length === 0) return;
+    this.reportedSegments.add(answer.key);
+    const provisional =
+      answer.utterance === this.timings.utterance ? this.timings.provisionalShownAt : null;
     const between = (from: number | null, to: number | null) =>
       from === null || to === null ? null : Math.round(to - from);
     void api
       .reportVoiceTimings(session, {
-        utterance: this.timings.utterance,
+        utterance: answer.utterance,
         speech_end_to_owner_message_dom_ms: null,
         owner_message_dom_to_playback_start_ms: null,
         speech_end_to_playback_start_ms: null,
         committed_seen_to_owner_message_dom_ms: null,
         speech_end_to_owner_words_provisional_ms: between(
-          this.timings.speechEndEstimateAt,
-          this.timings.provisionalShownAt,
+          provisional === null ? null : this.timings.speechEndEstimateAt,
+          provisional,
         ),
-        segment_text_offsets_ms: this.spoken.offsets(),
-        segment_gaps_ms: this.spoken.gaps(),
+        segment_text_offsets_ms: this.spoken.offsets(answer.key),
+        segment_gaps_ms: this.spoken.gaps(answer.key),
         segments: answer.segments.length,
       })
       .catch(() => undefined);
@@ -644,9 +672,10 @@ export class VoiceController {
       }
       // A segment from an answer that is no longer the one being spoken is not
       // played: it would sound — and reveal text — in the wrong turn.
-      if (!this.spoken.belongs(offered.message_id)) return;
-      this.spoken.offered(offered.message_id);
+      const answerKey = this.spoken.offered(offered.message_id);
+      if (answerKey === null) return;
       this.player.enqueue({
+        answerKey,
         messageId: offered.message_id,
         segmentIndex: offered.segment_index,
         text: offered.text,
@@ -662,43 +691,93 @@ export class VoiceController {
 
   private speakerObserver() {
     const report = (segment: SegmentAudio, state: PlaybackState, reason?: string): void => {
-      const session = this.session;
-      if (session === null) return;
-      void api
-        .reportPlayback(session, {
-          message_id: segment.messageId,
-          segment_index: segment.segmentIndex,
-          state,
-          // Omitted rather than sent as null when there is none: the service
-          // refuses a reason on a state that must not carry one.
-          ...(reason === undefined ? {} : { reason }),
-        })
-        .catch(() => undefined);
+      const messageId = this.messageIdFor(segment);
+      if (messageId === null) {
+        // Voiced before her answer was written: held until the answer is known.
+        this.heldReports.push({ segment, state, reason, at: this.now() });
+        return;
+      }
+      this.sendReport(segment, messageId, state, reason, null);
     };
     return {
       onStarted: (segment: SegmentAudio) => {
-        if (this.timings.firstAudibleAt === null) {
+        // Her first sound **for the turn being timed** — not the rest of an earlier
+        // answer still playing when his next words were committed.
+        const answer = this.spoken.byKey(segment.answerKey);
+        const forThisTurn =
+          this.timingTurn !== null && (answer === null || answer.turn === this.timingTurn);
+        if (forThisTurn && this.timings.firstAudibleAt === null) {
           this.timings = { ...this.timings, firstAudibleAt: this.now() };
           this.options.hooks.onTimings(this.timings);
           this.maybeReportTimings();
         }
         this.apply(withActivity(this.status, "speaking"));
-        this.spoken.started(segment.messageId, segment.segmentIndex, segment.text);
+        this.spoken.started(segment.answerKey, segment.segmentIndex, segment.text);
         report(segment, "playback_started");
       },
       onCompleted: (segment: SegmentAudio) => {
-        this.spoken.ended(segment.messageId, segment.segmentIndex);
+        this.spoken.ended(segment.answerKey, segment.segmentIndex);
         report(segment, "playback_completed");
-        void this.markDelivered(segment.messageId);
+        const delivered = this.messageIdFor(segment);
+        if (delivered !== null) void this.markDelivered(delivered);
       },
       onInterrupted: (segment: SegmentAudio, reason: string) => {
         report(segment, "playback_interrupted", reason);
       },
       onFailed: (segment: SegmentAudio, detail: string) => {
-        this.spoken.failed();
+        this.spoken.failed(segment.answerKey);
         report(segment, "playback_failed", detail);
       },
     };
+  }
+
+  /** Her message a segment belongs to, or `null` while it is not yet written. */
+  private messageIdFor(segment: SegmentAudio): string | null {
+    const known = this.spoken.messageIdOf(segment.answerKey) ?? segment.messageId;
+    return known === UNBOUND_MESSAGE ? null : known;
+  }
+
+  private sendReport(
+    segment: SegmentAudio,
+    messageId: string,
+    state: PlaybackState,
+    reason: string | undefined,
+    observedMsAgo: number | null,
+  ): void {
+    const session = this.session;
+    if (session === null) return;
+    void api
+      .reportPlayback(session, {
+        message_id: messageId,
+        segment_index: segment.segmentIndex,
+        state,
+        // Omitted rather than sent as null when there is none: the service
+        // refuses a reason on a state that must not carry one.
+        ...(reason === undefined ? {} : { reason }),
+        ...(observedMsAgo === null ? {} : { observed_ms_ago: observedMsAgo }),
+      })
+      .catch(() => undefined);
+  }
+
+  /** Held reports whose answer is now known, in the order they happened. */
+  private sendHeldReports(): void {
+    const still: typeof this.heldReports = [];
+    for (const held of this.heldReports) {
+      const messageId = this.messageIdFor(held.segment);
+      if (messageId === null) {
+        still.push(held);
+        continue;
+      }
+      this.sendReport(
+        held.segment,
+        messageId,
+        held.state,
+        held.reason,
+        Math.max(0, Math.round(this.now() - held.at)),
+      );
+      if (held.state === "playback_completed") void this.markDelivered(messageId);
+    }
+    this.heldReports = still;
   }
 
   private async markDelivered(messageId: string): Promise<void> {

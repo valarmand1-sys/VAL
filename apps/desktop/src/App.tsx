@@ -148,7 +148,7 @@ export function App(): React.JSX.Element {
   const [voice, setVoice] = useState<VoiceStatus>(VOICE_OFF);
   const [voiceSession, setVoiceSession] = useState<VoiceSessionView | null>(null);
   const [voiceTimings, setVoiceTimings] = useState<VoiceTimings>(NO_TIMINGS);
-  const [spokenAnswer, setSpokenAnswer] = useState<SpokenAnswer | null>(null);
+  const [spokenAnswers, setSpokenAnswers] = useState<SpokenAnswer[]>([]);
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
   const voiceController = useRef<VoiceController | null>(null);
   const shortcutBinding = useRef<ShortcutBinding | null>(null);
@@ -304,17 +304,19 @@ export function App(): React.JSX.Element {
     controller.noteProvisionalShown(voiceSession.utterance, performance.now());
   }, [heardText, voiceSession]);
 
-  // Each revealed segment of her paced answer, in the document (§4 offsets).
+  // Each revealed segment of her paced answers, in the document (§4 offsets).
   useEffect(() => {
     const controller = voiceController.current;
-    const answer = spokenAnswer;
-    if (controller === null || answer === null || answer.messageId === null) return;
-    if (answer.revealed === "" || detail === null) return;
-    const inThread =
-      detail.messages.some((message) => message.id === answer.messageId) ||
-      detail.messages.some((message) => message.id === answer.turn);
-    if (inThread) controller.noteRevealShown(answer.messageId, answer.revealed.length, performance.now());
-  }, [spokenAnswer, detail]);
+    if (controller === null || detail === null) return;
+    const at = performance.now();
+    for (const answer of spokenAnswers) {
+      if (answer.messageId === null || answer.revealed === "") continue;
+      const inThread = detail.messages.some(
+        (message) => message.id === answer.messageId || message.id === answer.turn,
+      );
+      if (inThread) controller.noteRevealShown(answer.messageId, answer.revealed.length, at);
+    }
+  }, [spokenAnswers, detail]);
 
   // Voice — owner execution order, 24 September 2026, §5, §6, §7, §8.
   //
@@ -345,7 +347,7 @@ export function App(): React.JSX.Element {
         onAnswerAvailable: (answered) => {
           void openConversation(answered.conversation_id).catch(() => undefined);
         },
-        onSpoken: (answer) => setSpokenAnswer(answer),
+        onSpoken: (answers) => setSpokenAnswers(answers),
         // Her answer, once it exists. The same read path, so it cannot race the first.
         onTurnSettled: (view) => {
           const settled = view.turns.at(-1);
@@ -710,7 +712,7 @@ export function App(): React.JSX.Element {
           <Thread
             detail={detail}
             projects={projects}
-            spoken={spokenAnswer}
+            spoken={spokenAnswers}
             onRecorded={() => void openConversation(detail.conversation.id)}
             onConversationChanged={async () => {
               await openConversation(detail.conversation.id);
@@ -892,7 +894,7 @@ export function App(): React.JSX.Element {
         {/* The three owner-facing voice measurements the order names (§7, §18). Shown
             rather than only logged, because the unmute figure is a promise about his
             microphone and he should be able to see it. */}
-        {voice.session !== "off" && <VoiceMeasurements timings={voiceTimings} spoken={spokenAnswer} />}
+        {voice.session !== "off" && <VoiceMeasurements timings={voiceTimings} spoken={spokenAnswers.at(-1) ?? null} />}
         {voiceNotice !== null && <div className="notice voice-notice">{voiceNotice}</div>}
         {voiceSession !== null && voiceSession.error !== null && (
           <div className="notice voice-notice">{voiceSession.error}</div>
@@ -1241,19 +1243,17 @@ export function Thread(props: {
   onRecorded: () => void;
   onConversationChanged: () => Promise<void>;
   onRefused: (message: string) => void;
-  /** Her answer being spoken in Voice, paced to her playback; absent in text mode. */
-  spoken?: SpokenAnswer | null;
+  /** Her answers being spoken in Voice, paced to her playback; absent in text mode. */
+  spoken?: readonly SpokenAnswer[];
 }): React.JSX.Element {
   const { detail, projects, onRecorded, onConversationChanged, onRefused } = props;
-  const spoken = props.spoken ?? null;
+  const spoken = props.spoken ?? [];
   // Segments she began speaking before this window had read her written answer: shown
   // after his message, from the playback facts alone, until the answer itself arrives.
-  const early =
-    spoken !== null &&
-    spoken.revealed !== "" &&
-    !detail.messages.some((message) => message.id === spoken.messageId)
-      ? spoken
-      : null;
+  const early = spoken.filter(
+    (answer) =>
+      answer.revealed !== "" && !detail.messages.some((message) => message.id === answer.messageId),
+  );
   const transitions = detail.scope_transitions ?? [];
   return (
     <div className="messages">
@@ -1279,14 +1279,16 @@ export function Thread(props: {
             onRecorded={onRecorded}
             onRefused={onRefused}
           />
-          {early !== null && early.turn === message.id && (
-            <div className="message val spoken-early">
-              <div className="speaker">Val</div>
-              <div className="content">
-                <Prose text={early.revealed} />
+          {early
+            .filter((answer) => answer.turn === message.id)
+            .map((answer) => (
+              <div key={`early-${answer.key}`} className="message val spoken-early">
+                <div className="speaker">Val</div>
+                <div className="content">
+                  <Prose text={answer.revealed} />
+                </div>
               </div>
-            </div>
-          )}
+            ))}
           {transitions
             .filter((transition) => transition.after_sequence === message.sequence)
             .map((transition) => (
@@ -1303,14 +1305,14 @@ export function Thread(props: {
 function MessageBlock(props: {
   message: MessageView;
   detail: ConversationDetail;
-  spoken?: SpokenAnswer | null;
+  spoken?: readonly SpokenAnswer[];
   onRecorded: () => void;
   onRefused: (message: string) => void;
 }): React.JSX.Element {
   const { message, detail, onRecorded, onRefused } = props;
-  // Only her answer being spoken is paced; every other message is shown whole.
+  // Only her answers being spoken are paced; every other message is shown whole.
   const presented =
-    message.role === "val" ? present(message.content, message.id, props.spoken ?? null) : null;
+    message.role === "val" ? present(message.content, message.id, props.spoken ?? []) : null;
   const blind = detail.blind_positions.filter((b) => b.message_id === message.id);
   const manual = detail.deliberations.filter(
     (d) => d.message_id === message.id && d.blind_position_id === null,

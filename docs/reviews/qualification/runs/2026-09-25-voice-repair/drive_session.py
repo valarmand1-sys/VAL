@@ -230,6 +230,7 @@ class Session:
                         {
                             "index": segment["segment_index"],
                             "chars": len(segment["text"]),
+                            "text": segment["text"],
                             "duration_s": segment["duration_seconds"],
                             "audio_bytes": len(audio),
                             "arrived": arrived,
@@ -301,6 +302,7 @@ def summarise(turn: dict) -> dict:
             {
                 "index": seg["index"],
                 "chars": seg["chars"],
+                "text": seg["text"],
                 "duration_s": seg["duration_s"],
                 "arrived_ms": ms(seg["arrived"]),
                 "playback_start_ms": ms(seg["start"]),
