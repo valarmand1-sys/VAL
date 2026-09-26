@@ -676,6 +676,7 @@ export class VoiceController {
       if (answerKey === null) return;
       this.player.enqueue({
         answerKey,
+        durationSeconds: offered.duration_seconds,
         messageId: offered.message_id,
         segmentIndex: offered.segment_index,
         text: offered.text,
@@ -712,7 +713,12 @@ export class VoiceController {
           this.maybeReportTimings();
         }
         this.apply(withActivity(this.status, "speaking"));
-        this.spoken.started(segment.answerKey, segment.segmentIndex, segment.text);
+        this.spoken.started(
+          segment.answerKey,
+          segment.segmentIndex,
+          segment.text,
+          segment.durationSeconds === undefined ? null : segment.durationSeconds * 1000,
+        );
         report(segment, "playback_started");
       },
       onCompleted: (segment: SegmentAudio) => {
@@ -722,6 +728,8 @@ export class VoiceController {
         if (delivered !== null) void this.markDelivered(delivered);
       },
       onInterrupted: (segment: SegmentAudio, reason: string) => {
+        // Cut off, not finished: it no longer sounds, whatever its answer's state.
+        this.spoken.playbackStopped(segment.answerKey, segment.segmentIndex);
         report(segment, "playback_interrupted", reason);
       },
       onFailed: (segment: SegmentAudio, detail: string) => {

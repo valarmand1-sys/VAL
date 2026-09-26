@@ -8,6 +8,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  END_GRACE_MS,
   present,
   SpokenPresentation,
   STALL_MS,
@@ -303,5 +304,90 @@ describe("the coordination figures", () => {
     presentation.shown(HERS, SEGMENTS[0]!.length + SEGMENTS[1]!.length, 4_262);
     expect(presentation.offsets(key)).toEqual([16, 12]);
     expect(presentation.gaps(key)).toEqual([250]);
+  });
+});
+
+describe("playback activity is not the same thing as a fully revealed answer", () => {
+  // Owner-reproduced defect, 25 September 2026: `complete` means every segment has
+  // started; the stall check treated a complete answer as silent even while its
+  // final segment was still sounding, and dumped the next answer's text.
+  const A = "m-answer-a";
+  const B = "m-answer-b";
+  const B_TEXT = "The queued answer, waiting its turn.";
+
+  function finalSegmentPlaying(durationMs: number | null = null) {
+    const made = subject();
+    const { presentation } = made;
+    presentation.turn("m-his-a", 1);
+    presentation.answered("m-his-a", A);
+    const aKey = presentation.offered(A) as number;
+    presentation.allOffered(A);
+    presentation.started(aKey, 1, "The only segment of A.", durationMs);
+    expect(presentation.byKey(aKey)?.state).toBe("complete");
+    presentation.turn("m-his-b", 2);
+    presentation.answered("m-his-b", B);
+    const bKey = presentation.offered(B) as number;
+    return { ...made, aKey, bKey };
+  }
+
+  const bShown = (presentation: SpokenPresentation) => present(B_TEXT, B, presentation.answers);
+
+  it("keeps a queued answer paced while an earlier answer's final segment plays", () => {
+    const { presentation, clock, aKey } = finalSegmentPlaying();
+    clock.now += STALL_MS * 2;
+    presentation.checkStall();
+    expect(presentation.playing()).toBe(true);
+    expect(bShown(presentation)).toEqual({ shown: "", unspoken: "", pacing: true, note: null });
+    // A finishes; the output then falls silent for the stall limit: B's text appears.
+    presentation.ended(aKey, 1);
+    clock.now += STALL_MS;
+    presentation.checkStall();
+    expect(bShown(presentation).unspoken).toBe(B_TEXT);
+    expect(bShown(presentation).note).toBe("Her voice is delayed; the text is shown in full.");
+  });
+
+  it.each([
+    ["the delivery's stop", (p: SpokenPresentation) => p.stopped(A, false)],
+    ["the player cutting the segment off", (p: SpokenPresentation, key: number) => p.playbackStopped(key, 1)],
+    ["a playback failure", (p: SpokenPresentation, key: number) => p.failed(key)],
+    ["Voice ending", (p: SpokenPresentation) => p.released()],
+  ] as const)("%s clears the complete answer's playback", (_label, stop) => {
+    const { presentation, clock, aKey } = finalSegmentPlaying();
+    stop(presentation, aKey);
+    expect(presentation.playing()).toBe(false);
+    clock.now += STALL_MS;
+    presentation.checkStall();
+    // Released answers are shown whole-but-unspoken by release itself; otherwise the
+    // stall fallback now reaches B instead of being held off forever.
+    expect(bShown(presentation).pacing).toBe(false);
+    expect(bShown(presentation).unspoken).toBe(B_TEXT);
+  });
+
+  it("a lost end event holds the fallback off only for the audio's own length", () => {
+    const { presentation, clock } = finalSegmentPlaying(4_000);
+    clock.now += 4_000 + END_GRACE_MS - 1;
+    expect(presentation.playing()).toBe(true);
+    clock.now += 1;
+    expect(presentation.playing()).toBe(false);
+    clock.now += STALL_MS - 1;
+    presentation.checkStall();
+    expect(bShown(presentation).pacing).toBe(true);
+    clock.now += 1;
+    presentation.checkStall();
+    expect(bShown(presentation).unspoken).toBe(B_TEXT);
+  });
+
+  it("cleanup never forgets an answer whose audio is still sounding", () => {
+    const { presentation, aKey } = finalSegmentPlaying();
+    for (let turn = 3; turn <= 12; turn += 1) {
+      presentation.turn(`m-his-${turn}`, turn);
+      presentation.answered(`m-his-${turn}`, `m-answer-${turn}`);
+      presentation.stopped(`m-answer-${turn}`, false); // finished, silent
+    }
+    expect(presentation.byKey(aKey)).not.toBeNull();
+    expect(presentation.playing()).toBe(true);
+    presentation.ended(aKey, 1);
+    presentation.turn("m-his-13", 13);
+    expect(presentation.byKey(aKey)).toBeNull();
   });
 });

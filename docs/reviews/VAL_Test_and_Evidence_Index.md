@@ -1462,3 +1462,7 @@ Tests: `spokenPresentation.test.ts` (20), `spokenThread.test.tsx` (6, real contr
 **Probe wording corrected** (time to first streamed event; client termination only; one-token scope; eviction from engine source).
 
 **Smallest open decision:** a conversation-level prime (DERIVED 1.2–1.8 s per later turn).
+
+## 109. Final-segment playback no longer excluded from stall detection — 25 September 2026
+
+**WP3 remains PARTIAL.** The owner-reproduced defect: an answer `complete` (every segment started) with its final segment still playing was skipped by the stall check, so a queued answer behind it was shown in full as "delayed". Reproduced against the committed implementation. Fixed by judging playback from segments, not reveal state; cleared by end, cut-off (`onInterrupted`), delivery stop (including a complete answer's), failure and release; a lost end event is bounded by the segment's known audio length plus 3 s; cleanup keeps playing answers. 7 regression tests. Status unchanged and restated: first-segment latency gain NOT YET DEMONSTRATED; self-knowledge correction PARTIAL; the 41-second queued-utterance wait a remaining turn-taking limitation; conversation-content priming not authorised.

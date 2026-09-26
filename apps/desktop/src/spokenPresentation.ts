@@ -36,6 +36,13 @@ export const STALL_MS = 12_000;
 /** How many answers are remembered; the oldest finished ones are forgotten first. */
 const REMEMBERED = 6;
 
+/**
+ * How long past its own audio's length a started segment still counts as playing
+ * when the device never says it ended. Not a pacing timer: it only stops a lost
+ * end event from holding the stall fallback off indefinitely.
+ */
+export const END_GRACE_MS = 3_000;
+
 export type SpokenState =
   | "awaiting" // her answer exists; no segment of it has started playing yet
   | "speaking" // segments are playing; text follows them
@@ -49,7 +56,12 @@ export interface SpokenSegment {
   index: number;
   text: string;
   startedAt: number;
+  /** The device said it finished playing. */
   endedAt: number | null;
+  /** Its playback was cut off: interrupted, failed, or Voice ended. */
+  stoppedAt: number | null;
+  /** When its audio should have finished, if its length is known. */
+  expectedEndAt: number | null;
   shownAt: number | null;
 }
 
@@ -232,25 +244,57 @@ export class SpokenPresentation {
     this.completeIfDone(answer);
   }
 
-  /** The delivery of this answer stopped: interrupted, or failed. */
+  /**
+   * The delivery of this answer stopped: interrupted, or failed. Its playback is cut
+   * off even when every word of it had already started — a complete answer's last
+   * segment can still be sounding, and the player has just stopped it.
+   */
   stopped(deliveryMessageId: string | null, failed: boolean): void {
+    const named =
+      deliveryMessageId === null || deliveryMessageId === UNBOUND_MESSAGE
+        ? null
+        : (this.list.find((candidate) => candidate.messageId === deliveryMessageId) ?? null);
+    if (named !== null) this.stopPlayback(named);
     const answer = this.concerned(deliveryMessageId);
     if (answer === null) return;
     this.finish(answer, failed ? "failed" : "interrupted");
   }
 
-  started(key: number | undefined, index: number, text: string): number | null {
+  started(
+    key: number | undefined,
+    index: number,
+    text: string,
+    durationMs: number | null = null,
+  ): number | null {
     const answer = this.byKey(key);
     if (answer === null || isTerminal(answer)) return null;
     if (answer.segments.some((segment) => segment.index === index)) return null;
     const at = this.now();
-    answer.segments.push({ index, text, startedAt: at, endedAt: null, shownAt: null });
+    answer.segments.push({
+      index,
+      text,
+      startedAt: at,
+      endedAt: null,
+      stoppedAt: null,
+      expectedEndAt: durationMs === null ? null : at + durationMs,
+      shownAt: null,
+    });
     answer.revealed += text;
     answer.state = "speaking";
     this.lastActivityAt = at;
     this.emit();
     this.completeIfDone(answer);
     return at;
+  }
+
+  /** The device cut this segment off (barge-in, or the player stopped). */
+  playbackStopped(key: number | undefined, index: number): void {
+    const answer = this.byKey(key);
+    const segment = answer?.segments.find((item) => item.index === index);
+    if (segment === undefined) return;
+    const at = this.now();
+    if (segment.endedAt === null && segment.stoppedAt === null) segment.stoppedAt = at;
+    this.lastActivityAt = at;
   }
 
   ended(key: number | undefined, index: number): void {
@@ -276,12 +320,29 @@ export class SpokenPresentation {
   /** A segment's playback failed: that answer's remaining text is shown, not spoken. */
   failed(key?: number): void {
     const answer = key === undefined ? this.current : this.byKey(key);
-    if (answer !== null) this.finish(answer, "failed");
+    if (answer === null) return;
+    this.stopPlayback(answer);
+    this.finish(answer, "failed");
   }
 
-  /** Voice ended: every answer still being paced shows the rest, not spoken. */
+  /** Voice ended: nothing plays any more, and every paced answer shows the rest, not spoken. */
   released(): void {
-    for (const answer of this.list) this.finish(answer, "released");
+    for (const answer of this.list) {
+      this.stopPlayback(answer);
+      this.finish(answer, "released");
+    }
+  }
+
+  /**
+   * Is any segment of any answer — finished revealing or not — still sounding?
+   *
+   * `complete` is a statement about text: every segment has *started*. It says
+   * nothing about the last one having finished, so playback is judged here, from
+   * the segments themselves, and never from an answer's state.
+   */
+  playing(): boolean {
+    const now = this.now();
+    return this.list.some((answer) => answer.segments.some((segment) => isPlaying(segment, now)));
   }
 
   /**
@@ -290,11 +351,18 @@ export class SpokenPresentation {
    * stalls an answer. One waiting its turn behind another's playback is not stalled.
    */
   checkStall(): void {
-    const playing = this.list.some(
-      (answer) =>
-        !isTerminal(answer) && answer.segments.some((segment) => segment.endedAt === null),
+    if (this.playing()) return;
+    // Silence is measured from the last activity, or from when the last segment
+    // should have finished if its end was never reported.
+    const lastEnd = Math.max(
+      this.lastActivityAt,
+      ...this.list.flatMap((answer) =>
+        answer.segments
+          .filter((segment) => segment.endedAt === null && segment.stoppedAt === null)
+          .map((segment) => (segment.expectedEndAt ?? segment.startedAt) + END_GRACE_MS),
+      ),
     );
-    if (playing || this.now() - this.lastActivityAt < STALL_MS) return;
+    if (this.now() - lastEnd < STALL_MS) return;
     for (const answer of this.list) {
       if (answer.messageId !== null) this.finish(answer, "stalled");
     }
@@ -368,14 +436,34 @@ export class SpokenPresentation {
 
   private finish(answer: SpokenAnswer, state: SpokenState): void {
     if (isTerminal(answer)) return;
+    if (state === "interrupted" || state === "failed" || state === "released") {
+      this.stopPlayback(answer);
+    }
     answer.state = state;
     this.emit();
   }
 
-  /** Forget the oldest finished answers beyond `REMEMBERED`. */
+  /** Every segment of this answer still sounding has been cut off. */
+  private stopPlayback(answer: SpokenAnswer): void {
+    const at = this.now();
+    for (const segment of answer.segments) {
+      if (segment.endedAt === null && segment.stoppedAt === null) {
+        segment.stoppedAt = at;
+        this.lastActivityAt = at;
+      }
+    }
+  }
+
+  /**
+   * Forget the oldest finished answers beyond `REMEMBERED` — never one whose audio
+   * is still sounding, which is still needed to know that something is playing.
+   */
   private forget(): void {
+    const now = this.now();
     while (this.list.length > REMEMBERED) {
-      const index = this.list.findIndex((answer) => isTerminal(answer));
+      const index = this.list.findIndex(
+        (answer) => isTerminal(answer) && !answer.segments.some((segment) => isPlaying(segment, now)),
+      );
       if (index < 0) break;
       this.list.splice(index, 1);
     }
@@ -384,6 +472,12 @@ export class SpokenPresentation {
   private emit(): void {
     this.onChange(this.answers);
   }
+}
+
+/** Started, not reported finished, not cut off, and not long past its own length. */
+function isPlaying(segment: SpokenSegment, now: number): boolean {
+  if (segment.endedAt !== null || segment.stoppedAt !== null) return false;
+  return segment.expectedEndAt === null || now < segment.expectedEndAt + END_GRACE_MS;
 }
 
 function copy(answer: SpokenAnswer): SpokenAnswer {

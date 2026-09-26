@@ -34,6 +34,8 @@ export interface SegmentAudio {
   audio: ArrayBuffer;
   /** Which of her answers this segment belongs to, in the window's own terms. */
   answerKey?: number;
+  /** The audio's length, as the service stated it. */
+  durationSeconds?: number;
 }
 
 export interface SpeakerObserver {

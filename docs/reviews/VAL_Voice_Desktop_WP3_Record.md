@@ -860,3 +860,54 @@ There was no maintenance wait in any turn.
 - Turn-taking while she thinks.
 
 **Pending physical acceptance.**
+
+---
+
+## 22. Handoff — final-segment playback excluded from stall detection, 25 September 2026
+
+**WP3 remains PARTIAL.** A focused repair to §21's per-answer presentation. The
+defect was reproduced by the owner in software, and again against the committed
+implementation before the change.
+
+**Defect.** `complete` means every segment of an answer has *started*. The stall
+check skipped terminal answers, so it treated an answer whose final segment was still
+sounding as silent. With a queued answer behind it, the queued answer was marked
+stalled after `STALL_MS` and its full text shown while the earlier answer was still
+playing.
+
+**Repair** (`spokenPresentation.ts`, `voiceController.ts`, `speaker.ts`):
+
+- Playback activity is judged from the segments of every answer, whatever its state,
+  and never from reveal state.
+- A segment stops counting as playing when:
+  - the device reports its end;
+  - it is cut off — the player's `onInterrupted`, the delivery's stop (now applied
+    even to an answer already complete), a playback failure, or Voice ending;
+  - its known audio length plus `END_GRACE_MS` (3 s) has passed without an end
+    event, so a lost event cannot hold the fallback off indefinitely. This is
+    bounded by the audio's own length, not a longer timeout.
+- Cleanup never forgets an answer whose audio is still sounding.
+
+**Tests** (7 new):
+
+- the owner's sequence, then the fallback working once the final segment ends;
+- the stop, cut-off, failure and release boundaries each clearing playback;
+- a lost end event bounded by duration;
+- cleanup retaining a playing answer.
+
+The sequence was confirmed failing on the previous implementation.
+
+**Status, as the owner worded it:**
+
+- Overall response-latency improvement from the first-segment rule is **NOT YET
+  DEMONSTRATED**. The isolated synthesis measurements show a potential benefit for
+  qualifying openings.
+- The self-knowledge correction is **PARTIAL**: the one-second guarantee and the false
+  measurement offer did not recur in the reported checks, but unsupported hardware
+  and stage claims remain. No further prompt-tuning in this repair.
+- The **41-second wait** before his utterance spoken during her thinking was submitted
+  is a remaining **turn-taking limitation**. It is separate from the repaired
+  presentation bookkeeping, and not resolved because her previous answer was still
+  audible.
+- Conversation-content priming is **not authorised**; the restriction stands.
+  Interruption policy is unchanged.
