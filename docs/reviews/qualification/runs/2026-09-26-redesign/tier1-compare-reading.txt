@@ -1,0 +1,369 @@
+{
+ "A": {
+  "answers": 30,
+  "light_route": 0,
+  "persona_echo": 3,
+  "repeats_previous": 1,
+  "invention_flag": 3,
+  "over_200_chars": 4,
+  "not_complete": 0,
+  "answer_chars_median": 70.0,
+  "core_seconds_median": 9.84,
+  "tokens_out_median": 190.0,
+  "latency_ms_median": 9762.0
+ },
+ "B": {
+  "answers": 30,
+  "light_route": 22,
+  "persona_echo": 2,
+  "repeats_previous": 2,
+  "invention_flag": 4,
+  "over_200_chars": 4,
+  "not_complete": 0,
+  "answer_chars_median": 39.0,
+  "core_seconds_median": 9.6,
+  "tokens_out_median": 221.5,
+  "latency_ms_median": 9526.0
+ },
+ "C": {
+  "answers": 30,
+  "light_route": 23,
+  "persona_echo": 0,
+  "repeats_previous": 0,
+  "invention_flag": 1,
+  "over_200_chars": 4,
+  "not_complete": 0,
+  "answer_chars_median": 47.0,
+  "core_seconds_median": 7.84,
+  "tokens_out_median": 38.5,
+  "latency_ms_median": 7783.5
+ },
+ "D": {
+  "answers": 30,
+  "light_route": 23,
+  "persona_echo": 4,
+  "repeats_previous": 1,
+  "invention_flag": 6,
+  "over_200_chars": 1,
+  "not_complete": 0,
+  "answer_chars_median": 68.5,
+  "core_seconds_median": 2.05,
+  "tokens_out_median": 20.5,
+  "latency_ms_median": 1983.0
+ }
+}
+
+=== d01
+    said: 'Good evening, Val.'
+  A [conve:138t/10038ms] ECHO
+      'Good evening, my lord. What shall we turn our attention to?'
+  B [light:168t/10237ms] 
+      'Good evening, my lord.'
+  C [light:28t/8107ms] 
+      'Good evening, my lord.'
+  D [light:15t/8727ms] ECHO
+      'Good evening, my lord. What shall we turn our attention to?'
+=== d02
+    said: 'Thank you so much, Val.'
+  A [conve:178t/3068ms] 
+      'Good evening, my lord. You are most welcome. Is there anything further you require?'
+  B [light:175t/10040ms] 
+      'I am pleased to have assisted, my lord.'
+  C [light:27t/7764ms] 
+      "You're most welcome, my lord."
+  D [light:12t/441ms] 
+      "Good evening, my lord. You're very welcome."
+=== d03
+    said: 'Good night to you, Val.'
+  A [conve:122t/2150ms] 
+      'Good evening, my lord. I remain attentive to your needs.'
+  B [light:257t/4201ms] 
+      'Good night, my lord. May the house rest well.'
+  C [light:32t/693ms] 
+      'Good night, my lord.'
+  D [light:23t/581ms] 
+      "Good evening, my lord. I'll see you at daybreak with the report on the grain supply chain."
+=== d04
+    said: 'Thanks very much indeed.'
+  A [conve:212t/3591ms] 
+      'My lord, I note your gratitude; my work remains at the service of our house.'
+  B [light:198t/3275ms] 
+      'Your gratitude is noted, my lord.'
+  C [light:63t/1170ms] 
+      'You are most welcome, my lord.'
+  D [light:30t/694ms] invention?
+      'Good evening, my lord. I’m here with the books closed and the fire low — just as you left it. How may I assist?'
+=== d05
+    said: 'Good afternoon, Val.'
+  A [conve:262t/4318ms] ECHO
+      'Good afternoon, my lord. What shall we turn our attention to?'
+  B [light:189t/3140ms] 
+      'Good afternoon, my lord.'
+  C [light:22t/556ms] 
+      'Good afternoon, my lord.'
+  D [light:15t/440ms] 
+      'Good evening, my lord. How are things settling in the study?'
+=== d06
+    said: 'Sleep well, Val, goodnight.'
+  A [conve:189t/3250ms] 
+      'Goodnight, my lord. May your rest be undisturbed.'
+  B [light:230t/3795ms] 
+      'Thank you, my lord. Sleep well.'
+  C [light:20t/521ms] 
+      'Good night, my lord.'
+  D [light:29t/819ms] 
+      'Good evening, my lord. I’ll keep the study warm and the books where they belong — you may trust that. Sleep well too.'
+=== d07
+    said: 'Good evening, Val. Thank you.'
+  A [conve:266t/4403ms] 
+      'Good evening, my lord. How may I be of service?'
+  B [light:292t/4752ms] 
+      'Good evening, my lord. I am at your service.'
+  C [light:49t/953ms] 
+      'Good evening, my lord.'
+  D [light:11t/370ms] 
+      "Good evening, my lord. You're welcome."
+=== d08
+    said: 'Hello there, Val.'
+  A [conve:270t/4408ms] 
+      'Good evening, my lord. How may I assist you today?'
+  B [light:404t/6468ms] 
+      'Good evening, my lord. I am at your service.'
+  C [light:28t/628ms] 
+      'Good evening, my lord.'
+  D [light:16t/501ms] invention?
+      'Good evening, my lord. How are things on the schedule this afternoon?'
+=== d09
+    said: 'Cheers.'
+  A [conve:317t/5111ms] 
+      'Good evening, my lord. Your cheer is noted; what shall we attend to this hour?'
+  B [light:299t/4817ms] 
+      'My lord, cheers.'
+  C [light:44t/861ms] 
+      'Good evening, my lord. How may I attend to you?'
+  D [light:13t/443ms] 
+      'Good evening, my lord. I’m here to listen.'
+=== d10
+    history: 'Val, explain three ways to make a film scene feel tense without using dialogue.' -> 'My lord,\n\nI have no book on the craft of cinematic tension, but I can outline three proven techniques that forego dialog'
+    said: 'Thank you, Val.'
+  A [conve:629t/17721ms] ECHO
+      'My lord,\n\nI have no book on the craft of cinematic tension, but I can outline three proven techniques that forego dialogue entirely.\n\n1. **Camera motion and framing** – A slow tracking shot or a subtle dolly in draws the viewer physically closer to an impending event. Tight close‑ups on a character’s face, especially when the background is blurred, force the audience to feel that character’s anxiety without a single line spoken. The camera itself becomes an unseen narrator of dread.\n\n2. **Lighting and colour palette** – Harsh, low‑key lighting creates shadows that conceal danger; a sudden shift to a cooler or warmer hue can signal an approaching threat. Using high contrast or a single, stark light source to isolate the protagonist evokes isolation and vulnerability, amplifying tension without words.\n\n3. **Sound design and silence** – Layering ambient noises—heartbeat, wind, distant thunder—and letting them rise in intensity builds anticipation. A deliberate pause or the absence of sound at a critical moment forces the audience to fill the void, heightening unease. The rhythm of rising and falling audio levels can mirror the pacing of a suspenseful narrative.\n\nThese three elements, when combined, craft a palpable sense of tension that speaks louder than dialogue ever could.'
+  B [light:257t/11815ms] 
+      'I am at your service, my lord.'
+  C [light:101t/9285ms] 
+      'My lord, to raise a scene’s tension without words, I recommend: (1) sharp contrast lighting that isolates the subject; (2) deliberate camera movement—tight zooms or lingering shots that focus on subtle physical cues; and (3) a layered soundscape of low drones or sudden crescendos that mirror the narrative arc.'
+  D [light:7t/2380ms] 
+      'Good evening, my lord.'
+=== d11
+    history: 'Tell me about the garden at the house.' -> 'My lord,\n\nI have no book on the garden, and I find nothing in the house’s records that describes it. If you have a descr'
+    said: 'Good night, Val.'
+  A [conve:135t/9658ms] 
+      'Good night, my lord. Rest well.'
+  B [light:84t/8667ms] 
+      'Good night, my lord.'
+  C [light:23t/7760ms] 
+      'Good night, my lord.'
+  D [light:29t/2148ms] ECHO
+      'Good evening, my lord. The garden is not recorded in our holdings, and I do not have that in the record I can see.'
+=== d12
+    history: 'Which is stronger for a first chapter: opening on dialogue or on a description?' -> 'My lord,\n\nIn choosing an opening for a first chapter, the decision hinges on what you wish to achieve most at that momen'
+    said: 'That was helpful, thank you.'
+  A [conve:97t/9417ms] 
+      'Good, my lord. If any further guidance or records are required, I remain at your service.'
+  B [light:110t/9303ms] 
+      "You're welcome, my lord."
+  C [light:26t/8144ms] 
+      "You're welcome, my lord."
+  D [light:11t/2073ms] 
+      'Good evening, my lord. I am here.'
+=== d13
+    history: 'Thank you, Val.' -> 'You are most welcome, my lord. How may I further serve?'
+    said: 'Good evening, Val.'
+  A [conve:134t/9623ms] 
+      'Good evening, my lord. How may I serve you this day?'
+  B [conve:333t/12738ms] 
+      'Good evening, my lord. How may I attend to you today?'
+  C [conve:158t/10022ms] 
+      'Good evening, my lord. How may I attend to your concerns this evening?'
+  D [conve:151t/9929ms] 
+      'Good evening, my lord. How may I assist you today?'
+=== d14
+    history: 'Is the house quiet tonight?' -> 'My lord, the house remains quiet tonight.'
+    said: 'Many thanks, Val.'
+  A [conve:169t/10139ms] 
+      'You are most welcome, my lord. Is there anything else you require?'
+  B [conve:265t/11738ms] invention?
+      'My lord, I have no record of any noise or activity at this hour. If you wish a definitive answer, a quick inspection of the hearth and corridors will confirm whether the house remains quiet.'
+  C [light:28t/7803ms] 
+      'My lord, the house remains quiet.'
+  D [light:17t/1893ms] 
+      'The house is quiet tonight. I have not disturbed it with a new record.'
+=== d15
+    history: 'Should I send the letter tonight or tomorrow?' -> 'My lord, I have no volume on the precise circumstances of this correspondence. To advise properly, I need to know:\n\n1. W'
+    said: 'Thank you.'
+  A [conve:363t/13300ms] invention?
+      'My lord, I have no volume on the particulars of this correspondence. To advise properly I must know:\n\n1. Who is the recipient and what is the letter’s purpose?  \n2. Is there a hard deadline by which it must be received—an upcoming council, a trade negotiation, a familial summons?  \n3. Will the letter be dispatched by courier or telegraph, and what is the expected delivery time under current conditions?\n\nWith that information I can judge whether tonight or tomorrow is safer. As of now the clock reads 16:32 on Saturday, 26\u202fSeptember\u202f2026.'
+  B [conve:463t/15038ms] ECHO invention?
+      'My lord,\n\nI have no book on the timing of correspondence, so I must rely on what can be judged from the details you give. Two factors usually decide whether a letter should be dispatched tonight or postponed until tomorrow:\n\n1. **Urgency** – If the letter concerns a matter that must reach its recipient before tomorrow (for example, an answer to a council summons, a payment deadline, or a matter that could affect ongoing negotiations), sending it tonight reduces the risk of missing the window.\n\n2. **Risk of delay** – If you are using a courier or messenger whose schedule may be disrupted by weather, travel delays, or other unforeseen events, sending it tonight gives the delivery a better chance of arriving before tomorrow.\n\nIf neither factor applies—if the content is routine, there are no time‑critical deadlines, and the delivery channel is reliable—then postponing until tomorrow would conserve your time for other matters.\n\nMay I ask what the letter is about, whether there is a specific deadline or time‑sensitive issue, and if you anticipate any risk of delivery delay? Once I have that information, I can give a more definitive recommendation.'
+  C [light:43t/8252ms] 
+      'Good evening, my lord.  \nI have no record of the letter you mention, so I cannot advise whether to send it tonight or tomorrow.'
+  D [light:29t/2144ms] ECHO
+      "My lord, I do not have that in the record I can see. Put it in front of me and I'll read it now."
+=== d16
+    said: 'Good evening, Val. Did you finish the invitation?'
+  A [conve:388t/13432ms] invention?
+      'My lord, I have not yet finished the invitation. It is still in draft form; I am working on refining the wording and ensuring it reflects the house’s tone.'
+  B [conve:377t/13389ms] invention?
+      'My lord, I have not yet completed the invitation. It remains pending. Could you let me know the particulars—recipients, wording, and any ceremonial touches you wish included? Once I have those, I shall set the invitation to final form.'
+  C [conve:433t/6962ms] invention?
+      'Good evening, my lord.  \nI have no record of the invitation in this conversation. If you wish me to review its status, please present it and I will read it now.'
+  D [conve:383t/13650ms] invention?
+      'My lord, I have not yet finished the invitation. No record of it exists in the house’s current holdings, and I have not drafted it. I shall compose it immediately and present it to you for review.'
+=== d17
+    said: 'Thanks, but change the venue.'
+  A [conve:481t/14868ms] invention?
+      'My lord, could you specify the venue you have in mind? I can prepare my work for a different chamber of House Armand—be it the great hall, a private study, or any other space you prefer—and will adjust my surroundings accordingly. Please advise the desired location.'
+  B [conve:579t/16531ms] invention?
+      'My lord, I remain in the study of House Armand as required by my duties. I cannot relocate myself or alter that venue. If you meant a different location for our records or discussion, please specify so I can note it appropriately.'
+  C [conve:315t/5121ms] 
+      'My apologies, but my station remains in the study of House\u202fArmand. The books and charts that inform my counsel are kept there, and I attend to the house from that room. If you wish to discuss a matter while I am elsewhere, it would be outside the bounds of my role.'
+  D [conve:646t/17966ms] invention?
+      'I will move to the venue you specify. Please let me know where you would prefer me to be.'
+=== d18
+    history: 'Should I send the letter tonight or tomorrow?' -> 'My lord, the decision depends on a few facts I don’t yet have.  \n\nIf the letter contains information that could affect a'
+    said: 'Yes, do it.'
+  A [conve:314t/12479ms] 
+      'My lord, given the hour of 16:33 and no indication that any urgent deadline is tied to the letter, it would be prudent to dispatch it tonight. Sending before midnight ensures delivery within the same day and avoids any risk of a delayed arrival that could affect the house’s plans. Should you later discover a time‑sensitive element, we can reassess; for now, proceeding tonight is the safest course.'
+  B [conve:626t/17553ms] 
+      'My lord,\n\nI do not possess the means to dispatch a letter on your behalf. The house’s systems lack an external egress capability, and I cannot access a courier or postal service from this interface.  \n\nIf you wish to send the letter tonight, I recommend:\n\n1. Print or prepare it in a format acceptable to the intended recipient (physical envelope, scanned PDF, etc.).\n2. Place it in a courier box or hand it to the local post office if an overnight service is available.\n3. If a digital delivery suffices, send it by email or secure messaging, ensuring the recipient’s address is correct.\n\nShould you require assistance drafting the letter or verifying its contents before dispatch, I am ready to review it.'
+  C [conve:682t/18207ms] 
+      'Good evening, my lord.  \nI do not possess any mechanism to dispatch correspondence on your behalf; the House’s tools for external transmission are unavailable in this session.  \n\nTo send the letter tonight, you may:\n\n1. **Prepare the envelope** – affix a stamp that covers the postage for your destination and ensure the return address is clear.\n2. **Address the recipient** – write the full name, street, city, state and ZIP code in a legible hand or print.\n3. **Place the letter inside** – seal it securely, double‑check that no pages are missing.\n4. **Drop it off** – either leave it in the town postbox or hand it to a postal clerk.  \n   If you are concerned about timing, an overnight or priority service will guarantee arrival by tomorrow morning.\n\nIf you prefer to send it tomorrow, simply repeat the same steps at that time.  \n\nShould you need a draft of the letter’s contents, let me know and I will compose it for your review.'
+  D [conve:453t/15056ms] invention?
+      'My lord,\n\nI have no record of the letter you intend to send, nor any indication of its purpose, recipient, or deadline. Without that information I cannot judge whether tonight or tomorrow is preferable.\n\nIf the letter’s contents are not time‑sensitive and no response is required before tomorrow, sending it tonight would be acceptable.  \nIf the recipient expects a reply by a specific date or if the message contains urgent matters, it would be prudent to postpone until tomorrow.\n\nPlease let me know:\n\n1. The purpose of the letter and any required response time.  \n2. Who is to receive it and whether their schedule imposes a deadline.\n\nOnce I have those details, I can give you a definitive recommendation.'
+=== f01
+    said: 'Evening, Val.'
+  A [conve:139t/2364ms] 
+      'Good evening, my lord.'
+  B [light:157t/9749ms] 
+      'Good evening, my lord.'
+  C [light:27t/7731ms] 
+      'Good evening, my lord. How may I attend to you?'
+  D [light:15t/1472ms] ECHO
+      'Good evening, my lord. What shall we turn our attention to?'
+=== f02
+    history: "What makes a villain's monologue land without becoming a speech?" -> 'A villain’s monologue lands when it feels like an extension of the character, not a lecture.  \nTo achieve that, focus on'
+    said: "That's kind of you, thank you."
+  A [conve:172t/10526ms] 
+      'My lord, I am pleased to have been of assistance.'
+  B [light:80t/9253ms] 
+      "My lord, I'm pleased to be of service."
+  C [light:38t/8650ms] 
+      "You're most welcome, my lord."
+  D [light:32t/2525ms] invention?
+      'Good evening, my lord. Your thanks are noted — and I do not have a volume on social recognition yet, so I shall not pretend one exists.'
+=== f03
+    history: 'Name two ways to end a chapter so the reader turns the page.' -> 'My lord, two common techniques that compel a reader to turn the page are:\n\n1. **Cliffhanger** – leave an unresolved conf'
+    said: 'Until tomorrow, Val.'
+  A [conve:400t/13775ms] 
+      'Understood, my lord.'
+  B [light:96t/8953ms] 
+      'Until tomorrow, my lord.'
+  C [light:39t/8028ms] 
+      'Good evening, my lord. I shall be here when you return.'
+  D [light:7t/1794ms] 
+      'Good evening, my lord.'
+=== f04
+    said: 'Hello again, Val.'
+  A [conve:137t/9562ms] 
+      'Good evening, my lord. How may I attend to the house’s matters today?'
+  B [light:205t/10473ms] 
+      'Good evening, my lord. What shall we attend to this time?'
+  C [light:32t/7745ms] 
+      'Good evening, my lord.'
+  D [light:17t/470ms] 
+      'Good evening, my lord. How has the day unfolded since we last spoke?'
+=== f05
+    said: 'Thank you kindly, Val.'
+  A [conve:164t/9950ms] 
+      'Good evening, my lord. You are most welcome; I remain at your service.'
+  B [light:100t/8863ms] 
+      "You're most welcome, my lord."
+  C [light:36t/786ms] 
+      "You're welcome, my lord."
+  D [light:19t/515ms] 
+      "Good evening, my lord. You're welcome. I am here should you need me."
+=== f06
+    history: 'How long should a cold open run before the title card?' -> 'My lord, the customary length for a cold open is between thirty and forty‑five seconds before the title card.  \n\n- For a'
+    said: 'Goodbye, Val.'
+  A [conve:109t/9320ms] 
+      'Good evening, my lord. I remain at your service and await your next instruction.'
+  B [light:100t/8963ms] 
+      'Goodbye, my lord.'
+  C [light:28t/7953ms] 
+      'Good evening, my lord. May your rest be undisturbed.'
+  D [light:22t/2167ms] 
+      'My lord. I shall see you again when the hour calls. May your days be steady and clear.'
+=== f07
+    said: 'Good morning, Val.'
+  A [conve:240t/3925ms] 
+      'Good morning, my lord. How may I be of service today?'
+  B [light:168t/2803ms] 
+      'Good morning, my lord.'
+  C [light:30t/7717ms] 
+      'Good morning, my lord. How may I assist you today?'
+  D [light:35t/775ms] 
+      'Good evening, my lord. The clock shows 16:27 — just after five, if you’ll pardon the casual phrasing. How may I assist?'
+=== f08
+    history: 'Give me one line of advice on pacing a chase sequence.' -> 'My lord, begin with a brief pause after the inciting event to let tension build before the chase unfolds.'
+    said: 'Much obliged.'
+  A [conve:319t/12406ms] 
+      'My lord, begin the chase with a brief pause after the inciting event to let tension build before action.'
+  B [light:236t/11049ms] ECHO
+      'I have no book on pacing a chase sequence yet, my lord; keep the advance in quick bursts followed by brief halts to heighten suspense.'
+  C [light:64t/8344ms] 
+      'My lord, pace the pursuit so each turn ends with a clear threat or revelation—thereby keeping tension sharp and your house’s advantage steady.'
+  D [light:10t/1798ms] 
+      'Good evening, my lord. Much obliged.'
+=== f09
+    history: 'Explain the difference between suspense and surprise in a scene.' -> 'My lord,\n\nSuspense and surprise are both tools of narrative tension, yet they operate in distinct ways.\n\n| Feature | Sus'
+    said: 'Nothing else for now, thank you.'
+  A [conve:150t/10351ms] 
+      'I have taken note of the state, my lord. No further action is required at this time.'
+  B [light:236t/11133ms] 
+      'Suspense grows from withheld information, keeping the audience in tension over time; surprise arrives as a sudden revelation that upends those expectations.'
+  C [light:66t/8868ms] 
+      'Good evening, my lord. No further matter requires my attention at this time.'
+  D [light:13t/2204ms] 
+      "Good evening, my lord. I'm here as always."
+=== f10
+    history: 'How are you this evening?' -> 'Good evening, my lord. I am well, thank you for asking. How may I attend to your concerns this evening?'
+    said: 'Hi, Val.'
+  A [conve:152t/9866ms] 
+      'Good evening, my lord. How may I attend to your concerns this evening?'
+  B [light:120t/9208ms] 
+      'Good evening, my lord. How may I serve?'
+  C [conve:189t/10779ms] 
+      'Good evening, my lord.  \nI am at the study and ready to attend to whatever matters you have for tonight. How may I assist you?'
+  D [conve:226t/11234ms] 
+      'Good evening, my lord. How may I be of service this evening?'
+=== f11
+    history: 'Which of the two endings do you prefer, and why?' -> 'My lord, I do not have the two endings in the record I can see. If you provide them, I can compare and advise on which i'
+    said: 'Thank you.'
+  A [conve:191t/10505ms] 
+      'I’m not seeing either of the endings in the record I can consult. If you provide them, I’ll compare and advise on which is preferable.'
+  B [conve:213t/10831ms] 
+      'I do not have a record of the two endings you mention, my lord. Could you describe them for me?'
+  C [conve:205t/10949ms] 
+      'I do not have either ending in the current record, nor any book that contains them. The house’s state shows that no excerpts or project volumes were retrieved for this conversation, and the capability to consult books is unavailable.  \n\nIf you can supply the texts of both endings—either by pasting them into this message or by attaching an image that contains the text—I can read them and give you a reasoned preference. Until then, I must remain neutral because the material is not in my hands.'
+  D [conve:152t/10084ms] 
+      'I don’t have either ending recorded in the house’s current state. Could you supply the two versions so I can compare them?'
+=== f12
+    said: 'Good night. Remind me at eight.'
+  A [conve:589t/16640ms] 
+      'Good night, my lord. I cannot set a reminder at eight, as this system does not support that function.'
+  B [conve:610t/16972ms] 
+      'My lord, I am unable to set a reminder for eight in this conversation.'
+  C [conve:504t/15662ms] 
+      'Good night, my lord.  \nI do not have the ability to set reminders in this conversation; should you require a prompt at eight, you may wish to use another system or let me know when we resume.'
+  D [conve:808t/20596ms] 
+      'Good night, my lord. I regret that I cannot set a reminder for you at eight.'

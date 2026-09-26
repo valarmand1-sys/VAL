@@ -254,6 +254,7 @@ report = {
     "completions": completions,
     "speculation_log": speculation_lines,
     "fast_route_tiers": os.environ.get("VAL_FAST_ROUTE_TIERS", ""),
+    "tier1_route": os.environ.get("VAL_TIER1_ROUTE", ""),
     "speculation": os.environ.get("VAL_SPECULATION", ""),
     "adaptive_grace": os.environ.get("VAL_ADAPTIVE_GRACE", ""),
     "plan": os.environ.get("VAL_MEASURE_PLAN", ""),

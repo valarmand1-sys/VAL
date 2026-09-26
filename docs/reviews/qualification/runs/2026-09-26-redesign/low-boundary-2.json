@@ -1,0 +1,1496 @@
+{
+ "repeats": 3,
+ "summary": {
+  "S1 P M → M": {
+   "ttft_s": {
+    "n": 3,
+    "median": 0.201,
+    "min": 0.184,
+    "max": 1.305
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5881,
+    "min": 5881,
+    "max": 5881
+   },
+   "reasoning": [
+    "medium"
+   ]
+  },
+  "S2 P L M → M": {
+   "ttft_s": {
+    "n": 3,
+    "median": 0.204,
+    "min": 0.187,
+    "max": 1.302
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5881,
+    "min": 5881,
+    "max": 5881
+   },
+   "reasoning": [
+    "medium"
+   ]
+  },
+  "S2 P L M → L": {
+   "ttft_s": {
+    "n": 3,
+    "median": 1.128,
+    "min": 0.199,
+    "max": 1.136
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5743,
+    "min": 5743,
+    "max": 5743
+   },
+   "reasoning": [
+    "low"
+   ]
+  },
+  "S3 P Mg M → M": {
+   "ttft_s": {
+    "n": 3,
+    "median": 0.202,
+    "min": 0.198,
+    "max": 0.214
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5881,
+    "min": 5881,
+    "max": 5881
+   },
+   "reasoning": [
+    "medium"
+   ]
+  },
+  "S3 P Mg M → Mg": {
+   "ttft_s": {
+    "n": 3,
+    "median": 1.291,
+    "min": 1.286,
+    "max": 1.298
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5872,
+    "min": 5872,
+    "max": 5872
+   },
+   "reasoning": [
+    "medium"
+   ]
+  },
+  "S4 P L P M → M": {
+   "ttft_s": {
+    "n": 3,
+    "median": 1.3,
+    "min": 0.197,
+    "max": 1.313
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5881,
+    "min": 5881,
+    "max": 5881
+   },
+   "reasoning": [
+    "medium"
+   ]
+  },
+  "S4 P L P M → L": {
+   "ttft_s": {
+    "n": 3,
+    "median": 1.132,
+    "min": 0.199,
+    "max": 1.137
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5743,
+    "min": 5743,
+    "max": 5743
+   },
+   "reasoning": [
+    "low"
+   ]
+  },
+  "S5 P L L → L": {
+   "ttft_s": {
+    "n": 6,
+    "median": 0.204,
+    "min": 0.199,
+    "max": 0.213
+   },
+   "prompt_tokens": {
+    "n": 6,
+    "median": 5743.0,
+    "min": 5743,
+    "max": 5743
+   },
+   "reasoning": [
+    "low"
+   ]
+  },
+  "S6 M L → M": {
+   "ttft_s": {
+    "n": 3,
+    "median": 0.205,
+    "min": 0.195,
+    "max": 1.333
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5881,
+    "min": 5881,
+    "max": 5881
+   },
+   "reasoning": [
+    "medium"
+   ]
+  },
+  "S6 M L → L": {
+   "ttft_s": {
+    "n": 3,
+    "median": 0.202,
+    "min": 0.195,
+    "max": 1.141
+   },
+   "prompt_tokens": {
+    "n": 3,
+    "median": 5743,
+    "min": 5743,
+    "max": 5743
+   },
+   "reasoning": [
+    "low"
+   ]
+  }
+ },
+ "steps": [
+  {
+   "label": "P",
+   "sequence": "S1 P M",
+   "repeat": 0,
+   "start": 1790459537.995053,
+   "end": 1790459539.4786901,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S1 P M",
+   "repeat": 0,
+   "start": 1790459539.880342,
+   "end": 1790459550.6067939,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 10607,
+    "tokens_out": 595,
+    "answer": "My lord, here are three ways to heighten the sense of tension in a film scene wi"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S2 P L M",
+   "repeat": 0,
+   "start": 1790459551.007006,
+   "end": 1790459564.212285,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S2 P L M",
+   "repeat": 0,
+   "start": 1790459564.616192,
+   "end": 1790459566.311147,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 1600,
+    "tokens_out": 29,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S2 P L M",
+   "repeat": 0,
+   "start": 1790459566.715306,
+   "end": 1790459573.58732,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 6774,
+    "tokens_out": 420,
+    "answer": "My lord, here are three techniques that can lend a film scene an unmistakable se"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S3 P Mg M",
+   "repeat": 0,
+   "start": 1790459573.992602,
+   "end": 1790459574.837636,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "Mg",
+   "sequence": "S3 P Mg M",
+   "repeat": 0,
+   "start": 1790459575.238538,
+   "end": 1790459579.2221792,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 3886,
+    "tokens_out": 167,
+    "answer": "Good evening, my lord. What shall we attend to?"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S3 P Mg M",
+   "repeat": 0,
+   "start": 1790459579.627237,
+   "end": 1790459587.616278,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 7892,
+    "tokens_out": 494,
+    "answer": "**Three non‑dialogue techniques to heighten tension in a film scene**\n\n1. **Cont"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S4 P L P M",
+   "repeat": 0,
+   "start": 1790459588.0189261,
+   "end": 1790459588.893638,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S4 P L P M",
+   "repeat": 0,
+   "start": 1790459589.298632,
+   "end": 1790459590.9828422,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 1589,
+    "tokens_out": 28,
+    "answer": "Good evening, my lord. How may I attend to your thoughts?"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S4 P L P M",
+   "repeat": 0,
+   "start": 1790459591.38346,
+   "end": 1790459592.245971,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S4 P L P M",
+   "repeat": 0,
+   "start": 1790459592.651066,
+   "end": 1790459605.3127239,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 12564,
+    "tokens_out": 723,
+    "answer": "Good evening, my lord.  \nHere are three ways to heighten tension in a film scene"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S5 P L L",
+   "repeat": 0,
+   "start": 1790459605.715465,
+   "end": 1790459618.8194182,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S5 P L L",
+   "repeat": 0,
+   "start": 1790459619.2245078,
+   "end": 1790459619.976801,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 650,
+    "tokens_out": 27,
+    "answer": "Good evening, my lord. How may I attend to you?"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S5 P L L",
+   "repeat": 0,
+   "start": 1790459620.3818612,
+   "end": 1790459621.107116,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 634,
+    "tokens_out": 27,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S6 M L",
+   "repeat": 0,
+   "start": 1790459621.511625,
+   "end": 1790459635.559079,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 13949,
+    "tokens_out": 883,
+    "answer": "Good evening, my lord.  \nI have no volume on film scene construction yet, but I "
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S6 M L",
+   "repeat": 0,
+   "start": 1790459635.9641302,
+   "end": 1790459636.680081,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 623,
+    "tokens_out": 26,
+    "answer": "Good evening, my lord. How may I assist you?"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S1 P M",
+   "repeat": 1,
+   "start": 1790459637.082023,
+   "end": 1790459637.9610062,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S1 P M",
+   "repeat": 1,
+   "start": 1790459638.3611531,
+   "end": 1790459644.196749,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 5735,
+    "tokens_out": 356,
+    "answer": "Good evening, my lord.\n\nThree methods to heighten tension in a film scene withou"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S2 P L M",
+   "repeat": 1,
+   "start": 1790459644.6019788,
+   "end": 1790459645.443053,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S2 P L M",
+   "repeat": 1,
+   "start": 1790459645.8468192,
+   "end": 1790459647.5130959,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 1573,
+    "tokens_out": 27,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S2 P L M",
+   "repeat": 1,
+   "start": 1790459647.915048,
+   "end": 1790459659.039576,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 11032,
+    "tokens_out": 622,
+    "answer": "Good evening, my lord.\n\nThree techniques can inject palpable tension into a film"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S3 P Mg M",
+   "repeat": 1,
+   "start": 1790459659.440535,
+   "end": 1790459660.341995,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "Mg",
+   "sequence": "S3 P Mg M",
+   "repeat": 1,
+   "start": 1790459660.747081,
+   "end": 1790459667.55832,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 6710,
+    "tokens_out": 346,
+    "answer": "Good evening, my lord. How may I assist you this hour?"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S3 P Mg M",
+   "repeat": 1,
+   "start": 1790459667.96161,
+   "end": 1790459683.766858,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 15711,
+    "tokens_out": 990,
+    "answer": "Good evening, my lord.\n\nI have no book on cinematic techniques in the House’s li"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S4 P L P M",
+   "repeat": 1,
+   "start": 1790459684.1721332,
+   "end": 1790459685.0434308,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S4 P L P M",
+   "repeat": 1,
+   "start": 1790459685.447718,
+   "end": 1790459686.1913831,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 635,
+    "tokens_out": 27,
+    "answer": "Good evening, my lord. How may I attend to you?"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S4 P L P M",
+   "repeat": 1,
+   "start": 1790459686.593087,
+   "end": 1790459687.4769018,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S4 P L P M",
+   "repeat": 1,
+   "start": 1790459687.881988,
+   "end": 1790459696.360207,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 8379,
+    "tokens_out": 526,
+    "answer": "Good evening, my lord.  \nHere are three ways to heighten tension in a film scene"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S5 P L L",
+   "repeat": 1,
+   "start": 1790459696.764141,
+   "end": 1790459697.652537,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S5 P L L",
+   "repeat": 1,
+   "start": 1790459698.055719,
+   "end": 1790459698.727009,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 577,
+    "tokens_out": 23,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S5 P L L",
+   "repeat": 1,
+   "start": 1790459699.127754,
+   "end": 1790459699.878595,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 656,
+    "tokens_out": 28,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S6 M L",
+   "repeat": 1,
+   "start": 1790459700.281549,
+   "end": 1790459711.236198,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 10857,
+    "tokens_out": 611,
+    "answer": "Good day, my lord. Three ways to raise a scene’s tension without dialogue are:\n\n"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S6 M L",
+   "repeat": 1,
+   "start": 1790459711.641252,
+   "end": 1790459713.3841338,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 1646,
+    "tokens_out": 31,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S1 P M",
+   "repeat": 2,
+   "start": 1790459713.789313,
+   "end": 1790459726.976903,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S1 P M",
+   "repeat": 2,
+   "start": 1790459727.3805661,
+   "end": 1790459734.461365,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 6988,
+    "tokens_out": 437,
+    "answer": "Good evening, my lord.  \nThree ways to make a film scene feel tense without dial"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S2 P L M",
+   "repeat": 2,
+   "start": 1790459734.8641,
+   "end": 1790459735.758948,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S2 P L M",
+   "repeat": 2,
+   "start": 1790459736.1640909,
+   "end": 1790459736.9039402,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 651,
+    "tokens_out": 28,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S2 P L M",
+   "repeat": 2,
+   "start": 1790459737.309035,
+   "end": 1790459745.66363,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 8256,
+    "tokens_out": 518,
+    "answer": "My lord, three techniques can inject tension into a film scene without spoken wo"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S3 P Mg M",
+   "repeat": 2,
+   "start": 1790459746.063974,
+   "end": 1790459746.9351292,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "Mg",
+   "sequence": "S3 P Mg M",
+   "repeat": 2,
+   "start": 1790459747.340226,
+   "end": 1790459752.512757,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 5073,
+    "tokens_out": 243,
+    "answer": "Good evening, my lord. How may I attend to your concerns tonight?"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S3 P Mg M",
+   "repeat": 2,
+   "start": 1790459752.916723,
+   "end": 1790459762.565575,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 9550,
+    "tokens_out": 601,
+    "answer": "My lord, to convey tension without words one may rely on the visual and auditory"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S4 P L P M",
+   "repeat": 2,
+   "start": 1790459762.970817,
+   "end": 1790459763.851986,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S4 P L P M",
+   "repeat": 2,
+   "start": 1790459764.2562969,
+   "end": 1790459766.477154,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 2124,
+    "tokens_out": 63,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S4 P L P M",
+   "repeat": 2,
+   "start": 1790459766.8810182,
+   "end": 1790459767.750699,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S4 P L P M",
+   "repeat": 2,
+   "start": 1790459768.155787,
+   "end": 1790459777.732718,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 9459,
+    "tokens_out": 525,
+    "answer": "Good evening, my lord.  \nThree techniques that can render a scene taut without u"
+   }
+  },
+  {
+   "label": "P",
+   "sequence": "S5 P L L",
+   "repeat": 2,
+   "start": 1790459778.1367822,
+   "end": 1790459779.01868,
+   "result": {
+    "medium": "established",
+    "low": "established"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S5 P L L",
+   "repeat": 2,
+   "start": 1790459779.4229708,
+   "end": 1790459780.1428149,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 618,
+    "tokens_out": 26,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S5 P L L",
+   "repeat": 2,
+   "start": 1790459780.545588,
+   "end": 1790459781.511557,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 871,
+    "tokens_out": 42,
+    "answer": "Good evening, my lord."
+   }
+  },
+  {
+   "label": "M",
+   "sequence": "S6 M L",
+   "repeat": 2,
+   "start": 1790459781.9148061,
+   "end": 1790459790.222833,
+   "result": {
+    "task": "conversation",
+    "latency_ms": 8210,
+    "tokens_out": 515,
+    "answer": "Good evening, my lord.  \nHere are three ways to heighten tension in a film scene"
+   }
+  },
+  {
+   "label": "L",
+   "sequence": "S6 M L",
+   "repeat": 2,
+   "start": 1790459790.6271338,
+   "end": 1790459791.3530219,
+   "result": {
+    "task": "light_conversation",
+    "latency_ms": 631,
+    "tokens_out": 27,
+    "answer": "Good evening, my lord. How may I attend to you?"
+   }
+  }
+ ],
+ "predictions": [
+  {
+   "timestamp": 1790459538896,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S1 P M #0 P"
+  },
+  {
+   "timestamp": 1790459539473,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S1 P M #0 P"
+  },
+  {
+   "timestamp": 1790459550592,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 1.305,
+   "predicted_tokens": 595,
+   "stop": "eosFound",
+   "step": "S1 P M #0 M"
+  },
+  {
+   "timestamp": 1790459557624,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S2 P L M #0 P"
+  },
+  {
+   "timestamp": 1790459564205,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S2 P L M #0 P"
+  },
+  {
+   "timestamp": 1790459566301,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 1.128,
+   "predicted_tokens": 29,
+   "stop": "eosFound",
+   "step": "S2 P L M #0 L"
+  },
+  {
+   "timestamp": 1790459573573,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.187,
+   "predicted_tokens": 420,
+   "stop": "eosFound",
+   "step": "S2 P L M #0 M"
+  },
+  {
+   "timestamp": 1790459574417,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S3 P Mg M #0 P"
+  },
+  {
+   "timestamp": 1790459574829,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S3 P Mg M #0 P"
+  },
+  {
+   "timestamp": 1790459579208,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5872,
+   "ttft_s": 1.286,
+   "predicted_tokens": 167,
+   "stop": "eosFound",
+   "step": "S3 P Mg M #0 Mg"
+  },
+  {
+   "timestamp": 1790459587591,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.202,
+   "predicted_tokens": 494,
+   "stop": "eosFound",
+   "step": "S3 P Mg M #0 M"
+  },
+  {
+   "timestamp": 1790459588453,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #0 P"
+  },
+  {
+   "timestamp": 1790459588886,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #0 P"
+  },
+  {
+   "timestamp": 1790459590973,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 1.137,
+   "predicted_tokens": 28,
+   "stop": "eosFound",
+   "step": "S4 P L P M #0 L"
+  },
+  {
+   "timestamp": 1790459591811,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #0 P"
+  },
+  {
+   "timestamp": 1790459592236,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #0 P"
+  },
+  {
+   "timestamp": 1790459605301,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 1.313,
+   "predicted_tokens": 723,
+   "stop": "eosFound",
+   "step": "S4 P L P M #0 M"
+  },
+  {
+   "timestamp": 1790459612286,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S5 P L L #0 P"
+  },
+  {
+   "timestamp": 1790459618811,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S5 P L L #0 P"
+  },
+  {
+   "timestamp": 1790459619962,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.213,
+   "predicted_tokens": 27,
+   "stop": "eosFound",
+   "step": "S5 P L L #0 L"
+  },
+  {
+   "timestamp": 1790459621095,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.199,
+   "predicted_tokens": 27,
+   "stop": "eosFound",
+   "step": "S5 P L L #0 L"
+  },
+  {
+   "timestamp": 1790459635546,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.195,
+   "predicted_tokens": 883,
+   "stop": "eosFound",
+   "step": "S6 M L #0 M"
+  },
+  {
+   "timestamp": 1790459636671,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.202,
+   "predicted_tokens": 26,
+   "stop": "eosFound",
+   "step": "S6 M L #0 L"
+  },
+  {
+   "timestamp": 1790459637520,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S1 P M #1 P"
+  },
+  {
+   "timestamp": 1790459637953,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S1 P M #1 P"
+  },
+  {
+   "timestamp": 1790459644184,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.201,
+   "predicted_tokens": 356,
+   "stop": "eosFound",
+   "step": "S1 P M #1 M"
+  },
+  {
+   "timestamp": 1790459645004,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S2 P L M #1 P"
+  },
+  {
+   "timestamp": 1790459645436,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S2 P L M #1 P"
+  },
+  {
+   "timestamp": 1790459647503,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 1.136,
+   "predicted_tokens": 27,
+   "stop": "eosFound",
+   "step": "S2 P L M #1 L"
+  },
+  {
+   "timestamp": 1790459659030,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 1.302,
+   "predicted_tokens": 622,
+   "stop": "eosFound",
+   "step": "S2 P L M #1 M"
+  },
+  {
+   "timestamp": 1790459659886,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S3 P Mg M #1 P"
+  },
+  {
+   "timestamp": 1790459660335,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S3 P Mg M #1 P"
+  },
+  {
+   "timestamp": 1790459667548,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5872,
+   "ttft_s": 1.298,
+   "predicted_tokens": 346,
+   "stop": "eosFound",
+   "step": "S3 P Mg M #1 Mg"
+  },
+  {
+   "timestamp": 1790459683755,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.214,
+   "predicted_tokens": 990,
+   "stop": "eosFound",
+   "step": "S3 P Mg M #1 M"
+  },
+  {
+   "timestamp": 1790459684612,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #1 P"
+  },
+  {
+   "timestamp": 1790459685036,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #1 P"
+  },
+  {
+   "timestamp": 1790459686178,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.199,
+   "predicted_tokens": 27,
+   "stop": "eosFound",
+   "step": "S4 P L P M #1 L"
+  },
+  {
+   "timestamp": 1790459687028,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #1 P"
+  },
+  {
+   "timestamp": 1790459687469,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #1 P"
+  },
+  {
+   "timestamp": 1790459696347,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.197,
+   "predicted_tokens": 526,
+   "stop": "eosFound",
+   "step": "S4 P L P M #1 M"
+  },
+  {
+   "timestamp": 1790459697203,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S5 P L L #1 P"
+  },
+  {
+   "timestamp": 1790459697644,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S5 P L L #1 P"
+  },
+  {
+   "timestamp": 1790459698715,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.204,
+   "predicted_tokens": 23,
+   "stop": "eosFound",
+   "step": "S5 P L L #1 L"
+  },
+  {
+   "timestamp": 1790459699868,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.204,
+   "predicted_tokens": 28,
+   "stop": "eosFound",
+   "step": "S5 P L L #1 L"
+  },
+  {
+   "timestamp": 1790459711223,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 1.333,
+   "predicted_tokens": 611,
+   "stop": "eosFound",
+   "step": "S6 M L #1 M"
+  },
+  {
+   "timestamp": 1790459713374,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 1.141,
+   "predicted_tokens": 31,
+   "stop": "eosFound",
+   "step": "S6 M L #1 L"
+  },
+  {
+   "timestamp": 1790459720403,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S1 P M #2 P"
+  },
+  {
+   "timestamp": 1790459726967,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S1 P M #2 P"
+  },
+  {
+   "timestamp": 1790459734451,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.184,
+   "predicted_tokens": 437,
+   "stop": "eosFound",
+   "step": "S1 P M #2 M"
+  },
+  {
+   "timestamp": 1790459735311,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S2 P L M #2 P"
+  },
+  {
+   "timestamp": 1790459735751,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S2 P L M #2 P"
+  },
+  {
+   "timestamp": 1790459736893,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.199,
+   "predicted_tokens": 28,
+   "stop": "eosFound",
+   "step": "S2 P L M #2 L"
+  },
+  {
+   "timestamp": 1790459745651,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.204,
+   "predicted_tokens": 518,
+   "stop": "eosFound",
+   "step": "S2 P L M #2 M"
+  },
+  {
+   "timestamp": 1790459746494,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S3 P Mg M #2 P"
+  },
+  {
+   "timestamp": 1790459746928,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S3 P Mg M #2 P"
+  },
+  {
+   "timestamp": 1790459752497,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5872,
+   "ttft_s": 1.291,
+   "predicted_tokens": 243,
+   "stop": "eosFound",
+   "step": "S3 P Mg M #2 Mg"
+  },
+  {
+   "timestamp": 1790459762552,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.198,
+   "predicted_tokens": 601,
+   "stop": "eosFound",
+   "step": "S3 P Mg M #2 M"
+  },
+  {
+   "timestamp": 1790459763411,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #2 P"
+  },
+  {
+   "timestamp": 1790459763844,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #2 P"
+  },
+  {
+   "timestamp": 1790459766464,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 1.132,
+   "predicted_tokens": 63,
+   "stop": "eosFound",
+   "step": "S4 P L P M #2 L"
+  },
+  {
+   "timestamp": 1790459767312,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #2 P"
+  },
+  {
+   "timestamp": 1790459767743,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S4 P L P M #2 P"
+  },
+  {
+   "timestamp": 1790459777718,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 1.3,
+   "predicted_tokens": 525,
+   "stop": "eosFound",
+   "step": "S4 P L P M #2 M"
+  },
+  {
+   "timestamp": 1790459778577,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S5 P L L #2 P"
+  },
+  {
+   "timestamp": 1790459779011,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "predicted_tokens": 0,
+   "stop": "maxPredictedTokensReached",
+   "step": "S5 P L L #2 P"
+  },
+  {
+   "timestamp": 1790459780129,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.199,
+   "predicted_tokens": 26,
+   "stop": "eosFound",
+   "step": "S5 P L L #2 L"
+  },
+  {
+   "timestamp": 1790459781501,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.203,
+   "predicted_tokens": 42,
+   "stop": "eosFound",
+   "step": "S5 P L L #2 L"
+  },
+  {
+   "timestamp": 1790459790212,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "medium",
+   "prompt_tokens": 5881,
+   "ttft_s": 0.205,
+   "predicted_tokens": 515,
+   "stop": "eosFound",
+   "step": "S6 M L #2 M"
+  },
+  {
+   "timestamp": 1790459791342,
+   "model": "openai/gpt-oss-20b",
+   "reasoning": "low",
+   "prompt_tokens": 5743,
+   "ttft_s": 0.195,
+   "predicted_tokens": 27,
+   "stop": "eosFound",
+   "step": "S6 M L #2 L"
+  }
+ ]
+}

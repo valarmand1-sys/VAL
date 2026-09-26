@@ -87,7 +87,13 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import Engine
 
-from val_domain.conversation import ConversationRecord, MessageRecord, StoredRole
+from val_domain.conversation import (
+    ConversationRecord,
+    MessageRecord,
+    MessageState,
+    StoredRole,
+    WorkingThread,
+)
 from val_domain.deliberation import (
     BlindPositionRecord,
     ClassificationRecord,
@@ -145,11 +151,12 @@ from val_gateway.loop import (
     settle_turn,
     unanswered_or_raise,
 )
-from val_gateway.memory import DEFAULT_LIMIT
+from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage
 from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_gateway.projects import ProjectSession
 from val_gateway.seal import SealRoute
 from val_gateway.speculation import PreparedAnswer, fingerprint, record_preparation
+from val_gateway.tier1 import tier1_messages
 from val_policy.budget import (
     CONVERSATION_MAX_OUTPUT_TOKENS,
     LIGHT_CONVERSATION_MAX_OUTPUT_TOKENS,
@@ -178,7 +185,7 @@ from val_policy.deliberation import (
     validate_strip,
 )
 from val_policy.egress import LiveVoiceConversations, decide_egress
-from val_policy.light_conversation import ConversationState, FastRoute
+from val_policy.light_conversation import ConversationState, FastRoute, RouteDecision
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 
 _LOGGER = logging.getLogger("val.deliberation")
@@ -1090,33 +1097,21 @@ def prepare_light_answer(
             if conversation_id is not None
             else conversations.prospective_thread(ephemeral)
         )
-        previous = next(
-            (record.content for record in reversed(head) if record.role is StoredRole.VAL), None
-        )
-        verdict = fast_route.decide(
-            content,
-            ConversationState(
-                previous_answer=previous,
-                prior_turns=sum(1 for record in head if record.role is StoredRole.USER),
-            ),
-        )
+        verdict = tier1_eligibility(thread, content, sequence, fast_route)
         if verdict.tier is None:
             _LOGGER.info("speculation: not prepared (%s)", verdict.reason)
             return None
         tier = verdict.tier
-        opened = OpenedTurn(
-            conversation=conversation, scope=scope, user_message=ephemeral, attachments=()
-        )
         reasons: list[LocalOnlyReason] = []
         if live_voice is not None and live_voice.active_in(conversation.id):
             reasons.append(LocalOnlyReason.VOICE_SESSION_ACTIVE)
         reasons.append(LocalOnlyReason.CONVERSATION_SEALED)
-        messages, _recalled, egress = assemble_turn(
-            engine,
-            opened,
-            recall_limit=recall_limit,
-            egress=sealed(*reasons),
-            thread=thread,
+        egress = sealed(*reasons)
+        messages, _projection = tier1_messages(
+            thread,
+            Message(role="user", content=content),
+            before_sequence=sequence,
+            egress=egress,
         )
         response, persona = gateway.converse_prospectively(
             messages,
@@ -1174,20 +1169,7 @@ def _light_tier(
     thread = conversations.working(
         engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
     )
-    records = thread.live_records()
-    previous = next(
-        (
-            record.content
-            for record in reversed(records)
-            if record.role is StoredRole.VAL and record.sequence < opened.user_message.sequence
-        ),
-        None,
-    )
-    state = ConversationState(
-        previous_answer=previous,
-        prior_turns=sum(1 for record in records if record.role is StoredRole.USER) - 1,
-    )
-    verdict = fast_route.decide(content, state)
+    verdict = tier1_eligibility(thread, content, opened.user_message.sequence, fast_route)
     _LOGGER.info(
         "fast route: %s",
         json.dumps(
@@ -1195,6 +1177,42 @@ def _light_tier(
         ),
     )
     return verdict.tier
+
+
+def tier1_eligibility(
+    thread: WorkingThread, content: str, sequence: int, fast_route: FastRoute
+) -> RouteDecision:
+    """Eligibility against the authoritative state — owner order of 26 September 2026, §2.
+
+    Read **before** anything is projected, from the full working thread: her most
+    recent answer (an open question or offer makes an acknowledgement ineligible, in
+    the policy), the count of his earlier turns, and two state conditions the policy
+    cannot see. **Missing or uncertain state falls back to ordinary MEDIUM:** a
+    conversation with earlier turns but no readable answer of hers (an unanswered
+    turn in flight, or a record the reader could not settle) is not Tier 1; and a
+    turn that follows a corrected message is correction-sensitive — the routing guard
+    the LOW correction-preservation failure requires — so it is not Tier 1 either.
+    """
+    live = [m for m in thread.live() if m.record.role in (StoredRole.USER, StoredRole.VAL)]
+    earlier = [m for m in live if m.record.sequence < sequence]
+    previous = next(
+        (m.record.content for m in reversed(earlier) if m.record.role is StoredRole.VAL), None
+    )
+    prior_turns = sum(1 for m in earlier if m.record.role is StoredRole.USER)
+    if prior_turns > 0 and previous is None:
+        return RouteDecision(None, "uncertain state: earlier turns but no answer of hers to read")
+    last_user = next((m for m in reversed(earlier) if m.record.role is StoredRole.USER), None)
+    if last_user is not None and last_user.state is not MessageState.CURRENT:
+        return RouteDecision(
+            None, "correction-sensitive: the previous message was corrected or withdrawn"
+        )
+    if thread.live_records() and any(
+        m.record.sequence == sequence for m in live if m.state is not MessageState.CURRENT
+    ):
+        return RouteDecision(None, "correction-sensitive: this message carries a revision")
+    return fast_route.decide(
+        content, ConversationState(previous_answer=previous, prior_turns=prior_turns)
+    )
 
 
 def _ordinary(
@@ -1225,14 +1243,40 @@ def _ordinary(
     # `assemble_turn` returns the decision as it stands once this request's content
     # is known: content recalled from a sealed conversation seals the request that
     # carries it. Routing below uses what came back, not what went in.
-    messages, recalled, egress = assemble_turn(
-        engine,
-        opened,
-        recall_limit=recall_limit,
-        images=visual.images,
-        perception=visual.perception,
-        egress=egress,
-    )
+    if light is not None:
+        # The Core-owned Tier-1 request (owner order of 26 September 2026, §2): the
+        # persona whole, the last exchange, a reduced record state, Core's contract for
+        # the turn, his words. Recall is deliberately not run; the ordinary assembly is
+        # made only if this route has to fall back.
+        thread = conversations.working(
+            engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
+        )
+        messages, projection = tier1_messages(
+            thread,
+            Message(role="user", content=opened.user_message.content),
+            before_sequence=opened.user_message.sequence,
+            egress=egress,
+        )
+        recalled: tuple[RecalledMessage, ...] = ()
+        _LOGGER.info(
+            "tier 1 request: %s",
+            json.dumps(
+                {
+                    "retained_exchange": projection.retained_exchange,
+                    "prior_messages_in_record": projection.prior_messages_in_record,
+                    "recall": "not_run",
+                }
+            ),
+        )
+    else:
+        messages, recalled, egress = assemble_turn(
+            engine,
+            opened,
+            recall_limit=recall_limit,
+            images=visual.images,
+            perception=visual.perception,
+            egress=egress,
+        )
     _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     turn = TurnReference(conversation_id=opened.conversation.id, message_id=opened.user_message.id)
     task_type = TaskType.LIGHT_CONVERSATION if light is not None else TaskType.CONVERSATION
@@ -1282,14 +1326,23 @@ def _ordinary(
         else:
             try:
                 if task_type is TaskType.LIGHT_CONVERSATION:
+                    # Delivered whole, after completion: a Tier-1 answer that hits its
+                    # cap or says nothing must fail **before** a word reaches him, so
+                    # the fallback below is exactly once and invisible (§3, §5).
                     response = gateway.converse_lightly(
                         messages,
                         scope=opened.scope,
                         turn=turn,
                         max_output_tokens=LIGHT_CONVERSATION_MAX_OUTPUT_TOKENS,
-                        on_delta=sink if on_delta is not None else None,
                         egress=egress.egress,
                     )
+                    if response.terminal is not TerminalState.COMPLETE or not response.text.strip():
+                        raise GatewayError(
+                            GatewayErrorKind.PROVIDER_ERROR,
+                            f"the Tier-1 answer ended {response.terminal.value} "
+                            f"with {len(response.text)} characters; not delivered",
+                        )
+                    sink(response.text)
                 else:
                     response = gateway.converse(
                         messages,
@@ -1315,6 +1368,14 @@ def _ordinary(
                     "the partner route instead, with nothing yet delivered",
                     failure.kind.value,
                     failure,
+                )
+                messages, recalled, egress = assemble_turn(
+                    engine,
+                    opened,
+                    recall_limit=recall_limit,
+                    images=visual.images,
+                    perception=visual.perception,
+                    egress=egress,
                 )
                 response = gateway.converse(
                     messages,

@@ -301,28 +301,49 @@ def configured_candidate_switches(fast_route: FastRoute) -> tuple[bool, bool, st
     return speculation, grace_raw == "on", None
 
 
-def enable_light_candidate() -> ModelConfig:
-    """Promote the light candidate to the `light` profile, in this process only.
+#: Which configuration carries the Tier-1 request in a candidate build (owner order of
+#: 26 September 2026, "COMPARE EXISTING TIER-1 OPTIONS"): `qwen` (D, the default so the
+#: earlier candidate's meaning is unchanged), `medium` (B: the production Partner entry
+#: itself, at MEDIUM) or `low` (C: the same GPT-OSS instance at LOW — the evaluation-only
+#: entry, promoted for this process; **not** an admission of LOW, and never for
+#: substantive work, which keeps its own route and floor).
+TIER1_ROUTE_SETTING = "VAL_TIER1_ROUTE"
+TIER1_ROUTES = {
+    "qwen": LIGHT_CANDIDATE_SLUG,
+    "medium": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "low": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+}
+
+
+def configured_tier1_route() -> tuple[str, str | None]:
+    raw = os.environ.get(TIER1_ROUTE_SETTING, "").strip().lower() or "qwen"
+    if raw not in TIER1_ROUTES:
+        return raw, f"{TIER1_ROUTE_SETTING}: must be one of {sorted(TIER1_ROUTES)}, not {raw!r}"
+    return raw, None
+
+
+def enable_light_candidate(route: str = "qwen") -> ModelConfig:
+    """Promote one configuration to the `light` profile, in this process only.
 
     The same device the candidate harness uses: `val_domain.registry.REGISTRY` is
     replaced for this process with the entry copied as PROVISIONALLY_ADMITTED and
-    declaring `CapabilityProfile.LIGHT`. Nothing on disk changes; a restart without
-    the setting is the registry as written.
+    declaring `CapabilityProfile.LIGHT` (the Partner entry keeps its `partner` profile
+    beside it). Nothing on disk changes; a restart without the setting is the registry
+    as written.
     """
-    entry = by_slug(LIGHT_CANDIDATE_SLUG)
+    slug = TIER1_ROUTES[route]
+    entry = by_slug(slug)
     if entry is None:
-        raise StartupRefusedError(
-            [f"{FAST_ROUTE_SETTING}: no registry entry {LIGHT_CANDIDATE_SLUG}"]
-        )
+        raise StartupRefusedError([f"{FAST_ROUTE_SETTING}: no registry entry {slug}"])
     promoted = entry.model_copy(
         update={
             "admission": Admission.PROVISIONALLY_ADMITTED,
-            "capability_profiles": frozenset({CapabilityProfile.LIGHT}),
+            "capability_profiles": entry.capability_profiles | frozenset({CapabilityProfile.LIGHT}),
             "qualification_targets": frozenset(),
         }
     )
     registry.REGISTRY = tuple(
-        promoted if config.slug == LIGHT_CANDIDATE_SLUG else config for config in registry.REGISTRY
+        promoted if config.slug == slug else config for config in registry.REGISTRY
     )
     return promoted
 
@@ -345,14 +366,18 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     speculation, adaptive_grace, switch_problem = configured_candidate_switches(fast_route)
     if switch_problem is not None:
         raise StartupRefusedError([switch_problem])
+    tier1_route, route_problem = configured_tier1_route()
+    if route_problem is not None:
+        raise StartupRefusedError([route_problem])
     if fast_route.enabled:
-        promoted = enable_light_candidate()
+        promoted = enable_light_candidate(tier1_route)
         _LOGGER.warning(
-            "CANDIDATE fast route enabled for this process: tiers %s on %s (%s). The registry "
-            "entry is NOT_ADMITTED and unchanged on disk; this promotion is not an admission.",
+            "CANDIDATE fast route enabled for this process: tiers %s on %s (%s, effort %s). The "
+            "registry is unchanged on disk; this promotion is not an admission.",
             sorted(fast_route.tiers),
             promoted.slug,
             promoted.model_identifier,
+            promoted.reasoning_effort.value,
         )
     violations, warnings = check_startup(moment.date())
 

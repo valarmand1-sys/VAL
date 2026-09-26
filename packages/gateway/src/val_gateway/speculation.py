@@ -60,19 +60,27 @@ class PreparedAnswer:
 
 #: The record-state envelope's marker line, as `val_gateway.context` writes it.
 _ENVELOPE_MARKER = "VAL-STATE-V1"
+#: The Tier-1 request's own state block (owner order of 26 September 2026, §2).
+_TIER1_STATE_MARKER = "VAL-TIER1-STATE-V1"
 
 
 def _bound_content(content: object) -> object:
-    """A message's content as the digest sees it: the envelope without its clock."""
-    if not isinstance(content, str) or not content.startswith(_ENVELOPE_MARKER + "\n"):
+    """A message's content as the digest sees it: a state block without its clock."""
+    if not isinstance(content, str):
+        return content
+    marker = next(
+        (m for m in (_ENVELOPE_MARKER, _TIER1_STATE_MARKER) if content.startswith(m + "\n")), None
+    )
+    if marker is None:
         return content
     try:
-        document = json.loads(content[len(_ENVELOPE_MARKER) + 1 :])
+        document = json.loads(content[len(marker) + 1 :])
     except ValueError:
         return content
-    state = document.get("prior_record_state")
-    if isinstance(state, dict):
-        state.pop("current_time", None)
+    for key in ("prior_record_state", "record_state"):
+        state = document.get(key)
+        if isinstance(state, dict):
+            state.pop("current_time", None)
     return json.dumps(document, sort_keys=True, ensure_ascii=False)
 
 

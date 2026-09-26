@@ -1,0 +1,2168 @@
+[
+ {
+  "phrase": "Good evening, Val, it's me.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 959.2,
+  "speech_end_to_first_playback_ms": 5197.5,
+  "endpoint_to_first_audio_ready_ms": 4351.3,
+  "stages": {
+   "endpoint → submitted": 1256.6,
+   "submitted → dispatch": 957.5,
+   "dispatch → first provider event": 1535.2,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -934.4,
+   "first speech-safe segment → TTS start": 0.2,
+   "TTS start → first audio ready": 591.9,
+   "endpoint → first audio ready": 4351.3
+  }
+ },
+ {
+  "phrase": "Say 'yes, proceed' to the booking.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1046.7,
+  "speech_end_to_first_playback_ms": 22843.2,
+  "endpoint_to_first_audio_ready_ms": 21966.0,
+  "stages": {
+   "endpoint → submitted": 1255.6,
+   "submitted → dispatch": 95.3,
+   "dispatch → first provider event": 1589.7,
+   "first event → first answer text": 18252.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -84.0,
+   "first speech-safe segment → TTS start": 17.2,
+   "TTS start → first audio ready": 755.9,
+   "endpoint → first audio ready": 21966.0
+  }
+ },
+ {
+  "phrase": "Evening to you, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 967.6,
+  "speech_end_to_first_playback_ms": 4340.4,
+  "endpoint_to_first_audio_ready_ms": 3464.5,
+  "stages": {
+   "endpoint → submitted": 1238.7,
+   "submitted → dispatch": 83.9,
+   "dispatch → first provider event": 1648.6,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -76.5,
+   "first speech-safe segment → TTS start": 9.2,
+   "TTS start → first audio ready": 476.0,
+   "endpoint → first audio ready": 3464.5
+  }
+ },
+ {
+  "phrase": "Good evening, Val, and send the reply tonight.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 979.0,
+  "speech_end_to_first_playback_ms": 12507.5,
+  "endpoint_to_first_audio_ready_ms": 11698.5,
+  "stages": {
+   "endpoint → submitted": 1258.4,
+   "submitted → dispatch": 84.2,
+   "dispatch → first provider event": 2435.9,
+   "first event → first answer text": 6926.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -75.6,
+   "first speech-safe segment → TTS start": 221.3,
+   "TTS start → first audio ready": 772.0,
+   "endpoint → first audio ready": 11698.5
+  }
+ },
+ {
+  "phrase": "Good morning to you, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 962.5,
+  "speech_end_to_first_playback_ms": 5029.9,
+  "endpoint_to_first_audio_ready_ms": 4200.4,
+  "stages": {
+   "endpoint → submitted": 1292.0,
+   "submitted → dispatch": 703.0,
+   "dispatch → first provider event": 1577.5,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -698.1,
+   "first speech-safe segment → TTS start": 14.5,
+   "TTS start → first audio ready": 608.2,
+   "endpoint → first audio ready": 4200.4
+  }
+ },
+ {
+  "phrase": "Thank you. || Now change the venue to the hall.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1476.5,
+  "speech_end_to_first_playback_ms": 8494.3,
+  "endpoint_to_first_audio_ready_ms": 7690.9,
+  "stages": {
+   "endpoint → submitted": 1236.7,
+   "submitted → dispatch": 77.8,
+   "dispatch → first provider event": 1639.0,
+   "first event → first answer text": 4030.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -71.7,
+   "first speech-safe segment → TTS start": 172.9,
+   "TTS start → first audio ready": 534.1,
+   "endpoint → first audio ready": 7690.9
+  }
+ },
+ {
+  "phrase": "A very good evening, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1381.0,
+  "speech_end_to_first_playback_ms": 6729.5,
+  "endpoint_to_first_audio_ready_ms": 5879.9,
+  "stages": {
+   "endpoint → submitted": 1242.0,
+   "submitted → dispatch": 82.2,
+   "dispatch → first provider event": 1608.2,
+   "first event → first answer text": 2427.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.9,
+   "first speech-safe segment → TTS start": 41.7,
+   "TTS start → first audio ready": 477.9,
+   "endpoint → first audio ready": 5879.9
+  }
+ },
+ {
+  "phrase": "Thanks. Did you remember to book the venue?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -2161.4,
+  "speech_end_to_first_playback_ms": 10191.9,
+  "endpoint_to_first_audio_ready_ms": 9396.2,
+  "stages": {
+   "endpoint → submitted": 1255.3,
+   "submitted → dispatch": 87.9,
+   "dispatch → first provider event": 1762.6,
+   "first event → first answer text": 5595.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -80.3,
+   "first speech-safe segment → TTS start": 156.6,
+   "TTS start → first audio ready": 538.1,
+   "endpoint → first audio ready": 9396.2
+  }
+ },
+ {
+  "phrase": "Hello there, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1112.5,
+  "speech_end_to_first_playback_ms": 10723.9,
+  "endpoint_to_first_audio_ready_ms": 9688.8,
+  "stages": {
+   "endpoint → submitted": 1251.5,
+   "submitted → dispatch": 1061.8,
+   "dispatch → first provider event": 1541.3,
+   "first event → first answer text": 5224.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -1058.0,
+   "first speech-safe segment → TTS start": 1.3,
+   "TTS start → first audio ready": 608.0,
+   "endpoint → first audio ready": 9688.8
+  }
+ },
+ {
+  "phrase": "Hello, Val. Where did we leave the third chapter?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 913.7,
+  "speech_end_to_first_playback_ms": 14230.4,
+  "endpoint_to_first_audio_ready_ms": 13399.9,
+  "stages": {
+   "endpoint → submitted": 1241.0,
+   "submitted → dispatch": 80.1,
+   "dispatch → first provider event": 1606.9,
+   "first event → first answer text": 9855.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -72.9,
+   "first speech-safe segment → TTS start": 138.8,
+   "TTS start → first audio ready": 477.8,
+   "endpoint → first audio ready": 13399.9
+  }
+ },
+ {
+  "phrase": "Hi there, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 982.6,
+  "speech_end_to_first_playback_ms": 4237.6,
+  "endpoint_to_first_audio_ready_ms": 3435.7,
+  "stages": {
+   "endpoint → submitted": 1221.0,
+   "submitted → dispatch": 56.3,
+   "dispatch → first provider event": 1666.7,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -52.5,
+   "first speech-safe segment → TTS start": 7.6,
+   "TTS start → first audio ready": 479.1,
+   "endpoint → first audio ready": 3435.7
+  }
+ },
+ {
+  "phrase": "What do you think of the second act?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 983.6,
+  "speech_end_to_first_playback_ms": 6684.5,
+  "endpoint_to_first_audio_ready_ms": 5931.6,
+  "stages": {
+   "endpoint → submitted": 1262.2,
+   "submitted → dispatch": 83.9,
+   "dispatch → first provider event": 2397.8,
+   "first event → first answer text": 1517.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -76.3,
+   "first speech-safe segment → TTS start": 174.0,
+   "TTS start → first audio ready": 496.4,
+   "endpoint → first audio ready": 5931.6
+  }
+ },
+ {
+  "phrase": "Hey there, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 936.9,
+  "speech_end_to_first_playback_ms": 5328.1,
+  "endpoint_to_first_audio_ready_ms": 4517.7,
+  "stages": {
+   "endpoint → submitted": 1221.1,
+   "submitted → dispatch": 1150.2,
+   "dispatch → first provider event": 1535.1,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -1144.6,
+   "first speech-safe segment → TTS start": 9.6,
+   "TTS start → first audio ready": 596.9,
+   "endpoint → first audio ready": 4517.7
+  }
+ },
+ {
+  "phrase": "Good evening, Val. I have three things for you tonight: the venue, the reader, and the invitation. Let's start with the venue.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1121.9,
+  "speech_end_to_first_playback_ms": 11857.3,
+  "endpoint_to_first_audio_ready_ms": 10937.3,
+  "stages": {
+   "endpoint → submitted": 1303.4,
+   "submitted → dispatch": 81.5,
+   "dispatch → first provider event": 1641.4,
+   "first event → first answer text": 7151.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.7,
+   "first speech-safe segment → TTS start": 78.5,
+   "TTS start → first audio ready": 681.4,
+   "endpoint → first audio ready": 10937.3
+  }
+ },
+ {
+  "phrase": "Greetings, Val, good morning.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1039.9,
+  "speech_end_to_first_playback_ms": 7260.9,
+  "endpoint_to_first_audio_ready_ms": 6390.7,
+  "stages": {
+   "endpoint → submitted": 1241.6,
+   "submitted → dispatch": 84.4,
+   "dispatch → first provider event": 1716.8,
+   "first event → first answer text": 2807.9,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -77.3,
+   "first speech-safe segment → TTS start": 59.8,
+   "TTS start → first audio ready": 480.1,
+   "endpoint → first audio ready": 6390.7
+  }
+ },
+ {
+  "phrase": "Thank you. What should I read next?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 900.9,
+  "speech_end_to_first_playback_ms": 14247.7,
+  "endpoint_to_first_audio_ready_ms": 13453.0,
+  "stages": {
+   "endpoint → submitted": 1241.1,
+   "submitted → dispatch": 74.0,
+   "dispatch → first provider event": 1854.8,
+   "first event → first answer text": 9300.9,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -68.5,
+   "first speech-safe segment → TTS start": 218.0,
+   "TTS start → first audio ready": 764.1,
+   "endpoint → first audio ready": 13453.0
+  }
+ },
+ {
+  "phrase": "Hello, Val, hello.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 989.8,
+  "speech_end_to_first_playback_ms": 4795.9,
+  "endpoint_to_first_audio_ready_ms": 3976.4,
+  "stages": {
+   "endpoint → submitted": 1218.7,
+   "submitted → dispatch": 587.4,
+   "dispatch → first provider event": 1565.2,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -581.4,
+   "first speech-safe segment → TTS start": 0.4,
+   "TTS start → first audio ready": 600.5,
+   "endpoint → first audio ready": 3976.4
+  }
+ },
+ {
+  "phrase": "How long do you usually take to reply?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 946.7,
+  "speech_end_to_first_playback_ms": 9129.0,
+  "endpoint_to_first_audio_ready_ms": 8354.8,
+  "stages": {
+   "endpoint → submitted": 1259.4,
+   "submitted → dispatch": 81.0,
+   "dispatch → first provider event": 2267.3,
+   "first event → first answer text": 3800.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.7,
+   "first speech-safe segment → TTS start": 189.7,
+   "TTS start → first audio ready": 757.3,
+   "endpoint → first audio ready": 8354.8
+  }
+ },
+ {
+  "phrase": "Val, good evening.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1035.4,
+  "speech_end_to_first_playback_ms": 7649.6,
+  "endpoint_to_first_audio_ready_ms": 6760.1,
+  "stages": {
+   "endpoint → submitted": 1226.1,
+   "submitted → dispatch": 83.0,
+   "dispatch → first provider event": 1755.0,
+   "first event → first answer text": 3147.5,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -77.1,
+   "first speech-safe segment → TTS start": 62.3,
+   "TTS start → first audio ready": 486.2,
+   "endpoint → first audio ready": 6760.1
+  }
+ },
+ {
+  "phrase": "Actually, make it the morning instead.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 936.2,
+  "speech_end_to_first_playback_ms": 10498.4,
+  "endpoint_to_first_audio_ready_ms": 9742.3,
+  "stages": {
+   "endpoint → submitted": 1258.3,
+   "submitted → dispatch": 76.9,
+   "dispatch → first provider event": 1832.1,
+   "first event → first answer text": 5582.6,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -70.7,
+   "first speech-safe segment → TTS start": 326.8,
+   "TTS start → first audio ready": 665.6,
+   "endpoint → first audio ready": 9742.3
+  }
+ },
+ {
+  "phrase": "Val, hello.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 1088.2,
+  "speech_end_to_first_playback_ms": 5369.8,
+  "endpoint_to_first_audio_ready_ms": 4371.4,
+  "stages": {
+   "endpoint → submitted": 1230.0,
+   "submitted → dispatch": 877.4,
+   "dispatch → first provider event": 1657.1,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -872.8,
+   "first speech-safe segment → TTS start": 9.0,
+   "TTS start → first audio ready": 590.9,
+   "endpoint → first audio ready": 4371.4
+  }
+ },
+ {
+  "phrase": "What would you recommend for the second reader?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1219.2,
+  "speech_end_to_first_playback_ms": 10615.9,
+  "endpoint_to_first_audio_ready_ms": 9877.7,
+  "stages": {
+   "endpoint → submitted": 1522.6,
+   "submitted → dispatch": 83.8,
+   "dispatch → first provider event": 2284.7,
+   "first event → first answer text": 4913.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -78.5,
+   "first speech-safe segment → TTS start": 315.6,
+   "TTS start → first audio ready": 757.6,
+   "endpoint → first audio ready": 9877.7
+  }
+ },
+ {
+  "phrase": "Good afternoon, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 922.4,
+  "speech_end_to_first_playback_ms": 8968.4,
+  "endpoint_to_first_audio_ready_ms": 8143.9,
+  "stages": {
+   "endpoint → submitted": 1242.2,
+   "submitted → dispatch": 78.5,
+   "dispatch → first provider event": 2142.9,
+   "first event → first answer text": 4179.2,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -70.9,
+   "first speech-safe segment → TTS start": 2.8,
+   "TTS start → first audio ready": 498.3,
+   "endpoint → first audio ready": 8143.9
+  }
+ },
+ {
+  "phrase": "Good evening, Val. Did you finish the invitation?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1043.0,
+  "speech_end_to_first_playback_ms": 9444.4,
+  "endpoint_to_first_audio_ready_ms": 8651.8,
+  "stages": {
+   "endpoint → submitted": 1291.8,
+   "submitted → dispatch": 64.4,
+   "dispatch → first provider event": 2076.7,
+   "first event → first answer text": 4206.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -58.9,
+   "first speech-safe segment → TTS start": 229.6,
+   "TTS start → first audio ready": 782.6,
+   "endpoint → first audio ready": 8651.8
+  }
+ },
+ {
+  "phrase": "Thank you so much, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 994.9,
+  "speech_end_to_first_playback_ms": 5360.8,
+  "endpoint_to_first_audio_ready_ms": 4510.7,
+  "stages": {
+   "endpoint → submitted": 1272.8,
+   "submitted → dispatch": 781.0,
+   "dispatch → first provider event": 1846.0,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -776.3,
+   "first speech-safe segment → TTS start": 8.8,
+   "TTS start → first audio ready": 599.4,
+   "endpoint → first audio ready": 4510.7
+  }
+ },
+ {
+  "phrase": "Please write a short note to the reader thanking her for the second act and asking whether the ending should change.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 993.3,
+  "speech_end_to_first_playback_ms": 19233.1,
+  "endpoint_to_first_audio_ready_ms": 18441.4,
+  "stages": {
+   "endpoint → submitted": 1303.7,
+   "submitted → dispatch": 84.6,
+   "dispatch → first provider event": 2269.1,
+   "first event → first answer text": 13939.6,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -76.0,
+   "first speech-safe segment → TTS start": 208.1,
+   "TTS start → first audio ready": 636.3,
+   "endpoint → first audio ready": 18441.4
+  }
+ },
+ {
+  "phrase": "Thanks very much indeed.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 963.7,
+  "speech_end_to_first_playback_ms": 7701.6,
+  "endpoint_to_first_audio_ready_ms": 6876.0,
+  "stages": {
+   "endpoint → submitted": 1216.9,
+   "submitted → dispatch": 82.2,
+   "dispatch → first provider event": 1704.1,
+   "first event → first answer text": 3260.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.0,
+   "first speech-safe segment → TTS start": 123.8,
+   "TTS start → first audio ready": 488.3,
+   "endpoint → first audio ready": 6876.0
+  }
+ },
+ {
+  "phrase": "Sleep well, and finish the invitation first.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 877.7,
+  "speech_end_to_first_playback_ms": 16142.6,
+  "endpoint_to_first_audio_ready_ms": 15368.9,
+  "stages": {
+   "endpoint → submitted": 1245.8,
+   "submitted → dispatch": 86.6,
+   "dispatch → first provider event": 1856.7,
+   "first event → first answer text": 11259.0,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -77.4,
+   "first speech-safe segment → TTS start": 144.5,
+   "TTS start → first audio ready": 776.2,
+   "endpoint → first audio ready": 15368.9
+  }
+ },
+ {
+  "phrase": "Thank you, Val, thank you.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 926.3,
+  "speech_end_to_first_playback_ms": 4890.1,
+  "endpoint_to_first_audio_ready_ms": 4003.2,
+  "stages": {
+   "endpoint → submitted": 1237.3,
+   "submitted → dispatch": 453.8,
+   "dispatch → first provider event": 1626.0,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -445.0,
+   "first speech-safe segment → TTS start": 8.6,
+   "TTS start → first audio ready": 672.9,
+   "endpoint → first audio ready": 4003.2
+  }
+ },
+ {
+  "phrase": "Good evening, Val, and 'book the venue now'.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 951.9,
+  "speech_end_to_first_playback_ms": 8332.4,
+  "endpoint_to_first_audio_ready_ms": 7520.5,
+  "stages": {
+   "endpoint → submitted": 1263.8,
+   "submitted → dispatch": 82.7,
+   "dispatch → first provider event": 1635.0,
+   "first event → first answer text": 3826.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.0,
+   "first speech-safe segment → TTS start": 201.1,
+   "TTS start → first audio ready": 511.9,
+   "endpoint → first audio ready": 7520.5
+  }
+ },
+ {
+  "phrase": "Many thanks, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 907.1,
+  "speech_end_to_first_playback_ms": 4775.9,
+  "endpoint_to_first_audio_ready_ms": 3934.2,
+  "stages": {
+   "endpoint → submitted": 1228.3,
+   "submitted → dispatch": 77.2,
+   "dispatch → first provider event": 2088.9,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -70.0,
+   "first speech-safe segment → TTS start": 0.3,
+   "TTS start → first audio ready": 531.8,
+   "endpoint → first audio ready": 3934.2
+  }
+ },
+ {
+  "phrase": "Lovely. Read me the letter.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 985.7,
+  "speech_end_to_first_playback_ms": 7820.3,
+  "endpoint_to_first_audio_ready_ms": 7028.0,
+  "stages": {
+   "endpoint → submitted": 1258.6,
+   "submitted → dispatch": 74.3,
+   "dispatch → first provider event": 1757.9,
+   "first event → first answer text": 3117.1,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -69.5,
+   "first speech-safe segment → TTS start": 235.0,
+   "TTS start → first audio ready": 585.0,
+   "endpoint → first audio ready": 7028.0
+  }
+ },
+ {
+  "phrase": "Much obliged, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 926.3,
+  "speech_end_to_first_playback_ms": 11471.8,
+  "endpoint_to_first_audio_ready_ms": 10644.9,
+  "stages": {
+   "endpoint → submitted": 1241.7,
+   "submitted → dispatch": 710.6,
+   "dispatch → first provider event": 1588.1,
+   "first event → first answer text": 6368.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -705.4,
+   "first speech-safe segment → TTS start": 62.3,
+   "TTS start → first audio ready": 673.8,
+   "endpoint → first audio ready": 10644.9
+  }
+ },
+ {
+  "phrase": "Do you know what day it is today?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 944.0,
+  "speech_end_to_first_playback_ms": 5941.7,
+  "endpoint_to_first_audio_ready_ms": 5183.9,
+  "stages": {
+   "endpoint → submitted": 1256.6,
+   "submitted → dispatch": 82.2,
+   "dispatch → first provider event": 1655.7,
+   "first event → first answer text": 1630.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -77.2,
+   "first speech-safe segment → TTS start": 72.9,
+   "TTS start → first audio ready": 486.2,
+   "endpoint → first audio ready": 5183.9
+  }
+ },
+ {
+  "phrase": "Thanks for that, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 999.7,
+  "speech_end_to_first_playback_ms": 6356.3,
+  "endpoint_to_first_audio_ready_ms": 5532.0,
+  "stages": {
+   "endpoint → submitted": 1257.5,
+   "submitted → dispatch": 84.6,
+   "dispatch → first provider event": 1652.1,
+   "first event → first answer text": 2045.6,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -77.8,
+   "first speech-safe segment → TTS start": 13.9,
+   "TTS start → first audio ready": 478.3,
+   "endpoint → first audio ready": 5532.0
+  }
+ },
+ {
+  "phrase": "Good morning, Val. What is on the schedule today?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 945.5,
+  "speech_end_to_first_playback_ms": 8352.2,
+  "endpoint_to_first_audio_ready_ms": 7524.8,
+  "stages": {
+   "endpoint → submitted": 1273.6,
+   "submitted → dispatch": 72.0,
+   "dispatch → first provider event": 1716.7,
+   "first event → first answer text": 3620.7,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -67.6,
+   "first speech-safe segment → TTS start": 266.1,
+   "TTS start → first audio ready": 575.6,
+   "endpoint → first audio ready": 7524.8
+  }
+ },
+ {
+  "phrase": "That was lovely, thank you.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 1024.2,
+  "speech_end_to_first_playback_ms": 4933.2,
+  "endpoint_to_first_audio_ready_ms": 4089.4,
+  "stages": {
+   "endpoint → submitted": 1306.5,
+   "submitted → dispatch": 488.2,
+   "dispatch → first provider event": 1662.0,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -474.6,
+   "first speech-safe segment → TTS start": 10.9,
+   "TTS start → first audio ready": 616.6,
+   "endpoint → first audio ready": 4089.4
+  }
+ },
+ {
+  "phrase": "No, not that one, the other draft.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 943.3,
+  "speech_end_to_first_playback_ms": 8406.7,
+  "endpoint_to_first_audio_ready_ms": 7603.5,
+  "stages": {
+   "endpoint → submitted": 1242.1,
+   "submitted → dispatch": 81.8,
+   "dispatch → first provider event": 1655.7,
+   "first event → first answer text": 3783.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.8,
+   "first speech-safe segment → TTS start": 149.9,
+   "TTS start → first audio ready": 691.0,
+   "endpoint → first audio ready": 7603.5
+  }
+ },
+ {
+  "phrase": "That's very helpful, thank you, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 994.4,
+  "speech_end_to_first_playback_ms": 7800.5,
+  "endpoint_to_first_audio_ready_ms": 6990.5,
+  "stages": {
+   "endpoint → submitted": 1256.1,
+   "submitted → dispatch": 84.6,
+   "dispatch → first provider event": 1688.5,
+   "first event → first answer text": 2978.0,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -77.8,
+   "first speech-safe segment → TTS start": 217.0,
+   "TTS start → first audio ready": 766.2,
+   "endpoint → first audio ready": 6990.5
+  }
+ },
+ {
+  "phrase": "Can you hear me clearly tonight, Val?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 924.4,
+  "speech_end_to_first_playback_ms": 9243.5,
+  "endpoint_to_first_audio_ready_ms": 8474.2,
+  "stages": {
+   "endpoint → submitted": 1251.7,
+   "submitted → dispatch": 75.2,
+   "dispatch → first provider event": 2524.4,
+   "first event → first answer text": 4138.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -71.0,
+   "first speech-safe segment → TTS start": 0.9,
+   "TTS start → first audio ready": 483.3,
+   "endpoint → first audio ready": 8474.2
+  }
+ },
+ {
+  "phrase": "Cheers.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 957.6,
+  "speech_end_to_first_playback_ms": 5443.3,
+  "endpoint_to_first_audio_ready_ms": 4669.7,
+  "stages": {
+   "endpoint → submitted": 1268.0,
+   "submitted → dispatch": 132.8,
+   "dispatch → first provider event": 2619.5,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -126.6,
+   "first speech-safe segment → TTS start": 0.3,
+   "TTS start → first audio ready": 643.3,
+   "endpoint → first audio ready": 4669.7
+  }
+ },
+ {
+  "phrase": "Never mind the letter; cancel it.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 923.3,
+  "speech_end_to_first_playback_ms": 10092.2,
+  "endpoint_to_first_audio_ready_ms": 9363.5,
+  "stages": {
+   "endpoint → submitted": 1239.7,
+   "submitted → dispatch": 60.3,
+   "dispatch → first provider event": 1644.4,
+   "first event → first answer text": 5698.6,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -56.0,
+   "first speech-safe segment → TTS start": 244.5,
+   "TTS start → first audio ready": 476.0,
+   "endpoint → first audio ready": 9363.5
+  }
+ },
+ {
+  "phrase": "Goodbye for now, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 955.7,
+  "speech_end_to_first_playback_ms": 5735.2,
+  "endpoint_to_first_audio_ready_ms": 4939.7,
+  "stages": {
+   "endpoint → submitted": 1258.7,
+   "submitted → dispatch": 81.7,
+   "dispatch → first provider event": 1735.7,
+   "first event → first answer text": 1380.4,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -75.6,
+   "first speech-safe segment → TTS start": 3.0,
+   "TTS start → first audio ready": 480.1,
+   "endpoint → first audio ready": 4939.7
+  }
+ },
+ {
+  "phrase": "Yes. || Go ahead with the booking.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1343.7,
+  "speech_end_to_first_playback_ms": 9125.3,
+  "endpoint_to_first_audio_ready_ms": 8290.3,
+  "stages": {
+   "endpoint → submitted": 1228.9,
+   "submitted → dispatch": 71.9,
+   "dispatch → first provider event": 1813.4,
+   "first event → first answer text": 4345.8,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -66.5,
+   "first speech-safe segment → TTS start": 249.1,
+   "TTS start → first audio ready": 581.2,
+   "endpoint → first audio ready": 8290.3
+  }
+ },
+ {
+  "phrase": "Good night to you, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 1047.1,
+  "speech_end_to_first_playback_ms": 4781.4,
+  "endpoint_to_first_audio_ready_ms": 3986.9,
+  "stages": {
+   "endpoint → submitted": 1287.7,
+   "submitted → dispatch": 677.5,
+   "dispatch → first provider event": 1428.2,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -670.9,
+   "first speech-safe segment → TTS start": 15.1,
+   "TTS start → first audio ready": 569.5,
+   "endpoint → first audio ready": 3986.9
+  }
+ },
+ {
+  "phrase": "How are you, and has the reply gone out?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1354.0,
+  "speech_end_to_first_playback_ms": 8673.5,
+  "endpoint_to_first_audio_ready_ms": 7540.1,
+  "stages": {
+   "endpoint → submitted": 1279.2,
+   "submitted → dispatch": 76.8,
+   "dispatch → first provider event": 2344.5,
+   "first event → first answer text": 3055.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -71.3,
+   "first speech-safe segment → TTS start": 171.8,
+   "TTS start → first audio ready": 612.4,
+   "endpoint → first audio ready": 7540.1
+  }
+ },
+ {
+  "phrase": "Sleep well, Val, good night.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 897.3,
+  "speech_end_to_first_playback_ms": 4263.6,
+  "endpoint_to_first_audio_ready_ms": 3502.0,
+  "stages": {
+   "endpoint → submitted": 1246.4,
+   "submitted → dispatch": 80.2,
+   "dispatch → first provider event": 1693.2,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -70.0,
+   "first speech-safe segment → TTS start": 6.4,
+   "TTS start → first audio ready": 472.2,
+   "endpoint → first audio ready": 3502.0
+  }
+ },
+ {
+  "phrase": "Are you able to remember what I said yesterday?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 975.6,
+  "speech_end_to_first_playback_ms": 6724.7,
+  "endpoint_to_first_audio_ready_ms": 5945.8,
+  "stages": {
+   "endpoint → submitted": 1279.7,
+   "submitted → dispatch": 87.5,
+   "dispatch → first provider event": 1690.4,
+   "first event → first answer text": 1893.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -79.1,
+   "first speech-safe segment → TTS start": 246.8,
+   "TTS start → first audio ready": 748.0,
+   "endpoint → first audio ready": 5945.8
+  }
+ },
+ {
+  "phrase": "Until the morning, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 1077.0,
+  "speech_end_to_first_playback_ms": 5441.7,
+  "endpoint_to_first_audio_ready_ms": 4600.3,
+  "stages": {
+   "endpoint → submitted": 1297.7,
+   "submitted → dispatch": 595.7,
+   "dispatch → first provider event": 2111.2,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -584.1,
+   "first speech-safe segment → TTS start": 0.2,
+   "TTS start → first audio ready": 591.5,
+   "endpoint → first audio ready": 4600.3
+  }
+ },
+ {
+  "phrase": "Rough week. Which reader should I believe?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 899.1,
+  "speech_end_to_first_playback_ms": 11067.9,
+  "endpoint_to_first_audio_ready_ms": 10267.3,
+  "stages": {
+   "endpoint → submitted": 1219.3,
+   "submitted → dispatch": 72.4,
+   "dispatch → first provider event": 1704.7,
+   "first event → first answer text": 6327.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -66.5,
+   "first speech-safe segment → TTS start": 188.9,
+   "TTS start → first audio ready": 754.9,
+   "endpoint → first audio ready": 10267.3
+  }
+ },
+ {
+  "phrase": "See you in the morning, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 895.1,
+  "speech_end_to_first_playback_ms": 4338.1,
+  "endpoint_to_first_audio_ready_ms": 3530.2,
+  "stages": {
+   "endpoint → submitted": 1239.9,
+   "submitted → dispatch": 81.3,
+   "dispatch → first provider event": 1718.2,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -72.6,
+   "first speech-safe segment → TTS start": 6.4,
+   "TTS start → first audio ready": 479.4,
+   "endpoint → first audio ready": 3530.2
+  }
+ },
+ {
+  "phrase": "How are you, Val? Is the draft finished?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 923.4,
+  "speech_end_to_first_playback_ms": 9017.0,
+  "endpoint_to_first_audio_ready_ms": 8222.7,
+  "stages": {
+   "endpoint → submitted": 1244.8,
+   "submitted → dispatch": 82.9,
+   "dispatch → first provider event": 1756.2,
+   "first event → first answer text": 4289.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -75.0,
+   "first speech-safe segment → TTS start": 94.1,
+   "TTS start → first audio ready": 754.8,
+   "endpoint → first audio ready": 8222.7
+  }
+ },
+ {
+  "phrase": "Farewell for now.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 961.8,
+  "speech_end_to_first_playback_ms": 7941.3,
+  "endpoint_to_first_audio_ready_ms": 7185.5,
+  "stages": {
+   "endpoint → submitted": 1263.9,
+   "submitted → dispatch": 929.3,
+   "dispatch → first provider event": 1594.4,
+   "first event → first answer text": 2800.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -922.9,
+   "first speech-safe segment → TTS start": 2.8,
+   "TTS start → first audio ready": 594.2,
+   "endpoint → first audio ready": 7185.5
+  }
+ },
+ {
+  "phrase": "I'm well. Now, where is the note from yesterday?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 984.0,
+  "speech_end_to_first_playback_ms": 11991.8,
+  "endpoint_to_first_audio_ready_ms": 11190.8,
+  "stages": {
+   "endpoint → submitted": 1276.7,
+   "submitted → dispatch": 89.3,
+   "dispatch → first provider event": 1681.6,
+   "first event → first answer text": 7098.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -83.3,
+   "first speech-safe segment → TTS start": 283.6,
+   "TTS start → first audio ready": 761.6,
+   "endpoint → first audio ready": 11190.8
+  }
+ },
+ {
+  "phrase": "That will be all for tonight, Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1001.2,
+  "speech_end_to_first_playback_ms": 9165.0,
+  "endpoint_to_first_audio_ready_ms": 8320.9,
+  "stages": {
+   "endpoint → submitted": 1259.1,
+   "submitted → dispatch": 85.5,
+   "dispatch → first provider event": 1853.4,
+   "first event → first answer text": 4264.2,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -78.2,
+   "first speech-safe segment → TTS start": 186.3,
+   "TTS start → first audio ready": 672.4,
+   "endpoint → first audio ready": 8320.9
+  }
+ },
+ {
+  "phrase": "I think the ending is wrong. Do you agree?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 901.1,
+  "speech_end_to_first_playback_ms": 11860.9,
+  "endpoint_to_first_audio_ready_ms": 11088.6,
+  "stages": {
+   "endpoint → submitted": 1259.3,
+   "submitted → dispatch": 84.3,
+   "dispatch → first provider event": 1893.2,
+   "first event → first answer text": 6966.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -76.9,
+   "first speech-safe segment → TTS start": 189.9,
+   "TTS start → first audio ready": 695.0,
+   "endpoint → first audio ready": 11088.6
+  }
+ },
+ {
+  "phrase": "That is all for now, thank you, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 992.8,
+  "speech_end_to_first_playback_ms": 5025.7,
+  "endpoint_to_first_audio_ready_ms": 4209.0,
+  "stages": {
+   "endpoint → submitted": 1244.1,
+   "submitted → dispatch": 436.9,
+   "dispatch → first provider event": 1950.6,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -430.3,
+   "first speech-safe segment → TTS start": 0.4,
+   "TTS start → first audio ready": 570.5,
+   "endpoint → first audio ready": 4209.0
+  }
+ },
+ {
+  "phrase": "Good night, Val, and remind me in the morning.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 978.2,
+  "speech_end_to_first_playback_ms": 6657.3,
+  "endpoint_to_first_audio_ready_ms": 5857.9,
+  "stages": {
+   "endpoint → submitted": 1240.5,
+   "submitted → dispatch": 81.9,
+   "dispatch → first provider event": 1647.7,
+   "first event → first answer text": 2095.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -75.2,
+   "first speech-safe segment → TTS start": 32.5,
+   "TTS start → first audio ready": 759.6,
+   "endpoint → first audio ready": 5857.9
+  }
+ },
+ {
+  "phrase": "Nothing more tonight, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 953.2,
+  "speech_end_to_first_playback_ms": 4480.5,
+  "endpoint_to_first_audio_ready_ms": 3635.9,
+  "stages": {
+   "endpoint → submitted": 1266.1,
+   "submitted → dispatch": 76.7,
+   "dispatch → first provider event": 1813.5,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -70.1,
+   "first speech-safe segment → TTS start": 0.6,
+   "TTS start → first audio ready": 476.5,
+   "endpoint → first audio ready": 3635.9
+  }
+ },
+ {
+  "phrase": "Yes, do it.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 963.4,
+  "speech_end_to_first_playback_ms": 7270.3,
+  "endpoint_to_first_audio_ready_ms": 6464.1,
+  "stages": {
+   "endpoint → submitted": 1255.1,
+   "submitted → dispatch": 64.4,
+   "dispatch → first provider event": 1854.2,
+   "first event → first answer text": 2277.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -60.1,
+   "first speech-safe segment → TTS start": 250.7,
+   "TTS start → first audio ready": 762.4,
+   "endpoint → first audio ready": 6464.1
+  }
+ },
+ {
+  "phrase": "I'm off for now, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 1009.9,
+  "speech_end_to_first_playback_ms": 4734.6,
+  "endpoint_to_first_audio_ready_ms": 3892.4,
+  "stages": {
+   "endpoint → submitted": 1240.3,
+   "submitted → dispatch": 532.6,
+   "dispatch → first provider event": 1547.2,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -527.1,
+   "first speech-safe segment → TTS start": 7.0,
+   "TTS start → first audio ready": 559.7,
+   "endpoint → first audio ready": 3892.4
+  }
+ },
+ {
+  "phrase": "That's all, except cancel the meeting on Tuesday.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 993.4,
+  "speech_end_to_first_playback_ms": 9481.6,
+  "endpoint_to_first_audio_ready_ms": 8686.3,
+  "stages": {
+   "endpoint → submitted": 1240.8,
+   "submitted → dispatch": 78.7,
+   "dispatch → first provider event": 1612.8,
+   "first event → first answer text": 4931.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -72.4,
+   "first speech-safe segment → TTS start": 63.3,
+   "TTS start → first audio ready": 759.6,
+   "endpoint → first audio ready": 8686.3
+  }
+ },
+ {
+  "phrase": "Talk soon, Val.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": 939.8,
+  "speech_end_to_first_playback_ms": 4414.8,
+  "endpoint_to_first_audio_ready_ms": 3562.5,
+  "stages": {
+   "endpoint → submitted": 1220.0,
+   "submitted → dispatch": 63.1,
+   "dispatch → first provider event": 1775.4,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -58.6,
+   "first speech-safe segment → TTS start": 4.7,
+   "TTS start → first audio ready": 495.8,
+   "endpoint → first audio ready": 3562.5
+  }
+ },
+ {
+  "phrase": "Should I send the letter tonight or tomorrow?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 939.9,
+  "speech_end_to_first_playback_ms": 7769.0,
+  "endpoint_to_first_audio_ready_ms": 6933.0,
+  "stages": {
+   "endpoint → submitted": 1237.7,
+   "submitted → dispatch": 56.0,
+   "dispatch → first provider event": 1808.3,
+   "first event → first answer text": 2886.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -52.6,
+   "first speech-safe segment → TTS start": 178.4,
+   "TTS start → first audio ready": 765.7,
+   "endpoint → first audio ready": 6933.0
+  }
+ },
+ {
+  "phrase": "Good evening, Val. || Thank you.",
+  "group": "tier_1",
+  "route": "light",
+  "speech_end_to_endpoint_ms": -790.8,
+  "speech_end_to_first_playback_ms": 4300.6,
+  "endpoint_to_first_audio_ready_ms": 3429.0,
+  "stages": {
+   "endpoint → submitted": 1201.0,
+   "submitted → dispatch": 80.7,
+   "dispatch → first provider event": 1552.3,
+   "first event → first answer text": null,
+   "first answer text → first speech-safe segment": null,
+   "dispatch → generation complete (persisted)": -70.3,
+   "first speech-safe segment → TTS start": 0.8,
+   "TTS start → first audio ready": 589.4,
+   "endpoint → first audio ready": 3429.0
+  }
+ },
+ {
+  "phrase": "Did you finish the invitation, Val?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1844.0,
+  "speech_end_to_first_playback_ms": 8597.2,
+  "endpoint_to_first_audio_ready_ms": 7818.6,
+  "stages": {
+   "endpoint → submitted": 1260.1,
+   "submitted → dispatch": 89.3,
+   "dispatch → first provider event": 1639.8,
+   "first event → first answer text": 4066.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -82.4,
+   "first speech-safe segment → TTS start": 185.7,
+   "TTS start → first audio ready": 577.7,
+   "endpoint → first audio ready": 7818.6
+  }
+ },
+ {
+  "phrase": "Good night, || Val.",
+  "group": "tier_1",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1262.2,
+  "speech_end_to_first_playback_ms": 12400.1,
+  "endpoint_to_first_audio_ready_ms": 11645.0,
+  "stages": {
+   "endpoint → submitted": 1237.3,
+   "submitted → dispatch": 86.8,
+   "dispatch → first provider event": 1640.1,
+   "first event → first answer text": 7709.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -79.3,
+   "first speech-safe segment → TTS start": 218.5,
+   "TTS start → first audio ready": 752.9,
+   "endpoint → first audio ready": 11645.0
+  }
+ },
+ {
+  "phrase": "Wait, I meant the second venue.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1604.9,
+  "speech_end_to_first_playback_ms": 7864.5,
+  "endpoint_to_first_audio_ready_ms": 7037.4,
+  "stages": {
+   "endpoint → submitted": 1262.7,
+   "submitted → dispatch": 90.5,
+   "dispatch → first provider event": 2470.6,
+   "first event → first answer text": 2232.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -81.6,
+   "first speech-safe segment → TTS start": 233.1,
+   "TTS start → first audio ready": 747.8,
+   "endpoint → first audio ready": 7037.4
+  }
+ },
+ {
+  "phrase": "Thanks, but change the venue.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 974.8,
+  "speech_end_to_first_playback_ms": 11293.6,
+  "endpoint_to_first_audio_ready_ms": 10392.8,
+  "stages": {
+   "endpoint → submitted": 1230.4,
+   "submitted → dispatch": 91.4,
+   "dispatch → first provider event": 1554.8,
+   "first event → first answer text": 6659.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -86.7,
+   "first speech-safe segment → TTS start": 219.3,
+   "TTS start → first audio ready": 637.5,
+   "endpoint → first audio ready": 10392.8
+  }
+ },
+ {
+  "phrase": "It's late, Val. Read me the summary.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1030.1,
+  "speech_end_to_first_playback_ms": 9633.2,
+  "endpoint_to_first_audio_ready_ms": 8843.3,
+  "stages": {
+   "endpoint → submitted": 1260.8,
+   "submitted → dispatch": 72.2,
+   "dispatch → first provider event": 1714.5,
+   "first event → first answer text": 5306.8,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -67.8,
+   "first speech-safe segment → TTS start": 16.7,
+   "TTS start → first audio ready": 472.3,
+   "endpoint → first audio ready": 8843.3
+  }
+ },
+ {
+  "phrase": "Tell me about the garden at the house.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 947.9,
+  "speech_end_to_first_playback_ms": 6922.1,
+  "endpoint_to_first_audio_ready_ms": 6165.6,
+  "stages": {
+   "endpoint → submitted": 1301.8,
+   "submitted → dispatch": 75.3,
+   "dispatch → first provider event": 1730.5,
+   "first event → first answer text": 2575.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -68.7,
+   "first speech-safe segment → TTS start": 8.2,
+   "TTS start → first audio ready": 474.1,
+   "endpoint → first audio ready": 6165.6
+  }
+ },
+ {
+  "phrase": "Thank you, Val. Now draft the letter.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1057.6,
+  "speech_end_to_first_playback_ms": 9433.8,
+  "endpoint_to_first_audio_ready_ms": 8546.1,
+  "stages": {
+   "endpoint → submitted": 1249.8,
+   "submitted → dispatch": 84.2,
+   "dispatch → first provider event": 1773.9,
+   "first event → first answer text": 4476.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -75.8,
+   "first speech-safe segment → TTS start": 252.1,
+   "TTS start → first audio ready": 709.2,
+   "endpoint → first audio ready": 8546.1
+  }
+ },
+ {
+  "phrase": "How quickly can you answer me, Val?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 976.6,
+  "speech_end_to_first_playback_ms": 12744.1,
+  "endpoint_to_first_audio_ready_ms": 11948.2,
+  "stages": {
+   "endpoint → submitted": 1239.5,
+   "submitted → dispatch": 491.2,
+   "dispatch → first provider event": 2169.6,
+   "first event → first answer text": 7226.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -485.0,
+   "first speech-safe segment → TTS start": 234.6,
+   "TTS start → first audio ready": 586.4,
+   "endpoint → first audio ready": 11948.2
+  }
+ },
+ {
+  "phrase": "Good evening, Val. || Did you finish the invitation?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1698.1,
+  "speech_end_to_first_playback_ms": 10938.3,
+  "endpoint_to_first_audio_ready_ms": 10068.8,
+  "stages": {
+   "endpoint → submitted": 1242.0,
+   "submitted → dispatch": 64.5,
+   "dispatch → first provider event": 1647.7,
+   "first event → first answer text": 6182.6,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -59.6,
+   "first speech-safe segment → TTS start": 156.7,
+   "TTS start → first audio ready": 775.3,
+   "endpoint → first audio ready": 10068.8
+  }
+ },
+ {
+  "phrase": "It's cold tonight, so light the fire.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1725.6,
+  "speech_end_to_first_playback_ms": 6447.0,
+  "endpoint_to_first_audio_ready_ms": 5678.7,
+  "stages": {
+   "endpoint → submitted": 1248.4,
+   "submitted → dispatch": 76.3,
+   "dispatch → first provider event": 1744.3,
+   "first event → first answer text": 2115.5,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -69.6,
+   "first speech-safe segment → TTS start": 10.2,
+   "TTS start → first audio ready": 484.0,
+   "endpoint → first audio ready": 5678.7
+  }
+ },
+ {
+  "phrase": "Have you sent the reply yet?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1004.9,
+  "speech_end_to_first_playback_ms": 7280.7,
+  "endpoint_to_first_audio_ready_ms": 6470.5,
+  "stages": {
+   "endpoint → submitted": 1239.2,
+   "submitted → dispatch": 70.5,
+   "dispatch → first provider event": 2460.6,
+   "first event → first answer text": 2220.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -67.1,
+   "first speech-safe segment → TTS start": 13.3,
+   "TTS start → first audio ready": 466.9,
+   "endpoint → first audio ready": 6470.5
+  }
+ },
+ {
+  "phrase": "Explain how you decide what to say.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 857.4,
+  "speech_end_to_first_playback_ms": 12728.3,
+  "endpoint_to_first_audio_ready_ms": 11925.3,
+  "stages": {
+   "endpoint → submitted": 1237.9,
+   "submitted → dispatch": 563.3,
+   "dispatch → first provider event": 1599.6,
+   "first event → first answer text": 7137.5,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -556.5,
+   "first speech-safe segment → TTS start": 517.5,
+   "TTS start → first audio ready": 869.5,
+   "endpoint → first audio ready": 11925.3
+  }
+ },
+ {
+  "phrase": "Good evening, Val. What did we decide about the venue?",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 960.6,
+  "speech_end_to_first_playback_ms": 21347.0,
+  "endpoint_to_first_audio_ready_ms": 20514.3,
+  "stages": {
+   "endpoint → submitted": 1283.6,
+   "submitted → dispatch": 103.8,
+   "dispatch → first provider event": 3713.7,
+   "first event → first answer text": 14493.6,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -95.6,
+   "first speech-safe segment → TTS start": 196.7,
+   "TTS start → first audio ready": 722.8,
+   "endpoint → first audio ready": 20514.3
+  }
+ },
+ {
+  "phrase": "Good. Send it.",
+  "group": "ineligible",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 930.5,
+  "speech_end_to_first_playback_ms": 9952.3,
+  "endpoint_to_first_audio_ready_ms": 9158.2,
+  "stages": {
+   "endpoint → submitted": 1218.9,
+   "submitted → dispatch": 84.7,
+   "dispatch → first provider event": 3519.0,
+   "first event → first answer text": 3573.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -77.9,
+   "first speech-safe segment → TTS start": 268.6,
+   "TTS start → first audio ready": 493.1,
+   "endpoint → first audio ready": 9158.2
+  }
+ },
+ {
+  "phrase": "Splendid, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 977.7,
+  "speech_end_to_first_playback_ms": 14263.8,
+  "endpoint_to_first_audio_ready_ms": 13415.0,
+  "stages": {
+   "endpoint → submitted": 1220.8,
+   "submitted → dispatch": 92.5,
+   "dispatch → first provider event": 3622.3,
+   "first event → first answer text": 7627.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -85.2,
+   "first speech-safe segment → TTS start": 304.6,
+   "TTS start → first audio ready": 547.8,
+   "endpoint → first audio ready": 13415.0
+  }
+ },
+ {
+  "phrase": "How do you do, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1031.8,
+  "speech_end_to_first_playback_ms": 7176.7,
+  "endpoint_to_first_audio_ready_ms": 6326.8,
+  "stages": {
+   "endpoint → submitted": 1280.1,
+   "submitted → dispatch": 417.9,
+   "dispatch → first provider event": 1554.1,
+   "first event → first answer text": 2419.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -411.2,
+   "first speech-safe segment → TTS start": 47.6,
+   "TTS start → first audio ready": 607.4,
+   "endpoint → first audio ready": 6326.8
+  }
+ },
+ {
+  "phrase": "I'm fine, thank you, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1047.1,
+  "speech_end_to_first_playback_ms": 7379.6,
+  "endpoint_to_first_audio_ready_ms": 6489.8,
+  "stages": {
+   "endpoint → submitted": 1285.8,
+   "submitted → dispatch": 93.4,
+   "dispatch → first provider event": 1610.6,
+   "first event → first answer text": 2792.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -85.6,
+   "first speech-safe segment → TTS start": 62.7,
+   "TTS start → first audio ready": 645.2,
+   "endpoint → first audio ready": 6489.8
+  }
+ },
+ {
+  "phrase": "Glad to hear you're there, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 944.1,
+  "speech_end_to_first_playback_ms": 6573.1,
+  "endpoint_to_first_audio_ready_ms": 5794.6,
+  "stages": {
+   "endpoint → submitted": 1244.9,
+   "submitted → dispatch": 85.6,
+   "dispatch → first provider event": 2316.7,
+   "first event → first answer text": 1517.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -79.1,
+   "first speech-safe segment → TTS start": 47.2,
+   "TTS start → first audio ready": 582.9,
+   "endpoint → first audio ready": 5794.6
+  }
+ },
+ {
+  "phrase": "How is the weather tonight, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1019.1,
+  "speech_end_to_first_playback_ms": 6981.3,
+  "endpoint_to_first_audio_ready_ms": 6143.6,
+  "stages": {
+   "endpoint → submitted": 1263.6,
+   "submitted → dispatch": 79.3,
+   "dispatch → first provider event": 1746.0,
+   "first event → first answer text": 2564.9,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -73.7,
+   "first speech-safe segment → TTS start": 12.5,
+   "TTS start → first audio ready": 477.3,
+   "endpoint → first audio ready": 6143.6
+  }
+ },
+ {
+  "phrase": "It's been a quiet evening.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1099.6,
+  "speech_end_to_first_playback_ms": 9197.6,
+  "endpoint_to_first_audio_ready_ms": 8292.3,
+  "stages": {
+   "endpoint → submitted": 1315.3,
+   "submitted → dispatch": 531.7,
+   "dispatch → first provider event": 1576.1,
+   "first event → first answer text": 4110.2,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -526.6,
+   "first speech-safe segment → TTS start": 62.0,
+   "TTS start → first audio ready": 697.0,
+   "endpoint → first audio ready": 8292.3
+  }
+ },
+ {
+  "phrase": "Is the house quiet today, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 894.3,
+  "speech_end_to_first_playback_ms": 7361.6,
+  "endpoint_to_first_audio_ready_ms": 6507.2,
+  "stages": {
+   "endpoint → submitted": 1235.6,
+   "submitted → dispatch": 80.5,
+   "dispatch → first provider event": 1666.8,
+   "first event → first answer text": 3008.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.9,
+   "first speech-safe segment → TTS start": 42.3,
+   "TTS start → first audio ready": 473.6,
+   "endpoint → first audio ready": 6507.2
+  }
+ },
+ {
+  "phrase": "It's late, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 908.8,
+  "speech_end_to_first_playback_ms": 8554.8,
+  "endpoint_to_first_audio_ready_ms": 7707.7,
+  "stages": {
+   "endpoint → submitted": 1221.8,
+   "submitted → dispatch": 83.6,
+   "dispatch → first provider event": 1686.6,
+   "first event → first answer text": 4035.2,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -77.0,
+   "first speech-safe segment → TTS start": 62.5,
+   "TTS start → first audio ready": 618.0,
+   "endpoint → first audio ready": 7707.7
+  }
+ },
+ {
+  "phrase": "Are you well tonight, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1036.8,
+  "speech_end_to_first_playback_ms": 8491.5,
+  "endpoint_to_first_audio_ready_ms": 7668.6,
+  "stages": {
+   "endpoint → submitted": 1258.8,
+   "submitted → dispatch": 82.2,
+   "dispatch → first provider event": 1819.8,
+   "first event → first answer text": 3814.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -75.7,
+   "first speech-safe segment → TTS start": 140.8,
+   "TTS start → first audio ready": 552.7,
+   "endpoint → first audio ready": 7668.6
+  }
+ },
+ {
+  "phrase": "I'm well tonight, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1121.1,
+  "speech_end_to_first_playback_ms": 10322.4,
+  "endpoint_to_first_audio_ready_ms": 9519.5,
+  "stages": {
+   "endpoint → submitted": 1346.2,
+   "submitted → dispatch": 587.5,
+   "dispatch → first provider event": 1533.3,
+   "first event → first answer text": 5488.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -581.6,
+   "first speech-safe segment → TTS start": 0.9,
+   "TTS start → first audio ready": 563.5,
+   "endpoint → first audio ready": 9519.5
+  }
+ },
+ {
+  "phrase": "The weather is dreadful tonight.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1132.2,
+  "speech_end_to_first_playback_ms": 9967.5,
+  "endpoint_to_first_audio_ready_ms": 9201.8,
+  "stages": {
+   "endpoint → submitted": 1439.5,
+   "submitted → dispatch": 67.6,
+   "dispatch → first provider event": 1638.4,
+   "first event → first answer text": 5118.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -61.4,
+   "first speech-safe segment → TTS start": 171.1,
+   "TTS start → first audio ready": 767.2,
+   "endpoint → first audio ready": 9201.8
+  }
+ },
+ {
+  "phrase": "Excellent, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1009.3,
+  "speech_end_to_first_playback_ms": 9491.7,
+  "endpoint_to_first_audio_ready_ms": 8567.2,
+  "stages": {
+   "endpoint → submitted": 1235.7,
+   "submitted → dispatch": 61.6,
+   "dispatch → first provider event": 1810.2,
+   "first event → first answer text": 4973.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -56.8,
+   "first speech-safe segment → TTS start": 9.3,
+   "TTS start → first audio ready": 477.3,
+   "endpoint → first audio ready": 8567.2
+  }
+ },
+ {
+  "phrase": "How are you this morning, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1004.0,
+  "speech_end_to_first_playback_ms": 7021.0,
+  "endpoint_to_first_audio_ready_ms": 6200.7,
+  "stages": {
+   "endpoint → submitted": 1257.9,
+   "submitted → dispatch": 64.5,
+   "dispatch → first provider event": 1852.7,
+   "first event → first answer text": 2544.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -60.1,
+   "first speech-safe segment → TTS start": 1.2,
+   "TTS start → first audio ready": 480.0,
+   "endpoint → first audio ready": 6200.7
+  }
+ },
+ {
+  "phrase": "Lovely to hear you, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1025.4,
+  "speech_end_to_first_playback_ms": 7503.6,
+  "endpoint_to_first_audio_ready_ms": 6635.6,
+  "stages": {
+   "endpoint → submitted": 1302.6,
+   "submitted → dispatch": 647.2,
+   "dispatch → first provider event": 2198.9,
+   "first event → first answer text": 1806.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -641.1,
+   "first speech-safe segment → TTS start": 64.8,
+   "TTS start → first audio ready": 616.1,
+   "endpoint → first audio ready": 6635.6
+  }
+ },
+ {
+  "phrase": "How has your day been?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1022.0,
+  "speech_end_to_first_playback_ms": 11765.4,
+  "endpoint_to_first_audio_ready_ms": 10900.8,
+  "stages": {
+   "endpoint → submitted": 1238.1,
+   "submitted → dispatch": 68.1,
+   "dispatch → first provider event": 1653.8,
+   "first event → first answer text": 6992.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -62.5,
+   "first speech-safe segment → TTS start": 223.0,
+   "TTS start → first audio ready": 725.1,
+   "endpoint → first audio ready": 10900.8
+  }
+ },
+ {
+  "phrase": "How is your night, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 900.4,
+  "speech_end_to_first_playback_ms": 5318.0,
+  "endpoint_to_first_audio_ready_ms": 4531.5,
+  "stages": {
+   "endpoint → submitted": 1244.8,
+   "submitted → dispatch": 63.5,
+   "dispatch → first provider event": 1806.3,
+   "first event → first answer text": 593.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -58.5,
+   "first speech-safe segment → TTS start": 171.4,
+   "TTS start → first audio ready": 652.1,
+   "endpoint → first audio ready": 4531.5
+  }
+ },
+ {
+  "phrase": "How's your evening going, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 925.1,
+  "speech_end_to_first_playback_ms": 7645.6,
+  "endpoint_to_first_audio_ready_ms": 6839.5,
+  "stages": {
+   "endpoint → submitted": 1240.4,
+   "submitted → dispatch": 55.6,
+   "dispatch → first provider event": 1859.8,
+   "first event → first answer text": 2876.4,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -51.7,
+   "first speech-safe segment → TTS start": 172.2,
+   "TTS start → first audio ready": 635.1,
+   "endpoint → first audio ready": 6839.5
+  }
+ },
+ {
+  "phrase": "How are you tonight, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1109.2,
+  "speech_end_to_first_playback_ms": 9432.7,
+  "endpoint_to_first_audio_ready_ms": 8529.2,
+  "stages": {
+   "endpoint → submitted": 1274.2,
+   "submitted → dispatch": 621.9,
+   "dispatch → first provider event": 1566.4,
+   "first event → first answer text": 4433.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -613.4,
+   "first speech-safe segment → TTS start": 64.1,
+   "TTS start → first audio ready": 569.3,
+   "endpoint → first audio ready": 8529.2
+  }
+ },
+ {
+  "phrase": "Nothing much tonight, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 992.7,
+  "speech_end_to_first_playback_ms": 6815.9,
+  "endpoint_to_first_audio_ready_ms": 6016.5,
+  "stages": {
+   "endpoint → submitted": 1239.7,
+   "submitted → dispatch": 79.7,
+   "dispatch → first provider event": 1616.9,
+   "first event → first answer text": 2463.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -72.8,
+   "first speech-safe segment → TTS start": 93.1,
+   "TTS start → first audio ready": 524.0,
+   "endpoint → first audio ready": 6016.5
+  }
+ },
+ {
+  "phrase": "I'm home, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 955.7,
+  "speech_end_to_first_playback_ms": 10992.3,
+  "endpoint_to_first_audio_ready_ms": 10135.4,
+  "stages": {
+   "endpoint → submitted": 1260.4,
+   "submitted → dispatch": 80.4,
+   "dispatch → first provider event": 1692.7,
+   "first event → first answer text": 6532.6,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.4,
+   "first speech-safe segment → TTS start": 63.5,
+   "TTS start → first audio ready": 505.8,
+   "endpoint → first audio ready": 10135.4
+  }
+ },
+ {
+  "phrase": "The evening is pleasant out.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 977.0,
+  "speech_end_to_first_playback_ms": 5842.8,
+  "endpoint_to_first_audio_ready_ms": 5033.5,
+  "stages": {
+   "endpoint → submitted": 1240.9,
+   "submitted → dispatch": 84.9,
+   "dispatch → first provider event": 1761.9,
+   "first event → first answer text": 1430.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -77.8,
+   "first speech-safe segment → TTS start": 44.5,
+   "TTS start → first audio ready": 471.3,
+   "endpoint → first audio ready": 5033.5
+  }
+ },
+ {
+  "phrase": "I'm back, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1034.0,
+  "speech_end_to_first_playback_ms": 9038.4,
+  "endpoint_to_first_audio_ready_ms": 8101.9,
+  "stages": {
+   "endpoint → submitted": 1237.7,
+   "submitted → dispatch": 876.9,
+   "dispatch → first provider event": 1593.4,
+   "first event → first answer text": 3776.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -871.3,
+   "first speech-safe segment → TTS start": 46.1,
+   "TTS start → first audio ready": 571.8,
+   "endpoint → first audio ready": 8101.9
+  }
+ },
+ {
+  "phrase": "Good to be home, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 948.5,
+  "speech_end_to_first_playback_ms": 8770.2,
+  "endpoint_to_first_audio_ready_ms": 7969.8,
+  "stages": {
+   "endpoint → submitted": 1238.7,
+   "submitted → dispatch": 74.5,
+   "dispatch → first provider event": 1665.1,
+   "first event → first answer text": 4408.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -57.2,
+   "first speech-safe segment → TTS start": 79.0,
+   "TTS start → first audio ready": 504.4,
+   "endpoint → first audio ready": 7969.8
+  }
+ },
+ {
+  "phrase": "It's a cold night tonight.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 881.3,
+  "speech_end_to_first_playback_ms": 7198.2,
+  "endpoint_to_first_audio_ready_ms": 6432.5,
+  "stages": {
+   "endpoint → submitted": 1241.3,
+   "submitted → dispatch": 81.5,
+   "dispatch → first provider event": 1684.7,
+   "first event → first answer text": 2568.6,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -71.9,
+   "first speech-safe segment → TTS start": 172.1,
+   "TTS start → first audio ready": 684.3,
+   "endpoint → first audio ready": 6432.5
+  }
+ },
+ {
+  "phrase": "I'm tired this evening, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 969.8,
+  "speech_end_to_first_playback_ms": 8108.5,
+  "endpoint_to_first_audio_ready_ms": 7268.6,
+  "stages": {
+   "endpoint → submitted": 1255.7,
+   "submitted → dispatch": 85.4,
+   "dispatch → first provider event": 1744.7,
+   "first event → first answer text": 3363.0,
+   "first answer text → first speech-safe segment": 0.1,
+   "dispatch → generation complete (persisted)": -78.2,
+   "first speech-safe segment → TTS start": 48.5,
+   "TTS start → first audio ready": 771.2,
+   "endpoint → first audio ready": 7268.6
+  }
+ },
+ {
+  "phrase": "A long week, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 1013.2,
+  "speech_end_to_first_playback_ms": 13162.4,
+  "endpoint_to_first_audio_ready_ms": 12253.5,
+  "stages": {
+   "endpoint → submitted": 1258.4,
+   "submitted → dispatch": 654.9,
+   "dispatch → first provider event": 2255.0,
+   "first event → first answer text": 7325.8,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -649.0,
+   "first speech-safe segment → TTS start": 114.1,
+   "TTS start → first audio ready": 645.3,
+   "endpoint → first audio ready": 12253.5
+  }
+ },
+ {
+  "phrase": "Just saying hello, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 959.8,
+  "speech_end_to_first_playback_ms": 7974.4,
+  "endpoint_to_first_audio_ready_ms": 7124.6,
+  "stages": {
+   "endpoint → submitted": 1279.6,
+   "submitted → dispatch": 78.5,
+   "dispatch → first provider event": 1672.2,
+   "first event → first answer text": 3388.7,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -72.2,
+   "first speech-safe segment → TTS start": 109.0,
+   "TTS start → first audio ready": 596.6,
+   "endpoint → first audio ready": 7124.6
+  }
+ },
+ {
+  "phrase": "It's raining here tonight.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 999.3,
+  "speech_end_to_first_playback_ms": 10367.8,
+  "endpoint_to_first_audio_ready_ms": 9527.5,
+  "stages": {
+   "endpoint → submitted": 1238.6,
+   "submitted → dispatch": 84.1,
+   "dispatch → first provider event": 1761.1,
+   "first event → first answer text": 5635.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -76.1,
+   "first speech-safe segment → TTS start": 62.6,
+   "TTS start → first audio ready": 746.1,
+   "endpoint → first audio ready": 9527.5
+  }
+ },
+ {
+  "phrase": "Same as ever, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 987.9,
+  "speech_end_to_first_playback_ms": 8391.7,
+  "endpoint_to_first_audio_ready_ms": 7575.4,
+  "stages": {
+   "endpoint → submitted": 1240.6,
+   "submitted → dispatch": 95.3,
+   "dispatch → first provider event": 1901.0,
+   "first event → first answer text": 3691.8,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -84.3,
+   "first speech-safe segment → TTS start": 80.5,
+   "TTS start → first audio ready": 566.2,
+   "endpoint → first audio ready": 7575.4
+  }
+ },
+ {
+  "phrase": "How are you, Val? || I'm well myself.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1049.3,
+  "speech_end_to_first_playback_ms": 7800.6,
+  "endpoint_to_first_audio_ready_ms": 7106.9,
+  "stages": {
+   "endpoint → submitted": 1233.8,
+   "submitted → dispatch": 66.3,
+   "dispatch → first provider event": 1617.8,
+   "first event → first answer text": 3479.8,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -59.9,
+   "first speech-safe segment → TTS start": 93.8,
+   "TTS start → first audio ready": 615.4,
+   "endpoint → first audio ready": 7106.9
+  }
+ },
+ {
+  "phrase": "Just passing through, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1521.5,
+  "speech_end_to_first_playback_ms": 5628.7,
+  "endpoint_to_first_audio_ready_ms": 4859.7,
+  "stages": {
+   "endpoint → submitted": 1240.3,
+   "submitted → dispatch": 81.1,
+   "dispatch → first provider event": 1647.1,
+   "first event → first answer text": 1396.0,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -74.1,
+   "first speech-safe segment → TTS start": 3.0,
+   "TTS start → first audio ready": 492.2,
+   "endpoint → first audio ready": 4859.7
+  }
+ },
+ {
+  "phrase": "Is everything well with you, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -1631.7,
+  "speech_end_to_first_playback_ms": 7463.1,
+  "endpoint_to_first_audio_ready_ms": 6203.3,
+  "stages": {
+   "endpoint → submitted": 1433.6,
+   "submitted → dispatch": 64.8,
+   "dispatch → first provider event": 1720.3,
+   "first event → first answer text": 2416.5,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -60.3,
+   "first speech-safe segment → TTS start": 90.1,
+   "TTS start → first audio ready": 478.0,
+   "endpoint → first audio ready": 6203.3
+  }
+ },
+ {
+  "phrase": "Wonderful.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": -103.1,
+  "speech_end_to_first_playback_ms": 7338.1,
+  "endpoint_to_first_audio_ready_ms": 6506.3,
+  "stages": {
+   "endpoint → submitted": 1231.4,
+   "submitted → dispatch": 78.3,
+   "dispatch → first provider event": 1731.7,
+   "first event → first answer text": 2970.3,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -71.5,
+   "first speech-safe segment → TTS start": 12.9,
+   "TTS start → first audio ready": 481.7,
+   "endpoint → first audio ready": 6506.3
+  }
+ },
+ {
+  "phrase": "It's dark out, Val.",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 968.4,
+  "speech_end_to_first_playback_ms": 11746.6,
+  "endpoint_to_first_audio_ready_ms": 10880.8,
+  "stages": {
+   "endpoint → submitted": 1218.3,
+   "submitted → dispatch": 933.0,
+   "dispatch → first provider event": 1580.9,
+   "first event → first answer text": 6425.8,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -927.7,
+   "first speech-safe segment → TTS start": 63.3,
+   "TTS start → first audio ready": 659.5,
+   "endpoint → first audio ready": 10880.8
+  }
+ },
+ {
+  "phrase": "Everything all right, Val?",
+  "group": "tier_2",
+  "route": "substantive",
+  "speech_end_to_endpoint_ms": 965.0,
+  "speech_end_to_first_playback_ms": 6018.2,
+  "endpoint_to_first_audio_ready_ms": 5192.1,
+  "stages": {
+   "endpoint → submitted": 1243.2,
+   "submitted → dispatch": 65.3,
+   "dispatch → first provider event": 1707.1,
+   "first event → first answer text": 1337.1,
+   "first answer text → first speech-safe segment": 0.0,
+   "dispatch → generation complete (persisted)": -60.1,
+   "first speech-safe segment → TTS start": 81.7,
+   "TTS start → first audio ready": 757.7,
+   "endpoint → first audio ready": 5192.1
+  }
+ }
+]

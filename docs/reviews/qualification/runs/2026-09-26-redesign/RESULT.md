@@ -1,5 +1,7 @@
 # The local conversational latency redesign: candidate and qualification — 26 September 2026
 
+> **Superseded in part by `TIER1_COMPARISON.md` (same day, second owner order).** The qualification run recorded here **completed**; its candidate **did not qualify** — the two are different statements, and this document's title uses the first sense. The second pass replaced the ordinary request with a Core-owned Tier-1 request, compared four configurations, and selected GPT-OSS at LOW; its record corrects this one's reporting in its §11. Everything below stands as the record of the first candidate.
+
 Owner order "VAL VOICE: IMPLEMENT AND QUALIFY THE LOCAL CONVERSATIONAL LATENCY
 REDESIGN". This is the deliverable §11 asks for. **Nothing experimental is deployed:**
 production runs `13b3cb8` (the audio repair, its own record in `AUDIO_REPAIR.md`) with

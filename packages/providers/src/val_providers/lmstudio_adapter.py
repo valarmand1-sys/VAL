@@ -246,7 +246,7 @@ class LMStudioAdapter:
         self._runtime = runtime or LMStudioRuntime(self._base_url, token)
         #: Prefix-prime plans, by instance, persona digest and engine: the filler that
         #: lands the checkpoint on the boundary does not change while those do not.
-        self._prime_plans: dict[tuple[str, str, str], PrefixPrimePlan] = {}
+        self._prime_plans: dict[tuple[str, str, str, ReasoningEffort], PrefixPrimePlan] = {}
 
     # --- bringing the runtime up (owner ruling, 21 September 2026) ------------
 
@@ -313,7 +313,21 @@ class LMStudioAdapter:
             )
         if self._inspector is None:
             return PrefixPrimePlan(engine=label, refused="no runtime inspector is available")
-        key = (config.model_identifier, hashlib.sha256(system.encode()).hexdigest(), label)
+        # The plan is per reasoning effort as well as per persona and engine (26 September
+        # 2026, "COMPARE EXISTING TIER-1 OPTIONS" §4): the runtime renders the effort into
+        # the system header *before* the persona, so LOW and MEDIUM prompts share their
+        # persona bytes but not their prefix, and a prime sent at one effort warms only
+        # that effort's prefix. The inspector renders at the runtime's default effort, so
+        # `boundary_sha256` is the digest of that rendering's tokens; the count is what
+        # places the checkpoint, and the count is the same at every effort ("low",
+        # "medium" and "high" are each one token) — verified against the runtime's own
+        # input log in `low-boundary-rendered.json`.
+        key = (
+            config.model_identifier,
+            hashlib.sha256(system.encode()).hexdigest(),
+            label,
+            config.reasoning_effort,
+        )
         remembered = self._prime_plans.get(key)
         if remembered is not None:
             return remembered

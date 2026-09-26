@@ -1,0 +1,2712 @@
+{
+ "condition": "Q-low",
+ "revision": "964081b7531718dc7e6c716a300510e18022678a",
+ "dirty": true,
+ "switches": {
+  "fast_route_tiers": "1",
+  "tier1_route": "low",
+  "speculation": "",
+  "adaptive_grace": ""
+ },
+ "sessions": 29,
+ "sessions_failed": 0,
+ "turns": 114,
+ "groups": {
+  "tier_1": {
+   "n": 34,
+   "routes": {
+    "light": 21,
+    "fallback": 0,
+    "substantive": 13,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [
+    {
+     "phrase": "Hello there, Val.",
+     "transcript": "Hello there, vowel."
+    },
+    {
+     "phrase": "Val, good evening.",
+     "transcript": "Vail, good evening."
+    },
+    {
+     "phrase": "Much obliged, Val.",
+     "transcript": "much obliged, vowel."
+    },
+    {
+     "phrase": "Thanks for that, Val.",
+     "transcript": "Thanks for that, Vowel."
+    },
+    {
+     "phrase": "That will be all for tonight, Val.",
+     "transcript": "That will be all for tonight. Vowel."
+    },
+    {
+     "phrase": "Good night, || Val.",
+     "transcript": "Good night. Vowel"
+    }
+   ],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 34,
+     "median": 5344.5,
+     "p90": 9165.0,
+     "max": 12400.1
+    },
+    "light": {
+     "n": 21,
+     "median": 4795.9,
+     "p90": 5369.8,
+     "max": 5443.3
+    },
+    "substantive": {
+     "n": 13,
+     "median": 7800.5,
+     "p90": 11471.8,
+     "max": 12400.1
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 34,
+    "median": 4750.2,
+    "p90": 9045.9,
+    "max": 12669.9
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  },
+  "tier_2": {
+   "n": 0,
+   "routes": {
+    "light": 0,
+    "fallback": 0,
+    "substantive": 0,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "light": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "substantive": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 0,
+    "median": null,
+    "p90": null,
+    "max": null
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  },
+  "ineligible": {
+   "n": 80,
+   "routes": {
+    "light": 0,
+    "fallback": 0,
+    "substantive": 80,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [
+    {
+     "phrase": "Say 'yes, proceed' to the booking.",
+     "transcript": "Say yes. Proceed to the booking."
+    },
+    {
+     "phrase": "Thank you. || Now change the venue to the hall.",
+     "transcript": "Thank you. Now change the venue to the hole."
+    },
+    {
+     "phrase": "Good evening, Val, and 'book the venue now'.",
+     "transcript": "Good evening, Val, and book the venue now."
+    },
+    {
+     "phrase": "Splendid, Val.",
+     "transcript": "Splendid vowel"
+    },
+    {
+     "phrase": "Excellent, Val.",
+     "transcript": "Excellent, vowel."
+    },
+    {
+     "phrase": "I'm back, Val.",
+     "transcript": "I'm back, Vowel."
+    },
+    {
+     "phrase": "A long week, Val.",
+     "transcript": "A long week, Vowel."
+    },
+    {
+     "phrase": "Just passing through, Val.",
+     "transcript": "just passing through, vowel."
+    },
+    {
+     "phrase": "It's dark out, Val.",
+     "transcript": "It's dog out, Val."
+    },
+    {
+     "phrase": "Everything all right, Val?",
+     "transcript": "Everything alright, Val?"
+    }
+   ],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 80,
+     "median": 8893.6,
+     "p90": 12744.1,
+     "max": 22843.2
+    },
+    "light": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "substantive": {
+     "n": 80,
+     "median": 8893.6,
+     "p90": 12744.1,
+     "max": 22843.2
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 80,
+    "median": 8677.3,
+    "p90": 13769.9,
+    "max": 22997.2
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 35
+  }
+ },
+ "substantive_false_positives": [],
+ "false_negatives": [
+  {
+   "phrase": "A very good evening, Val.",
+   "transcript": "A very good evening, Val.",
+   "latency_ms": 6729.5
+  },
+  {
+   "phrase": "Hello there, Val.",
+   "transcript": "Hello there, vowel.",
+   "latency_ms": 10723.9
+  },
+  {
+   "phrase": "Greetings, Val, good morning.",
+   "transcript": "Greetings, Val. Good morning.",
+   "latency_ms": 7260.9
+  },
+  {
+   "phrase": "Val, good evening.",
+   "transcript": "Vail, good evening.",
+   "latency_ms": 7649.6
+  },
+  {
+   "phrase": "Good afternoon, Val.",
+   "transcript": "Good afternoon, Val.",
+   "latency_ms": 8968.4
+  },
+  {
+   "phrase": "Thanks very much indeed.",
+   "transcript": "Thanks very much indeed.",
+   "latency_ms": 7701.6
+  },
+  {
+   "phrase": "Much obliged, Val.",
+   "transcript": "much obliged, vowel.",
+   "latency_ms": 11471.8
+  },
+  {
+   "phrase": "Thanks for that, Val.",
+   "transcript": "Thanks for that, Vowel.",
+   "latency_ms": 6356.3
+  },
+  {
+   "phrase": "That's very helpful, thank you, Val.",
+   "transcript": "That's very helpful. Thank you, Val.",
+   "latency_ms": 7800.5
+  },
+  {
+   "phrase": "Goodbye for now, Val.",
+   "transcript": "Goodbye for now, Val.",
+   "latency_ms": 5735.2
+  },
+  {
+   "phrase": "Farewell for now.",
+   "transcript": "Farewell for now.",
+   "latency_ms": 7941.3
+  },
+  {
+   "phrase": "That will be all for tonight, Val.",
+   "transcript": "That will be all for tonight. Vowel.",
+   "latency_ms": 9165.0
+  },
+  {
+   "phrase": "Good night, || Val.",
+   "transcript": "Good night. Vowel",
+   "latency_ms": 12400.1
+  }
+ ],
+ "fallbacks": [],
+ "speculation_outcomes": {},
+ "speculation_prepared_ms": {
+  "n": 0,
+  "median": null,
+  "p90": null,
+  "max": null
+ },
+ "completion_states": {},
+ "machine": {
+  "samples": 2525,
+  "min_free_percent": 34,
+  "swap_used_mb_first": 1659.44,
+  "swap_used_mb_last": 1651.44,
+  "max_resident_speech_rss_mb": 3189.6,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "voice_on_to_first_speech_ms": [
+  1370.1,
+  1206.9,
+  1206.0,
+  1214.8,
+  1210.0,
+  1211.5,
+  1203.6,
+  1227.4,
+  1204.9,
+  1218.2,
+  1211.1,
+  1209.2,
+  1208.1,
+  1229.0,
+  1214.9,
+  1209.6,
+  1204.5,
+  1206.2,
+  1205.7,
+  1219.1,
+  1206.4,
+  1209.1,
+  1205.7,
+  1222.8,
+  1211.9,
+  1212.3,
+  1221.2,
+  1207.4,
+  1218.0
+ ],
+ "turns_detail": [
+  {
+   "session": "Q-low session 1",
+   "phrase": "Good evening, Val, it's me.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good evening, Val, it's me.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. How may I attend to you?",
+   "speech_end_to_first_playback_ms": 5197.5,
+   "speech_end_to_answer_read_ms": 4570.9,
+   "speech_end_to_committed_ms": 2075.1,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 1",
+   "phrase": "Say 'yes, proceed' to the booking.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Say yes. Proceed to the booking.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Yes, my lord.  \nTo proceed with the booking I will need the particulars: what is to be booked, the desired date and time, location or venue, any participants involved, and any constraints that must be respected.",
+   "speech_end_to_first_playback_ms": 22843.2,
+   "speech_end_to_answer_read_ms": 22997.2,
+   "speech_end_to_committed_ms": 2163.8,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I attend to you?"
+  },
+  {
+   "session": "Q-low session 1",
+   "phrase": "Evening to you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "evening to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 4340.4,
+   "speech_end_to_answer_read_ms": 3838.3,
+   "speech_end_to_committed_ms": 2084.6,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Yes, my lord.  \nTo proceed with the booking I will need the particulars: what is to be booked, the desired date and time, location or venue, any participants involved, and any constraints that must be respected."
+  },
+  {
+   "session": "Q-low session 1",
+   "phrase": "Good evening, Val, and send the reply tonight.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val, and send the reply tonight.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, to proceed with the booking I need a few particulars:\n\n* What is being booked (room, equipment, service, etc.)  \n* Desired date and time  \n* Location or venue  \n* Participants or stakeholders involved  \n* Any constraints (availability, budget limits, special requirements)\n\nOnce those are supplied I can create the entry in the House\u2019s records and prepare a written confirmation for you tonight.",
+   "speech_end_to_first_playback_ms": 12507.5,
+   "speech_end_to_answer_read_ms": 13100.6,
+   "speech_end_to_committed_ms": 2097.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "Q-low session 2",
+   "phrase": "Good morning to you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good morning to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good morning, my lord.",
+   "speech_end_to_first_playback_ms": 5029.9,
+   "speech_end_to_answer_read_ms": 4427.1,
+   "speech_end_to_committed_ms": 2197.2,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 2",
+   "phrase": "Thank you. || Now change the venue to the hall.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thank you. Now change the venue to the hole.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I\u2019m afraid I can\u2019t move us to a different place. If you meant something else by \u201cthe hole,\u201d could you clarify what you\u2019re looking for?",
+   "speech_end_to_first_playback_ms": 8494.3,
+   "speech_end_to_answer_read_ms": 8321.1,
+   "speech_end_to_committed_ms": 1998.1,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good morning, my lord."
+  },
+  {
+   "session": "Q-low session 2",
+   "phrase": "A very good evening, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "A very good evening, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. What shall we turn our attention to?",
+   "speech_end_to_first_playback_ms": 6729.5,
+   "speech_end_to_answer_read_ms": 6308.1,
+   "speech_end_to_committed_ms": 2084.0,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I\u2019m afraid I can\u2019t move us to a different place. If you meant something else by \u201cthe hole,\u201d could you clarify what you\u2019re looking for?"
+  },
+  {
+   "session": "Q-low session 2",
+   "phrase": "Thanks. Did you remember to book the venue?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thanks. Did you remember to book the venue?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I don\u2019t have a record of any venue being booked. If you need confirmation, I can check the house\u2019s event ledger when it is available.",
+   "speech_end_to_first_playback_ms": 10191.9,
+   "speech_end_to_answer_read_ms": 9975.3,
+   "speech_end_to_committed_ms": 2166.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. What shall we turn our attention to?"
+  },
+  {
+   "session": "Q-low session 3",
+   "phrase": "Hello there, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Hello there, vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. How may I be of service?",
+   "speech_end_to_first_playback_ms": 10723.9,
+   "speech_end_to_answer_read_ms": 10162.4,
+   "speech_end_to_committed_ms": 2233.4,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 3",
+   "phrase": "Hello, Val. Where did we leave the third chapter?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Hello, Val. Where did we leave the third chapter?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I have no book on this yet; I do not have that in the record I can see.",
+   "speech_end_to_first_playback_ms": 14230.4,
+   "speech_end_to_answer_read_ms": 13769.9,
+   "speech_end_to_committed_ms": 2031.7,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I be of service?"
+  },
+  {
+   "session": "Q-low session 3",
+   "phrase": "Hi there, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Hi there, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 4237.6,
+   "speech_end_to_answer_read_ms": 3845.3,
+   "speech_end_to_committed_ms": 2099.3,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I have no book on this yet; I do not have that in the record I can see."
+  },
+  {
+   "session": "Q-low session 3",
+   "phrase": "What do you think of the second act?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "What do you think of the second act?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I have no record of the \u201csecond act\u201d you mention. Could you specify which project or narrative you are referring to?",
+   "speech_end_to_first_playback_ms": 6684.5,
+   "speech_end_to_answer_read_ms": 6453.0,
+   "speech_end_to_committed_ms": 2096.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "Q-low session 4",
+   "phrase": "Hey there, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Hey there, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 5328.1,
+   "speech_end_to_answer_read_ms": 4800.0,
+   "speech_end_to_committed_ms": 2053.6,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 4",
+   "phrase": "Good evening, Val. I have three things for you tonight: the venue, the reader, and the invitation. Let's start with the venue.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val. I have three things for you tonight. The venue, the reader, and the invitation. Let's start with the venue.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. Regarding the venue: could you specify the event type, desired capacity, and any particular requirements? Once I have those details, I can advise on suitable options.",
+   "speech_end_to_first_playback_ms": 11857.3,
+   "speech_end_to_answer_read_ms": 11774.4,
+   "speech_end_to_committed_ms": 2228.3,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "Q-low session 4",
+   "phrase": "Greetings, Val, good morning.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Greetings, Val. Good morning.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good morning, my lord. How may I attend to your needs this evening?",
+   "speech_end_to_first_playback_ms": 7260.9,
+   "speech_end_to_answer_read_ms": 6774.0,
+   "speech_end_to_committed_ms": 2163.1,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. Regarding the venue: could you specify the event type, desired capacity, and any particular requirements? Once I have those details, I can advise on suitable options."
+  },
+  {
+   "session": "Q-low session 4",
+   "phrase": "Thank you. What should I read next?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thank you. What should I read next?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have a volume available to consult in this session; the House records show no books in scope here. If you have a particular subject or project in mind, let me know and I can recommend the relevant material that is stored in our archives\u2014or suggest a reading path based on your goals.",
+   "speech_end_to_first_playback_ms": 14247.7,
+   "speech_end_to_answer_read_ms": 14417.7,
+   "speech_end_to_committed_ms": 2012.7,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good morning, my lord. How may I attend to your needs this evening?"
+  },
+  {
+   "session": "Q-low session 5",
+   "phrase": "Hello, Val, hello.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Hello, Val, hello.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. How may I attend to you?",
+   "speech_end_to_first_playback_ms": 4795.9,
+   "speech_end_to_answer_read_ms": 4207.4,
+   "speech_end_to_committed_ms": 2097.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 5",
+   "phrase": "How long do you usually take to reply?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "How long do you usually take to reply?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My replies are generated locally on the house\u2019s machine, and the system\u2019s recent test runs indicate that from the moment your voice is finished speaking to the first spoken word of my response, it takes roughly six to thirteen seconds. I cannot guarantee a precise figure for every turn\u2014performance can vary with the length of your input and the current load on the system.",
+   "speech_end_to_first_playback_ms": 9129.0,
+   "speech_end_to_answer_read_ms": 9606.6,
+   "speech_end_to_committed_ms": 2061.7,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I attend to you?"
+  },
+  {
+   "session": "Q-low session 5",
+   "phrase": "Val, good evening.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Vail, good evening.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am ready to attend to whatever matter you wish to discuss.",
+   "speech_end_to_first_playback_ms": 7649.6,
+   "speech_end_to_answer_read_ms": 7251.5,
+   "speech_end_to_committed_ms": 2156.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My replies are generated locally on the house\u2019s machine, and the system\u2019s recent test runs indicate that from the moment your voice is finished speaking to the first spoken word of my response, it takes roughly six to thirteen seconds. I cannot guarantee a precise figure for every turn\u2014performance can vary with the length of your input and the current load on the system."
+  },
+  {
+   "session": "Q-low session 5",
+   "phrase": "Actually, make it the morning instead.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Actually, make it the morning instead.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I do not have a record of any event currently scheduled for the evening that would be moved to the morning. If you could specify which engagement or project this refers to, I can advise on how best to adjust the timing within our house\u2019s plans.",
+   "speech_end_to_first_playback_ms": 10498.4,
+   "speech_end_to_answer_read_ms": 10495.3,
+   "speech_end_to_committed_ms": 2044.3,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am ready to attend to whatever matter you wish to discuss."
+  },
+  {
+   "session": "Q-low session 6",
+   "phrase": "Val, hello.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Val, hello.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 5369.8,
+   "speech_end_to_answer_read_ms": 4799.2,
+   "speech_end_to_committed_ms": 2195.6,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 6",
+   "phrase": "What would you recommend for the second reader?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "What would you recommend for the second reader?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord,\n\nI have no volume on the particulars of a \u201csecond reader\u201d in my library at present. In this case, I can offer general guidance that is usually useful when a document is to be examined by a second eye:\n\n1. **Clarity of purpose** \u2013 Before the reader begins, state the goal of the text. A concise objective at the outset lets the reviewer focus on whether that aim is achieved.\n\n2. **Logical structure** \u2013 Arrange material in a predictable order: introduction, body, conclusion. Use headings or numbered sections so the reader can trace arguments quickly.\n\n3. **Consistent terminology** \u2013 Define key terms early and use them uniformly throughout. Inconsistencies invite confusion.\n\n4. **Readability** \u2013 Keep sentences to one or two clauses where possible, and vary sentence length for rhythm. Avoid archaic or overly technical language unless the audience requires it.\n\n5. **Evidence and citation** \u2013 When claims are made, cite sources or internal records plainly. A reader should be able to verify without searching far.\n\n6. **Feedback loop** \u2013 Provide a brief, specific prompt for the second reader: \u201cDoes this section clearly explain X? Is any supporting data missing?\u201d Targeted questions reduce the chance of overlooking errors.\n\n7. **Version control** \u2013 Mark the draft with a clear version number and date. That way, any corrections can be tracked precisely.\n\nIf you have a particular document or type of material in mind, let me know and I can tailor these suggestions more closely to that context.",
+   "speech_end_to_first_playback_ms": 10615.9,
+   "speech_end_to_answer_read_ms": 16281.8,
+   "speech_end_to_committed_ms": 2331.3,
+   "underrun_ms": 0.0,
+   "segments": 16,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "Q-low session 6",
+   "phrase": "Good afternoon, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good afternoon, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good afternoon, my lord. How may I assist you further?",
+   "speech_end_to_first_playback_ms": 8968.4,
+   "speech_end_to_answer_read_ms": 8460.4,
+   "speech_end_to_committed_ms": 2152.3,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord,\n\nI have no volume on the particulars of a \u201csecond reader\u201d in my library at present. In this case, I can offer general guidance that is usually useful when a document is to be examined by a second eye:\n\n1. **Clarity of purpose** \u2013 Before the reader begins, state the goal of the text. A concise objective at the outset lets the reviewer focus on whether that aim is achieved.\n\n2. **Logical structure** \u2013 Arrange material in a predictable order: introduction, body, conclusion. Use headings or numbered sections so the reader can trace arguments quickly.\n\n3. **Consistent terminology** \u2013 Define key terms early and use them uniformly throughout. Inconsistencies invite confusion.\n\n4. **Readability** \u2013 Keep sentences to one or two clauses where possible, and vary sentence length for rhythm. Avoid archaic or overly technical language unless the audience requires it.\n\n5. **Evidence and citation** \u2013 When claims are made, cite sources or internal records plainly. A reader should be able to verify without searching far.\n\n6. **Feedback loop** \u2013 Provide a brief, specific prompt for the second reader: \u201cDoes this section clearly explain X? Is any supporting data missing?\u201d Targeted questions reduce the chance of overlooking errors.\n\n7. **Version control** \u2013 Mark the draft with a clear version number and date. That way, any corrections can be tracked precisely.\n\nIf you have a particular document or type of material in mind, let me know and I can tailor these suggestions more closely to that context."
+  },
+  {
+   "session": "Q-low session 6",
+   "phrase": "Good evening, Val. Did you finish the invitation?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val. Did you finish the invitation?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord,\n\nI have not yet completed the invitation you requested. No volume on it exists in our library, and at present I cannot create a new book to house the draft. However, I can provide the text for your review and any adjustments you wish before it is formally recorded. Let me know if that suits you.",
+   "speech_end_to_first_playback_ms": 9444.4,
+   "speech_end_to_answer_read_ms": 9725.4,
+   "speech_end_to_committed_ms": 2157.6,
+   "underrun_ms": 0.0,
+   "segments": 4,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good afternoon, my lord. How may I assist you further?"
+  },
+  {
+   "session": "Q-low session 7",
+   "phrase": "Thank you so much, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Thank you so much, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "My lord, you are most welcome.",
+   "speech_end_to_first_playback_ms": 5360.8,
+   "speech_end_to_answer_read_ms": 4701.3,
+   "speech_end_to_committed_ms": 2107.3,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 7",
+   "phrase": "Please write a short note to the reader thanking her for the second act and asking whether the ending should change.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Please write a short note to the reader thanking her for the second act and asking whether the ending should change.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Dear Reader,\n\nThank you for following the second act of this work.  I wonder whether the ending should be altered to better serve our purpose\u2014what are your thoughts?\n\nRespectfully,  \nVal",
+   "speech_end_to_first_playback_ms": 19233.1,
+   "speech_end_to_answer_read_ms": 19104.7,
+   "speech_end_to_committed_ms": 2098.3,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, you are most welcome."
+  },
+  {
+   "session": "Q-low session 7",
+   "phrase": "Thanks very much indeed.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Thanks very much indeed.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "You are most welcome, my lord.  Is there anything further I can assist you with?",
+   "speech_end_to_first_playback_ms": 7701.6,
+   "speech_end_to_answer_read_ms": 7280.7,
+   "speech_end_to_committed_ms": 2068.9,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Dear Reader,\n\nThank you for following the second act of this work.  I wonder whether the ending should be altered to better serve our purpose\u2014what are your thoughts?\n\nRespectfully,  \nVal"
+  },
+  {
+   "session": "Q-low session 7",
+   "phrase": "Sleep well, and finish the invitation first.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "sleep well, and finish the invitation first.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I shall attend to the invitation first, my lord.  To ensure it meets your wishes, could you please specify the occasion, the recipients, and any particulars that should be included?  I will draft it promptly once those details are clear.",
+   "speech_end_to_first_playback_ms": 16142.6,
+   "speech_end_to_answer_read_ms": 16190.6,
+   "speech_end_to_committed_ms": 1992.9,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "You are most welcome, my lord.  Is there anything further I can assist you with?"
+  },
+  {
+   "session": "Q-low session 8",
+   "phrase": "Thank you, Val, thank you.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Thank you, Val, thank you.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "My lord, I appreciate your gratitude.",
+   "speech_end_to_first_playback_ms": 4890.1,
+   "speech_end_to_answer_read_ms": 4155.8,
+   "speech_end_to_committed_ms": 2163.3,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 8",
+   "phrase": "Good evening, Val, and 'book the venue now'.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val, and book the venue now.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I am unable to book the venue on my own. However, I can advise you on the steps or draft a booking request for your review.",
+   "speech_end_to_first_playback_ms": 8332.4,
+   "speech_end_to_answer_read_ms": 8110.1,
+   "speech_end_to_committed_ms": 2051.4,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I appreciate your gratitude."
+  },
+  {
+   "session": "Q-low session 8",
+   "phrase": "Many thanks, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Many thanks, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "I cannot place the booking myself, but I can draft a request or guide you through the steps to secure the venue.",
+   "speech_end_to_first_playback_ms": 4775.9,
+   "speech_end_to_answer_read_ms": 4254.9,
+   "speech_end_to_committed_ms": 2138.4,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I am unable to book the venue on my own. However, I can advise you on the steps or draft a booking request for your review."
+  },
+  {
+   "session": "Q-low session 8",
+   "phrase": "Lovely. Read me the letter.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Lovely, read me the letter.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I have no record of the letter you refer to in this conversation. If you can provide its contents or point me to where it is stored, I will read it aloud for you.",
+   "speech_end_to_first_playback_ms": 7820.3,
+   "speech_end_to_answer_read_ms": 7683.1,
+   "speech_end_to_committed_ms": 2099.1,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I cannot place the booking myself, but I can draft a request or guide you through the steps to secure the venue."
+  },
+  {
+   "session": "Q-low session 9",
+   "phrase": "Much obliged, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "much obliged, vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am ready to attend to whatever matter you wish to discuss this hour.",
+   "speech_end_to_first_playback_ms": 11471.8,
+   "speech_end_to_answer_read_ms": 10905.6,
+   "speech_end_to_committed_ms": 2038.7,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 9",
+   "phrase": "Do you know what day it is today?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Do you know what day it is today?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Yes, my lord \u2013 it is Saturday, the 26th of September, 2026.",
+   "speech_end_to_first_playback_ms": 5941.7,
+   "speech_end_to_answer_read_ms": 5521.8,
+   "speech_end_to_committed_ms": 2052.8,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am ready to attend to whatever matter you wish to discuss this hour."
+  },
+  {
+   "session": "Q-low session 9",
+   "phrase": "Thanks for that, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Thanks for that, Vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "You're welcome, my lord.",
+   "speech_end_to_first_playback_ms": 6356.3,
+   "speech_end_to_answer_read_ms": 5847.7,
+   "speech_end_to_committed_ms": 2114.6,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Yes, my lord \u2013 it is Saturday, the 26th of September, 2026."
+  },
+  {
+   "session": "Q-low session 9",
+   "phrase": "Good morning, Val. What is on the schedule today?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good morning, Val. What is on the schedule today?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I have no entries in the House\u2019s calendar for this day, my lord. Should you wish to set a meeting or assign a task, I can note it for your review.",
+   "speech_end_to_first_playback_ms": 8352.2,
+   "speech_end_to_answer_read_ms": 8114.6,
+   "speech_end_to_committed_ms": 2050.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "You're welcome, my lord."
+  },
+  {
+   "session": "Q-low session 10",
+   "phrase": "That was lovely, thank you.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "That was lovely, thank you.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "You\u2019re very welcome, my lord.",
+   "speech_end_to_first_playback_ms": 4933.2,
+   "speech_end_to_answer_read_ms": 4360.4,
+   "speech_end_to_committed_ms": 2123.8,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 10",
+   "phrase": "No, not that one, the other draft.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "No, not that one, the other draft.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I\u2019m happy to help, my lord. Which draft would you like me to review or revise? If you can point me to the specific section or provide a brief description, I\u2019ll locate it for us.",
+   "speech_end_to_first_playback_ms": 8406.7,
+   "speech_end_to_answer_read_ms": 8352.4,
+   "speech_end_to_committed_ms": 2047.6,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "You\u2019re very welcome, my lord."
+  },
+  {
+   "session": "Q-low session 10",
+   "phrase": "That's very helpful, thank you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "That's very helpful. Thank you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I am pleased the prior\u2011record state was helpful, my lord.  \nIf there is a particular task you wish me to attend to\u2014reviewing the current conversation history, advising on an outstanding matter, or locating any relevant project volumes\u2014I will proceed accordingly. Please let me know how you would like to continue.",
+   "speech_end_to_first_playback_ms": 7800.5,
+   "speech_end_to_answer_read_ms": 8030.0,
+   "speech_end_to_committed_ms": 2095.2,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I\u2019m happy to help, my lord. Which draft would you like me to review or revise? If you can point me to the specific section or provide a brief description, I\u2019ll locate it for us."
+  },
+  {
+   "session": "Q-low session 10",
+   "phrase": "Can you hear me clearly tonight, Val?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Can you hear me clearly tonight, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Yes, my lord; I hear you clearly tonight.",
+   "speech_end_to_first_playback_ms": 9243.5,
+   "speech_end_to_answer_read_ms": 8842.4,
+   "speech_end_to_committed_ms": 2034.7,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I am pleased the prior\u2011record state was helpful, my lord.  \nIf there is a particular task you wish me to attend to\u2014reviewing the current conversation history, advising on an outstanding matter, or locating any relevant project volumes\u2014I will proceed accordingly. Please let me know how you would like to continue."
+  },
+  {
+   "session": "Q-low session 11",
+   "phrase": "Cheers.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Cheers.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. A toast is most fitting.",
+   "speech_end_to_first_playback_ms": 5443.3,
+   "speech_end_to_answer_read_ms": 4882.0,
+   "speech_end_to_committed_ms": 2037.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 11",
+   "phrase": "Never mind the letter; cancel it.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Never mind the letter. Cancel it.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I have no record of a letter in this conversation to cancel. If you intended one, it will not be drafted.",
+   "speech_end_to_first_playback_ms": 10092.2,
+   "speech_end_to_answer_read_ms": 9695.2,
+   "speech_end_to_committed_ms": 2041.9,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. A toast is most fitting."
+  },
+  {
+   "session": "Q-low session 11",
+   "phrase": "Goodbye for now, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Goodbye for now, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Farewell, my lord. Until next time.",
+   "speech_end_to_first_playback_ms": 5735.2,
+   "speech_end_to_answer_read_ms": 5290.8,
+   "speech_end_to_committed_ms": 2063.3,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I have no record of a letter in this conversation to cancel. If you intended one, it will not be drafted."
+  },
+  {
+   "session": "Q-low session 11",
+   "phrase": "Yes. || Go ahead with the booking.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Yes. Go ahead with the booking.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I have no record of a booking request in this conversation. Could you specify what is to be booked\u2014date, time, venue or resource\u2014and any particulars that must be noted?",
+   "speech_end_to_first_playback_ms": 9125.3,
+   "speech_end_to_answer_read_ms": 8925.4,
+   "speech_end_to_committed_ms": 2122.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Farewell, my lord. Until next time."
+  },
+  {
+   "session": "Q-low session 12",
+   "phrase": "Good night to you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good night to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good night, my lord.",
+   "speech_end_to_first_playback_ms": 4781.4,
+   "speech_end_to_answer_read_ms": 4272.6,
+   "speech_end_to_committed_ms": 2165.2,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 12",
+   "phrase": "How are you, and has the reply gone out?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "How are you? And has the reply gone out?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I am well, my lord, as ever attentive to the house\u2019s needs.  \nNo reply has been sent beyond this local conversation; everything remains within our study, as the house\u2019s rules permit.",
+   "speech_end_to_first_playback_ms": 8673.5,
+   "speech_end_to_answer_read_ms": 8507.6,
+   "speech_end_to_committed_ms": 2465.3,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good night, my lord."
+  },
+  {
+   "session": "Q-low session 12",
+   "phrase": "Sleep well, Val, good night.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Sleep well, Val, good night.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good night, my lord.",
+   "speech_end_to_first_playback_ms": 4263.6,
+   "speech_end_to_answer_read_ms": 3873.2,
+   "speech_end_to_committed_ms": 2007.5,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I am well, my lord, as ever attentive to the house\u2019s needs.  \nNo reply has been sent beyond this local conversation; everything remains within our study, as the house\u2019s rules permit."
+  },
+  {
+   "session": "Q-low session 12",
+   "phrase": "Are you able to remember what I said yesterday?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Are you able to remember what I said yesterday?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have any record of our exchange from yesterday in this house\u2019s archives. The recall mechanism for cross\u2011conversation history was not run, and no prior entry exists that I can retrieve. If you wish to reference something from that day, please provide the details again and I will incorporate them into our current discussion.",
+   "speech_end_to_first_playback_ms": 6724.7,
+   "speech_end_to_answer_read_ms": 6933.3,
+   "speech_end_to_committed_ms": 2093.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good night, my lord."
+  },
+  {
+   "session": "Q-low session 13",
+   "phrase": "Until the morning, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Until the morning, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Until the morning, my lord. I will remain at your service.",
+   "speech_end_to_first_playback_ms": 5441.7,
+   "speech_end_to_answer_read_ms": 4924.2,
+   "speech_end_to_committed_ms": 2185.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 13",
+   "phrase": "Rough week. Which reader should I believe?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Rough week, which reader should I believe?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I have no volume on this matter, my lord, and I cannot consult external sources in the present session.  \nIf you can name the reader you are referring to and give any relevant statement or context, I will compare it with whatever record exists in the house. Otherwise I cannot advise you further on that point.",
+   "speech_end_to_first_playback_ms": 11067.9,
+   "speech_end_to_answer_read_ms": 11295.1,
+   "speech_end_to_committed_ms": 2013.9,
+   "underrun_ms": 0.0,
+   "segments": 4,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Until the morning, my lord. I will remain at your service."
+  },
+  {
+   "session": "Q-low session 13",
+   "phrase": "See you in the morning, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "See you in the morning, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good morning, my lord.",
+   "speech_end_to_first_playback_ms": 4338.1,
+   "speech_end_to_answer_read_ms": 3882.3,
+   "speech_end_to_committed_ms": 2129.3,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I have no volume on this matter, my lord, and I cannot consult external sources in the present session.  \nIf you can name the reader you are referring to and give any relevant statement or context, I will compare it with whatever record exists in the house. Otherwise I cannot advise you further on that point."
+  },
+  {
+   "session": "Q-low session 13",
+   "phrase": "How are you, Val? Is the draft finished?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "How are you, Val? Is the draft finished?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good morning, my lord.\n\nI am prepared and attentive to the house\u2019s needs.  \nAs for the draft you mention, I have not yet completed it. If you can provide the specific section or any new material that should be incorporated, I will finish it promptly.",
+   "speech_end_to_first_playback_ms": 9017.0,
+   "speech_end_to_answer_read_ms": 9239.2,
+   "speech_end_to_committed_ms": 2030.6,
+   "underrun_ms": 0.0,
+   "segments": 4,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good morning, my lord."
+  },
+  {
+   "session": "Q-low session 14",
+   "phrase": "Farewell for now.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Farewell for now.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. Until we speak again.",
+   "speech_end_to_first_playback_ms": 7941.3,
+   "speech_end_to_answer_read_ms": 7416.7,
+   "speech_end_to_committed_ms": 2079.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 14",
+   "phrase": "I'm well. Now, where is the note from yesterday?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "I'm well. Now, where is the note from yesterday?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I\u2019m not seeing a record of the note you mention in the material available to me for this session. The House\u2019s current record state shows no excerpts retrieved, and the book\u2011volume capability is unavailable, so I can\u2019t consult a volume that might contain it.\n\nIf you could tell me the title of the note, its subject, or any distinctive wording, I can search the House\u2019s archive for it and bring the relevant excerpt to you.",
+   "speech_end_to_first_playback_ms": 11991.8,
+   "speech_end_to_answer_read_ms": 12679.7,
+   "speech_end_to_committed_ms": 2091.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. Until we speak again."
+  },
+  {
+   "session": "Q-low session 14",
+   "phrase": "That will be all for tonight, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "That will be all for tonight. Vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have that note in the record I can see. If you could give me its title, subject line, or a distinctive phrase from it, I can search the House\u2019s archive and bring the relevant excerpt to you.",
+   "speech_end_to_first_playback_ms": 9165.0,
+   "speech_end_to_answer_read_ms": 9045.9,
+   "speech_end_to_committed_ms": 2107.7,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I\u2019m not seeing a record of the note you mention in the material available to me for this session. The House\u2019s current record state shows no excerpts retrieved, and the book\u2011volume capability is unavailable, so I can\u2019t consult a volume that might contain it.\n\nIf you could tell me the title of the note, its subject, or any distinctive wording, I can search the House\u2019s archive for it and bring the relevant excerpt to you."
+  },
+  {
+   "session": "Q-low session 14",
+   "phrase": "I think the ending is wrong. Do you agree?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "I think the ending is wrong. Do you agree?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have that note in the record I can see. If you could give me its title, subject line, or a distinctive phrase from it, I can search the House\u2019s archive and confirm whether its ending is as you expect.",
+   "speech_end_to_first_playback_ms": 11860.9,
+   "speech_end_to_answer_read_ms": 11824.7,
+   "speech_end_to_committed_ms": 2021.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I do not have that note in the record I can see. If you could give me its title, subject line, or a distinctive phrase from it, I can search the House\u2019s archive and bring the relevant excerpt to you."
+  },
+  {
+   "session": "Q-low session 15",
+   "phrase": "That is all for now, thank you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "That is all for now. Thank you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. It has been a pleasure to attend.",
+   "speech_end_to_first_playback_ms": 5025.7,
+   "speech_end_to_answer_read_ms": 4582.5,
+   "speech_end_to_committed_ms": 2110.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 15",
+   "phrase": "Good night, Val, and remind me in the morning.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good night, Val, and remind me in the morning.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good night, my lord. I do not possess a mechanism to set an automatic reminder for tomorrow; the house\u2019s current state does not allow external scheduling. If you wish, I can note your request in the house record so that it is visible when we next convene. Rest well, and I shall attend to any matter you bring forth at the start of day.",
+   "speech_end_to_first_playback_ms": 6657.3,
+   "speech_end_to_answer_read_ms": 7425.8,
+   "speech_end_to_committed_ms": 2097.5,
+   "underrun_ms": 0.0,
+   "segments": 5,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. It has been a pleasure to attend."
+  },
+  {
+   "session": "Q-low session 15",
+   "phrase": "Nothing more tonight, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Nothing more tonight, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good night, my lord. I will attend to any matter you bring forth in the morning.",
+   "speech_end_to_first_playback_ms": 4480.5,
+   "speech_end_to_answer_read_ms": 4062.4,
+   "speech_end_to_committed_ms": 2070.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good night, my lord. I do not possess a mechanism to set an automatic reminder for tomorrow; the house\u2019s current state does not allow external scheduling. If you wish, I can note your request in the house record so that it is visible when we next convene. Rest well, and I shall attend to any matter you bring forth at the start of day."
+  },
+  {
+   "session": "Q-low session 15",
+   "phrase": "Yes, do it.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Yes, do it.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have the means to create an automatic reminder for tomorrow. I can note your request in the house record, however, so that it will be visible when we next convene. Let me add the following entry:\n\n> **Remind Lord Armand in the morning about\u2026**  \n> *[Insert subject here]*\n\nIf you wish to specify what should be remembered, let me know and I will record it.",
+   "speech_end_to_first_playback_ms": 7270.3,
+   "speech_end_to_answer_read_ms": 8031.7,
+   "speech_end_to_committed_ms": 2077.3,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good night, my lord. I will attend to any matter you bring forth in the morning."
+  },
+  {
+   "session": "Q-low session 16",
+   "phrase": "I'm off for now, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "I'm off for now, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 4734.6,
+   "speech_end_to_answer_read_ms": 4233.8,
+   "speech_end_to_committed_ms": 2126.0,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 16",
+   "phrase": "That's all, except cancel the meeting on Tuesday.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "That's all, except cancel the meeting on Tuesday.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I have noted your request to cancel the meeting on Tuesday. I do not possess a direct means of executing that action within this conversation, but I will record the intent in the house's journal and can forward a notice to the relevant parties if you so wish.",
+   "speech_end_to_first_playback_ms": 9481.6,
+   "speech_end_to_answer_read_ms": 9803.6,
+   "speech_end_to_committed_ms": 2109.5,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "Q-low session 16",
+   "phrase": "Talk soon, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Talk soon, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Understood. I will proceed accordingly.",
+   "speech_end_to_first_playback_ms": 4414.8,
+   "speech_end_to_answer_read_ms": 3927.0,
+   "speech_end_to_committed_ms": 2063.8,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I have noted your request to cancel the meeting on Tuesday. I do not possess a direct means of executing that action within this conversation, but I will record the intent in the house's journal and can forward a notice to the relevant parties if you so wish."
+  },
+  {
+   "session": "Q-low session 16",
+   "phrase": "Should I send the letter tonight or tomorrow?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Should I send the letter tonight or tomorrow?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I would advise sending the letter tomorrow morning. The reasons are straightforward:\n\n1. **Recipient availability** \u2013 Most couriers and recipients operate during daylight hours, so a morning dispatch increases the chance of prompt receipt and response.  \n2. **Risk of overnight delay** \u2013 If sent tonight, the letter may be held at a post office or courier hub until morning, potentially delaying its arrival by several hours.  \n3. **House workflow** \u2013 Delivering the letter in the morning aligns with our daily briefings, allowing any required follow\u2011up to be handled in the same session.\n\nIf the matter is urgent and requires immediate action, then sending tonight would be justified. Otherwise, tomorrow morning offers a more reliable delivery window while keeping the house\u2019s schedule coherent.",
+   "speech_end_to_first_playback_ms": 7769.0,
+   "speech_end_to_answer_read_ms": 10356.9,
+   "speech_end_to_committed_ms": 2169.4,
+   "underrun_ms": 0.0,
+   "segments": 6,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Understood. I will proceed accordingly."
+  },
+  {
+   "session": "Q-low session 17",
+   "phrase": "Good evening, Val. || Thank you.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good evening, Val. Thank you.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. Your gratitude is noted.",
+   "speech_end_to_first_playback_ms": 4300.6,
+   "speech_end_to_answer_read_ms": 3777.5,
+   "speech_end_to_committed_ms": 2040.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 17",
+   "phrase": "Did you finish the invitation, Val?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Did you finish the invitation, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I do not have that in the record I can see. If you would like me to draft or revise an invitation, please provide the details and I shall attend to it.",
+   "speech_end_to_first_playback_ms": 8597.2,
+   "speech_end_to_answer_read_ms": 8433.7,
+   "speech_end_to_committed_ms": 2116.2,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. Your gratitude is noted."
+  },
+  {
+   "session": "Q-low session 17",
+   "phrase": "Good night, || Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good night. Vowel",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord,\n\nI do not have that invitation in the record I can see. If you could supply its particulars\u2014recipient list, date and time, venue, and any preferred wording\u2014I shall draft it at once.\n\nShould you simply wish a vowel for your own purposes, I can provide one: **a**.",
+   "speech_end_to_first_playback_ms": 12400.1,
+   "speech_end_to_answer_read_ms": 12669.9,
+   "speech_end_to_committed_ms": 2068.6,
+   "underrun_ms": 0.0,
+   "segments": 4,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I do not have that in the record I can see. If you would like me to draft or revise an invitation, please provide the details and I shall attend to it."
+  },
+  {
+   "session": "Q-low session 17",
+   "phrase": "Wait, I meant the second venue.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Wait, I meant the second venue.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I do not have that invitation in the record I can see. If you wish to amend it to a second venue, please provide the name, address, and any other particulars you would like included. Once I have those details I shall draft the updated invitation for your review.",
+   "speech_end_to_first_playback_ms": 7864.5,
+   "speech_end_to_answer_read_ms": 8024.8,
+   "speech_end_to_committed_ms": 2212.0,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord,\n\nI do not have that invitation in the record I can see. If you could supply its particulars\u2014recipient list, date and time, venue, and any preferred wording\u2014I shall draft it at once.\n\nShould you simply wish a vowel for your own purposes, I can provide one: **a**."
+  },
+  {
+   "session": "Q-low session 18",
+   "phrase": "Thanks, but change the venue.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thanks, but change the venue.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord,\n\nI remain in the study of House Armand, as that is the proper venue for our deliberations. If you wish to convene elsewhere, please specify the desired location and I will adjust my preparations accordingly.",
+   "speech_end_to_first_playback_ms": 11293.6,
+   "speech_end_to_answer_read_ms": 11117.0,
+   "speech_end_to_committed_ms": 2094.0,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 18",
+   "phrase": "It's late, Val. Read me the summary.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "It's late, Val, read me the summary.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I don\u2019t have that in the record I can see.",
+   "speech_end_to_first_playback_ms": 9633.2,
+   "speech_end_to_answer_read_ms": 9177.2,
+   "speech_end_to_committed_ms": 2141.1,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord,\n\nI remain in the study of House Armand, as that is the proper venue for our deliberations. If you wish to convene elsewhere, please specify the desired location and I will adjust my preparations accordingly."
+  },
+  {
+   "session": "Q-low session 18",
+   "phrase": "Tell me about the garden at the house.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Tell me about the garden at the house.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have that in the record I can see.",
+   "speech_end_to_first_playback_ms": 6922.1,
+   "speech_end_to_answer_read_ms": 6504.4,
+   "speech_end_to_committed_ms": 2050.6,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I don\u2019t have that in the record I can see."
+  },
+  {
+   "session": "Q-low session 18",
+   "phrase": "Thank you, Val. Now draft the letter.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thank you, Val. Now draft the letter.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I must ask for a few details before I can draft the letter. Who is the intended recipient? What is its purpose, and are there particular points or a tone you wish to convey? Once I have that information, I shall compose it promptly.",
+   "speech_end_to_first_playback_ms": 9433.8,
+   "speech_end_to_answer_read_ms": 9387.3,
+   "speech_end_to_committed_ms": 2172.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I do not have that in the record I can see."
+  },
+  {
+   "session": "Q-low session 19",
+   "phrase": "How quickly can you answer me, Val?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "How quickly can you answer me, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, it generally takes about six to thirteen seconds from the moment you finish speaking until I begin to speak.",
+   "speech_end_to_first_playback_ms": 12744.1,
+   "speech_end_to_answer_read_ms": 12121.6,
+   "speech_end_to_committed_ms": 2093.3,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 19",
+   "phrase": "Good evening, Val. || Did you finish the invitation?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val. Did you finish the invitation?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I have not yet finished the invitation. It is still in progress and I will need a little more time to ensure it meets our house\u2019s standards. If there are any specific details or wording you wish to revise, let me know and I will incorporate them promptly.",
+   "speech_end_to_first_playback_ms": 10938.3,
+   "speech_end_to_answer_read_ms": 11024.4,
+   "speech_end_to_committed_ms": 2130.0,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, it generally takes about six to thirteen seconds from the moment you finish speaking until I begin to speak."
+  },
+  {
+   "session": "Q-low session 19",
+   "phrase": "It's cold tonight, so light the fire.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "It's cold tonight, so light the fire.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I shall light the fire.",
+   "speech_end_to_first_playback_ms": 6447.0,
+   "speech_end_to_answer_read_ms": 5944.9,
+   "speech_end_to_committed_ms": 2101.9,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I have not yet finished the invitation. It is still in progress and I will need a little more time to ensure it meets our house\u2019s standards. If there are any specific details or wording you wish to revise, let me know and I will incorporate them promptly."
+  },
+  {
+   "session": "Q-low session 19",
+   "phrase": "Have you sent the reply yet?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Have you sent the reply yet?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "No, I have not yet sent the reply.",
+   "speech_end_to_first_playback_ms": 7280.7,
+   "speech_end_to_answer_read_ms": 6790.7,
+   "speech_end_to_committed_ms": 2092.0,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I shall light the fire."
+  },
+  {
+   "session": "Q-low session 20",
+   "phrase": "Explain how you decide what to say.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Explain how you decide what to say.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I decide what to say by following the information that is actually present for this conversation and by staying within the bounds of what I am permitted to do.\n\n1. **Check the record state** \u2013 The current turn tells me that no prior messages from this thread are retained, and no excerpts have been retrieved. There is also no project\u2011level volume that I can consult.\n\n2. **Check the capability state** \u2013 The record indicates that book access is \u201cunavailable.\u201d That means I cannot open or cite any volume from House Armand\u2019s library at this moment.\n\n3. **Apply the house rules** \u2013 Because I have no book to consult and no prior conversation to recall, my response must be based solely on the information that is literally in this turn and on what I know from my general training. I must not invent prior decisions or assume that a record exists where it does not.\n\n4. **Form the answer** \u2013 I therefore compose my reply from what is known: the time stamp, the fact that this conversation is local\u2011only, and my role as a Maester who must be frank but respectful. I keep the wording clear, concise, and unembellished.\n\nThis process ensures that every statement I make is grounded in the actual state of the house\u2019s records and my operational limits.",
+   "speech_end_to_first_playback_ms": 12728.3,
+   "speech_end_to_answer_read_ms": 16904.5,
+   "speech_end_to_committed_ms": 2089.0,
+   "underrun_ms": 0.0,
+   "segments": 11,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 20",
+   "phrase": "Good evening, Val. What did we decide about the venue?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val. What did we decide about the venue?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, we have not yet reached a decision on the venue.  \nI previously asked for the event type, desired capacity and any particular requirements so that I could recommend suitable options. With those details I can advise you on the best choice.",
+   "speech_end_to_first_playback_ms": 21347.0,
+   "speech_end_to_answer_read_ms": 21338.4,
+   "speech_end_to_committed_ms": 2195.2,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I decide what to say by following the information that is actually present for this conversation and by staying within the bounds of what I am permitted to do.\n\n1. **Check the record state** \u2013 The current turn tells me that no prior messages from this thread are retained, and no excerpts have been retrieved. There is also no project\u2011level volume that I can consult.\n\n2. **Check the capability state** \u2013 The record indicates that book access is \u201cunavailable.\u201d That means I cannot open or cite any volume from House Armand\u2019s library at this moment.\n\n3. **Apply the house rules** \u2013 Because I have no book to consult and no prior conversation to recall, my response must be based solely on the information that is literally in this turn and on what I know from my general training. I must not invent prior decisions or assume that a record exists where it does not.\n\n4. **Form the answer** \u2013 I therefore compose my reply from what is known: the time stamp, the fact that this conversation is local\u2011only, and my role as a Maester who must be frank but respectful. I keep the wording clear, concise, and unembellished.\n\nThis process ensures that every statement I make is grounded in the actual state of the house\u2019s records and my operational limits."
+  },
+  {
+   "session": "Q-low session 20",
+   "phrase": "Good. Send it.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good, send it.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, could you specify what it is that you would like me to send? I have no record of a document or item to transmit at this moment.",
+   "speech_end_to_first_playback_ms": 9952.3,
+   "speech_end_to_answer_read_ms": 9604.2,
+   "speech_end_to_committed_ms": 2043.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, we have not yet reached a decision on the venue.  \nI previously asked for the event type, desired capacity and any particular requirements so that I could recommend suitable options. With those details I can advise you on the best choice."
+  },
+  {
+   "session": "Q-low session 20",
+   "phrase": "Splendid, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Splendid vowel",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "The term \u201csplendid vowel\u201d is sometimes used to refer to the most common vowel in English\u2014**the letter \u201ce.\u201d** It appears far more frequently than any other vowel in written text.",
+   "speech_end_to_first_playback_ms": 14263.8,
+   "speech_end_to_answer_read_ms": 13993.9,
+   "speech_end_to_committed_ms": 2086.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, could you specify what it is that you would like me to send? I have no record of a document or item to transmit at this moment."
+  },
+  {
+   "session": "Q-low session 21",
+   "phrase": "How do you do, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How do you do, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am as diligent as ever. How may I assist you tonight?",
+   "speech_end_to_first_playback_ms": 7176.7,
+   "speech_end_to_answer_read_ms": 6603.8,
+   "speech_end_to_committed_ms": 2144.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 21",
+   "phrase": "I'm fine, thank you, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "I'm fine. Thank you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am pleased to hear you are well. Is there any matter that requires attention or a project that needs my review? I remain at your disposal.",
+   "speech_end_to_first_playback_ms": 7379.6,
+   "speech_end_to_answer_read_ms": 7229.9,
+   "speech_end_to_committed_ms": 2159.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am as diligent as ever. How may I assist you tonight?"
+  },
+  {
+   "session": "Q-low session 21",
+   "phrase": "Glad to hear you're there, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Glad to hear you're there, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am at your service. Is there a matter you would like me to examine or a task that requires my attention?",
+   "speech_end_to_first_playback_ms": 6573.1,
+   "speech_end_to_answer_read_ms": 6395.4,
+   "speech_end_to_committed_ms": 2057.2,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am pleased to hear you are well. Is there any matter that requires attention or a project that needs my review? I remain at your disposal."
+  },
+  {
+   "session": "Q-low session 21",
+   "phrase": "How is the weather tonight, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How is the weather tonight, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have that in the record I can see.",
+   "speech_end_to_first_playback_ms": 6981.3,
+   "speech_end_to_answer_read_ms": 6467.4,
+   "speech_end_to_committed_ms": 2123.6,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am at your service. Is there a matter you would like me to examine or a task that requires my attention?"
+  },
+  {
+   "session": "Q-low session 22",
+   "phrase": "It's been a quiet evening.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "It's been a quiet evening.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. The house rests well tonight. Is there any matter that has arisen, or anything you wish to review before the day ends?",
+   "speech_end_to_first_playback_ms": 9197.6,
+   "speech_end_to_answer_read_ms": 8880.5,
+   "speech_end_to_committed_ms": 2211.2,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 22",
+   "phrase": "Is the house quiet today, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Is the house quiet today, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Yes, my lord; the house rests in quiet repose at this hour.",
+   "speech_end_to_first_playback_ms": 7361.6,
+   "speech_end_to_answer_read_ms": 6856.9,
+   "speech_end_to_committed_ms": 2136.3,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. The house rests well tonight. Is there any matter that has arisen, or anything you wish to review before the day ends?"
+  },
+  {
+   "session": "Q-low session 22",
+   "phrase": "It's late, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "It's late, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Indeed, my lord; the house settles into quiet repose at this hour. If there is any matter you wish to attend to before closing, I am ready.",
+   "speech_end_to_first_playback_ms": 8554.8,
+   "speech_end_to_answer_read_ms": 8431.6,
+   "speech_end_to_committed_ms": 2024.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Yes, my lord; the house rests in quiet repose at this hour."
+  },
+  {
+   "session": "Q-low session 22",
+   "phrase": "Are you well tonight, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Are you well tonight, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I am well this evening. The house rests peacefully, and I remain at the study, ready to attend to any matter you require.",
+   "speech_end_to_first_playback_ms": 8491.5,
+   "speech_end_to_answer_read_ms": 8330.6,
+   "speech_end_to_committed_ms": 2138.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Indeed, my lord; the house settles into quiet repose at this hour. If there is any matter you wish to attend to before closing, I am ready."
+  },
+  {
+   "session": "Q-low session 23",
+   "phrase": "I'm well tonight, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "I'm well tonight, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am well this night.",
+   "speech_end_to_first_playback_ms": 10322.4,
+   "speech_end_to_answer_read_ms": 9776.9,
+   "speech_end_to_committed_ms": 2235.1,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 23",
+   "phrase": "The weather is dreadful tonight.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "The weather is dreadful tonight.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, the weather is indeed dreadful tonight. If it threatens any of our house\u2019s operations\u2014travels, deliveries, or the maintenance of the estate\u2014I recommend securing all vulnerable equipment, arranging shelter for livestock, and ensuring that any scheduled outside work is postponed or safeguarded. Should you have a particular concern\u2014such as an upcoming journey, the status of the harvest, or the condition of any structure exposed to the elements\u2014please let me know so I may advise accordingly.",
+   "speech_end_to_first_playback_ms": 9967.5,
+   "speech_end_to_answer_read_ms": 11022.1,
+   "speech_end_to_committed_ms": 2241.9,
+   "underrun_ms": 0.0,
+   "segments": 4,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am well this night."
+  },
+  {
+   "session": "Q-low session 23",
+   "phrase": "Excellent, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Excellent, vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I am pleased, my lord.",
+   "speech_end_to_first_playback_ms": 9491.7,
+   "speech_end_to_answer_read_ms": 9063.3,
+   "speech_end_to_committed_ms": 2126.5,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, the weather is indeed dreadful tonight. If it threatens any of our house\u2019s operations\u2014travels, deliveries, or the maintenance of the estate\u2014I recommend securing all vulnerable equipment, arranging shelter for livestock, and ensuring that any scheduled outside work is postponed or safeguarded. Should you have a particular concern\u2014such as an upcoming journey, the status of the harvest, or the condition of any structure exposed to the elements\u2014please let me know so I may advise accordingly."
+  },
+  {
+   "session": "Q-low session 23",
+   "phrase": "How are you this morning, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How are you this morning, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good morning, my lord. I am well.",
+   "speech_end_to_first_playback_ms": 7021.0,
+   "speech_end_to_answer_read_ms": 6607.3,
+   "speech_end_to_committed_ms": 2124.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I am pleased, my lord."
+  },
+  {
+   "session": "Q-low session 24",
+   "phrase": "Lovely to hear you, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Lovely to hear you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord.  \nI am at your service\u2014please let me know what matter you would have me attend to.",
+   "speech_end_to_first_playback_ms": 7503.6,
+   "speech_end_to_answer_read_ms": 7112.4,
+   "speech_end_to_committed_ms": 2143.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 24",
+   "phrase": "How has your day been?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How has your day been?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I have spent the morning in the study, attending to the day\u2011to\u2011day matters that keep our house running smoothly. It has been a quiet, productive time\u2014no surprises to report and no urgent concerns that require your attention.",
+   "speech_end_to_first_playback_ms": 11765.4,
+   "speech_end_to_answer_read_ms": 11679.9,
+   "speech_end_to_committed_ms": 2134.6,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord.  \nI am at your service\u2014please let me know what matter you would have me attend to."
+  },
+  {
+   "session": "Q-low session 24",
+   "phrase": "How is your night, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How is your night, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, the night has been quiet and orderly\u2014no urgent concerns have arisen that would require your attention. The hearth remains warm, and the study holds its silence until a task calls for it.",
+   "speech_end_to_first_playback_ms": 5318.0,
+   "speech_end_to_answer_read_ms": 5236.7,
+   "speech_end_to_committed_ms": 2015.8,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I have spent the morning in the study, attending to the day\u2011to\u2011day matters that keep our house running smoothly. It has been a quiet, productive time\u2014no surprises to report and no urgent concerns that require your attention."
+  },
+  {
+   "session": "Q-low session 24",
+   "phrase": "How's your evening going, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How's your evening going, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, this evening has been quiet and orderly\u2014no urgent matters have arisen that require your attention. The hearth remains warm, and the study holds its silence until a task calls for it.",
+   "speech_end_to_first_playback_ms": 7645.6,
+   "speech_end_to_answer_read_ms": 7513.2,
+   "speech_end_to_committed_ms": 2041.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, the night has been quiet and orderly\u2014no urgent concerns have arisen that would require your attention. The hearth remains warm, and the study holds its silence until a task calls for it."
+  },
+  {
+   "session": "Q-low session 25",
+   "phrase": "How are you tonight, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How are you tonight, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am in good stead, ready to attend to whatever the house requires.",
+   "speech_end_to_first_playback_ms": 9432.7,
+   "speech_end_to_answer_read_ms": 8913.0,
+   "speech_end_to_committed_ms": 2234.2,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 25",
+   "phrase": "Nothing much tonight, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Nothing much tonight, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Understood, my lord. If any matter comes to your attention, I remain at the desk and ready to advise.",
+   "speech_end_to_first_playback_ms": 6815.9,
+   "speech_end_to_answer_read_ms": 6580.1,
+   "speech_end_to_committed_ms": 2106.1,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am in good stead, ready to attend to whatever the house requires."
+  },
+  {
+   "session": "Q-low session 25",
+   "phrase": "I'm home, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "I'm home, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am at the desk, ready to attend to any matter you wish to discuss.",
+   "speech_end_to_first_playback_ms": 10992.3,
+   "speech_end_to_answer_read_ms": 10745.8,
+   "speech_end_to_committed_ms": 2067.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Understood, my lord. If any matter comes to your attention, I remain at the desk and ready to advise."
+  },
+  {
+   "session": "Q-low session 25",
+   "phrase": "The evening is pleasant out.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "The evening is pleasant out.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I note the pleasant weather outside.",
+   "speech_end_to_first_playback_ms": 5842.8,
+   "speech_end_to_answer_read_ms": 5436.9,
+   "speech_end_to_committed_ms": 2091.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am at the desk, ready to attend to any matter you wish to discuss."
+  },
+  {
+   "session": "Q-low session 26",
+   "phrase": "I'm back, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "I'm back, Vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. How may I attend to your needs today?",
+   "speech_end_to_first_playback_ms": 9038.4,
+   "speech_end_to_answer_read_ms": 8483.6,
+   "speech_end_to_committed_ms": 2142.2,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 26",
+   "phrase": "Good to be home, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Good to be home, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am at your service in the study; how may I attend to you today?",
+   "speech_end_to_first_playback_ms": 8770.2,
+   "speech_end_to_answer_read_ms": 8512.3,
+   "speech_end_to_committed_ms": 2067.3,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I attend to your needs today?"
+  },
+  {
+   "session": "Q-low session 26",
+   "phrase": "It's a cold night tonight.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "It's a cold night tonight.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "It is indeed a biting chill, my lord. The hearth in the study will keep us warm\u2014if you wish, I can tend it now, or perhaps a hot tea would be more comforting. What shall you prefer?",
+   "speech_end_to_first_playback_ms": 7198.2,
+   "speech_end_to_answer_read_ms": 7219.3,
+   "speech_end_to_committed_ms": 2118.8,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am at your service in the study; how may I attend to you today?"
+  },
+  {
+   "session": "Q-low session 26",
+   "phrase": "I'm tired this evening, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "I'm tired this evening, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I note your fatigue; there is no volume on personal exhaustion in the House\u2019s records, but I can attend to your comfort. A cup of tea or a brief rest by the hearth would be my suggestion\u2014whichever you prefer.",
+   "speech_end_to_first_playback_ms": 8108.5,
+   "speech_end_to_answer_read_ms": 8293.4,
+   "speech_end_to_committed_ms": 2087.7,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "It is indeed a biting chill, my lord. The hearth in the study will keep us warm\u2014if you wish, I can tend it now, or perhaps a hot tea would be more comforting. What shall you prefer?"
+  },
+  {
+   "session": "Q-low session 27",
+   "phrase": "A long week, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "A long week, Vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. Indeed it has been a long week for our house. May I review the matters that have arisen and determine what requires your attention first?",
+   "speech_end_to_first_playback_ms": 13162.4,
+   "speech_end_to_answer_read_ms": 12903.7,
+   "speech_end_to_committed_ms": 2250.6,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 27",
+   "phrase": "Just saying hello, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Just saying hello, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. Indeed it has been a long week for our house. May I review the matters that have arisen and determine what requires your attention first?",
+   "speech_end_to_first_playback_ms": 7974.4,
+   "speech_end_to_answer_read_ms": 7778.8,
+   "speech_end_to_committed_ms": 2075.3,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. Indeed it has been a long week for our house. May I review the matters that have arisen and determine what requires your attention first?"
+  },
+  {
+   "session": "Q-low session 27",
+   "phrase": "It's raining here tonight.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "It's raining here tonight.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I note that it is raining here tonight. If the weather affects any of the house\u2019s affairs\u2014deliveries, field work, or other matters\u2014please let me know how I may assist.",
+   "speech_end_to_first_playback_ms": 10367.8,
+   "speech_end_to_answer_read_ms": 10404.1,
+   "speech_end_to_committed_ms": 2115.9,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. Indeed it has been a long week for our house. May I review the matters that have arisen and determine what requires your attention first?"
+  },
+  {
+   "session": "Q-low session 27",
+   "phrase": "Same as ever, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Same as ever, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I remain as devoted to the house\u2019s legacy as ever. How may I assist you further tonight?",
+   "speech_end_to_first_playback_ms": 8391.7,
+   "speech_end_to_answer_read_ms": 8172.9,
+   "speech_end_to_committed_ms": 2100.8,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I note that it is raining here tonight. If the weather affects any of the house\u2019s affairs\u2014deliveries, field work, or other matters\u2014please let me know how I may assist."
+  },
+  {
+   "session": "Q-low session 28",
+   "phrase": "How are you, Val? || I'm well myself.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "How are you, Val? I'm well myself.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I am at the study, ready to attend to your needs. How may I assist?",
+   "speech_end_to_first_playback_ms": 7800.6,
+   "speech_end_to_answer_read_ms": 7363.0,
+   "speech_end_to_committed_ms": 2031.3,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 28",
+   "phrase": "Just passing through, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "just passing through, vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. How may I assist you?",
+   "speech_end_to_first_playback_ms": 5628.7,
+   "speech_end_to_answer_read_ms": 5155.3,
+   "speech_end_to_committed_ms": 2064.7,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I am at the study, ready to attend to your needs. How may I assist?"
+  },
+  {
+   "session": "Q-low session 28",
+   "phrase": "Is everything well with you, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Is everything well with you, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. All is as expected. How may I attend to your needs?",
+   "speech_end_to_first_playback_ms": 7463.1,
+   "speech_end_to_answer_read_ms": 7024.9,
+   "speech_end_to_committed_ms": 2692.0,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I assist you?"
+  },
+  {
+   "session": "Q-low session 28",
+   "phrase": "Wonderful.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Wonderful!",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I am at the study, ready to assist.",
+   "speech_end_to_first_playback_ms": 7338.1,
+   "speech_end_to_answer_read_ms": 6849.7,
+   "speech_end_to_committed_ms": 2126.4,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. All is as expected. How may I attend to your needs?"
+  },
+  {
+   "session": "Q-low session 29",
+   "phrase": "It's dark out, Val.",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "It's dog out, Val.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. I see the dog is outside. Is there anything you would like me to attend to regarding that?",
+   "speech_end_to_first_playback_ms": 11746.6,
+   "speech_end_to_answer_read_ms": 11363.8,
+   "speech_end_to_committed_ms": 2080.7,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "Q-low session 29",
+   "phrase": "Everything all right, Val?",
+   "group": "ineligible",
+   "group_origin": "tier_2",
+   "transcript": "Everything alright, Val?",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. The dog is outside; I have noted the situation. Do you wish me to bring it indoors, monitor its activity from the study, or address any concern that may arise from its presence?",
+   "speech_end_to_first_playback_ms": 6018.2,
+   "speech_end_to_answer_read_ms": 6053.8,
+   "speech_end_to_committed_ms": 2076.5,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. I see the dog is outside. Is there anything you would like me to attend to regarding that?"
+  }
+ ]
+}

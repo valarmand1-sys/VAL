@@ -112,6 +112,17 @@ _OPEN_QUESTION = re.compile(
     r"(\?\s*$|\b(?:shall i|would you like|do you want|may i|should i|which|whether)\b)",
     re.IGNORECASE,
 )
+#: How her last answer may have left an action unresolved: she said what she will, can
+#: or cannot do about something he asked for. A greeting or farewell spoken into that
+#: context is a pending-action context (owner order of 26 September 2026, §2 and §8 —
+#: the LOW correction-preservation class as a routing guard): found in the Tier-1
+#: qualification run, where "Talk soon, Val." after "I will record the intent" drew
+#: "Understood. I will proceed accordingly." from the light route.
+_UNRESOLVED_ACTION = re.compile(
+    r"\bi(?:'ll| will| shall| can| could| cannot| can't| am unable| am not able| have noted| "
+    r"will record| will draft| will prepare| will proceed)\b",
+    re.IGNORECASE,
+)
 
 MAX_WORDS = 12
 
@@ -200,6 +211,19 @@ def decide(text: str, state: ConversationState, tiers: frozenset[int]) -> RouteD
     sentences = _sentences(stripped)
     if not sentences:
         return RouteDecision(None, "nothing said")
+    # Owner order of 26 September 2026 ("COMPARE EXISTING TIER-1 OPTIONS", §2): a turn
+    # spoken while her last answer left a question or an offer open is a pending-action
+    # context whatever its wording — "thank you" after "shall I send it?" leaves the
+    # matter live — and stays on ordinary MEDIUM. Narrower than before (the rule applied
+    # to acknowledgements only); nothing is admitted by it.
+    # Read over the whole of her last answer, not its last sentence alone: the four-way
+    # comparison of 26 September 2026 (case d15) found an answer that listed the
+    # questions it needed answered, numbered, with no question mark at its end.
+    previous = state.previous_answer or ""
+    if previous and ("?" in previous or _OPEN_QUESTION.search(previous)):
+        return RouteDecision(None, "her last answer left a question or an offer open")
+    if previous and _UNRESOLVED_ACTION.search(previous):
+        return RouteDecision(None, "her last answer left an action unresolved")
     highest = 0
     for sentence in sentences:
         tier, reason = classify_sentence(sentence)
@@ -207,11 +231,6 @@ def decide(text: str, state: ConversationState, tiers: frozenset[int]) -> RouteD
             return RouteDecision(None, reason)
         if "?" in sentence and not _PLEASANTRY_QUESTION.match(_core(sentence)):
             return RouteDecision(None, "a question outside the admitted pleasantries")
-        if reason == "acknowledgement":
-            previous = state.previous_answer or ""
-            last = _sentences(previous)[-1] if _sentences(previous) else previous
-            if previous and _OPEN_QUESTION.search(last):
-                return RouteDecision(None, "answers a question she left open")
         highest = max(highest, tier)
     if highest not in tiers:
         return RouteDecision(None, f"tier {highest} is not enabled")

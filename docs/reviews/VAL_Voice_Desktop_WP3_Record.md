@@ -1156,3 +1156,65 @@ candidate, or a ruling on how the envelope reaches a small model); adaptive
 completion's trade; interruption policy (§24); a second resident model at that memory.
 
 ---
+
+## 27. Handoff — Tier 1: the existing options compared, GPT-OSS at LOW with a Core-owned request qualified in isolation, 26 September 2026
+
+**WP3 remains PARTIAL. Nothing deployed; production admission is his.** Record:
+`docs/reviews/qualification/runs/2026-09-26-redesign/TIER1_COMPARISON.md` (evidence
+index §114). Owner order "COMPARE EXISTING TIER-1 OPTIONS, THEN QUALIFY THE BEST
+CONFIGURATION". Production verified: service still on `13b3cb8`'s code (process 50184),
+live store `0031`, no switches, desktop `13b3cb8`, production Voice unused throughout.
+
+**Coverage (read-only, model-free):** 27 owner-spoken turns, 24–26 September, 20 of
+them in diagnostic conversations; tier 1 = 7 (26%), tier 2 = 0, substantive = 20; in
+the 7 ordinary-use turns, 4 are tier 1. Three days of voice-mode building, not his
+habits. Recorded waits: tier 1 ~10 s, substantive ~12 s median where a timeline exists.
+
+**The Core-owned Tier-1 request** (`val_gateway/tier1.py`): persona whole; the last
+exchange; a reduced state block that says what it omits (recall not run, history
+beyond the last exchange unseen, no media); Core's contract for the turn (answer the
+social utterance directly, one short answer in her manner, persona examples are not
+facts or text, invent nothing, no filler); his words. Eligibility read from the full
+state before projection: any question or offer in her last answer, any unresolved
+action she named, a corrected previous message, or no readable answer → MEDIUM. A
+Tier-1 answer is delivered whole after completion; a cap hit or empty answer falls
+back to MEDIUM exactly once before a word is shown.
+
+**Four-way comparison (30 cases, every answer read):** A ordinary MEDIUM re-spoke a
+whole previous answer to "Thank you"; B MEDIUM + Tier-1 answers well but keeps ~150–400
+tokens of hidden reasoning (9 s, no gain); **C LOW + Tier-1: no persona echo, no
+repetition, no invention, one wrong-turn recap, ~32 tokens**; D Qwen3-4B + Tier-1 fast
+but invents (6/23). **C selected.**
+
+**LOW at the boundary:** the wire carries `reasoning_effort: low`; the runtime renders
+`Reasoning: low` before the persona (first differing byte 148; persona bytes identical),
+LOW's hidden reasoning is one line; LOW and MEDIUM prefixes **coexist** in the runtime's
+cache (69 predictions attributed by `lms log stream`: MEDIUM after LOW = MEDIUM after
+MEDIUM, 0.2–1.3 s to first token; the 7 s persona prefill never recurred after each
+effort's first prime); every substantive request rendered MEDIUM. Prime plan now keyed
+by effort (defect fixed).
+
+**Qualification of C (29 sessions, 114 turns, real recognition, Qwen unloaded, fixed
+window, no speculation):** 0 substantive false positives in 80 must-stay-MEDIUM turns;
+21/34 tier-1 on the route, 13 safe false negatives (6 recognition, 7 rule/guard);
+speech end → first audio **4.80 s median, p90 5.37, max 5.44** on the route (MEDIUM on the
+same phrases 8.50 s); owner message visible → first audio 2.70 s (MEDIUM 6.53). 17/21
+answers right and in her manner, 2 off-register, **2 wrong-turn answers in
+pending-action contexts** ("Talk soon, Val." after "I will record the intent" →
+"Understood. I will proceed accordingly.") → an unresolved-action guard added
+afterwards, evaluated offline: both routed MEDIUM, coverage 15/34. **The ~1 s target is
+not met**: 2.2 s of every turn is the endpoint and the fixed window (held steady), the
+route itself ~2.7 s.
+
+**Speculation:** ~0.9 s gain on greetings, but a discarded preparation cannot be
+cancelled at the engine and delayed a corrected substantive request by ~1 s on the
+shared lane → **left disabled**. **Resources:** no substantive regression (−0.23 s),
+no swap growth, memory flat; the one cost is a second cold prime per session (6.5–7 s,
+between turns, an arriving utterance waits behind it). Offline: loopback only, and the
+service ran under a sandbox denying non-loopback network (record §9).
+
+**Recommendation (his to take):** `VAL_FAST_ROUTE_TIERS=1`, `VAL_TIER1_ROUTE=low`,
+speculation and adaptive completion off, migration `0032` applied live; rollback is
+removing the two settings. Not an admission of LOW.
+
+---

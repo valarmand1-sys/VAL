@@ -1,0 +1,180 @@
+{
+ "trials": 3,
+ "wire": {
+  "low": {
+   "model": "openai/gpt-oss-20b",
+   "max_tokens": 1024,
+   "reasoning_effort": "low"
+  },
+  "medium": {
+   "model": "openai/gpt-oss-20b",
+   "max_tokens": 1024,
+   "reasoning_effort": "medium"
+  }
+ },
+ "rendered_log_entries": {
+  "low_tier1": 2,
+  "medium_ordinary": 2
+ },
+ "prime": {
+  "primed": true,
+  "outcome": "established",
+  "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+  "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+  "boundary_tokens": 5048,
+  "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+  "prime_tokens": 5059,
+  "model_call_id": "01a0dfaa-3695-7b25-8c85-fb033d057a85",
+  "seconds": 6.379,
+  "light": {
+   "primed": true,
+   "outcome": "established",
+   "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+   "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+   "boundary_tokens": 5048,
+   "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+   "prime_tokens": 5059,
+   "model_call_id": "01a0dfaa-504a-7d6b-97e4-9d61b43c23f5",
+   "seconds": 6.408
+  }
+ },
+ "first_event_ms": {
+  "medium_fresh_after_prime": {
+   "samples": [
+    [
+     4949.2,
+     "conversation@3f9c1d70 latency 7464 ms"
+    ],
+    [
+     5029.5,
+     "conversation@3f9c1d70 latency 7270 ms"
+    ],
+    [
+     6592.0,
+     "conversation@3f9c1d70 latency 11659 ms"
+    ]
+   ],
+   "median": 5029.5
+  },
+  "low_tier1_after_prime": {
+   "samples": [
+    [
+     1501.3,
+     "light_conversation@de3c53f0 latency 1446 ms"
+    ],
+    [
+     702.1,
+     "light_conversation@de3c53f0 latency 643 ms"
+    ],
+    [
+     1818.1,
+     "light_conversation@de3c53f0 latency 1754 ms"
+    ]
+   ],
+   "median": 1501.3
+  },
+  "medium_fresh_after_low_no_reprime": {
+   "samples": [
+    [
+     5079.6,
+     "conversation@3f9c1d70 latency 7958 ms"
+    ],
+    [
+     6943.4,
+     "conversation@3f9c1d70 latency 11770 ms"
+    ],
+    [
+     7009.6,
+     "conversation@3f9c1d70 latency 9512 ms"
+    ]
+   ],
+   "median": 6943.4
+  },
+  "medium_tier1_after_prime": {
+   "samples": [
+    [
+     5571.9,
+     "conversation@3f9c1d70 latency 5544 ms"
+    ],
+    [
+     6945.6,
+     "conversation@3f9c1d70 latency 6931 ms"
+    ],
+    [
+     3935.6,
+     "conversation@3f9c1d70 latency 3906 ms"
+    ]
+   ],
+   "median": 5571.9
+  },
+  "medium_fresh_after_medium_tier1_no_reprime": {
+   "samples": [
+    [
+     4407.1,
+     "conversation@3f9c1d70 latency 7752 ms"
+    ],
+    [
+     4310.3,
+     "conversation@3f9c1d70 latency 7740 ms"
+    ],
+    [
+     4277.2,
+     "conversation@3f9c1d70 latency 7421 ms"
+    ]
+   ],
+   "median": 4310.3
+  }
+ },
+ "primes": [
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  },
+  {
+   "outcome": "established",
+   "boundary_tokens": 5048,
+   "light": "established"
+  }
+ ]
+}

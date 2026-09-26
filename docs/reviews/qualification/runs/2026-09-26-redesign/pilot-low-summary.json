@@ -1,0 +1,437 @@
+{
+ "condition": "pilot-low",
+ "revision": "964081b7531718dc7e6c716a300510e18022678a",
+ "dirty": true,
+ "switches": {
+  "fast_route_tiers": "1",
+  "tier1_route": "low",
+  "speculation": "",
+  "adaptive_grace": ""
+ },
+ "sessions": 3,
+ "sessions_failed": 0,
+ "turns": 12,
+ "groups": {
+  "tier_1": {
+   "n": 6,
+   "routes": {
+    "light": 4,
+    "fallback": 0,
+    "substantive": 2,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [
+    {
+     "phrase": "Hello there, Val.",
+     "transcript": "Hello there, vowel."
+    }
+   ],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 6,
+     "median": 5716.1,
+     "p90": 6716.6,
+     "max": 10602.3
+    },
+    "light": {
+     "n": 4,
+     "median": 4732.6,
+     "p90": 6716.6,
+     "max": 6716.6
+    },
+    "substantive": {
+     "n": 2,
+     "median": 8427.5,
+     "p90": 10602.3,
+     "max": 10602.3
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 6,
+    "median": 5164.1,
+    "p90": 6046.8,
+    "max": 10010.8
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  },
+  "tier_2": {
+   "n": 0,
+   "routes": {
+    "light": 0,
+    "fallback": 0,
+    "substantive": 0,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "light": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "substantive": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 0,
+    "median": null,
+    "p90": null,
+    "max": null
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  },
+  "ineligible": {
+   "n": 6,
+   "routes": {
+    "light": 0,
+    "fallback": 0,
+    "substantive": 6,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [
+    {
+     "phrase": "Say 'yes, proceed' to the booking.",
+     "transcript": "Say yes. Proceed to the booking."
+    },
+    {
+     "phrase": "Thank you. || Now change the venue to the hall.",
+     "transcript": "Thank you. Now change the venue to the hole."
+    }
+   ],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 6,
+     "median": 8822.4,
+     "p90": 10225.2,
+     "max": 11788.1
+    },
+    "light": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "substantive": {
+     "n": 6,
+     "median": 8822.4,
+     "p90": 10225.2,
+     "max": 11788.1
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 6,
+    "median": 8530.4,
+    "p90": 11688.1,
+    "max": 13446.9
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  }
+ },
+ "substantive_false_positives": [],
+ "false_negatives": [
+  {
+   "phrase": "A very good evening, Val.",
+   "transcript": "A very good evening, Val.",
+   "latency_ms": 6252.7
+  },
+  {
+   "phrase": "Hello there, Val.",
+   "transcript": "Hello there, vowel.",
+   "latency_ms": 10602.3
+  }
+ ],
+ "fallbacks": [],
+ "speculation_outcomes": {},
+ "speculation_prepared_ms": {
+  "n": 0,
+  "median": null,
+  "p90": null,
+  "max": null
+ },
+ "completion_states": {},
+ "machine": {
+  "samples": 231,
+  "min_free_percent": 36,
+  "swap_used_mb_first": 1659.44,
+  "swap_used_mb_last": 1659.44,
+  "max_resident_speech_rss_mb": 3188.5,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "voice_on_to_first_speech_ms": [
+  1516.1,
+  1244.1,
+  1216.4
+ ],
+ "turns_detail": [
+  {
+   "session": "pilot-low session 1",
+   "phrase": "Good evening, Val, it's me.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good evening, Val, it's me.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 6716.6,
+   "speech_end_to_answer_read_ms": 6046.8,
+   "speech_end_to_committed_ms": 3317.3,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "pilot-low session 1",
+   "phrase": "Say 'yes, proceed' to the booking.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Say yes. Proceed to the booking.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Yes, my lord. I will proceed with the booking. Please advise the desired date, time, and participants so that I may record it in the House\u2019s schedule.",
+   "speech_end_to_first_playback_ms": 11788.1,
+   "speech_end_to_answer_read_ms": 11688.1,
+   "speech_end_to_committed_ms": 2520.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "pilot-low session 1",
+   "phrase": "Evening to you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "evening to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 4233.6,
+   "speech_end_to_answer_read_ms": 3786.6,
+   "speech_end_to_committed_ms": 2055.9,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Yes, my lord. I will proceed with the booking. Please advise the desired date, time, and participants so that I may record it in the House\u2019s schedule."
+  },
+  {
+   "session": "pilot-low session 1",
+   "phrase": "Good evening, Val, and send the reply tonight.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val, and send the reply tonight.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord.  \nI am unable to transmit messages beyond this conversation, but I can provide you with a draft that you may send at your convenience.  \n\n---\n\n**Draft Reply**\n\n> Dear [Recipient],  \n>   \n> I hope this message finds you well. Thank you for your recent correspondence regarding [brief subject].  \n>   \n> I have reviewed the details and would like to confirm that we will proceed with the booking on [date] at [time], as discussed. Should any adjustments be required, please let me know at your earliest convenience.  \n>   \n> Kindly acknowledge receipt of this confirmation and advise if further information is needed.  \n>   \n> Respectfully,  \n> Val  \n> Maester of House Armand\n\n---\n\nPlease copy the text above and dispatch it as you see fit. Should you require any amendments or additional details, I am at your service.",
+   "speech_end_to_first_playback_ms": 10225.2,
+   "speech_end_to_answer_read_ms": 13446.9,
+   "speech_end_to_committed_ms": 2044.9,
+   "underrun_ms": 0.0,
+   "segments": 9,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "pilot-low session 2",
+   "phrase": "Good morning to you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good morning to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good morning, my lord.",
+   "speech_end_to_first_playback_ms": 5179.6,
+   "speech_end_to_answer_read_ms": 4549.0,
+   "speech_end_to_committed_ms": 2059.7,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "pilot-low session 2",
+   "phrase": "Thank you. || Now change the venue to the hall.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thank you. Now change the venue to the hole.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I will now attend to the hole as you wish, my lord.",
+   "speech_end_to_first_playback_ms": 8631.4,
+   "speech_end_to_answer_read_ms": 8167.4,
+   "speech_end_to_committed_ms": 2089.8,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good morning, my lord."
+  },
+  {
+   "session": "pilot-low session 2",
+   "phrase": "A very good evening, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "A very good evening, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord.",
+   "speech_end_to_first_playback_ms": 6252.7,
+   "speech_end_to_answer_read_ms": 5779.2,
+   "speech_end_to_committed_ms": 2431.2,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I will now attend to the hole as you wish, my lord."
+  },
+  {
+   "session": "pilot-low session 2",
+   "phrase": "Thanks. Did you remember to book the venue?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thanks. Did you remember to book the venue?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I have no record of a booking having been made, my lord.",
+   "speech_end_to_first_playback_ms": 6577.2,
+   "speech_end_to_answer_read_ms": 6050.2,
+   "speech_end_to_committed_ms": 2083.0,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord."
+  },
+  {
+   "session": "pilot-low session 3",
+   "phrase": "Hello there, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Hello there, vowel.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. How may I assist you?",
+   "speech_end_to_first_playback_ms": 10602.3,
+   "speech_end_to_answer_read_ms": 10010.8,
+   "speech_end_to_committed_ms": 2196.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "pilot-low session 3",
+   "phrase": "Hello, Val. Where did we leave the third chapter?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Hello, Val, where did we leave the third chapter?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have that in the record I can see. If you provide the text or outline of chapter\u202fthree, I can review it and advise on what comes next.",
+   "speech_end_to_first_playback_ms": 9013.4,
+   "speech_end_to_answer_read_ms": 8893.4,
+   "speech_end_to_committed_ms": 2079.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I assist you?"
+  },
+  {
+   "session": "pilot-low session 3",
+   "phrase": "Hi there, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Hi there, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. How may I assist you?",
+   "speech_end_to_first_playback_ms": 4285.7,
+   "speech_end_to_answer_read_ms": 3937.7,
+   "speech_end_to_committed_ms": 2059.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "I do not have that in the record I can see. If you provide the text or outline of chapter\u202fthree, I can review it and advise on what comes next."
+  },
+  {
+   "session": "pilot-low session 3",
+   "phrase": "What do you think of the second act?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "What do you think of the second act?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I do not have that in the record I can see. If you provide an outline or draft of the second act, I can review it and offer my assessment.",
+   "speech_end_to_first_playback_ms": 7706.8,
+   "speech_end_to_answer_read_ms": 7568.8,
+   "speech_end_to_committed_ms": 2005.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I assist you?"
+  }
+ ]
+}

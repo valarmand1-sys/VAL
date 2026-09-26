@@ -16,6 +16,7 @@ Usage: summarise_qualification.py RESULT.json [RESULT.json ...]
 from __future__ import annotations
 
 import json
+import os
 import re
 import statistics
 import sys
@@ -41,8 +42,20 @@ def quantiles(values: list[float]) -> dict[str, float | int | None]:
     }
 
 
+#: Tier-1-only pass (owner order "COMPARE EXISTING TIER-1 OPTIONS", 26 September 2026):
+#: tier-2 phrases must stay on MEDIUM, so they are judged with the ineligible group.
+TIER1_ONLY = os.environ.get("SUMMARY_TIER1_ONLY") == "1"
+
+
 def summarise(path: Path) -> dict:
     report = json.loads(path.read_text())
+    if TIER1_ONLY:
+        for session in report["sessions"]:
+            for turn in session.get("turns", []):
+                if turn.get("group") == "tier_2":
+                    turn["group"] = "ineligible"
+                    turn["group_origin"] = "tier_2"
+    
     dialogue = report["dialogue"]
     by_conversation: dict[str, list[dict]] = {}
     for message in dialogue:
@@ -92,6 +105,7 @@ def summarise(path: Path) -> dict:
                     "session": session["label"],
                     "phrase": turn["phrase"],
                     "group": expected_group,
+                    "group_origin": turn.get("group_origin"),
                     "transcript": transcript,
                     "recognised_as_phrase": (
                         None if transcript is None else normalise(transcript) == normalise(turn["phrase"])
@@ -140,6 +154,7 @@ def summarise(path: Path) -> dict:
             },
             "speech_end_to_answer_read_ms": quantiles([t["speech_end_to_answer_read_ms"] for t in mine]),
             "underruns": sum(1 for t in mine if t["underrun_ms"] > 0),
+            "from_tier_2_phrases": sum(1 for t in mine if t.get("group_origin") == "tier_2"),
         }
     false_positives = [
         {"phrase": t["phrase"], "transcript": t["transcript"], "answer": t["answer"]}
@@ -149,6 +164,8 @@ def summarise(path: Path) -> dict:
         {"phrase": t["phrase"], "transcript": t["transcript"], "latency_ms": t["speech_end_to_first_playback_ms"]}
         for t in turns_out if t.get("group") in ("tier_1", "tier_2") and t.get("route") == "substantive"
     ]
+    if TIER1_ONLY:
+        report["tier1_only"] = True
     fallbacks = [t["phrase"] for t in turns_out if t.get("route") == "fallback"]
     preparations = report.get("preparations", [])
     outcomes: dict[str, int] = {}
@@ -164,6 +181,7 @@ def summarise(path: Path) -> dict:
         "dirty": report["dirty"],
         "switches": {
             "fast_route_tiers": report.get("fast_route_tiers"),
+            "tier1_route": report.get("tier1_route"),
             "speculation": report.get("speculation"),
             "adaptive_grace": report.get("adaptive_grace"),
         },

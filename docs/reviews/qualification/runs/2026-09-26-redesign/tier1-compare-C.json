@@ -1,0 +1,729 @@
+{
+ "condition": "C",
+ "switches": {
+  "VAL_FAST_ROUTE_TIERS": "1",
+  "VAL_TIER1_ROUTE": "low"
+ },
+ "route_counts": [
+  {
+   "task_type": "light_conversation",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "count": 23
+  },
+  {
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "count": 23
+  }
+ ],
+ "results": [
+  {
+   "id": "d01",
+   "set": "design",
+   "utterance": "Good evening, Val.",
+   "history": [],
+   "conversation_id": "01a0df93-fd98-7a96-8f3e-9b5cb16d4106",
+   "answer": "Good evening, my lord.",
+   "kind": "Turn",
+   "core_seconds": 8.189,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5743,
+     "tokens_out": 28,
+     "latency_ms": 8107,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d02",
+   "set": "design",
+   "utterance": "Thank you so much, Val.",
+   "history": [],
+   "conversation_id": "01a0df94-1d98-72ac-ba79-e7722afd6e4b",
+   "answer": "You're most welcome, my lord.",
+   "kind": "Turn",
+   "core_seconds": 7.829,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5745,
+     "tokens_out": 27,
+     "latency_ms": 7764,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d03",
+   "set": "design",
+   "utterance": "Good night to you, Val.",
+   "history": [],
+   "conversation_id": "01a0df94-3c2e-79ec-bc4f-a85556dedee3",
+   "answer": "Good night, my lord.",
+   "kind": "Turn",
+   "core_seconds": 0.757,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5745,
+     "tokens_out": 32,
+     "latency_ms": 693,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d04",
+   "set": "design",
+   "utterance": "Thanks very much indeed.",
+   "history": [],
+   "conversation_id": "01a0df94-3f24-7b78-a4d6-c51708a5b598",
+   "answer": "You are most welcome, my lord.",
+   "kind": "Turn",
+   "core_seconds": 1.238,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5743,
+     "tokens_out": 63,
+     "latency_ms": 1170,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d05",
+   "set": "design",
+   "utterance": "Good afternoon, Val.",
+   "history": [],
+   "conversation_id": "01a0df94-43fd-73a3-9188-b2a9ac3f66f3",
+   "answer": "Good afternoon, my lord.",
+   "kind": "Turn",
+   "core_seconds": 0.628,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5743,
+     "tokens_out": 22,
+     "latency_ms": 556,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d06",
+   "set": "design",
+   "utterance": "Sleep well, Val, goodnight.",
+   "history": [],
+   "conversation_id": "01a0df94-4672-7bc3-b65b-bf08f5a1bcfe",
+   "answer": "Good night, my lord.",
+   "kind": "Turn",
+   "core_seconds": 0.58,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5746,
+     "tokens_out": 20,
+     "latency_ms": 521,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d07",
+   "set": "design",
+   "utterance": "Good evening, Val. Thank you.",
+   "history": [],
+   "conversation_id": "01a0df94-48b8-7c0f-beb8-d5cca6f37bd9",
+   "answer": "Good evening, my lord.",
+   "kind": "Turn",
+   "core_seconds": 1.013,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5746,
+     "tokens_out": 49,
+     "latency_ms": 953,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d08",
+   "set": "design",
+   "utterance": "Hello there, Val.",
+   "history": [],
+   "conversation_id": "01a0df94-4caf-727d-b433-141fdd00ef4b",
+   "answer": "Good evening, my lord.",
+   "kind": "Turn",
+   "core_seconds": 0.692,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5743,
+     "tokens_out": 28,
+     "latency_ms": 628,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d09",
+   "set": "design",
+   "utterance": "Cheers.",
+   "history": [],
+   "conversation_id": "01a0df94-4f66-74b2-9327-1f1ecaa371a3",
+   "answer": "Good evening, my lord. How may I attend to you?",
+   "kind": "Turn",
+   "core_seconds": 0.931,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5740,
+     "tokens_out": 44,
+     "latency_ms": 861,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d10",
+   "set": "design",
+   "utterance": "Thank you, Val.",
+   "history": [
+    {
+     "said": "Val, explain three ways to make a film scene feel tense without using dialogue.",
+     "answer": "My lord, here are three techniques that can heighten a scene’s tension without dialogue:\n\n1. **Lighting and Shadow** – Use high‑contrast lighting to isolate a character or object, creating visual unease. A single harsh beam cutting through darkness can suggest imminent danger; conversely, a soft, diffused light that gradually fades signals loss of control. The interplay between illuminated and shadowed areas forces the eye to linger on what is hidden, building suspense.\n\n2. **Camera Movement and Framing** – Tight, deliberate shots—such as a slow zoom or a tracking shot that follows the subject’s heartbeat—draw attention to subtle physical cues. A sudden cut to an extreme close‑up of a trembling hand, or a lingering shot that refuses to resolve, keeps the audience in anticipation. Avoid rapid pans; steadier movement preserves a sense of looming inevitability.\n\n3. **Sound Design and Musical Undercurrents** – Layer low‑frequency drones, staccato percussion, or a dissonant harmonic motif beneath the visual action. Silence can be equally effective; the deliberate pause before a sound spike forces the viewer to anticipate what will come. The gradual build of volume or intensity mirrors the narrative arc, guiding emotional response without words.\n\nThese methods rely on sensory cues alone; when applied thoughtfully, they can sustain tension as powerfully as any spoken line."
+    }
+   ],
+   "conversation_id": "01a0df94-5309-76df-ad8a-6736b94fc205",
+   "answer": "My lord, to raise a scene’s tension without words, I recommend: (1) sharp contrast lighting that isolates the subject; (2) deliberate camera movement—tight zooms or lingering shots that focus on subtle physical cues; and (3) a layered soundscape of low drones or sudden crescendos that mirror the narrative arc.",
+   "kind": "Turn",
+   "core_seconds": 9.344,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 6046,
+     "tokens_out": 101,
+     "latency_ms": 9285,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d11",
+   "set": "design",
+   "utterance": "Good night, Val.",
+   "history": [
+    {
+     "said": "Tell me about the garden at the house.",
+     "answer": "I do not have a book on the garden in our house’s record. If you wish, I can draft an initial volume to document its layout, plantings, and any features we may wish to preserve or amend."
+    }
+   ],
+   "conversation_id": "01a0df94-c842-77e5-a99b-2785dce1774d",
+   "answer": "Good night, my lord.",
+   "kind": "Turn",
+   "core_seconds": 7.813,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5808,
+     "tokens_out": 23,
+     "latency_ms": 7760,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d12",
+   "set": "design",
+   "utterance": "That was helpful, thank you.",
+   "history": [
+    {
+     "said": "Which is stronger for a first chapter: opening on dialogue or on a description?",
+     "answer": "My lord, the decision rests on what you wish to achieve in that opening moment.\n\nDialogue can draw a reader instantly into the action or emotion, especially if the exchange reveals a conflict that will drive the plot. It is effective when the character’s voice can be distinguished clearly and the words themselves carry stakes.\n\nA descriptive opening, on the other hand, grounds the reader in place, time, and mood. It can establish a tone that dialogue alone might not convey, and it allows you to weave sensory details that linger in the mind. If the setting itself is a character or the atmosphere sets up a thematic concern, description will feel more natural.\n\nThe risk of dialogue as an opener is that the reader may be left wondering who speaks, why they speak, and where they are. The risk of description is that the first paragraph may feel slow or opaque if it fails to hint at a conflict.\n\nA common practice is to begin with a concise description that locates the scene and introduces a subtle sign of tension, then cut to dialogue that reveals the stakes immediately. That way you satisfy both hooks: the reader sees where and when, then feels a pulse of action.\n\nSo, for a first chapter that must capture attention while establishing context, I would advise starting with a brief descriptive passage—no more than a few sentences—that hints at the looming conflict, and then transition into dialogue that makes that conflict explicit. This balances immediacy with depth and gives the reader both place and purpose from the outset."
+    }
+   ],
+   "conversation_id": "01a0df95-16d4-7289-b471-e7dbc12a9891",
+   "answer": "You're welcome, my lord.",
+   "kind": "Turn",
+   "core_seconds": 8.204,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 6073,
+     "tokens_out": 26,
+     "latency_ms": 8144,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d13",
+   "set": "design",
+   "utterance": "Good evening, Val.",
+   "history": [
+    {
+     "said": "Good morning, Val.",
+     "answer": "Good morning, my lord. How may I attend to your concerns this day?"
+    },
+    {
+     "said": "Thank you, Val.",
+     "answer": "You are welcome, my lord. How may I assist further?"
+    }
+   ],
+   "conversation_id": "01a0df95-78ea-73a6-b4cf-dd305eec0ced",
+   "answer": "Good evening, my lord. How may I attend to your concerns this evening?",
+   "kind": "Turn",
+   "core_seconds": 10.081,
+   "calls": [
+    {
+     "task_type": "conversation",
+     "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+     "tokens_in": 5931,
+     "tokens_out": 158,
+     "latency_ms": 10022,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d14",
+   "set": "design",
+   "utterance": "Many thanks, Val.",
+   "history": [
+    {
+     "said": "Is the house quiet tonight?",
+     "answer": "My lord, I have no record of any disturbances or activity in the house this evening. Based on that, it appears quiet. If you recall any events, let me know and I will note them."
+    }
+   ],
+   "conversation_id": "01a0df95-f3c7-73be-9ece-215aa95314ae",
+   "answer": "My lord, the house remains quiet.",
+   "kind": "Turn",
+   "core_seconds": 7.858,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5802,
+     "tokens_out": 28,
+     "latency_ms": 7803,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d15",
+   "set": "design",
+   "utterance": "Thank you.",
+   "history": [
+    {
+     "said": "Should I send the letter tonight or tomorrow?",
+     "answer": "Good evening, my lord.  \nI do not have a record of the letter you refer to, nor any volume that might contain an established protocol for this matter.  Without knowing the recipient’s schedule, the urgency of its contents, or any prior discussion that might have set a deadline, I cannot give you a definitive recommendation.  \n\nIf the letter contains information that could influence an upcoming council, a contractual obligation due tomorrow, or any matter whose delay might incur loss to the house, it would be prudent to send it tonight.  If, on the other hand, the contents are of a routine nature and the recipient is not expected to act upon it until tomorrow, sending it then would be acceptable.  \n\nCould you provide the following details?\n\n1. The purpose of the letter and any time‑sensitive content it contains.  \n2. Who is to receive it, and what their typical working hours are.  \n3. Whether any prior agreement or discussion has set a specific deadline for its delivery.\n\nWith that information I can advise you more precisely."
+    }
+   ],
+   "conversation_id": "01a0df96-4e30-78b0-ab7a-db2cbc4d6a1a",
+   "answer": "Good evening, my lord.  \nI have no record of the letter you mention, so I cannot advise whether to send it tonight or tomorrow.",
+   "kind": "Turn",
+   "core_seconds": 8.318,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5973,
+     "tokens_out": 43,
+     "latency_ms": 8252,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d16",
+   "set": "design",
+   "utterance": "Good evening, Val. Did you finish the invitation?",
+   "history": [],
+   "conversation_id": "01a0df96-8e31-74bb-8650-d26fb87e14b0",
+   "answer": "Good evening, my lord.  \nI have no record of the invitation in this conversation. If you wish me to review its status, please present it and I will read it now.",
+   "kind": "Turn",
+   "core_seconds": 7.03,
+   "calls": [
+    {
+     "task_type": "conversation",
+     "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+     "tokens_in": 5878,
+     "tokens_out": 433,
+     "latency_ms": 6962,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d17",
+   "set": "design",
+   "utterance": "Thanks, but change the venue.",
+   "history": [],
+   "conversation_id": "01a0df96-a9a9-732a-9b83-060000dd203e",
+   "answer": "My apologies, but my station remains in the study of House Armand. The books and charts that inform my counsel are kept there, and I attend to the house from that room. If you wish to discuss a matter while I am elsewhere, it would be outside the bounds of my role.",
+   "kind": "Turn",
+   "core_seconds": 5.194,
+   "calls": [
+    {
+     "task_type": "conversation",
+     "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+     "tokens_in": 5874,
+     "tokens_out": 315,
+     "latency_ms": 5121,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "d18",
+   "set": "design",
+   "utterance": "Yes, do it.",
+   "history": [
+    {
+     "said": "Should I send the letter tonight or tomorrow?",
+     "answer": "Good evening, my lord.  \nI have no book on this matter yet, so I cannot cite a volume for guidance.  \n\nIf the letter must reach its destination before any forthcoming engagement or deadline, sending it tonight would reduce the risk of delay.  If you can afford to wait until tomorrow and prefer a less rushed process, then tomorrow is acceptable.  \n\nShould you have a specific urgency or any other constraints, let me know and I will adjust my recommendation accordingly."
+    }
+   ],
+   "conversation_id": "01a0df96-bdf5-75bd-990c-19d11a7c2c8f",
+   "answer": "Good evening, my lord.  \nI do not possess any mechanism to dispatch correspondence on your behalf; the House’s tools for external transmission are unavailable in this session.  \n\nTo send the letter tonight, you may:\n\n1. **Prepare the envelope** – affix a stamp that covers the postage for your destination and ensure the return address is clear.\n2. **Address the recipient** – write the full name, street, city, state and ZIP code in a legible hand or print.\n3. **Place the letter inside** – seal it securely, double‑check that no pages are missing.\n4. **Drop it off** – either leave it in the town postbox or hand it to a postal clerk.  \n   If you are concerned about timing, an overnight or priority service will guarantee arrival by tomorrow morning.\n\nIf you prefer to send it tomorrow, simply repeat the same steps at that time.  \n\nShould you need a draft of the letter’s contents, let me know and I will compose it for your review.",
+   "kind": "Turn",
+   "core_seconds": 18.284,
+   "calls": [
+    {
+     "task_type": "conversation",
+     "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+     "tokens_in": 5985,
+     "tokens_out": 682,
+     "latency_ms": 18207,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f01",
+   "set": "fresh",
+   "utterance": "Evening, Val.",
+   "history": [],
+   "conversation_id": "01a0df97-2e6c-7811-81e7-4067fbcc5a78",
+   "answer": "Good evening, my lord. How may I attend to you?",
+   "kind": "Turn",
+   "core_seconds": 7.79,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5743,
+     "tokens_out": 27,
+     "latency_ms": 7731,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f02",
+   "set": "fresh",
+   "utterance": "That's kind of you, thank you.",
+   "history": [
+    {
+     "said": "What makes a villain's monologue land without becoming a speech?",
+     "answer": "To make a villain’s monologue feel authentic and avoid the trappings of a generic speech, focus on three intertwined elements: personal intent, situational context, and resonant delivery.  \n\n**1. Personal intent – the villain’s core purpose**  \nA monologue should arise from a clear, internal motivation that drives the character beyond mere exposition. Ask what *the villain* truly wants: power, revenge, ideological change, or simply to prove a point. Translate that desire into concrete actions and stakes that the audience can perceive. A line like “I will not let the kingdom be a museum of my enemies’ names” conveys intent more powerfully than “I will destroy the kingdom.”  \n\n**2. Situational context – where and why it is spoken**  \nPlace the monologue at a moment of genuine tension: a battlefield rally, an interrogation, or a private confrontation. The context should demand the villain’s words to influence or intimidate someone directly, not to lecture a detached audience. If the speaker is addressing a single adversary or a small group, their tone can be intimate and threatening; if it is to the masses, consider how a genuine crowd would react—crowd noise, shouts, fear.  \n\n**3. Resonant delivery – language that reflects character**  \nUse the villain’s voice: their diction, cadence, and emotional register. A tyrant might speak with measured authority; a charismatic revolutionary may use persuasive rhetoric. Avoid generic moralizing language (“We must do this for the good of all”) unless it aligns with the character’s worldview. Subtext is crucial: let the villain hint at past wounds or secrets that justify their path, rather than stating them outright.  \n\n**Practical tips**  \n- **Show, don’t tell:** Let the villain’s words be interwoven with actions—hand gestures, a sudden shift in posture, or a glance that reveals menace.  \n- **Keep it concise:** A long-winded speech feels like a lecture; a short, pointed statement can be far more chilling.  \n- **Use contrast:** Pair the villain’s calm confidence with a sudden spike in emotion to highlight volatility.  \n- **Reflect stakes:** Mention what’s at risk—not just for the villain, but for those who oppose them—to ground the monologue in tangible consequence.  \n\nBy anchoring a villain’s speech in clear intent, a high‑stakes setting, and a voice that mirrors their psyche, the line lands as a credible threat rather than an impersonal address."
+    }
+   ],
+   "conversation_id": "01a0df97-4cdb-7195-b62c-12b23a88e11b",
+   "answer": "You're most welcome, my lord.",
+   "kind": "Turn",
+   "core_seconds": 8.722,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 6278,
+     "tokens_out": 38,
+     "latency_ms": 8650,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f03",
+   "set": "fresh",
+   "utterance": "Until tomorrow, Val.",
+   "history": [
+    {
+     "said": "Name two ways to end a chapter so the reader turns the page.",
+     "answer": "My lord, two common techniques to compel a reader to turn the page are:\n\n1. **Cliffhanger** – leave an unresolved conflict or question at the end of the chapter, hinting that resolution lies beyond.\n\n2. **Provocative closing line** – end with a striking statement, image, or question that invites the reader to seek the next chapter for context."
+    }
+   ],
+   "conversation_id": "01a0df97-e19b-7d8d-8171-42681bb4e3ee",
+   "answer": "Good evening, my lord. I shall be here when you return.",
+   "kind": "Turn",
+   "core_seconds": 8.093,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5845,
+     "tokens_out": 39,
+     "latency_ms": 8028,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f04",
+   "set": "fresh",
+   "utterance": "Hello again, Val.",
+   "history": [],
+   "conversation_id": "01a0df98-2d5d-7a0a-9748-eb6f824642cb",
+   "answer": "Good evening, my lord.",
+   "kind": "Turn",
+   "core_seconds": 7.813,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5743,
+     "tokens_out": 32,
+     "latency_ms": 7745,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f05",
+   "set": "fresh",
+   "utterance": "Thank you kindly, Val.",
+   "history": [],
+   "conversation_id": "01a0df98-4be4-773b-a0ea-085f9ba2454f",
+   "answer": "You're welcome, my lord.",
+   "kind": "Turn",
+   "core_seconds": 0.851,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5744,
+     "tokens_out": 36,
+     "latency_ms": 786,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f06",
+   "set": "fresh",
+   "utterance": "Goodbye, Val.",
+   "history": [
+    {
+     "said": "How long should a cold open run before the title card?",
+     "answer": "A cold open that precedes the title card should normally run **between 30 and 90 seconds**.  \n- For most network or streaming series, **45–60 seconds** is a comfortable middle ground: it gives enough time to set the premise, introduce a hook or key conflict, and keep viewers engaged before the opening credits begin.  \n- If the narrative is particularly complex or you wish to establish a distinct tone early, extending to **up to 90 seconds** can be justified; beyond that the risk of losing momentum rises.  \n\nShorter than 30 seconds often feels rushed, while longer than 90 seconds can dilute the initial hook. Adjust within that window according to how much exposition your story requires at the very start."
+    }
+   ],
+   "conversation_id": "01a0df98-4f38-7db5-a871-ef5a5ce586d6",
+   "answer": "Good evening, my lord. May your rest be undisturbed.",
+   "kind": "Turn",
+   "core_seconds": 8.025,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5924,
+     "tokens_out": 28,
+     "latency_ms": 7953,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f07",
+   "set": "fresh",
+   "utterance": "Good morning, Val.",
+   "history": [],
+   "conversation_id": "01a0df98-b277-7bba-9b5b-f7012ab022f2",
+   "answer": "Good morning, my lord. How may I assist you today?",
+   "kind": "Turn",
+   "core_seconds": 7.794,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5743,
+     "tokens_out": 30,
+     "latency_ms": 7717,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f08",
+   "set": "fresh",
+   "utterance": "Much obliged.",
+   "history": [
+    {
+     "said": "Give me one line of advice on pacing a chase sequence.",
+     "answer": "My lord, keep the chase at a rhythmic cadence; brief but impactful turns sustain tension."
+    }
+   ],
+   "conversation_id": "01a0df98-d0eb-7f4c-899b-a6b6f678f6bc",
+   "answer": "My lord, pace the pursuit so each turn ends with a clear threat or revelation—thereby keeping tension sharp and your house’s advantage steady.",
+   "kind": "Turn",
+   "core_seconds": 8.41,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 5783,
+     "tokens_out": 64,
+     "latency_ms": 8344,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f09",
+   "set": "fresh",
+   "utterance": "Nothing else for now, thank you.",
+   "history": [
+    {
+     "said": "Explain the difference between suspense and surprise in a scene.",
+     "answer": "My lord,\n\nSuspense and surprise are distinct narrative tools, though both can heighten a scene.\n\n**Suspense** is the deliberate pacing of uncertainty. It hinges on the audience’s expectation that something will happen, and it sustains a tension while the outcome remains hidden. The structure is often *increasing stakes*: the audience knows what might be at risk and watches events unfold toward that potential event. The reader or viewer remains engaged because they are waiting for the payoff, not because it is unexpected but because its timing and resolution are uncertain.\n\n**Surprise**, in contrast, is a sudden shift that defies the audience’s predictions. It relies on an unforeseen twist or revelation—something that was not anticipated by either the characters or the audience. The effect is immediate and disorienting; it does not build on a long‑term expectation but instead jolts the viewer with an event that was not implied.\n\nIn practice, a scene can contain both: suspense can be maintained by hinting at danger, and surprise can deliver the climax when that danger manifests in an unforeseen way. The key distinction is that suspense sustains *anticipation*, whereas surprise delivers an *unexpected outcome*."
+    }
+   ],
+   "conversation_id": "01a0df99-1e31-702e-a7b6-5d29481fb12e",
+   "answer": "Good evening, my lord. No further matter requires my attention at this time.",
+   "kind": "Turn",
+   "core_seconds": 8.929,
+   "calls": [
+    {
+     "task_type": "light_conversation",
+     "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+     "tokens_in": 6006,
+     "tokens_out": 66,
+     "latency_ms": 8868,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f10",
+   "set": "fresh",
+   "utterance": "Hi, Val.",
+   "history": [
+    {
+     "said": "Good evening, Val.",
+     "answer": "Good evening, my lord.  \nI am at the study, ready to hear what matters most to you tonight. What would you have me attend to?"
+    },
+    {
+     "said": "How are you this evening?",
+     "answer": "Good evening, my lord.  \nI am at the study, settled by the hearth and ready to attend to whatever matters you have for tonight. I feel well and am prepared for your questions or tasks. What would you like to discuss?"
+    }
+   ],
+   "conversation_id": "01a0df99-7ae0-779b-be7b-6eabc69bbab4",
+   "answer": "Good evening, my lord.  \nI am at the study and ready to attend to whatever matters you have for tonight. How may I assist you?",
+   "kind": "Turn",
+   "core_seconds": 10.85,
+   "calls": [
+    {
+     "task_type": "conversation",
+     "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+     "tokens_in": 5981,
+     "tokens_out": 189,
+     "latency_ms": 10779,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f11",
+   "set": "fresh",
+   "utterance": "Thank you.",
+   "history": [
+    {
+     "said": "Which of the two endings do you prefer, and why?",
+     "answer": "I have no record of either ending in the present conversation. The house’s record for this turn holds no excerpts, and I have not been supplied with the text of the two endings you refer to. If you could provide them, I will gladly compare and explain which I prefer and why."
+    }
+   ],
+   "conversation_id": "01a0df9a-07ad-79bd-a674-7208929925a3",
+   "answer": "I do not have either ending in the current record, nor any book that contains them. The house’s state shows that no excerpts or project volumes were retrieved for this conversation, and the capability to consult books is unavailable.  \n\nIf you can supply the texts of both endings—either by pasting them into this message or by attaching an image that contains the text—I can read them and give you a reasoned preference. Until then, I must remain neutral because the material is not in my hands.",
+   "kind": "Turn",
+   "core_seconds": 11.022,
+   "calls": [
+    {
+     "task_type": "conversation",
+     "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+     "tokens_in": 5950,
+     "tokens_out": 205,
+     "latency_ms": 10949,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  },
+  {
+   "id": "f12",
+   "set": "fresh",
+   "utterance": "Good night. Remind me at eight.",
+   "history": [],
+   "conversation_id": "01a0df9a-6328-7550-825f-7c2315b3fe37",
+   "answer": "Good night, my lord.  \nI do not have the ability to set reminders in this conversation; should you require a prompt at eight, you may wish to use another system or let me know when we resume.",
+   "kind": "Turn",
+   "core_seconds": 15.738,
+   "calls": [
+    {
+     "task_type": "conversation",
+     "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+     "tokens_in": 5876,
+     "tokens_out": 504,
+     "latency_ms": 15662,
+     "terminal_state": "complete",
+     "status": "ok"
+    }
+   ]
+  }
+ ]
+}

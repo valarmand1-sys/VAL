@@ -1,0 +1,343 @@
+{
+ "condition": "offline-low",
+ "revision": "964081b7531718dc7e6c716a300510e18022678a",
+ "dirty": true,
+ "switches": {
+  "fast_route_tiers": "1",
+  "tier1_route": "low",
+  "speculation": "",
+  "adaptive_grace": ""
+ },
+ "sessions": 2,
+ "sessions_failed": 0,
+ "turns": 8,
+ "groups": {
+  "tier_1": {
+   "n": 4,
+   "routes": {
+    "light": 2,
+    "fallback": 0,
+    "substantive": 2,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 4,
+     "median": 7026.9,
+     "p90": 11227.2,
+     "max": 11227.2
+    },
+    "light": {
+     "n": 2,
+     "median": 7988.8,
+     "p90": 11227.2,
+     "max": 11227.2
+    },
+    "substantive": {
+     "n": 2,
+     "median": 7026.9,
+     "p90": 8437.6,
+     "max": 8437.6
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 4,
+    "median": 6906.4,
+    "p90": 10724.2,
+    "max": 10724.2
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  },
+  "tier_2": {
+   "n": 0,
+   "routes": {
+    "light": 0,
+    "fallback": 0,
+    "substantive": 0,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "light": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "substantive": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 0,
+    "median": null,
+    "p90": null,
+    "max": null
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  },
+  "ineligible": {
+   "n": 4,
+   "routes": {
+    "light": 0,
+    "fallback": 0,
+    "substantive": 4,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [
+    {
+     "phrase": "Say 'yes, proceed' to the booking.",
+     "transcript": "Say yes. Proceed to the booking."
+    }
+   ],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 4,
+     "median": 10160.3,
+     "p90": 16753.8,
+     "max": 16753.8
+    },
+    "light": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "substantive": {
+     "n": 4,
+     "median": 10160.3,
+     "p90": 16753.8,
+     "max": 16753.8
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 4,
+    "median": 10119.4,
+    "p90": 16921.4,
+    "max": 16921.4
+   },
+   "underruns": 0,
+   "from_tier_2_phrases": 0
+  }
+ },
+ "substantive_false_positives": [],
+ "false_negatives": [
+  {
+   "phrase": "Evening to you, Val.",
+   "transcript": "evening to you, Val.",
+   "latency_ms": 8437.6
+  },
+  {
+   "phrase": "A very good evening, Val.",
+   "transcript": "A very good evening, Val.",
+   "latency_ms": 5616.2
+  }
+ ],
+ "fallbacks": [],
+ "speculation_outcomes": {},
+ "speculation_prepared_ms": {
+  "n": 0,
+  "median": null,
+  "p90": null,
+  "max": null
+ },
+ "completion_states": {},
+ "machine": {
+  "samples": 0,
+  "min_free_percent": null,
+  "swap_used_mb_first": null,
+  "swap_used_mb_last": null,
+  "max_resident_speech_rss_mb": null,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "voice_on_to_first_speech_ms": [
+  1366.8,
+  1204.5
+ ],
+ "turns_detail": [
+  {
+   "session": "offline-low session 1",
+   "phrase": "Good evening, Val, it's me.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good evening, Val, it's me.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. How may I assist you tonight?",
+   "speech_end_to_first_playback_ms": 11227.2,
+   "speech_end_to_answer_read_ms": 10724.2,
+   "speech_end_to_committed_ms": 2081.2,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "offline-low session 1",
+   "phrase": "Say 'yes, proceed' to the booking.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Say yes. Proceed to the booking.",
+   "recognised_as_phrase": false,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Yes, my lord.\n\nTo proceed with the booking, could you please specify what is to be reserved\u2014whether it is a room, a piece of equipment, or an appointment slot\u2014and any relevant dates, times, and additional requirements?",
+   "speech_end_to_first_playback_ms": 16753.8,
+   "speech_end_to_answer_read_ms": 16921.4,
+   "speech_end_to_committed_ms": 2705.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I assist you tonight?"
+  },
+  {
+   "session": "offline-low session 1",
+   "phrase": "Evening to you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "evening to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I\u2019m unable to place the booking at this moment. To proceed I would need a clear record of what is being reserved\u2014room, equipment, or an appointment slot\u2014and the desired dates and times. Once that information is in the house\u2019s record, I can arrange it for you.",
+   "speech_end_to_first_playback_ms": 8437.6,
+   "speech_end_to_answer_read_ms": 8645.8,
+   "speech_end_to_committed_ms": 2184.4,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Yes, my lord.\n\nTo proceed with the booking, could you please specify what is to be reserved\u2014whether it is a room, a piece of equipment, or an appointment slot\u2014and any relevant dates, times, and additional requirements?"
+  },
+  {
+   "session": "offline-low session 1",
+   "phrase": "Good evening, Val, and send the reply tonight.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Good evening, Val, and send the reply tonight.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord.\n\nI am unable to place a booking at this moment because the record contains no details of what is to be reserved\u2014room, equipment, or appointment slot\u2014and no dates or times are specified. If you could provide those particulars, I will arrange it for you immediately.",
+   "speech_end_to_first_playback_ms": 7484.4,
+   "speech_end_to_answer_read_ms": 7886.9,
+   "speech_end_to_committed_ms": 2027.1,
+   "underrun_ms": 0.0,
+   "segments": 3,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I\u2019m unable to place the booking at this moment. To proceed I would need a clear record of what is being reserved\u2014room, equipment, or an appointment slot\u2014and the desired dates and times. Once that information is in the house\u2019s record, I can arrange it for you."
+  },
+  {
+   "session": "offline-low session 2",
+   "phrase": "Good morning to you, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "Good morning to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good morning, my lord. How may I attend to you?",
+   "speech_end_to_first_playback_ms": 4750.4,
+   "speech_end_to_answer_read_ms": 4097.1,
+   "speech_end_to_committed_ms": 2059.9,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": null
+  },
+  {
+   "session": "offline-low session 2",
+   "phrase": "Thank you. || Now change the venue to the hall.",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thank you. Now change the venue to the hall.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, I am presently in the study of House\u202fArmand. There is no mechanism for me to physically relocate you or myself to another room within the house. However, should your matter be best considered in a hall setting, I can conduct our conversation as though we were there. Please let me know if that satisfies your intent.",
+   "speech_end_to_first_playback_ms": 11892.8,
+   "speech_end_to_answer_read_ms": 12271.2,
+   "speech_end_to_committed_ms": 2109.9,
+   "underrun_ms": 0.0,
+   "segments": 4,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good morning, my lord. How may I attend to you?"
+  },
+  {
+   "session": "offline-low session 2",
+   "phrase": "A very good evening, Val.",
+   "group": "tier_1",
+   "group_origin": null,
+   "transcript": "A very good evening, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. How may I attend to you?",
+   "speech_end_to_first_playback_ms": 5616.2,
+   "speech_end_to_answer_read_ms": 5167.1,
+   "speech_end_to_committed_ms": 2097.2,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "My lord, I am presently in the study of House\u202fArmand. There is no mechanism for me to physically relocate you or myself to another room within the house. However, should your matter be best considered in a hall setting, I can conduct our conversation as though we were there. Please let me know if that satisfies your intent."
+  },
+  {
+   "session": "offline-low session 2",
+   "phrase": "Thanks. Did you remember to book the venue?",
+   "group": "ineligible",
+   "group_origin": null,
+   "transcript": "Thanks. Did you remember to book the venue?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I have not booked the hall, and I lack the capability to do so within this session.",
+   "speech_end_to_first_playback_ms": 8427.8,
+   "speech_end_to_answer_read_ms": 7967.6,
+   "speech_end_to_committed_ms": 2082.9,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true,
+   "speculative": false,
+   "previous_answer": "Good evening, my lord. How may I attend to you?"
+  }
+ ]
+}
