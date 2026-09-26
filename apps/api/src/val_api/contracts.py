@@ -1027,6 +1027,12 @@ class VoiceSessionView(BaseModel):
     #: it. **A VAD-derived estimate**, never an acoustic observation; the desktop
     #: uses it to start its owner-facing intervals at speech end (Step B latency pass).
     speech_end: SpeechEndView | None = None
+    #: Response-in-progress feedback (owner order, 26 September 2026 §8): the accepted
+    #: turn's stage — `thinking`, `writing`, `voicing`, `speaking` — or None when no
+    #: accepted turn is in progress. `queued` says his next settled words are waiting
+    #: behind it; that is a queue, and is never shown as reasoning.
+    progress: str | None = None
+    queued: bool = False
 
 
 class SpeechEndView(BaseModel):

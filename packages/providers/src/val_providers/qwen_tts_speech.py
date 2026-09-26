@@ -307,6 +307,7 @@ class QwenTTSSpeech:
                 **_as_mapping(report.get("generation")),
                 "stream": True,
                 "streaming_interval": STREAM_INTERVAL_SECONDS,
+                "decoder_priming": report.get("decoder_priming"),
             },
             clone_prompt_sha256=str(report.get("clone_prompt_sha256", "")),
             elapsed_seconds=round(time.monotonic() - started, 3),
@@ -368,7 +369,7 @@ class QwenTTSSpeech:
 
     # --- one attempt --------------------------------------------------------------
 
-    def warm(self) -> dict[str, object]:
+    def warm(self, voice: VoiceConditioning | None = None) -> dict[str, object]:
         """Start the resident speech worker: the model loaded once, nothing spoken.
 
         Owner order, 25 September 2026 (Voice-mode repair §5). The one-shot runner spent
@@ -383,6 +384,10 @@ class QwenTTSSpeech:
         Never a gate and never ahead of real speech: a real synthesis that arrives
         while the worker is still loading waits for that load — the one it would
         otherwise do itself — and any failure falls back to the one-shot runner.
+
+        `voice` (26 September 2026): when the governed voice is known, its stored
+        conditioning is loaded and the streaming decoder is primed at start, so the
+        session's first sentence pays for neither (~0.6 s otherwise).
         """
         unavailable = self.available()
         if unavailable is not None:
@@ -401,15 +406,33 @@ class QwenTTSSpeech:
             threading.Thread(
                 target=self._read_replies, args=(process, self._replies), daemon=True
             ).start()
+            workspace: Path | None = None
             try:
                 if process.stdin is None:
                     raise OSError("the resident voice has no input pipe")
-                process.stdin.write(json.dumps({"model_path": str(self._model_path)}) + "\n")
+                opening: dict[str, object] = {"model_path": str(self._model_path)}
+                if voice is not None:
+                    workspace = Path(tempfile.mkdtemp(prefix="val-speech-"))
+                    os.chmod(workspace, 0o700)
+                    reference = workspace / "reference.wav"
+                    reference.write_bytes(voice.reference_audio)
+                    opening["prime"] = {
+                        "ref_audio_path": str(reference),
+                        "ref_audio_sha256": voice.reference_sha256,
+                        "ref_text": voice.reference_text,
+                        "clone_prompt_path": str(
+                            clone_prompt_for(voice.reference_sha256, self._voice_dir)
+                        ),
+                    }
+                process.stdin.write(json.dumps(opening) + "\n")
                 process.stdin.flush()
                 ready = self._reply(self._replies, self._timeout)
             except (OSError, SpeechUnavailableError) as failure:
                 self._stop_resident_locked()
                 return {"warmed": False, "reason": f"the resident voice did not start: {failure}"}
+            finally:
+                if workspace is not None:
+                    shutil.rmtree(workspace, ignore_errors=True)
             if ready.get("mode") != "ready":
                 self._stop_resident_locked()
                 return {"warmed": False, "reason": "the resident voice did not report ready"}
@@ -418,6 +441,7 @@ class QwenTTSSpeech:
             "warmed": True,
             "resident": True,
             "load_seconds": ready.get("load_seconds"),
+            "primed": ready.get("primed"),
             "elapsed_seconds": round(time.monotonic() - started, 3),
             "spoke_nothing": True,
         }

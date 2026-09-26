@@ -161,6 +161,16 @@ class Delivery(Protocol):
         ...
 
     @property
+    def has_text(self) -> bool:
+        """Has any of her answer reached delivery yet? (progress: writing)"""
+        ...
+
+    @property
+    def first_tts_start_ms(self) -> int | None:
+        """When her first sentence began to be synthesised, if it has. (progress: voicing)"""
+        ...
+
+    @property
     def cancellation_ms(self) -> float | None:
         """Service-side: signal to sink stopped. `None` if never interrupted."""
         ...
@@ -270,6 +280,16 @@ class VoiceSessionView:
     #: process's monotonic clock: the endpoint less the silence that confirmed it.
     #: A VAD-derived estimate, never an acoustic observation (WP3 Step B latency pass).
     speech_end: tuple[int, float] | None = None
+    #: What the house is doing about his accepted message right now, truthfully
+    #: (owner order, 26 September 2026 §8): ``thinking`` — the turn is in cognition
+    #: and none of her answer is visible yet; ``writing`` — her answer is arriving;
+    #: ``voicing`` — her first sentence is being synthesised; ``speaking`` — audio has
+    #: reached the desktop. ``None`` when no accepted turn is in progress. Never a
+    #: claim about a queued utterance, which is `queued` below.
+    progress: str | None = None
+    #: His next settled words are waiting behind a turn still in progress. Not
+    #: reasoning, not accepted yet: a queue, said as one.
+    queued: bool = False
 
 
 @dataclass
@@ -1413,7 +1433,24 @@ class VoiceSession:
                 committed=self._committed,
                 answered=self._answered,
                 speech_end=self._speech_end,
+                progress=self._progress_locked(),
+                queued=self._pending is not None and self._inflight is not None,
             )
+
+    def _progress_locked(self) -> str | None:
+        """The accepted turn's stage, from the session's own facts (lock held)."""
+        if self._inflight is None:
+            return None
+        delivery = self._delivery
+        if delivery is None:
+            return "thinking"
+        if delivery.audible:
+            return "speaking"
+        if delivery.first_tts_start_ms is not None:
+            return "voicing"
+        if delivery.has_text:
+            return "writing"
+        return "thinking"
 
     def __enter__(self) -> VoiceSession:
         self.start()

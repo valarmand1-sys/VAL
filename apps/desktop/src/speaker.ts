@@ -1,30 +1,56 @@
-// Physical playback — owner execution order, 24 September 2026, §11, §11.1, §12.
+// Physical playback — owner execution order, 24 September 2026, §11, §11.1, §12;
+// rebuilt 26 September 2026 for the audio regression (§8 of that day's order).
 //
 // Val's synthesised speech becomes sound in the room here, and nowhere else. The
-// audio arrives over the existing loopback service, is decoded, is scheduled on the
-// Mac's default output device, and is then released.
+// audio arrives over the existing loopback service as WAV — a whole segment, or a
+// segment in ~1-second pieces — is decoded here, handed to one playback worklet as a
+// single continuous stream of samples, and released.
 //
-// Three rules.
+// **One stream, not one buffer per piece.** The previous player decoded each piece
+// with `decodeAudioData` and scheduled it as its own source node. `decodeAudioData`
+// resamples each piece independently to the context's rate, and separately scheduled
+// nodes meet at a boundary the engine did not design for, so every seam between
+// pieces was a resampler restart and a scheduling edge — audible as a click. Now the
+// pieces of a segment are written to the device sample after sample by
+// `pcm-playback-worklet.js`, and the context is asked for the speech's own sample
+// rate so that, where the platform grants it, nothing is resampled at all. Where it
+// is not, the worklet's own resampler carries its state across pieces.
+//
+// Three rules, unchanged.
 //
 // **Only under an owner-started Voice session.** This player is created when Voice
 // goes on and destroyed when Voice goes off; with Voice off no sink exists, so no
 // generated speech can be played (§1.2).
 //
-// **Barge-in stops the sound, not just the queue.** `stop` halts the source that is
-// playing *and* discards everything queued behind it, in that order, because a
-// queue emptied while a buffer plays on is not an interruption (§12).
+// **Barge-in stops the sound, not just the queue.** `stop` silences the worklet —
+// which discards everything it holds — and disconnects it, so nothing keeps
+// sounding while the queue is cleared (§12).
 //
 // **Playback started is reported, never assumed.** The service cannot see an output
 // device. What it records is what this module says happened, and this module says it
-// when the buffer is actually scheduled — which is why `onStarted` fires from the
-// scheduling call and not from the decision to schedule (§11.1).
+// when the worklet has written the segment's first sample to the output — sound at
+// the device, not an intention to schedule (§11.1).
 
 export interface SpeakerPlatform {
-  createContext(): AudioContext;
+  /**
+   * An output context, asked for the speech's sample rate. A platform may ignore the
+   * request; the worklet resamples if the context runs at another rate.
+   */
+  createContext(sampleRate: number): AudioContext;
+  workletModuleUrl: string;
 }
 
+export const PLAYBACK_WORKLET_URL = "/pcm-playback-worklet.js";
+
 export const browserSpeaker: SpeakerPlatform = {
-  createContext: () => new AudioContext(),
+  createContext: (sampleRate) => {
+    try {
+      return new AudioContext({ sampleRate });
+    } catch {
+      return new AudioContext();
+    }
+  },
+  workletModuleUrl: PLAYBACK_WORKLET_URL,
 };
 
 export interface SegmentAudio {
@@ -46,30 +72,84 @@ export interface SegmentAudio {
 }
 
 export interface SpeakerObserver {
-  /** The segment is actually scheduled on the output device. Sound in the room. */
+  /** The segment's first sample has been written to the output device. Sound in the room. */
   onStarted(segment: SegmentAudio): void;
   onCompleted(segment: SegmentAudio): void;
   onInterrupted(segment: SegmentAudio, reason: string): void;
   onFailed(segment: SegmentAudio, detail: string): void;
 }
 
+/** A WAV file's samples, as the worklet wants them. */
+export interface DecodedWav {
+  sampleRate: number;
+  samples: Float32Array;
+}
+
+/**
+ * Decode a WAV file: PCM 16-bit, or 32-bit float, mono (channels are averaged).
+ * Done here, from the bytes, rather than through `decodeAudioData`: a decode that
+ * resamples each piece on its own is exactly what produced the seams.
+ */
+export function decodeWav(buffer: ArrayBuffer): DecodedWav {
+  const view = new DataView(buffer);
+  const tag = (at: number) => String.fromCharCode(...new Uint8Array(buffer, at, 4));
+  if (buffer.byteLength < 12 || tag(0) !== "RIFF" || tag(8) !== "WAVE") {
+    throw new Error("not a WAV file");
+  }
+  let at = 12;
+  let format: { channels: number; rate: number; bits: number; float: boolean } | null = null;
+  while (at + 8 <= buffer.byteLength) {
+    const id = tag(at);
+    const size = view.getUint32(at + 4, true);
+    const body = at + 8;
+    if (id === "fmt ") {
+      const code = view.getUint16(body, true);
+      format = {
+        channels: view.getUint16(body + 2, true),
+        rate: view.getUint32(body + 4, true),
+        bits: view.getUint16(body + 14, true),
+        float: code === 3,
+      };
+    } else if (id === "data") {
+      if (format === null) throw new Error("WAV data before its format");
+      const frameBytes = (format.bits / 8) * format.channels;
+      const frames = Math.floor(Math.min(size, buffer.byteLength - body) / frameBytes);
+      const samples = new Float32Array(frames);
+      for (let frame = 0; frame < frames; frame += 1) {
+        let sum = 0;
+        for (let channel = 0; channel < format.channels; channel += 1) {
+          const offset = body + frame * frameBytes + channel * (format.bits / 8);
+          if (format.float && format.bits === 32) sum += view.getFloat32(offset, true);
+          else if (format.bits === 16) sum += view.getInt16(offset, true) / 32768;
+          else throw new Error(`unsupported WAV sample format (${format.bits}-bit)`);
+        }
+        samples[frame] = sum / format.channels;
+      }
+      return { sampleRate: format.rate, samples };
+    }
+    at = body + size + (size % 2);
+  }
+  throw new Error("WAV file has no data");
+}
+
+interface Tracked {
+  segment: SegmentAudio;
+  started: boolean;
+  completed: boolean;
+}
+
 /** One answer's worth of speech, played in order, stoppable at any instant. */
 export class SpeechPlayer {
   private context: AudioContext | null = null;
-  /** Every buffer scheduled and not yet ended: all of them stop together. */
-  private sources = new Set<AudioBufferSourceNode>();
-  /** The segment sounding now, and where its next piece joins it on the audio clock. */
-  private active: {
-    segment: SegmentAudio;
-    joinAt: number;
-    outstanding: number;
-    ended: boolean;
-    finished: Promise<void>;
-    finish: () => void;
-  } | null = null;
-  private queue: SegmentAudio[] = [];
-  private draining = false;
+  private node: AudioWorkletNode | null = null;
+  private ready: Promise<boolean> | null = null;
+  private sourceRate: number | null = null;
+  private readonly tracked = new Map<string, Tracked>();
+  /** Pieces waiting for the worklet to be ready, in arrival order. */
+  private chain: Promise<void> = Promise.resolve();
   private stopped = false;
+  /** Frames of silence the worklet had to write while waiting for a piece. */
+  underrunFrames = 0;
 
   constructor(
     private readonly observer: SpeakerObserver,
@@ -77,140 +157,124 @@ export class SpeechPlayer {
   ) {}
 
   /** Queue a segment, or a piece of one, collected from the service. Service order. */
-  enqueue(segment: SegmentAudio): void {
+  enqueue(piece: SegmentAudio): void {
     if (this.stopped) return;
-    this.queue.push(segment);
-    void this.drain();
+    this.chain = this.chain.then(() => this.accept(piece)).catch(() => undefined);
   }
 
   get queued(): number {
-    return this.queue.length;
+    return 0; // the worklet holds the queue; nothing waits on this side once ready
   }
 
   get audible(): boolean {
-    return this.sources.size > 0;
+    for (const item of this.tracked.values()) if (item.started && !item.completed) return true;
+    return false;
   }
 
-  private async drain(): Promise<void> {
-    if (this.draining || this.stopped) return;
-    this.draining = true;
-    try {
-      while (!this.stopped) {
-        const piece = this.queue[0];
-        if (piece === undefined) break;
-        // A new segment stays queued — where a stop discards it — until the one
-        // sounding now has finished.
-        if ((piece.chunk ?? 0) === 0 && this.active !== null) {
-          await this.active.finished;
-          continue;
-        }
-        this.queue.shift();
-        await this.accept(piece);
-      }
-    } finally {
-      this.draining = false;
-    }
+  private key(piece: SegmentAudio): string {
+    return `${piece.answerKey ?? "-"}:${piece.segmentIndex}`;
   }
 
-  /**
-   * One piece. The first piece of a segment waits for the segment before it to
-   * finish, and starts it; every later piece is scheduled on the audio clock to
-   * begin exactly where the one before it ends (26 September 2026: streamed
-   * speech), so a sentence arriving in pieces plays without a seam of silence.
-   */
   private async accept(piece: SegmentAudio): Promise<void> {
+    if (this.stopped) return;
+    const key = this.key(piece);
     const opening = (piece.chunk ?? 0) === 0;
-    if (this.stopped) return;
-    const closes = piece.last ?? true;
-    if (piece.audio.byteLength === 0) {
-      // The end of a streamed segment: nothing to play, only its close.
-      if (this.active !== null && !opening) {
-        this.active.ended = true;
-        this.settle();
+    if (opening) this.tracked.set(key, { segment: piece, started: false, completed: false });
+    const known = this.tracked.get(key);
+    if (known === undefined) return; // a later piece of a segment never opened here
+    let decoded: DecodedWav | null = null;
+    if (piece.audio.byteLength > 0) {
+      try {
+        decoded = decodeWav(piece.audio);
+      } catch (failure) {
+        this.observer.onFailed(
+          known.segment,
+          failure instanceof Error ? failure.message : "the audio could not be decoded",
+        );
+        this.tracked.delete(key);
+        return;
       }
+    }
+    if (this.ready === null) this.ready = this.prepare(decoded?.sampleRate ?? 24000);
+    if (!(await this.ready)) {
+      this.observer.onFailed(known.segment, "the playback worklet could not be started");
+      this.tracked.delete(key);
       return;
     }
-    if (this.context === null) this.context = this.platform.createContext();
-    const context = this.context;
-    let buffer: AudioBuffer;
+    if (this.stopped || this.node === null) return;
+    if (decoded !== null && this.sourceRate !== null && decoded.sampleRate !== this.sourceRate) {
+      this.observer.onFailed(known.segment, "a piece arrived at another sample rate");
+      this.tracked.delete(key);
+      return;
+    }
+    const samples = decoded === null ? new Float32Array(0) : decoded.samples;
+    this.node.port.postMessage(
+      { type: "piece", key, samples: samples.buffer, last: piece.last ?? true },
+      [samples.buffer],
+    );
+  }
+
+  private async prepare(sampleRate: number): Promise<boolean> {
     try {
-      // `decodeAudioData` detaches the ArrayBuffer, which is the release: after
-      // this the bytes we were handed are gone from this side too.
-      buffer = await context.decodeAudioData(piece.audio);
-    } catch (failure) {
-      this.observer.onFailed(
-        piece,
-        failure instanceof Error ? failure.message : "the audio could not be decoded",
-      );
-      return;
-    }
-    if (this.stopped) return;
-    if (opening) {
-      let finish: () => void = () => undefined;
-      const finished = new Promise<void>((resolve) => {
-        finish = resolve;
+      const context = this.platform.createContext(sampleRate);
+      this.context = context;
+      this.sourceRate = sampleRate;
+      await context.audioWorklet.addModule(this.platform.workletModuleUrl);
+      if (this.stopped) return false;
+      const node = new AudioWorkletNode(context, "val-playback", {
+        numberOfInputs: 0,
+        numberOfOutputs: 1,
+        outputChannelCount: [1],
+        processorOptions: { sourceRate: sampleRate },
       });
-      this.active = { segment: piece, joinAt: 0, outstanding: 0, ended: false, finished, finish };
-    }
-    const active = this.active;
-    if (active === null) return; // a later piece of a segment already stopped
-    const source = context.createBufferSource();
-    source.buffer = buffer;
-    source.connect(context.destination);
-    const now = typeof context.currentTime === "number" ? context.currentTime : 0;
-    const at = Math.max(now, active.joinAt);
-    active.joinAt = at + (typeof buffer.duration === "number" ? buffer.duration : 0);
-    active.outstanding += 1;
-    if (closes) active.ended = true;
-    this.sources.add(source);
-    source.onended = () => {
-      if (!this.sources.delete(source)) return;
-      active.outstanding -= 1;
-      this.settle();
-    };
-    source.start(at);
-    if (opening) {
-      // Reported here, from the scheduling call itself: this is the moment the
-      // buffer is on the device, which is the physical boundary §11.1 names.
-      this.observer.onStarted(piece);
+      node.port.onmessage = (event: MessageEvent) => this.receive(event.data as WorkletEvent);
+      node.connect(context.destination);
+      this.node = node;
+      return true;
+    } catch {
+      return false;
     }
   }
 
-  /** The active segment is over once its last piece has come and every piece has played. */
-  private settle(): void {
-    const active = this.active;
-    if (active === null || !active.ended || active.outstanding > 0) return;
-    this.active = null;
-    // An interrupted source also ends; `stopped` tells the two apart, so an
-    // interruption is never recorded as a completion.
-    if (!this.stopped) this.observer.onCompleted(active.segment);
-    active.finish();
+  private receive(event: WorkletEvent): void {
+    if (this.stopped) return;
+    const item = event.key === undefined ? undefined : this.tracked.get(event.key);
+    if (event.type === "started" && item !== undefined && !item.started) {
+      item.started = true;
+      this.observer.onStarted(item.segment);
+    } else if (event.type === "completed" && item !== undefined && !item.completed) {
+      item.completed = true;
+      this.observer.onCompleted(item.segment);
+    } else if (event.type === "underrun") {
+      this.underrunFrames += event.frames ?? 0;
+    }
   }
 
   /**
    * Stop the sound now and discard what was queued behind it.
    *
-   * The order is the contract: every scheduled source is stopped first, so nothing
-   * keeps sounding while the queue is cleared.
+   * The order is the contract: the worklet is silenced first — it drops every piece it
+   * holds and writes silence — then disconnected, so nothing keeps sounding while the
+   * queue is cleared.
    */
   stop(reason: string): void {
+    if (this.stopped) return;
     this.stopped = true;
-    for (const source of this.sources) {
+    const node = this.node;
+    if (node !== null) {
       try {
-        source.onended = null;
-        source.stop();
-        source.disconnect();
+        node.port.postMessage({ type: "stop" });
+        node.disconnect();
       } catch {
-        // A source that had already ended is the state we wanted.
+        // A node already gone is the state we wanted.
       }
+      this.node = null;
     }
-    this.sources.clear();
-    const interrupted = this.active;
-    this.active = null;
-    this.queue = [];
-    if (interrupted !== null) {
-      this.observer.onInterrupted(interrupted.segment, reason);
-      interrupted.finish();
+    for (const item of this.tracked.values()) {
+      if (item.started && !item.completed) {
+        item.completed = true;
+        this.observer.onInterrupted(item.segment, reason);
+      }
     }
   }
 
@@ -222,6 +286,13 @@ export class SpeechPlayer {
       this.context = null;
     }
   }
+}
+
+interface WorkletEvent {
+  type: "started" | "completed" | "underrun" | "stopped";
+  key?: string;
+  frame?: number;
+  frames?: number;
 }
 
 /** Decode the service's base64 transport into bytes to hand to the player. */

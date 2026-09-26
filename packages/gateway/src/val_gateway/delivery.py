@@ -305,6 +305,11 @@ class SpeechDelivery:
         return self.first_audio_ms - self.first_delta_ms
 
     @property
+    def has_text(self) -> bool:
+        """Has Core made any of her answer visible yet? (The progress indicator's "writing".)"""
+        return self.segmenter.source != ""
+
+    @property
     def segments_delivered(self) -> int:
         """How many speech-safe pieces actually reached the ear."""
         return self.sink.segments_played

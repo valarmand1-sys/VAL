@@ -61,6 +61,78 @@ def _fail(reason: str, *, kind: str = "unavailable") -> int:
     return 1
 
 
+#: Reference-primed streaming-decoder states, by clone-prompt digest (owner order,
+#: 26 September 2026, audio regression). See `_prime_streaming_decoder`.
+_PRIMED_DECODER: dict[str, dict[str, Any]] = {}
+
+
+def _decoder_module(model: Any) -> Any:  # noqa: ANN401 - MLX module objects
+    """The speech tokenizer's decoder module itself.
+
+    `model.speech_tokenizer.decoder` is an MLX compiled-function object that forwards
+    attribute reads to the module but not writes; the module is reached through the
+    bound method it hands back.
+    """
+    return model.speech_tokenizer.decoder.reset_streaming_state.__self__
+
+
+def _private_state(module: Any) -> dict[str, Any]:  # noqa: ANN401 - MLX module objects
+    """A module's streaming buffers: MLX keeps array-valued attributes as dict items
+    (private names are excluded from parameters) and other attributes in __dict__."""
+    state = {k: v for k, v in dict.items(module) if k.startswith("_")}
+    state.update({k: v for k, v in vars(module).items() if k.startswith("_") and not callable(v)})
+    return state
+
+
+def _prime_streaming_decoder(model: Any, ref_codes: Any, digest: str) -> dict[str, Any]:  # noqa: ANN401
+    """Make the streaming decoder start every segment as the whole decoder does.
+
+    **The cause of the audio regression** (owner order, 26 September 2026, §8). The
+    library's whole-segment path decodes the reference codes and the generated codes
+    together, then cuts the reference portion: the generated speech is decoded by a
+    decoder whose convolution buffers and attention already hold the voice. Its
+    streaming path resets the decoder and feeds generated codes alone, so every
+    segment began from a **cold** decoder — a burst in the first 60 ms (measured 0.065
+    RMS against 0.0015) and a rendering that differed from the whole decode across the
+    entire sentence (log-mel distance 0.11 to 0.50 against 0.0). That is the click at
+    each sentence and the altered quality he heard.
+
+    Priming the streaming decoder with the reference codes reproduces the whole
+    path (distance 0.00 to 0.015, onset identical), but recomputing that on every
+    segment cost 0.57 s. So it is computed **once per reference**: the primed state —
+    the transformer's KV cache and every buffer `reset_streaming_state` clears — is
+    captured here, and the library's own reset is wrapped to restore it instead of
+    leaving the decoder cold. Restored generation is sample-identical to freshly
+    primed generation (measured, four seeds) and the first piece is back to ~0.46 s.
+    The library file is untouched; this is the runner's own use of its decoder.
+    """
+    import copy
+
+    if digest in _PRIMED_DECODER:
+        return _PRIMED_DECODER[digest]
+    module = _decoder_module(model)
+    original = type(module).reset_streaming_state.__get__(module)
+    stateful = [m for _, m in module.named_modules() if hasattr(m, "reset_state")]
+    original()
+    module.streaming_step(ref_codes)
+    snapshot = {
+        "cache": copy.deepcopy(module._transformer_cache),
+        "modules": [copy.deepcopy(_private_state(m)) for m in stateful],
+        "reference_codes": int(ref_codes.shape[-1]),
+    }
+
+    def restore_primed() -> None:
+        original()
+        module._transformer_cache = copy.deepcopy(snapshot["cache"])
+        for m, state in zip(stateful, snapshot["modules"], strict=True):
+            for key, value in state.items():
+                setattr(m, key, copy.deepcopy(value))
+
+    module.reset_streaming_state = restore_primed
+    _PRIMED_DECODER[digest] = snapshot
+    return snapshot
+
+
 def write_wav(path: Path, samples: object, sample_rate: int) -> None:
     """The waveform as a 16-bit PCM WAV, written with the standard library.
 
@@ -130,7 +202,19 @@ def serve() -> int:
     first = json.loads(sys.stdin.readline())
     started = time.monotonic()
     model = load_model(first["model_path"])
-    ready = {"ok": True, "mode": "ready", "load_seconds": round(time.monotonic() - started, 3)}
+    ready: dict[str, Any] = {
+        "ok": True,
+        "mode": "ready",
+        "load_seconds": round(time.monotonic() - started, 3),
+    }
+    prime = first.get("prime")
+    if prime:
+        # The voice is known at Voice On: load its conditioning and prime the
+        # streaming decoder now, so the first sentence of the session pays neither.
+        try:
+            ready["primed"] = _load_voice_and_prime(model, prime)
+        except Exception as failure:  # priming is optional; the first request does it
+            ready["primed"] = {"failed": f"{type(failure).__name__}: {failure}"}
     print(json.dumps(ready), flush=True)
     for line in sys.stdin:
         if not line.strip():
@@ -145,6 +229,53 @@ def serve() -> int:
             _fail(f"{type(failure).__name__}: {failure}")
         sys.stdout.flush()
     return 0
+
+
+def _load_voice_and_prime(model: Any, request: dict[str, Any]) -> dict[str, Any]:  # noqa: ANN401
+    """Load the stored clone prompt for this reference and prime the streaming decoder.
+
+    The same steps `perform` takes on a `speak` request, done at worker start instead:
+    the reference is checked against its digest, the stored codes are loaded under the
+    library's own cache key, and the decoder's primed state is captured once.
+    """
+    import mlx.core as mx
+    import numpy as np
+    from mlx_audio.utils import load_audio
+
+    reference = Path(request["ref_audio_path"])
+    digest = hashlib.sha256(reference.read_bytes()).hexdigest()
+    if digest != request["ref_audio_sha256"]:
+        raise ValueError("the reference written for priming does not hash to its digest")
+    ref_audio = load_audio(str(reference), sample_rate=int(model.sample_rate))
+    cache_key = (request["ref_text"], (ref_audio.size, float(ref_audio.sum())))
+    prompt_path = Path(request["clone_prompt_path"])
+    if not prompt_path.is_file():
+        return {"skipped": "no stored clone prompt for this reference yet"}
+    stored = np.load(prompt_path)
+    model._icl_cache[cache_key] = (
+        mx.array(stored["ref_codes"]),
+        mx.array(stored["ref_text_ids"]),
+    )
+    primed = _prime_streaming_decoder(model, model._icl_cache[cache_key][0], digest)
+    # The first generation of a process also pays MLX's own one-time compilation
+    # (~0.6 s, measured on the first piece). Spent here, on a short utterance that is
+    # discarded inside this process: never played, never written, never recorded —
+    # Val has said nothing. The same standing the persona prime's discarded token has.
+    began = time.monotonic()
+    for _ in model.generate(
+        text="Good evening.",
+        ref_audio=ref_audio,
+        ref_text=request["ref_text"],
+        lang_code="english",
+        verbose=False,
+        stream=True,
+        streaming_interval=1.0,
+    ):
+        pass
+    return {
+        "reference_codes": primed["reference_codes"],
+        "warmup_generation": {"discarded": True, "seconds": round(time.monotonic() - began, 3)},
+    }
 
 
 def perform(model: Any, request: dict[str, Any], started: float, loaded_seconds: float) -> int:  # noqa: ANN401 - the MLX model object
@@ -241,6 +372,15 @@ def perform(model: Any, request: dict[str, Any], started: float, loaded_seconds:
             import base64
 
             interval = float(request["streaming_interval"])
+            # The decoder starts each segment holding the voice, as the whole path
+            # does — computed once per reference, restored per segment.
+            primed = _prime_streaming_decoder(
+                model, model._icl_cache[cache_key][0], request["ref_audio_sha256"]
+            )
+            report["decoder_priming"] = {
+                "reference_codes": primed["reference_codes"],
+                "restored_per_segment": True,
+            }
             generated = model.generate(
                 text=request["text"],
                 ref_audio=ref_audio,

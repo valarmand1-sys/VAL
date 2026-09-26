@@ -23,6 +23,7 @@ import { Thread } from "./App";
 import { latestIssuedWins } from "./conversationReads";
 import type { CapturePlatform } from "./microphone";
 import type { SpeakerPlatform } from "./speaker";
+import { PlaybackHarness } from "./testPlayback";
 import { VoiceController } from "./voiceController";
 
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
@@ -127,15 +128,7 @@ const capture: CapturePlatform = {
   workletModuleUrl: "/pcm-worklet.js",
 };
 
-const speaker: SpeakerPlatform = {
-  createContext: () =>
-    ({
-      decodeAudioData: async () => ({ duration: 0.1 }),
-      createBufferSource: () => ({ connect() {}, disconnect() {}, start() {}, stop() {} }),
-      close: async () => undefined,
-      destination: {},
-    }) as unknown as AudioContext,
-};
+const speaker: SpeakerPlatform = new PlaybackHarness().platform();
 
 let container: HTMLDivElement;
 let root: Root;

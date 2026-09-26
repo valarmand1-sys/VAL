@@ -10,6 +10,7 @@ import { api } from "./api";
 import { settledWordsUtterance, VoiceController } from "./voiceController";
 import type { CapturePlatform } from "./microphone";
 import type { SpeakerPlatform } from "./speaker";
+import { PlaybackHarness } from "./testPlayback";
 
 class FakeTrack {
   readyState: "live" | "ended" = "live";
@@ -49,22 +50,7 @@ function capturePlatform(tracks: FakeTrack[], fail = false): CapturePlatform {
   };
 }
 
-const speakerPlatform: SpeakerPlatform = {
-  createContext: () =>
-    ({
-      decodeAudioData: async () => ({ duration: 0.1 }),
-      createBufferSource: () => ({
-        onended: null,
-        connect() {},
-        disconnect() {},
-        start() {},
-        stop() {},
-        set buffer(_value: unknown) {},
-      }),
-      close: async () => undefined,
-      destination: {},
-    }) as unknown as AudioContext,
-};
+const speakerPlatform: SpeakerPlatform = new PlaybackHarness().platform();
 
 const SESSION = {
   session: "01a0d100-0000-7000-8000-000000000000",

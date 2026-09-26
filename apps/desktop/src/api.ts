@@ -376,6 +376,10 @@ export interface VoiceSessionView {
   committed: VoiceCommittedView | null;
   // Her answer, the moment Core has written it (`message_id` is hers).
   answered?: VoiceCommittedView | null;
+  // The accepted turn's stage — thinking, writing, voicing, speaking — or null; and
+  // whether his next words are queued behind it (26 September 2026).
+  progress?: string | null;
+  queued?: boolean;
   // When his most recent settled utterance's speech ended, as milliseconds before this
   // response was written: the endpoint less the silence that confirmed it. A
   // VAD-derived estimate, never an acoustic observation.

@@ -1499,3 +1499,7 @@ Speech end → playback 18,036 ms (desktop): his message 5,579 ms; ~3.5 s queue;
 - delivery streaming (4), provider streaming (5), API pieces (1);
 - resume hold (2, one confirmed failing without the repair);
 - gate (18 + 1).
+
+## 112. Audio regression: cold streaming decoder and per-piece scheduling — 26 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-26-redesign/AUDIO_REPAIR.md`. Same speech codes by seeding: cold streaming decode differed from the whole decode by log-mel 0.11–0.50 (whole-vs-whole 0.0), onset RMS up to 0.065 vs 0.0015; primed with all 235 reference codes 0.000 (0.03–0.07 at 1 s seams); tail-50 priming 0.07–0.11. Primed-state snapshot restore is sample-identical (max diff 0.0, four seeds) at ~0.1 ms; first piece 0.45–0.48 s. Desktop playback moved to one continuous worklet stream, tested against the shipped worklet (11 tests). Voice On readiness 1.1 → 2.3 s with priming and a discarded warm-up generation; first-request first piece 1.07 → 0.47 s. Progress stages exposed and tested (gateway 2, desktop 2, API 1).

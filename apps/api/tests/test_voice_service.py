@@ -967,6 +967,9 @@ def test_streamed_pieces_travel_with_their_place_and_are_recorded_once(
         )
         view = _poll_until_answered(reachable, session)
         message_id = view["turns"][0]["answer"]["val_message"]["id"]
+        # Response-in-progress feedback (26 September 2026 §8): the fields travel, and
+        # an answered turn with nothing queued reports no stage.
+        assert view["progress"] is None and view["queued"] is False
         pieces = []
         for _ in range(60):
             segment = reachable.get(f"/voice/sessions/{session}/speech/next").json()["segment"]

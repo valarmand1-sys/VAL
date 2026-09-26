@@ -726,6 +726,9 @@ export function App(): React.JSX.Element {
         {view !== "review" && streaming === null && (
           <HeardWords session={voiceSession} detail={detail} />
         )}
+        {view !== "review" && streaming === null && voiceSession !== null && (
+          <ResponseProgress session={voiceSession} />
+        )}
         {lastTiming !== null && streaming === null && <TimingPanel report={lastTiming} />}
 
         {clarification !== null && (
@@ -1158,6 +1161,31 @@ function SpokenContent(props: { presented: Presented }): React.JSX.Element {
  * is hearing, and then what it heard — plainly marked provisional, and gone the moment
  * the canonical message is in the thread. Never a message, never sent from here.
  */
+/**
+ * What is happening to his accepted message, said truthfully (owner order, 26
+ * September 2026 §8). The stage comes from the session's own facts on every poll —
+ * in cognition with nothing visible, writing, voicing — and so clears itself the
+ * moment playback begins, the turn ends, or delivery stops. A queued utterance is
+ * called a queue, never reasoning. Feedback only: it makes nothing faster.
+ */
+export function ResponseProgress(props: { session: VoiceSessionView }): React.JSX.Element | null {
+  const { session } = props;
+  const lines: string[] = [];
+  const stage = session.progress ?? null;
+  if (stage === "thinking") lines.push("Val is thinking…");
+  else if (stage === "writing") lines.push("Val is writing…");
+  else if (stage === "voicing") lines.push("Preparing her voice…");
+  if (session.queued) lines.push("Your next words are waiting for her current answer.");
+  if (lines.length === 0) return null;
+  return (
+    <div className="response-progress" aria-live="polite">
+      {lines.map((line) => (
+        <span key={line}>{line}</span>
+      ))}
+    </div>
+  );
+}
+
 export function HeardWords(props: {
   session: VoiceSessionView | null;
   detail: ConversationDetail | null;

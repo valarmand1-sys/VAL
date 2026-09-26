@@ -17,10 +17,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ConversationDetail, MessageView, SpeechOfferView, VoiceSessionView } from "./api";
 import { api } from "./api";
-import { HeardWords, Thread } from "./App";
+import { HeardWords, ResponseProgress, Thread } from "./App";
 import { latestIssuedWins } from "./conversationReads";
 import type { CapturePlatform } from "./microphone";
 import type { SpeakerPlatform } from "./speaker";
+import { PlaybackHarness, ramp, wavBase64 } from "./testPlayback";
 import type { SpokenAnswer } from "./spokenPresentation";
 import { VoiceController } from "./voiceController";
 
@@ -98,7 +99,7 @@ function segment(index: number, text: string): SpeechOfferView {
       sample_rate: 24_000,
       duration_seconds: 1,
       audio_bytes: 4,
-      audio_base64: "AAAAAA==",
+      audio_base64: wavBase64(ramp(2400, 0.1, 0.1)),
     } as SpeechOfferView["segment"],
   });
 }
@@ -117,21 +118,9 @@ const capture: CapturePlatform = {
   workletModuleUrl: "/pcm-worklet.js",
 };
 
-/** An output device whose buffers finish only when the test ends them. */
-const playing: Array<{ onended: (() => void) | null }> = [];
-const speaker: SpeakerPlatform = {
-  createContext: () =>
-    ({
-      decodeAudioData: async () => ({ duration: 1 }),
-      createBufferSource: () => {
-        const source = { onended: null as (() => void) | null, connect() {}, disconnect() {}, start() {}, stop() {} };
-        playing.push(source);
-        return source;
-      },
-      close: async () => undefined,
-      destination: {},
-    }) as unknown as AudioContext,
-};
+/** The real playback worklet behind a fake device; the test pumps its frames. */
+let harness = new PlaybackHarness();
+let speaker: SpeakerPlatform = harness.platform();
 
 let container: HTMLDivElement;
 let root: Root;
@@ -180,7 +169,8 @@ function mount() {
 
 /** Let the player decode and schedule what it was given. */
 async function settle(): Promise<void> {
-  for (let i = 0; i < 5; i += 1) await act(async () => Promise.resolve());
+  // A macrotask: the player's accept chain awaits the worklet's (fake) module load.
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
 }
 
 function text(): string {
@@ -188,7 +178,8 @@ function text(): string {
 }
 
 beforeEach(() => {
-  playing.length = 0;
+  harness = new PlaybackHarness();
+  speaker = harness.platform();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -227,6 +218,7 @@ describe("her answer is shown as she speaks it", () => {
     vi.spyOn(api, "collectSpeech").mockResolvedValue(segment(0, FIRST) as never);
     await act(async () => collect());
     await settle();
+    await act(async () => harness.pump(128)); // the device writes its first sample
     expect(text()).toContain("Good evening, my lord.");
     expect(text()).not.toContain("I am listening");
 
@@ -236,7 +228,7 @@ describe("her answer is shown as she speaks it", () => {
     await settle();
     expect(text()).not.toContain("I am listening");
     // The first ends; the second starts; its text appears.
-    await act(async () => playing[0]!.onended?.());
+    await act(async () => harness.pump(2400));
     await settle();
     expect(text()).toContain("I am listening");
     expect(text()).not.toContain("Tell me what");
@@ -245,7 +237,7 @@ describe("her answer is shown as she speaks it", () => {
     await act(async () => collect());
     vi.spyOn(api, "collectSpeech").mockResolvedValue(offer({ delivery_state: "completed" }) as never);
     await act(async () => collect());
-    await act(async () => playing[1]!.onended?.());
+    await act(async () => harness.pump(2400));
     await settle();
     expect(text()).toContain(ANSWER.trim());
     expect(text()).not.toContain("Not spoken");
@@ -305,7 +297,7 @@ describe("his next words committed while she is still speaking (his session of 2
     expect(text()).not.toContain("Not spoken");
     expect(text()).not.toContain("I am listening");
     // Her second segment still plays, and appears as it does.
-    await act(async () => playing[0]!.onended?.());
+    await act(async () => harness.pump(2400));
     await settle();
     expect(text()).toContain("I am listening");
     expect(text()).not.toContain("Not spoken");
@@ -330,6 +322,7 @@ describe("a segment voiced before her answer was written", () => {
     vi.spyOn(api, "collectSpeech").mockResolvedValue(unbound as never);
     await act(async () => collect());
     await settle();
+    await act(async () => harness.pump(128)); // the device starts it
     expect(played).not.toHaveBeenCalled();
     // Her answer is announced: the held report goes out under its id.
     vi.spyOn(api, "voiceSession").mockResolvedValue(session({}) as never);
@@ -369,5 +362,30 @@ describe("his words, before they are his message", () => {
     const elsewhere = { ...ANSWERED, conversation: { ...ANSWERED.conversation, id: "somewhere-else" } };
     renderHeard(session({ committed: null }), elsewhere);
     expect(text()).toBe("");
+  });
+});
+
+
+describe("response-in-progress feedback", () => {
+  const show = (over: Partial<VoiceSessionView>) =>
+    act(() => root.render(<ResponseProgress session={session(over)} />));
+
+  it("names the stage the session reports, and only while one is in progress", () => {
+    show({ progress: "thinking" });
+    expect(text()).toBe("Val is thinking…");
+    show({ progress: "writing" });
+    expect(text()).toBe("Val is writing…");
+    show({ progress: "voicing" });
+    expect(text()).toBe("Preparing her voice…");
+    show({ progress: "speaking" });
+    expect(text()).toBe(""); // playback itself is the feedback
+    show({ progress: null });
+    expect(text()).toBe("");
+  });
+
+  it("calls a queue a queue, never reasoning", () => {
+    show({ progress: "writing", queued: true });
+    expect(text()).toContain("Your next words are waiting for her current answer.");
+    expect(text()).not.toContain("thinking");
   });
 });

@@ -515,7 +515,9 @@ class Gateway:
         if not callable(warm):
             return {"warmed": False, "reason": "this speech provider cannot be warmed"}
         try:
-            report = warm()
+            # The governed voice, when this gateway has one: its conditioning is
+            # loaded and the streaming decoder primed at start (26 September 2026).
+            report = warm(self.voice) if self.voice is not None else warm()
         except Exception as failure:  # reported, never fatal
             return {"warmed": False, "reason": f"{type(failure).__name__}: {failure}"}
         return dict(report) if isinstance(report, Mapping) else {"warmed": False}

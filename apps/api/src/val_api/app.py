@@ -923,6 +923,8 @@ def create_app(
             provisional=view.provisional,
             hearing=view.hearing,
             pending=view.pending,
+            progress=view.progress,
+            queued=view.queued,
             turns=[
                 VoiceTurnView(
                     message_id=turn.message_id,

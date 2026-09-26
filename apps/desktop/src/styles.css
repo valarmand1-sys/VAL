@@ -518,6 +518,15 @@ body {
   font-size: 0.8em;
 }
 /* Her answer paced to her speech: nothing yet, and text she did not speak. */
+/* What is happening to his accepted message: thinking, writing, voicing; a queue is a queue. */
+.response-progress {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9em;
+  font-style: italic;
+  opacity: 0.7;
+  margin: 0.25rem 0 0.5rem;
+}
 .spoken-pending {
   opacity: 0.5;
   margin: 0;

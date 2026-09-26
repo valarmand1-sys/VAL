@@ -75,6 +75,9 @@ def test_the_commit_is_visible_in_the_session_before_cognition_returns(
     assert view.committed is not None
     assert view.turns == ()
     assert view.state is VoiceSessionState.THINKING
+    # Response-in-progress feedback (26 September 2026 §8): in cognition, nothing
+    # visible yet, nothing queued behind it.
+    assert view.progress == "thinking" and view.queued is False
     assert view.conversation_id == view.committed.conversation_id
     assert messages_of(store, view.committed.conversation_id) == ["Good evening, Val."]
 
@@ -119,6 +122,8 @@ class HeldVoice:
         self.finishing = threading.Event()
         self.release = threading.Event()
         self.audible = True
+        self.has_text = False
+        self.first_tts_start_ms: int | None = None
         self.bound: object = None
 
     def feed(self, text: str) -> None:
@@ -172,4 +177,32 @@ def test_her_answer_is_announced_before_her_voice_has_finished(
     voice.release.set()
     settle(session, clock)
     assert [turn.answer_message_id for turn in session.snapshot().turns] == [voice.bound]
+    session.close()
+
+
+def test_the_progress_stage_follows_the_delivery_and_clears_when_the_turn_ends(
+    store: Engine,  # noqa: F811 - pytest fixture injection
+) -> None:
+    """Owner order, 26 September 2026 §8: truthful stages, cleared on completion."""
+    recognizer = ScriptedRecognizer(batches=[[started(1), final(1, "Good evening, Val.")]])
+    session, _, clock = a_session(
+        store, recognizer, adapter=ScriptedAdapter([ok("Good evening, my lord.")])
+    )
+    voice = HeldVoice()
+    voice.audible = False
+    session._speech = lambda: voice  # type: ignore[assignment,return-value]
+    session.feed(MARKER)
+    clock.tick(5.0)
+    session.advance()
+    assert voice.finishing.wait(10)
+    # Her voice has the text and is working on the first sentence.
+    voice.has_text = True
+    assert session.snapshot().progress == "writing"
+    voice.first_tts_start_ms = 1200
+    assert session.snapshot().progress == "voicing"
+    voice.audible = True
+    assert session.snapshot().progress == "speaking"
+    voice.release.set()
+    settle(session, clock)
+    assert session.snapshot().progress is None, "cleared once the turn is over"
     session.close()

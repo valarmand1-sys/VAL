@@ -1080,3 +1080,31 @@ unchanged.
   and both answers.
 
 **Pending physical acceptance.**
+
+---
+
+## 25. Handoff — the audio regression's cause and repair, and response-in-progress feedback, 26 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-26-redesign/AUDIO_REPAIR.md`
+(evidence index §112). A production correctness repair under the redesign order's
+standing authorisation; nothing of the redesign's experimental routing is in it.
+
+**Cause 1, measured:** the library's streaming decoder began every sentence cold —
+no reference context — where the whole decode had the voice already in its buffers.
+Same codes by seeding: log-mel distance 0.11–0.50 against 0.0, and a 0.065 RMS burst
+in the first 60 ms of a sentence against 0.0015. **Repair:** the streaming decoder is
+primed with the reference codes once per reference, its primed state captured, and
+restored per segment (sample-identical to fresh priming; ~0.1 ms). First piece stays
+at 0.45–0.48 s. **Cause 2, structural:** each piece decoded and scheduled separately on
+the desktop, a resampler restart and a scheduling edge per seam. **Repair:** one
+playback worklet writes every piece as one continuous signal at the speech's own rate.
+
+**Also:** the voice worker primes at Voice On when the governed voice is known and
+spends MLX's one-time compilation on a discarded short generation (readiness 1.1 →
+2.3 s, reported; the session's first sentence 1.07 → 0.47 s to first piece). The
+session reports the accepted turn's stage — thinking, writing, voicing, speaking — and
+whether his next words are queued behind it; the desktop shows it; it makes nothing
+faster.
+
+**Not established:** that it sounds clean in the room. Fallback if it does not:
+whole-segment synthesis, 1.1–4.5 s to first audio.

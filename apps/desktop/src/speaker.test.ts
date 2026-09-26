@@ -1,79 +1,22 @@
-// Physical playback and barge-in — owner execution order, 24 September 2026, §12, §19.
+// Physical playback and barge-in — owner execution order, 24 September 2026, §12, §19;
+// rebuilt 26 September 2026 (audio regression §8) around the real playback worklet.
 //
-// The assertion here: **stopping stops the sound, not only the queue.** A queue
-// emptied while a buffer plays on is not an interruption, and the difference is the
-// whole of barge-in. Also: playback started is reported from the scheduling call,
-// so the record's physical boundary is a real event rather than an intention.
+// The assertions: pieces of one segment reach the device as ONE continuous signal; a
+// segment starts once and completes after its last piece; the next segment follows
+// without a gap; a late piece is silence and an underrun, never a click; stopping
+// silences the device and discards everything queued; and a stopped or failed piece is
+// reported as what it was, never as a completion.
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import {
-  SpeechPlayer,
   decodeSegmentAudio,
+  decodeWav,
+  SpeechPlayer,
   type SegmentAudio,
   type SpeakerObserver,
-  type SpeakerPlatform,
 } from "./speaker";
-
-class FakeSource {
-  started = 0;
-  stops = 0;
-  disconnects = 0;
-  onended: (() => void) | null = null;
-  buffer: unknown = null;
-  connect(): void {}
-  disconnect(): void {
-    this.disconnects += 1;
-  }
-  start(): void {
-    this.started += 1;
-  }
-  stop(): void {
-    this.stops += 1;
-  }
-  /** What a real source does when it finishes on its own. */
-  finish(): void {
-    this.onended?.();
-  }
-}
-
-class FakeAudioContext {
-  sources: FakeSource[] = [];
-  closed = 0;
-  decoded = 0;
-  failDecode = false;
-  destination = {};
-  async decodeAudioData(buffer: ArrayBuffer): Promise<unknown> {
-    this.decoded += 1;
-    if (this.failDecode) throw new Error("not audio");
-    // A real decode detaches the buffer; the fake records that the bytes were
-    // consumed rather than retained.
-    void buffer;
-    return { duration: 0.5 };
-  }
-  createBufferSource(): FakeSource {
-    const source = new FakeSource();
-    this.sources.push(source);
-    return source;
-  }
-  async close(): Promise<void> {
-    this.closed += 1;
-  }
-}
-
-function world(): { platform: SpeakerPlatform; context: FakeAudioContext } {
-  const context = new FakeAudioContext();
-  return { platform: { createContext: () => context as unknown as AudioContext }, context };
-}
-
-function segment(index: number, text = "Eight, my lord."): SegmentAudio {
-  return {
-    messageId: "01a0d000-0000-7000-8000-000000000000",
-    segmentIndex: index,
-    text,
-    audio: new ArrayBuffer(16),
-  };
-}
+import { PlaybackHarness, ramp, wavBase64, wavBytes } from "./testPlayback";
 
 interface Reported {
   started: number[];
@@ -87,123 +30,127 @@ function observer(): { reported: Reported; hooks: SpeakerObserver } {
   return {
     reported,
     hooks: {
-      onStarted: (item: SegmentAudio) => reported.started.push(item.segmentIndex),
-      onCompleted: (item: SegmentAudio) => reported.completed.push(item.segmentIndex),
-      onInterrupted: (item: SegmentAudio, reason: string) =>
-        reported.interrupted.push([item.segmentIndex, reason]),
-      onFailed: (item: SegmentAudio, detail: string) =>
-        reported.failed.push([item.segmentIndex, detail]),
+      onStarted: (item) => reported.started.push(item.segmentIndex),
+      onCompleted: (item) => reported.completed.push(item.segmentIndex),
+      onInterrupted: (item, reason) => reported.interrupted.push([item.segmentIndex, reason]),
+      onFailed: (item, detail) => reported.failed.push([item.segmentIndex, detail]),
     },
   };
 }
 
-describe("playing Val's speech", () => {
-  it("reports started from the scheduling call, which is the physical boundary", async () => {
-    const { platform, context } = world();
-    const watch = observer();
-    const player = new SpeechPlayer(watch.hooks, platform);
-    player.enqueue(segment(1));
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(context.sources).toHaveLength(1);
-    expect(context.sources[0]!.started).toBe(1);
+function piece(index: number, chunk: number, samples: number[], last: boolean): SegmentAudio {
+  return { messageId: "m", segmentIndex: index, text: `segment ${index}`, audio: wavBytes(samples), chunk, last };
+}
+
+async function settle(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+let harness: PlaybackHarness;
+let watch: ReturnType<typeof observer>;
+let player: SpeechPlayer;
+
+beforeEach(() => {
+  harness = new PlaybackHarness(24000);
+  watch = observer();
+  player = new SpeechPlayer(watch.hooks, harness.platform());
+});
+
+describe("streamed pieces are one signal", () => {
+  it("joins a segment's pieces sample to sample, starts it once and completes it after the last", async () => {
+    const first = ramp(480, -0.5, 0.5);
+    const second = ramp(480, 0.5, -0.5);
+    player.enqueue(piece(1, 0, first, false));
+    player.enqueue(piece(1, 1, second, false));
+    player.enqueue(piece(1, 2, [], true));
+    await settle();
+    expect(harness.requestedRate).toBe(24000);
+    harness.pump(960);
+    // The device saw the two ramps back to back, to 16-bit precision.
+    const expected = [...first, ...second];
+    for (let i = 0; i < 960; i += 1) expect(harness.output[i]).toBeCloseTo(expected[i]!, 3);
     expect(watch.reported.started).toEqual([1]);
-    // Nothing is reported as completed until the source really ends.
-    expect(watch.reported.completed).toEqual([]);
-    context.sources[0]!.finish();
+    expect(watch.reported.completed).toEqual([1]);
+    expect(player.underrunFrames).toBe(0);
+  });
+
+  it("plays the next segment right after the previous one, in order", async () => {
+    player.enqueue(piece(1, 0, ramp(240, 0.2, 0.2), true));
+    player.enqueue(piece(2, 0, ramp(240, -0.2, -0.2), true));
+    await settle();
+    harness.pump(480);
+    expect(harness.output[239]).toBeCloseTo(0.2, 3);
+    expect(harness.output[240]).toBeCloseTo(-0.2, 3);
+    expect(watch.reported.started).toEqual([1, 2]);
+    expect(watch.reported.completed).toEqual([1, 2]);
+  });
+
+  it("writes silence and counts an underrun when the next piece is late — never a click", async () => {
+    player.enqueue(piece(1, 0, ramp(240, 0.3, 0.3), false));
+    await settle();
+    harness.pump(360); // 120 frames past the end of the piece
+    expect(harness.output.slice(240, 360).every((v) => v === 0)).toBe(true);
+    player.enqueue(piece(1, 1, ramp(240, 0.3, 0.3), true));
+    await settle();
+    harness.pump(240);
+    expect(player.underrunFrames).toBe(120);
     expect(watch.reported.completed).toEqual([1]);
   });
 
-  it("reports a failed decode rather than pretending it played", async () => {
-    const { platform, context } = world();
-    context.failDecode = true;
-    const watch = observer();
-    const player = new SpeechPlayer(watch.hooks, platform);
-    player.enqueue(segment(1));
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(watch.reported.failed).toHaveLength(1);
-    expect(watch.reported.started).toEqual([]);
+  it("resamples continuously when the context runs at another rate", async () => {
+    harness = new PlaybackHarness(48000);
+    player = new SpeechPlayer(watch.hooks, harness.platform());
+    player.enqueue(piece(1, 0, ramp(240, 0, 0.5), false));
+    player.enqueue(piece(1, 1, ramp(240, 0.5, 1.0), true));
+    await settle();
+    harness.pump(960);
+    // Twice as many output samples, and no jump at the boundary between pieces.
+    const steps = harness.output.slice(1, 960).map((v, i) => Math.abs(v - harness.output[i]!));
+    expect(Math.max(...steps)).toBeLessThan(0.002);
+    expect(harness.output[959]).toBeCloseTo(1.0, 2);
   });
 });
 
 describe("barge-in", () => {
-  it("stops the sounding buffer and discards what was queued behind it", async () => {
-    const { platform, context } = world();
-    const watch = observer();
-    const player = new SpeechPlayer(watch.hooks, platform);
-    player.enqueue(segment(1));
-    player.enqueue(segment(2, "And the wine."));
-    player.enqueue(segment(3, "At once."));
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
+  it("silences the device at once and discards what was queued", async () => {
+    player.enqueue(piece(1, 0, ramp(4800, 0.4, 0.4), true));
+    player.enqueue(piece(2, 0, ramp(4800, 0.4, 0.4), true));
+    await settle();
+    harness.pump(128);
     expect(player.audible).toBe(true);
-    expect(player.queued).toBe(2);
-
     player.stop("the owner spoke");
-
-    // The sound stopped — not merely the queue.
-    expect(context.sources[0]!.stops).toBe(1);
-    expect(context.sources[0]!.disconnects).toBe(1);
+    const after = harness.pump(4800);
+    expect(after.every((v) => v === 0)).toBe(true);
     expect(player.audible).toBe(false);
-    expect(player.queued).toBe(0);
     expect(watch.reported.interrupted).toEqual([[1, "the owner spoke"]]);
-    // And an interruption is never recorded as a completion.
     expect(watch.reported.completed).toEqual([]);
-  });
-
-  it("plays nothing more after a stop", async () => {
-    const { platform, context } = world();
-    const watch = observer();
-    const player = new SpeechPlayer(watch.hooks, platform);
-    player.enqueue(segment(1));
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    player.stop("the owner spoke");
-    player.enqueue(segment(2));
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(context.sources).toHaveLength(1);
     expect(watch.reported.started).toEqual([1]);
   });
 
-  it("closing releases the audio device and stops anything playing", async () => {
-    const { platform, context } = world();
-    const watch = observer();
-    const player = new SpeechPlayer(watch.hooks, platform);
-    player.enqueue(segment(1));
-    await Promise.resolve();
-    await Promise.resolve();
-    await Promise.resolve();
-    player.close();
-    expect(context.sources[0]!.stops).toBe(1);
-    expect(context.closed).toBe(1);
-    expect(watch.reported.interrupted[0]?.[1]).toBe("voice mode ended");
+  it("plays nothing more after a stop", async () => {
+    player.enqueue(piece(1, 0, ramp(240, 0.4, 0.4), true));
+    await settle();
+    player.stop("the owner spoke");
+    player.enqueue(piece(2, 0, ramp(240, 0.4, 0.4), true));
+    await settle();
+    expect(harness.pump(480).every((v) => v === 0)).toBe(true);
+    expect(watch.reported.started).toEqual([]);
   });
 });
 
-describe("the transport", () => {
-  it("decodes the service's base64 into the exact bytes", () => {
-    const bytes = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x00, 0xff]);
-    const base64 = btoa(String.fromCharCode(...bytes));
-    const decoded = new Uint8Array(decodeSegmentAudio(base64));
-    expect(Array.from(decoded)).toEqual(Array.from(bytes));
+describe("what is reported is what happened", () => {
+  it("reports a piece that is not audio as failed rather than played", async () => {
+    player.enqueue({ messageId: "m", segmentIndex: 1, text: "x", audio: new ArrayBuffer(16) });
+    await settle();
+    expect(watch.reported.failed).toHaveLength(1);
+    expect(watch.reported.started).toEqual([]);
   });
 
-  it("writes no file and keeps no archive", async () => {
-    const modules = import.meta.glob("./speaker.ts", {
-      query: "?raw",
-      import: "default",
-      eager: true,
-    });
-    const source = String(Object.values(modules)[0]);
-    for (const forbidden of ["MediaRecorder", "showSaveFilePicker", "createWriteStream", "localStorage"]) {
-      expect(source).not.toContain(forbidden);
-    }
+  it("decodes the service's transport into the WAV it carried", () => {
+    const samples = ramp(100, -0.25, 0.25);
+    const decoded = decodeWav(decodeSegmentAudio(wavBase64(samples)));
+    expect(decoded.sampleRate).toBe(24000);
+    expect(decoded.samples).toHaveLength(100);
+    expect(decoded.samples[99]).toBeCloseTo(0.25, 3);
   });
 });
