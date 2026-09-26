@@ -911,3 +911,106 @@ The sequence was confirmed failing on the previous implementation.
   audible.
 - Conversation-content priming is **not authorised**; the restriction stands.
   Interruption policy is unchanged.
+
+---
+
+## 23. Handoff — his physical turn of 23:03, 25 September 2026: where the ~15 s went
+
+**WP3 remains PARTIAL.** No code changed in this pass. Presentation and queued-answer
+acceptance are **not** inferred from this timing report.
+
+**Identity (OBSERVED):** Voice session `01a0dbe2-4826…`, conversation
+`01a0dbe2-17fe…`, 23:03–23:04 CDT.
+
+- **Service:** process 14780, started on `642cb35`'s code; `e866a09` changed only the
+  desktop.
+- **Desktop:** the report fields prove `b6c8937` or later. The installed binary is
+  `e866a09`'s, and Val was not running at install time. Which build this window ran
+  is **not provable from the records**: the desktop reports no build identity.
+- **Runtime:** `openai/gpt-oss-20b`, parallel 1.
+
+**What happened:**
+
+1. He asked for "a detailed summary of what we accomplished with voice today…".
+2. About 3.9 s after he finished (`gap_before_s`), while she was still reasoning
+   (7.58 s of hidden reasoning), he began "And after that, tell me which remaining
+   issue…".
+3. His speaking was barge-in: answer 1's delivery was interrupted ("the owner began
+   speaking"), and its 848 characters were written but never voiced.
+4. His second utterance was queued until answer 1's cognition finished. It was
+   submitted 29 ms after answer 1 was persisted.
+
+**The turn he timed** (utterance 2; ms after the recognizer's endpoint unless stated):
+
+| boundary | this turn | successful turn 4 (§21) |
+|---|---|---|
+| speech end → endpoint (confirming silence) | 0.67 s (DERIVED, `silence_s`) | ~0.66 s |
+| endpoint → final transcript | 0.27 s | 0.16 s |
+| **waiting behind answer 1's cognition** | **~3.5 s** (submitted 4.84 s after the endpoint against ~1.3 s normal; OBSERVED as submission 29 ms after answer 1 persisted) | none |
+| speech end → his message in the DOM | **5,579 ms** (OBSERVED, desktop) | 2,024 ms |
+| submitted → dispatch (readiness, preflight; no maintenance wait) | 0.10 s | 0.10 s |
+| dispatch → first provider output | **2.67 s** (1,676 tokens beyond the 5,048 cached; the history now held answer 1) | 1.74 s (946) |
+| first output → first answer text (hidden reasoning; all earlier chunks non-visible) | 4.05 s | 4.57 s |
+| first answer text → first speech-safe segment | 0.34 s (107 characters: "My lord," + blank line + a 97-character sentence; no qualifying pause, so the first-pause rule correctly did not fire) | 0.34 s (121) |
+| segment → playable audio (synthesis, while the rest of a 1,113-character answer was still being generated) | **5.30 s** | 3.85 s |
+| audio → playback (service clock) | 0.09 s | 0.06 s |
+| **speech end → playback** | **18,036 ms** (OBSERVED, desktop) | 12,596 ms |
+
+His "about 15 seconds" is not assumed to share the software's starting point. From his
+message appearing to her first sound was 12,457 ms (OBSERVED).
+
+**Where the extra ~5.4 s over the successful turn went:**
+
+- ~3.5 s queued behind a turn whose answer was never going to be spoken;
+- ~0.9 s recomputing a longer history;
+- ~1.45 s slower first synthesis under heavier contention.
+
+Reasoning was 0.5 s shorter.
+
+**Safe to remove now, within authorisation:** nothing demonstrated.
+
+- The queue wait is turn-taking behaviour.
+- The history recompute needs conversation-content priming, which is not authorised.
+- The reasoning and the contended first synthesis are model and voice work under the
+  kept settings.
+
+**Measurement defect found, not fixed:** the panel's provisional-words figure for this
+turn (−4,239 ms) paired utterance 2 with utterance 1's text. The session's `pending`
+carries the in-flight turn's text while he is speaking again. The fix is to count
+provisional words only when the session is not currently hearing. It is small, but it
+was not made in this report-only pass.
+
+**Turn-taking, separately.** When he speaks while she is still thinking, her voice for
+that answer is already stopped, yet its cognition runs to completion before his new
+words are submitted. Here that cost ~3.5 s, plus contention on what followed; in the
+successful session it cost 41 s. Cancelling the unspoken answer's cognition — or
+joining his follow-up to the question it continues — would remove that wait. It would
+also change what reaches the record (an answer never written, or one merged turn).
+That is interruption policy, and his to rule on.
+
+**Conversation-level priming — proposed isolated experiment (not authorised, not
+run):**
+
+- **Content:** the persona plus the conversation's retained canonical messages, exactly
+  as Core assembles them for the next turn. That is his words and her answers as
+  stored, with none of her hidden reasoning, and not the per-turn record-state envelope
+  or the new turn. A short filler places the engine's checkpoint exactly at the end of
+  the history (the same token-identity plan as the persona prime).
+- **Where the state lives:** the LM Studio engine's in-memory prompt cache (the MLX KV
+  state in its 10-entry insertion-ordered `LRUPromptCache`), in RAM only. No disk cache
+  appeared in the priming pass, and this is to be re-verified.
+- **Lifetime and cleanup:** until later entries evict it, the model unloads (1 h idle),
+  or LM Studio restarts. It is never written to the store.
+- **Isolation:** the APFS clone `val-experiment/gpt-oss-20b` loaded as `val-exp`, a
+  scratch service and store, and scripted synthetic conversations only. Production and
+  his conversations are untouched, and the clone is removed afterwards.
+- **Comparison:** the current persona prime against the conversation prime, on the same
+  multi-turn conversations. Measured per turn:
+  - request-ready → first output;
+  - speech end → first playback;
+  - each prime's establishment and refresh time, added into the totals;
+  - complete spoken turns arriving during a refresh at 0.5 / 2 / 4 s;
+  - Whisper decode time and first synthesis under contention;
+  - free memory and swap.
+- **Cost:** $0, local; about 45 minutes. Deployment would need its own ruling.
+- **The 1.2–1.8 s per later turn is an estimate, not a measurement.**

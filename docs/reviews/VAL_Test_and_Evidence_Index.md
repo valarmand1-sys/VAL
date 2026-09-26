@@ -1466,3 +1466,11 @@ Tests: `spokenPresentation.test.ts` (20), `spokenThread.test.tsx` (6, real contr
 ## 109. Final-segment playback no longer excluded from stall detection — 25 September 2026
 
 **WP3 remains PARTIAL.** The owner-reproduced defect: an answer `complete` (every segment started) with its final segment still playing was skipped by the stall check, so a queued answer behind it was shown in full as "delayed". Reproduced against the committed implementation. Fixed by judging playback from segments, not reveal state; cleared by end, cut-off (`onInterrupted`), delivery stop (including a complete answer's), failure and release; a lost end event is bounded by the segment's known audio length plus 3 s; cleanup keeps playing answers. 7 regression tests. Status unchanged and restated: first-segment latency gain NOT YET DEMONSTRATED; self-knowledge correction PARTIAL; the 41-second queued-utterance wait a remaining turn-taking limitation; conversation-content priming not authorised.
+
+## 110. His physical turn of 23:03: 18.0 s, of which ~3.5 s queued behind an unspoken answer — 25 September 2026
+
+**WP3 remains PARTIAL; no code changed.** Conversation `01a0dbe2-17fe…`. Utterance 2 was spoken while she reasoned about utterance 1; barge-in stopped answer 1's voice (never spoken) but not its cognition, and utterance 2 was submitted 29 ms after answer 1 persisted.
+
+Speech end → playback 18,036 ms (desktop): his message 5,579 ms; ~3.5 s queue; dispatch → first output 2.67 s (1,676 uncached tokens); hidden reasoning 4.05 s; first segment 0.34 s (107 characters, correctly uncut); synthesis 5.30 s under contention; playback 0.09 s. Against the successful turn's 12.6 s: +3.5 s queue, +0.9 s prefill, +1.45 s synthesis.
+
+**Nothing safely removable within authorisation.** The provisional-words panel figure for a turn spoken during thinking is mis-paired (recorded, not fixed). Proposed isolated conversation-priming experiment recorded in WP3 §23; its saving is an estimate, not measured.
