@@ -764,3 +764,44 @@ nothing on the input or presentation path; those tests pass unchanged.
 **Pending physical acceptance:** the smallest Voice retest, read from the three-interval
 panel. **Held:** resident speech process (~1.3 s per synthesis); model residency; answer-
 text timing. Avatar blocked; LOW NOT_ADMITTED; Whisper unchanged.
+
+---
+
+## 20. Handoff — voice-mode repair: his words, her response, text with speech, 25 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-25-voice-repair/RESULT.md`
+(evidence index §107). §16–§19 stand as written.
+
+**His physical failure (OBSERVED):** his words took 2.1 s to appear, her voice began
+9.0 s and 13.2 s after his words, and her text arrived after she had begun speaking.
+Cause of the last: the desktop read her answer only when the turn was appended, after
+**every** segment had been synthesised — about when she started for a one-segment
+reply (his earlier satisfactory run), mid-way or later for two or three segments.
+
+**His presentation ruling, implemented:** her displayed answer progresses with her
+speech — each segment's text appears when that segment starts playing, not by a timer
+or a speaking rate; the answer is read the moment Core has written it
+(`VoiceSessionView.answered`) so it is always ready before her voice; interruption,
+failure, a 12 s stall or Voice ending show the rest at once, marked not spoken; text
+mode unchanged.
+
+**Also changed:** his settled words appear in the thread as provisional text ~1 s after
+he stops, replaced by the canonical message (still 2.0–2.2 s, reported separately;
+endpoint and resume grace unchanged). The speech model stays loaded in a resident
+worker while Voice is on (same model, voice, pace and code; released when Voice
+ends; falls back to one-shot on any failure). Speech offers name their answer so a
+finished answer's state cannot land on the next. Desktop tests can no longer reach a
+live service.
+
+**Before → after (synthetic, same driver, production model, n=9 each):** first
+sentence synthesis median 2.92 → 2.02 s; speech end → first playback median 10.29 →
+9.13 s (first turn after Voice On 8.8–10.1 → 6.4–8.9 s); silent gaps 10.6 s → 0.6 s
+in total; her text ready before her voice 0/9 → 9/9 turns; text offset up to +17 s →
+0 for every segment. Priming retained unchanged; no refresh overlapped a turn.
+
+**Remaining dominant cost:** MEDIUM's hidden reasoning before visible text (1.1–6.3 s
+in these runs, 9.1 s in his), then first-sentence synthesis under contention with
+cognition (up to 4.2 s). **Unverified:** paint and sound in the room.
+
+**Pending physical acceptance:** the smallest Voice retest (below). **Held:** C / E / G,
+conversation-switch acceptance, Avatar; LOW NOT_ADMITTED; Whisper unchanged.

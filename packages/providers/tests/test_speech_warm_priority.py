@@ -1,15 +1,23 @@
-"""Optional voice warming never takes priority over real speech — owner diagnostic, 25 Sept 2026.
+"""The resident voice: loaded once at Voice On, released when Voice ends — 25 Sept 2026.
 
-Voice On starts a warm-up of the speech model so that the first real synthesis
-reads weights the operating system has just cached. His diagnostic's first turn
-came right after Voice On, while warm-ups may still have been running, and the
-owner's order is that **real owner work takes priority** and that this is proved
-structurally, not by timing: if cancellation is the mechanism, the underlying work
-must actually stop and release what it held — a cancelled wait is not preemption.
+Owner order, Voice-mode repair §5. **This file replaces the earlier warm-up tests of
+the same name, and the reason is written here rather than hidden:** the warm-up they
+tested was a separate process that loaded the model, exited, and left each sentence
+to start its own process and load its own copy (~0.26 s interpreter start and
+~1.0 s model load before every sentence — about half of each sentence's synthesis,
+measured on this Mac). That process no longer exists, so "real speech stops a loading
+warm-up" has nothing left to hold. What replaces it is the same runner in `serve`
+mode — the same model, settings and conditioning, run by the same code — holding the
+model while Voice is on, and these tests hold what that must guarantee instead:
 
-So the warm-up here is a **real child process**, as it is in production, and each
-test looks at that process — whether it has exited and whether its process id still
-exists — at the instant real synthesis begins.
+- real speech is never slower for the worker's existence: a sentence that arrives
+  while it loads waits for **that** load (the one it would otherwise do itself), and
+  any failure of the worker falls back to the ordinary one-shot synthesis;
+- a broken worker is never asked twice;
+- the worker speaks nothing of its own, and exits — process gone — when released.
+
+Each test runs a **real child process** speaking the worker's line protocol, as the
+production worker does, and looks at that process.
 """
 
 from __future__ import annotations
@@ -35,132 +43,166 @@ def alive(pid: int) -> bool:
     return True
 
 
-#: Stands in for the model load: reads its instructions, then holds the machine until
-#: it is stopped. It never finishes on its own inside a test's lifetime.
-LOADING = "import sys, time; sys.stdin.read(); time.sleep(60)"
-#: A load that completes, reporting as the real runner's warm mode does.
-LOADED = (
-    "import json, sys; sys.stdin.read(); print(json.dumps({'warmed': True, 'load_seconds': 0.01}))"
-)
+#: The worker protocol: a first line naming the model, `ready` once loaded, then one
+#: JSON request per line and one JSON reply per request; `{"mode": "stop"}` ends it.
+WORKER = """
+import json, sys, time
+LOAD, DIE = float(sys.argv[1]), sys.argv[2] == "die"
+first = json.loads(sys.stdin.readline())
+time.sleep(LOAD)
+print("a library's chatter on stdout, which is not a reply")
+print(json.dumps({"ok": True, "mode": "ready", "load_seconds": LOAD}), flush=True)
+for line in sys.stdin:
+    request = json.loads(line)
+    if request.get("mode") == "stop":
+        break
+    if DIE:
+        sys.exit(3)
+    with open(request["out_path"], "wb") as out:
+        out.write(b"RIFF" + b"\\x00" * 60 + b"resident")
+    print(json.dumps({
+        "ok": True, "sample_rate": 24000, "duration_seconds": 1.2,
+        "clone_prompt_sha256": "c" * 64, "resident_text": request["text"],
+        "generation": {"temperature": 0.9, "kwargs_passed_to_generate": []},
+    }), flush=True)
+"""
 
 
-class WarmingRunner(RecordingRunner):
-    """Starts real processes for warm-ups, and notes their state when speech begins."""
+class WorkerRunner(RecordingRunner):
+    """Starts a real resident worker; one-shot runs are recorded as before."""
 
-    def __init__(self, *replies: object, warm_script: str = LOADING) -> None:
+    def __init__(self, *replies: object, load: float = 0.0, die: bool = False) -> None:
         super().__init__(*replies)
-        self.warm_script = warm_script
+        self.load = load
+        self.die = die
+        self.started: list[list[str]] = []
         self.processes: list[subprocess.Popen[str]] = []
-        self.at_speech: list[list[tuple[int | None, bool]]] = []
-        self.speaking = threading.Event()
-        self.finish_speaking = threading.Event()
-        self.finish_speaking.set()
 
     def start(self, argv: list[str]) -> subprocess.Popen[str]:
+        self.started.append(list(argv))
         process = subprocess.Popen(  # noqa: S603 - this interpreter, a fixed script
-            [sys.executable, "-c", self.warm_script],
+            [sys.executable, "-c", WORKER, str(self.load), "die" if self.die else "live"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
             text=True,
+            bufsize=1,
         )
         self.processes.append(process)
         return process
 
-    def run(self, argv: list[str], payload: str, timeout: float) -> tuple[int, str, str]:
-        # The instant real synthesis begins: is any warm-up still running?
-        self.at_speech.append([(p.poll(), alive(p.pid)) for p in self.processes])
-        self.speaking.set()
-        assert self.finish_speaking.wait(10)
-        return super().run(argv, payload, timeout)
+
+def speak(provider: object, text: str = "Good evening, my lord.") -> object:
+    return provider.synthesize(SpeechRequest(text=text, voice=voice()))  # type: ignore[attr-defined]
 
 
-def wait_until(condition: object, timeout: float = 10.0) -> None:
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        if callable(condition) and condition():
-            return
-        time.sleep(0.01)
-    raise AssertionError("the condition was never reached")
-
-
-def test_real_speech_stops_a_loading_warm_up_and_waits_for_it_to_exit(tmp_path: Path) -> None:
-    runner = WarmingRunner({})
-    provider = adapter(runner, tmp_path)
-    outcome: list[dict[str, object]] = []
-    warming = threading.Thread(target=lambda: outcome.append(provider.warm()), daemon=True)
-    warming.start()
-    wait_until(lambda: runner.processes and runner.processes[0].poll() is None)
-    warm_up = runner.processes[0]
-    assert alive(warm_up.pid), "the warm-up is running when his answer needs the voice"
-
-    provider.synthesize(SpeechRequest(text="Good evening, my lord.", voice=voice()))
-
-    # When real synthesis began, the warm-up had exited and its process was gone:
-    # released, not merely no longer awaited.
-    assert runner.at_speech == [[(warm_up.returncode, False)]]
-    assert warm_up.returncode is not None
-    warming.join(timeout=10)
-    assert outcome and outcome[0]["preempted"] is True
-    assert outcome[0]["warmed"] is False
-    assert provider.last_preemption is not None
-    assert provider.last_preemption["pid"] == warm_up.pid
-
-
-def test_no_warm_up_starts_while_real_speech_is_running(tmp_path: Path) -> None:
-    runner = WarmingRunner({})
-    runner.finish_speaking.clear()
-    provider = adapter(runner, tmp_path)
-    speaking = threading.Thread(
-        target=lambda: provider.synthesize(SpeechRequest(text="Indeed.", voice=voice())),
-        daemon=True,
-    )
-    speaking.start()
-    assert runner.speaking.wait(10)
-
-    report = provider.warm()
-
-    assert report["warmed"] is False
-    assert "real speech is running" in str(report["reason"])
-    assert runner.processes == [], "no warm-up process was started at all"
-    runner.finish_speaking.set()
-    speaking.join(timeout=10)
-
-
-def test_a_warm_up_left_alone_completes_and_says_what_it_did(tmp_path: Path) -> None:
-    runner = WarmingRunner(warm_script=LOADED)
+def test_warm_starts_one_resident_worker_that_speaks_nothing(tmp_path: Path) -> None:
+    runner = WorkerRunner()
     provider = adapter(runner, tmp_path)
 
     report = provider.warm()
 
-    assert report["warmed"] is True
+    assert report["warmed"] is True and report["resident"] is True
     assert report["spoke_nothing"] is True
-    assert "preempted" not in report
-    assert runner.processes[0].returncode == 0
-    # What was asked of it: the warm mode, which generates nothing.
-    assert runner.calls == []
+    assert runner.started[0][-1] == "serve"
+    assert runner.calls == [], "nothing was synthesised by warming"
+    assert provider.resident
+    # A second Voice On while it serves starts nothing new.
+    assert provider.warm().get("already_running") is True
+    assert len(runner.processes) == 1
+    provider.release()
 
 
-def test_the_warm_up_is_asked_to_load_and_nothing_else(tmp_path: Path) -> None:
-    captured: list[str] = []
-
-    class Capturing(WarmingRunner):
-        def start(self, argv: list[str]) -> subprocess.Popen[str]:
-            process = super().start(argv)
-            original = process.communicate
-
-            def communicate(
-                payload: str | None = None, timeout: float | None = None
-            ) -> tuple[str, str]:
-                captured.append(payload or "")
-                return original(payload, timeout=timeout)
-
-            process.communicate = communicate  # type: ignore[method-assign]
-            return process
-
-    runner = Capturing(warm_script=LOADED)
+def test_speech_goes_through_the_resident_worker_without_loading_again(tmp_path: Path) -> None:
+    runner = WorkerRunner()
     provider = adapter(runner, tmp_path)
     provider.warm()
-    request = json.loads(captured[0])
-    assert request["mode"] == "warm"
-    assert "text" not in request
+
+    first = speak(provider, "Good evening, my lord.")
+    second = speak(provider, "The lamps are lit.")
+
+    assert runner.calls == [], "no one-shot process was started for either sentence"
+    assert first.audio.endswith(b"resident") and second.audio.endswith(b"resident")  # type: ignore[attr-defined]
+    assert len(runner.processes) == 1
+    provider.release()
+
+
+def test_speech_arriving_while_the_worker_loads_waits_for_that_load(tmp_path: Path) -> None:
+    runner = WorkerRunner(load=0.4)
+    provider = adapter(runner, tmp_path)
+    warming = threading.Thread(target=provider.warm, daemon=True)
+    warming.start()
+    while not runner.processes:
+        time.sleep(0.01)
+
+    result = speak(provider)
+
+    assert runner.calls == [], "it waited for the load under way rather than doing its own"
+    assert result.audio.endswith(b"resident")  # type: ignore[attr-defined]
+    warming.join(timeout=10)
+    provider.release()
+
+
+def test_a_failed_worker_falls_back_to_one_shot_and_is_never_asked_again(tmp_path: Path) -> None:
+    runner = WorkerRunner({}, {}, die=True)
+    provider = adapter(runner, tmp_path)
+    provider.warm()
+    worker = runner.processes[0]
+
+    result = speak(provider)
+
+    assert len(runner.calls) == 1, "the sentence was spoken by the ordinary one-shot runner"
+    assert result.audio.endswith(b"generated")  # type: ignore[attr-defined]
+    worker.wait(timeout=5)
+    assert not provider.resident
+    speak(provider, "And again.")
+    assert len(runner.calls) == 2, "the broken worker was not asked a second time"
+
+
+def test_release_stops_the_worker_and_its_process_is_gone(tmp_path: Path) -> None:
+    runner = WorkerRunner()
+    provider = adapter(runner, tmp_path)
+    provider.warm()
+    worker = runner.processes[0]
+    assert alive(worker.pid)
+
+    assert provider.release() == {"released": True}
+
+    assert worker.returncode is not None
+    assert not provider.resident
+    # With no worker, speech is the one-shot synthesis it always was.
+    runner.replies.append({})
+    speak(provider)
+    assert len(runner.calls) == 1
+    assert provider.release() == {"released": False}
+
+
+def test_the_worker_is_told_the_model_and_asked_for_nothing_else(tmp_path: Path) -> None:
+    captured: list[str] = []
+
+    class Capturing(WorkerRunner):
+        def start(self, argv: list[str]) -> subprocess.Popen[str]:
+            process = super().start(argv)
+            original = process.stdin
+            assert original is not None
+
+            class Tee:
+                def write(self, text: str) -> int:
+                    captured.append(text)
+                    return original.write(text)
+
+                def flush(self) -> None:
+                    original.flush()
+
+                def close(self) -> None:
+                    original.close()
+
+            process.stdin = Tee()  # type: ignore[assignment]
+            return process
+
+    provider = adapter(Capturing(), tmp_path)
+    provider.warm()
+    provider.release()
+    requests = [json.loads(line) for line in "".join(captured).splitlines()]
+    assert requests[0] == {"model_path": str(tmp_path / "model")}
+    assert requests[1:] == [{"mode": "stop"}]

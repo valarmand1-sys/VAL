@@ -374,6 +374,8 @@ export interface VoiceSessionView {
   // His most recent spoken message, canonical in the store, answered or not — set
   // by the commit itself, before cognition (owner diagnostic, 25 September 2026).
   committed: VoiceCommittedView | null;
+  // Her answer, the moment Core has written it (`message_id` is hers).
+  answered?: VoiceCommittedView | null;
   // When his most recent settled utterance's speech ended, as milliseconds before this
   // response was written: the endpoint less the silence that confirmed it. A
   // VAD-derived estimate, never an acoustic observation.
@@ -387,6 +389,10 @@ export interface DesktopTimingReport {
   owner_message_dom_to_playback_start_ms: number | null;
   speech_end_to_playback_start_ms: number | null;
   committed_seen_to_owner_message_dom_ms: number | null;
+  speech_end_to_owner_words_provisional_ms?: number | null;
+  segment_text_offsets_ms?: number[] | null;
+  segment_gaps_ms?: number[] | null;
+  segments?: number | null;
 }
 
 export interface VoiceCommittedView {
@@ -417,6 +423,8 @@ export interface SpeechOfferView {
   stop: boolean;
   reason: string | null;
   segment: SpokenAudioView | null;
+  // Her answer this delivery speaks, once written — which answer a state is about.
+  message_id?: string | null;
 }
 
 export interface PlaybackEventView {

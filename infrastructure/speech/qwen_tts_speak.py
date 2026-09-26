@@ -57,6 +57,7 @@ GENERATE_KWARGS: dict[str, Any] = {}
 def _fail(reason: str, *, kind: str = "unavailable") -> int:
     json.dump({"ok": False, "kind": kind, "reason": reason}, sys.stdout)
     sys.stdout.write("\n")
+    sys.stdout.flush()
     return 1
 
 
@@ -85,18 +86,59 @@ def write_wav(path: Path, samples: object, sample_rate: int) -> None:
 
 
 def main() -> int:
-    request = json.load(sys.stdin)
-    mode = request["mode"]
-    model_path = request["model_path"]
-    out_path = Path(request["out_path"])
-
-    import mlx.core as mx
-    import numpy as np
+    request = json.load(sys.stdin) if len(sys.argv) < 2 else {"mode": sys.argv[1]}
+    if request["mode"] == "serve":
+        return serve()
     from mlx_audio.tts.utils import load_model
 
     started = time.monotonic()
-    model = load_model(model_path)
-    loaded_seconds = time.monotonic() - started
+    model = load_model(request["model_path"])
+    return perform(model, request, started, time.monotonic() - started)
+
+
+def serve() -> int:
+    """The resident worker: load once, then one request per stdin line, one reply each.
+
+    Owner order, 25 September 2026 (Voice-mode repair §5). Each one-shot run spent
+    ~0.26 s starting the interpreter and ~1.0 s loading the model before generating,
+    for every sentence Val spoke — about half of each sentence's synthesis time. This
+    mode runs the **same** `perform` on the **same** model with the **same** settings
+    and conditioning; only the process lives longer. It lives only while a Voice
+    session wants it: the service starts it at Voice On and stops it when Voice ends,
+    so the speech, audio-perception and cognition models still take turns in memory
+    rather than competing all day.
+
+    The first stdin line names the model; `{"mode": "stop"}` ends the worker.
+    """
+    from mlx_audio.tts.utils import load_model
+
+    first = json.loads(sys.stdin.readline())
+    started = time.monotonic()
+    model = load_model(first["model_path"])
+    ready = {"ok": True, "mode": "ready", "load_seconds": round(time.monotonic() - started, 3)}
+    print(json.dumps(ready), flush=True)
+    for line in sys.stdin:
+        if not line.strip():
+            continue
+        request = json.loads(line)
+        if request.get("mode") == "stop":
+            break
+        began = time.monotonic()
+        try:
+            perform(model, request, began, 0.0)
+        except Exception as failure:  # one bad request does not end the worker
+            _fail(f"{type(failure).__name__}: {failure}")
+        sys.stdout.flush()
+    return 0
+
+
+def perform(model: Any, request: dict[str, Any], started: float, loaded_seconds: float) -> int:  # noqa: ANN401 - the MLX model object
+    """One request against a loaded model: warm, design or speak."""
+    import mlx.core as mx
+    import numpy as np
+
+    mode = request["mode"]
+    out_path = Path(request.get("out_path") or ".")
     sample_rate = int(model.sample_rate)
 
     report: dict[str, Any] = {
@@ -128,7 +170,7 @@ def main() -> int:
         # there is nothing to attribute: Val has not spoken. That is the whole reason
         # this is a mode rather than a discarded synthesis.
         report["warmed"] = True
-        print(json.dumps(report))
+        print(json.dumps(report), flush=True)
         return 0
 
     if mode == "design":
@@ -213,6 +255,7 @@ def main() -> int:
     report["elapsed_seconds"] = round(time.monotonic() - started, 3)
     json.dump(report, sys.stdout, default=str)
     sys.stdout.write("\n")
+    sys.stdout.flush()
     return 0
 
 

@@ -707,9 +707,14 @@ def test_handing_over_is_recorded_and_is_not_a_claim_that_anything_was_heard(
         (turn,) = view["turns"]
         # Val's answer, which is what speech is about — never the owner's message.
         message_id = turn["answer"]["val_message"]["id"]
+        # Her answer was announced by the session itself, not only through `turns`.
+        assert view["answered"]["message_id"] == message_id
         segment = None
         for _ in range(20):
             offer = reachable.get(f"/voice/sessions/{session}/speech/next").json()
+            # Every offer names the answer its delivery speaks, so a finished answer's
+            # repeated state can never be read as the next one's (Voice-mode repair §4).
+            assert offer["message_id"] == message_id
             if offer["segment"] is not None:
                 segment = offer["segment"]
                 break

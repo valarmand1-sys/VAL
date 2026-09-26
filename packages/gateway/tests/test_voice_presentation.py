@@ -110,3 +110,66 @@ def test_every_spoken_turn_writes_one_timeline_line(
     # Nothing he said is in it.
     assert "Good evening" not in lines[0]
     session.close()
+
+
+class HeldVoice:
+    """A delivery whose voice has not finished: `finish` waits until the test says so."""
+
+    def __init__(self) -> None:
+        self.finishing = threading.Event()
+        self.release = threading.Event()
+        self.audible = True
+        self.bound: object = None
+
+    def feed(self, text: str) -> None:
+        pass
+
+    def bind(self, message_id: object) -> None:
+        self.bound = message_id
+
+    def finish(self, text: str) -> None:
+        self.finishing.set()
+        assert self.release.wait(30), "the test never let her voice finish"
+
+    def record_segments(self) -> None:
+        pass
+
+    def interrupt(self, reason: str) -> None:
+        pass
+
+
+def test_her_answer_is_announced_before_her_voice_has_finished(
+    store: Engine,  # noqa: F811 - pytest fixture injection
+) -> None:
+    """Voice-mode repair §4, 25 September 2026.
+
+    The desktop read her answer only when `turns` learned of it — after every segment
+    had been synthesised — so her text arrived mid-way through a two-segment answer.
+    The session now names her answer the moment Core has written it.
+    """
+    recognizer = ScriptedRecognizer(batches=[[started(1), final(1, "Good evening, Val.")]])
+    session, _, clock = a_session(
+        store, recognizer, adapter=ScriptedAdapter([ok("Good evening, my lord.")])
+    )
+    voice = HeldVoice()
+    session._speech = lambda: voice  # type: ignore[assignment,return-value]
+    session.feed(MARKER)
+    clock.tick(5.0)
+    session.advance()
+    assert voice.finishing.wait(10), "her voice began"
+
+    view = session.snapshot()
+    assert view.turns == (), "the turn is not over: her voice is still being made"
+    assert view.answered is not None
+    assert view.answered.message_id == voice.bound, "the answer her voice speaks"
+    assert view.committed is not None
+    assert view.answered.utterance == view.committed.utterance
+    assert messages_of(store, view.answered.conversation_id) == [
+        "Good evening, Val.",
+        "Good evening, my lord.",
+    ]
+
+    voice.release.set()
+    settle(session, clock)
+    assert [turn.answer_message_id for turn in session.snapshot().turns] == [voice.bound]
+    session.close()

@@ -493,19 +493,16 @@ class Gateway:
     # --- the entrances ---------------------------------------------------------
 
     def warm_voice(self) -> Mapping[str, object]:
-        """Load the speech model early, and generate nothing.
+        """Load the speech model once for this Voice session, and generate nothing.
 
-        Owner acceptance, 25 September 2026 (WP3 Step B §9). Each synthesis is its own
-        subprocess, so the first of a session pays for reading the weights off disk:
-        **6.708 s** for a 1.68 s phrase against **2.727 s** once they were cached.
-
-        **Described exactly** (owner diagnostic, 25 September 2026, §9, which corrected
-        "loading while he is still talking removes it"): this starts a separate process
-        that loads the model and **exits**. Nothing stays resident; the first real
-        synthesis still starts its own process and loads its own copy. What is paid
-        early is reading the files, which leaves them in the operating system's cache.
-        The measured saving is for one phrase on this machine and is not a claim about
-        what he will hear in the room. A real synthesis stops a warm-up still running.
+        Owner order, 25 September 2026 (Voice-mode repair §5), superseding the load-
+        and-exit warm-up of WP3 Step B §9. The provider starts its **resident** worker:
+        the same runner, model, settings and conditioning, holding the model while
+        Voice is on so that each sentence no longer pays an interpreter start and a
+        model load (one-shot 2.35 to 2.81 s against resident 1.13 to 1.59 s for the same
+        phrases, measured on this Mac). `release_voice` stops it when the last Voice
+        session ends. A sentence that arrives while it loads waits for that load, and
+        any failure of the worker falls back to the one-shot synthesis.
 
         Not a gate, exactly like `warm_cognition`: a failure is reported and the first
         answer proceeds as it would have. Nothing is spoken and nothing is recorded —
@@ -641,6 +638,14 @@ class Gateway:
             "model_call_id": str(response.model_call_id),
             "seconds": round(time.monotonic() - started, 3),
         }
+
+    def release_voice(self) -> Mapping[str, object]:
+        """Give back what Voice held: the resident speech worker, if one is running."""
+        release = getattr(self.speech, "release", None)
+        if not callable(release):
+            return {"released": False, "reason": "this speech provider holds nothing"}
+        result = release()
+        return dict(result) if isinstance(result, Mapping) else {"released": True}
 
     def warm_cognition(self) -> Mapping[str, object]:
         """Bring the ordinary conversation route's local runtime up, early.

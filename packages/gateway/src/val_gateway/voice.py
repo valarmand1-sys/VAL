@@ -262,6 +262,10 @@ class VoiceSessionView:
     endpoint: dict[str, float | int]
     #: The owner's most recently committed spoken message, answered or not.
     committed: VoiceCommitted | None = None
+    #: Her answer to it, the moment Core has written it — before any of it is voiced
+    #: (owner order, 25 September 2026: the desktop paces her words to her speech,
+    #: which it can only do once it has them). `message_id` is **her** message.
+    answered: VoiceCommitted | None = None
     #: The most recent settled utterance's index and when its speech ended, on this
     #: process's monotonic clock: the endpoint less the silence that confirmed it.
     #: A VAD-derived estimate, never an acoustic observation (WP3 Step B latency pass).
@@ -442,6 +446,7 @@ class VoiceSession:
         self._inflight: _Pending | None = None
         self._turns: list[VoiceTurn] = []
         self._committed: VoiceCommitted | None = None
+        self._answered: VoiceCommitted | None = None
         self._speech_end: tuple[int, float] | None = None
         self._worker: threading.Thread | None = None
         #: How this session speaks, if it speaks at all. `None` is work package 1's
@@ -1096,6 +1101,16 @@ class VoiceSession:
             return
         with self._lock:
             self._cognition_busy = False
+            # Her answer is in the store now; say so at once rather than when her
+            # voice has finished synthesising it, which is when `turns` learns of it.
+            answered = _answered(outcome)
+            identified = _identify(outcome)
+            if answered is not None and identified[0] is not None:
+                self._answered = VoiceCommitted(
+                    conversation_id=identified[0],
+                    message_id=answered[0],
+                    utterance=utterance.utterance,
+                )
         try:
             self._record(pending, outcome, delivery)
         except Exception as failure:
@@ -1369,6 +1384,7 @@ class VoiceSession:
                 recognizer=self._recognizer.identity.as_record(),
                 endpoint=self.endpoint.as_record(),
                 committed=self._committed,
+                answered=self._answered,
                 speech_end=self._speech_end,
             )
 
@@ -1493,7 +1509,14 @@ class VoiceSessions:
     journal, labelled as the guess it was.
     """
 
-    def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+    def __init__(
+        self,
+        clock: Callable[[], float] = time.monotonic,
+        on_empty: Callable[[], object] | None = None,
+    ) -> None:
+        #: Told when the last session has gone — closed, reaped or shut down — so what
+        #: Voice holds (the resident speech worker) is released with it.
+        self._on_empty = on_empty
         self._sessions: dict[UUID, VoiceSession] = {}
         #: When the desktop last asked about each session — any poll, any audio.
         self._seen: dict[UUID, float] = {}
@@ -1517,7 +1540,19 @@ class VoiceSessions:
     def remove(self, key: UUID) -> VoiceSession | None:
         with self._lock:
             self._seen.pop(key, None)
-            return self._sessions.pop(key, None)
+            removed = self._sessions.pop(key, None)
+            empty = removed is not None and not self._sessions
+        if empty:
+            self._emptied()
+        return removed
+
+    def _emptied(self) -> None:
+        if self._on_empty is None:
+            return
+        try:
+            self._on_empty()
+        except Exception:  # releasing what Voice held must never break closing it
+            _LOGGER.exception("releasing what Voice held failed")
 
     def reap(self, idle_seconds: float = ABANDONED_AFTER_SECONDS) -> list[UUID]:
         """Close every session nothing has asked about for `idle_seconds`.
@@ -1542,6 +1577,10 @@ class VoiceSessions:
                 f"the desktop stopped asking for this session for over {idle_seconds:.0f}s: "
                 "its window has gone, so Voice is off"
             )
+        with self._lock:
+            empty = bool(abandoned) and not self._sessions
+        if empty:
+            self._emptied()
         return [key for key, _ in abandoned]
 
     def start_reaper(self, every_seconds: float = 10.0) -> None:
@@ -1594,3 +1633,4 @@ class VoiceSessions:
             self._seen.clear()
         for session in live:
             session.close(reason)
+        self._emptied()

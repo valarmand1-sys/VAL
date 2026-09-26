@@ -20,5 +20,7 @@ export default defineConfig({
     // Vitest stubs every stylesheet to an empty string unless told otherwise;
     // the review-scroll tests need the real cascade applied to rendered nodes.
     css: { include: [/styles\.css$/] },
+    // Every test starts with a `fetch` that refuses: none may reach a real service.
+    setupFiles: ["src/testSetup.ts"],
   },
 });

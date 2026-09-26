@@ -31,6 +31,7 @@ import {
   type CapturePlatform,
 } from "./microphone";
 import { OrderedPcmSender, type SenderReport } from "./pcmSender";
+import { isTerminal, SpokenPresentation, type SpokenAnswer } from "./spokenPresentation";
 import { SpeechPlayer, decodeSegmentAudio, type SpeakerPlatform, type SegmentAudio } from "./speaker";
 import {
   VOICE_OFF,
@@ -87,6 +88,8 @@ export interface VoiceTimings {
   committedSeenAt: number | null;
   ownerShownAt: number | null;
   ownerFramesAt: number | null;
+  /** His settled (not yet canonical) words first on screen — a DOM commit. */
+  provisionalShownAt: number | null;
   /**
    * When his speech ended, **estimated** from the recognizer's endpoint: the
    * service says how long ago (endpoint less the confirming silence), and this is
@@ -109,6 +112,7 @@ export const NO_TIMINGS: VoiceTimings = {
   ownerShownAt: null,
   ownerFramesAt: null,
   speechEndEstimateAt: null,
+  provisionalShownAt: null,
 };
 
 export interface VoiceControllerHooks {
@@ -134,6 +138,13 @@ export interface VoiceControllerHooks {
    * is contacted (owner diagnostic, 25 September 2026).
    */
   onOwnerMessageCommitted?(committed: VoiceCommittedView): void;
+  /**
+   * Her answer is written (owner order, 25 September 2026): read it now. The thread
+   * shows it paced to her playback through `onSpoken`, never all at once ahead of her.
+   */
+  onAnswerAvailable?(answered: VoiceCommittedView): void;
+  /** The spoken answer being paced: which text is revealed, and in what state. */
+  onSpoken?(answer: SpokenAnswer | null): void;
 }
 
 export interface VoiceControllerOptions {
@@ -168,6 +179,12 @@ export class VoiceController {
   private lastCommitted: string | null = null;
   /** The utterance whose intervals have been reported, so each is sent once. */
   private reportedUtterance: number | null = null;
+  /** The answer whose segment figures have been reported. */
+  private reportedSegments: string | null = null;
+  /** Her answer the desktop was last told to read. */
+  private lastAnswered: string | null = null;
+  /** Her words, paced to her speech (Voice-mode repair §4). */
+  readonly spoken: SpokenPresentation;
   private collecting = false;
   private polling = false;
   private readonly now: () => number;
@@ -176,6 +193,10 @@ export class VoiceController {
 
   constructor(private readonly options: VoiceControllerOptions) {
     this.now = options.now ?? (() => performance.now());
+    this.spoken = new SpokenPresentation((answer) => {
+      this.options.hooks.onSpoken?.(answer);
+      if (isTerminal(answer)) this.reportSegments();
+    }, this.now);
     this.schedule =
       options.scheduleInterval ??
       ((callback, ms) => globalThis.setInterval(callback, ms) as unknown as number);
@@ -402,8 +423,16 @@ export class VoiceController {
           this.timings = { ...this.timings, committedSeenAt: this.now() };
           this.options.hooks.onTimings(this.timings);
         }
+        this.spoken.turn(committed.message_id);
         this.options.hooks.onOwnerMessageCommitted?.(committed);
       }
+      const answered = view.answered ?? null;
+      if (answered !== null && answered.message_id !== this.lastAnswered) {
+        this.lastAnswered = answered.message_id;
+        if (committed !== null) this.spoken.answered(committed.message_id, answered.message_id);
+        this.options.hooks.onAnswerAvailable?.(answered);
+      }
+      this.spoken.checkStall();
       // And hers, once the exchange is answered.
       const settled = view.turns.at(-1);
       if (settled !== undefined) {
@@ -448,6 +477,7 @@ export class VoiceController {
       ownerShownAt: null,
       ownerFramesAt: null,
       speechEndEstimateAt: null,
+      provisionalShownAt: null,
     };
     this.reportedUtterance = null;
     this.options.hooks.onTimings(this.timings);
@@ -481,6 +511,46 @@ export class VoiceController {
         owner_message_dom_to_playback_start_ms: between(t.ownerShownAt, t.firstAudibleAt),
         speech_end_to_playback_start_ms: between(t.speechEndEstimateAt, t.firstAudibleAt),
         committed_seen_to_owner_message_dom_ms: between(t.committedSeenAt, t.ownerShownAt),
+      })
+      .catch(() => undefined);
+  }
+
+  /** His settled words were first on screen as provisional text (a DOM commit). */
+  noteProvisionalShown(utterance: number, domAt: number): void {
+    if (utterance !== this.timings.utterance || this.timings.provisionalShownAt !== null) return;
+    this.timings = { ...this.timings, provisionalShownAt: domAt };
+    this.options.hooks.onTimings(this.timings);
+  }
+
+  /** The thread committed this much of her paced answer to the document. */
+  noteRevealShown(messageId: string, revealedLength: number, domAt: number): void {
+    this.spoken.shown(messageId, revealedLength, domAt);
+  }
+
+  /** Once per answer, when its pacing ends: text/audio offsets and inter-segment gaps. */
+  private reportSegments(): void {
+    const session = this.session;
+    const answer = this.spoken.current;
+    const key = answer?.messageId ?? null;
+    if (session === null || answer === null || key === null || this.reportedSegments === key) return;
+    if (this.timings.utterance === null) return;
+    this.reportedSegments = key;
+    const between = (from: number | null, to: number | null) =>
+      from === null || to === null ? null : Math.round(to - from);
+    void api
+      .reportVoiceTimings(session, {
+        utterance: this.timings.utterance,
+        speech_end_to_owner_message_dom_ms: null,
+        owner_message_dom_to_playback_start_ms: null,
+        speech_end_to_playback_start_ms: null,
+        committed_seen_to_owner_message_dom_ms: null,
+        speech_end_to_owner_words_provisional_ms: between(
+          this.timings.speechEndEstimateAt,
+          this.timings.provisionalShownAt,
+        ),
+        segment_text_offsets_ms: this.spoken.offsets(),
+        segment_gaps_ms: this.spoken.gaps(),
+        segments: answer.segments.length,
       })
       .catch(() => undefined);
   }
@@ -559,13 +629,23 @@ export class VoiceController {
         // produced the 49,891 ms figure he saw, an interval spanning several turns.
         const observed = this.now();
         this.player.stop(offer.reason ?? "delivery ended");
+        // What she had not yet said is shown now, marked as not spoken — for the
+        // answer this delivery speaks, never for a newer one.
+        this.spoken.stopped(offer.message_id ?? null, offer.delivery_state === "failed");
         this.timings = { ...this.timings, bargeInAt: observed, silenceAt: this.now() };
         this.options.hooks.onTimings(this.timings);
         this.player = new SpeechPlayer(this.speakerObserver(), this.options.speaker);
         return;
       }
       const offered: SpokenAudioView | null = offer.segment;
-      if (offered === null) return;
+      if (offered === null) {
+        if (offer.delivery_state === "completed") this.spoken.allOffered(offer.message_id ?? null);
+        return;
+      }
+      // A segment from an answer that is no longer the one being spoken is not
+      // played: it would sound — and reveal text — in the wrong turn.
+      if (!this.spoken.belongs(offered.message_id)) return;
+      this.spoken.offered(offered.message_id);
       this.player.enqueue({
         messageId: offered.message_id,
         segmentIndex: offered.segment_index,
@@ -603,9 +683,11 @@ export class VoiceController {
           this.maybeReportTimings();
         }
         this.apply(withActivity(this.status, "speaking"));
+        this.spoken.started(segment.messageId, segment.segmentIndex, segment.text);
         report(segment, "playback_started");
       },
       onCompleted: (segment: SegmentAudio) => {
+        this.spoken.ended(segment.messageId, segment.segmentIndex);
         report(segment, "playback_completed");
         void this.markDelivered(segment.messageId);
       },
@@ -613,6 +695,7 @@ export class VoiceController {
         report(segment, "playback_interrupted", reason);
       },
       onFailed: (segment: SegmentAudio, detail: string) => {
+        this.spoken.failed();
         report(segment, "playback_failed", detail);
       },
     };
@@ -630,6 +713,8 @@ export class VoiceController {
   }
 
   private async releaseEverything(): Promise<void> {
+    // Anything she had not yet said is shown now, marked as not spoken.
+    this.spoken.released();
     this.sender?.close();
     this.sender = null;
     this.microphone?.release();

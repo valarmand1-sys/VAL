@@ -508,11 +508,27 @@ body {
 /* The guess in progress. Deliberately unlike a message: it is speech being heard,
    not something said, and the service keeps the two in separate fields so that
    nothing renders one as the other. */
-.voice-provisional {
-  font-size: 0.95em;
+/* His words before they are his message: plainly provisional (Voice-mode repair §3). */
+.message.heard .provisional-words {
   font-style: italic;
   opacity: 0.75;
-  margin: 0.4rem 0 0;
+}
+.message.heard .provisional-words .state-line {
+  font-style: normal;
+  font-size: 0.8em;
+}
+/* Her answer paced to her speech: nothing yet, and text she did not speak. */
+.spoken-pending {
+  opacity: 0.5;
+  margin: 0;
+}
+.unspoken {
+  opacity: 0.6;
+  border-left: 2px dashed currentColor;
+  padding-left: 0.6rem;
+}
+.spoken-note {
+  font-size: 0.8em;
 }
 .voice-notice {
   margin-top: 0.4rem;

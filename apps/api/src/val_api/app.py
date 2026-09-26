@@ -219,7 +219,8 @@ def create_app(
     #: The live voice sessions this process is listening with. In-process because
     #: a live session *is* process state — it holds a subprocess and volatile
     #: audio buffers — and could not be resumed from a store if it tried.
-    sessions = VoiceSessions()
+    # When the last Voice session ends, the resident speech worker is stopped with it.
+    sessions = VoiceSessions(on_empty=gateway.release_voice)
     if recognizers is not None:
         # A window that went away without its close request reaching here leaves a
         # session nobody asks about; it is closed rather than kept listening
@@ -940,6 +941,15 @@ def create_app(
                     utterance=view.committed.utterance,
                 )
             ),
+            answered=(
+                None
+                if view.answered is None
+                else VoiceCommittedView(
+                    conversation_id=view.answered.conversation_id,
+                    message_id=view.answered.message_id,
+                    utterance=view.answered.utterance,
+                )
+            ),
             speech_end=(
                 None
                 if view.speech_end is None
@@ -1030,10 +1040,9 @@ def create_app(
             # Optional work, done early and never ahead of him (owner diagnostic, 25
             # September 2026, §8, §9). The cognition runtime's readiness — no
             # inference; any load it does is the one his first turn would do itself —
-            # and a load-only speech process that exits, leaving the model's files in
-            # the operating system's cache (6.708 s cold against 2.727 s cached,
-            # measured for one phrase; not a claim about the room). Real speech stops
-            # a speech warm-up still running. Each is timed on the record.
+            # and the resident speech worker, which holds the voice model while Voice
+            # is on and is released when the last session ends (Voice-mode repair §5,
+            # 25 September 2026). Each is timed on the record.
             warm=lambda: {
                 "cognition": timed_warm(gateway.warm_cognition),
                 "voice": timed_warm(gateway.warm_voice),
@@ -1163,6 +1172,7 @@ def create_app(
         if speaking is None:
             return SpeechOfferView(delivery_state="none", stop=False)
         state = speaking.state.value
+        speaks = speaking.message_id
         sink = getattr(speaking, "sink", None)
         # Stop when delivery ended other than by completing. `active` is False for a
         # completed answer too, which is why the state decides rather than the flag.
@@ -1174,10 +1184,14 @@ def create_app(
         if should_stop:
             reason = getattr(speaking, "reason", None) or stopped_because or "delivery ended"
         if not isinstance(sink, DesktopSink):
-            return SpeechOfferView(delivery_state=state, stop=should_stop, reason=reason)
+            return SpeechOfferView(
+                delivery_state=state, stop=should_stop, reason=reason, message_id=speaks
+            )
         offer = sink.collect()
         if offer is None:
-            return SpeechOfferView(delivery_state=state, stop=should_stop, reason=reason)
+            return SpeechOfferView(
+                delivery_state=state, stop=should_stop, reason=reason, message_id=speaks
+            )
         message_id = speaking.message_id
         if message_id is not None:
             # The service's own half of the record: this segment became available
@@ -1194,6 +1208,7 @@ def create_app(
             delivery_state=state,
             stop=should_stop,
             reason=reason,
+            message_id=speaks,
             segment=SpokenAudioView(
                 message_id=message_id if message_id is not None else UUID(int=0),
                 segment_index=offer.segment_index,

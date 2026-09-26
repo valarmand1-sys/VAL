@@ -71,3 +71,38 @@ def test_nothing_is_reaped_early() -> None:
     clock.now = ABANDONED_AFTER_SECONDS - 0.5
     assert registry.reap() == []
     assert session.closed == []
+
+
+def test_the_voice_is_released_when_the_last_session_ends_and_not_before() -> None:
+    """Voice-mode repair §5: the resident speech worker lives only while Voice is on."""
+    released: list[str] = []
+    registry = VoiceSessions(clock=Clock(), on_empty=lambda: released.append("released"))
+    first, second = uuid4(), uuid4()
+    registry.add(first, FakeSession())  # type: ignore[arg-type]
+    registry.add(second, FakeSession())  # type: ignore[arg-type]
+
+    registry.remove(first)
+    assert released == [], "another session still has Voice on"
+    registry.remove(second)
+    assert released == ["released"]
+
+
+def test_a_reaped_last_session_releases_the_voice_too() -> None:
+    clock = Clock()
+    released: list[str] = []
+    registry = VoiceSessions(clock=clock, on_empty=lambda: released.append("released"))
+    registry.add(uuid4(), FakeSession())  # type: ignore[arg-type]
+    clock.now = ABANDONED_AFTER_SECONDS + 1
+    registry.reap()
+    assert released == ["released"]
+
+
+def test_a_failing_release_does_not_break_closing() -> None:
+    def broken() -> None:
+        raise RuntimeError("the worker would not stop")
+
+    registry = VoiceSessions(clock=Clock(), on_empty=broken)
+    key = uuid4()
+    registry.add(key, FakeSession())  # type: ignore[arg-type]
+    registry.remove(key)
+    assert registry.get(key) is None

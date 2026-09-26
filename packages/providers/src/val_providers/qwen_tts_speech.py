@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import json
 import os
+import queue
 import shutil
 import subprocess
 import tempfile
@@ -129,14 +130,17 @@ class _Runner:
             argv,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            # A long-lived worker's unread stderr would fill its pipe and stall it;
+            # its failures come back as JSON on stdout instead.
+            stderr=subprocess.DEVNULL,
             text=True,
+            bufsize=1,
             shell=False,
         )
 
 
-#: How long a stopped warm-up is given to exit before it is killed outright.
-PREEMPT_GRACE_SECONDS = 2.0
+#: How long a stopped resident worker is given to exit before it is killed outright.
+STOP_GRACE_SECONDS = 2.0
 
 
 class QwenTTSSpeech:
@@ -159,15 +163,13 @@ class QwenTTSSpeech:
         self._voice_dir = voice_dir
         self._runner = runner or _Runner()
         self._timeout = timeout
-        #: Owner diagnostic, 25 September 2026 (§8): **optional warming never takes
-        #: priority over real speech.** The warm-up process in flight, if any; how many
-        #: real syntheses are running; and how long the last preemption took, for the
-        #: record. All three are guarded by one lock.
-        self._warm_lock = threading.Lock()
-        self._warming: subprocess.Popen[str] | None = None
-        self._preempted: set[int] = set()
-        self._speaking = 0
-        self.last_preemption: dict[str, object] | None = None
+        #: The resident worker (owner order, 25 September 2026, Voice-mode repair §5):
+        #: the runner in `serve` mode, the model loaded once, requests one per line.
+        #: Started by `warm` at Voice On, stopped by `release` when Voice ends.
+        self._resident: subprocess.Popen[str] | None = None
+        self._replies: queue.Queue[str | None] = queue.Queue()
+        self._resident_lock = threading.Lock()
+        self._resident_ready = threading.Event()
 
     # --- availability -------------------------------------------------------------
 
@@ -204,42 +206,7 @@ class QwenTTSSpeech:
         if unavailable is not None:
             raise SpeechUnavailableError(unavailable)
 
-        # Real speech first: a warm-up still loading is stopped, and gone, before
-        # this synthesis starts its own process — and none may start while it runs.
-        with self._warm_lock:
-            self._speaking += 1
-        try:
-            self._preempt_warming()
-            return self._synthesize(request, text)
-        finally:
-            with self._warm_lock:
-                self._speaking -= 1
-
-    def _preempt_warming(self) -> None:
-        """Stop an optional warm-up and wait until its process has exited.
-
-        Terminating the process is the release: its memory, its open model files and
-        its share of the machine go with it. Waiting for the exit — not merely asking
-        for it — is what makes that true before real speech begins, and a process
-        that ignores the request is killed.
-        """
-        with self._warm_lock:
-            process = self._warming
-            if process is None or process.poll() is not None:
-                return
-            self._preempted.add(process.pid)
-        started = time.monotonic()
-        process.terminate()
-        try:
-            process.wait(timeout=PREEMPT_GRACE_SECONDS)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=PREEMPT_GRACE_SECONDS)
-        self.last_preemption = {
-            "pid": process.pid,
-            "returncode": process.returncode,
-            "waited_ms": round((time.monotonic() - started) * 1000, 1),
-        }
+        return self._synthesize(request, text)
 
     def _synthesize(self, request: SpeechRequest, text: str) -> SpeechResult:
         started = time.monotonic()
@@ -278,73 +245,146 @@ class QwenTTSSpeech:
     # --- one attempt --------------------------------------------------------------
 
     def warm(self) -> dict[str, object]:
-        """Load the voice model and generate nothing.
+        """Start the resident speech worker: the model loaded once, nothing spoken.
 
-        Owner acceptance, 25 September 2026 (WP3 Step B §9). Each synthesis is its own
-        subprocess, so the first one of a session pays for reading the weights off
-        disk. Measured in his run: **6.708 s** for a 1.68 s phrase against **2.727 s**
-        once the file was in the page cache — about four seconds, sitting directly in
-        front of his first answer.
+        Owner order, 25 September 2026 (Voice-mode repair §5). The one-shot runner spent
+        ~0.26 s starting an interpreter and ~1.0 s loading the model before every
+        sentence — about half of each sentence's synthesis, measured on this Mac. The
+        worker is the same runner in `serve` mode: the **same** model, settings and
+        conditioning, run by the same code, with the load paid once at Voice On instead
+        of once per sentence. It holds the model only while Voice is on: `release`
+        stops it, and the speech, audio-perception and cognition models go back to
+        taking turns in memory.
 
-        **What it is, exactly** (owner diagnostic, 25 September 2026, §9): a separate
-        process that loads the model and exits. It does not stay resident and nothing
-        is "loaded while he talks" for later use — each synthesis still starts its own
-        process and loads its own copy. What it buys is that the weights have just
-        been read, so the operating system's file cache is warm when the first real
-        synthesis reads them; that is where the measured difference came from.
-
-        **Optional, and never ahead of real speech** (§8). It does not start while a
-        real synthesis is running, and a real synthesis that begins while it is still
-        loading stops it and waits for the process to exit first. It is never a gate:
-        a failure is reported and the turn proceeds exactly as it would have. It
-        produces no audio, writes no file and records no provenance.
+        Never a gate and never ahead of real speech: a real synthesis that arrives
+        while the worker is still loading waits for that load — the one it would
+        otherwise do itself — and any failure falls back to the one-shot runner.
         """
         unavailable = self.available()
         if unavailable is not None:
             return {"warmed": False, "reason": unavailable}
-        payload = json.dumps({"mode": "warm", "model_path": str(self._model_path), "out_path": ""})
         started = time.monotonic()
-        with self._warm_lock:
-            if self._speaking:
-                return {"warmed": False, "reason": "real speech is running; nothing to warm"}
+        with self._resident_lock:
+            if self._resident is not None and self._resident.poll() is None:
+                return {"warmed": True, "resident": True, "already_running": True}
+            self._resident_ready.clear()
             try:
-                process = self._runner.start([str(self._python), str(RUNNER)])
+                process = self._runner.start([str(self._python), str(RUNNER), "serve"])
             except OSError as failure:
                 return {"warmed": False, "reason": f"the voice runtime could not start: {failure}"}
-            self._warming = process
-        try:
-            out, err = process.communicate(payload, timeout=self._timeout)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.communicate()
-            return {"warmed": False, "reason": "the voice runtime did not load in time"}
-        finally:
-            with self._warm_lock:
-                if self._warming is process:
-                    self._warming = None
-                preempted = process.pid in self._preempted
-                self._preempted.discard(process.pid)
-        elapsed = round(time.monotonic() - started, 3)
-        if preempted:
-            return {
-                "warmed": False,
-                "preempted": True,
-                "reason": "real speech began; the warm-up was stopped so it could not delay it",
-                "elapsed_seconds": elapsed,
-            }
-        code = process.returncode
-        if code != 0:
-            return {"warmed": False, "reason": (err or out or "the voice runtime failed").strip()}
-        try:
-            report = json.loads(out.strip().splitlines()[-1])
-        except ValueError, IndexError:
-            return {"warmed": False, "reason": "the voice runtime reported nothing readable"}
+            self._resident = process
+            self._replies = queue.Queue()
+            threading.Thread(
+                target=self._read_replies, args=(process, self._replies), daemon=True
+            ).start()
+            try:
+                if process.stdin is None:
+                    raise OSError("the resident voice has no input pipe")
+                process.stdin.write(json.dumps({"model_path": str(self._model_path)}) + "\n")
+                process.stdin.flush()
+                ready = self._reply(self._replies, self._timeout)
+            except (OSError, SpeechUnavailableError) as failure:
+                self._stop_resident_locked()
+                return {"warmed": False, "reason": f"the resident voice did not start: {failure}"}
+            if ready.get("mode") != "ready":
+                self._stop_resident_locked()
+                return {"warmed": False, "reason": "the resident voice did not report ready"}
+            self._resident_ready.set()
         return {
-            "warmed": bool(report.get("warmed")),
-            "load_seconds": report.get("load_seconds"),
-            "elapsed_seconds": elapsed,
+            "warmed": True,
+            "resident": True,
+            "load_seconds": ready.get("load_seconds"),
+            "elapsed_seconds": round(time.monotonic() - started, 3),
             "spoke_nothing": True,
         }
+
+    def release(self) -> dict[str, object]:
+        """Stop the resident worker, and give its memory back to the machine."""
+        with self._resident_lock:
+            running = self._resident is not None
+            self._stop_resident_locked()
+        return {"released": running}
+
+    @property
+    def resident(self) -> bool:
+        """Whether a loaded resident worker is serving."""
+        process = self._resident
+        return process is not None and process.poll() is None and self._resident_ready.is_set()
+
+    def _stop_resident_locked(self) -> None:
+        process, self._resident = self._resident, None
+        self._resident_ready.clear()
+        if process is None:
+            return
+        try:
+            if process.stdin is not None and process.poll() is None:
+                process.stdin.write(json.dumps({"mode": "stop"}) + "\n")
+                process.stdin.flush()
+                process.stdin.close()
+            process.wait(timeout=STOP_GRACE_SECONDS)
+        except OSError, subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=STOP_GRACE_SECONDS)
+
+    @staticmethod
+    def _read_replies(process: subprocess.Popen[str], replies: queue.Queue[str | None]) -> None:
+        """Every stdout line of the worker, in order; `None` when it ends."""
+        if process.stdout is None:
+            replies.put(None)
+            return
+        for line in process.stdout:
+            replies.put(line)
+        replies.put(None)
+
+    @staticmethod
+    def _reply(replies: queue.Queue[str | None], timeout: float) -> dict[str, object]:
+        """The worker's next JSON reply, skipping anything on stdout that is not one."""
+        deadline = time.monotonic() + timeout
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise SpeechUnavailableError(
+                    f"the resident voice did not reply within {timeout:.0f}s"
+                )
+            try:
+                line = replies.get(timeout=remaining)
+            except queue.Empty as empty:
+                raise SpeechUnavailableError(
+                    f"the resident voice did not reply within {timeout:.0f}s"
+                ) from empty
+            if line is None:
+                raise SpeechUnavailableError("the resident voice exited")
+            try:
+                parsed = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(parsed, dict):
+                return parsed
+
+    def _run_resident(self, payload: str) -> dict[str, object] | None:
+        """One request through the resident worker, or `None` to use the one-shot path.
+
+        A request arriving while the worker loads waits for that load. Any failure
+        stops the worker, so a broken one is never asked twice, and the caller runs
+        the ordinary one-shot synthesis instead.
+        """
+        process = self._resident
+        if process is None or process.poll() is not None:
+            return None
+        if not self._resident_ready.wait(timeout=self._timeout):
+            return None
+        with self._resident_lock:
+            if self._resident is not process or process.poll() is not None:
+                return None
+            try:
+                if process.stdin is None:
+                    raise OSError("the resident voice has no input pipe")
+                process.stdin.write(payload.replace("\n", " ") + "\n")
+                process.stdin.flush()
+                return self._reply(self._replies, self._timeout)
+            except OSError, SpeechUnavailableError:
+                self._stop_resident_locked()
+                return None
 
     def _attempt(self, request: SpeechRequest, text: str) -> tuple[dict[str, object], bytes]:
         workspace = Path(tempfile.mkdtemp(prefix="val-speech-"))
@@ -369,20 +409,23 @@ class QwenTTSSpeech:
                     "out_path": str(out_path),
                 }
             )
-            try:
-                code, out, err = self._runner.run(
-                    [str(self._python), str(RUNNER)], payload, self._timeout
-                )
-            except subprocess.TimeoutExpired as expired:
-                raise SpeechUnavailableError(
-                    f"the speech run did not finish within {self._timeout:.0f}s"
-                ) from expired
-            except OSError as failure:
-                raise SpeechUnavailableError(
-                    f"the dedicated speech runtime could not be started: {failure}"
-                ) from failure
-
-            report = self._parse(code, out, err)
+            resident = self._run_resident(payload)
+            if resident is not None:
+                report = resident
+            else:
+                try:
+                    code, out, err = self._runner.run(
+                        [str(self._python), str(RUNNER)], payload, self._timeout
+                    )
+                except subprocess.TimeoutExpired as expired:
+                    raise SpeechUnavailableError(
+                        f"the speech run did not finish within {self._timeout:.0f}s"
+                    ) from expired
+                except OSError as failure:
+                    raise SpeechUnavailableError(
+                        f"the dedicated speech runtime could not be started: {failure}"
+                    ) from failure
+                report = self._parse(code, out, err)
             if not report.get("ok"):
                 reason = str(report.get("reason", "no reason given"))
                 if report.get("kind") == "refused":

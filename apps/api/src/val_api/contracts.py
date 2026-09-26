@@ -1019,6 +1019,9 @@ class VoiceSessionView(BaseModel):
     #: can show him his words while she is still thinking (owner diagnostic, 25
     #: September 2026). `turns` still gains the exchange only once it is answered.
     committed: VoiceCommittedView | None = None
+    #: Her answer to it, as soon as Core has written it — `message_id` is **her**
+    #: message. The desktop reads it at once and paces its display to her playback.
+    answered: VoiceCommittedView | None = None
     #: The most recent settled utterance, and how many milliseconds before this response
     #: was written its speech ended — the endpoint less the silence that confirmed
     #: it. **A VAD-derived estimate**, never an acoustic observation; the desktop
@@ -1052,6 +1055,14 @@ class DesktopTimingReport(BaseModel):
     owner_message_dom_to_playback_start_ms: float | None = None
     speech_end_to_playback_start_ms: float | None = None
     committed_seen_to_owner_message_dom_ms: float | None = None
+    #: Owner order, 25 September 2026 (Voice-mode repair). When his settled words were
+    #: first on screen as provisional text, from speech end; each of her segments'
+    #: text reveal less its playback start; and the silences between her segments
+    #: (the next start less the previous end) — software proxies, not acoustics.
+    speech_end_to_owner_words_provisional_ms: float | None = None
+    segment_text_offsets_ms: list[float] | None = None
+    segment_gaps_ms: list[float] | None = None
+    segments: int | None = None
 
 
 class VoiceCommittedView(BaseModel):
@@ -1153,6 +1164,11 @@ class SpeechOfferView(BaseModel):
     #: the house recorded.
     reason: str | None = None
     segment: SpokenAudioView | None = None
+    #: Her answer this delivery speaks, once written; None before. The delivery's
+    #: state is repeated on every poll until the next delivery replaces it, so the
+    #: desktop needs to know *which* answer a `completed` or a stop is about — or a
+    #: finished answer's state lands on the next one (Voice-mode repair §4).
+    message_id: UUID | None = None
 
 
 class PlaybackReport(BaseModel):

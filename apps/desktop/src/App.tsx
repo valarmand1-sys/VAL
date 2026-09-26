@@ -34,6 +34,7 @@ import type {
 } from "./api";
 import { Attachments } from "./attachments";
 import { latestIssuedWins } from "./conversationReads";
+import { present, type Presented, type SpokenAnswer } from "./spokenPresentation";
 import {
   NO_TIMINGS,
   VoiceController,
@@ -147,6 +148,7 @@ export function App(): React.JSX.Element {
   const [voice, setVoice] = useState<VoiceStatus>(VOICE_OFF);
   const [voiceSession, setVoiceSession] = useState<VoiceSessionView | null>(null);
   const [voiceTimings, setVoiceTimings] = useState<VoiceTimings>(NO_TIMINGS);
+  const [spokenAnswer, setSpokenAnswer] = useState<SpokenAnswer | null>(null);
   const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
   const voiceController = useRef<VoiceController | null>(null);
   const shortcutBinding = useRef<ShortcutBinding | null>(null);
@@ -293,6 +295,27 @@ export function App(): React.JSX.Element {
     };
   }, [detail]);
 
+  // His settled words, provisional, on screen (Voice-mode repair §3) — a DOM commit,
+  // reported separately so provisional text never stands in for the canonical figure.
+  const heardText = voiceSession?.pending ?? "";
+  useEffect(() => {
+    const controller = voiceController.current;
+    if (controller === null || voiceSession === null || heardText === "") return;
+    controller.noteProvisionalShown(voiceSession.utterance, performance.now());
+  }, [heardText, voiceSession]);
+
+  // Each revealed segment of her paced answer, in the document (§4 offsets).
+  useEffect(() => {
+    const controller = voiceController.current;
+    const answer = spokenAnswer;
+    if (controller === null || answer === null || answer.messageId === null) return;
+    if (answer.revealed === "" || detail === null) return;
+    const inThread =
+      detail.messages.some((message) => message.id === answer.messageId) ||
+      detail.messages.some((message) => message.id === answer.turn);
+    if (inThread) controller.noteRevealShown(answer.messageId, answer.revealed.length, performance.now());
+  }, [spokenAnswer, detail]);
+
   // Voice — owner execution order, 24 September 2026, §5, §6, §7, §8.
   //
   // Every one of these is called from an owner gesture handler and from nowhere
@@ -316,6 +339,13 @@ export function App(): React.JSX.Element {
         onOwnerMessageCommitted: (committed) => {
           void openConversation(committed.conversation_id).catch(() => undefined);
         },
+        // Her answer, the moment Core has written it — not once her voice is ready.
+        // The thread paces it to her playback (`onSpoken`), so reading it early never
+        // puts the whole answer on screen ahead of her.
+        onAnswerAvailable: (answered) => {
+          void openConversation(answered.conversation_id).catch(() => undefined);
+        },
+        onSpoken: (answer) => setSpokenAnswer(answer),
         // Her answer, once it exists. The same read path, so it cannot race the first.
         onTurnSettled: (view) => {
           const settled = view.turns.at(-1);
@@ -680,6 +710,7 @@ export function App(): React.JSX.Element {
           <Thread
             detail={detail}
             projects={projects}
+            spoken={spokenAnswer}
             onRecorded={() => void openConversation(detail.conversation.id)}
             onConversationChanged={async () => {
               await openConversation(detail.conversation.id);
@@ -687,6 +718,9 @@ export function App(): React.JSX.Element {
             }}
             onRefused={(message) => setNotice(message)}
           />
+        )}
+        {view !== "review" && streaming === null && (
+          <HeardWords session={voiceSession} detail={detail} />
         )}
         {lastTiming !== null && streaming === null && <TimingPanel report={lastTiming} />}
 
@@ -855,20 +889,10 @@ export function App(): React.JSX.Element {
           </div>
         </form>
 
-        {/* What the microphone is hearing, as a guess in progress. Deliberately
-            outside the conversation: a provisional transcript is not a message, and
-            the service keeps the two in separate fields precisely so that nothing
-            renders one as the other. */}
-        {voiceSession !== null && voiceSession.provisional !== "" && (
-          <p className="voice-provisional" aria-live="polite">
-            <span className="visually-hidden">Hearing: </span>
-            {voiceSession.provisional}
-          </p>
-        )}
         {/* The three owner-facing voice measurements the order names (§7, §18). Shown
             rather than only logged, because the unmute figure is a promise about his
             microphone and he should be able to see it. */}
-        {voice.session !== "off" && <VoiceMeasurements timings={voiceTimings} />}
+        {voice.session !== "off" && <VoiceMeasurements timings={voiceTimings} spoken={spokenAnswer} />}
         {voiceNotice !== null && <div className="notice voice-notice">{voiceNotice}</div>}
         {voiceSession !== null && voiceSession.error !== null && (
           <div className="notice voice-notice">{voiceSession.error}</div>
@@ -999,8 +1023,12 @@ async function asAttachmentInput(pending: PendingAttachment): Promise<Attachment
 // Each is a difference between two moments this window observed, and each is shown
 // **only once both ends exist**: an interval with one end is not a duration, and a
 // dash says so rather than a zero pretending to be a measurement.
-export function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.Element | null {
+export function VoiceMeasurements(props: {
+  timings: VoiceTimings;
+  spoken?: SpokenAnswer | null;
+}): React.JSX.Element | null {
   const { timings } = props;
+  const spoken = props.spoken ?? null;
   const span = (from: number | null, to: number | null): string =>
     from === null || to === null ? "—" : `${Math.round(to - from)} ms`;
   const unmute = span(timings.unmuteGestureAt, timings.unmuteTrackLiveAt);
@@ -1012,6 +1040,18 @@ export function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.E
   const between = (from: number | null, to: number | null): string =>
     from === null || to === null ? "unavailable" : `${Math.round(to - from)} ms`;
   const heard = between(timings.speechEndEstimateAt, timings.ownerShownAt);
+  const provisional = between(timings.speechEndEstimateAt, timings.provisionalShownAt);
+  const offsets = (spoken?.segments ?? [])
+    .filter((segment) => segment.shownAt !== null)
+    .map((segment) => `${Math.round((segment.shownAt as number) - segment.startedAt)}`);
+  const gaps: string[] = [];
+  const segments = spoken?.segments ?? [];
+  for (let i = 1; i < segments.length; i += 1) {
+    const previous = segments[i - 1];
+    const next = segments[i];
+    if (previous !== undefined && next !== undefined && previous.endedAt !== null)
+      gaps.push(`${Math.round(next.startedAt - previous.endedAt)}`);
+  }
   const answered = between(timings.ownerShownAt, timings.firstAudibleAt);
   const whole = between(timings.speechEndEstimateAt, timings.firstAudibleAt);
   if (unmute === "—" && ready === "—" && audible === "—" && silence === "—" && timings.utterance === null)
@@ -1035,6 +1075,15 @@ export function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.E
       </span>
       <span
         title={
+          "From the end of your speech (estimated) to the React commit that showed your " +
+          "settled words as provisional text. Reported separately: provisional text is " +
+          "not your message, and does not stand in for the figure above."
+        }
+      >
+        speech end (est.) → your words, provisional {provisional}
+      </span>
+      <span
+        title={
           "From the React commit that put your words in the thread to this window " +
           "starting her first segment. Playback start is a software event, not sound " +
           "leaving the speakers."
@@ -1050,10 +1099,97 @@ export function VoiceMeasurements(props: { timings: VoiceTimings }): React.JSX.E
       >
         speech end (est.) → her playback start {whole}
       </span>
+      {offsets.length > 0 && (
+        <span
+          title={
+            "For each of her segments, the React commit that revealed its text less the " +
+            "moment this window started playing it. Segment-level, not word-level."
+          }
+        >
+          text vs playback {offsets.join(" / ")} ms
+        </span>
+      )}
+      {gaps.length > 0 && (
+        <span title="Between her segments: the next one's playback start less the previous one's end.">
+          gaps {gaps.join(" / ")} ms
+        </span>
+      )}
       <span title="From your barge-in to the playing buffer being stopped in this window.">
         barge-in → silence {silence}
       </span>
     </p>
+  );
+}
+
+/**
+ * Her words as presented: the whole message in text mode; in Voice, the part she has
+ * begun to speak, and — only once speech can no longer carry it — the rest, marked as
+ * not spoken rather than presented as heard.
+ */
+function SpokenContent(props: { presented: Presented }): React.JSX.Element {
+  const { presented } = props;
+  return (
+    <>
+      {presented.shown !== "" ? (
+        <Prose text={presented.shown} />
+      ) : (
+        presented.pacing && (
+          <p className="spoken-pending" aria-label="Val is about to speak">
+            …
+          </p>
+        )
+      )}
+      {presented.unspoken !== "" && (
+        <div className="unspoken">
+          <Prose text={presented.unspoken} />
+        </div>
+      )}
+      {presented.note !== null && <div className="state-line spoken-note">{presented.note}</div>}
+    </>
+  );
+}
+
+/**
+ * His words, before they are his message (Voice-mode repair §3): what the recognizer
+ * is hearing, and then what it heard — plainly marked provisional, and gone the moment
+ * the canonical message is in the thread. Never a message, never sent from here.
+ */
+export function HeardWords(props: {
+  session: VoiceSessionView | null;
+  detail: ConversationDetail | null;
+}): React.JSX.Element | null {
+  const { session, detail } = props;
+  if (session === null) return null;
+  // A conversation switch ends Voice, so an unread thread (a new chat whose first
+  // message is being committed) is this session's; any other conversation is not.
+  const here =
+    detail === null || session.conversation_id === null || session.conversation_id === detail.conversation.id;
+  if (!here) return null;
+  const messages = detail?.messages ?? [];
+  const committed = session.committed ?? null;
+  const canonical = (text: string): boolean =>
+    committed !== null && committed.utterance === session.utterance
+      ? messages.some((message) => message.id === committed.message_id)
+      : messages.some((message) => message.role === "user" && message.content.trim() === text.trim());
+  const settled = session.pending !== "" && !canonical(session.pending) ? session.pending : "";
+  const hearing = session.hearing ? session.provisional : "";
+  if (settled === "" && hearing === "") return null;
+  return (
+    <div className="message user heard" aria-live="polite">
+      <div className="speaker">Lord Armand</div>
+      {settled !== "" && (
+        <div className="content provisional-words">
+          {settled}
+          <span className="state-line"> Heard — not yet your message</span>
+        </div>
+      )}
+      {hearing !== "" && (
+        <div className="content provisional-words hearing">
+          {hearing}
+          <span className="state-line"> Hearing…</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1105,8 +1241,19 @@ export function Thread(props: {
   onRecorded: () => void;
   onConversationChanged: () => Promise<void>;
   onRefused: (message: string) => void;
+  /** Her answer being spoken in Voice, paced to her playback; absent in text mode. */
+  spoken?: SpokenAnswer | null;
 }): React.JSX.Element {
   const { detail, projects, onRecorded, onConversationChanged, onRefused } = props;
+  const spoken = props.spoken ?? null;
+  // Segments she began speaking before this window had read her written answer: shown
+  // after his message, from the playback facts alone, until the answer itself arrives.
+  const early =
+    spoken !== null &&
+    spoken.revealed !== "" &&
+    !detail.messages.some((message) => message.id === spoken.messageId)
+      ? spoken
+      : null;
   const transitions = detail.scope_transitions ?? [];
   return (
     <div className="messages">
@@ -1128,9 +1275,18 @@ export function Thread(props: {
           <MessageBlock
             message={message}
             detail={detail}
+            spoken={spoken}
             onRecorded={onRecorded}
             onRefused={onRefused}
           />
+          {early !== null && early.turn === message.id && (
+            <div className="message val spoken-early">
+              <div className="speaker">Val</div>
+              <div className="content">
+                <Prose text={early.revealed} />
+              </div>
+            </div>
+          )}
           {transitions
             .filter((transition) => transition.after_sequence === message.sequence)
             .map((transition) => (
@@ -1147,10 +1303,14 @@ export function Thread(props: {
 function MessageBlock(props: {
   message: MessageView;
   detail: ConversationDetail;
+  spoken?: SpokenAnswer | null;
   onRecorded: () => void;
   onRefused: (message: string) => void;
 }): React.JSX.Element {
   const { message, detail, onRecorded, onRefused } = props;
+  // Only her answer being spoken is paced; every other message is shown whole.
+  const presented =
+    message.role === "val" ? present(message.content, message.id, props.spoken ?? null) : null;
   const blind = detail.blind_positions.filter((b) => b.message_id === message.id);
   const manual = detail.deliberations.filter(
     (d) => d.message_id === message.id && d.blind_position_id === null,
@@ -1257,7 +1417,7 @@ function MessageBlock(props: {
       ) : (
         <>
           <div className="content">
-            {message.role === "val" ? <Prose text={message.content} /> : message.content}
+            {presented !== null ? <SpokenContent presented={presented} /> : message.content}
           </div>
           <Attachments attachments={message.attachments} />
         </>
