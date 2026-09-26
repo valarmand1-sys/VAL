@@ -896,6 +896,56 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 23),
     ),
     ModelConfig(
+        id=UUID("6b2e9c41-8f3d-4a57-b1c6-0d9e7a5f2c83"),
+        slug="qwen3-4b-instruct-2507-mlx-lmstudio-light",
+        # Owner order, 26 September 2026 (latency redesign §4): the **candidate** for
+        # the fast local route — `Qwen/Qwen3-4B-Instruct-2507` (the non-thinking
+        # Instruct variant, Apache-2.0, base revision cdbee75f17c01a7cc42f958dc650907174af0554)
+        # as `mlx-community/Qwen3-4B-Instruct-2507-4bit`, 4-bit MLX, Hugging Face
+        # revision 50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b, 2.28 GB, downloaded 26
+        # September 2026 into LM Studio's models directory and served by LM Studio's
+        # mlx-llm engine on the loopback interface. LM Studio's model key and API
+        # identifier is `qwen3-4b-instruct-2507`, which is what the exact preflight
+        # and the runtime supervisor address.
+        #
+        # **Registered NOT_ADMITTED, with no capability profile**, so nothing in
+        # production routing can select it. The candidate build promotes it for its
+        # own process only — `VAL_FAST_ROUTE_TIERS` in `val_gateway.startup` — to the
+        # `light` profile, for `TaskType.LIGHT_CONVERSATION` alone. Admitting it is
+        # his ruling, made by editing this entry; nothing here presumes it. It has no
+        # reasoning setting (`NOT_APPLICABLE`: the 2507 Instruct variant does not
+        # think), no tools, no image capability, and the same eligibility as every
+        # other local entry. Its qualification record: the redesign run of
+        # 26 September 2026.
+        provider="lmstudio",
+        model_identifier="qwen3-4b-instruct-2507",
+        display_name=(
+            "Qwen3 4B Instruct 2507 (4-bit MLX, LM Studio — light-conversation "
+            "candidate, NOT_ADMITTED; HF 50d42775, base cdbee75f)"
+        ),
+        context_window_tokens=32_768,
+        max_output_tokens=4_096,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        qualification_targets=frozenset(),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        known_weaknesses=(
+            "not qualified for any Partner work: a candidate for light conversation "
+            "(greetings, thanks, farewells, pleasantries) only — 26 September 2026",
+        ),
+        activated_on=date(2026, 9, 26),
+        rates_verified_on=date(2026, 9, 26),
+    ),
+    ModelConfig(
         id=UUID("3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"),
         slug="gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
         # OWNER ADMISSION RULING, Lord Armand, 21 September 2026: the production

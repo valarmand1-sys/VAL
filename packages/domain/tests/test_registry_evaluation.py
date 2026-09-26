@@ -45,6 +45,11 @@ PARTNER_CANDIDATES: set[str] = {
     # on one identical request path. It serves nothing; production text
     # cognition stays MEDIUM.
     "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+    # 26 September 2026 (owner order, the conversational latency redesign §4): the
+    # fast light-conversation candidate, registered for evaluation only. It has no
+    # qualification target because the light profile is not a Partner target; a
+    # candidate build promotes it in-process, and the registry never does.
+    "qwen3-4b-instruct-2507-mlx-lmstudio-light",
 }
 
 
@@ -68,6 +73,8 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
             # 23 September 2026: the admitted artifact at low effort, for the
             # bounded latency measurement of Voice work package 2.
             "gpt-oss-20b-mxfp4-mlx-lmstudio-low": date(2026, 9, 23),
+            # 26 September 2026: the fast light-conversation candidate.
+            "qwen3-4b-instruct-2507-mlx-lmstudio-light": date(2026, 9, 26),
         }
         is_local = config.provider in ("lmstudio", "llamacpp")
         expected = local_dates[config.slug] if is_local else date(2026, 9, 10)

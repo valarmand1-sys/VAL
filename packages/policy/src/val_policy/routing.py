@@ -81,6 +81,10 @@ _REQUIRED_PROFILE: dict[TaskType, CapabilityProfile] = {
     TaskType.TITLE: CapabilityProfile.STRUCTURED,
     # The prime is sent to the Partner route it accelerates, and to nothing else.
     TaskType.PREFIX_PRIME: CapabilityProfile.PARTNER,
+    # Owner order, 26 September 2026: light conversation has its own, lower floor.
+    # No production configuration declares it, so the task is unroutable there.
+    TaskType.LIGHT_CONVERSATION: CapabilityProfile.LIGHT,
+    TaskType.SPECULATIVE_LIGHT: CapabilityProfile.LIGHT,
 }
 
 

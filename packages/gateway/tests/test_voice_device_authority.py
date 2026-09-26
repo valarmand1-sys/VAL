@@ -109,6 +109,13 @@ def test_no_tool_or_mcp_registration_exists_at_all() -> None:
         # prefix prime is a local model call that computes the persona and discards
         # its one token. It is not a tool, reaches no device and no model can call it.
         "prefix_prime",
+        # Checked against the device-authority rule, 26 September 2026 (owner order,
+        # the conversational latency redesign): a light conversation and a
+        # speculative light conversation are local model calls that produce Val's
+        # words. Neither is a tool, neither reaches a device, and no model can call
+        # either — Core decides both, deterministically, before any model is asked.
+        "light_conversation",
+        "speculative_light_conversation",
     }, "a new task type may be a tool; check it against the device-authority rule"
 
     root = Path(__file__).resolve().parents[3]

@@ -55,6 +55,10 @@ CANDIDATES = (
     # 18 September 2026 (owner ruling): Gemma 4 31B on the llama.cpp provider,
     # evaluation only, target PARTNER, no profile.
     "gemma-4-31b-q6k-llamacpp",
+    # 26 September 2026 (owner order, the conversational latency redesign): the fast
+    # light-conversation candidate, NOT_ADMITTED, no profile. Promoted to the light
+    # profile only in-process by the candidate switch, never in the registry.
+    "qwen3-4b-instruct-2507-mlx-lmstudio-light",
 )
 
 

@@ -70,6 +70,9 @@ def build() -> tuple[FastAPI, Settings]:
             started.gateway,
             started.warnings,
             recognizers=started.recognizers,
+            fast_route=started.fast_route,
+            speculation=started.speculation,
+            adaptive_grace=started.adaptive_grace,
         ),
         settings,
     )

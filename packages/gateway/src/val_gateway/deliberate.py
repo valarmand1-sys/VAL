@@ -75,16 +75,19 @@ never a guessed one. Nothing on any path fabricates a record.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import StrEnum
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import Engine
 
-from val_domain.conversation import StoredRole
+from val_domain.conversation import ConversationRecord, MessageRecord, StoredRole
 from val_domain.deliberation import (
     BlindPositionRecord,
     ClassificationRecord,
@@ -110,18 +113,24 @@ from val_domain.gateway import (
     TurnReference,
 )
 from val_domain.perception import PerceptionRefusedError, PerceptionUnavailableError
-from val_domain.project import ProjectScope, attribution_of, attribution_state_of
+from val_domain.project import (
+    AmbiguousProject,
+    ProjectScope,
+    attribution_of,
+    attribution_state_of,
+)
 from val_domain.provider import DeltaSink
 from val_domain.timings import mark
 from val_gateway import conversations
 from val_gateway.attachments import CandidateAttachment
 from val_gateway.candidate import CandidateGateway
+from val_gateway.conversations import ConversationNotFoundError
 from val_gateway.deliberation import (
     record_blind_position,
     record_classification,
     record_deliberation,
 )
-from val_gateway.exchange import ClarificationNeeded
+from val_gateway.exchange import ClarificationNeeded, resolve_scope
 from val_gateway.gateway import Gateway
 from val_gateway.loop import (
     OpenedTurn,
@@ -137,10 +146,14 @@ from val_gateway.loop import (
     unanswered_or_raise,
 )
 from val_gateway.memory import DEFAULT_LIMIT
-from val_gateway.persona import DatabasePersonaLoader
+from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_gateway.projects import ProjectSession
 from val_gateway.seal import SealRoute
-from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
+from val_gateway.speculation import PreparedAnswer, fingerprint, record_preparation
+from val_policy.budget import (
+    CONVERSATION_MAX_OUTPUT_TOKENS,
+    LIGHT_CONVERSATION_MAX_OUTPUT_TOKENS,
+)
 from val_policy.consequence import execution_refusal
 from val_policy.deliberation import (
     BLIND_POSITION_INSTRUCTION,
@@ -165,6 +178,7 @@ from val_policy.deliberation import (
     validate_strip,
 )
 from val_policy.egress import LiveVoiceConversations, decide_egress
+from val_policy.light_conversation import ConversationState, FastRoute
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 
 _LOGGER = logging.getLogger("val.deliberation")
@@ -320,8 +334,23 @@ def send(
     spoken: bool = False,
     seal_route: SealRoute = SealRoute.UTTERANCE_FINALIZED,
     on_persisted: PersistedSink | None = None,
+    fast_route: FastRoute | None = None,
+    prepared: PreparedAnswer | None = None,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
+
+    `fast_route` (owner order, 26 September 2026 §5) is the candidate's enabled light
+    tiers, `None` or disabled in production. On a **sealed** turn — the only place it
+    applies — the whole utterance and the conversation's state are judged
+    deterministically, and a greeting, thanks, farewell or pleasantry is answered on
+    the light route (`TaskType.LIGHT_CONVERSATION`); anything else, and any light
+    route failure before a word was delivered, takes the Partner route as always.
+    The decision is logged as a positive state either way.
+
+    `prepared` (§6) is a light answer prepared for these very words while the resume
+    window ran. It is used only if the completed request is the request it was made
+    for — same persona, same assembled messages, same light task — and never
+    otherwise; what became of it is recorded either way.
 
     The same signature and scope doctrine as `loop.send` — the turn phases are
     shared, not duplicated. What this adds is everything between persisting
@@ -500,6 +529,8 @@ def send(
             candidate=candidate,
             visual=visual,
             egress=decision,
+            light=_light_tier(engine, opened, content, fast_route),
+            prepared=prepared,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -958,6 +989,214 @@ def _known_material_cannot_fit(
     return GatewayError(GatewayErrorKind.INVALID_REQUEST, detail)
 
 
+def _accept_prepared(
+    engine: Engine,
+    gateway: Gateway,
+    opened: OpenedTurn,
+    messages: tuple[Message, ...],
+    task_type: TaskType,
+    prepared: PreparedAnswer | None,
+) -> PreparedAnswer | None:
+    """The prepared answer, if it is bound to exactly this request; else it is discarded."""
+    if prepared is None:
+        return None
+    if task_type is not TaskType.LIGHT_CONVERSATION:
+        outcome, detail = "discarded_not_light", "the completed turn is not light"
+    elif prepared.content != opened.user_message.content:
+        outcome, detail = "discarded_mismatch", "the words differ from those prepared for"
+    else:
+        persona = gateway.active_persona_content()
+        if persona is None:
+            outcome, detail = "discarded_mismatch", "no persona to bind against"
+        elif fingerprint(persona, messages, TaskType.SPECULATIVE_LIGHT) != prepared.fingerprint:
+            outcome, detail = "discarded_mismatch", "the assembled request differs"
+        else:
+            _LOGGER.info("speculation: prepared answer accepted for this turn")
+            return prepared
+    _LOGGER.info("speculation: prepared answer %s (%s)", outcome, detail)
+    record_preparation(
+        engine,
+        conversation_id=opened.conversation.id,
+        utterance_sha256=prepared.utterance_sha256,
+        tier=prepared.tier,
+        outcome=outcome,
+        model_call_id=prepared.response.model_call_id,
+        detail=detail,
+        prepared_ms=prepared.prepared_ms,
+    )
+    return None
+
+
+def prepare_light_answer(
+    engine: Engine,
+    gateway: Gateway,
+    content: str,
+    *,
+    catalogue: ProjectCatalogue,
+    signals: ProjectSignals | None,
+    conversation_id: UUID | None,
+    fast_route: FastRoute,
+    live_voice: LiveVoiceConversations | None = None,
+    recall_limit: int = DEFAULT_LIMIT,
+) -> PreparedAnswer | None:
+    """Prepare a light answer for words he has not yet confirmed — owner order §6.
+
+    Nothing is persisted. The conversation is assembled with the settled words in the
+    current message's place, exactly as the turn will assemble it; a turn that would
+    not be light is not prepared at all; a failure is recorded and prepares nothing.
+
+    The seal is predicted, not read: the spoken turn this prepares for will seal its
+    conversation in the transaction that commits his message, so the assembled
+    envelope names `conversation_sealed` — and `voice_session_active` first when the
+    session's conversation already exists — exactly as `decide_egress` will say once
+    the message is canonical. A prediction that turns out wrong is a different
+    digest, and the preparation is discarded rather than trusted.
+    """
+    if not fast_route.enabled:
+        return None
+    started = time.monotonic()
+    digest = hashlib.sha256(content.encode()).hexdigest()
+    tier = 0
+    try:
+        if conversation_id is not None:
+            conversation, scope = conversations.resume(engine, conversation_id)
+            head = conversations.working(engine, conversation_id).live_records()
+            sequence = (head[-1].sequence + 1) if head else 1
+        else:
+            resolution = resolve_scope(signals or ProjectSignals(), catalogue, None)
+            if isinstance(resolution, AmbiguousProject):
+                return None
+            scope = resolution
+            now = datetime.now(UTC)
+            conversation = ConversationRecord(
+                id=uuid4(),
+                project_id=attribution_of(scope),
+                title="",
+                started_at=now,
+                last_message_at=now,
+            )
+            head = ()
+            sequence = 1
+        ephemeral = MessageRecord(
+            id=uuid4(),
+            conversation_id=conversation.id,
+            role=StoredRole.USER,
+            content=content,
+            sequence=sequence,
+            created_at=datetime.now(UTC),
+        )
+        thread = (
+            conversations.working_with(engine, conversation.id, ephemeral)
+            if conversation_id is not None
+            else conversations.prospective_thread(ephemeral)
+        )
+        previous = next(
+            (record.content for record in reversed(head) if record.role is StoredRole.VAL), None
+        )
+        verdict = fast_route.decide(
+            content,
+            ConversationState(
+                previous_answer=previous,
+                prior_turns=sum(1 for record in head if record.role is StoredRole.USER),
+            ),
+        )
+        if verdict.tier is None:
+            _LOGGER.info("speculation: not prepared (%s)", verdict.reason)
+            return None
+        tier = verdict.tier
+        opened = OpenedTurn(
+            conversation=conversation, scope=scope, user_message=ephemeral, attachments=()
+        )
+        reasons: list[LocalOnlyReason] = []
+        if live_voice is not None and live_voice.active_in(conversation.id):
+            reasons.append(LocalOnlyReason.VOICE_SESSION_ACTIVE)
+        reasons.append(LocalOnlyReason.CONVERSATION_SEALED)
+        messages, _recalled, egress = assemble_turn(
+            engine,
+            opened,
+            recall_limit=recall_limit,
+            egress=sealed(*reasons),
+            thread=thread,
+        )
+        response, persona = gateway.converse_prospectively(
+            messages,
+            scope=scope,
+            max_output_tokens=LIGHT_CONVERSATION_MAX_OUTPUT_TOKENS,
+            egress=egress.egress,
+        )
+    except (GatewayError, PersonaUnavailableError, ConversationNotFoundError) as failure:
+        record_preparation(
+            engine,
+            conversation_id=conversation_id,
+            utterance_sha256=digest,
+            tier=tier or 1,
+            outcome="failed",
+            detail=f"{type(failure).__name__}: {failure}"[:500],
+            prepared_ms=int((time.monotonic() - started) * 1000),
+        )
+        _LOGGER.warning("speculation: preparation failed (%s)", failure)
+        return None
+    if response.terminal is not TerminalState.COMPLETE or not response.text.strip():
+        record_preparation(
+            engine,
+            conversation_id=conversation_id,
+            utterance_sha256=digest,
+            tier=tier,
+            outcome="failed",
+            model_call_id=response.model_call_id,
+            detail=f"terminal {response.terminal.value}",
+            prepared_ms=int((time.monotonic() - started) * 1000),
+        )
+        return None
+    prepared = PreparedAnswer(
+        content=content,
+        conversation_id=conversation_id,
+        tier=tier,
+        fingerprint=fingerprint(persona, messages, TaskType.SPECULATIVE_LIGHT),
+        response=response,
+        prepared_ms=int((time.monotonic() - started) * 1000),
+    )
+    _LOGGER.info(
+        "speculation: prepared a tier %d answer in %d ms (%s)",
+        tier,
+        prepared.prepared_ms,
+        response.slug,
+    )
+    return prepared
+
+
+def _light_tier(
+    engine: Engine, opened: OpenedTurn, content: str, fast_route: FastRoute | None
+) -> int | None:
+    """Which light tier this sealed turn may take, if any — decided once, logged once."""
+    if fast_route is None or not fast_route.enabled:
+        return None
+    thread = conversations.working(
+        engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
+    )
+    records = thread.live_records()
+    previous = next(
+        (
+            record.content
+            for record in reversed(records)
+            if record.role is StoredRole.VAL and record.sequence < opened.user_message.sequence
+        ),
+        None,
+    )
+    state = ConversationState(
+        previous_answer=previous,
+        prior_turns=sum(1 for record in records if record.role is StoredRole.USER) - 1,
+    )
+    verdict = fast_route.decide(content, state)
+    _LOGGER.info(
+        "fast route: %s",
+        json.dumps(
+            {"tier": verdict.tier, "reason": verdict.reason, "tiers": sorted(fast_route.tiers)}
+        ),
+    )
+    return verdict.tier
+
+
 def _ordinary(
     engine: Engine,
     gateway: Gateway,
@@ -970,8 +1209,17 @@ def _ordinary(
     candidate: ModelConfig | None = None,
     visual: VisualTurn | None = None,
     egress: EgressDecision = ORDINARY,
+    light: int | None = None,
+    prepared: PreparedAnswer | None = None,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
-    """The WP-0.7 turn, from an already-opened state."""
+    """The WP-0.7 turn, from an already-opened state.
+
+    `light` (26 September 2026) names the light tier this turn qualified for, or
+    `None`. A light turn is asked of the light route; if that route cannot answer
+    **before any word has been delivered**, the same turn is asked of the Partner
+    route instead — one user message, one answer, and the fallback on record. Once a
+    word has gone out there is no second answer to give.
+    """
     visual = visual or VisualTurn(classification=classification, configuration=None, bound=())
     # Owner ruling, 24 September 2026 (§2.6). **The seal travels with recall**, and
     # `assemble_turn` returns the decision as it stands once this request's content
@@ -987,6 +1235,38 @@ def _ordinary(
     )
     _stage(on_stage, TurnStage.PREPARING_RESPONSE)
     turn = TurnReference(conversation_id=opened.conversation.id, message_id=opened.user_message.id)
+    task_type = TaskType.LIGHT_CONVERSATION if light is not None else TaskType.CONVERSATION
+    delivered = False
+
+    accepted = _accept_prepared(engine, gateway, opened, messages, task_type, prepared)
+    if accepted is not None:
+        # The prepared answer is this turn's answer: Core delivers it whole, now, and
+        # persists it exactly as it would a freshly generated one.
+        if on_delta is not None:
+            on_delta(accepted.response.text)
+        bind_response(engine, accepted.response, visual)
+        settled = settle_turn(engine, opened, recalled, accepted.response)
+        settled_turn = settled if isinstance(settled, Turn) else None
+        record_preparation(
+            engine,
+            conversation_id=opened.conversation.id,
+            utterance_sha256=accepted.utterance_sha256,
+            tier=accepted.tier,
+            outcome="accepted" if settled_turn is not None else "failed",
+            model_call_id=accepted.response.model_call_id,
+            detail=None if settled_turn is not None else "the prepared answer did not settle",
+            user_message_id=opened.user_message.id if settled_turn is not None else None,
+            answer_message_id=None if settled_turn is None else settled_turn.val_message.id,
+            prepared_ms=accepted.prepared_ms,
+        )
+        return settled
+
+    def sink(delta: str) -> None:
+        nonlocal delivered
+        delivered = True
+        if on_delta is not None:
+            on_delta(delta)
+
     try:
         if candidate is not None and isinstance(gateway, CandidateGateway):
             response = gateway.converse_candidate(
@@ -1000,21 +1280,52 @@ def _ordinary(
                 egress=egress.egress,
             )
         else:
-            response = gateway.converse(
-                messages,
-                scope=opened.scope,
-                classification=classification,
-                turn=turn,
-                max_output_tokens=max_output_tokens,
-                on_delta=on_delta,
-                # The seal, as decided for this turn and escalated for whatever
-                # recall brought in. A local-only request routes locally, and the
-                # gateway refuses it to any route that runs off this machine.
-                egress=egress.egress,
-                # Pinned to the route this turn's images were derived for; None
-                # on a text turn, where routing proceeds exactly as it always has.
-                configuration=visual.configuration,
-            )
+            try:
+                if task_type is TaskType.LIGHT_CONVERSATION:
+                    response = gateway.converse_lightly(
+                        messages,
+                        scope=opened.scope,
+                        turn=turn,
+                        max_output_tokens=LIGHT_CONVERSATION_MAX_OUTPUT_TOKENS,
+                        on_delta=sink if on_delta is not None else None,
+                        egress=egress.egress,
+                    )
+                else:
+                    response = gateway.converse(
+                        messages,
+                        scope=opened.scope,
+                        classification=classification,
+                        turn=turn,
+                        max_output_tokens=max_output_tokens,
+                        on_delta=on_delta,
+                        # The seal, as decided for this turn and escalated for
+                        # whatever recall brought in. A local-only request routes
+                        # locally, and the gateway refuses it to any route that
+                        # runs off this machine.
+                        egress=egress.egress,
+                        # Pinned to the route this turn's images were derived for;
+                        # None on a text turn, where routing proceeds as always.
+                        configuration=visual.configuration,
+                    )
+            except GatewayError as failure:
+                if task_type is not TaskType.LIGHT_CONVERSATION or delivered:
+                    raise
+                _LOGGER.warning(
+                    "fast route: the light route could not answer (%s: %s); the turn takes "
+                    "the partner route instead, with nothing yet delivered",
+                    failure.kind.value,
+                    failure,
+                )
+                response = gateway.converse(
+                    messages,
+                    scope=opened.scope,
+                    classification=classification,
+                    turn=turn,
+                    max_output_tokens=max_output_tokens,
+                    on_delta=on_delta,
+                    egress=egress.egress,
+                    configuration=visual.configuration,
+                )
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
     bind_response(engine, response, visual)

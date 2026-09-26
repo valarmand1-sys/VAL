@@ -171,8 +171,13 @@ def test_the_local_entries_are_distinct_evaluation_only_entries() -> None:
         # evaluation only. It exists to be measured against MEDIUM on one
         # identical request path and serves nothing.
         "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+        # Pin moved 26 September 2026 (owner order, the conversational latency
+        # redesign §4): the fast light-conversation candidate, Qwen3-4B-Instruct-2507
+        # 4-bit MLX, evaluation only — NOT_ADMITTED with no profile in the registry,
+        # promoted to the light profile in-process by a candidate switch and never here.
+        "qwen3-4b-instruct-2507-mlx-lmstudio-light",
     }
-    assert len({c.id for c in candidates}) == 4
+    assert len({c.id for c in candidates}) == 5
     assert all(c.admission is Admission.NOT_ADMITTED for c in candidates)
     assert all(not c.capability_profiles for c in candidates)
 

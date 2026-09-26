@@ -83,6 +83,7 @@ from val_domain.gateway import (
     ConversationProvenance,
     GatewayRequest,
     Message,
+    PersonaAttribution,
     TaskType,
     TurnReference,
 )
@@ -849,8 +850,14 @@ def assemble(
     turn: TurnReference | None = None,
     max_output_tokens: int = 4096,
     egress: Egress = Egress.ORDINARY,
+    attributed: bool = False,
 ) -> GatewayRequest:
     """One normal Val conversational request, with her persona whole in it.
+
+    `attributed` names the assembled revision by separate `PersonaAttribution`, for
+    the tasks that carry the persona with no conversation to record it (owner order,
+    26 September 2026: the speculative light answer); a conversation call's persona
+    rides in its provenance and passes False.
 
     The persona's content goes into `system` verbatim — the complete active row,
     not an excerpt of it and not a rewrite of it for brevity. `persona_id` rides
@@ -867,6 +874,7 @@ def assemble(
         messages=messages,
         system=persona.content,
         max_output_tokens=max_output_tokens,
+        persona=PersonaAttribution(persona_id=persona.id) if attributed else None,
         # One argument, not two that must agree. Corrective round, 18 August
         # 2026: this took `project_id` and `project_attribution` separately, with
         # a default on the second, so a caller could pass a real id alongside

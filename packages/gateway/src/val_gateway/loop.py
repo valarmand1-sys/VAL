@@ -681,8 +681,13 @@ def assemble_turn(
     images: tuple[ImagePart, ...] = (),
     perception: TurnPerception | None = None,
     egress: EgressDecision = ORDINARY,
+    thread: WorkingThread | None = None,
 ) -> tuple[tuple[Message, ...], tuple[RecalledMessage, ...], EgressDecision]:
     """Steps 4-7: history and recall, assembled into the outbound messages.
+
+    `thread` (26 September 2026, §6) is the conversation as the caller holds it — used
+    by speculative preparation, where the current message is not yet stored and so
+    cannot be read back. Absent, the stored conversation as of this turn is read.
 
     Returns the messages, what recall selected, and **the egress decision as it
     stands once this request's content is known** (owner ruling, 24 September 2026,
@@ -707,9 +712,10 @@ def assemble_turn(
     #    a withdrawn message and Val's immediate answer to it are left out. A
     #    fact recorded after this turn was opened cannot reach it, and a later
     #    reconstruction of this turn yields exactly what it received.
-    thread = conversations.working(
-        engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
-    )
+    if thread is None:
+        thread = conversations.working(
+            engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
+        )
     history = thread.live_records()
     turns, selection = select_conversation(history)
     prior, current = turns[:-1], turns[-1:]

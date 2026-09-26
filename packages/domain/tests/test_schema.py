@@ -499,6 +499,22 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "applied_by",
         "reason",
     ),
+    # A light answer prepared before its turn was confirmed — owner order, 26
+    # September 2026 (migration 0032). A digest of the settled words, never the
+    # words: a preparation he did not confirm is not his message.
+    "speculative_preparations": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "utterance_sha256",
+        "tier",
+        "model_call_id",
+        "outcome",
+        "detail",
+        "user_message_id",
+        "answer_message_id",
+        "prepared_ms",
+    ),
     # Live voice input — Voice mode work package 1, 23 September 2026.
     # Transcribed by hand like everything else here. Read these three column
     # lists as the privacy claim they are: **no audio column of any type appears
@@ -581,6 +597,15 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         ("speech_playbacks", "voice_session_id"),
         ("speech_playbacks", "elapsed_ms"),
         ("speech_playbacks", "reason"),
+        # Owner order, 26 September 2026 (migration 0032): no conversation yet when
+        # the words would open one; no call when nothing was sent; the two message
+        # ids only once accepted; detail and timing when there is something to say.
+        ("speculative_preparations", "conversation_id"),
+        ("speculative_preparations", "model_call_id"),
+        ("speculative_preparations", "detail"),
+        ("speculative_preparations", "user_message_id"),
+        ("speculative_preparations", "answer_message_id"),
+        ("speculative_preparations", "prepared_ms"),
         # Ruling, 7 September 2026: the determination exists iff the label is
         # not_consequential; tuning fields exist iff the conclusion needs them.
         ("classification_labels", "exclusion_determination"),
@@ -715,6 +740,10 @@ SPECIFIED_ENUMS: dict[str, tuple[str, ...]] = {
         "title",
         # Owner order, 25 September 2026: the local persona prefix prime (migration 0031).
         "prefix_prime",
+        # Owner order, 26 September 2026 (migration 0032): Val's own turn on the light
+        # route, and that answer prepared before its message exists.
+        "light_conversation",
+        "speculative_light_conversation",
     ),
     "model_call_status": ("ok", "error", "refused"),
     # Amendments, 17 August 2026

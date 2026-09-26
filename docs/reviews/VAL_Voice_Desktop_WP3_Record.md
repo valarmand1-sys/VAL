@@ -1108,3 +1108,51 @@ faster.
 
 **Not established:** that it sounds clean in the room. Fallback if it does not:
 whole-segment synthesis, 1.1–4.5 s to first audio.
+
+## 26. Handoff — the local conversational latency redesign: candidate built, fast route not qualified, 26 September 2026
+
+**WP3 remains PARTIAL. Nothing experimental is deployed.** Record:
+`docs/reviews/qualification/runs/2026-09-26-redesign/RESULT.md` (evidence index §113).
+Owner order "IMPLEMENT AND QUALIFY THE LOCAL CONVERSATIONAL LATENCY REDESIGN"; the
+candidate awaits his review, off behind three unset switches.
+
+**Built, inside Core:** a two-tier deterministic eligibility rule (greeting / thanks /
+farewell; narrow pleasantry) that fails toward MEDIUM; `Gateway.converse_lightly` on a
+`LIGHT` capability floor no production configuration carries; speculative preparation
+of the light answer while the resume window runs, bound to the turn only when the
+completed request is the very request prepared for, every outcome on the record
+(`speculative_preparations`, migration `0032`); adaptive turn completion from the
+transcript's own cues; per-model readiness; the light route primed like the partner
+route. Guards: production routes nothing light; the closure contract holds; three
+tripwires amended with dated notes.
+
+**The finding:** `Qwen3-4B-Instruct-2507`, given the persona whole and the authoritative
+envelope as Core assembles every turn, does not answer the light turn — it copies
+persona example lines verbatim or repeats her previous answer (12/12 on the real path;
+27 of 49 light answers in the run echo the persona; unchanged under every sampling and
+message-structure variant; only the non-deployable envelope-free control answers, and
+it invents). **Neither tier is qualified; neither is enabled.**
+
+**Measured anyway (E: tiers 1+2 + speculation + adaptive completion; 20 sessions, 114
+turns, real recognition, $0):** 0 substantive false positives on 45 adversarial turns
+(every phrase the order names); 20 safe false negatives (10 Whisper hearing "Val" as
+"vowel" on the synthetic voice, 10 frozen-rule misses, recorded not tuned); 47/55
+preparations bound, 6 discarded on resume, 2 unused, 0 mismatched; all six resumed
+pairs joined into one turn; light-route speech end → first playback 6.0–6.1 s median
+against ~1–2 s targets, the whole excess being the candidate's 4.6 s median to generate
+its answer; substantive 8.8 s median. Voice On → ready 5.9 s. Lowest free memory 16%,
+swap +1.0 GB over the run. Offline: loopback only. **Against production routing on
+the same 114 phrases (A):** the candidate took 0.76 s (tier 1) and 2.18 s (tier 2) off
+the median while tripling the length of what she said; the substantive route did not
+regress (ineligible −0.03 s median); swap grew in both conditions with both models
+resident (A +4.9 GB, E +1.0 GB), so residency's memory cost has no clean baseline yet.
+
+**Blocked:** the LiveKit turn detector — its Model License §3 excludes standalone use.
+**Repaired on the way:** an address-only clause in the router; the preparation wait
+(0.6 s → 8 s; a late preparation is now recorded `discarded_unused`).
+
+**His rulings needed:** the fast candidate's future (close, one named larger local
+candidate, or a ruling on how the envelope reaches a small model); adaptive
+completion's trade; interruption policy (§24); a second resident model at that memory.
+
+---

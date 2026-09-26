@@ -125,7 +125,7 @@ from val_gateway.conversations import (
     ScopeTransitionRefusedError,
     TitleRefusedError,
 )
-from val_gateway.deliberate import DeliberatedOutcome
+from val_gateway.deliberate import DeliberatedOutcome, prepare_light_answer
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import (
     IncoherentDeliberationError,
@@ -166,9 +166,11 @@ from val_gateway.projects import (
 )
 from val_gateway.revisions import RevisionRefusedError, retract, revise
 from val_gateway.seal import SealRoute
+from val_gateway.speculation import PreparedAnswer
 from val_gateway.speech import register_voice, speak_message
 from val_gateway.voice import NO_SESSION, VoiceSession, VoiceSessions, interrupted
 from val_policy.attachments import AdmissionRefusedError
+from val_policy.light_conversation import FastRoute
 from val_policy.project_resolution import ProjectSignals
 from val_policy.routing import is_admitted, satisfies_profile
 from val_providers.qwen_tts_speech import VOICE_RECORD
@@ -208,8 +210,14 @@ def create_app(
     warnings: list[str] | None = None,
     *,
     recognizers: Callable[[], LiveRecognizer] | None = None,
+    fast_route: FastRoute | None = None,
+    speculation: bool = False,
+    adaptive_grace: bool = False,
 ) -> FastAPI:
     """The service, wired to an already-started house.
+
+    `fast_route` (26 September 2026) is the candidate's enabled light tiers, from
+    startup; `None` or disabled in production. It reaches only the microphone's door.
 
     The caller supplies the engine and a gateway that `val_gateway.startup`
     has already built — startup enforcement (eligibility, keys, ledger sweep)
@@ -1022,6 +1030,7 @@ def create_app(
             on_delta: Callable[[str], None] | None = None,
             merged: bool = False,
             on_persisted: Callable[[UUID, UUID], None] | None = None,
+            prepared: object | None = None,
         ) -> DeliberatedOutcome:
             """The ordinary door. A spoken turn is an ordinary turn.
 
@@ -1056,6 +1065,26 @@ def create_app(
                 # His words are canonical: the session is told at once, so the next
                 # poll shows the desktop a message to read while she is thinking.
                 on_persisted=on_persisted,
+                # The candidate's light tiers, if this process enables any.
+                fast_route=fast_route,
+                # A light answer prepared during the resume window, for Core to bind or
+                # discard (owner order §6).
+                prepared=prepared if isinstance(prepared, PreparedAnswer) else None,
+            )
+
+        def prepare(content: str, conversation_id: UUID | None) -> object | None:
+            """Speculative preparation (owner order §6), through Core, persisting nothing."""
+            if fast_route is None:
+                return None
+            return prepare_light_answer(
+                engine,
+                gateway,
+                content,
+                catalogue=load_catalogue(engine),
+                signals=None if conversation_id is not None else signals,
+                conversation_id=conversation_id,
+                fast_route=fast_route,
+                live_voice=sessions.live_conversations(),
             )
 
         live = VoiceSession(
@@ -1082,6 +1111,11 @@ def create_app(
             # later turns do not recompute it (owner order, 25 September 2026). Never
             # started while a request of his is waiting; recorded as `prefix_prime`.
             prime=gateway.prime_prefix,
+            # Candidate behaviours (owner order, 26 September 2026 §6, §7), both off in
+            # production: a light answer prepared during the resume window, and a
+            # resume window sized from the transcript's own cues.
+            prepare=prepare if speculation else None,
+            adaptive_grace=adaptive_grace,
         )
         try:
             live.start()

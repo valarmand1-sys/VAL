@@ -100,6 +100,13 @@ def raw_input_bound(parts: Iterable[str]) -> int:
 #: never retried automatically.
 CONVERSATION_MAX_OUTPUT_TOKENS = 6_144
 
+#: Owner order, 26 September 2026 (latency redesign §5): the output ceiling of a
+#: **light** conversation turn — a greeting, thanks, farewell or pleasantry answered
+#: in Val's register. A light answer of more than a few sentences is not light; the
+#: ceiling bounds a runaway generation on the small route, and it is what lets that
+#: route's own smaller output cap admit the request at all.
+LIGHT_CONVERSATION_MAX_OUTPUT_TOKENS = 1_024
+
 
 def upper_bound_output_tokens(requested_max_output_tokens: int, config: ModelConfig) -> int:
     """The most output tokens this call can possibly be billed as.

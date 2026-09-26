@@ -67,7 +67,9 @@ from val_gateway.deliberate import DeliberatedOutcome
 from val_gateway.exchange import ClarificationNeeded
 from val_gateway.loop import TruncatedTurn, Turn, UnansweredTurn
 from val_gateway.revisions import RevisionRefusedError, retract
+from val_gateway.speculation import record_preparation
 from val_policy.egress import LiveVoiceConversations
+from val_policy.turn_completion import completion_of
 
 _LOGGER = logging.getLogger("val.voice")
 
@@ -75,6 +77,16 @@ _LOGGER = logging.getLogger("val.voice")
 #: case the owner was only drawing breath. Long enough to catch a resumed
 #: sentence, short enough that an ordinary turn does not feel held back.
 RESUME_GRACE_SECONDS = 1.1
+
+#: How long a submission waits for a speculative preparation that is still running
+#: (owner order §6). The preparation *is* this turn's request, already in flight on a
+#: light instance that serves one request at a time (`--parallel 1`), so a duplicate
+#: issued now could only queue behind it and finish later; waiting is the fastest
+#: path to the answer. The bound guards against a hung provider, not a slow one: past
+#: it the turn proceeds on its own and the preparation is recorded unused. (The
+#: pilot of 26 September 2026 measured 0.6 s here as a duplicate queued behind its
+#: own preparation on every light turn.)
+SPECULATION_WAIT_SECONDS = 8.0
 
 #: How often the recovery journal may record the guess in progress. The journal
 #: exists to survive a crash mid-utterance, not to keep every guess: a row per
@@ -124,7 +136,20 @@ class Submit(Protocol):
         on_delta: DeltaSink | None = None,
         merged: bool = False,
         on_persisted: Callable[[UUID, UUID], None] | None = None,
+        prepared: object | None = None,
     ) -> DeliberatedOutcome: ...
+
+
+class Prepare(Protocol):
+    """Prepare a light answer for settled words not yet confirmed (owner order §6).
+
+    Given the settled text and the conversation it would join, returns Core's
+    prepared answer or None. Runs during the resume window, off the session's
+    thread; its result is handed back to Core with the completed request, which
+    decides — by binding, never by trust — whether to use it.
+    """
+
+    def __call__(self, content: str, conversation_id: UUID | None) -> object | None: ...
 
 
 class Delivery(Protocol):
@@ -317,6 +342,15 @@ class _Pending:
     #: opening boundaries. Durations and counts only. `None` for a merged pending
     #: whose halves are described by the later one's evidence.
     evidence: dict[str, object] | None = None
+    #: Speculative preparation (owner order §6): the thread preparing an answer for
+    #: these words during the resume window, and what it prepared. Set only when the
+    #: candidate enables speculation; a merged pending prepares nothing.
+    speculation: threading.Thread | None = None
+    prepared: object | None = None
+    #: How long this utterance's resume window is: the default, or the adaptive
+    #: value its own final transcript earned (owner order §7).
+    grace_seconds: float = RESUME_GRACE_SECONDS
+    grace_reason: str = "fixed"
 
 
 # --- the durable record ----------------------------------------------------------------
@@ -443,6 +477,8 @@ class VoiceSession:
         speech: DeliveryFactory | None = None,
         warm: Callable[[], object] | None = None,
         prime: Callable[[Callable[[], bool]], object] | None = None,
+        prepare: Prepare | None = None,
+        adaptive_grace: bool = False,
     ) -> None:
         self._engine = engine
         self._recognizer = recognizer
@@ -494,6 +530,12 @@ class VoiceSession:
         #: order, 25 September 2026). Optional maintenance: it never starts while a
         #: request of his is waiting, and one run at a time.
         self._prime = prime
+        #: Owner order, 26 September 2026 (§6, §7): candidate behaviours, off in
+        #: production. `prepare` speculates a light answer during the resume window;
+        #: `adaptive_grace` sizes that window from the transcript's own cues.
+        self._prepare = prepare
+        self._adaptive_grace = adaptive_grace
+        self.speculations: list[dict[str, object]] = []
         self._maintaining = threading.Lock()
         #: True from the moment a turn is submitted until its cognition returns —
         #: the span in which his request is with the model or about to be.
@@ -816,12 +858,15 @@ class VoiceSession:
                 # Still inside the resume window: he was drawing breath, not
                 # finishing. Nothing has been submitted, so nothing needs
                 # cancelling — the two halves are simply one utterance.
+                self._discard_speculation(waiting, "discarded_resumed")
                 self._pending = _Pending(
                     utterance=waiting.utterance.merged_with(settled),
                     provisional_events=waiting.provisional_events + events,
                     settled_at=self._now(),
                     evidence=evidence,
                 )
+                self._size_grace(self._pending)
+                self._speculate(self._pending)
                 self.state = VoiceSessionState.THINKING
                 return
             # Nothing waiting. If a turn has been submitted and Val has not yet
@@ -834,6 +879,8 @@ class VoiceSession:
                     settled_at=self._now(),
                     evidence=evidence,
                 )
+                self._size_grace(self._pending)
+                self._speculate(self._pending)
                 self.state = VoiceSessionState.THINKING
                 if not self._initial_prime_started:
                     # **The session's first prime starts here**, when his first
@@ -992,13 +1039,110 @@ class VoiceSession:
             )
             self.state = VoiceSessionState.THINKING
 
+    def _size_grace(self, pending: _Pending) -> None:
+        """Adaptive turn completion (owner order §7): the window this utterance earns."""
+        if not self._adaptive_grace:
+            return
+        completion = completion_of(pending.utterance.text, self._grace)
+        pending.grace_seconds = completion.grace_seconds
+        pending.grace_reason = completion.state
+        _LOGGER.info(
+            "turn completion: %s",
+            json.dumps(
+                {
+                    "utterance": pending.utterance.utterance,
+                    "state": completion.state,
+                    "grace_seconds": round(completion.grace_seconds, 3),
+                    "reason": completion.reason,
+                }
+            ),
+        )
+
+    def _speculate(self, pending: _Pending) -> None:
+        """Prepare a light answer while the resume window runs (owner order §6).
+
+        Off the session's thread; bounded by the preparation itself. Never started
+        while a turn is in flight — the light instance serves one request at a time,
+        and a speculation queued behind a real turn would delay nothing but itself.
+        """
+        prepare = self._prepare
+        if prepare is None or self._inflight is not None:
+            return
+        text_ = pending.utterance.text
+        conversation = self.conversation_id
+        started = self._now()
+
+        def run() -> None:
+            try:
+                result = prepare(text_, conversation)
+            except Exception as failure:  # prepared nothing; the turn is unaffected
+                _LOGGER.warning("speculation: preparation raised %s", failure)
+                result = None
+            with self._lock:
+                pending.prepared = result
+                self.speculations.append(
+                    {
+                        "utterance": pending.utterance.utterance,
+                        "prepared": result is not None,
+                        "seconds": round(self._now() - started, 3),
+                    }
+                )
+
+        pending.speculation = threading.Thread(target=run, daemon=True)
+        pending.speculation.start()
+
+    def _prepared_for(self, pending: _Pending) -> object | None:
+        """The prepared answer for this utterance, waiting briefly if it is about to land."""
+        thread = pending.speculation
+        if thread is None:
+            return None
+        if thread.is_alive():
+            # It began at settle, a resume window ago, and is this very request in
+            # flight; it is waited for up to the bound rather than duplicated.
+            thread.join(timeout=SPECULATION_WAIT_SECONDS)
+        if thread.is_alive():
+            # Past the bound the turn goes on without it. Whatever it produces later
+            # is recorded as unused, never left as a preparation that vanished.
+            self._discard_speculation(pending, "discarded_unused")
+            return None
+        with self._lock:
+            return pending.prepared
+
+    def _discard_speculation(self, pending: _Pending, reason: str) -> None:
+        """A preparation for words he went on to change is stale; say so on the record."""
+        thread = pending.speculation
+        if thread is None:
+            return
+
+        def discard() -> None:
+            thread.join(timeout=60)
+            with self._lock:
+                prepared = pending.prepared
+            if prepared is not None:
+                try:
+                    record_preparation(
+                        self._engine,
+                        conversation_id=getattr(prepared, "conversation_id", None),
+                        utterance_sha256=getattr(prepared, "utterance_sha256", "0" * 64),
+                        tier=int(getattr(prepared, "tier", 1)),
+                        outcome=reason,
+                        model_call_id=getattr(
+                            getattr(prepared, "response", None), "model_call_id", None
+                        ),
+                        prepared_ms=getattr(prepared, "prepared_ms", None),
+                    )
+                except Exception:
+                    _LOGGER.exception("speculation: could not record a discarded preparation")
+
+        threading.Thread(target=discard, daemon=True).start()
+
     def _submit_if_due(self) -> None:
         """Submit a pending utterance once the resume window has passed."""
         with self._lock:
             pending = self._pending
             if pending is None or self._inflight is not None:
                 return
-            if self._now() - pending.settled_at < self._grace:
+            if self._now() - pending.settled_at < pending.grace_seconds:
                 return
             if self._resuming(pending):
                 return
@@ -1123,6 +1267,7 @@ class VoiceSession:
             # The previous turn's hand-off ends when this one begins: one delivery
             # is collectable at a time, and an older one is released here.
             self._recent = None
+        prepared = self._prepared_for(pending)
         try:
             outcome = self._submit(
                 utterance.text,
@@ -1135,6 +1280,11 @@ class VoiceSession:
                 on_persisted=lambda conversation, message: self._persisted(
                     utterance.utterance, conversation, message
                 ),
+                # The answer prepared for these words during the resume window, if
+                # one was and it is ready; Core decides whether it binds. Passed only
+                # when there is one, so a submit that knows nothing of preparation
+                # (there is no speculation in production) is called as before.
+                **({} if prepared is None else {"prepared": prepared}),
             )
         except Exception as failure:
             with self._lock:

@@ -455,6 +455,27 @@ def working(
     )
 
 
+def working_with(engine: Engine, conversation_id: UUID, extra: MessageRecord) -> WorkingThread:
+    """The conversation as it stands now, with one message that is **not yet stored**.
+
+    Owner order, 26 September 2026 (§6): a light answer may be prepared while his
+    utterance is still inside its resume window. Core assembles that preparation
+    from the conversation exactly as the turn would, with the settled words in the
+    current message's place; nothing is written. `extra` is the ephemeral record,
+    numbered after the last stored message.
+    """
+    with engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
+        history_rows = connection.execute(_SELECT_HISTORY, {"id": conversation_id}).all()
+        fact_rows = connection.execute(_SELECT_FACTS, {"id": conversation_id}).all()
+    history = tuple(_message(row) for row in history_rows)
+    return working_thread((*history, extra), tuple(revision_record(row) for row in fact_rows))
+
+
+def prospective_thread(extra: MessageRecord) -> WorkingThread:
+    """A conversation that does not exist yet, holding only the words that may open it."""
+    return working_thread((extra,), ())
+
+
 # --- Remove and Reinstate (ruling, 12 September 2026) ----------------------------
 
 #: Who records removal facts.

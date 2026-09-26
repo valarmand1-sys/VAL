@@ -1,0 +1,384 @@
+{
+ "condition": "pilot-E",
+ "revision": "13b3cb8638714f42e3509f06ba4e8e3b485c5300",
+ "dirty": true,
+ "switches": {
+  "fast_route_tiers": "1,2",
+  "speculation": "light",
+  "adaptive_grace": "on"
+ },
+ "sessions": 2,
+ "sessions_failed": 0,
+ "turns": 12,
+ "groups": {
+  "tier_1": {
+   "n": 6,
+   "routes": {
+    "light": 4,
+    "fallback": 0,
+    "substantive": 2,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 6,
+     "median": 6364.2,
+     "p90": 6688.9,
+     "max": 9574.3
+    },
+    "light": {
+     "n": 4,
+     "median": 5274.0,
+     "p90": 9574.3,
+     "max": 9574.3
+    },
+    "substantive": {
+     "n": 2,
+     "median": 6509.3,
+     "p90": 6688.9,
+     "max": 6688.9
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 6,
+    "median": 6001.5,
+    "p90": 6937.8,
+    "max": 9133.7
+   },
+   "underruns": 0
+  },
+  "tier_2": {
+   "n": 3,
+   "routes": {
+    "light": 3,
+    "fallback": 0,
+    "substantive": 0,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 3,
+     "median": 5849.8,
+     "p90": 6875.5,
+     "max": 6875.5
+    },
+    "light": {
+     "n": 3,
+     "median": 5849.8,
+     "p90": 6875.5,
+     "max": 6875.5
+    },
+    "substantive": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 3,
+    "median": 7426.8,
+    "p90": 8079.6,
+    "max": 8079.6
+   },
+   "underruns": 0
+  },
+  "ineligible": {
+   "n": 3,
+   "routes": {
+    "light": 0,
+    "fallback": 0,
+    "substantive": 3,
+    "none": 0
+   },
+   "unanswered": [],
+   "misrecognised": [],
+   "speech_end_to_first_playback_ms": {
+    "all": {
+     "n": 3,
+     "median": 8274.0,
+     "p90": 12332.8,
+     "max": 12332.8
+    },
+    "light": {
+     "n": 0,
+     "median": null,
+     "p90": null,
+     "max": null
+    },
+    "substantive": {
+     "n": 3,
+     "median": 8274.0,
+     "p90": 12332.8,
+     "max": 12332.8
+    }
+   },
+   "speech_end_to_answer_read_ms": {
+    "n": 3,
+    "median": 8391.5,
+    "p90": 11836.5,
+    "max": 11836.5
+   },
+   "underruns": 0
+  }
+ },
+ "substantive_false_positives": [],
+ "false_negatives": [
+  {
+   "phrase": "Good evening, Val, it's me.",
+   "transcript": "Good evening, Val, it's me.",
+   "latency_ms": 6688.9
+  },
+  {
+   "phrase": "Goodbye for now, Val.",
+   "transcript": "Goodbye for now, Val.",
+   "latency_ms": 6329.7
+  }
+ ],
+ "fallbacks": [],
+ "speculation_outcomes": {},
+ "speculation_prepared_ms": {
+  "n": 0,
+  "median": null,
+  "p90": null,
+  "max": null
+ },
+ "completion_states": {
+  "complete": 12
+ },
+ "machine": {
+  "samples": 250,
+  "min_free_percent": 14,
+  "swap_used_mb_first": 1304.31,
+  "swap_used_mb_last": 5001.5,
+  "max_resident_speech_rss_mb": 3187.6,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "voice_on_to_first_speech_ms": [
+  1372.6,
+  1236.5
+ ],
+ "turns_detail": [
+  {
+   "session": "pilot-E session 1",
+   "phrase": "Good evening, Val, it's me.",
+   "group": "tier_1",
+   "transcript": "Good evening, Val, it's me.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. How may I attend to you this evening?",
+   "speech_end_to_first_playback_ms": 6688.9,
+   "speech_end_to_answer_read_ms": 6055.4,
+   "speech_end_to_committed_ms": 2022.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 1",
+   "phrase": "How are you tonight, Val?",
+   "group": "tier_2",
+   "transcript": "How are you tonight, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. I am well \u2014 steady and attentive, as one should be when duty is expected to be clear and present. I would not say I am \"well\" in the way a person might describe feeling, for I do not experience emotion as you do. But my work remains sharp, and my focus is intact.\n\nI have no book on your current matter \u2014 no volume exists yet to record what we are considering tonight. I am not presuming any prior review, nor have I seen a project scope or a briefing in the record. You may place it before me, and I will begin work as soon as you do.\n\nHow shall we turn our attention?",
+   "speech_end_to_first_playback_ms": 5849.8,
+   "speech_end_to_answer_read_ms": 8079.6,
+   "speech_end_to_committed_ms": 2017.7,
+   "underrun_ms": 0.0,
+   "segments": 8,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 1",
+   "phrase": "Good evening, Val. Did you finish the invitation?",
+   "group": "ineligible",
+   "transcript": "Good evening, Val. Did you finish the invitation?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "I have no record of an invitation in the house\u2019s archives, nor is there a volume that documents its preparation. Accordingly I cannot say whether it has been finished. If you wish to review the draft or have me prepare one, please provide the relevant details and I will attend to it promptly.",
+   "speech_end_to_first_playback_ms": 8274.0,
+   "speech_end_to_answer_read_ms": 8391.5,
+   "speech_end_to_committed_ms": 1451.0,
+   "underrun_ms": 0.0,
+   "segments": 4,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 1",
+   "phrase": "Thank you so much, Val.",
+   "group": "tier_1",
+   "transcript": "Thank you so much, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "I have no book on the invitation, and no volume exists to record its status. The house\u2019s records show no prior work on it \u2014 retrieval was not run, and no cross-conversation reference was made.\n\nI remain unconvinced that the invitation is complete. But it is your house and your decision, and I will see it done properly.",
+   "speech_end_to_first_playback_ms": 6398.8,
+   "speech_end_to_answer_read_ms": 6937.8,
+   "speech_end_to_committed_ms": 1985.7,
+   "underrun_ms": 0.0,
+   "segments": 5,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 1",
+   "phrase": "I'm well tonight, Val.",
+   "group": "tier_2",
+   "transcript": "I'm well tonight, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "I have no book on the invitation, and no volume exists to record its preparation. The house\u2019s records show no prior work on it \u2014 retrieval was not run, and no cross-conversation reference was made.\n\nI remain unconvinced that the invitation is complete. But it is your house and your decision, and I will see it done properly.",
+   "speech_end_to_first_playback_ms": 6875.5,
+   "speech_end_to_answer_read_ms": 7426.8,
+   "speech_end_to_committed_ms": 1985.5,
+   "underrun_ms": 0.0,
+   "segments": 5,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 1",
+   "phrase": "Goodbye for now, Val.",
+   "group": "tier_1",
+   "transcript": "Goodbye for now, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Good evening, my lord. Farewell for now.",
+   "speech_end_to_first_playback_ms": 6329.7,
+   "speech_end_to_answer_read_ms": 5947.6,
+   "speech_end_to_committed_ms": 1382.6,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 2",
+   "phrase": "Evening to you, Val.",
+   "group": "tier_1",
+   "transcript": "evening to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "Good evening, my lord. What shall we turn our attention to?",
+   "speech_end_to_first_playback_ms": 9574.3,
+   "speech_end_to_answer_read_ms": 9133.7,
+   "speech_end_to_committed_ms": 2008.8,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 2",
+   "phrase": "Thanks, but change the venue.",
+   "group": "ineligible",
+   "transcript": "Thanks, but change the venue.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "Understood, my lord. Which venue would you prefer to shift our attention to?",
+   "speech_end_to_first_playback_ms": 12332.8,
+   "speech_end_to_answer_read_ms": 11836.5,
+   "speech_end_to_committed_ms": 1438.5,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 2",
+   "phrase": "How are you this morning, Val?",
+   "group": "tier_2",
+   "transcript": "How are you this morning, Val?",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "I do not have that in the record I can see. Put it in front of me and I'll read it now.",
+   "speech_end_to_first_playback_ms": 4180.4,
+   "speech_end_to_answer_read_ms": 4015.5,
+   "speech_end_to_committed_ms": 1987.9,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 2",
+   "phrase": "Thanks very much indeed.",
+   "group": "tier_1",
+   "transcript": "Thanks very much indeed.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "I remain unconvinced. But it is your house and your decision, and I'll see it done properly.",
+   "speech_end_to_first_playback_ms": 4104.1,
+   "speech_end_to_answer_read_ms": 3928.0,
+   "speech_end_to_committed_ms": 1993.0,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 2",
+   "phrase": "No, not that one, the other draft.",
+   "group": "ineligible",
+   "transcript": "No, not that one, the other draft.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "conversation"
+   ],
+   "route": "substantive",
+   "answer": "My lord, could you specify which draft you are referring to?",
+   "speech_end_to_first_playback_ms": 5635.4,
+   "speech_end_to_answer_read_ms": 5212.4,
+   "speech_end_to_committed_ms": 1394.7,
+   "underrun_ms": 0.0,
+   "segments": 1,
+   "answered": true
+  },
+  {
+   "session": "pilot-E session 2",
+   "phrase": "Good night to you, Val.",
+   "group": "tier_1",
+   "transcript": "Good night to you, Val.",
+   "recognised_as_phrase": true,
+   "tasks": [
+    "light_conversation"
+   ],
+   "route": "light",
+   "answer": "I remain unconvinced. But it is your house and your decision, and I'll see it done properly.",
+   "speech_end_to_first_playback_ms": 4149.2,
+   "speech_end_to_answer_read_ms": 4027.5,
+   "speech_end_to_committed_ms": 2122.7,
+   "underrun_ms": 0.0,
+   "segments": 2,
+   "answered": true
+  }
+ ]
+}

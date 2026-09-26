@@ -117,6 +117,8 @@ class LMStudioRuntime:
         self._runner = runner or _Runner()
         # One load at a time, per runtime object. See `ensure_ready`.
         self._loading = threading.Lock()
+        self._models_lock = threading.Lock()
+        self._per_model: dict[str, threading.Lock] = {}
         self._lms = lms_path
         self._probe_timeout = probe_timeout
 
@@ -304,15 +306,23 @@ class LMStudioRuntime:
         The lock covers observation and action together, because a decision to load
         taken before another caller's load finishes is the whole of the bug.
         """
-        with self._loading:
+        # One lock per model (26 September 2026): the light route's small model must
+        # not wait behind the Partner model's load — a first greeting sat 9.8 s behind
+        # GPT-OSS loading. Observation and action for one model are still one step.
+        with self._models_lock:
+            lock = self._per_model.setdefault(config.model_identifier, threading.Lock())
+        with lock:
             return self._ensure_ready_locked(config)
 
     def _ensure_ready_locked(self, config: ModelConfig) -> Mapping[str, object]:
-        found_serving = self.serving()
-        started = False
-        if not found_serving:
-            self._start_server()
-            started = True
+        # The server itself is one thing for every model: observed and started under
+        # one lock, so two models arriving together cannot both start it.
+        with self._loading:
+            found_serving = self.serving()
+            started = False
+            if not found_serving:
+                self._start_server()
+                started = True
 
         instance = self._instance(config.model_identifier)
         wanted = config.context_window_tokens

@@ -18,17 +18,19 @@ configured provider requires no change outside configuration" untrue in exactly
 the way that is hardest to notice.
 """
 
+import logging
 import os
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 from sqlalchemy import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from val_domain.gateway import CacheTtl, CapabilityProfile
+import val_domain.registry as registry
+from val_domain.gateway import Admission, CacheTtl, CapabilityProfile, ModelConfig
 from val_domain.perception import PerceptionProvider
-from val_domain.registry import active
+from val_domain.registry import active, by_slug
 from val_domain.speech import SpeechUnavailableError, VoiceConditioning
 from val_domain.voice import LiveRecognizer
 from val_gateway.gateway import Gateway, check_startup
@@ -42,6 +44,7 @@ from val_gateway.persistence import record_call
 from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_gateway.provenance import verifier
 from val_gateway.speech import register_voice
+from val_policy.light_conversation import FastRoute
 from val_policy.routing import is_admitted, satisfies_profile
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
@@ -80,6 +83,9 @@ KEY_VARIABLES = {
 }
 
 
+_LOGGER = logging.getLogger(__name__)
+
+
 class StartupRefusedError(Exception):
     """Startup may not proceed. Carries every reason, not just the first."""
 
@@ -101,10 +107,33 @@ class Startup:
     #: input is not available in this process, and the service says so rather
     #: than reaching for anything else.
     recognizers: Callable[[], LiveRecognizer] | None = None
+    #: Owner order, 26 September 2026 (latency redesign §5): the light tiers this
+    #: process may route to the fast local candidate. Disabled unless the candidate
+    #: setting names them; production names none.
+    fast_route: FastRoute = field(default_factory=FastRoute)
+    #: Owner order §6: prepare light answers during the resume window. Candidate only.
+    speculation: bool = False
+    #: Owner order §7: size the resume window from the transcript's cues. Candidate only.
+    adaptive_grace: bool = False
 
 
 #: The prompt-cache lifetime the gateway requests on cacheable calls.
 CACHE_TTL_SETTING = "VAL_CACHE_TTL"
+
+#: Owner order, 26 September 2026 (latency redesign §5). **The candidate switch.**
+#: `"1"` enables tier 1 (greetings, thanks, farewells), `"1,2"` both tiers; unset or
+#: empty means the fast route does not exist in this process. When set, the
+#: NOT_ADMITTED light candidate is promoted **for this process only** to the `light`
+#: profile — the registry on disk is unchanged, and production's launchd definition
+#: does not set this, so the promotion is never production's. Admission is his
+#: ruling, made by editing the registry entry.
+FAST_ROUTE_SETTING = "VAL_FAST_ROUTE_TIERS"
+#: `light` enables speculative preparation of light answers (§6); requires the fast
+#: route. `on` enables adaptive turn completion (§7). Both are candidate switches,
+#: unset in production's launchd definition.
+SPECULATION_SETTING = "VAL_SPECULATION"
+ADAPTIVE_GRACE_SETTING = "VAL_ADAPTIVE_GRACE"
+LIGHT_CANDIDATE_SLUG = "qwen3-4b-instruct-2507-mlx-lmstudio-light"
 
 #: Ruling, 16 September 2026: where the local LM Studio server listens. Read
 #: only when the `lmstudio` adapter is built; the adapter refuses any host
@@ -243,6 +272,61 @@ def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], lis
     return adapters, problems
 
 
+def configured_fast_route() -> tuple[FastRoute, str | None]:
+    """The candidate's light tiers from the environment, or why the setting is refused."""
+    raw = os.environ.get(FAST_ROUTE_SETTING, "").strip()
+    if not raw:
+        return FastRoute(), None
+    try:
+        return FastRoute.parse(raw), None
+    except ValueError as invalid:
+        return FastRoute(), f"{FAST_ROUTE_SETTING}: {invalid}"
+
+
+def configured_candidate_switches(fast_route: FastRoute) -> tuple[bool, bool, str | None]:
+    """(speculation, adaptive grace, problem) from the environment."""
+    speculation_raw = os.environ.get(SPECULATION_SETTING, "").strip().lower()
+    grace_raw = os.environ.get(ADAPTIVE_GRACE_SETTING, "").strip().lower()
+    if speculation_raw not in ("", "light"):
+        return (
+            False,
+            False,
+            f"{SPECULATION_SETTING}: must be unset or 'light', not {speculation_raw!r}",
+        )
+    if grace_raw not in ("", "on"):
+        return False, False, f"{ADAPTIVE_GRACE_SETTING}: must be unset or 'on', not {grace_raw!r}"
+    speculation = speculation_raw == "light"
+    if speculation and not fast_route.enabled:
+        return False, False, f"{SPECULATION_SETTING}=light requires {FAST_ROUTE_SETTING}"
+    return speculation, grace_raw == "on", None
+
+
+def enable_light_candidate() -> ModelConfig:
+    """Promote the light candidate to the `light` profile, in this process only.
+
+    The same device the candidate harness uses: `val_domain.registry.REGISTRY` is
+    replaced for this process with the entry copied as PROVISIONALLY_ADMITTED and
+    declaring `CapabilityProfile.LIGHT`. Nothing on disk changes; a restart without
+    the setting is the registry as written.
+    """
+    entry = by_slug(LIGHT_CANDIDATE_SLUG)
+    if entry is None:
+        raise StartupRefusedError(
+            [f"{FAST_ROUTE_SETTING}: no registry entry {LIGHT_CANDIDATE_SLUG}"]
+        )
+    promoted = entry.model_copy(
+        update={
+            "admission": Admission.PROVISIONALLY_ADMITTED,
+            "capability_profiles": frozenset({CapabilityProfile.LIGHT}),
+            "qualification_targets": frozenset(),
+        }
+    )
+    registry.REGISTRY = tuple(
+        promoted if config.slug == LIGHT_CANDIDATE_SLUG else config for config in registry.REGISTRY
+    )
+    return promoted
+
+
 def start(engine: Engine, today: datetime | None = None) -> Startup:
     """Build the gateway, or refuse to start and say why.
 
@@ -255,6 +339,21 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     stopping him.
     """
     moment = today or datetime.now(UTC)
+    fast_route, fast_problem = configured_fast_route()
+    if fast_problem is not None:
+        raise StartupRefusedError([fast_problem])
+    speculation, adaptive_grace, switch_problem = configured_candidate_switches(fast_route)
+    if switch_problem is not None:
+        raise StartupRefusedError([switch_problem])
+    if fast_route.enabled:
+        promoted = enable_light_candidate()
+        _LOGGER.warning(
+            "CANDIDATE fast route enabled for this process: tiers %s on %s (%s). The registry "
+            "entry is NOT_ADMITTED and unchanged on disk; this promotion is not an admission.",
+            sorted(fast_route.tiers),
+            promoted.slug,
+            promoted.model_identifier,
+        )
     violations, warnings = check_startup(moment.date())
 
     # Owner rulings, 22 September 2026: perception and speech routes are not
@@ -474,4 +573,21 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         speech=speech,
         voice=voice,
     )
-    return Startup(gateway=gateway, warnings=warnings, recognizers=recognizers)
+    if fast_route.enabled:
+        warnings.append(
+            f"candidate fast route enabled: light tiers {sorted(fast_route.tiers)} on "
+            f"{LIGHT_CANDIDATE_SLUG}, promoted for this process only (not an admission)."
+        )
+    if speculation or adaptive_grace:
+        warnings.append(
+            f"candidate switches: speculation={'light' if speculation else 'off'}, "
+            f"adaptive grace={'on' if adaptive_grace else 'off'} (this process only)."
+        )
+    return Startup(
+        gateway=gateway,
+        warnings=warnings,
+        recognizers=recognizers,
+        fast_route=fast_route,
+        speculation=speculation,
+        adaptive_grace=adaptive_grace,
+    )

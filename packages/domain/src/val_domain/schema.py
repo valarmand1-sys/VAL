@@ -2368,6 +2368,64 @@ class ConversationEgressSeal(Base):
     )
 
 
+class SpeculativePreparation(Base):
+    """What became of a light answer prepared before its turn was confirmed. Append-only.
+
+    Owner order, 26 September 2026 (the conversational latency redesign, §6;
+    migration 0032). While his settled words wait out the resume window a candidate
+    build may prepare the light answer it would give. A preparation is not an
+    answer: this row says whether Core bound it to the completed turn or discarded
+    it — he resumed, the request no longer matched, the turn was not light after
+    all — with the speculative call it made, so the cost is attributed and nothing
+    is inferred. It holds a digest of the settled words, never the words: a
+    preparation he did not confirm is not his message.
+    """
+
+    __tablename__ = "speculative_preparations"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    #: The conversation it was prepared for; NULL when the words would have opened one.
+    conversation_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True), nullable=True)
+    #: A digest of the settled words, not the words.
+    utterance_sha256: Mapped[str] = mapped_column(Text, nullable=False)
+    tier: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: The speculative call, when one was made; NULL when nothing was sent.
+    model_call_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("model_calls.id", ondelete="NO ACTION"), nullable=True
+    )
+    outcome: Mapped[str] = mapped_column(Text, nullable=False)
+    detail: Mapped[str | None] = mapped_column(Text, nullable=True)
+    #: Set only when accepted: his message, and her answer built from the preparation.
+    user_message_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=True
+    )
+    answer_message_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=True
+    )
+    prepared_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint(
+            "outcome IN ('accepted', 'discarded_resumed', 'discarded_mismatch', "
+            "'discarded_not_light', 'discarded_unused', 'failed')",
+            name="outcome_is_known",
+        ),
+        CheckConstraint("tier IN (1, 2)", name="tier_is_light"),
+        CheckConstraint(
+            "(outcome = 'accepted') = "
+            "(user_message_id IS NOT NULL AND answer_message_id IS NOT NULL)",
+            name="accepted_names_both_messages",
+        ),
+        CheckConstraint("length(utterance_sha256) = 64", name="digest_is_sha256"),
+        Index("ix_speculative_preparations_conversation", "conversation_id"),
+    )
+
+
 SPECIFIED_TABLES = frozenset(
     {
         "projects",
@@ -2414,5 +2472,7 @@ SPECIFIED_TABLES = frozenset(
         # The live-voice seal and physical playback, migration 0030 (24 September 2026).
         "conversation_egress_seals",
         "speech_playbacks",
+        # A light answer prepared before its turn, migration 0032 (26 September 2026).
+        "speculative_preparations",
     }
 )

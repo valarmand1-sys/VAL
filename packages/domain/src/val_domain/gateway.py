@@ -39,6 +39,24 @@ class TaskType(StrEnum):
     #: runtime's memory so later turns reuse it. Not a turn, not an answer, not
     #: memory; attached to no conversation. Recorded because every invocation is.
     PREFIX_PRIME = "prefix_prime"
+    #: Owner order, 26 September 2026 (latency redesign §5): **light conversation** —
+    #: a standalone greeting, thanks or farewell (tier 1) or a narrowly defined
+    #: pleasantry (tier 2), decided deterministically by `val_policy.light_conversation`
+    #: from the whole utterance and the conversation's state. It is still Val's own
+    #: answer — Core assembles, checks, persists and delivers it exactly as any turn —
+    #: but the work requires a different floor (`CapabilityProfile.LIGHT`), so the
+    #: record names it, and routing coverage can be read from `model_calls` rather
+    #: than inferred. Recorded as what it is; never re-labelled as `conversation`.
+    LIGHT_CONVERSATION = "light_conversation"
+    #: Owner order, 26 September 2026 (§6): a light answer **prepared before the turn
+    #: is confirmed** — while the resume window still runs — on the light route, with
+    #: the persona and the conversation's state assembled exactly as the turn would
+    #: assemble them. Not an answer until Core accepts the completed request and
+    #: finds the preparation bound to it; a preparation he resumed over, or that no
+    #: longer matches, is discarded and recorded as discarded. Like the prefix
+    #: prime, it attaches to no conversation or message: the message it may answer
+    #: does not exist yet.
+    SPECULATIVE_LIGHT = "speculative_light_conversation"
 
 
 class CallStatus(StrEnum):
@@ -121,6 +139,15 @@ class TerminalState(StrEnum):
     UNKNOWN = "unknown"
 
 
+#: Tasks that assemble the persona while belonging to no conversation yet, so the
+#: revision is recorded by separate attribution: a blind position (WP-0.9, 19 August
+#: 2026) and a light answer prepared before its message is committed (owner order, 26
+#: September 2026). A conversation call's persona rides in its provenance instead.
+PERSONA_ATTRIBUTED_TASKS: frozenset[TaskType] = frozenset(
+    {TaskType.BLIND_POSITION, TaskType.SPECULATIVE_LIGHT}
+)
+
+
 class CapabilityProfile(StrEnum):
     """What work a configuration is qualified for — ruling, 7 September 2026.
 
@@ -142,6 +169,12 @@ class CapabilityProfile(StrEnum):
 
     STRUCTURED = "structured"
     PARTNER = "partner"
+    #: Owner order, 26 September 2026: the floor for `TaskType.LIGHT_CONVERSATION` —
+    #: a greeting, thanks, farewell or pleasantry answered in Val's own register from
+    #: her persona, with no judgment, memory, action or self-knowledge required.
+    #: Declared only by a configuration the owner has admitted to it; in production
+    #: no configuration declares it and the light task type is never selected.
+    LIGHT = "light"
     #: Ruling, 9 September 2026. The §4.1 strip is its own floor: a route
     #: serves it only after demonstrating the strip contract on the frozen
     #: conformance suite — zero leakage into an enforced blind input, zero
@@ -1098,7 +1131,8 @@ class GatewayRequest(BaseModel):
         provenance on one would be attribution to a conversation that did not
         cause it.
         """
-        if self.task_type is TaskType.CONVERSATION and self.conversation is None:
+        conversational = (TaskType.CONVERSATION, TaskType.LIGHT_CONVERSATION)
+        if self.task_type in conversational and self.conversation is None:
             raise ValueError(
                 "a conversation call must carry its provenance: the conversation it "
                 "belongs to, the persisted user message that caused it, and the "
@@ -1107,7 +1141,7 @@ class GatewayRequest(BaseModel):
                 "(04-layer-0.md WP-0.7). Use `val_gateway.loop.send`, which persists "
                 "the message first and supplies all three."
             )
-        if self.task_type is not TaskType.CONVERSATION and self.conversation is not None:
+        if self.task_type not in conversational and self.conversation is not None:
             raise ValueError(
                 f"a {self.task_type.value!r} request may not carry conversation "
                 "provenance. Only a conversation is caused by a conversation turn; "
@@ -1137,7 +1171,9 @@ class GatewayRequest(BaseModel):
 
     @model_validator(mode="after")
     def _persona_iff_blind_position(self) -> GatewayRequest:
-        """Separate persona attribution is present iff the task is blind_position.
+        """Separate persona attribution is present iff the task assembles the persona
+        without a conversation to carry it: blind_position and, since the owner order
+        of 26 September 2026, speculative_light_conversation.
 
         *WP-0.9 ruling, 19 August 2026.* Forward: a blind-position call carries
         the active persona (WP-0.5 as amended), and a persona assembled without
@@ -1148,15 +1184,16 @@ class GatewayRequest(BaseModel):
         with it. Guarded at the entrances too, because `model_copy` skips
         validators.
         """
-        if self.task_type is TaskType.BLIND_POSITION and self.persona is None:
+        if self.task_type in PERSONA_ATTRIBUTED_TASKS and self.persona is None:
             raise ValueError(
-                "a blind_position call must carry its persona attribution: the blind "
-                "position is Val's position, so the call assembles the active persona "
-                "(04-layer-0.md WP-0.5, amended 19 August 2026) and must say which "
-                "revision it assembled — a persona-bearing call recording NULL would "
-                "be a false record, not a missing feature."
+                f"a {self.task_type.value} call must carry its persona attribution: the "
+                "blind position is Val's position, and a speculative light answer is "
+                "Val's answer prepared before its message exists, so the call assembles "
+                "the active persona (04-layer-0.md WP-0.5, amended 19 August 2026) and "
+                "must say which revision it assembled — a persona-bearing call recording "
+                "NULL would be a false record, not a missing feature."
             )
-        if self.task_type is not TaskType.BLIND_POSITION and self.persona is not None:
+        if self.task_type not in PERSONA_ATTRIBUTED_TASKS and self.persona is not None:
             raise ValueError(
                 f"a {self.task_type.value!r} request may not carry persona "
                 "attribution. Classification, strip, and title assemble no persona "

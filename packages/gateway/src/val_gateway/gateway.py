@@ -56,6 +56,7 @@ from uuid import UUID
 
 from val_domain.egress import Egress
 from val_domain.gateway import (
+    PERSONA_ATTRIBUTED_TASKS,
     Admission,
     CacheTtl,
     CallStatus,
@@ -522,7 +523,7 @@ class Gateway:
             return {"warmed": False, "reason": f"{type(failure).__name__}: {failure}"}
         return dict(report) if isinstance(report, Mapping) else {"warmed": False}
 
-    def _spoken_turn_route(self) -> ModelConfig | None:
+    def _spoken_turn_route(self, task_type: TaskType = TaskType.CONVERSATION) -> ModelConfig | None:
         """The route a spoken turn will try first, chosen the way that turn chooses it."""
         order = attempt_order(
             active(),
@@ -530,13 +531,29 @@ class Gateway:
             is_ready=lambda config: config.provider in self._adapters,
             is_affordable=lambda config: True,
             resolve_fallback=fallback_for,
-            profile=required_profile(TaskType.CONVERSATION),
+            profile=required_profile(task_type),
             cost_bound=lambda config: maximum_cost(config, (), CONVERSATION_MAX_OUTPUT_TOKENS),
             egress=Egress.LOCAL_ONLY,
         )
         return order[0] if order else None
 
     def prime_prefix(self, still_wanted: Callable[[], bool] = lambda: True) -> Mapping[str, object]:
+        """Prime the spoken turn's route — and the light route too, when one is admitted.
+
+        Owner order, 26 September 2026 (§9): exact persona-prefix reuse is qualified for
+        the fast model as for the Partner route, by the same plan, on its own instance.
+        The Partner route's result is this method's result, as before; the light
+        route's rides alongside as `light`.
+        """
+        result = dict(self._prime_route(TaskType.CONVERSATION, still_wanted))
+        light = self._spoken_turn_route(TaskType.LIGHT_CONVERSATION)
+        if light is not None:
+            result["light"] = self._prime_route(TaskType.LIGHT_CONVERSATION, still_wanted)
+        return result
+
+    def _prime_route(
+        self, task_type: TaskType, still_wanted: Callable[[], bool]
+    ) -> Mapping[str, object]:
         """Leave the computation of Val's persona in the local runtime, for later turns.
 
         Owner order, 25 September 2026 (priming-cache pass). **A local infrastructure
@@ -558,7 +575,7 @@ class Gateway:
         the prefix his request would otherwise compute itself, so waiting for it is
         never longer than doing that work from nothing.
         """
-        config = self._spoken_turn_route()
+        config = self._spoken_turn_route(task_type)
         if config is None:
             return {"primed": False, "outcome": "skipped", "reason": "no admitted partner route"}
         adapter = self._adapters[config.provider]
@@ -701,7 +718,18 @@ class Gateway:
                 "and will fail honestly there if the runtime cannot be had."
             )
             return {"warmed": False, "slug": chosen.slug, "reason": str(failure)}
-        return {"warmed": True, "slug": chosen.slug, **dict(readiness)}
+        result: dict[str, object] = {"warmed": True, "slug": chosen.slug, **dict(readiness)}
+        # The light route's runtime too, when one is admitted (26 September 2026): its
+        # model is small, and a first greeting should not pay its load.
+        light = self._spoken_turn_route(TaskType.LIGHT_CONVERSATION)
+        if light is not None and supports_local_runtime(self._adapters[light.provider]):
+            try:
+                ready = cast(LocalRuntimeAdapter, self._adapters[light.provider])
+                readiness_light = ready.ensure_runtime_ready(light)
+                result["light"] = {"warmed": True, "slug": light.slug, **dict(readiness_light)}
+            except LocalRuntimeUnavailableError as failure:
+                result["light"] = {"warmed": False, "slug": light.slug, "reason": str(failure)}
+        return result
 
     def converse(
         self,
@@ -755,17 +783,85 @@ class Gateway:
                 "Val. `converse` is the persona-bearing path; a gateway wired without one "
                 "can only serve `complete`, which sends what it is given.",
             )
+        return self._converse(
+            messages,
+            # Fixed, not a parameter. *Closure pass, 18 August 2026*: `converse`
+            # is one real conversational turn by definition, and a caller who
+            # could relabel it CLASSIFICATION or TITLE could file Val's own
+            # utterances under machinery. The task type is what the function
+            # *is*, so the function states it. The light kind has its own
+            # function, `converse_lightly`, for the same reason.
+            TaskType.CONVERSATION,
+            scope=scope,
+            turn=turn,
+            classification=classification,
+            max_output_tokens=max_output_tokens,
+            configuration=configuration,
+            on_delta=on_delta,
+            egress=egress,
+        )
+
+    def converse_lightly(
+        self,
+        messages: tuple[Message, ...],
+        *,
+        scope: ProjectScope,
+        turn: TurnReference,
+        max_output_tokens: int,
+        on_delta: DeltaSink | None = None,
+        egress: Egress = Egress.ORDINARY,
+    ) -> GatewayResponse:
+        """Val's own turn on the light route — owner order, 26 September 2026 (§5).
+
+        Core has decided, deterministically and before this call, that the turn is a
+        standalone greeting, thanks, farewell or admitted pleasantry. The request is
+        assembled exactly as `converse` assembles it — persona whole, provenance,
+        seal — and differs in one thing only: the task is `LIGHT_CONVERSATION`, so
+        routing requires the light capability floor, and the record says so. It is a
+        separate function rather than a parameter for the closure contract's reason
+        (§3, 18 August 2026): the label is what the function is. No pinned
+        configuration: a light turn carries no images and is never a blind
+        position's partner.
+        """
+        if self._persona_loader is None:
+            raise PersonaUnavailableError(
+                PersonaProblem.NONE_ACTIVE,
+                "this gateway was built without a persona loader, so it cannot assemble Val.",
+            )
+        return self._converse(
+            messages,
+            TaskType.LIGHT_CONVERSATION,
+            scope=scope,
+            turn=turn,
+            classification=Classification.PROTECTED,
+            max_output_tokens=max_output_tokens,
+            configuration=None,
+            on_delta=on_delta,
+            egress=egress,
+        )
+
+    def _converse(
+        self,
+        messages: tuple[Message, ...],
+        task_type: TaskType,
+        *,
+        scope: ProjectScope,
+        turn: TurnReference,
+        classification: Classification,
+        max_output_tokens: int,
+        configuration: ModelConfig | None,
+        on_delta: DeltaSink | None,
+        egress: Egress,
+    ) -> GatewayResponse:
+        """The body shared by `converse` and `converse_lightly`; each names its task."""
+        if self._persona_loader is None:  # both callers checked; stated for the type
+            raise PersonaUnavailableError(PersonaProblem.NONE_ACTIVE, "no persona loader")
         persona = self._persona_loader.active()
         request = assemble(
             persona,
             messages,
             classification=classification,
-            # Fixed, not a parameter. *Closure pass, 18 August 2026*: `converse`
-            # is one real conversational turn by definition, and a caller who
-            # could relabel it CLASSIFICATION or TITLE could file Val's own
-            # utterances under machinery. The task type is what the function
-            # *is*, so the function states it.
-            task_type=TaskType.CONVERSATION,
+            task_type=task_type,
             scope=scope,
             turn=turn,
             max_output_tokens=max_output_tokens,
@@ -788,6 +884,51 @@ class Gateway:
             configuration, request.classification, request.task_type
         )
         return self._attempt(request, known, content_parts(request), on_delta=on_delta)
+
+    def active_persona_content(self) -> str | None:
+        """The active persona's content, for binding a prepared answer; None if none is loaded."""
+        if self._persona_loader is None:
+            return None
+        try:
+            return self._persona_loader.active().content
+        except PersonaUnavailableError:
+            return None
+
+    def converse_prospectively(
+        self,
+        messages: tuple[Message, ...],
+        *,
+        scope: ProjectScope,
+        max_output_tokens: int,
+        egress: Egress = Egress.LOCAL_ONLY,
+    ) -> tuple[GatewayResponse, str]:
+        """Prepare a light answer before the turn exists — owner order, 26 September 2026 (§6).
+
+        The persona is loaded and assembled whole, exactly as `converse` does, and the
+        call goes through the same execution body: Restricted refused, persona
+        verified, budgeted, preflighted, routed by the light floor, **recorded** as
+        `speculative_light_conversation` with no conversation or message, because the
+        message it may answer has not been committed. Nothing it produces is spoken,
+        persisted or remembered here; Core decides at acceptance whether it is bound to
+        the completed request. Returns the response and the persona's content, which
+        the binding is computed over.
+        """
+        if self._persona_loader is None:
+            raise PersonaUnavailableError(
+                PersonaProblem.NONE_ACTIVE,
+                "this gateway was built without a persona loader, so it cannot prepare Val.",
+            )
+        persona = self._persona_loader.active()
+        request = assemble(
+            persona,
+            messages,
+            task_type=TaskType.SPECULATIVE_LIGHT,
+            scope=scope,
+            max_output_tokens=max_output_tokens,
+            egress=egress,
+            attributed=True,
+        )
+        return self._execute(request), persona.content
 
     def complete(
         self, request: GatewayRequest, *, on_delta: DeltaSink | None = None
@@ -1586,7 +1727,11 @@ class Gateway:
         arriving at a public generic entrance is by definition one `converse`
         did not build.
         """
-        if request.task_type is TaskType.CONVERSATION:
+        if request.task_type in (
+            TaskType.CONVERSATION,
+            TaskType.LIGHT_CONVERSATION,
+            TaskType.SPECULATIVE_LIGHT,
+        ):
             raise GatewayError(
                 GatewayErrorKind.INVALID_REQUEST,
                 "conversation inference goes through `converse`, which loads the active "
@@ -1654,20 +1799,20 @@ class Gateway:
         Both directions are guarded at the entrance as well as in the request
         validator, for the `model_copy` reason `_refuse_masquerade` states.
         """
-        if request.task_type is TaskType.BLIND_POSITION:
+        if request.task_type in PERSONA_ATTRIBUTED_TASKS:
             if request.persona is None:
                 raise GatewayError(
                     GatewayErrorKind.INVALID_REQUEST,
-                    "a blind_position call must carry its persona attribution: the "
-                    "blind position is Val's position, and a persona-bearing call "
-                    "recording NULL persona_id would be a false record (WP-0.9 "
-                    "ruling, 19 August 2026).",
+                    f"a {request.task_type.value} call must carry its persona attribution: "
+                    "it assembles Val's persona with no conversation to record it, and a "
+                    "persona-bearing call recording NULL persona_id would be a false "
+                    "record (WP-0.9 ruling, 19 August 2026).",
                 )
             if self._persona_loader is None:
                 raise GatewayError(
                     GatewayErrorKind.INVALID_REQUEST,
                     "this gateway was built without a persona loader, so it cannot "
-                    "verify that this blind_position call attributes the active "
+                    f"verify that this {request.task_type.value} call attributes the active "
                     "persona. The call is refused rather than transmitted with an "
                     "unverified identity claim.",
                 )

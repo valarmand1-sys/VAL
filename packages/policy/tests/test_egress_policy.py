@@ -221,6 +221,14 @@ def test_nothing_currently_executes_on_the_classification() -> None:
         # discards its one token. It has no effect outside that memory — no message,
         # no record but its own call row, no executor — so it is not an action.
         TaskType.PREFIX_PRIME,
+        # Checked against the execution gate, 26 September 2026 (owner order, the
+        # conversational latency redesign): a light conversation is Val's own turn
+        # on a different capability floor, and a speculative light conversation is
+        # that answer prepared before its message exists and bound or discarded by
+        # Core. Both produce text into the conversation and nothing else — no
+        # executor, no effect outside it — so neither is an action.
+        TaskType.LIGHT_CONVERSATION,
+        TaskType.SPECULATIVE_LIGHT,
     }, "a new task type may be an action; check it against the execution gate"
 
 
