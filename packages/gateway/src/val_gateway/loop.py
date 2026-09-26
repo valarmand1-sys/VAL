@@ -141,6 +141,7 @@ from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 from val_policy.recall_gate import ThreadContext, gate_house_recall, gate_recall
 from val_policy.restricted import preflight, refusal_message
 from val_policy.routing import is_admitted, is_eligible, satisfies_profile
+from val_policy.spoken_path import asks_about_the_spoken_path
 
 _LOGGER = logging.getLogger("val.loop")
 
@@ -856,7 +857,15 @@ def assemble_turn(
         # Present in the document only when it is true, and then with its grounds.
         local_only=egress.local_only,
         local_only_reasons=tuple(reason.value for reason in egress.reasons),
+        # Owner order, 26 September 2026: the spoken-path facts only when he asks.
+        spoken_path_asked=asks_about_the_spoken_path(opened.user_message.content),
     )
+    if egress.local_only:
+        # The gate's decision, stated as a positive fact either way (§5.5).
+        _LOGGER.info(
+            "spoken path facts: %s",
+            "included" if state.spoken_path_asked else "not_run (the turn does not ask)",
+        )
     mark("record_state_assembled")
     _LOGGER.info("prior record state: %s", json.dumps(state.as_document()))
     excerpts = recall_block(recalled)

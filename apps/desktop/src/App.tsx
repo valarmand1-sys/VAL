@@ -39,6 +39,7 @@ import {
   NO_TIMINGS,
   VoiceController,
   type VoiceTimings,
+  settledWordsUtterance,
 } from "./voiceController";
 import {
   MUTE_SHORTCUT_LABEL,
@@ -300,8 +301,9 @@ export function App(): React.JSX.Element {
   const heardText = voiceSession?.pending ?? "";
   useEffect(() => {
     const controller = voiceController.current;
-    if (controller === null || voiceSession === null || heardText === "") return;
-    controller.noteProvisionalShown(voiceSession.utterance, performance.now());
+    const utterance = settledWordsUtterance(voiceSession);
+    if (controller === null || utterance === null || heardText === "") return;
+    controller.noteProvisionalShown(utterance, performance.now());
   }, [heardText, voiceSession]);
 
   // Each revealed segment of her paced answers, in the document (§4 offsets).

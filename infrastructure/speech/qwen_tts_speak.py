@@ -67,6 +67,19 @@ def write_wav(path: Path, samples: object, sample_rate: int) -> None:
     Deliberately not a third-party writer: the file this produces is durable
     evidence the owner will play, and it should be readable by anything.
     """
+    path.write_bytes(wav_bytes(samples, sample_rate))
+
+
+def wav_bytes(samples: object, sample_rate: int, *, scale_to_fit: bool = True) -> bytes:
+    """The same 16-bit PCM WAV, in memory.
+
+    `scale_to_fit=False` is for one streamed piece of a longer utterance: scaling a
+    piece by its own peak would change its level against its neighbours, so a piece
+    is clipped instead. The model stays inside [-1, 1] in ordinary speech, in which
+    case both are the same bytes.
+    """
+    import io
+
     import numpy as np
 
     audio = np.asarray(samples, dtype=np.float32).reshape(-1)
@@ -74,15 +87,17 @@ def write_wav(path: Path, samples: object, sample_rate: int) -> None:
     # Scaled only if the model produced samples outside [-1, 1]; a model that
     # stays in range is written through unchanged, so nothing is "normalised"
     # behind the measurement that follows.
-    if peak > 1.0:
+    if scale_to_fit and peak > 1.0:
         audio = audio / peak
     pcm = np.clip(audio, -1.0, 1.0)
     pcm = (pcm * 32767.0).astype("<i2")
-    with wave.open(str(path), "wb") as writer:
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as writer:
         writer.setnchannels(1)
         writer.setsampwidth(2)
         writer.setframerate(sample_rate)
         writer.writeframes(pcm.tobytes())
+    return buffer.getvalue()
 
 
 def main() -> int:
@@ -185,7 +200,7 @@ def perform(model: Any, request: dict[str, Any], started: float, loaded_seconds:
                 **GENERATE_KWARGS,
             )
         )
-    elif mode == "speak":
+    elif mode in ("speak", "speak_stream"):
         if getattr(model.config, "tts_model_type", None) != "base":
             return _fail("this artifact is not a Base voice-cloning model", kind="refused")
         reference = Path(request["ref_audio_path"])
@@ -216,16 +231,53 @@ def perform(model: Any, request: dict[str, Any], started: float, loaded_seconds:
             )
             report["clone_prompt"] = "reused"
 
-        segments = list(
-            model.generate(
+        if mode == "speak_stream":
+            # **Incremental audio** (owner order, 26 September 2026: reduce the wait
+            # before Val speaks). The same model, conditioning and sampling, through
+            # the installed library's own streaming path: every `streaming_interval`
+            # seconds of speech tokens are decoded by its stateful streaming decoder
+            # and handed over at once, instead of the whole sentence first. Each piece
+            # goes out on stdout as it exists; nothing is written to a file.
+            import base64
+
+            interval = float(request["streaming_interval"])
+            generated = model.generate(
                 text=request["text"],
                 ref_audio=ref_audio,
                 ref_text=ref_text,
                 lang_code="english",
                 verbose=False,
+                stream=True,
+                streaming_interval=interval,
                 **GENERATE_KWARGS,
             )
-        )
+            segments = []
+            for piece, result in enumerate(generated):
+                samples = np.asarray(result.audio).reshape(-1)
+                segments.append(result)
+                chunk = {
+                    "chunk": piece,
+                    "duration_seconds": round(samples.size / sample_rate, 3),
+                    "elapsed_seconds": round(time.monotonic() - started, 3),
+                    "wav_base64": base64.b64encode(
+                        wav_bytes(samples, sample_rate, scale_to_fit=False)
+                    ).decode("ascii"),
+                }
+                print(json.dumps(chunk), flush=True)
+            report["streamed"] = True
+            report["streaming_interval"] = interval
+            report["chunks"] = len(segments)
+        else:
+            segments = list(
+                model.generate(
+                    text=request["text"],
+                    ref_audio=ref_audio,
+                    ref_text=ref_text,
+                    lang_code="english",
+                    verbose=False,
+                    **GENERATE_KWARGS,
+                )
+            )
 
         if report.get("clone_prompt") != "reused":
             # The run just computed it. Write it down so it is computed once,
@@ -247,6 +299,21 @@ def perform(model: Any, request: dict[str, Any], started: float, loaded_seconds:
     audio = np.concatenate([np.asarray(segment.audio).reshape(-1) for segment in segments])
     if audio.size == 0:
         return _fail("the speech run produced an empty waveform")
+    if mode == "speak_stream":
+        # The pieces have already gone; the whole is kept only long enough to be
+        # digested into the record, and is never written.
+        import hashlib as _hashlib
+
+        whole = wav_bytes(audio, sample_rate, scale_to_fit=False)
+        report["audio_sha256"] = _hashlib.sha256(whole).hexdigest()
+        report["audio_bytes"] = len(whole)
+        report["samples"] = int(audio.size)
+        report["duration_seconds"] = round(audio.size / sample_rate, 3)
+        report["elapsed_seconds"] = round(time.monotonic() - started, 3)
+        json.dump(report, sys.stdout, default=str)
+        sys.stdout.write("\n")
+        sys.stdout.flush()
+        return 0
     write_wav(out_path, audio, sample_rate)
 
     report["out_path"] = str(out_path)

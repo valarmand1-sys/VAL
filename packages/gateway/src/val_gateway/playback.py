@@ -49,7 +49,11 @@ __all__ = [
 #: on purpose: this is a hand-off, not a buffer, and a desktop that has stopped
 #: collecting is one whose playback has ended — in which case the audio is stale
 #: and discarding it is correct.
-QUEUE_DEPTH = 8
+QUEUE_DEPTH = 64
+#: Since 26 September 2026 a segment arrives in ~1-second pieces (up to ~10 per
+#: segment); a dropped piece would be a hole in a sentence, so the hand-off holds
+#: several segments' worth. The desktop collects every 80 ms, far faster than pieces
+#: are made, so in ordinary use it never holds more than one or two.
 
 
 class PlaybackState(StrEnum):
@@ -75,6 +79,11 @@ class OfferedSegment:
     audio_format: str
     sample_rate: int
     duration_seconds: float
+    #: Which piece of the segment this is, from 0, and whether it is the end. A whole
+    #: segment is one piece that is also the end; a streamed one ends with an empty
+    #: piece marked `last`, because its length is not known until it has been made.
+    chunk: int = 0
+    last: bool = True
 
 
 class DesktopSink(EphemeralSink):
@@ -125,6 +134,56 @@ class DesktopSink(EphemeralSink):
             # A desktop that has stopped collecting is one whose playback has
             # ended. The oldest waiting segment is stale; dropping it is honest,
             # and it is counted so the record can say it happened.
+            self._dropped += 1
+            return
+        with self._handover:
+            self._offered += 1
+
+    def play_piece(
+        self,
+        segment_index: int,
+        text: str,
+        audio: bytes,
+        sample_rate: int,
+        seconds: float,
+        piece: int,
+    ) -> None:
+        super().play_piece(segment_index, text, audio, sample_rate, seconds, piece)
+        self._offer(
+            OfferedSegment(
+                segment_index=segment_index,
+                text=text,
+                audio=audio,
+                audio_format="wav",
+                sample_rate=sample_rate,
+                duration_seconds=seconds,
+                chunk=piece,
+                last=False,
+            )
+        )
+
+    def end_segment(self, segment_index: int, text: str, sample_rate: int, pieces: int) -> None:
+        super().end_segment(segment_index, text, sample_rate, pieces)
+        self._offer(
+            OfferedSegment(
+                segment_index=segment_index,
+                text=text,
+                audio=b"",
+                audio_format="wav",
+                sample_rate=sample_rate,
+                duration_seconds=0.0,
+                chunk=pieces,
+                last=True,
+            )
+        )
+
+    def _offer(self, offer: OfferedSegment) -> None:
+        with self._handover:
+            if self.stopped_because is not None:
+                return
+        try:
+            self._waiting.put_nowait(offer)
+        except queue.Full:
             self._dropped += 1
             return
         with self._handover:

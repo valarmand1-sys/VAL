@@ -149,6 +149,8 @@ export function present(
  */
 export class SpokenPresentation {
   private list: SpokenAnswer[] = [];
+  /** Streamed audio that arrived for a segment before the segment began playing. */
+  private earlyAudio = new Map<string, number>();
   private nextKey = 1;
   /** Any segment offered, started or ended, of any answer: the stall clock. */
   private lastActivityAt: number;
@@ -270,13 +272,15 @@ export class SpokenPresentation {
     if (answer === null || isTerminal(answer)) return null;
     if (answer.segments.some((segment) => segment.index === index)) return null;
     const at = this.now();
+    const early = this.earlyAudio.get(`${key}:${index}`) ?? 0;
+    this.earlyAudio.delete(`${key}:${index}`);
     answer.segments.push({
       index,
       text,
       startedAt: at,
       endedAt: null,
       stoppedAt: null,
-      expectedEndAt: durationMs === null ? null : at + durationMs,
+      expectedEndAt: durationMs === null ? null : at + durationMs + early,
       shownAt: null,
     });
     answer.revealed += text;
@@ -285,6 +289,20 @@ export class SpokenPresentation {
     this.emit();
     this.completeIfDone(answer);
     return at;
+  }
+
+  /**
+   * More of a streamed segment has arrived: its audio will run this much longer.
+   * Keeps the lost-end-event bound tied to the segment's real length.
+   */
+  extend(key: number | undefined, index: number, moreMs: number): void {
+    const segment = this.byKey(key)?.segments.find((item) => item.index === index);
+    if (segment !== undefined) {
+      if (segment.expectedEndAt !== null) segment.expectedEndAt += moreMs;
+      return;
+    }
+    const pending = `${key}:${index}`;
+    this.earlyAudio.set(pending, (this.earlyAudio.get(pending) ?? 0) + moreMs);
   }
 
   /** The device cut this segment off (barge-in, or the player stopped). */

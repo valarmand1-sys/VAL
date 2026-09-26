@@ -1139,6 +1139,11 @@ class SpokenAudioView(BaseModel):
     #: The waveform, base64-encoded for transport over the existing loopback JSON
     #: contract. Not stored at either end beyond playing it.
     audio_base64: str
+    #: Which piece of the segment this is, from 0, and whether it ends the segment
+    #: (26 September 2026). A segment voiced whole is one piece, `last`; a streamed
+    #: one is several, then an empty piece marked `last`.
+    chunk: int = 0
+    last: bool = True
 
 
 class SpeechOfferView(BaseModel):

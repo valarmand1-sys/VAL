@@ -1200,3 +1200,58 @@ def test_a_failure_writing_provenance_is_reported_not_swallowed(store: Engine) -
     assert said_by_the_owner(store, conversation) == ["Note that down."], (
         "the turn itself happened and is not pretended away"
     )
+
+
+def test_r_speech_resumed_inside_the_window_holds_the_waiting_utterance_until_it_settles(
+    store: Engine,
+) -> None:
+    """R, the case his session of 25 September (20:15) found — owner order, 26 Sept 2026.
+
+    He resumed 0.5 s after he stopped, well inside the grace, but was still speaking
+    when the grace expired. The waiting utterance was submitted on its own, the rest
+    could not join a turn already in cognition, and it waited 41 s for that turn's
+    whole answer. The waiting utterance is now held while the resumed speech is still
+    being heard, and the two become one message.
+    """
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [
+                started(1, at=10.0),
+                final(1, "Is there a way to go faster?", at=10.9, endpoint_at=10.7),
+            ],
+            [started(2, at=10.5)],  # he carries on, 0.5 s after he stopped speaking
+            [final(2, "I'd like it a little faster.", at=13.2, endpoint_at=13.0)],
+        ]
+    )
+    conversation = a_conversation(store)
+    session, _, clock = a_session(store, recognizer, conversation_id=conversation)
+
+    session.feed(MARKER)
+    session.feed(MARKER)  # the resumed speech is being heard
+    clock.tick(RESUME_GRACE_SECONDS * 3)  # the grace expires while he is still speaking
+    session.advance()
+    assert messages_of(store, conversation) == [], "nothing went out while he was speaking"
+
+    session.feed(MARKER)  # the resumed speech settles
+    settle(session, clock)
+    said = messages_of(store, conversation)
+    assert said[0] == "Is there a way to go faster? I'd like it a little faster."
+    assert len([line for line in said if "faster" in line and "?" in line]) == 1
+
+
+def test_r_speech_that_began_after_the_window_is_still_a_new_turn(store: Engine) -> None:
+    """The bound: speech that began later than the grace does not hold anything."""
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [started(1, at=10.0), final(1, "Good evening, Val.", at=10.9, endpoint_at=10.7)],
+            [started(2, at=10.7 + RESUME_GRACE_SECONDS + 1.0)],
+        ]
+    )
+    conversation = a_conversation(store)
+    session, _, clock = a_session(store, recognizer, conversation_id=conversation)
+    session.feed(MARKER)
+    session.feed(MARKER)
+    clock.tick(RESUME_GRACE_SECONDS * 3)
+    session.advance()
+    session.await_turn(timeout=10)
+    assert messages_of(store, conversation)[0] == "Good evening, Val.", "submitted on its own"

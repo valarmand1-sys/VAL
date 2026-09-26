@@ -1223,7 +1223,10 @@ def create_app(
                 delivery_state=state, stop=should_stop, reason=reason, message_id=speaks
             )
         message_id = speaking.message_id
-        if message_id is None:
+        if offer.chunk > 0:
+            # A later piece of a segment already handed over: one hand-off per segment.
+            pass
+        elif message_id is None:
             # Voiced before her answer was written: recorded once it is.
             unbound_handoffs.setdefault(session, []).append(
                 (speaking, offer.segment_index, offer.text, datetime.now(UTC))
@@ -1253,6 +1256,8 @@ def create_app(
                 duration_seconds=offer.duration_seconds,
                 audio_bytes=len(offer.audio),
                 audio_base64=b64encode(offer.audio).decode("ascii"),
+                chunk=offer.chunk,
+                last=offer.last,
             ),
         )
 

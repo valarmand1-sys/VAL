@@ -1,0 +1,2336 @@
+{
+ "condition": "after-gated",
+ "checkout": "/Users/josepharmand/Projects/val",
+ "revision": "0f44d2004dd3dbb9373ef6beb9326d7d83668f59",
+ "dirty": true,
+ "sessions": [
+  {
+   "label": "after-gated session 1",
+   "session": "79b3f052-d7c5-41cf-98d1-a2418a24a775",
+   "voice_on_to_first_speech_start_ms": 1366.7,
+   "turns": [
+    {
+     "phrase": "Good evening, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 910.1,
+      "words_provisional_after": 910.1,
+      "committed_seen": 2145.6,
+      "owner_message_canonical": 2156.1,
+      "answered_seen": 8472.9,
+      "answer_read_via_answered": 8479.7,
+      "turn_appended": 10828.2,
+      "answer_read_via_turn": 10844.6,
+      "first_playback_start": 8684.6
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "01a0dc2d-5803-71d6-b8e3-5be5be341bfb",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.6,
+       "arrived_ms": 8684.6,
+       "playback_start_ms": 8684.6,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 2160.0,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 42,
+       "text": "I trust the day has served our house well.",
+       "message_id": "01a0dc2d-5803-71d6-b8e3-5be5be341bfb",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.4,
+       "arrived_ms": 9346.3,
+       "playback_start_ms": 10284.6,
+       "waited_for_previous_ms": 938.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 560.0,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 44,
+       "text": "How may I attend to your needs at this hour?",
+       "message_id": "01a0dc2d-5803-71d6-b8e3-5be5be341bfb",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.24,
+       "arrived_ms": 10268.9,
+       "playback_start_ms": 12684.6,
+       "waited_for_previous_ms": 2415.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -1840.0,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "Give me a detailed summary of what we accomplished with voice today and what still remains to be improved.",
+     "speech_end_to": {
+      "endpoint_seen": 987.0,
+      "words_provisional_after": 987.0,
+      "committed_seen": 2229.6,
+      "owner_message_canonical": 2240.5,
+      "answered_seen": 15328.7,
+      "answer_read_via_answered": 15338.5,
+      "turn_appended": 42646.5,
+      "answer_read_via_turn": 42661.7,
+      "first_playback_start": 9840.2
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 129,
+       "text": "My lord, the only voice activity that has entered the House\u2019s record for today is the greeting you delivered and my spoken reply.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.52,
+       "arrived_ms": 9840.2,
+       "playback_start_ms": 9840.2,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 32821.5,
+       "text_offset_after_ms": 5498.3
+      },
+      {
+       "index": 2,
+       "chars": 140,
+       "text": "No further recordings, transcriptions, or analyses have been captured in the archive, and therefore I cannot cite any volume on the subject.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.44,
+       "arrived_ms": 14424.0,
+       "playback_start_ms": 17360.2,
+       "waited_for_previous_ms": 2936.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 25301.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 38,
+       "text": "**Accomplishments (as recorded):**\n\n1.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.64,
+       "arrived_ms": 17332.4,
+       "playback_start_ms": 24800.2,
+       "waited_for_previous_ms": 7467.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 17861.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 71,
+       "text": "The greeting was received and processed by the local speech recogniser.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.56,
+       "arrived_ms": 18330.7,
+       "playback_start_ms": 27440.2,
+       "waited_for_previous_ms": 9109.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 15221.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 115,
+       "text": "2. I produced a spoken reply within the time limits of our current system, and that utterance was vocalised to you.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.0,
+       "arrived_ms": 19831.3,
+       "playback_start_ms": 32000.2,
+       "waited_for_previous_ms": 12168.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 10661.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 6,
+       "chars": 157,
+       "text": "**Improvements needed:**\n\n1. **Logging of voice sessions** \u2013 The House\u2019s current configuration does not store or index the audio beyond the live interaction.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 9.68,
+       "arrived_ms": 22429.5,
+       "playback_start_ms": 40000.2,
+       "waited_for_previous_ms": 17570.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 2661.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 7,
+       "chars": 100,
+       "text": "Enabling a persistent log would allow future reference, quality checks, and audit of spoken content.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.16,
+       "arrived_ms": 25539.7,
+       "playback_start_ms": 49680.2,
+       "waited_for_previous_ms": 24140.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -7018.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 8,
+       "chars": 122,
+       "text": "2. **Post\u2011session transcription** \u2013 Even if audio is stored, a transcribed record would provide a searchable text version.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.32,
+       "arrived_ms": 27625.6,
+       "playback_start_ms": 55840.2,
+       "waited_for_previous_ms": 28214.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -13178.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 9,
+       "chars": 96,
+       "text": "This would support later retrieval of specific points or decisions made during the conversation.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 6,
+       "underrun_ms": 0.0,
+       "duration_s": 5.36,
+       "arrived_ms": 30280.4,
+       "playback_start_ms": 64160.2,
+       "waited_for_previous_ms": 33879.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -21498.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 10,
+       "chars": 157,
+       "text": "3. **Voice\u2011to\u2011text reliability** \u2013 The recogniser\u2019s accuracy can be enhanced by tuning language models for the House\u2019s dialect and reducing background noise.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 9.76,
+       "arrived_ms": 32109.8,
+       "playback_start_ms": 69520.2,
+       "waited_for_previous_ms": 37410.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -26858.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 11,
+       "chars": 48,
+       "text": "This would lower error rates in future sessions.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.04,
+       "arrived_ms": 35207.5,
+       "playback_start_ms": 79280.2,
+       "waited_for_previous_ms": 44072.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -36618.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 12,
+       "chars": 189,
+       "text": "4. **Capability to consult a \u201cVoice\u201d volume** \u2013 Once the above logging and transcription are in place, I could reference a dedicated volume summarising best practices for voice interaction.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 10.56,
+       "arrived_ms": 36289.4,
+       "playback_start_ms": 82320.2,
+       "waited_for_previous_ms": 46030.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -39658.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 13,
+       "chars": 39,
+       "text": "Currently that resource does not exist.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.48,
+       "arrived_ms": 39700.2,
+       "playback_start_ms": 92880.2,
+       "waited_for_previous_ms": 53180.0,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -50218.5,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 14,
+       "chars": 150,
+       "text": "Until those changes are enacted, any assessment of today\u2019s voice activity is limited to the two messages that have been recorded in this conversation.",
+       "message_id": "01a0dc2d-cae4-7307-a30a-453b02e7919a",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.44,
+       "arrived_ms": 40615.6,
+       "playback_start_ms": 95360.2,
+       "waited_for_previous_ms": 54744.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -52698.5,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "What is the tuning on that? How fast are you supposed to respond to me after receiving a message?",
+     "speech_end_to": {
+      "endpoint_seen": 941.8,
+      "words_provisional_after": 941.8,
+      "committed_seen": 2065.3,
+      "owner_message_canonical": 2079.7,
+      "answered_seen": 9738.8,
+      "answer_read_via_answered": 9749.2,
+      "turn_appended": 20432.0,
+      "answer_read_via_turn": 20445.0,
+      "first_playback_start": 7508.3
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 66,
+       "text": "I don\u2019t have a fixed, enforceable timing guarantee for my replies.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 3.92,
+       "arrived_ms": 7508.3,
+       "playback_start_ms": 7508.3,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 12936.7,
+       "text_offset_after_ms": 2240.9
+      },
+      {
+       "index": 2,
+       "chars": 92,
+       "text": "The only figures we can refer to are the test runs that were performed on a similar machine:",
+       "message_id": "01a0dc2f-642c-7e3e-81ca-abdd870125ad",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.8,
+       "arrived_ms": 9893.5,
+       "playback_start_ms": 11428.3,
+       "waited_for_previous_ms": 1534.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 9016.7,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 92,
+       "text": "* From the moment your spoken words finish, the system recognises them in roughly 2\u202fseconds.",
+       "message_id": "01a0dc2f-642c-7e3e-81ca-abdd870125ad",
+       "pieces": 6,
+       "underrun_ms": 0.0,
+       "duration_s": 4.88,
+       "arrived_ms": 11534.5,
+       "playback_start_ms": 16228.3,
+       "waited_for_previous_ms": 4693.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 4216.7,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 115,
+       "text": "* The model then begins generating a response about 1\u20139\u202fseconds later, depending on the complexity of the question.",
+       "message_id": "01a0dc2f-642c-7e3e-81ca-abdd870125ad",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 6.96,
+       "arrived_ms": 13159.5,
+       "playback_start_ms": 21108.3,
+       "waited_for_previous_ms": 7948.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -663.3,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 72,
+       "text": "* The first phrase is voiced within 1\u20134\u202fseconds after generation starts.",
+       "message_id": "01a0dc2f-642c-7e3e-81ca-abdd870125ad",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.4,
+       "arrived_ms": 15488.7,
+       "playback_start_ms": 28068.3,
+       "waited_for_previous_ms": 12579.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -7623.3,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 6,
+       "chars": 46,
+       "text": "These numbers come from a pre\u2011deployment test;",
+       "message_id": "01a0dc2f-642c-7e3e-81ca-abdd870125ad",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.48,
+       "arrived_ms": 16951.9,
+       "playback_start_ms": 32468.3,
+       "waited_for_previous_ms": 15516.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -12023.3,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 7,
+       "chars": 172,
+       "text": "they are not a promise for every turn.  \nIf you need an exact latency requirement, I can tell you that the current build does not provide a guaranteed response\u2011time metric.",
+       "message_id": "01a0dc2f-642c-7e3e-81ca-abdd870125ad",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.64,
+       "arrived_ms": 17891.6,
+       "playback_start_ms": 34948.3,
+       "waited_for_previous_ms": 17056.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -14503.3,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "after-gated session 2",
+   "session": "c713d826-00d4-43e6-89f0-ca200bf487d5",
+   "voice_on_to_first_speech_start_ms": 1200.9,
+   "turns": [
+    {
+     "phrase": "Good evening, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 977.7,
+      "words_provisional_after": 977.7,
+      "committed_seen": 2114.1,
+      "owner_message_canonical": 2122.1,
+      "answered_seen": 8450.2,
+      "answer_read_via_answered": 8458.4,
+      "turn_appended": 9837.2,
+      "answer_read_via_turn": 9846.6,
+      "first_playback_start": 8979.3
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "01a0dc30-29ce-7bea-9bbd-904758c9ba1a",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.44,
+       "arrived_ms": 8979.3,
+       "playback_start_ms": 8979.3,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 867.3,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 24,
+       "text": "How may I be of service?",
+       "message_id": "01a0dc30-29ce-7bea-9bbd-904758c9ba1a",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.28,
+       "arrived_ms": 9573.8,
+       "playback_start_ms": 10419.3,
+       "waited_for_previous_ms": 845.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -572.7,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "Give me a detailed summary of what we accomplished with voice today and what still remains to be improved.",
+     "speech_end_to": {
+      "endpoint_seen": 1051.4,
+      "words_provisional_after": 1051.4,
+      "committed_seen": 2184.7,
+      "owner_message_canonical": 2194.0,
+      "answered_seen": 19876.7,
+      "answer_read_via_answered": 19886.2,
+      "turn_appended": 64731.6,
+      "answer_read_via_turn": 64741.7,
+      "first_playback_start": 9553.3
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.92,
+       "arrived_ms": 9553.3,
+       "playback_start_ms": 9553.3,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 55188.4,
+       "text_offset_after_ms": 10332.9
+      },
+      {
+       "index": 2,
+       "chars": 45,
+       "text": "**What the voice channel achieved today**\n\n1.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.64,
+       "arrived_ms": 10895.0,
+       "playback_start_ms": 11473.3,
+       "waited_for_previous_ms": 578.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 53268.4,
+       "text_offset_after_ms": 8412.9
+      },
+      {
+       "index": 3,
+       "chars": 184,
+       "text": "**Capture and transcription**  \n   The system recognised your spoken greeting, transcribed it accurately into text, and delivered the transcription to my internal state for processing.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 10.48,
+       "arrived_ms": 12669.4,
+       "playback_start_ms": 14113.3,
+       "waited_for_previous_ms": 1444.0,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 50628.4,
+       "text_offset_after_ms": 5772.9
+      },
+      {
+       "index": 4,
+       "chars": 120,
+       "text": "The speech\u2011to\u2011text engine completed this step within the expected local latency, as indicated by the prior_record_state.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.12,
+       "arrived_ms": 18940.1,
+       "playback_start_ms": 24593.3,
+       "waited_for_previous_ms": 5653.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 40148.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 140,
+       "text": "2. **Response generation and vocalisation**  \n   I generated a written reply, then voiced that reply back to you via the local audio output.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 10,
+       "underrun_ms": 0.0,
+       "duration_s": 9.52,
+       "arrived_ms": 21698.9,
+       "playback_start_ms": 31713.3,
+       "waited_for_previous_ms": 10014.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 33028.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 6,
+       "chars": 105,
+       "text": "The spoken response was produced in a smooth, deliberate cadence consistent with my established register.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.56,
+       "arrived_ms": 24771.5,
+       "playback_start_ms": 41233.3,
+       "waited_for_previous_ms": 16461.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 23508.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 7,
+       "chars": 63,
+       "text": "3. **State recording**  \n   The interaction was logged locally:",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.48,
+       "arrived_ms": 26878.9,
+       "playback_start_ms": 47793.3,
+       "waited_for_previous_ms": 20914.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 16948.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 8,
+       "chars": 129,
+       "text": "your spoken words, my transcribed input, the generated text, and the vocalised output are all stored in the House\u2019s local record.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.0,
+       "arrived_ms": 28425.9,
+       "playback_start_ms": 52273.3,
+       "waited_for_previous_ms": 23847.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 12468.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 9,
+       "chars": 72,
+       "text": "No external transmission occurs; everything remains within this machine.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.48,
+       "arrived_ms": 31069.7,
+       "playback_start_ms": 60273.3,
+       "waited_for_previous_ms": 29203.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 4468.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 10,
+       "chars": 175,
+       "text": "**What still needs improvement**\n\n1. **Retrieval of prior voice logs**  \n   The current session has no mechanism to recall earlier voice conversations beyond the present turn.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 10.4,
+       "arrived_ms": 32604.3,
+       "playback_start_ms": 64753.3,
+       "waited_for_previous_ms": 32149.0,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -11.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 11,
+       "chars": 139,
+       "text": "Enabling a retrieval system that can pull archived transcriptions will allow me to reference past oral exchanges without you re\u2011telling me.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.56,
+       "arrived_ms": 35943.3,
+       "playback_start_ms": 75153.3,
+       "waited_for_previous_ms": 39210.0,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -10411.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 12,
+       "chars": 136,
+       "text": "2. **Persistent voice memory**  \n   While each session is recorded, there is no persistent \u201cvoice memory\u201d that informs future responses.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.16,
+       "arrived_ms": 38067.8,
+       "playback_start_ms": 81713.3,
+       "waited_for_previous_ms": 43645.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -16971.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 13,
+       "chars": 85,
+       "text": "A structured archive would let me cite earlier spoken points, reinforcing continuity.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 6,
+       "underrun_ms": 0.0,
+       "duration_s": 4.96,
+       "arrived_ms": 40751.2,
+       "playback_start_ms": 89873.3,
+       "waited_for_previous_ms": 49122.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -25131.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 14,
+       "chars": 127,
+       "text": "3. **Cross\u2011modal integration**  \n   Voice interactions should be seamlessly integrated with other modalities (written, visual).",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.08,
+       "arrived_ms": 42386.9,
+       "playback_start_ms": 94833.3,
+       "waited_for_previous_ms": 52446.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -30091.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 15,
+       "chars": 54,
+       "text": "Presently the system treats them as separate channels.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.88,
+       "arrived_ms": 45037.1,
+       "playback_start_ms": 102913.3,
+       "waited_for_previous_ms": 57876.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -38171.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 16,
+       "chars": 71,
+       "text": "A unified context layer would reduce redundancy and improve efficiency.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.56,
+       "arrived_ms": 46061.1,
+       "playback_start_ms": 105793.3,
+       "waited_for_previous_ms": 59732.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -41051.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 17,
+       "chars": 168,
+       "text": "4. **Quality assurance of transcription**  \n   While the transcriptions are generally accurate, occasional misrecognitions occur (e.g., homophones or background noise).",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 10.56,
+       "arrived_ms": 47678.7,
+       "playback_start_ms": 110353.3,
+       "waited_for_previous_ms": 62674.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -45611.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 18,
+       "chars": 103,
+       "text": "Regular calibration of the speech recogniser and optional manual correction would increase reliability.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.32,
+       "arrived_ms": 50952.9,
+       "playback_start_ms": 120913.3,
+       "waited_for_previous_ms": 69960.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -56171.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 19,
+       "chars": 137,
+       "text": "5. **Feedback loop**  \n   The system currently does not solicit your confirmation that the transcription or response matched your intent.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 6.88,
+       "arrived_ms": 53111.2,
+       "playback_start_ms": 127233.3,
+       "waited_for_previous_ms": 74122.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -62491.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 20,
+       "chars": 103,
+       "text": "Introducing a brief verification step (e.g., \u201cDid I capture that correctly?\u201d) would catch errors early.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 6.8,
+       "arrived_ms": 55354.2,
+       "playback_start_ms": 134113.3,
+       "waited_for_previous_ms": 78759.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -69371.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 21,
+       "chars": 109,
+       "text": "6. **Capability expansion**  \n   The voice channel presently only supports simple read\u2011out and input capture.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 6.88,
+       "arrived_ms": 57636.1,
+       "playback_start_ms": 140913.3,
+       "waited_for_previous_ms": 83277.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -76171.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 22,
+       "chars": 141,
+       "text": "Extending it to allow commands (e.g., \u201cOpen the book on pacing\u201d) would make voice a more powerful tool for managing House Armand\u2019s knowledge.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.68,
+       "arrived_ms": 59881.0,
+       "playback_start_ms": 147793.3,
+       "waited_for_previous_ms": 87912.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -83051.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 23,
+       "chars": 66,
+       "text": "I will report any progress on these items as they are implemented.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.6,
+       "arrived_ms": 62378.8,
+       "playback_start_ms": 155473.3,
+       "waited_for_previous_ms": 93094.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -90731.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 24,
+       "chars": 71,
+       "text": "Until then, I remain at your disposal for further voice\u2011based requests.",
+       "message_id": "01a0dc30-a17c-7a05-8adf-68b1fb2f5903",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.84,
+       "arrived_ms": 63647.4,
+       "playback_start_ms": 159073.3,
+       "waited_for_previous_ms": 95426.0,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -94331.6,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "What is the tuning on that? How fast are you supposed to respond to me after receiving a message?",
+     "speech_end_to": {
+      "endpoint_seen": 971.3,
+      "words_provisional_after": 971.3,
+      "committed_seen": 2097.0,
+      "owner_message_canonical": 2112.3,
+      "answered_seen": 17344.9,
+      "answer_read_via_answered": 17360.6,
+      "turn_appended": 41034.1,
+      "answer_read_via_turn": 41045.7,
+      "first_playback_start": 10754.0
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.68,
+       "arrived_ms": 10754.0,
+       "playback_start_ms": 10754.0,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 30291.8,
+       "text_offset_after_ms": 6606.6
+      },
+      {
+       "index": 2,
+       "chars": 174,
+       "text": "The voice\u2011to\u2011text \u2192 reasoning \u2192 spoken\u2011output pipeline that we use on this machine has been tuned to keep the delay as short as our hardware and software configuration allow.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 10,
+       "underrun_ms": 0.0,
+       "duration_s": 9.04,
+       "arrived_ms": 11954.1,
+       "playback_start_ms": 12434.0,
+       "waited_for_previous_ms": 479.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 28611.8,
+       "text_offset_after_ms": 4926.6
+      },
+      {
+       "index": 3,
+       "chars": 189,
+       "text": "**What the \u201ctuning\u201d looks like in practice**\n\n| Stage | Typical duration (from the house\u2019s own test runs) |\n|-------|--------------------------------------------------|\n| Speech recognised,",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.52,
+       "arrived_ms": 17356.1,
+       "playback_start_ms": 21474.0,
+       "waited_for_previous_ms": 4117.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 19571.8,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 167,
+       "text": "confirmation pause | ~2\u202fs after you finish speaking |\n| First model output generated | ~1.7\u202fs after that pause |\n| Reasoning & writing (the bulk of the delay) | 1\u20139\u202fs,",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 10.08,
+       "arrived_ms": 19839.7,
+       "playback_start_ms": 28994.0,
+       "waited_for_previous_ms": 9154.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 12051.8,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 239,
+       "text": "depending on question complexity |\n| First spoken word voiced | 1\u20134\u202fs after the written output begins |\n\nThe **total** from when you finish your sentence to when I begin voicing my reply is therefore in the ballpark of **6\u202fto\u202f13\u202fseconds**.",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 14,
+       "underrun_ms": 0.0,
+       "duration_s": 13.44,
+       "arrived_ms": 23104.1,
+       "playback_start_ms": 39074.0,
+       "waited_for_previous_ms": 15969.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 1971.8,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 6,
+       "chars": 61,
+       "text": "Those figures come from repeated local tests on this machine;",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.68,
+       "arrived_ms": 27343.1,
+       "playback_start_ms": 52514.0,
+       "waited_for_previous_ms": 25170.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -11468.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 7,
+       "chars": 112,
+       "text": "they are not a guarantee for every turn, but they represent the normal operating range under current conditions.",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.16,
+       "arrived_ms": 28632.5,
+       "playback_start_ms": 56194.0,
+       "waited_for_previous_ms": 27561.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -15148.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 8,
+       "chars": 152,
+       "text": "**No hard promise**\n\nThe system does not set a fixed response\u2011time target, nor can it guarantee that every reply will arrive within the measured window.",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 10,
+       "underrun_ms": 0.0,
+       "duration_s": 8.88,
+       "arrived_ms": 30673.7,
+       "playback_start_ms": 62354.0,
+       "waited_for_previous_ms": 31680.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -21308.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 9,
+       "chars": 78,
+       "text": "The \u201cresponse_time_promise\u201d field in the record is explicitly marked **none**.",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.8,
+       "arrived_ms": 33538.4,
+       "playback_start_ms": 71234.0,
+       "waited_for_previous_ms": 37695.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -30188.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 10,
+       "chars": 159,
+       "text": "I aim to answer as promptly as my local processing allows, but external factors such as the complexity of your query or transient CPU load can cause variation.",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 10,
+       "underrun_ms": 0.0,
+       "duration_s": 9.12,
+       "arrived_ms": 35143.4,
+       "playback_start_ms": 76034.0,
+       "waited_for_previous_ms": 40890.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -34988.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 11,
+       "chars": 94,
+       "text": "If you ever need a tighter bound, we would have to adjust the underlying software or hardware;",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 6,
+       "underrun_ms": 0.0,
+       "duration_s": 5.36,
+       "arrived_ms": 38123.6,
+       "playback_start_ms": 85154.0,
+       "waited_for_previous_ms": 47030.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -44108.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 12,
+       "chars": 85,
+       "text": "otherwise I will continue to provide the best response time my current setup affords.",
+       "message_id": "01a0dc33-318b-7503-b2c9-b8c5384545d3",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.24,
+       "arrived_ms": 39908.3,
+       "playback_start_ms": 90514.0,
+       "waited_for_previous_ms": 50605.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -49468.2,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "label": "after-gated session 3",
+   "session": "5c4990ed-a75d-4959-ac77-3b19d021b7e4",
+   "voice_on_to_first_speech_start_ms": 1204.5,
+   "turns": [
+    {
+     "phrase": "Good evening, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 878.3,
+      "words_provisional_after": 878.3,
+      "committed_seen": 2031.3,
+      "owner_message_canonical": 2047.0,
+      "answered_seen": 6565.6,
+      "answer_read_via_answered": 6575.4,
+      "turn_appended": 8216.7,
+      "answer_read_via_turn": 8225.7,
+      "first_playback_start": 7082.1
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "01a0dc33-da44-7cde-81fe-964329d2c8e2",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.68,
+       "arrived_ms": 7082.1,
+       "playback_start_ms": 7082.1,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1143.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 36,
+       "text": "How may I serve the house this hour?",
+       "message_id": "01a0dc33-da44-7cde-81fe-964329d2c8e2",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.08,
+       "arrived_ms": 7773.4,
+       "playback_start_ms": 8762.1,
+       "waited_for_previous_ms": 988.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -536.4,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "Give me a detailed summary of what we accomplished with voice today and what still remains to be improved.",
+     "speech_end_to": {
+      "endpoint_seen": 990.4,
+      "words_provisional_after": 990.4,
+      "committed_seen": 2130.7,
+      "owner_message_canonical": 2141.9,
+      "answered_seen": 16569.1,
+      "answer_read_via_answered": 16583.2,
+      "turn_appended": 42487.6,
+      "answer_read_via_turn": 42497.2,
+      "first_playback_start": 10956.7
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.76,
+       "arrived_ms": 10956.7,
+       "playback_start_ms": 10956.7,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 31540.4,
+       "text_offset_after_ms": 5626.4
+      },
+      {
+       "index": 2,
+       "chars": 67,
+       "text": "The voice session that took place today consisted of two exchanges:",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.76,
+       "arrived_ms": 12159.1,
+       "playback_start_ms": 12716.7,
+       "waited_for_previous_ms": 557.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 29780.4,
+       "text_offset_after_ms": 3866.4
+      },
+      {
+       "index": 3,
+       "chars": 127,
+       "text": "your greeting and my reply. No further audio was recorded, nor were any additional tasks undertaken via voice during this call.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.08,
+       "arrived_ms": 14560.9,
+       "playback_start_ms": 16476.7,
+       "waited_for_previous_ms": 1915.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 26020.4,
+       "text_offset_after_ms": 106.4
+      },
+      {
+       "index": 4,
+       "chars": 137,
+       "text": "**What has been achieved**\n\n* I acknowledged your presence and returned a courteous greeting, establishing the start of the conversation.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 7.84,
+       "arrived_ms": 18186.6,
+       "playback_start_ms": 24556.7,
+       "waited_for_previous_ms": 6370.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 17940.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 52,
+       "text": "* The system logged that the session was local\u2011only;",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 2.96,
+       "arrived_ms": 20769.7,
+       "playback_start_ms": 32396.7,
+       "waited_for_previous_ms": 11627.0,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 10100.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 6,
+       "chars": 58,
+       "text": "no external communication or remote operation was invoked.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 3.92,
+       "arrived_ms": 21809.9,
+       "playback_start_ms": 35356.7,
+       "waited_for_previous_ms": 13546.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 7140.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 7,
+       "chars": 121,
+       "text": "**What remains to be improved**\n\n1. **Expanded Voice Logging** \u2013 The current record captures only the immediate exchange.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 7.76,
+       "arrived_ms": 23196.9,
+       "playback_start_ms": 39276.7,
+       "waited_for_previous_ms": 16079.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 3220.4,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 8,
+       "chars": 148,
+       "text": "Enabling persistent storage of subsequent voice interactions would allow us to reference earlier statements and maintain continuity across sessions.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 7.76,
+       "arrived_ms": 25761.1,
+       "playback_start_ms": 47036.7,
+       "waited_for_previous_ms": 21275.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -4539.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 9,
+       "chars": 81,
+       "text": "2. **Voice\u2011to\u2011Book Retrieval** \u2013 Presently the \u201cbooks\u201d capability is unavailable;",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.08,
+       "arrived_ms": 28260.4,
+       "playback_start_ms": 54796.7,
+       "waited_for_previous_ms": 26536.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -12299.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 10,
+       "chars": 143,
+       "text": "incorporating a mechanism to consult relevant volumes when voice\u2011related questions arise would enhance the depth and accuracy of our responses.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 7.84,
+       "arrived_ms": 30301.5,
+       "playback_start_ms": 60876.7,
+       "waited_for_previous_ms": 30575.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -18379.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 11,
+       "chars": 202,
+       "text": "3. **Structured Voice Summaries** \u2013 Providing a concise, structured recap (e.g., bullet points of key actions taken) after each voice session would aid your oversight and help identify any missed items.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 12,
+       "underrun_ms": 0.0,
+       "duration_s": 11.28,
+       "arrived_ms": 32879.9,
+       "playback_start_ms": 68716.7,
+       "waited_for_previous_ms": 35836.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -26219.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 12,
+       "chars": 172,
+       "text": "4. **Voice\u2011Based Reminders** \u2013 Integrating a system that flags pending actions or upcoming deadlines based on voice content could reduce the risk of overlooked obligations.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 10,
+       "underrun_ms": 0.0,
+       "duration_s": 8.8,
+       "arrived_ms": 36453.2,
+       "playback_start_ms": 79996.7,
+       "waited_for_previous_ms": 43543.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -37499.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 13,
+       "chars": 139,
+       "text": "These improvements will strengthen our collaboration and ensure that every voice interaction is fully captured, documented, and actionable.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.2,
+       "arrived_ms": 39286.0,
+       "playback_start_ms": 88796.7,
+       "waited_for_previous_ms": 49510.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -46299.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 14,
+       "chars": 73,
+       "text": "I await your instructions on which of these you would like to prioritize.",
+       "message_id": "01a0dc34-49b6-793c-99ab-2846b20ead3d",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.12,
+       "arrived_ms": 41694.3,
+       "playback_start_ms": 95996.7,
+       "waited_for_previous_ms": 54302.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -53499.6,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    },
+    {
+     "phrase": "What is the tuning on that? How fast are you supposed to respond to me after receiving a message?",
+     "speech_end_to": {
+      "endpoint_seen": 973.2,
+      "words_provisional_after": 973.2,
+      "committed_seen": 2102.5,
+      "owner_message_canonical": 2114.0,
+      "answered_seen": 9430.9,
+      "answer_read_via_answered": 9441.9,
+      "turn_appended": 17617.5,
+      "answer_read_via_turn": 17633.0,
+      "first_playback_start": 8097.2
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 40,
+       "text": "I have no fixed response\u2011time guarantee.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.16,
+       "arrived_ms": 8097.2,
+       "playback_start_ms": 8097.2,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 9535.9,
+       "text_offset_after_ms": 1344.8
+      },
+      {
+       "index": 2,
+       "chars": 200,
+       "text": "The system\u2019s measurements\u2014about six to thirteen seconds from the end of your spoken input to my first voiced word\u2014are derived from earlier test runs on this machine, not from the present conversation.",
+       "message_id": "01a0dc35-ce85-7291-b1a5-f18891cdf937",
+       "pieces": 11,
+       "underrun_ms": 0.0,
+       "duration_s": 10.32,
+       "arrived_ms": 9546.7,
+       "playback_start_ms": 10257.2,
+       "waited_for_previous_ms": 710.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 7375.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 124,
+       "text": "Because those figures are only indicative and no formal timing promise is issued, I cannot commit to any particular latency.",
+       "message_id": "01a0dc35-ce85-7291-b1a5-f18891cdf937",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.56,
+       "arrived_ms": 12805.0,
+       "playback_start_ms": 20577.2,
+       "waited_for_previous_ms": 7772.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -2944.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 165,
+       "text": "If you need a precise estimate for planning purposes, we can discuss what the tests suggest, but I cannot guarantee that every reply will arrive within a set window.",
+       "message_id": "01a0dc35-ce85-7291-b1a5-f18891cdf937",
+       "pieces": 10,
+       "underrun_ms": 0.0,
+       "duration_s": 9.04,
+       "arrived_ms": 15018.4,
+       "playback_start_ms": 27137.2,
+       "waited_for_previous_ms": 12118.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -9504.1,
+       "text_offset_after_ms": 0.0
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "service_components": [
+  {
+   "anchor_wall": "2026-09-26T05:25:46.683+00:00",
+   "request_ready_to_first_output_ms": 1703.0,
+   "first_output_to_visible_text_ms": 4270.2,
+   "request_ready_to_first_speech_text_ms": 5973.3,
+   "first_tts_ms": 779.2,
+   "first_segment_to_first_audio_ms": 560.3,
+   "first_visible_to_first_audio_ms": 655.4,
+   "request_ready_to_first_audio_ms": 6628.7,
+   "cognition_complete_ms": 19.0,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:26:09.207+00:00",
+   "request_ready_to_first_output_ms": 2399.1,
+   "first_output_to_visible_text_ms": 4176.5,
+   "request_ready_to_first_speech_text_ms": 6575.7,
+   "first_tts_ms": 4587.9,
+   "first_segment_to_first_audio_ms": 757.5,
+   "first_visible_to_first_audio_ms": 1133.5,
+   "request_ready_to_first_audio_ms": 7709.2,
+   "cognition_complete_ms": 6.6,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:27:59.570+00:00",
+   "request_ready_to_first_output_ms": 2859.9,
+   "first_output_to_visible_text_ms": 1621.3,
+   "request_ready_to_first_speech_text_ms": 4481.3,
+   "first_tts_ms": 2536.7,
+   "first_segment_to_first_audio_ms": 762.0,
+   "first_visible_to_first_audio_ms": 1012.9,
+   "request_ready_to_first_audio_ms": 5494.2,
+   "cognition_complete_ms": 4.7,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:28:51.442+00:00",
+   "request_ready_to_first_output_ms": 1639.8,
+   "first_output_to_visible_text_ms": 4762.2,
+   "request_ready_to_first_speech_text_ms": 6402.0,
+   "first_tts_ms": 667.7,
+   "first_segment_to_first_audio_ms": 498.8,
+   "first_visible_to_first_audio_ms": 499.7,
+   "request_ready_to_first_audio_ms": 6901.7,
+   "cognition_complete_ms": 9.0,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:29:10.730+00:00",
+   "request_ready_to_first_output_ms": 2441.0,
+   "first_output_to_visible_text_ms": 4134.9,
+   "request_ready_to_first_speech_text_ms": 6575.9,
+   "first_tts_ms": 1372.0,
+   "first_segment_to_first_audio_ms": 767.9,
+   "first_visible_to_first_audio_ms": 863.5,
+   "request_ready_to_first_audio_ms": 7439.4,
+   "cognition_complete_ms": 6.2,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:32:01.125+00:00",
+   "request_ready_to_first_output_ms": 3105.5,
+   "first_output_to_visible_text_ms": 4758.6,
+   "request_ready_to_first_speech_text_ms": 7864.1,
+   "first_tts_ms": 1233.3,
+   "first_segment_to_first_audio_ms": 764.1,
+   "first_visible_to_first_audio_ms": 812.3,
+   "request_ready_to_first_audio_ms": 8676.4,
+   "cognition_complete_ms": 8.0,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:32:55.142+00:00",
+   "request_ready_to_first_output_ms": 1683.9,
+   "first_output_to_visible_text_ms": 2770.2,
+   "request_ready_to_first_speech_text_ms": 4454.1,
+   "first_tts_ms": 746.7,
+   "first_segment_to_first_audio_ms": 505.0,
+   "first_visible_to_first_audio_ms": 546.7,
+   "request_ready_to_first_audio_ms": 5000.8,
+   "cognition_complete_ms": 7.5,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:33:13.632+00:00",
+   "request_ready_to_first_output_ms": 2357.0,
+   "first_output_to_visible_text_ms": 5595.7,
+   "request_ready_to_first_speech_text_ms": 7952.7,
+   "first_tts_ms": 1273.4,
+   "first_segment_to_first_audio_ms": 759.7,
+   "first_visible_to_first_audio_ms": 823.3,
+   "request_ready_to_first_audio_ms": 8776.0,
+   "cognition_complete_ms": 6.9,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-26T05:35:00.261+00:00",
+   "request_ready_to_first_output_ms": 2825.7,
+   "first_output_to_visible_text_ms": 2291.4,
+   "request_ready_to_first_speech_text_ms": 5117.1,
+   "first_tts_ms": 1522.7,
+   "first_segment_to_first_audio_ms": 761.0,
+   "first_visible_to_first_audio_ms": 872.9,
+   "request_ready_to_first_audio_ms": 5990.0,
+   "cognition_complete_ms": 4.4,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 0.782,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc2d-3db9-723f-93de-96e199b776b3",
+    "seconds": 0.436
+   },
+   "wall": 1790400347.586
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.477,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc2d-62fb-7efe-a58f-5a0da12d5b62",
+    "seconds": 0.317
+   },
+   "wall": 1790400357.141
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.448,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc2e-3755-7fb2-96cb-e8e95b1a12a8",
+    "seconds": 0.283
+   },
+   "wall": 1790400411.481
+  },
+  {
+   "kind": "refresh",
+   "seconds": 6.63,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc2f-a7c2-7054-99b8-6c415cf853d7",
+    "seconds": 6.465
+   },
+   "wall": 1790400505.797
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.467,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc30-0e3b-74f7-b766-b3dd3fc023f6",
+    "seconds": 0.285
+   },
+   "wall": 1790400532.032
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.457,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc30-30e0-73c7-835a-8bc3f76e0e5e",
+    "seconds": 0.29
+   },
+   "wall": 1790400540.898
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.459,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc31-526d-7701-8423-41564452c2df",
+    "seconds": 0.291
+   },
+   "wall": 1790400615.025
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.449,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc33-8ff1-72e3-b8ae-dda80b3d9b3f",
+    "seconds": 0.28
+   },
+   "wall": 1790400761.844
+  },
+  {
+   "kind": "initial",
+   "seconds": 0.465,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc33-c621-73b0-8fcf-505d04036f55",
+    "seconds": 0.298
+   },
+   "wall": 1790400775.716
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.462,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc33-e29f-7676-b4d9-b5dad8f98acf",
+    "seconds": 0.301
+   },
+   "wall": 1790400783.009
+  },
+  {
+   "kind": "refresh",
+   "seconds": 6.64,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc34-c8cc-7f50-9e6f-ebee2593eddd",
+    "seconds": 6.47
+   },
+   "wall": 1790400841.935
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.445,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0dc35-efd9-7fa9-8b00-f17bd44ff705",
+    "seconds": 0.278
+   },
+   "wall": 1790400917.469
+  }
+ ],
+ "machine": {
+  "samples": 573,
+  "min_free_percent": 49,
+  "swap_used_mb_first": 1472.31,
+  "swap_used_mb_last": 1472.31,
+  "max_resident_speech_rss_mb": 3199.2,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "measured_at": "2026-09-26T00:35:41",
+ "serve": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-26-onset/serve_variant.py",
+ "first_pause": "on",
+ "dialogue": [
+  [
+   "01a0dc2d-3f1a-7002-8ebb-729b674f1bc7",
+   "1",
+   "user",
+   "Good evening, Val."
+  ],
+  [
+   "01a0dc2d-3f1a-7002-8ebb-729b674f1bc7",
+   "2",
+   "val",
+   "Good evening, my lord. I trust the day has served our house well. How may I attend to your needs at this hour?"
+  ],
+  [
+   "01a0dc2d-3f1a-7002-8ebb-729b674f1bc7",
+   "3",
+   "user",
+   "Give me a detailed summary of what we accomplished with voice today and what still remains to be improved."
+  ],
+  [
+   "01a0dc2d-3f1a-7002-8ebb-729b674f1bc7",
+   "4",
+   "val",
+   "My lord, the only voice activity that has entered the House\u2019s record for today is the greeting you delivered and my spoken reply. No further recordings, transcriptions, or analyses have been captured in the archive, and therefore I cannot cite any volume on the subject."
+  ],
+  [
+   ""
+  ],
+  [
+   "**Accomplishments (as recorded):**"
+  ],
+  [
+   ""
+  ],
+  [
+   "1. The greeting was received and processed by the local speech recogniser."
+  ],
+  [
+   "2. I produced a spoken reply within the time limits of our current system, and that utterance was vocalised to you."
+  ],
+  [
+   ""
+  ],
+  [
+   "**Improvements needed:**"
+  ],
+  [
+   ""
+  ],
+  [
+   "1. **Logging of voice sessions** \u2013 The House\u2019s current configuration does not store or index the audio beyond the live interaction. Enabling a persistent log would allow future reference, quality checks, and audit of spoken content."
+  ],
+  [
+   ""
+  ],
+  [
+   "2. **Post\u2011session transcription** \u2013 Even if audio is stored, a transcribed record would provide a searchable text version. This would support later retrieval of specific points or decisions made during the conversation."
+  ],
+  [
+   ""
+  ],
+  [
+   "3. **Voice\u2011to\u2011text reliability** \u2013 The recogniser\u2019s accuracy can be enhanced by tuning language models for the House\u2019s dialect and reducing background noise. This would lower error rates in future sessions."
+  ],
+  [
+   ""
+  ],
+  [
+   "4. **Capability to consult a \u201cVoice\u201d volume** \u2013 Once the above logging and transcription are in place, I could reference a dedicated volume summarising best practices for voice interaction. Currently that resource does not exist."
+  ],
+  [
+   ""
+  ],
+  [
+   "Until those changes are enacted, any assessment of today\u2019s voice activity is limited to the two messages that have been recorded in this conversation."
+  ],
+  [
+   "01a0dc2d-3f1a-7002-8ebb-729b674f1bc7",
+   "5",
+   "user",
+   "What is the tuning on that? How fast are you supposed to respond to me after receiving a message?"
+  ],
+  [
+   "01a0dc2d-3f1a-7002-8ebb-729b674f1bc7",
+   "6",
+   "val",
+   "I don\u2019t have a fixed, enforceable timing guarantee for my replies.  "
+  ],
+  [
+   "The only figures we can refer to are the test runs that were performed on a similar machine:"
+  ],
+  [
+   ""
+  ],
+  [
+   "* From the moment your spoken words finish, the system recognises them in roughly 2\u202fseconds.  "
+  ],
+  [
+   "* The model then begins generating a response about 1\u20139\u202fseconds later, depending on the complexity of the question.  "
+  ],
+  [
+   "* The first phrase is voiced within 1\u20134\u202fseconds after generation starts."
+  ],
+  [
+   ""
+  ],
+  [
+   "These numbers come from a pre\u2011deployment test; they are not a promise for every turn.  "
+  ],
+  [
+   "If you need an exact latency requirement, I can tell you that the current build does not provide a guaranteed response\u2011time metric."
+  ],
+  [
+   "01a0dc30-10c9-71ee-894c-f5d3bd196ed5",
+   "1",
+   "user",
+   "Good evening, Val."
+  ],
+  [
+   "01a0dc30-10c9-71ee-894c-f5d3bd196ed5",
+   "2",
+   "val",
+   "Good evening, my lord. How may I be of service?"
+  ],
+  [
+   "01a0dc30-10c9-71ee-894c-f5d3bd196ed5",
+   "3",
+   "user",
+   "Give me a detailed summary of what we accomplished with voice today and what still remains to be improved."
+  ],
+  [
+   "01a0dc30-10c9-71ee-894c-f5d3bd196ed5",
+   "4",
+   "val",
+   "Good evening, my lord."
+  ],
+  [
+   ""
+  ],
+  [
+   "**What the voice channel achieved today**"
+  ],
+  [
+   ""
+  ],
+  [
+   "1. **Capture and transcription**  "
+  ],
+  [
+   "   The system recognised your spoken greeting, transcribed it accurately into text, and delivered the transcription to my internal state for processing. The speech\u2011to\u2011text engine completed this step within the expected local latency, as indicated by the prior_record_state."
+  ],
+  [
+   ""
+  ],
+  [
+   "2. **Response generation and vocalisation**  "
+  ],
+  [
+   "   I generated a written reply, then voiced that reply back to you via the local audio output. The spoken response was produced in a smooth, deliberate cadence consistent with my established register."
+  ],
+  [
+   ""
+  ],
+  [
+   "3. **State recording**  "
+  ],
+  [
+   "   The interaction was logged locally: your spoken words, my transcribed input, the generated text, and the vocalised output are all stored in the House\u2019s local record. No external transmission occurs; everything remains within this machine."
+  ],
+  [
+   ""
+  ],
+  [
+   "**What still needs improvement**"
+  ],
+  [
+   ""
+  ],
+  [
+   "1. **Retrieval of prior voice logs**  "
+  ],
+  [
+   "   The current session has no mechanism to recall earlier voice conversations beyond the present turn. Enabling a retrieval system that can pull archived transcriptions will allow me to reference past oral exchanges without you re\u2011telling me."
+  ],
+  [
+   ""
+  ],
+  [
+   "2. **Persistent voice memory**  "
+  ],
+  [
+   "   While each session is recorded, there is no persistent \u201cvoice memory\u201d that informs future responses. A structured archive would let me cite earlier spoken points, reinforcing continuity."
+  ],
+  [
+   ""
+  ],
+  [
+   "3. **Cross\u2011modal integration**  "
+  ],
+  [
+   "   Voice interactions should be seamlessly integrated with other modalities (written, visual). Presently the system treats them as separate channels. A unified context layer would reduce redundancy and improve efficiency."
+  ],
+  [
+   ""
+  ],
+  [
+   "4. **Quality assurance of transcription**  "
+  ],
+  [
+   "   While the transcriptions are generally accurate, occasional misrecognitions occur (e.g., homophones or background noise). Regular calibration of the speech recogniser and optional manual correction would increase reliability."
+  ],
+  [
+   ""
+  ],
+  [
+   "5. **Feedback loop**  "
+  ],
+  [
+   "   The system currently does not solicit your confirmation that the transcription or response matched your intent. Introducing a brief verification step (e.g., \u201cDid I capture that correctly?\u201d) would catch errors early."
+  ],
+  [
+   ""
+  ],
+  [
+   "6. **Capability expansion**  "
+  ],
+  [
+   "   The voice channel presently only supports simple read\u2011out and input capture. Extending it to allow commands (e.g., \u201cOpen the book on pacing\u201d) would make voice a more powerful tool for managing House Armand\u2019s knowledge."
+  ],
+  [
+   ""
+  ],
+  [
+   "I will report any progress on these items as they are implemented. Until then, I remain at your disposal for further voice\u2011based requests."
+  ],
+  [
+   "01a0dc30-10c9-71ee-894c-f5d3bd196ed5",
+   "5",
+   "user",
+   "What is the tuning on that? How fast are you supposed to respond to me after receiving a message?"
+  ],
+  [
+   "01a0dc30-10c9-71ee-894c-f5d3bd196ed5",
+   "6",
+   "val",
+   "Good evening, my lord.  "
+  ],
+  [
+   "The voice\u2011to\u2011text \u2192 reasoning \u2192 spoken\u2011output pipeline that we use on this machine has been tuned to keep the delay as short as our hardware and software configuration allow.  "
+  ],
+  [
+   ""
+  ],
+  [
+   "**What the \u201ctuning\u201d looks like in practice**"
+  ],
+  [
+   ""
+  ],
+  [
+   "| Stage | Typical duration (from the house\u2019s own test runs) |"
+  ],
+  [
+   "|-------|--------------------------------------------------|"
+  ],
+  [
+   "| Speech recognised, confirmation pause | ~2\u202fs after you finish speaking |"
+  ],
+  [
+   "| First model output generated | ~1.7\u202fs after that pause |"
+  ],
+  [
+   "| Reasoning & writing (the bulk of the delay) | 1\u20139\u202fs, depending on question complexity |"
+  ],
+  [
+   "| First spoken word voiced | 1\u20134\u202fs after the written output begins |"
+  ],
+  [
+   ""
+  ],
+  [
+   "The **total** from when you finish your sentence to when I begin voicing my reply is therefore in the ballpark of **6\u202fto\u202f13\u202fseconds**. Those figures come from repeated local tests on this machine; they are not a guarantee for every turn, but they represent the normal operating range under current conditions."
+  ],
+  [
+   ""
+  ],
+  [
+   "**No hard promise**"
+  ],
+  [
+   ""
+  ],
+  [
+   "The system does not set a fixed response\u2011time target, nor can it guarantee that every reply will arrive within the measured window. The \u201cresponse_time_promise\u201d field in the record is explicitly marked **none**. I aim to answer as promptly as my local processing allows, but external factors such as the complexity of your query or transient CPU load can cause variation.  "
+  ],
+  [
+   ""
+  ],
+  [
+   "If you ever need a tighter bound, we would have to adjust the underlying software or hardware; otherwise I will continue to provide the best response time my current setup affords."
+  ],
+  [
+   "01a0dc33-c8b1-722d-a506-da49f0e5068b",
+   "1",
+   "user",
+   "Good evening, Val."
+  ],
+  [
+   "01a0dc33-c8b1-722d-a506-da49f0e5068b",
+   "2",
+   "val",
+   "Good evening, my lord. How may I serve the house this hour?"
+  ],
+  [
+   "01a0dc33-c8b1-722d-a506-da49f0e5068b",
+   "3",
+   "user",
+   "Give me a detailed summary of what we accomplished with voice today and what still remains to be improved."
+  ],
+  [
+   "01a0dc33-c8b1-722d-a506-da49f0e5068b",
+   "4",
+   "val",
+   "Good evening, my lord.  "
+  ],
+  [
+   "The voice session that took place today consisted of two exchanges: your greeting and my reply. No further audio was recorded, nor were any additional tasks undertaken via voice during this call."
+  ],
+  [
+   ""
+  ],
+  [
+   "**What has been achieved**"
+  ],
+  [
+   ""
+  ],
+  [
+   "* I acknowledged your presence and returned a courteous greeting, establishing the start of the conversation.  "
+  ],
+  [
+   "* The system logged that the session was local\u2011only; no external communication or remote operation was invoked."
+  ],
+  [
+   ""
+  ],
+  [
+   "**What remains to be improved**"
+  ],
+  [
+   ""
+  ],
+  [
+   "1. **Expanded Voice Logging** \u2013 The current record captures only the immediate exchange. Enabling persistent storage of subsequent voice interactions would allow us to reference earlier statements and maintain continuity across sessions.  "
+  ],
+  [
+   "2. **Voice\u2011to\u2011Book Retrieval** \u2013 Presently the \u201cbooks\u201d capability is unavailable; incorporating a mechanism to consult relevant volumes when voice\u2011related questions arise would enhance the depth and accuracy of our responses.  "
+  ],
+  [
+   "3. **Structured Voice Summaries** \u2013 Providing a concise, structured recap (e.g., bullet points of key actions taken) after each voice session would aid your oversight and help identify any missed items.  "
+  ],
+  [
+   "4. **Voice\u2011Based Reminders** \u2013 Integrating a system that flags pending actions or upcoming deadlines based on voice content could reduce the risk of overlooked obligations.  "
+  ],
+  [
+   ""
+  ],
+  [
+   "These improvements will strengthen our collaboration and ensure that every voice interaction is fully captured, documented, and actionable. I await your instructions on which of these you would like to prioritize."
+  ],
+  [
+   "01a0dc33-c8b1-722d-a506-da49f0e5068b",
+   "5",
+   "user",
+   "What is the tuning on that? How fast are you supposed to respond to me after receiving a message?"
+  ],
+  [
+   "01a0dc33-c8b1-722d-a506-da49f0e5068b",
+   "6",
+   "val",
+   "I have no fixed response\u2011time guarantee.  "
+  ],
+  [
+   "The system\u2019s measurements\u2014about six to thirteen seconds from the end of your spoken input to my first voiced word\u2014are derived from earlier test runs on this machine, not from the present conversation. Because those figures are only indicative and no formal timing promise is issued, I cannot commit to any particular latency. If you need a precise estimate for planning purposes, we can discuss what the tests suggest, but I cannot guarantee that every reply will arrive within a set window."
+  ]
+ ]
+}

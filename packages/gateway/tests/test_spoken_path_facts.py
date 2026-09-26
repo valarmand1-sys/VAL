@@ -61,3 +61,18 @@ def test_it_promises_no_response_time_and_offers_no_measurement() -> None:
 def test_the_ruled_capability_state_is_untouched() -> None:
     """The 13 September ruling names books alone; this correction does not widen it."""
     assert dict(CAPABILITY_STATE) == {"books": "unavailable"}
+
+
+def test_a_spoken_turn_that_does_not_ask_leaves_them_out() -> None:
+    """Owner order, 26 September 2026: 470 tokens recomputed on every spoken turn."""
+    quiet = PriorRecordState(
+        history_state="zero",
+        history_prior_messages=0,
+        history_retained_messages=0,
+        retrieval_state="not_run",
+        retrieval_excerpts=0,
+        local_only=True,
+        local_only_reasons=("voice_session_active",),
+        spoken_path_asked=False,
+    ).as_document()
+    assert "spoken_path" not in quiet

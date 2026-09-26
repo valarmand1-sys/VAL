@@ -413,6 +413,9 @@ export interface SpokenAudioView {
   duration_seconds: number;
   audio_bytes: number;
   audio_base64: string;
+  // Which piece of the segment, and whether it ends it (26 September 2026).
+  chunk?: number;
+  last?: boolean;
 }
 
 // One poll, two questions (§11, §12): is a segment waiting, and should what is

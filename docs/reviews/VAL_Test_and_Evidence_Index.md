@@ -1474,3 +1474,28 @@ Tests: `spokenPresentation.test.ts` (20), `spokenThread.test.tsx` (6, real contr
 Speech end → playback 18,036 ms (desktop): his message 5,579 ms; ~3.5 s queue; dispatch → first output 2.67 s (1,676 uncached tokens); hidden reasoning 4.05 s; first segment 0.34 s (107 characters, correctly uncut); synthesis 5.30 s under contention; playback 0.09 s. Against the successful turn's 12.6 s: +3.5 s queue, +0.9 s prefill, +1.45 s synthesis.
 
 **Nothing safely removable within authorisation.** The provisional-words panel figure for a turn spoken during thinking is mis-paired (recorded, not fixed). Proposed isolated conversation-priming experiment recorded in WP3 §23; its saving is an estimate, not measured.
+
+## 111. Reducing the wait before Val speaks: streamed first audio, resume held, facts gated — 26 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-26-onset/RESULT.md`.
+
+**First synthesis (probe):** a whole 107–121 character sentence took 2.64–3.17 s alone and 4.35–5.38 s under concurrent generation, which itself slowed from 55–61 to 41–44 chunks/s. Streamed first audio (mlx-audio 0.5.5's own `stream=True`, 1.0 s interval) took 0.48 s alone and 0.74 s under load; seams were within the waveform's own step size.
+
+**Repairs:**
+- Streamed delivery, from the resident worker to a gapless desktop player.
+- Resume held while resumed speech is still being heard.
+- `spoken_path` gated (470 tokens; turn-1 first output 2.26–2.31 s → 1.64–1.70 s).
+- Provisional timing bound to its own utterance.
+
+**Net result (n = 9 per build):**
+- Speech end → first playback: median 12.58 s → 8.98 s.
+- Total less model time: 4.24 s (3.28–7.14) → 2.98 s (2.58–3.26), ranges not overlapping.
+- First answer text → first audio: 2.10 s → 0.82 s.
+- Joins with a gap over 50 ms: 4 of 49 → 0 of 73.
+- Resume case: two messages and two answers → one.
+
+**Tests:**
+- presentation, streamed player and controller (desktop);
+- delivery streaming (4), provider streaming (5), API pieces (1);
+- resume hold (2, one confirmed failing without the repair);
+- gate (18 + 1).

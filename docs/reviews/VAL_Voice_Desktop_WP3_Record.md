@@ -1015,3 +1015,68 @@ run):**
   - free memory and swap.
 - **Cost:** $0, local; about 45 minutes. Deployment would need its own ruling.
 - **The 1.2–1.8 s per later turn is an estimate, not a measurement.**
+
+---
+
+## 24. Handoff — reducing the wait before Val speaks, 26 September 2026
+
+**WP3 remains PARTIAL.** Record: `docs/reviews/qualification/runs/2026-09-26-onset/RESULT.md`
+(evidence index §111). This was an execution pass under the owner's order of that
+name.
+
+**Cause of the remaining wait** (his 23:03 turn, §23):
+
+- the first sentence voiced whole, under contention with her still-running answer
+  (5.30 s);
+- the history recomputed before her first output (2.67 s);
+- hidden reasoning (4.05 s);
+- a queue behind a silenced answer (~3.5 s).
+
+**Contention demonstrated:** voicing a 107–121 character sentence whole took 2.6–3.2 s
+alone and 4.3–5.4 s while GPT-OSS was generating, and her generation slowed from 55–61
+to 41–44 chunks/s meanwhile.
+
+**Repaired:**
+
+1. **Streamed first audio.** The installed mlx-audio 0.5.5's own incremental path, from
+   the resident worker to the desktop's gapless player. First playable audio is ~0.5 s
+   after the first segment is ready for short openings and ~0.76 s for long ones, where
+   it was 1.1–4.5 s. There were no seams, and no gaps or underruns in 73 joins. Voice,
+   conditioning and pace are unchanged.
+2. **Resume held while he is still speaking**, implementing the existing rule: his 20:15
+   case now gives one message and one answer, not a half-question answered and the
+   rest queued.
+3. **`spoken_path` facts gated** to turns that ask: 470 tokens and 0.6 s off the first
+   output of turns that do not.
+4. **The provisional-timing mismatch** — a correctness repair only.
+
+**Net result (n = 9 each):**
+
+| median (range) | before | after |
+|---|---|---|
+| speech end → first playback | 12.58 s (7.73–17.44) | 8.98 s (7.08–10.96) |
+| total less model time | 4.24 s (3.28–7.14) | 2.98 s (2.58–3.26), ranges not overlapping |
+| first answer text → first audio | 2.10 s | 0.82 s |
+
+The claimed improvement is the non-model part: 1.26 s at the median, plus 0.6 s before
+first output on turns that do not ask. Hidden reasoning varies between answers and is
+unchanged.
+
+**Remaining:**
+
+- MEDIUM's hidden reasoning (model work).
+- History recompute, 1.6–3.1 s before first output. Removing it needs
+  conversation-content priming, not authorised; the experiment is in §23 and its saving
+  is an estimate.
+- **The queue behind a silenced answer.** When he speaks after the resume grace while
+  she is still thinking, her voice stops but that answer's cognition runs to completion
+  before his new words go in. The choices, both his:
+  - cancel the silenced answer's cognition, so no answer is written and the record
+    shows his first question unanswered;
+  - or join his new words to the question they follow, so one merged turn is answered
+    and the first half's partial cognition is discarded.
+
+  Either removes that wait (~3.5 s at 23:03). The current policy keeps both questions
+  and both answers.
+
+**Pending physical acceptance.**

@@ -53,6 +53,7 @@ from val_domain.gateway import ModelConfig
 from val_domain.speech import (
     DeliveryState,
     SpeechRequest,
+    SpeechResult,
     SpokenSegment,
     VoiceConditioning,
 )
@@ -115,6 +116,38 @@ class EphemeralSink:
             self.texts.append(segment.text)
             if self.first_audio_at is None:
                 self.first_audio_at = time.monotonic()
+
+    def play_piece(
+        self,
+        segment_index: int,
+        text: str,
+        audio: bytes,
+        sample_rate: int,
+        seconds: float,
+        piece: int,
+    ) -> None:
+        """One streamed piece of a segment. Its first piece is the segment's delivery.
+
+        The delivered boundary and the exact prefix are the same facts as for a whole
+        segment: the segment counts, and its text joins what reached him, when its
+        first sound does.
+        """
+        with self._lock:
+            if self.stopped_because is not None:
+                return
+            self._current = audio
+            self.bytes_played += len(audio)
+            self.seconds_played += seconds
+            if piece == 0:
+                self.segments_played += 1
+                self.texts.append(text)
+                if self.first_audio_at is None:
+                    self.first_audio_at = time.monotonic()
+
+    def end_segment(self, segment_index: int, text: str, sample_rate: int, pieces: int) -> None:
+        """A streamed segment has no more pieces."""
+        with self._lock:
+            self._current = b""
 
     def finish(self) -> None:
         with self._lock:
@@ -203,6 +236,8 @@ class SpeechDelivery:
         self.state = DeliveryState.NOT_STARTED
         self.reason: str | None = None
         self.spoken: list[SpokenSegment] = []
+        #: Pieces handed over for the segment being streamed now.
+        self._pieces = 0
         self.message_id: UUID | None = None
         self.started_at = self._now()
         #: When Core's first visible text reached speech, and when the first audio
@@ -452,10 +487,13 @@ class SpeechDelivery:
                 # the answer was finished? — is answered by the record.
                 self.first_tts_start_ms = round((started - self.started_at) * 1000)
             mark("tts_synthesize_start")
+            request = SpeechRequest(text=pending.segment.text, voice=self._voice)
+            streamed = False
             try:
-                result = self._speech.synthesize(  # type: ignore[attr-defined]
-                    SpeechRequest(text=pending.segment.text, voice=self._voice)
-                )
+                result = self._stream_segment(pending.segment, request)
+                streamed = result is not None
+                if result is None:
+                    result = self._speech.synthesize(request)  # type: ignore[attr-defined]
                 mark("tts_synthesize_return")
             except Exception as failure:
                 self._fail(f"the local voice could not speak this segment: {failure}")
@@ -475,6 +513,13 @@ class SpeechDelivery:
                 generated_ms=int((self._now() - started) * 1000),
                 clone_prompt_sha256=result.clone_prompt_sha256,
             )
+            if streamed:
+                # Its pieces have already gone to the ear; this closes it and keeps
+                # the whole for the record, exactly as a whole segment is kept.
+                self.sink.end_segment(spoken.index, spoken.text, spoken.sample_rate, self._pieces)
+                with self._lock:
+                    self.spoken.append(spoken)
+                continue
             first = not self.audible
             self.sink.play(spoken)
             mark("audio_at_sink")
@@ -486,6 +531,40 @@ class SpeechDelivery:
                     self.state = DeliveryState.STARTED
             if first:
                 self._record_event()
+
+    def _stream_segment(self, segment: Segment, request: SpeechRequest) -> SpeechResult | None:
+        """Voice one segment piece by piece, if the provider can; `None` if it cannot.
+
+        Owner order, 26 September 2026 (reduce the wait before Val speaks): her first
+        sentence was being synthesised whole — 4.3-5.4 s while her answer was still
+        being written — before a sound of it could be played. Its first second now
+        reaches the sink in about 0.75 s under the same load. The first piece of the
+        first segment is the delivered boundary, exactly as a whole segment's audio was.
+        """
+        stream = getattr(self._speech, "synthesize_stream", None)
+        if not callable(stream):
+            return None
+        self._pieces = 0
+
+        def arrived(audio: bytes, seconds: float) -> None:
+            if self._is_closed():
+                return
+            first = not self.audible
+            self.sink.play_piece(
+                segment.index, segment.text, audio, _wav_rate(audio), seconds, self._pieces
+            )
+            if self._pieces == 0:
+                mark("audio_at_sink")
+            self._pieces += 1
+            if first and self.sink.first_audio_at is not None:
+                with self._lock:
+                    # **The delivered boundary.**
+                    self.first_audio_ms = int((self.sink.first_audio_at - self.started_at) * 1000)
+                    self.state = DeliveryState.STARTED
+                self._record_event()
+
+        result: SpeechResult | None = stream(request, arrived)
+        return result
 
     def _drain(self) -> None:
         """Wait for the voice to finish what is queued — or stop waiting.
@@ -733,3 +812,12 @@ def short_deliveries(engine: Engine, conversation_id: UUID) -> tuple[ShortDelive
         )
         for row in rows
     )
+
+
+def _wav_rate(audio: bytes) -> int:
+    """The sample rate a WAV piece declares, read from its header (bytes 24-27).
+
+    Read from the bytes rather than through a WAV library: this module holds audio
+    only in memory, and a test holds it to never naming a file-writing module at all.
+    """
+    return int.from_bytes(audio[24:28], "little") if audio[:4] == b"RIFF" else 0

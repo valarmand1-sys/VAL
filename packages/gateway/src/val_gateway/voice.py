@@ -980,6 +980,8 @@ class VoiceSession:
                 return
             if self._now() - pending.settled_at < self._grace:
                 return
+            if self._resuming(pending):
+                return
             self._pending = None
             self._inflight = pending
             self._cognition_busy = True
@@ -995,6 +997,31 @@ class VoiceSession:
             self._worker = worker
         mark("owner_turn_submitted")
         worker.start()
+
+    def _resuming(self, pending: _Pending) -> bool:
+        """Is he still speaking the rest of the utterance that is waiting? (lock held)
+
+        Owner order, 26 September 2026. The resume rule joins speech he resumes within
+        the grace into the utterance already waiting. But the waiting utterance was
+        submitted the moment the grace expired, even while the resumed speech was still
+        being heard; by the time that speech settled, the first half was in cognition,
+        and an in-flight turn cannot be joined, so the rest queued behind its whole
+        answer. In his session of 25 September at 20:15 he resumed 0.5 s after he
+        stopped, and waited 41 s. Now the waiting utterance is held while the speech
+        that resumed it is still being heard, and the two settle as one.
+
+        Bounded by the rule itself: only speech that began within the grace of the
+        waiting utterance's endpoint, on the recognizer's own clock, and only until that
+        speech settles. Speech that began later is a new turn, as before.
+        """
+        current = self._current
+        if current is None:
+            return False
+        began, ended = current.speech_start_at, pending.utterance.endpoint_at
+        if began and ended:
+            return began - ended <= self._grace
+        # A recognizer that reported no marks: held for at most one grace more.
+        return self._now() - pending.settled_at <= self._grace * 2
 
     def await_turn(self, timeout: float = 180.0) -> None:
         """Block until nothing is pending or in flight.

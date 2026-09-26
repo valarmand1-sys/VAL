@@ -104,6 +104,18 @@ export interface VoiceTimings {
   speechEndEstimateAt: number | null;
 }
 
+/**
+ * Whose settled words the session's `pending` is showing, or `null` if not his
+ * current utterance's (owner order, 26 September 2026: the timing panel paired one
+ * utterance's speech end with another's words and reported −4,239 ms). While he is
+ * speaking again, `pending` still carries the turn already in flight — his previous
+ * words — so no provisional figure may be taken for the new utterance then.
+ */
+export function settledWordsUtterance(view: VoiceSessionView | null): number | null {
+  if (view === null || view.pending === "" || view.hearing) return null;
+  return view.utterance;
+}
+
 export const NO_TIMINGS: VoiceTimings = {
   unmuteGestureAt: null,
   unmuteTrackLiveAt: null,
@@ -184,6 +196,8 @@ export class VoiceController {
   private lastCommitted: string | null = null;
   /** The utterance whose intervals have been reported, so each is sent once. */
   private reportedUtterance: number | null = null;
+  /** The segment whose pieces are arriving now, and the answer that took it. */
+  private streaming: { key: number; segment: number } | null = null;
   /** Answers whose segment figures have been reported, by key. */
   private reportedSegments = new Set<number>();
   /** His committed message for the utterance being timed: the only turn it pairs with. */
@@ -672,10 +686,27 @@ export class VoiceController {
       }
       // A segment from an answer that is no longer the one being spoken is not
       // played: it would sound — and reveal text — in the wrong turn.
-      const answerKey = this.spoken.offered(offered.message_id);
+      // A later piece of a streamed segment belongs to whichever answer took its
+      // first piece; one whose first piece was refused is dropped with it.
+      const chunk = offered.chunk ?? 0;
+      let answerKey: number | null;
+      if (chunk === 0) {
+        answerKey = this.spoken.offered(offered.message_id);
+        this.streaming =
+          answerKey === null ? null : { key: answerKey, segment: offered.segment_index };
+      } else {
+        const streaming = this.streaming;
+        answerKey =
+          streaming !== null && streaming.segment === offered.segment_index ? streaming.key : null;
+        if (answerKey !== null && offered.duration_seconds > 0) {
+          this.spoken.extend(answerKey, offered.segment_index, offered.duration_seconds * 1000);
+        }
+      }
       if (answerKey === null) return;
       this.player.enqueue({
         answerKey,
+        chunk,
+        last: offered.last ?? true,
         durationSeconds: offered.duration_seconds,
         messageId: offered.message_id,
         segmentIndex: offered.segment_index,

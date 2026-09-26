@@ -29,7 +29,7 @@ from __future__ import annotations
 import hashlib
 import threading
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
@@ -920,3 +920,75 @@ def test_a_segment_voiced_before_her_answer_is_written_is_still_recorded(store: 
         assert started_at < datetime.now(started_at.tzinfo) - timedelta(milliseconds=1000), (
             "recorded when the device acted, not when the report arrived"
         )
+
+
+def a_wav_piece() -> bytes:
+    import io
+    import wave
+
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as writer:
+        writer.setnchannels(1)
+        writer.setsampwidth(2)
+        writer.setframerate(24000)
+        writer.writeframes(b"\x01\x00" * 2400)
+    return buffer.getvalue()
+
+
+class StreamingVoiceProvider(ScriptedVoiceProvider):
+    """The local voice voicing each segment in three pieces (26 September 2026)."""
+
+    def synthesize_stream(
+        self, request: object, on_chunk: Callable[[bytes, float], None]
+    ) -> object:
+        for _ in range(3):
+            on_chunk(a_wav_piece(), 0.1)
+        return self.synthesize(request)
+
+
+def test_streamed_pieces_travel_with_their_place_and_are_recorded_once(
+    store: Engine,
+) -> None:
+    """Owner order, 26 September 2026: her first words sooner.
+
+    Each piece names its segment, its place and whether it ends the segment; the
+    service records one hand-off per segment, at its first piece, never one per piece.
+    """
+    recognizer = ScriptedRecognizer(batches=[[started(), final("What time is dinner?")]])
+    adapter = ScriptedAdapter([ok("Eight, my lord. And the table is laid for two.")])
+    with speaking_client(store, adapter, recognizer, StreamingVoiceProvider()) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        reachable.post(
+            f"/voice/sessions/{session}/audio",
+            content=PCM,
+            headers={"content-type": "application/octet-stream"},
+        )
+        view = _poll_until_answered(reachable, session)
+        message_id = view["turns"][0]["answer"]["val_message"]["id"]
+        pieces = []
+        for _ in range(60):
+            segment = reachable.get(f"/voice/sessions/{session}/speech/next").json()["segment"]
+            if segment is None:
+                if pieces and pieces[-1]["last"]:
+                    break
+                time.sleep(0.02)
+                continue
+            pieces.append(segment)
+        handed = reachable.get(f"/messages/{message_id}/playback").json()
+
+    places = [(p["segment_index"], p["chunk"], p["last"]) for p in pieces]
+    segments = sorted({index for index, _, _ in places})
+    assert segments, "pieces were handed over"
+    assert len(pieces) == 4 * len(segments)
+    for index in segments:
+        assert [(c, last) for i, c, last in places if i == index] == [
+            (0, False),
+            (1, False),
+            (2, False),
+            (3, True),
+        ]
+    assert all(p["audio_bytes"] == 0 for p in pieces if p["last"])
+    available = [e for e in handed if e["state"] == "available_to_desktop"]
+    assert sorted(e["segment_index"] for e in available) == segments

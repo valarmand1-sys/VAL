@@ -462,6 +462,10 @@ class PriorRecordState:
     #: enforcement is structural and happens whatever the model reads.
     local_only: bool = False
     local_only_reasons: tuple[str, ...] = ()
+    #: Whether this turn asks about her speed, timing, voice or the spoken path
+    #: (`val_policy.spoken_path`): the `spoken_path` facts are included only then.
+    #: Defaults to True so a caller that does not decide gets the facts.
+    spoken_path_asked: bool = True
 
     def _revision_facts(self) -> dict[str, object]:
         facts: dict[str, object] = {}
@@ -602,7 +606,7 @@ class PriorRecordState:
             # latency order, 25 September 2026). Never on a typed-only conversation.
             **(
                 {"spoken_path": dict(SPOKEN_PATH)}
-                if SPOKEN_PATH_REASONS & set(self.local_only_reasons)
+                if self.spoken_path_asked and SPOKEN_PATH_REASONS & set(self.local_only_reasons)
                 else {}
             ),
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},

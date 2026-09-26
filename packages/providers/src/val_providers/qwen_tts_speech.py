@@ -35,6 +35,9 @@ decision nobody made.
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import io
 import json
 import os
 import queue
@@ -43,6 +46,8 @@ import subprocess
 import tempfile
 import threading
 import time
+import wave
+from collections.abc import Callable
 from pathlib import Path
 
 from val_domain.speech import (
@@ -139,6 +144,12 @@ class _Runner:
         )
 
 
+#: Seconds of speech per streamed piece. Measured (26 September 2026): at 1.0 the
+#: first piece of a sentence was ready in 0.74 s while her answer was still being
+#: written, and every later piece arrived before the one ahead of it had finished
+#: playing. Shorter pieces would mean more seams for little gain.
+STREAM_INTERVAL_SECONDS = 1.0
+
 #: How long a stopped resident worker is given to exit before it is killed outright.
 STOP_GRACE_SECONDS = 2.0
 
@@ -191,6 +202,120 @@ class QwenTTSSpeech:
 
     def synthesize(self, request: SpeechRequest) -> SpeechResult:
         """Speak this exact text in this voice, with one bounded recovery attempt."""
+        text = self._checked(request)
+        return self._synthesize(request, text)
+
+    def synthesize_stream(
+        self, request: SpeechRequest, on_chunk: Callable[[bytes, float], None]
+    ) -> SpeechResult | None:
+        """Speak this exact text in this voice, handing each piece over as it exists.
+
+        Owner order, 26 September 2026 (reduce the wait before Val speaks). Measured on
+        this Mac with the resident worker, the same texts and conditioning: voicing a
+        107-121 character first sentence whole took 2.6-3.2 s alone and 4.3-5.4 s while
+        her answer was still being written; its first second of audio, streamed through
+        the installed library's own `stream=True` path, was ready in 0.48 s alone and
+        0.74 s under the same load, and the rest kept ahead of playback.
+
+        Only through the resident worker, which already holds the model: `None` when it
+        is not serving, and the caller speaks the segment whole as before. Each piece is
+        a complete little WAV (`on_chunk(bytes, seconds)`); nothing is written to a file.
+        The whole waveform is rebuilt here, in memory, and must match the runner's own
+        digest — the record's `audio_sha256` is of what was actually handed over.
+        """
+        text = self._checked(request)
+        process = self._resident
+        if process is None or process.poll() is not None or not self._resident_ready.is_set():
+            return None
+        started = time.monotonic()
+        workspace = Path(tempfile.mkdtemp(prefix="val-speech-"))
+        os.chmod(workspace, 0o700)
+        try:
+            reference = workspace / "reference.wav"
+            reference.write_bytes(request.voice.reference_audio)
+            payload = json.dumps(
+                {
+                    "mode": "speak_stream",
+                    "model_path": str(self._model_path),
+                    "text": text,
+                    "ref_audio_path": str(reference),
+                    "ref_audio_sha256": request.voice.reference_sha256,
+                    "ref_text": request.voice.reference_text,
+                    "clone_prompt_path": str(
+                        clone_prompt_for(request.voice.reference_sha256, self._voice_dir)
+                    ),
+                    "streaming_interval": STREAM_INTERVAL_SECONDS,
+                }
+            )
+            frames: list[bytes] = []
+            rate = 0
+            with self._resident_lock:
+                if self._resident is not process or process.poll() is not None:
+                    return None
+                try:
+                    if process.stdin is None:
+                        raise OSError("the resident voice has no input pipe")
+                    process.stdin.write(payload.replace("\n", " ") + "\n")
+                    process.stdin.flush()
+                    while True:
+                        reply = self._reply(self._replies, self._timeout)
+                        if "chunk" in reply:
+                            piece = base64.b64decode(str(reply["wav_base64"]))
+                            with wave.open(io.BytesIO(piece)) as reader:
+                                rate = reader.getframerate()
+                                frames.append(reader.readframes(reader.getnframes()))
+                            on_chunk(piece, _as_float(reply.get("duration_seconds")))
+                            continue
+                        report = reply
+                        break
+                except (OSError, SpeechUnavailableError) as failure:
+                    self._stop_resident_locked()
+                    if not frames:
+                        return None  # nothing went out: the whole-segment path speaks it
+                    raise SpeechUnavailableError(
+                        f"local speech stopped part-way through a streamed segment: {failure}"
+                    ) from failure
+        finally:
+            shutil.rmtree(workspace, ignore_errors=True)
+        if not report.get("ok"):
+            reason = str(report.get("reason", "no reason given"))
+            if report.get("kind") == "refused":
+                raise SpeechRefusedError(reason)
+            raise SpeechUnavailableError(reason)
+        whole = io.BytesIO()
+        with wave.open(whole, "wb") as writer:
+            writer.setnchannels(1)
+            writer.setsampwidth(2)
+            writer.setframerate(rate)
+            writer.writeframes(b"".join(frames))
+        audio = whole.getvalue()
+        if hashlib.sha256(audio).hexdigest() != report.get("audio_sha256"):
+            raise SpeechUnavailableError(
+                "the streamed pieces do not reassemble into the waveform the runner reported"
+            )
+        return SpeechResult(
+            audio=audio,
+            sample_rate=_as_int(report.get("sample_rate")),
+            duration_seconds=_as_float(report.get("duration_seconds")),
+            provider=self.provider,
+            model_identifier=self.model_identifier,
+            model_revision=MODEL_REVISION,
+            quantization=QUANTIZATION,
+            runtime="mlx-audio",
+            runtime_version=str(report.get("runtime_version", "0.5.5")),
+            generation={
+                **_as_mapping(report.get("generation")),
+                "stream": True,
+                "streaming_interval": STREAM_INTERVAL_SECONDS,
+            },
+            clone_prompt_sha256=str(report.get("clone_prompt_sha256", "")),
+            elapsed_seconds=round(time.monotonic() - started, 3),
+            cost_usd=0.0,
+            local=True,
+        )
+
+    def _checked(self, request: SpeechRequest) -> str:
+        """The text to speak, or the reason it may not be spoken at all."""
         text = request.text.strip()
         if not text:
             raise SpeechRefusedError("there is nothing to say: the text is empty")
@@ -205,8 +330,7 @@ class QwenTTSSpeech:
         unavailable = self.available()
         if unavailable is not None:
             raise SpeechUnavailableError(unavailable)
-
-        return self._synthesize(request, text)
+        return text
 
     def _synthesize(self, request: SpeechRequest, text: str) -> SpeechResult:
         started = time.monotonic()

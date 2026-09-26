@@ -7,7 +7,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 import { api } from "./api";
-import { VoiceController } from "./voiceController";
+import { settledWordsUtterance, VoiceController } from "./voiceController";
 import type { CapturePlatform } from "./microphone";
 import type { SpeakerPlatform } from "./speaker";
 
@@ -545,5 +545,25 @@ describe("owner-facing intervals — Step B retest, 25 September 2026", () => {
     } as never);
     await poll();
     expect(controller.awaitingAnswer).toBeNull();
+  });
+});
+
+describe("the provisional-words figure is bound to its own utterance", () => {
+  // Owner order, 26 September 2026: in his 23:03 session he spoke again while the
+  // previous turn was in flight; the session's `pending` still showed the previous
+  // words, and the panel reported −4,239 ms for the new utterance.
+  const view = (over: Partial<typeof SESSION>) => ({ ...SESSION, ...over }) as never;
+
+  it("takes no figure while he is speaking again over a turn in flight", () => {
+    expect(settledWordsUtterance(view({ utterance: 2, hearing: true, pending: "His first question." }))).toBeNull();
+  });
+
+  it("takes it once his new words have settled", () => {
+    expect(settledWordsUtterance(view({ utterance: 2, hearing: false, pending: "And after that?" }))).toBe(2);
+  });
+
+  it("takes none when nothing is settled", () => {
+    expect(settledWordsUtterance(view({ utterance: 2, hearing: false, pending: "" }))).toBeNull();
+    expect(settledWordsUtterance(null)).toBeNull();
   });
 });

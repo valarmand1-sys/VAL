@@ -36,6 +36,13 @@ export interface SegmentAudio {
   answerKey?: number;
   /** The audio's length, as the service stated it. */
   durationSeconds?: number;
+  /**
+   * Which piece of the segment this is (from 0) and whether it ends the segment. A
+   * segment voiced whole is one piece that ends it; a streamed one is several, then
+   * an empty piece that ends it. Absent means whole.
+   */
+  chunk?: number;
+  last?: boolean;
 }
 
 export interface SpeakerObserver {
@@ -49,8 +56,17 @@ export interface SpeakerObserver {
 /** One answer's worth of speech, played in order, stoppable at any instant. */
 export class SpeechPlayer {
   private context: AudioContext | null = null;
-  private playing: AudioBufferSourceNode | null = null;
-  private current: SegmentAudio | null = null;
+  /** Every buffer scheduled and not yet ended: all of them stop together. */
+  private sources = new Set<AudioBufferSourceNode>();
+  /** The segment sounding now, and where its next piece joins it on the audio clock. */
+  private active: {
+    segment: SegmentAudio;
+    joinAt: number;
+    outstanding: number;
+    ended: boolean;
+    finished: Promise<void>;
+    finish: () => void;
+  } | null = null;
   private queue: SegmentAudio[] = [];
   private draining = false;
   private stopped = false;
@@ -60,7 +76,7 @@ export class SpeechPlayer {
     private readonly platform: SpeakerPlatform = browserSpeaker,
   ) {}
 
-  /** Queue a segment collected from the service. Order is the service's order. */
+  /** Queue a segment, or a piece of one, collected from the service. Service order. */
   enqueue(segment: SegmentAudio): void {
     if (this.stopped) return;
     this.queue.push(segment);
@@ -72,7 +88,7 @@ export class SpeechPlayer {
   }
 
   get audible(): boolean {
-    return this.playing !== null;
+    return this.sources.size > 0;
   }
 
   private async drain(): Promise<void> {
@@ -80,83 +96,121 @@ export class SpeechPlayer {
     this.draining = true;
     try {
       while (!this.stopped) {
-        const segment = this.queue.shift();
-        if (segment === undefined) break;
-        await this.play(segment);
+        const piece = this.queue[0];
+        if (piece === undefined) break;
+        // A new segment stays queued — where a stop discards it — until the one
+        // sounding now has finished.
+        if ((piece.chunk ?? 0) === 0 && this.active !== null) {
+          await this.active.finished;
+          continue;
+        }
+        this.queue.shift();
+        await this.accept(piece);
       }
     } finally {
       this.draining = false;
     }
   }
 
-  private async play(segment: SegmentAudio): Promise<void> {
+  /**
+   * One piece. The first piece of a segment waits for the segment before it to
+   * finish, and starts it; every later piece is scheduled on the audio clock to
+   * begin exactly where the one before it ends (26 September 2026: streamed
+   * speech), so a sentence arriving in pieces plays without a seam of silence.
+   */
+  private async accept(piece: SegmentAudio): Promise<void> {
+    const opening = (piece.chunk ?? 0) === 0;
+    if (this.stopped) return;
+    const closes = piece.last ?? true;
+    if (piece.audio.byteLength === 0) {
+      // The end of a streamed segment: nothing to play, only its close.
+      if (this.active !== null && !opening) {
+        this.active.ended = true;
+        this.settle();
+      }
+      return;
+    }
     if (this.context === null) this.context = this.platform.createContext();
     const context = this.context;
     let buffer: AudioBuffer;
     try {
       // `decodeAudioData` detaches the ArrayBuffer, which is the release: after
       // this the bytes we were handed are gone from this side too.
-      buffer = await context.decodeAudioData(segment.audio);
+      buffer = await context.decodeAudioData(piece.audio);
     } catch (failure) {
       this.observer.onFailed(
-        segment,
+        piece,
         failure instanceof Error ? failure.message : "the audio could not be decoded",
       );
       return;
     }
     if (this.stopped) return;
-
-    await new Promise<void>((resolve) => {
-      const source = context.createBufferSource();
-      source.buffer = buffer;
-      source.connect(context.destination);
-      let settled = false;
-      source.onended = () => {
-        if (settled) return;
-        settled = true;
-        this.playing = null;
-        this.current = null;
-        // An interrupted source also ends; `stopped` tells the two apart, so an
-        // interruption is never recorded as a completion.
-        if (!this.stopped) this.observer.onCompleted(segment);
-        resolve();
-      };
-      this.playing = source;
-      this.current = segment;
-      source.start();
+    if (opening) {
+      let finish: () => void = () => undefined;
+      const finished = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      this.active = { segment: piece, joinAt: 0, outstanding: 0, ended: false, finished, finish };
+    }
+    const active = this.active;
+    if (active === null) return; // a later piece of a segment already stopped
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    const now = typeof context.currentTime === "number" ? context.currentTime : 0;
+    const at = Math.max(now, active.joinAt);
+    active.joinAt = at + (typeof buffer.duration === "number" ? buffer.duration : 0);
+    active.outstanding += 1;
+    if (closes) active.ended = true;
+    this.sources.add(source);
+    source.onended = () => {
+      if (!this.sources.delete(source)) return;
+      active.outstanding -= 1;
+      this.settle();
+    };
+    source.start(at);
+    if (opening) {
       // Reported here, from the scheduling call itself: this is the moment the
       // buffer is on the device, which is the physical boundary §11.1 names.
-      this.observer.onStarted(segment);
-    });
+      this.observer.onStarted(piece);
+    }
+  }
+
+  /** The active segment is over once its last piece has come and every piece has played. */
+  private settle(): void {
+    const active = this.active;
+    if (active === null || !active.ended || active.outstanding > 0) return;
+    this.active = null;
+    // An interrupted source also ends; `stopped` tells the two apart, so an
+    // interruption is never recorded as a completion.
+    if (!this.stopped) this.observer.onCompleted(active.segment);
+    active.finish();
   }
 
   /**
    * Stop the sound now and discard what was queued behind it.
    *
-   * The order is the contract: the playing source is stopped first, so nothing
+   * The order is the contract: every scheduled source is stopped first, so nothing
    * keeps sounding while the queue is cleared.
    */
   stop(reason: string): void {
     this.stopped = true;
-    const interrupted = this.current;
-    if (this.playing !== null) {
+    for (const source of this.sources) {
       try {
-        this.playing.onended = null;
-        this.playing.stop();
-        this.playing.disconnect();
+        source.onended = null;
+        source.stop();
+        source.disconnect();
       } catch {
         // A source that had already ended is the state we wanted.
       }
-      this.playing = null;
     }
-    this.current = null;
-    const discarded = this.queue.length;
+    this.sources.clear();
+    const interrupted = this.active;
+    this.active = null;
     this.queue = [];
-    if (interrupted !== null) this.observer.onInterrupted(interrupted, reason);
-    if (discarded > 0) {
-      // Not an error: a discarded segment is exactly what barge-in means. Counted
-      // so the caller can report it truthfully.
-      void discarded;
+    if (interrupted !== null) {
+      this.observer.onInterrupted(interrupted.segment, reason);
+      interrupted.finish();
     }
   }
 
