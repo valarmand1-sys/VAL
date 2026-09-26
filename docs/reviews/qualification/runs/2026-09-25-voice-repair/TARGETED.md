@@ -197,3 +197,14 @@ is not rewritten, and this record supersedes it.
   because answer 10 was still playing when answer 12 was ready. Whether speaking during
   her thinking should interrupt her is turn-taking policy, and is his to decide.
 - **Unverified:** paint and sound in the room.
+
+Files:
+- `first_segment_probe.py` and `first-segment-probe.json` (§3);
+- `serve_variant.py`, `measure-pause-off.json` and `measure-pause-on.json` (§4);
+- `measure-selfknowledge.json`, `measure-selfknowledge-2.json` and
+  `measure-selfknowledge-3.json` (§5: synthetic scratch conversations; their
+  multi-line answers are read whole from the scratch store in this record);
+- `service-timelines-targeted.txt`: the scratch services' content-free timeline, prime,
+  warm and endpoint lines; the full logs were not kept. The earlier runs' equivalents
+  were renamed from `.log`, which the repository ignores, to `.txt`, so the files these
+  records cite are in the tree.

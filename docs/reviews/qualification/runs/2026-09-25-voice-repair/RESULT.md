@@ -195,7 +195,7 @@ sound leaving the speakers in the room — the panel now reports per-segment tex
 offsets and gaps for his physical test.
 
 Files: `measure-before.json`, `measure-after.json` (every turn and segment),
-`service-timelines.log` (the service's content-free timeline, prime and warm lines
+`service-timelines.txt` (the service's content-free timeline, prime and warm lines
 from both runs; the full service logs were not kept), `tts-resident-probe.json`
 (one-shot against resident synthesis of the same phrases, before implementation),
 `abort-probe.json` and `collision-probe.json` (§4a).
