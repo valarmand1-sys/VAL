@@ -26,7 +26,7 @@ from val_gateway import conversations
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberate import tier1_eligibility
 from val_gateway.projects import load_catalogue
-from val_gateway.revisions import revise
+from val_gateway.revisions import retract, revise
 from val_gateway.seal import SealRoute
 from val_gateway.startup import LIGHT_CANDIDATE_SLUG
 from val_gateway.tier1 import (
@@ -231,3 +231,22 @@ def test_a_courtesy_exchange_is_left_out_when_his_words_were_misheard(store: Eng
     )
     assert [m.role for m in messages] == ["user", "user", "user"], "no greeting pair carried"
     assert not projection.retained_exchange and projection.prior_messages_in_record == 2
+
+
+def test_a_retracted_request_is_settled_and_a_standing_one_is_not(store: Engine) -> None:
+    """Release-gaps corrections of 27 September 2026 (§1): withdrawal is the authoritative
+    settlement; social exchanges are not, however many follow."""
+    adapter = ScriptedAdapter(
+        [ok("I will see to it, my lord."), ok("Good evening, my lord."), ok("It is, my lord.")]
+    )
+    conversation = a_conversation(store)
+    request = spoken(store, adapter, "Send the invitation tonight.", conversation)
+    spoken(store, adapter, "Good evening, Val.", conversation)
+    spoken(store, adapter, "Quiet tonight.", conversation)
+    thread = conversations.working(store, conversation)
+    standing = tier1_eligibility(thread, "Good night, Val.", 99, TIER_ONE)
+    assert standing.tier is None and "nothing establishes it settled" in standing.reason
+    retract(store, request.turn.user_message.id, note="withdrawn by the owner")  # type: ignore[attr-defined]
+    thread = conversations.working(store, conversation)
+    withdrawn = tier1_eligibility(thread, "Good night, Val.", 99, TIER_ONE)
+    assert withdrawn.tier == 1, withdrawn.reason

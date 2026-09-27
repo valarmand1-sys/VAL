@@ -1274,7 +1274,10 @@ def create_app(
             )
         # The session counts this piece as being heard for its own duration, so
         # maintenance waits for the speakers and not only for synthesis (§7).
-        live.speech_handed_over(offer.duration_seconds)
+        live.speech_handed_over(
+            offer.duration_seconds,
+            segment=(speaking.message_id, offer.segment_index) if offer.chunk == 0 else None,
+        )
         message_id = speaking.message_id
         if offer.chunk > 0:
             # A later piece of a segment already handed over: one hand-off per segment.
@@ -1340,7 +1343,7 @@ def create_app(
                     "over; a desktop reports what its output device did, not what the service did"
                 ),
             )
-        live.playback_reported(state.value)
+        live.playback_reported(state.value, segment=(report.message_id, report.segment_index))
         offered = [
             event
             for event in playback_of(engine, report.message_id)

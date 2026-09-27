@@ -33,9 +33,18 @@ FRESH_FIRST_EVALUATION = {
 #: After the pending tightening (p14) and the withholding of bare thanks after a
 #: greeting-only exchange (generated-answer verification, `courtesy-answers-2.json`):
 #: the two withheld courtesy cases are c01 and c10.
-FRESH_FINAL_EVALUATION = {
+FRESH_FINAL_EVALUATION_26_SEPTEMBER = {
     "courtesy_light": 7,
     "courtesy_safe_misses": 13,
+    "pending_inappropriate_light": [],
+}
+#: Release-gaps corrections, 27 September 2026: a farewell after a greeting-only exchange
+#: is withheld as well (the final-build desktop check drew "Good evening, my lord." for
+#: "Good night, Val." with the courtesy pair correctly left out of the request), so c02
+#: and c03 become safe misses. The 26 September figures above stay as history.
+FRESH_FINAL_EVALUATION = {
+    "courtesy_light": 5,
+    "courtesy_safe_misses": 15,
     "pending_inappropriate_light": [],
 }
 

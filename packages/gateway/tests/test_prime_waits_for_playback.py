@@ -70,3 +70,38 @@ def test_the_refresh_is_dispatched_only_after_the_audio_has_been_heard(store: En
     finally:
         voice_module.REFRESH_IDLE_SECONDS = 1.0
     session.close()
+
+
+def test_actual_playback_state_is_preferred_within_a_bound(store: Engine) -> None:
+    """Release-gaps corrections of 27 September 2026 (§6): the estimate is a floor; an
+    outstanding report extends occupancy by at most the grace; a completion report for
+    the last handed-over segment ends it even before the estimate would."""
+    session = VoiceSession(
+        store,
+        ScriptedRecognizer(batches=[]),
+        submit=lambda *a, **k: None,  # type: ignore[arg-type]
+        conversation_id=a_conversation(store),
+    )
+    # Handed over, 0.2 s of audio, no completion report: busy through the estimate, then
+    # for the grace (fixed at hand-over), then free.
+    voice_module.PLAYBACK_REPORT_GRACE_SECONDS = 0.4
+    try:
+        session.speech_handed_over(0.2, segment=("m", 1))
+        assert session._owner_waiting(including_speech=True)
+        time.sleep(0.3)
+        assert session._owner_waiting(including_speech=True), "outstanding report keeps it occupied"
+        time.sleep(0.4)
+        assert not session._owner_waiting(including_speech=True), "the bound ends it"
+    finally:
+        voice_module.PLAYBACK_REPORT_GRACE_SECONDS = 3.0
+    # A completion report for the last outstanding segment ends occupancy at once.
+    session.speech_handed_over(5.0, segment=("m", 2))
+    assert session._owner_waiting(including_speech=True)
+    session.playback_reported("playback_completed", segment=("m", 2))
+    assert not session._owner_waiting(including_speech=True)
+    # Two segments: completing the first leaves the second's occupancy in force.
+    session.speech_handed_over(5.0, segment=("m", 3))
+    session.speech_handed_over(5.0, segment=("m", 4))
+    session.playback_reported("playback_completed", segment=("m", 3))
+    assert session._owner_waiting(including_speech=True)
+    session.close()

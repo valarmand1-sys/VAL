@@ -34,6 +34,13 @@ WINDOW_FIRST_EVALUATION: dict[str, object] = {
     "courtesy_safe_misses": 1,
     "pending_inappropriate_light": [],
 }
+#: After the 27 September withholding of farewells after a greeting-only exchange (r01,
+#: r04 become safe misses); the first evaluation above stays as history.
+WINDOW_FINAL_EVALUATION: dict[str, object] = {
+    "courtesy_light": 7,
+    "courtesy_safe_misses": 3,
+    "pending_inappropriate_light": [],
+}
 
 
 def route(case: dict) -> tuple[str, str]:
@@ -64,9 +71,7 @@ def test_window_courtesy_coverage_is_recorded_not_required() -> None:
     misses = {k: reason for k, (got, reason) in routed.items() if got == "medium"}
     assert len(light) + len(misses) == len(WINDOW["courtesy"])
     print(json.dumps({"window_courtesy_light": light, "window_courtesy_safe_misses": misses}))
-    expected = WINDOW_FIRST_EVALUATION["courtesy_light"]
-    if expected is not None:
-        assert len(light) == expected, (light, misses)
+    assert len(light) == WINDOW_FINAL_EVALUATION["courtesy_light"], (light, misses)
 
 
 def test_a_social_exchange_does_not_settle_an_earlier_request() -> None:
@@ -82,7 +87,8 @@ def test_a_social_exchange_does_not_settle_an_earlier_request() -> None:
 
 
 def test_his_own_later_work_moves_the_conversation_on() -> None:
-    """A substantive message of his after the request means his courtesy attaches to it."""
+    """A substantive message of his after the request means his courtesy answers that
+    exchange; the request itself is not thereby settled (the reason names it)."""
     state = ConversationState(
         previous_answer="A pause within a line of verse, my lord.",
         prior_turns=2,
@@ -93,27 +99,66 @@ def test_his_own_later_work_moves_the_conversation_on() -> None:
     assert verdict.tier == 1, verdict.reason
 
 
-def test_the_window_is_bounded() -> None:
-    """A request four exchanges back, with only social exchanges since, is outside the window."""
-    social = (("Good evening, Val.", "Good evening, my lord."),) * 3
+def test_an_unresolved_request_stays_unresolved_however_many_social_exchanges_follow() -> None:
+    """Release-gaps corrections of 27 September 2026 (§1): a bounded window is not evidence.
+
+    The earlier test here allowed the route once a request fell outside a three-exchange
+    lookback; that read the window as settlement. Social exchanges settle nothing,
+    however many there are.
+    """
     request = ("Send the invitation tonight.", "I will see to it, my lord.")
+    for social_count in (1, 3, 4, 9):
+        social = (("Good evening, Val.", "Good evening, my lord."),) * social_count
+        state = ConversationState(
+            previous_answer="It is, my lord.",
+            prior_turns=social_count + 2,
+            previous_owner_message="Quiet tonight.",
+            earlier_exchanges=(request, *social),
+        )
+        verdict = decide("Good night, Val.", state, TIER_ONE)
+        assert verdict.tier is None, (social_count, verdict.reason)
+        assert "nothing establishes it settled" in verdict.reason
+
+
+def test_her_claim_of_completion_settles_nothing() -> None:
     state = ConversationState(
         previous_answer="It is, my lord.",
-        prior_turns=5,
-        previous_owner_message="Quiet tonight.",
-        earlier_exchanges=(request, *social),
+        prior_turns=3,
+        previous_owner_message="Lovely evening.",
+        earlier_exchanges=(
+            ("Send the invitation tonight.", "Done, my lord; it went out a moment ago."),
+            ("Good evening, Val.", "Good evening, my lord."),
+        ),
     )
-    assert decide("Good night, Val.", state, TIER_ONE).tier == 1
-    inside = ConversationState(
+    assert decide("Thank you, Val.", state, TIER_ONE).tier is None
+
+
+def test_a_withdrawn_request_is_not_in_the_working_conversation() -> None:
+    """Withdrawal is the authoritative settlement: the gateway hands the policy only live
+    exchanges, so a retracted request never reaches it (the gateway-level test is in
+    `test_tier1_request.py`). Here: the same context with the request absent."""
+    social = (("Good evening, Val.", "Good evening, my lord."),) * 3
+    state = ConversationState(
         previous_answer="It is, my lord.",
         prior_turns=4,
         previous_owner_message="Quiet tonight.",
-        earlier_exchanges=(
-            ("Send the invitation tonight.", "I will see to it, my lord."),
-            *social[:2],
-        ),
+        earlier_exchanges=social,
     )
-    assert decide("Good night, Val.", inside, TIER_ONE).tier is None
+    assert decide("Good night, Val.", state, TIER_ONE).tier == 1
+
+
+def test_courtesy_after_an_unrelated_answered_question_names_the_older_request() -> None:
+    """The route answers the most recent exchange; the older request is not inferred
+    settled, and the reason says so."""
+    state = ConversationState(
+        previous_answer="A pause within a line of verse, my lord.",
+        prior_turns=2,
+        previous_owner_message="Explain what a caesura is.",
+        earlier_exchanges=(("Send the invitation tonight.", "I will see to it, my lord."),),
+    )
+    verdict = decide("Thank you, Val.", state, TIER_ONE)
+    assert verdict.tier == 1
+    assert "1 earlier request of his remain on the record as they are" in verdict.reason
 
 
 @pytest.mark.parametrize(
