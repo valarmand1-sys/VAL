@@ -1,0 +1,45 @@
+{
+ "forced_bound_seconds": 2.0,
+ "runner": "qwen_tts_speak_bounded.py",
+ "warm": {
+  "warmed": true,
+  "resident": true,
+  "load_seconds": 2.145,
+  "primed": {
+   "reference_codes": 235,
+   "warmup_generation": {
+    "discarded": true,
+    "seconds": 3.267
+   }
+  },
+  "elapsed_seconds": 5.688,
+  "spoke_nothing": true
+ },
+ "worker_rss_kb_ready": 200320,
+ "long": {
+  "characters": 168,
+  "result": "failed",
+  "reason": "SpeechLengthBoundReached: speech length bound reached: a segment of 168 characters ran to its bound (25 codec tokens, 2.0 s of audio) without ending its speech; it is not counted as spoken",
+  "pieces": 3,
+  "seconds_handed_over": 2.0,
+  "elapsed_seconds": 0.907,
+  "worker_alive_after": true,
+  "worker_cpu_percent_1s_after": 2.3,
+  "worker_rss_kb_after": 212464
+ },
+ "short": {
+  "characters": 13,
+  "result": "completed",
+  "duration_seconds": 1.36,
+  "pieces": 2,
+  "seconds_handed_over": 1.36,
+  "elapsed_seconds": 0.627,
+  "worker_alive_after": true,
+  "worker_cpu_percent_1s_after": 1.1,
+  "worker_rss_kb_after": 215808
+ },
+ "release": {
+  "released": true
+ },
+ "worker_exited_after_release": true
+}

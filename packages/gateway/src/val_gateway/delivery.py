@@ -494,6 +494,7 @@ class SpeechDelivery:
             mark("tts_synthesize_start")
             request = SpeechRequest(text=pending.segment.text, voice=self._voice)
             streamed = False
+            self._pieces = 0
             try:
                 result = self._stream_segment(pending.segment, request)
                 streamed = result is not None
@@ -501,7 +502,19 @@ class SpeechDelivery:
                     result = self._speech.synthesize(request)  # type: ignore[attr-defined]
                 mark("tts_synthesize_return")
             except Exception as failure:
-                self._fail(f"the local voice could not speak this segment: {failure}")
+                if self._pieces:
+                    # Some of this segment already sounded (remaining latency work,
+                    # 27 September 2026, §6 — a segment cut off at the speech-length
+                    # bound is the case that forces it). Under the delivered-boundary
+                    # rule its text reached him when its first sound did, so it is not
+                    # relabelled unheard; nor is it complete. The record says both, by
+                    # segment, and nothing after it is claimed.
+                    self._fail(
+                        f"segment {pending.segment.index} began and did not complete — the "
+                        f"local voice stopped part-way through it: {failure}"
+                    )
+                else:
+                    self._fail(f"the local voice could not speak this segment: {failure}")
                 return
             if self._is_closed():
                 # Interrupted while this piece was being made. It is not

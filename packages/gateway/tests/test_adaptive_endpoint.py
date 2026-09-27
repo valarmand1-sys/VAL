@@ -184,3 +184,160 @@ def test_speech_resuming_after_the_bound_is_its_own_turn(store: Engine) -> None:
     assert [r[0] for r in got] == ["user", "val", "user", "val"], got
     assert adapter.released == []
     session.close()
+
+
+# --- §4 of the remaining latency work, 27 September 2026: the merge window under the
+# faster path. An early-submitted answer can be ready before he resumes; its audio is
+# held until the window closes, so resumption inside it always finds private work that
+# can be discarded, never audio he has begun to hear. After the window his words are an
+# independent turn, and audio that has begun is barge-in's ground: nothing already
+# audible is relabelled unheard.
+
+
+def _captured(session: VoiceSession) -> list[UnheardDelivery]:
+    made: list[UnheardDelivery] = []
+    original = session._speech
+
+    def make() -> UnheardDelivery:
+        delivery = original()  # type: ignore[misc]
+        made.append(delivery)
+        return delivery
+
+    session._speech = make  # type: ignore[assignment]
+    return made
+
+
+def _until_answers(store: Engine, session: VoiceSession, count: int, clock: dict) -> None:
+    for _ in range(120):
+        session.advance()
+        if rows(store, "select count(*) from messages where role = 'val'")[0][0] >= count:
+            return
+        time.sleep(0.05)
+    raise AssertionError("the answer never arrived")
+
+
+def test_an_answer_ready_before_he_resumes_is_held_until_the_window_closes(
+    store: Engine,
+) -> None:
+    adapter = ScriptedAdapter([ok("It is in hand, my lord.")])
+    session = _session(
+        store,
+        adapter,
+        [
+            [
+                started(1, at=10.0),
+                final(1, "Tell me about the invitation.", at=11.6, endpoint_at=11.5),
+            ]
+        ],
+    )
+    made = _captured(session)
+    clock = session._clock_box  # type: ignore[attr-defined]
+    session.start()
+    session.feed(MARKER)
+    clock["now"] += COMPLETE_GRACE_S + 0.01
+    session.advance()  # submitted early
+    _until_answers(store, session, 1, clock)
+    session.await_turn(timeout=10)
+    assert made, "a delivery was made for the early answer"
+    # Her short answer is written and waiting; the window is still open.
+    assert session.speech_hold, "not a sound of it before the merge window closes"
+    until = session._merge_hold[0]  # type: ignore[index]
+    clock["now"] = until - 0.01
+    assert session.speech_hold
+    clock["now"] = until + 0.01
+    assert not session.speech_hold, "released the moment the window has closed"
+    session.close()
+
+
+def test_a_correction_near_the_end_of_the_window_withdraws_a_finished_unheard_answer(
+    store: Engine,
+) -> None:
+    adapter = ScriptedAdapter(
+        [ok("The Hound of the Baskervilles, my lord."), ok("The Turn of the Screw, my lord.")]
+    )
+    session = _session(
+        store,
+        adapter,
+        [
+            [
+                started(1, at=10.0),
+                final(1, "Name a famous mystery novel.", at=11.6, endpoint_at=11.5),
+            ],
+            # 1.3 s after the endpoint: inside the 1.37 s window, near its end.
+            [started(2, at=12.8)],
+            [final(2, "No, a famous ghost story.", at=14.1, endpoint_at=14.0)],
+        ],
+    )
+    clock = session._clock_box  # type: ignore[attr-defined]
+    session.start()
+    session.feed(MARKER)
+    clock["now"] += COMPLETE_GRACE_S + 0.01
+    session.advance()
+    _until_answers(store, session, 1, clock)
+    session.await_turn(timeout=10)
+    assert session.speech_hold, "the finished answer is still private"
+    session.feed(MARKER)  # he resumes
+    session.feed(MARKER)  # and settles
+    clock["now"] += 2.0
+    _until_answers(store, session, 2, clock)
+    session.await_turn(timeout=10)
+    got = rows(
+        store,
+        "select m.role::text, mc.content, m.id in (select message_id from message_revisions "
+        "where kind::text = 'retraction') from messages m join messages_current mc on mc.id = m.id "
+        "order by m.sequence",
+    )
+    # The fragment and the unheard answer to it are withdrawn, not deleted; the joined
+    # request keeps his correction's meaning and gets its own answer.
+    assert [(r[0], r[2]) for r in got][-2:] == [("user", False), ("val", False)], got
+    assert got[-2][1] == "Name a famous mystery novel. No, a famous ghost story."
+    assert got[-1][1] == "The Turn of the Screw, my lord."
+    assert any(r[1] == "Name a famous mystery novel." and r[2] for r in got), got
+    session.close()
+
+
+def test_audio_that_has_begun_after_the_window_is_not_relabelled_unheard(
+    store: Engine,
+) -> None:
+    adapter = ScriptedAdapter([ok("The Hound of the Baskervilles, my lord."), ok("Very well.")])
+    session = _session(
+        store,
+        adapter,
+        [
+            [
+                started(1, at=10.0),
+                final(1, "Name a famous mystery novel.", at=11.6, endpoint_at=11.5),
+            ],
+            # 3.0 s after the endpoint: past the window; her answer has begun to play.
+            [started(2, at=14.5)],
+            [final(2, "No, a famous ghost story.", at=15.8, endpoint_at=15.7)],
+        ],
+    )
+    made = _captured(session)
+    clock = session._clock_box  # type: ignore[attr-defined]
+    session.start()
+    session.feed(MARKER)
+    clock["now"] += COMPLETE_GRACE_S + 0.01
+    session.advance()
+    _until_answers(store, session, 1, clock)
+    session.await_turn(timeout=10)
+    clock["now"] = session._merge_hold[0] + 0.5  # type: ignore[index]
+    assert not session.speech_hold
+    session.speech_handed_over(3.0, current=True)  # the desktop took it and it is playing
+    session.playback_reported("playback_started", segment=(str(made[0].message_id), 1))
+    session.feed(MARKER)  # he speaks over her
+    session.feed(MARKER)
+    clock["now"] += 2.0
+    _until_answers(store, session, 2, clock)
+    session.await_turn(timeout=10)
+    got = rows(
+        store,
+        "select m.role::text, m.id in (select message_id from message_revisions "
+        "where kind::text = 'retraction') from messages m order by m.sequence",
+    )
+    # Both of his requests stand, and so does the answer he had begun to hear.
+    assert got == [("user", False), ("val", False), ("user", False), ("val", False)], got
+    # Recorded, not asserted: once an answer's synthesis has finished, the session holds
+    # no active delivery, so his onset does not stop what the desktop is still playing
+    # (a pre-existing gap in barge-in, found by this test; LATENCY_CANDIDATE.md §7c).
+    session.close()

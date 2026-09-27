@@ -250,6 +250,18 @@ _APPEND = text(
     "returning id, event"
 )
 
+#: One writer at a time per (answer, segment), for the length of the writer's own
+#: transaction: the event number is "one more than the rows that exist", and two
+#: transactions computing it at once would both see the same rows.
+_SERIALISE = text("select pg_advisory_xact_lock(hashtextextended(:key, 0))")
+
+#: The transition already on record, if this report has been recorded before.
+_ALREADY = text(
+    "select event from speech_playbacks "
+    " where message_id = :message_id and segment_index = :segment_index and state = :state "
+    " order by event limit 1"
+)
+
 
 def record_playback(
     engine: Engine,
@@ -271,11 +283,28 @@ def record_playback(
     rather than the time the record caught up (targeted voice latency order,
     25 September 2026). Absent, the record's own clock says when.
 
-    The event number is computed inside the insert from the rows that exist, so two
-    reports arriving together cannot claim the same number — the unique constraint
-    refuses the loser rather than letting one overwrite the other.
+    **Concurrency and repetition (remaining latency work, 27 September 2026).** Each
+    transition happens at most once for a segment — it is handed over once, starts
+    once, and then completes, is interrupted or fails once. The desktop releases the
+    reports it held for a segment voiced before her answer was written together, so
+    `playback_started` and `playback_completed` for one segment used to arrive at the
+    same moment, compute the same next event number, and one was refused by the
+    unique constraint and lost (seen in every bench run). Writers for one (answer,
+    segment) are now serialised by a transaction-scoped advisory lock, so each sees
+    the other's row; and a transition already on record is not written again — the
+    same report delivered twice, or the service's hand-off recorded from two paths,
+    returns the event already there. Nothing is retried and nothing is overwritten:
+    the table stays append-only, and event numbers are the order of recording, while
+    `recorded_at` carries when each transition happened.
     """
     with engine.begin() as connection:
+        connection.execute(_SERIALISE, {"key": f"speech_playbacks:{message_id}:{segment_index}"})
+        existing = connection.execute(
+            _ALREADY,
+            {"message_id": message_id, "segment_index": segment_index, "state": state.value},
+        ).first()
+        if existing is not None:
+            return int(existing.event)
         row = connection.execute(
             _APPEND,
             {

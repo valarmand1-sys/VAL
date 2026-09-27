@@ -100,6 +100,11 @@ SPECULATION_WAIT_SECONDS = 8.0
 #: turn ended ran into his next words often enough to be measured; this makes owner
 #: work the thing that is never made to wait for maintenance that could have waited.
 REFRESH_IDLE_SECONDS = 1.0
+#: How long past the merge window an early-submitted answer's audio is still held, so
+#: that speech resuming at the very end of the window is detected before any of her
+#: answer can play (remaining latency work, 27 September 2026, §4). The recognizer
+#: reports an onset only after a stretch of voiced frames; this covers it.
+MERGE_HOLD_MARGIN_SECONDS = 0.3
 #: How long past the duration estimate a handed-over segment without a completion report
 #: still counts as playing (release-gaps corrections, 27 September 2026, §6).
 PLAYBACK_REPORT_GRACE_SECONDS = 3.0
@@ -429,6 +434,11 @@ class _Pending:
     #: bound after this turn was submitted early — the rest of the same utterance. The
     #: turn is cancelled; when its thread ends the halves are joined and submitted.
     resumed_with: list[tuple[VoiceUtterance, int]] = field(default_factory=list)
+    #: Remaining latency work, 27 September 2026 (§4): until when, on the session clock,
+    #: none of this turn's answer may be handed to the desktop — the end of the window in
+    #: which resumed speech would still be the rest of this same utterance, plus the
+    #: onset margin. Set at submission under the adaptive endpoint; None otherwise.
+    merge_window_until: float | None = None
     #: This turn's stopwatch, so a decision taken on another thread (supersession) can
     #: be marked on the turn it concerns.
     recorder: timings.TurnTimings | None = None
@@ -678,6 +688,9 @@ class VoiceSession:
             else self._grace
         )
         self.speculations: list[dict[str, object]] = []
+        #: §4 (27 September 2026): (until, delivery) — the delivery whose audio is held
+        #: until its turn's merge window has closed, on the session clock.
+        self._merge_hold: tuple[float, object] | None = None
         self._maintaining = threading.Lock()
         #: True from the moment a turn is submitted until its cognition returns —
         #: the span in which his request is with the model or about to be.
@@ -979,10 +992,24 @@ class VoiceSession:
         answer in flight has not begun to be heard: a continuation or ambiguous words
         release it and the answer plays after him; a stop or a replacement discards it.
         Nothing is held once playback has begun — that is barge-in's ground.
+
+        Under the adaptive endpoint an answer is also held until its turn's merge window
+        has closed (remaining latency work, 27 September 2026, §4): the turn may have
+        been submitted early, and speech resuming inside the window is the rest of the
+        same utterance. Holding makes that case always private work, never audio he has
+        begun to hear.
         """
         if not (self._owner_precedence or self._adaptive_endpoint):
             return False
         with self._lock:
+            hold = self._merge_hold
+            if hold is not None and self._now() < hold[0] and not self._playback_started:
+                # Inside the merge window of the turn whose delivery this is (§4) —
+                # whether its answer is still being written or already finished and
+                # waiting to be collected.
+                handover = self._delivery if self._delivery is not None else self._recent
+                if handover is hold[1]:
+                    return True
             delivery = self._delivery
             if delivery is None or not delivery.active or self._heard_locked():
                 return False
@@ -1571,6 +1598,16 @@ class VoiceSession:
             self._pending = None
             self._inflight = pending
             self._cognition_busy = True
+            if self._adaptive_endpoint:
+                # Early work stays private until the merge window has closed: an answer
+                # that is ready sooner waits, so speech resuming inside the window always
+                # finds it unheard and discardable, and never cuts off audio he has begun
+                # to hear (§4). Measured from when his words settled on this clock —
+                # never before the endpoint — so the hold closes no earlier than the
+                # window it protects.
+                pending.merge_window_until = (
+                    pending.settled_at + self._resume_window + MERGE_HOLD_MARGIN_SECONDS
+                )
             if pending.evidence is not None:
                 pending.evidence["submitted_mono"] = time.monotonic()
             # A plain thread starts with an empty context, so a diagnostic recorder
@@ -1692,6 +1729,12 @@ class VoiceSession:
             self._delivery = delivery
             self._playback_started = False
             self._first_play_est = None
+            # §4: this delivery's audio waits for its turn's merge window to close.
+            self._merge_hold = (
+                (pending.merge_window_until, delivery)
+                if pending.merge_window_until is not None and delivery is not None
+                else None
+            )
             # The previous turn's hand-off ends when this one begins: one delivery
             # is collectable at a time, and an older one is released here.
             self._recent = None
