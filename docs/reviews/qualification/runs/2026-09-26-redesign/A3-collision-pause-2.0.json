@@ -1,0 +1,2311 @@
+{
+ "condition": "A3-collision-pause-2.0",
+ "checkout": "/Users/josepharmand/Projects/val",
+ "revision": "18aef943e200d2dbea828531d946671cd9f2df42",
+ "dirty": true,
+ "sessions": [
+  {
+   "label": "A3-collision-pause-2.0 session 1",
+   "session": "3d6e79bf-baec-46ae-94f1-758aaa92e1ba",
+   "voice_on_to_first_speech_start_ms": 12392.6,
+   "turns": [
+    {
+     "phrase": "A very good evening, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 1046.1,
+      "words_provisional_after": 1046.1,
+      "committed_seen": 2155.6,
+      "owner_message_canonical": 2171.6,
+      "answered_seen": 8468.1,
+      "answer_read_via_answered": 8477.0,
+      "turn_appended": 10201.5,
+      "answer_read_via_turn": 10215.9,
+      "first_playback_start": 9134.8
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "01a0e070-b93d-79f5-a477-7fc0740a59aa",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.36,
+       "arrived_ms": 9134.8,
+       "playback_start_ms": 9134.8,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1081.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 34,
+       "text": "How may I serve the house tonight?",
+       "message_id": "01a0e070-b93d-79f5-a477-7fc0740a59aa",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.0,
+       "arrived_ms": 9721.0,
+       "playback_start_ms": 10494.8,
+       "waited_for_previous_ms": 773.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -278.8,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    },
+    {
+     "phrase": "Thank you, Val. Now draft the letter.",
+     "speech_end_to": {
+      "endpoint_seen": 914.0,
+      "words_provisional_after": 914.0,
+      "committed_seen": 2153.4,
+      "owner_message_canonical": 2163.2,
+      "answered_seen": 7489.0,
+      "answer_read_via_answered": 7499.0,
+      "turn_appended": 11312.1,
+      "answer_read_via_turn": 11326.6,
+      "first_playback_start": 7657.0
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 53,
+       "text": "My lord, could you provide the purpose of the letter,",
+       "message_id": "01a0e070-f9d6-7460-b1a2-99b39c1cd3e4",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.2,
+       "arrived_ms": 7657.0,
+       "playback_start_ms": 7657.0,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 3669.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 70,
+       "text": "its intended recipient, and any key points or tone you wish to convey?",
+       "message_id": "01a0e070-f9d6-7460-b1a2-99b39c1cd3e4",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.72,
+       "arrived_ms": 8823.3,
+       "playback_start_ms": 10857.0,
+       "waited_for_previous_ms": 2033.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 469.6,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 50,
+       "text": "Once I have those details, I can draft it for you.",
+       "message_id": "01a0e070-f9d6-7460-b1a2-99b39c1cd3e4",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.12,
+       "arrived_ms": 10481.9,
+       "playback_start_ms": 15577.0,
+       "waited_for_previous_ms": 5095.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -4250.4,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "ineligible"
+    },
+    {
+     "phrase": "Hello there, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 974.8,
+      "words_provisional_after": 974.8,
+      "committed_seen": 2098.9,
+      "owner_message_canonical": 2116.5,
+      "answered_seen": 8034.1,
+      "answer_read_via_answered": 8044.2,
+      "turn_appended": 11737.9,
+      "answer_read_via_turn": 11766.9,
+      "first_playback_start": 8153.7
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 53,
+       "text": "My lord, could you specify the purpose of the letter,",
+       "message_id": "01a0e071-52ca-7e33-a458-c48e5ddd5752",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.44,
+       "arrived_ms": 8153.7,
+       "playback_start_ms": 8153.7,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 3613.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 70,
+       "text": "its intended recipient, and any key points or tone you wish to convey?",
+       "message_id": "01a0e071-52ca-7e33-a458-c48e5ddd5752",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.4,
+       "arrived_ms": 9404.5,
+       "playback_start_ms": 11593.7,
+       "waited_for_previous_ms": 2189.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 173.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 50,
+       "text": "Once I have those details, I can draft it for you.",
+       "message_id": "01a0e071-52ca-7e33-a458-c48e5ddd5752",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.04,
+       "arrived_ms": 10909.9,
+       "playback_start_ms": 15993.7,
+       "waited_for_previous_ms": 5083.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -4226.8,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    },
+    {
+     "phrase": "Thanks. Did you remember to book the venue?",
+     "speech_end_to": {
+      "endpoint_seen": 998.5,
+      "words_provisional_after": 998.5,
+      "committed_seen": 2112.8,
+      "owner_message_canonical": 2136.5,
+      "answered_seen": 11050.9,
+      "answer_read_via_answered": 11065.8,
+      "turn_appended": 12771.7,
+      "answer_read_via_turn": 12791.7,
+      "first_playback_start": 11555.7
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 52,
+       "text": "My lord, I do not have that in the record I can see.",
+       "message_id": "01a0e071-bbf5-7138-a732-7c79a64c2918",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.08,
+       "arrived_ms": 11555.7,
+       "playback_start_ms": 11555.7,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1236.0,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "ineligible"
+    },
+    {
+     "phrase": "Hi there, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 961.6,
+      "words_provisional_after": 961.6,
+      "committed_seen": 2074.8,
+      "owner_message_canonical": 2096.7,
+      "answered_seen": 16927.9,
+      "answer_read_via_answered": 16945.1,
+      "turn_appended": 18289.9,
+      "answer_read_via_turn": 18306.7,
+      "first_playback_start": 17350.8
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "01a0e072-1d12-7e56-a051-d3ecc0a7e8e6",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.44,
+       "arrived_ms": 17350.8,
+       "playback_start_ms": 17350.8,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 955.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 24,
+       "text": "How may I be of service?",
+       "message_id": "01a0e072-1d12-7e56-a051-d3ecc0a7e8e6",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.52,
+       "arrived_ms": 18014.3,
+       "playback_start_ms": 18790.8,
+       "waited_for_previous_ms": 776.5,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -484.1,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    },
+    {
+     "phrase": "Thank you. What should I read next?",
+     "speech_end_to": {
+      "endpoint_seen": 890.1,
+      "words_provisional_after": 890.1,
+      "committed_seen": 1995.7,
+      "owner_message_canonical": 2017.2,
+      "answered_seen": 24545.6,
+      "answer_read_via_answered": 24560.9,
+      "turn_appended": 31836.8,
+      "answer_read_via_turn": 31855.4,
+      "first_playback_start": 23671.4
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 42,
+       "text": "My lord, I do not have a book on this yet.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.64,
+       "arrived_ms": 23671.4,
+       "playback_start_ms": 23671.4,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 8184.1,
+       "text_offset_after_ms": 889.5
+      },
+      {
+       "index": 2,
+       "chars": 136,
+       "text": "However, for your immediate needs I would recommend reviewing the House\u2019s Strategic Outlook 2026, which is filed in the Hall of Records.",
+       "message_id": "01a0e072-9bef-70ba-90f6-bc49cf4ba4d7",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.44,
+       "arrived_ms": 25084.1,
+       "playback_start_ms": 26311.4,
+       "waited_for_previous_ms": 1227.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 5544.1,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 91,
+       "text": "It contains the current objectives, resource allocations and key initiatives for this year.",
+       "message_id": "01a0e072-9bef-70ba-90f6-bc49cf4ba4d7",
+       "pieces": 6,
+       "underrun_ms": 0.0,
+       "duration_s": 5.28,
+       "arrived_ms": 27594.3,
+       "playback_start_ms": 33751.4,
+       "waited_for_previous_ms": 6157.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -1895.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 159,
+       "text": "If you have a particular area or issue in mind\u2014be it finance, alliances, or internal governance\u2014I can direct you to the most relevant section of that document.",
+       "message_id": "01a0e072-9bef-70ba-90f6-bc49cf4ba4d7",
+       "pieces": 9,
+       "underrun_ms": 0.0,
+       "duration_s": 8.24,
+       "arrived_ms": 29440.8,
+       "playback_start_ms": 39031.4,
+       "waited_for_previous_ms": 9590.6,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -7175.9,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "ineligible"
+    }
+   ]
+  },
+  {
+   "label": "A3-collision-pause-2.0 session 2",
+   "session": "5feb483f-a706-4bdd-ade4-293e9d9f4e9a",
+   "voice_on_to_first_speech_start_ms": 12223.1,
+   "turns": [
+    {
+     "phrase": "Hey there, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 908.0,
+      "words_provisional_after": 908.0,
+      "committed_seen": 2142.8,
+      "owner_message_canonical": 2152.6,
+      "answered_seen": 3760.2,
+      "answer_read_via_answered": 3771.3,
+      "turn_appended": 4751.2,
+      "answer_read_via_turn": 4761.4,
+      "first_playback_start": 4376.6
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "01a0e073-4e6e-7025-9521-a273a722de57",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.6,
+       "arrived_ms": 4376.6,
+       "playback_start_ms": 4376.6,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 384.8,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    },
+    {
+     "phrase": "Good night, Val, and remind me in the morning.",
+     "speech_end_to": {
+      "endpoint_seen": 1018.3,
+      "words_provisional_after": 1018.3,
+      "committed_seen": 2133.3,
+      "owner_message_canonical": 2144.8,
+      "answered_seen": 13040.9,
+      "answer_read_via_answered": 13053.3,
+      "turn_appended": 16384.9,
+      "answer_read_via_turn": 16398.6,
+      "first_playback_start": 13060.7
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 20,
+       "text": "Good night, my lord.",
+       "message_id": "01a0e073-9d91-7926-b56c-fc12c9ded411",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.28,
+       "arrived_ms": 13060.7,
+       "playback_start_ms": 13060.7,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 3337.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 62,
+       "text": "I will be present at 07:00\u202fCDT should you return to the study;",
+       "message_id": "01a0e073-9d91-7926-b56c-fc12c9ded411",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.32,
+       "arrived_ms": 13649.8,
+       "playback_start_ms": 14340.7,
+       "waited_for_previous_ms": 690.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 2057.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 84,
+       "text": "I cannot set an external reminder, but I will be ready to attend to your needs then.",
+       "message_id": "01a0e073-9d91-7926-b56c-fc12c9ded411",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.56,
+       "arrived_ms": 15153.3,
+       "playback_start_ms": 18660.7,
+       "waited_for_previous_ms": 3507.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -2262.1,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "ineligible"
+    },
+    {
+     "phrase": "Greetings, Val, good morning.",
+     "speech_end_to": {
+      "endpoint_seen": 1033.4,
+      "words_provisional_after": 1033.4,
+      "committed_seen": 2149.0,
+      "owner_message_canonical": 2163.1,
+      "answered_seen": 6487.2,
+      "answer_read_via_answered": 6500.5,
+      "turn_appended": 8331.5,
+      "answer_read_via_turn": 8341.7,
+      "first_playback_start": 6957.7
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good morning, my lord.",
+       "message_id": "01a0e073-f0f5-7246-9e4a-3751c466cf61",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.68,
+       "arrived_ms": 6957.7,
+       "playback_start_ms": 6957.7,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1384.0,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 37,
+       "text": "How may I attend to your needs today?",
+       "message_id": "01a0e073-f0f5-7246-9e4a-3751c466cf61",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.48,
+       "arrived_ms": 7789.6,
+       "playback_start_ms": 8637.7,
+       "waited_for_previous_ms": 848.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -296.0,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    },
+    {
+     "phrase": "That's all, except cancel the meeting on Tuesday.",
+     "speech_end_to": {
+      "endpoint_seen": 941.7,
+      "words_provisional_after": 941.7,
+      "committed_seen": 2050.5,
+      "owner_message_canonical": 2069.4,
+      "answered_seen": 9581.8,
+      "answer_read_via_answered": 9594.2,
+      "turn_appended": 13276.2,
+      "answer_read_via_turn": 13289.2,
+      "first_playback_start": 9684.4
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 45,
+       "text": "I am unable to cancel the meeting on Tuesday,",
+       "message_id": "01a0e074-3c8b-7449-890a-3d52a82889ba",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.72,
+       "arrived_ms": 9684.4,
+       "playback_start_ms": 9684.4,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 3604.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 71,
+       "text": "as I have no access to a scheduling or calendar system in this context.",
+       "message_id": "01a0e074-3c8b-7449-890a-3d52a82889ba",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.6,
+       "arrived_ms": 10767.2,
+       "playback_start_ms": 12404.4,
+       "waited_for_previous_ms": 1637.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 884.9,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 80,
+       "text": "Please use the house\u2019s appointment ledger or your own tools to amend that entry.",
+       "message_id": "01a0e074-3c8b-7449-890a-3d52a82889ba",
+       "pieces": 5,
+       "underrun_ms": 0.0,
+       "duration_s": 4.32,
+       "arrived_ms": 12015.5,
+       "playback_start_ms": 16004.4,
+       "waited_for_previous_ms": 3988.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -2715.1,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "ineligible"
+    },
+    {
+     "phrase": "Hello, Val, hello.",
+     "speech_end_to": {
+      "endpoint_seen": 1028.8,
+      "words_provisional_after": 1028.8,
+      "committed_seen": 2149.5,
+      "owner_message_canonical": 2168.2,
+      "answered_seen": 12273.5,
+      "answer_read_via_answered": 12290.4,
+      "turn_appended": 17467.2,
+      "answer_read_via_turn": 17491.9,
+      "first_playback_start": 11846.7
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.28,
+       "arrived_ms": 11846.7,
+       "playback_start_ms": 11846.7,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 5645.2,
+       "text_offset_after_ms": 443.7
+      },
+      {
+       "index": 2,
+       "chars": 129,
+       "text": "I have noted your greeting. As the house records indicate, I am unable to access or modify any meeting schedules in this session;",
+       "message_id": "01a0e074-a671-710f-81bb-846ffaaa2739",
+       "pieces": 8,
+       "underrun_ms": 0.0,
+       "duration_s": 7.28,
+       "arrived_ms": 12598.8,
+       "playback_start_ms": 13126.7,
+       "waited_for_previous_ms": 527.9,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 4365.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 50,
+       "text": "the capability to cancel a meeting is unavailable.",
+       "message_id": "01a0e074-a671-710f-81bb-846ffaaa2739",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.04,
+       "arrived_ms": 14933.6,
+       "playback_start_ms": 20406.7,
+       "waited_for_previous_ms": 5473.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -2914.8,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 99,
+       "text": "If you require that action, please use the house\u2019s appointment ledger or your own scheduling tools.",
+       "message_id": "01a0e074-a671-710f-81bb-846ffaaa2739",
+       "pieces": 6,
+       "underrun_ms": 0.0,
+       "duration_s": 5.04,
+       "arrived_ms": 16111.3,
+       "playback_start_ms": 23446.7,
+       "waited_for_previous_ms": 7335.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -5954.8,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    },
+    {
+     "phrase": "Sleep well, and finish the invitation first.",
+     "speech_end_to": {
+      "endpoint_seen": 845.0,
+      "words_provisional_after": 845.0,
+      "committed_seen": 2070.0,
+      "owner_message_canonical": 2084.5,
+      "answered_seen": 15428.0,
+      "answer_read_via_answered": 15442.6,
+      "turn_appended": 20623.2,
+      "answer_read_via_turn": 20641.1,
+      "first_playback_start": 15150.3
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 58,
+       "text": "I am not able to retrieve or alter the meeting on Tuesday,",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.28,
+       "arrived_ms": 15150.3,
+       "playback_start_ms": 15150.3,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 5490.8,
+       "text_offset_after_ms": 292.3
+      },
+      {
+       "index": 2,
+       "chars": 63,
+       "text": "nor do I have any record of an invitation in this conversation.",
+       "message_id": "01a0e075-35e3-77ec-9c29-ee5c99d4c24e",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.36,
+       "arrived_ms": 16487.5,
+       "playback_start_ms": 18430.3,
+       "waited_for_previous_ms": 1942.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 2210.8,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 122,
+       "text": "If you wish me to draft or finalize the invitation, please provide its contents or the key points that should be included.",
+       "message_id": "01a0e075-35e3-77ec-9c29-ee5c99d4c24e",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.24,
+       "arrived_ms": 17748.6,
+       "playback_start_ms": 21790.3,
+       "waited_for_previous_ms": 4041.7,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -1149.2,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 61,
+       "text": "I will compose it for you as soon as I have that information.",
+       "message_id": "01a0e075-35e3-77ec-9c29-ee5c99d4c24e",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.12,
+       "arrived_ms": 19833.1,
+       "playback_start_ms": 28030.3,
+       "waited_for_previous_ms": 8197.2,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -7389.2,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "ineligible"
+    }
+   ]
+  }
+ ],
+ "service_components": [
+  {
+   "anchor_wall": "2026-09-27T01:17:51.410+00:00",
+   "request_ready_to_first_output_ms": 1745.9,
+   "first_output_to_visible_text_ms": 4524.2,
+   "request_ready_to_first_speech_text_ms": 6270.1,
+   "first_tts_ms": 872.2,
+   "first_segment_to_first_audio_ms": 716.6,
+   "first_visible_to_first_audio_ms": 742.5,
+   "request_ready_to_first_audio_ms": 7012.6,
+   "cognition_complete_ms": 19.8,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:18:08.842+00:00",
+   "request_ready_to_first_output_ms": 1744.0,
+   "first_output_to_visible_text_ms": 2971.0,
+   "request_ready_to_first_speech_text_ms": 4715.1,
+   "first_tts_ms": 1369.8,
+   "first_segment_to_first_audio_ms": 643.4,
+   "first_visible_to_first_audio_ms": 854.7,
+   "request_ready_to_first_audio_ms": 5569.8,
+   "cognition_complete_ms": 6.9,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:18:31.087+00:00",
+   "request_ready_to_first_output_ms": 1811.6,
+   "first_output_to_visible_text_ms": 3469.7,
+   "request_ready_to_first_speech_text_ms": 5281.3,
+   "first_tts_ms": 1388.7,
+   "first_segment_to_first_audio_ms": 618.0,
+   "first_visible_to_first_audio_ms": 818.7,
+   "request_ready_to_first_audio_ms": 6100.0,
+   "cognition_complete_ms": 14.5,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:18:54.946+00:00",
+   "request_ready_to_first_output_ms": 1862.8,
+   "first_output_to_visible_text_ms": 7128.6,
+   "request_ready_to_first_speech_text_ms": 8991.4,
+   "first_tts_ms": 1529.0,
+   "first_segment_to_first_audio_ms": 475.8,
+   "first_visible_to_first_audio_ms": 486.4,
+   "request_ready_to_first_audio_ms": 9477.8,
+   "cognition_complete_ms": 7.8,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:19:14.026+00:00",
+   "request_ready_to_first_output_ms": 8679.8,
+   "first_output_to_visible_text_ms": 6115.4,
+   "request_ready_to_first_speech_text_ms": 14795.2,
+   "first_tts_ms": 675.3,
+   "first_segment_to_first_audio_ms": 497.5,
+   "first_visible_to_first_audio_ms": 498.4,
+   "request_ready_to_first_audio_ms": 15293.6,
+   "cognition_complete_ms": 5.9,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:19:38.768+00:00",
+   "request_ready_to_first_output_ms": 8368.4,
+   "first_output_to_visible_text_ms": 12374.7,
+   "request_ready_to_first_speech_text_ms": 20743.1,
+   "first_tts_ms": 1750.1,
+   "first_segment_to_first_audio_ms": 774.8,
+   "first_visible_to_first_audio_ms": 889.2,
+   "request_ready_to_first_audio_ms": 21632.3,
+   "cognition_complete_ms": 5.5,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:20:45.266+00:00",
+   "request_ready_to_first_output_ms": 1717.2,
+   "first_output_to_visible_text_ms": null,
+   "request_ready_to_first_speech_text_ms": 1721.0,
+   "first_tts_ms": 823.8,
+   "first_segment_to_first_audio_ms": 606.8,
+   "first_visible_to_first_audio_ms": 618.2,
+   "request_ready_to_first_audio_ms": 2339.2,
+   "cognition_complete_ms": 8.9,
+   "marks": [
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:20:56.324+00:00",
+   "request_ready_to_first_output_ms": 1735.5,
+   "first_output_to_visible_text_ms": 8503.8,
+   "request_ready_to_first_speech_text_ms": 10239.3,
+   "first_tts_ms": 816.9,
+   "first_segment_to_first_audio_ms": 690.4,
+   "first_visible_to_first_audio_ms": 752.1,
+   "request_ready_to_first_audio_ms": 10991.4,
+   "cognition_complete_ms": 7.8,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:21:24.203+00:00",
+   "request_ready_to_first_output_ms": 1790.1,
+   "first_output_to_visible_text_ms": 2566.9,
+   "request_ready_to_first_speech_text_ms": 4357.0,
+   "first_tts_ms": 812.5,
+   "first_segment_to_first_audio_ms": 482.5,
+   "first_visible_to_first_audio_ms": 523.0,
+   "request_ready_to_first_audio_ms": 4880.0,
+   "cognition_complete_ms": 8.1,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:21:40.465+00:00",
+   "request_ready_to_first_output_ms": 1864.7,
+   "first_output_to_visible_text_ms": 4931.0,
+   "request_ready_to_first_speech_text_ms": 6795.7,
+   "first_tts_ms": 1191.0,
+   "first_segment_to_first_audio_ms": 637.3,
+   "first_visible_to_first_audio_ms": 839.1,
+   "request_ready_to_first_audio_ms": 7634.8,
+   "cognition_complete_ms": 4.9,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:22:04.843+00:00",
+   "request_ready_to_first_output_ms": 8020.1,
+   "first_output_to_visible_text_ms": 894.5,
+   "request_ready_to_first_speech_text_ms": 8914.6,
+   "first_tts_ms": 1000.5,
+   "first_segment_to_first_audio_ms": 757.6,
+   "first_visible_to_first_audio_ms": 805.0,
+   "request_ready_to_first_audio_ms": 9719.6,
+   "cognition_complete_ms": 4.5,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:22:38.342+00:00",
+   "request_ready_to_first_output_ms": 8177.8,
+   "first_output_to_visible_text_ms": 4030.3,
+   "request_ready_to_first_speech_text_ms": 12208.1,
+   "first_tts_ms": 1631.2,
+   "first_segment_to_first_audio_ms": 764.5,
+   "first_visible_to_first_audio_ms": 968.4,
+   "request_ready_to_first_audio_ms": 13176.5,
+   "cognition_complete_ms": 5.8,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "routes": [
+    "partner",
+    "light"
+   ],
+   "seconds": 7.961,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0e070-8f5f-776b-9c16-47c11c535a21",
+    "seconds": 6.927,
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e070-91a5-7cc2-b021-c08172521ee4",
+     "seconds": 0.243
+    }
+   },
+   "wall": 1790471868.84
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 7.198,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e070-e06e-775d-848a-e59d3ff64b7b",
+     "seconds": 7.018
+    }
+   },
+   "wall": 1790471889.013
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.499,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e071-0ece-72cc-b43b-817a0e5baeb1",
+     "seconds": 0.309
+    }
+   },
+   "wall": 1790471900.882
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.482,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e071-6702-71a5-a161-00bed19fe34b",
+     "seconds": 0.299
+    }
+   },
+   "wall": 1790471923.462
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.494,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e071-c855-7635-9aa1-f5e5c9ca4e82",
+     "seconds": 0.302
+    }
+   },
+   "wall": 1790471948.375
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.468,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e072-28a0-7608-b0a1-4478bdf6694f",
+     "seconds": 0.298
+    }
+   },
+   "wall": 1790471973.028
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 6.873,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e072-d742-7044-b1b9-3a0b4ff33c36",
+     "seconds": 6.684
+    }
+   },
+   "wall": 1790472017.733
+  },
+  {
+   "kind": "initial",
+   "routes": [
+    "partner",
+    "light"
+   ],
+   "seconds": 7.405,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0e073-38c1-74f3-96fb-512f47ff1cb9",
+    "seconds": 6.729,
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e073-3a63-747b-8630-a7d3ff01f08d",
+     "seconds": 0.243
+    }
+   },
+   "wall": 1790472043.109
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "partner"
+   ],
+   "seconds": 0.466,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0e073-57fe-7558-9ba3-ff0205de3fe7",
+    "seconds": 0.281,
+    "light": {
+     "primed": true,
+     "outcome": "not_requested"
+    }
+   },
+   "wall": 1790472050.689
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.48,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e073-b09e-783f-853e-ab60cbfb91fe",
+     "seconds": 0.295
+    }
+   },
+   "wall": 1790472073.376
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.477,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e073-fe15-70e6-9bb8-4fa951a4d678",
+     "seconds": 0.297
+    }
+   },
+   "wall": 1790472093.208
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 6.865,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e074-69b0-7e19-a317-2ae3a4e3fd80",
+     "seconds": 6.68
+    }
+   },
+   "wall": 1790472120.754
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.466,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e074-c061-79e2-846c-22542b9b2046",
+     "seconds": 0.286
+    }
+   },
+   "wall": 1790472142.948
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.493,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e075-5007-7f05-bc30-205b3883fa2e",
+     "seconds": 0.305
+    }
+   },
+   "wall": 1790472179.723
+  }
+ ],
+ "machine": {
+  "samples": 322,
+  "min_free_percent": 39,
+  "swap_used_mb_first": 1427.31,
+  "swap_used_mb_last": 1427.31,
+  "max_resident_speech_rss_mb": 3188.1,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "measured_at": "2026-09-26T20:23:14",
+ "serve": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-26-redesign/serve_variant.py",
+ "first_pause": "on",
+ "dialogue": [
+  {
+   "id": "01a0e070-a0a7-7122-a498-429d77fb8fc9",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 1,
+   "role": "user",
+   "content": "A very good evening, Val.",
+   "created_at": "2026-09-26T20:17:52.677121-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e070-b93d-79f5-a477-7fc0740a59aa",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 2,
+   "role": "val",
+   "content": "Good evening, my lord. How may I serve the house tonight?",
+   "created_at": "2026-09-26T20:17:58.97276-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e070-e4b6-75f8-a483-bbcd30bc0590",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 3,
+   "role": "user",
+   "content": "Thank you, Val. Now draft the letter.",
+   "created_at": "2026-09-26T20:18:10.101197-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e070-f9d6-7460-b1a2-99b39c1cd3e4",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 4,
+   "role": "val",
+   "content": "My lord, could you provide the purpose of the letter, its intended recipient, and any key points or tone you wish to convey? Once I have those details, I can draft it for you.",
+   "created_at": "2026-09-26T20:18:15.509353-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e071-3b96-7ca4-bac1-ecb67c922f84",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 5,
+   "role": "user",
+   "content": "Hello there, vowel.",
+   "created_at": "2026-09-26T20:18:32.34145-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e071-52ca-7e33-a458-c48e5ddd5752",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 6,
+   "role": "val",
+   "content": "My lord, could you specify the purpose of the letter, its intended recipient, and any key points or tone you wish to convey? Once I have those details, I can draft it for you.",
+   "created_at": "2026-09-26T20:18:38.282148-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e071-98d6-782c-9658-a4019954b4e9",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 7,
+   "role": "user",
+   "content": "Thanks. Did you remember to book the venue?",
+   "created_at": "2026-09-26T20:18:56.213057-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e071-bbf5-7138-a732-7c79a64c2918",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 8,
+   "role": "val",
+   "content": "My lord, I do not have that in the record I can see.",
+   "created_at": "2026-09-26T20:19:05.204257-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e071-e343-7636-8861-dbd72e23eb32",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 9,
+   "role": "user",
+   "content": "Hi there, Val.",
+   "created_at": "2026-09-26T20:19:15.266368-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e072-1d12-7e56-a051-d3ecc0a7e8e6",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 10,
+   "role": "val",
+   "content": "Good evening, my lord. How may I be of service?",
+   "created_at": "2026-09-26T20:19:30.065843-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e072-43f9-74ea-ad9e-aa17d39ab4c1",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 11,
+   "role": "user",
+   "content": "Thank you. What should I read next?",
+   "created_at": "2026-09-26T20:19:40.024456-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e072-9bef-70ba-90f6-bc49cf4ba4d7",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "sequence": 12,
+   "role": "val",
+   "content": "My lord, I do not have a book on this yet. However, for your immediate needs I would recommend reviewing the House\u2019s Strategic Outlook 2026, which is filed in the Hall of Records. It contains the current objectives, resource allocations and key initiatives for this year. If you have a particular area or issue in mind\u2014be it finance, alliances, or internal governance\u2014I can direct you to the most relevant section of that document.",
+   "created_at": "2026-09-26T20:20:02.542294-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e073-47b9-7a2c-9a0b-d2e2561278d5",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 1,
+   "role": "user",
+   "content": "Hey there, Val.",
+   "created_at": "2026-09-26T20:20:46.520129-05:00",
+   "route": null,
+   "own_calls": "light_conversation@de3c53f0-7db1-4d1a-8fa5-52381e8a7f96"
+  },
+  {
+   "id": "01a0e073-4e6e-7025-9521-a273a722de57",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 2,
+   "role": "val",
+   "content": "Good evening, my lord.",
+   "created_at": "2026-09-26T20:20:48.236859-05:00",
+   "route": "light_conversation@de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e073-72f6-7417-8152-b8708af177a7",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 3,
+   "role": "user",
+   "content": "Good night, Val, and remind me in the morning.",
+   "created_at": "2026-09-26T20:20:57.588748-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e073-9d91-7926-b56c-fc12c9ded411",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 4,
+   "role": "val",
+   "content": "Good night, my lord. I will be present at 07:00\u202fCDT should you return to the study; I cannot set an external reminder, but I will be ready to attend to your needs then.",
+   "created_at": "2026-09-26T20:21:08.497015-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e073-dfc9-707f-903e-1ed5b169c657",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 5,
+   "role": "user",
+   "content": "Greetings, Val. Good morning.",
+   "created_at": "2026-09-26T20:21:25.447485-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e073-f0f5-7246-9e4a-3751c466cf61",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 6,
+   "role": "val",
+   "content": "Good morning, my lord. How may I attend to your needs today?",
+   "created_at": "2026-09-26T20:21:29.844587-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e074-1f4f-72f1-b82c-8e4c70a0b43f",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 7,
+   "role": "user",
+   "content": "That's all, except cancel the meeting on Tuesday.",
+   "created_at": "2026-09-26T20:21:41.710406-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e074-3c8b-7449-890a-3d52a82889ba",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 8,
+   "role": "val",
+   "content": "I am unable to cancel the meeting on Tuesday, as I have no access to a scheduling or calendar system in this context. Please use the house\u2019s appointment ledger or your own tools to amend that entry.",
+   "created_at": "2026-09-26T20:21:49.193976-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e074-7e98-72fc-a77b-afda69acd80b",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 9,
+   "role": "user",
+   "content": "Hello, Val, hello.",
+   "created_at": "2026-09-26T20:22:06.103199-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e074-a671-710f-81bb-846ffaaa2739",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 10,
+   "role": "val",
+   "content": "Good evening, my lord. I have noted your greeting. As the house records indicate, I am unable to access or modify any meeting schedules in this session; the capability to cancel a meeting is unavailable. If you require that action, please use the house\u2019s appointment ledger or your own scheduling tools.",
+   "created_at": "2026-09-26T20:22:16.304381-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e075-0161-7c0e-884f-1993d851aede",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 11,
+   "role": "user",
+   "content": "sleep well, and finish the invitation first.",
+   "created_at": "2026-09-26T20:22:39.584522-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e075-35e3-77ec-9c29-ee5c99d4c24e",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "sequence": 12,
+   "role": "val",
+   "content": "I am not able to retrieve or alter the meeting on Tuesday, nor do I have any record of an invitation in this conversation.  \nIf you wish me to draft or finalize the invitation, please provide its contents or the key points that should be included. I will compose it for you as soon as I have that information.",
+   "created_at": "2026-09-26T20:22:53.026534-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  }
+ ],
+ "preparations": [],
+ "calls": [
+  {
+   "id": "01a0e070-8f5f-776b-9c16-47c11c535a21",
+   "task_type": "prefix_prime",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 6888,
+   "created_at": "2026-09-26T20:17:48.254628-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e070-91a5-7cc2-b021-c08172521ee4",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 212,
+   "created_at": "2026-09-26T20:17:48.837322-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e070-b938-7c72-88e8-8f79a34a0be4",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "message_id": "01a0e070-a0a7-7122-a498-429d77fb8fc9",
+   "status": "ok",
+   "tokens_in": 5874,
+   "tokens_out": 295,
+   "cost": 0.0,
+   "latency_ms": 6202,
+   "created_at": "2026-09-26T20:17:58.967255-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e070-e06e-775d-848a-e59d3ff64b7b",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 6965,
+   "created_at": "2026-09-26T20:18:09.005973-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e070-f9d2-7273-a003-ba9ebd46ce5c",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "message_id": "01a0e070-e4b6-75f8-a483-bbcd30bc0590",
+   "status": "ok",
+   "tokens_in": 5914,
+   "tokens_out": 225,
+   "cost": 0.0,
+   "latency_ms": 5338,
+   "created_at": "2026-09-26T20:18:15.505768-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e071-0ece-72cc-b43b-817a0e5baeb1",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 270,
+   "created_at": "2026-09-26T20:18:20.877809-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e071-52c6-74a0-8e50-1f07ef6fd01e",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "message_id": "01a0e071-3b96-7ca4-bac1-ecb67c922f84",
+   "status": "ok",
+   "tokens_in": 5969,
+   "tokens_out": 267,
+   "cost": 0.0,
+   "latency_ms": 5838,
+   "created_at": "2026-09-26T20:18:38.277834-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e071-6702-71a5-a161-00bed19fe34b",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 254,
+   "created_at": "2026-09-26T20:18:43.457724-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e071-bbf2-7466-b009-3159b80d8795",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "message_id": "01a0e071-98d6-782c-9658-a4019954b4e9",
+   "status": "ok",
+   "tokens_in": 6029,
+   "tokens_out": 465,
+   "cost": 0.0,
+   "latency_ms": 8908,
+   "created_at": "2026-09-26T20:19:05.201803-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e071-c855-7635-9aa1-f5e5c9ca4e82",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 266,
+   "created_at": "2026-09-26T20:19:08.373006-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e072-1d0e-7313-816f-0c17369f9283",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "message_id": "01a0e071-e343-7636-8861-dbd72e23eb32",
+   "status": "ok",
+   "tokens_in": 6059,
+   "tokens_out": 392,
+   "cost": 0.0,
+   "latency_ms": 14709,
+   "created_at": "2026-09-26T20:19:30.061561-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e072-28a0-7608-b0a1-4478bdf6694f",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 257,
+   "created_at": "2026-09-26T20:19:33.02379-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e072-9beb-715d-9dca-11d3e7aeab98",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e070-a0a1-7ce6-9542-d815e36497c0",
+   "message_id": "01a0e072-43f9-74ea-ad9e-aa17d39ab4c1",
+   "status": "ok",
+   "tokens_in": 6091,
+   "tokens_out": 852,
+   "cost": 0.0,
+   "latency_ms": 22444,
+   "created_at": "2026-09-26T20:20:02.538733-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e072-d742-7044-b1b9-3a0b4ff33c36",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 6644,
+   "created_at": "2026-09-26T20:20:17.729569-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e073-38c1-74f3-96fb-512f47ff1cb9",
+   "task_type": "prefix_prime",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 6685,
+   "created_at": "2026-09-26T20:20:42.688405-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e073-3a63-747b-8630-a7d3ff01f08d",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 206,
+   "created_at": "2026-09-26T20:20:43.106862-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e073-4e69-7ae9-ad6b-6484940a9b94",
+   "task_type": "light_conversation",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "message_id": "01a0e073-47b9-7a2c-9a0b-d2e2561278d5",
+   "status": "ok",
+   "tokens_in": 5743,
+   "tokens_out": 31,
+   "cost": 0.0,
+   "latency_ms": 1642,
+   "created_at": "2026-09-26T20:20:48.23333-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e073-57fe-7558-9ba3-ff0205de3fe7",
+   "task_type": "prefix_prime",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 242,
+   "created_at": "2026-09-26T20:20:50.685979-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e073-9d8e-798b-867a-b9e453484ee6",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "message_id": "01a0e073-72f6-7417-8152-b8708af177a7",
+   "status": "ok",
+   "tokens_in": 5906,
+   "tokens_out": 590,
+   "cost": 0.0,
+   "latency_ms": 10826,
+   "created_at": "2026-09-26T20:21:08.49425-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e073-b09e-783f-853e-ab60cbfb91fe",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 252,
+   "created_at": "2026-09-26T20:21:13.373906-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e073-f0f2-7b6b-a66e-02f4a6ade999",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "message_id": "01a0e073-dfc9-707f-903e-1ed5b169c657",
+   "status": "ok",
+   "tokens_in": 5967,
+   "tokens_out": 183,
+   "cost": 0.0,
+   "latency_ms": 4311,
+   "created_at": "2026-09-26T20:21:29.842314-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e073-fe15-70e6-9bb8-4fa951a4d678",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 258,
+   "created_at": "2026-09-26T20:21:33.204712-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e074-3c87-75b6-b5a4-37a5a8fcf46d",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "message_id": "01a0e074-1f4f-72f1-b82c-8e4c70a0b43f",
+   "status": "ok",
+   "tokens_in": 6002,
+   "tokens_out": 360,
+   "cost": 0.0,
+   "latency_ms": 7410,
+   "created_at": "2026-09-26T20:21:49.190913-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e074-69b0-7e19-a317-2ae3a4e3fd80",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 6641,
+   "created_at": "2026-09-26T20:22:00.752648-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e074-a66e-75d5-aac4-8534c5bf2123",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "message_id": "01a0e074-7e98-72fc-a77b-afda69acd80b",
+   "status": "ok",
+   "tokens_in": 6059,
+   "tokens_out": 120,
+   "cost": 0.0,
+   "latency_ms": 10137,
+   "created_at": "2026-09-26T20:22:16.301828-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e074-c061-79e2-846c-22542b9b2046",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 247,
+   "created_at": "2026-09-26T20:22:22.945271-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e075-35dd-7fe3-87cb-d3b90ceab2a9",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e073-47b6-762a-9e7a-3041820f101c",
+   "message_id": "01a0e075-0161-7c0e-884f-1993d851aede",
+   "status": "ok",
+   "tokens_in": 6138,
+   "tokens_out": 327,
+   "cost": 0.0,
+   "latency_ms": 13361,
+   "created_at": "2026-09-26T20:22:53.021564-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e075-5007-7f05-bc30-205b3883fa2e",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 259,
+   "created_at": "2026-09-26T20:22:59.719481-05:00",
+   "terminal_state": "truncated"
+  }
+ ],
+ "routes": [
+  {
+   "wall": 1790471872.695,
+   "tier": null,
+   "reason": "not within the admitted light scope: 'A very good evening, Val.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790471890.11,
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790471912.356,
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790471936.222,
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790471955.274,
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790471980.031,
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790472046.529,
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790472057.597,
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790472085.456,
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790472101.717,
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790472126.109,
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790472159.592,
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  }
+ ],
+ "readiness": [
+  {
+   "wall": 1790471860.879,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "warming",
+   "prefix_light": "not_applicable",
+   "detail": null
+  },
+  {
+   "wall": 1790471868.84,
+   "ready": true,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "primed",
+   "prefix_light": "primed",
+   "detail": null
+  },
+  {
+   "wall": 1790471889.013,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "failed",
+   "prefix_light": "primed",
+   "detail": null
+  },
+  {
+   "wall": 1790472035.705,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "warming",
+   "prefix_light": "not_applicable",
+   "detail": null
+  },
+  {
+   "wall": 1790472043.109,
+   "ready": true,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "primed",
+   "prefix_light": "primed",
+   "detail": null
+  },
+  {
+   "wall": 1790472050.689,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "primed",
+   "prefix_light": "failed",
+   "detail": null
+  },
+  {
+   "wall": 1790472073.376,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "failed",
+   "prefix_light": "primed",
+   "detail": null
+  }
+ ],
+ "completions": [],
+ "speculation_log": [],
+ "fast_route_tiers": "1",
+ "tier1_route": "low",
+ "speculation": "",
+ "adaptive_grace": "",
+ "plan": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-26-redesign/plan_collision.json"
+}

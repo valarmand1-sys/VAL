@@ -1211,7 +1211,12 @@ def tier1_eligibility(
     ):
         return RouteDecision(None, "correction-sensitive: this message carries a revision")
     return fast_route.decide(
-        content, ConversationState(previous_answer=previous, prior_turns=prior_turns)
+        content,
+        ConversationState(
+            previous_answer=previous,
+            prior_turns=prior_turns,
+            previous_owner_message=None if last_user is None else last_user.record.content,
+        ),
     )
 
 

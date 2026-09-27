@@ -69,6 +69,7 @@ from val_api.contracts import (
     ProjectCreateRequest,
     ProjectView,
     QueuedExchangeView,
+    ReadinessView,
     RemovalRequest,
     RenameRequest,
     RetractionRequest,
@@ -933,6 +934,7 @@ def create_app(
             pending=view.pending,
             progress=view.progress,
             queued=view.queued,
+            readiness=ReadinessView(**view.readiness.as_record()),  # type: ignore[arg-type]
             turns=[
                 VoiceTurnView(
                     message_id=turn.message_id,

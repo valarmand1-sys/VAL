@@ -112,17 +112,87 @@ _OPEN_QUESTION = re.compile(
     r"(\?\s*$|\b(?:shall i|would you like|do you want|may i|should i|which|whether)\b)",
     re.IGNORECASE,
 )
-#: How her last answer may have left an action unresolved: she said what she will, can
-#: or cannot do about something he asked for. A greeting or farewell spoken into that
-#: context is a pending-action context (owner order of 26 September 2026, §2 and §8 —
-#: the LOW correction-preservation class as a routing guard): found in the Tier-1
-#: qualification run, where "Talk soon, Val." after "I will record the intent" drew
-#: "Understood. I will proceed accordingly." from the light route.
-_UNRESOLVED_ACTION = re.compile(
-    r"\bi(?:'ll| will| shall| can| could| cannot| can't| am unable| am not able| have noted| "
-    r"will record| will draft| will prepare| will proceed)\b",
+#: What his previous message asked for, when it asked for an action or a decision:
+#: the authoritative sign of pending work. Information he asked for and she gave
+#: ("explain", "tell me about", "name two ways") is settled by the answer itself;
+#: an action or a decision is not settled by anything she says about it.
+_ACTION_REQUEST = re.compile(
+    r"\b("
+    r"do it|make|change|send|write|draft|book|schedule|plan|remind|cancel|move|set|fix|save|"
+    r"delete|post|proceed|go ahead|remember|arrange|order|prepare|finish|start|stop|open|"
+    r"close|put|add|remove|update|record|note down|read|show|find|look up|check|search|"
+    r"play|list|summar\w*|"
+    r"should i|shall i|which (?:one|reader|venue|ending|option|of)|decide|yes,? do|"
+    r"not the|not that|i meant|never mind|instead|rather|actually|wait,"
+    r")\b",
     re.IGNORECASE,
 )
+#: Her generic closings of courtesy: an offer of service in general, not of anything in
+#: particular. A closing here leaves no matter open; anything else that asks or offers
+#: does.
+_COURTESY_CLOSING = re.compile(
+    r"^(?:(?:and )?how (?:may|can|might) i (?:assist|attend to|serve|help)(?: you)?"
+    r"(?: (?:this evening|tonight|today|this morning|further|this time|now))?|"
+    r"what (?:shall|may|can) (?:we|i) (?:turn our attention to|attend to|do for you)"
+    r"(?: (?:this evening|tonight|today|this time|this hour))?|"
+    r"is there anything (?:else|further|more)(?: (?:you (?:require|need|would like)|i can do"
+    r"(?: for you)?))?(?: (?:this evening|tonight|today))?|anything (?:else|further|more)"
+    r"(?:,? my lord)?|how else may i serve(?: you)?|what (?:may|can) i do for you|"
+    r"how may i be of service(?: (?:today|tonight|this evening))?|what shall we attend to"
+    r"(?: (?:this evening|tonight|today|this time))?|how may i serve(?: you)?"
+    r"(?: (?:this evening|tonight|today|this day))?)$",
+    re.IGNORECASE,
+)
+
+
+def pending_matter(state: ConversationState) -> str | None:
+    """Why the context is not settled, or None when a social turn may be answered as such.
+
+    Owner order of 26 September 2026 (Milestone A §4): a Core-owned decision in place of
+    a blanket phrase list. Read in this order, each sufficient on its own:
+
+    1. **His previous message asked for an action or a decision** (or was itself a
+       correction or withdrawal). Nothing she said about it — that she did it, will
+       do it, noted it, cannot do it — settles it here: a claim of action or completion
+       is uncertain state, not proof, and a refusal leaves the matter with him.
+    2. **Her previous answer asks or offers something in particular**: any sentence
+       with a question mark or an offer that is not one of the generic closings of
+       courtesy ("How may I assist you?", "Is there anything else you require?").
+       Those closings are courtesy when nothing else is open; they never override
+       an open matter found by rule 1.
+    3. Nothing readable to decide on when there were earlier turns → uncertain → MEDIUM.
+    """
+    previous_owner = (state.previous_owner_message or "").strip()
+    previous = (state.previous_answer or "").strip()
+    if state.prior_turns > 0 and not previous:
+        return "uncertain state: earlier turns but no answer of hers to read"
+    if previous_owner and _ACTION_REQUEST.search(previous_owner):
+        return "his previous message asked for an action or a decision, which nothing here settles"
+    if previous:
+        for sentence in _sentences(previous):
+            core = re.sub(r"[.!?,;:]+$", "", sentence.strip().replace(chr(0x2019), "'"))
+            core = re.sub(r"\s+", " ", core)
+            if _COURTESY_CLOSING.match(core.strip()):
+                continue
+            if "?" in sentence or _OPEN_QUESTION.search(sentence):
+                return "her last answer asked or offered something in particular"
+            # Tightened after the fresh set's first evaluation (26 September 2026,
+            # case p14: "Put it in front of me and I'll read it now"): an offer in a
+            # contraction, and an instruction to him, both leave the matter open.
+            if re.search(
+                r"\b(?:i(?: could| can| would| will| shall|'ll|'d) (?:suggest|draft|prepare|"
+                r"begin|set|read|go on|adjust|arrange|have|keep|record|review|compare|do)|"
+                r"if you wish|shall i|would you like|i propose|put it|give me|provide|"
+                r"send me|let me know|specify|describe it|name the)\b",
+                sentence,
+                re.IGNORECASE,
+            ):
+                return "her last answer offered something in particular"
+    return None
+
+
+#: A thanks alone (the class withheld after a greeting exchange, above).
+_THANKS_ONLY = _THANKS
 
 MAX_WORDS = 12
 
@@ -134,6 +204,8 @@ class ConversationState:
     #: Her most recent answer, wording in force; None when she has said nothing yet.
     previous_answer: str | None
     prior_turns: int
+    #: His previous message, wording in force; None when this is his first.
+    previous_owner_message: str | None = None
 
 
 @dataclass(frozen=True)
@@ -216,14 +288,26 @@ def decide(text: str, state: ConversationState, tiers: frozenset[int]) -> RouteD
     # context whatever its wording — "thank you" after "shall I send it?" leaves the
     # matter live — and stays on ordinary MEDIUM. Narrower than before (the rule applied
     # to acknowledgements only); nothing is admitted by it.
-    # Read over the whole of her last answer, not its last sentence alone: the four-way
-    # comparison of 26 September 2026 (case d15) found an answer that listed the
-    # questions it needed answered, numbered, with no question mark at its end.
-    previous = state.previous_answer or ""
-    if previous and ("?" in previous or _OPEN_QUESTION.search(previous)):
-        return RouteDecision(None, "her last answer left a question or an offer open")
-    if previous and _UNRESOLVED_ACTION.search(previous):
-        return RouteDecision(None, "her last answer left an action unresolved")
+    # Owner order of 26 September 2026 (Milestone A §4): courtesy against genuine
+    # pending work is a Core-owned decision over his previous message and the whole of
+    # her previous answer, not a phrase list. Uncertain → MEDIUM.
+    open_matter = pending_matter(state)
+    if open_matter is not None:
+        return RouteDecision(None, open_matter)
+    # Milestone A §4, from generated answers rather than routing alone: a bare thanks
+    # spoken after an exchange that was itself only a greeting drew a greeting back
+    # from LOW in verification ("Thank you, Val." → "Good evening, my lord."; 1 of 2
+    # after the request was corrected, 3 of 7 before). Only that class is withheld:
+    # farewells after a greeting exchange answered correctly every time, and thanks
+    # after a settled substantive answer did too.
+    previous_owner = (state.previous_owner_message or "").strip()
+    if previous_owner and _THANKS_ONLY.match(_core(stripped)):
+        previous_light = _classify_core(_core(previous_owner))[0]
+        if previous_light is not None and _GREETING.match(_core(previous_owner)):
+            return RouteDecision(
+                None,
+                "thanks after a greeting exchange: LOW answered it as a greeting in verification",
+            )
     highest = 0
     for sentence in sentences:
         tier, reason = classify_sentence(sentence)

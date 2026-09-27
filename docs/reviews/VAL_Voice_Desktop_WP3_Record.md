@@ -1218,3 +1218,63 @@ speculation and adaptive completion off, migration `0032` applied live; rollback
 removing the two settings. Not an admission of LOW.
 
 ---
+
+## 28. Handoff — Milestone A: the narrow Tier-1 release prepared (readiness, prime scheduling, the courtesy decision), 26 September 2026
+
+**WP3 remains PARTIAL. Nothing deployed; production admission is his.** Record:
+`docs/reviews/qualification/runs/2026-09-26-redesign/TIER1_RELEASE.md` (evidence index
+§115). Milestone B is a separate record (`ORDINARY_TURN.md`, in progress) and is not in
+this release.
+
+**The configuration and its limits, unsoftened:** GPT-OSS, one instance; LOW only for
+eligible standalone greetings, thanks and farewells through the Core-owned Tier-1
+request; MEDIUM for everything else; no Qwen; speculation off; adaptive completion
+off; endpoint and window unchanged. The earlier qualification: 21 LOW turns, two
+wrong-turn answers in pending-action contexts, the guard added afterwards, ~15 of 34
+eligible on replay; its 4.8 s median is not re-claimed for the revised decision. LOW's
+scope is enforced by test: the `light` floor only; conversation, blind position and
+structured routing unchanged; the registry on disk untouched.
+
+**Readiness (§2):** "Ready" meant session + microphone. The session now reports
+cognition, voice, Partner prefix and light prefix component by component; the prefixes
+are primed at Voice On (standing aside, marked `skipped`, if he is already speaking);
+the desktop says "Warming up…", "Val is warming up — your words are heard…", or
+"Voice is degraded: …". Measured: Voice On → Ready **6.7 s warm**, **26.4 s cold**
+(model load ≈ 10 s inside a 12.4 s warm-up, then 13.9 s of cold primes); first greeting
+after Ready 4.4 s warm / 5.2 s cold; a greeting spoken 1 s after Voice On on a cold
+start **15.2 s**. Prewarming moves the cold work before "Ready"; it does not remove it.
+**Why checkpoints go cold:** not time (warm after 90 s idle), not session lifecycle;
+distinct prompts entering a runtime cache that holds two or three entries — one
+unrelated ~120-token prompt evicted a checkpoint.
+
+**Prime scheduling (§3):** a refresh is owed by a turn and dispatched only after 1 s of
+idleness (speech being heard now counts), rechecked at dispatch and before each call,
+coalesced by a use generation, dropped after 60 s. **Selective refresh was measured and
+rejected** — priming only the other effort left MEDIUM's next first token at 8 s (from
+1.7 s); both entries are primed, light first and Partner last. Residual collision
+under the final policy: his next words 0.3 s after her answer waited **≤ 0.8 s** on 2 of
+12 turns, none with 2 s between turns; MEDIUM first token back at ~1.7 s; a cold prime
+(~7 s) still runs after about every second turn — the recurring cost of two warm
+prefixes on this runtime, stated.
+
+**Courtesy against pending work (§4):** a Core-owned decision replaces the phrase
+list — his previous message asked for an action or decision → MEDIUM whatever she said
+about it (claims of completion are uncertain state); her answer asks or offers
+something in particular → MEDIUM, generic courtesy closings excepted and never
+overriding an open matter. Fresh set (20 courtesy / 22 pending), written before
+implementation: first evaluation 1 inappropriate light (p14), tightened, then 0/22;
+known failures 0/2; development 0/10. **Generated answers** in the newly permitted
+contexts: LOW answered a bare thanks after a greeting-only exchange as a greeting
+(3/7, then 1/6 after the request stopped carrying a light previous exchange) → **that
+class is withheld**; farewells after a greeting and thanks after a settled substantive
+answer are released. Final fresh coverage 7/20, 0 inappropriate. Historical coverage
+recomputed read-only: unchanged, 7 of 27 turns.
+
+**Release (§6):** `VAL_FAST_ROUTE_TIERS=1`, `VAL_TIER1_ROUTE=low`, nothing else;
+migration **`0032_light_conversation` explicitly**, not `head`; rollback removes the
+two settings and restores routing, not the recorded evidence nor the schema. Offline:
+loopback-only by sampling; the runtime itself was not network-denied (he was active;
+the two-minute step is his to authorise). Memory: free ≥ 40%, swap flat, the second
+prefix's cost visible as cold primes. Physical acceptance test in §6.
+
+---

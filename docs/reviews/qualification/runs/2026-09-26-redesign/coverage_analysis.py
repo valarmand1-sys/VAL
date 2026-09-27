@@ -23,7 +23,8 @@ from val_policy.light_conversation import ConversationState, decide
 
 URL = "postgresql://josepharmand@localhost:5433/val"
 LOG = Path("/opt/homebrew/var/log/val/api.log")
-BOTH = frozenset({1, 2})
+#: Tier 1 only in this pass (owner order, Milestone A §4); the earlier estimate used both.
+TIERS = frozenset({int(t) for t in __import__("os").environ.get("COVERAGE_TIERS", "1").split(",")})
 #: A conversation is counted diagnostic when any owner message in it is about the voice
 #: system itself: hearing tests, voice-model checks, speed or tuning questions.
 DIAGNOSTIC = re.compile(
@@ -42,6 +43,9 @@ with psycopg.connect(URL, options="-c default_transaction_read_only=on") as conn
                    and mc2.sequence < m.sequence order by mc2.sequence desc limit 1) as previous_answer,
                (select count(*) from messages u where u.conversation_id = m.conversation_id
                    and u.role = 'user' and u.sequence < m.sequence) as prior_turns,
+               (select mc3.content from messages_current mc3
+                 where mc3.conversation_id = m.conversation_id and mc3.role = 'user'
+                   and mc3.sequence < m.sequence order by mc3.sequence desc limit 1) as previous_owner,
                (select a.id from messages a where a.conversation_id = m.conversation_id
                    and a.sequence = m.sequence + 1 and a.role = 'val') as answer_id
         from voice_message_provenance p
@@ -82,8 +86,12 @@ def q(values: list[float]) -> dict:
 
 
 turns = []
-for mid, cid, seq, created, content, previous, prior, answer_id in rows:
-    verdict = decide(content, ConversationState(previous_answer=previous, prior_turns=prior), BOTH)
+for mid, cid, seq, created, content, previous, prior, previous_owner, answer_id in rows:
+    verdict = decide(
+        content,
+        ConversationState(previous_answer=previous, prior_turns=prior, previous_owner_message=previous_owner),
+        TIERS,
+    )
     group = {1: "tier_1", 2: "tier_2", None: "substantive"}[verdict.tier]
     tl = timelines.get(str(mid), {})
     turns.append({
@@ -114,6 +122,7 @@ for split, keep in (("all", lambda t: True), ("ordinary_use", lambda t: not t["d
             "turns_without_timing_record": sum(1 for t in g if t["endpoint_to_audio_ms"] is None),
         }
     report["splits"][split] = {"turns": len(mine), "groups": groups}
+report["tiers"] = sorted(TIERS)
 report["unclassifiable"] = {"count": 0, "reason": "every spoken turn had its wording in force and its preceding context available; none was unclassifiable"}
 Path(sys.argv[1]).write_text(json.dumps(report, indent=1) + "\n")
 print(json.dumps(report, indent=1))

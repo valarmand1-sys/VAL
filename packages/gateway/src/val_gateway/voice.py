@@ -88,6 +88,57 @@ RESUME_GRACE_SECONDS = 1.1
 #: own preparation on every light turn.)
 SPECULATION_WAIT_SECONDS = 8.0
 
+#: How long the session must have been idle — no speech, no settled utterance, no turn
+#: in flight, no answer being voiced — before a refresh prime is dispatched (owner
+#: order of 26 September 2026, Milestone A §3). A refresh that started the instant a
+#: turn ended ran into his next words often enough to be measured; this makes owner
+#: work the thing that is never made to wait for maintenance that could have waited.
+REFRESH_IDLE_SECONDS = 1.0
+#: How long a scheduled refresh keeps waiting for that idleness before giving up.
+REFRESH_PATIENCE_SECONDS = 60.0
+
+
+@dataclass(frozen=True)
+class VoiceReadiness:
+    """What is actually ready, component by component — never a single flag inferred.
+
+    Owner order of 26 September 2026, Milestone A §2. The desktop said "Ready" when the
+    service session existed and the microphone was capturing; whether the cognition
+    runtime, the voice worker or the persona prefixes were warm was not part of it.
+    Each component here is a state observed by the session itself: `warming` until it
+    has been established, `ready` / `primed` when it has, `failed` with the reason when
+    it could not be, `skipped` when a prime stood aside for his request (it is retried
+    when the session is idle), `not_applicable` when the build has no such route.
+    `ready` is true only when every applicable component is.
+    """
+
+    cognition: str = "warming"
+    voice: str = "warming"
+    prefix_partner: str = "warming"
+    prefix_light: str = "not_applicable"
+    detail: str | None = None
+
+    @property
+    def ready(self) -> bool:
+        good = {"ready", "primed", "not_applicable"}
+        return (
+            self.cognition in good
+            and self.voice in good
+            and self.prefix_partner in good
+            and self.prefix_light in good
+        )
+
+    def as_record(self) -> dict[str, object]:
+        return {
+            "ready": self.ready,
+            "cognition": self.cognition,
+            "voice": self.voice,
+            "prefix_partner": self.prefix_partner,
+            "prefix_light": self.prefix_light,
+            "detail": self.detail,
+        }
+
+
 #: How often the recovery journal may record the guess in progress. The journal
 #: exists to survive a crash mid-utterance, not to keep every guess: a row per
 #: provisional would be a transcript of the recognizer's uncertainty, which is
@@ -315,6 +366,8 @@ class VoiceSessionView:
     #: His next settled words are waiting behind a turn still in progress. Not
     #: reasoning, not accepted yet: a queue, said as one.
     queued: bool = False
+    #: Component readiness (Milestone A §2): what is warm, what is not, what failed.
+    readiness: VoiceReadiness = VoiceReadiness()
 
 
 @dataclass
@@ -526,6 +579,24 @@ class VoiceSession:
         self._warm = warm
         #: What warming found and did, for the record. `None` until it has run.
         self.warmed: object | None = None
+        # The light prefix's presence is learned from the first prime's report; until
+        # then it is not claimed either way.
+        self.readiness = VoiceReadiness(
+            cognition="warming" if warm is not None else "not_applicable",
+            voice="warming" if warm is not None and speech is not None else "not_applicable",
+            prefix_partner="warming" if prime is not None else "not_applicable",
+            prefix_light="not_applicable",
+        )
+        #: A refresh is owed: a turn has used the runtime since the last prime. The
+        #: effort that turn used has its own prompt resident, so only the other is
+        #: re-primed (Milestone A §3: one entry per turn, not two, in a cache that the
+        #: eviction probe of 26 September 2026 found holds about three).
+        self._refresh_owed = False
+        self._refresh_scheduled = False
+        self._last_turn_task: str | None = None
+        #: Counts the turns that have used the runtime, so a prime that finishes can
+        #: tell whether a refresh owed *after it began* is still owed.
+        self._use_generation = 0
         #: How the local runtime's persona prefix is primed and refreshed (owner
         #: order, 25 September 2026). Optional maintenance: it never starts while a
         #: request of his is waiting, and one run at a time.
@@ -596,6 +667,14 @@ class VoiceSession:
 
     # --- lifecycle ------------------------------------------------------------------
 
+    def _set_readiness(self, **changes: str | None) -> None:
+        with self._lock:
+            before = self.readiness
+            self.readiness = replace(before, **changes)  # type: ignore[arg-type]
+            after = self.readiness
+        if after != before:
+            _LOGGER.info("voice readiness: %s", json.dumps(after.as_record()))
+
     def start(self) -> None:
         """Bring the recognizer up. Nothing is heard until this succeeds."""
         try:
@@ -609,7 +688,7 @@ class VoiceSession:
         # is still drawing breath — not when he stops talking. It is the same
         # readiness call the turn makes, and the turn still makes it: this only
         # moves the waiting off the moment he is waiting.
-        if self._warm is not None:
+        if self._warm is not None or self._prime is not None:
             threading.Thread(target=self._warm_runtime, daemon=True).start()
 
     def _warm_runtime(self) -> None:
@@ -620,7 +699,32 @@ class VoiceSession:
         phrase, the difference being the weights coming off disk). Neither is a gate:
         both are reported and swallowed, and the turn asks for itself regardless.
         """
-        if self._warm is None:
+        if self._warm is not None:
+            self._warm_up()
+        # Milestone A §2 (owner order of 26 September 2026): the persona prefixes are
+        # brought up **now**, at Voice On, so that "Ready" can mean ready — unless he is
+        # already speaking, in which case the prime stands aside (the recognizer's final
+        # decode measurably slows beside a prefill) and runs when his utterance settles,
+        # as before. Readiness stays `warming`/`skipped` until each prefix reports.
+        if self._prime is not None:
+            with self._lock:
+                speaking = self._current is not None
+                started = self._initial_prime_started
+            if speaking:
+                self._set_readiness(
+                    **{
+                        k: "skipped"
+                        for k in ("prefix_partner", "prefix_light")
+                        if getattr(self.readiness, k) == "warming"
+                    }
+                )
+            elif not started:
+                with self._lock:
+                    self._initial_prime_started = True
+                self._maintain("initial")
+
+    def _warm_up(self) -> None:
+        if self._warm is None:  # the caller checked; stated for the type
             return
         # When each warm-up began and ended, on the wall clock, so a turn's timeline
         # can be laid against it (owner diagnostic, 25 September 2026, §7.2: his first
@@ -639,6 +743,7 @@ class VoiceSession:
             time.monotonic() - clock,
             json.dumps(self.warmed, default=str),
         )
+        self._set_readiness(**_readiness_from_warm(self.warmed, self.readiness))
 
     def close(self, reason: str = "closed by the caller") -> None:
         """Stop listening, settle the record, and release everything held."""
@@ -1221,12 +1326,13 @@ class VoiceSession:
         with timings.recording(live):
             self._run_turn(pending)
         self._log_timeline(pending, live)
-        # The turn is over — answered, and her voice synthesised — so the prime is
-        # refreshed now: a fraction of a second while the runtime still holds it, and
-        # never while any part of his turn is running. Qualification found a refresh
-        # sent while her first sentence was still being synthesised slowing that
-        # synthesis from 2.6 s to 7.6 s (priming-cache pass, 25 September 2026).
-        self._maintain("refresh")
+        # The turn is over — answered, and her voice synthesised — so a refresh is owed:
+        # it is dispatched once the session is idle, never while any part of his turn
+        # is running or his next words are being heard (Milestone A §3). Qualification
+        # found a refresh sent while her first sentence was still being synthesised
+        # slowing that synthesis from 2.6 s to 7.6 s (priming-cache pass, 25 September
+        # 2026), and one sent the instant a turn ended colliding with his next words.
+        self._schedule_refresh()
 
     def _log_timeline(self, pending: _Pending, recorder: timings.TurnTimings) -> None:
         """One line per spoken turn: every boundary, in ms from the endpoint."""
@@ -1308,6 +1414,10 @@ class VoiceSession:
                     message_id=answered[0],
                     utterance=utterance.utterance,
                 )
+        # Which effort the turn used, from the record (Milestone A §3): the refresh that
+        # follows re-primes only the other one.
+        if identified[1] is not None:
+            self._last_turn_task = _task_of(self._engine, identified[1])
         try:
             self._record(pending, outcome, delivery)
         except Exception as failure:
@@ -1332,17 +1442,28 @@ class VoiceSession:
                 if self.state is VoiceSessionState.THINKING:
                     self.state = VoiceSessionState.LISTENING
 
-    def _owner_waiting(self) -> bool:
+    def _owner_waiting(self, *, including_speech: bool = False) -> bool:
         """Whether any part of his turn is under way: waiting, thinking, or being voiced.
 
         A settled utterance in its resume window, a turn whose cognition is running,
-        or a turn whose answer is still being synthesised. Maintenance starts in none
-        of them.
+        or a turn whose answer is still being synthesised — and, when asked, speech
+        the recognizer is still hearing. Maintenance starts in none of them.
         """
         with self._lock:
-            return self._pending is not None or self._cognition_busy or self._inflight is not None
+            return (
+                self._pending is not None
+                or self._cognition_busy
+                or self._inflight is not None
+                or (including_speech and self._current is not None)
+            )
 
-    def _maintain(self, kind: str, *, during_resume_window: bool = False) -> None:
+    def _maintain(
+        self,
+        kind: str,
+        *,
+        during_resume_window: bool = False,
+        routes: tuple[str, ...] | None = None,
+    ) -> None:
         """Prime or refresh the persona prefix on its own thread — never ahead of him.
 
         Not started at all while a request of his is waiting; asked again by the
@@ -1354,21 +1475,36 @@ class VoiceSession:
         def waiting() -> bool:
             # In the resume window his utterance has settled but is not yet a
             # request; the first prime may run then, and stands aside the moment
-            # the request is submitted.
+            # the request is submitted. Outside it, any part of his turn — including
+            # speech still being heard — means maintenance does not start.
             if during_resume_window:
                 with self._lock:
                     return self._cognition_busy or self._inflight is not None
-            return self._owner_waiting()
+            return self._owner_waiting(including_speech=True)
 
         if prime is None or waiting():
+            if prime is not None:
+                self._set_readiness(
+                    **{
+                        k: "skipped"
+                        for k in ("prefix_partner", "prefix_light")
+                        if getattr(self.readiness, k) == "warming"
+                    }
+                )
             return
         if not self._maintaining.acquire(blocking=False):
             return
 
         def run() -> None:
             began = time.monotonic()
+            with self._lock:
+                generation = self._use_generation
             try:
-                result = prime(lambda: not waiting())
+                result = (
+                    prime(lambda: not waiting())
+                    if routes is None
+                    else prime(lambda: not waiting(), routes)  # type: ignore[call-arg]
+                )
             except Exception as failure:  # maintenance is never fatal
                 result = {
                     "primed": False,
@@ -1377,11 +1513,77 @@ class VoiceSession:
                 }
             finally:
                 self._maintaining.release()
-            record = {"kind": kind, "seconds": round(time.monotonic() - began, 3), "result": result}
+            record = {
+                "kind": kind,
+                "routes": list(routes) if routes is not None else ["partner", "light"],
+                "seconds": round(time.monotonic() - began, 3),
+                "result": result,
+            }
             self.primes.append(record)
             _LOGGER.info("voice prime: %s", json.dumps(record, default=str))
+            self._set_readiness(**_readiness_from_prime(result))
+            if _prime_complete(result):
+                with self._lock:
+                    # Only a refresh owed before this prime began is settled by it.
+                    if self._use_generation == generation:
+                        self._refresh_owed = False
 
         threading.Thread(target=run, name=f"voice-prime-{kind}", daemon=True).start()
+
+    def _schedule_refresh(self) -> None:
+        """Refresh the prefixes once the session is idle — coalesced, rechecked, never ahead of him.
+
+        Milestone A §3 (owner order of 26 September 2026). A turn has used the runtime,
+        so a refresh is owed; it is dispatched only after `REFRESH_IDLE_SECONDS` with no
+        speech, no settled utterance, no turn in flight and no answer being voiced, the
+        condition being rechecked at dispatch and again inside the prime before each
+        call. Two turns finishing close together owe one refresh, not two. If the
+        session never falls idle within `REFRESH_PATIENCE_SECONDS` the refresh is
+        dropped and the next turn's completion schedules a new one.
+        """
+        if self._prime is None:
+            return
+        with self._lock:
+            self._refresh_owed = True
+            self._use_generation += 1
+            if self._refresh_scheduled:
+                return
+            self._refresh_scheduled = True
+
+        def wait_then_run() -> None:
+            deadline = time.monotonic() + REFRESH_PATIENCE_SECONDS
+            idle_since: float | None = None
+            try:
+                while time.monotonic() < deadline:
+                    with self._lock:
+                        closed = self.state in (VoiceSessionState.CLOSED, VoiceSessionState.ERROR)
+                        owed = self._refresh_owed
+                    if closed or not owed:
+                        return
+                    if self._owner_waiting(including_speech=True):
+                        idle_since = None
+                    elif idle_since is None:
+                        idle_since = time.monotonic()
+                    elif time.monotonic() - idle_since >= REFRESH_IDLE_SECONDS:
+                        break
+                    time.sleep(0.1)
+                else:
+                    _LOGGER.info("voice prime: refresh dropped (the session never fell idle)")
+                    return
+            finally:
+                with self._lock:
+                    self._refresh_scheduled = False
+                    used = self._last_turn_task
+            # Both entries, every time. A selective refresh (the other effort only) was
+            # measured on 26 September 2026 and rejected: a turn's own prompt is not a
+            # prefix the runtime reuses for the next turn, and the light prime evicted
+            # it, so MEDIUM's next first token went from ~1.7 s to ~8 s — faster
+            # greetings bought with slower substantive replies. `used` stays on the
+            # record for the measurement.
+            _LOGGER.info("voice prime: refresh after a %s turn", used or "unrecorded")
+            self._maintain("refresh", routes=("light", "partner"))
+
+        threading.Thread(target=wait_then_run, name="voice-prime-refresh-wait", daemon=True).start()
 
     def _persisted(self, utterance: int, conversation_id: UUID, message_id: UUID) -> None:
         """His message is committed: visible to the next poll, before any answer."""
@@ -1585,6 +1787,7 @@ class VoiceSession:
                 speech_end=self._speech_end,
                 progress=self._progress_locked(),
                 queued=self._pending is not None and self._inflight is not None,
+                readiness=self.readiness,
             )
 
     def _progress_locked(self) -> str | None:
@@ -1593,7 +1796,10 @@ class VoiceSession:
             return None
         delivery = self._delivery
         if delivery is None:
-            return "thinking"
+            # A turn that reached cognition before the runtime and prefixes were ready
+            # is waiting on, or running beside, that warming: said as such, not as
+            # reasoning (Milestone A §2).
+            return "warming" if not self.readiness.ready else "thinking"
         if delivery.audible:
             return "speaking"
         if delivery.first_tts_start_ms is not None:
@@ -1644,6 +1850,77 @@ def _endpoint_evidence(event: RecognizerEvent) -> dict[str, object]:
         "run_start_sample": event.run_start_sample,
         "received_samples": event.received_samples,
     }
+
+
+def _readiness_from_warm(warmed: object, current: VoiceReadiness) -> dict[str, str | None]:
+    """The warm-up's report, read into component states."""
+    changes: dict[str, str | None] = {}
+    if not isinstance(warmed, dict):
+        return {"cognition": "failed", "detail": "warm-up reported nothing readable"}
+    cognition = warmed.get("cognition")
+    if isinstance(cognition, dict):
+        changes["cognition"] = "ready" if cognition.get("warmed") else "failed"
+        if not cognition.get("warmed") and cognition.get("reason"):
+            changes["detail"] = str(cognition.get("reason"))
+    voice = warmed.get("voice")
+    if current.voice != "not_applicable":
+        if isinstance(voice, dict):
+            changes["voice"] = "ready" if voice.get("warmed") else "failed"
+            if not voice.get("warmed") and voice.get("reason"):
+                changes["detail"] = str(voice.get("reason"))
+    return changes
+
+
+def _prime_outcome_state(entry: object) -> str:
+    if not isinstance(entry, dict):
+        return "failed"
+    outcome = entry.get("outcome")
+    if entry.get("primed") and outcome == "established":
+        return "primed"
+    if outcome == "skipped":
+        return "skipped"
+    if outcome == "refused":
+        return "not_applicable" if "no admitted" in str(entry.get("reason", "")) else "failed"
+    return "failed"
+
+
+def _readiness_from_prime(result: object) -> dict[str, str | None]:
+    """One prime's report — the Partner entry and, when present, the light entry."""
+    if not isinstance(result, dict):
+        return {"prefix_partner": "failed"}
+    changes: dict[str, str | None] = {}
+    # A selective refresh reports the entry it did not touch as `not_requested`: that
+    # entry's state is whatever it was, and is not changed here.
+    if result.get("outcome") != "not_requested":
+        changes["prefix_partner"] = _prime_outcome_state(result)
+        if changes["prefix_partner"] == "failed" and result.get("reason"):
+            changes["detail"] = str(result.get("reason"))
+    light = result.get("light")
+    if isinstance(light, dict) and light.get("outcome") != "not_requested":
+        changes["prefix_light"] = _prime_outcome_state(light)
+    return changes
+
+
+def _prime_complete(result: object) -> bool:
+    """Every entry the prime was asked for reports primed (an untouched entry counts)."""
+    if not isinstance(result, dict) or not result.get("primed"):
+        return False
+    light = result.get("light")
+    return light is None or bool(isinstance(light, dict) and light.get("primed"))
+
+
+_TASK_OF_MESSAGE = text(
+    "select task_type::text from model_calls where message_id = :m order by id desc limit 1"
+)
+
+
+def _task_of(engine: Engine, message_id: UUID) -> str | None:
+    """The task type of the last model call attached to his message, or None."""
+    try:
+        with engine.connect() as connection:
+            return connection.execute(_TASK_OF_MESSAGE, {"m": message_id}).scalar()
+    except Exception:  # a record read failing must not fail the turn
+        return None
 
 
 def _anchor_name(evidence: dict[str, object] | None) -> str:

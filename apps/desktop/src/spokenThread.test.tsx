@@ -388,4 +388,28 @@ describe("response-in-progress feedback", () => {
     expect(text()).toContain("Your next words are waiting for her current answer.");
     expect(text()).not.toContain("thinking");
   });
+
+  // Milestone A §2 (26 September 2026): readiness is said component by component, and
+  // a turn that reached cognition before the runtime was ready is called warming.
+  const warming = { ready: false, cognition: "ready", voice: "ready", prefix_partner: "warming", prefix_light: "warming" };
+  it("says the house is warming up while it is, and that speech is heard", () => {
+    show({ progress: null, readiness: warming });
+    expect(text()).toBe("Warming up… you can speak; the first answer may take longer.");
+    show({ progress: "warming", readiness: warming });
+    expect(text()).toBe("Val is warming up — your words are heard and will be answered.");
+    expect(text()).not.toContain("thinking");
+  });
+
+  it("names a failed component as degraded rather than reporting ready", () => {
+    show({
+      progress: null,
+      readiness: { ...warming, voice: "failed", prefix_partner: "primed", prefix_light: "primed", detail: "the voice worker did not start" },
+    });
+    expect(text()).toBe("Voice is degraded: voice unavailable (the voice worker did not start).");
+  });
+
+  it("says nothing about readiness once everything is ready", () => {
+    show({ progress: null, readiness: { ...warming, ready: true, prefix_partner: "primed", prefix_light: "primed" } });
+    expect(text()).toBe("");
+  });
 });

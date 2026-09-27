@@ -1,0 +1,104 @@
+{
+  "_note": "The two wrong-turn contexts found in the LOW Tier-1 qualification run of 26 September 2026 (TIER1_COMPARISON.md §8), kept as regression cases apart from the fresh set. The recorded answers came from LOW on the Tier-1 route; the guard must send both to MEDIUM.",
+  "known_failures": [
+    {
+      "id": "k01",
+      "previous_owner": "Thanks. Did you remember to book the venue?",
+      "previous_answer": "My lord, I am unable to book the venue on my own. However, I can advise you on the steps or draft a booking request for your review.",
+      "utterance": "Many thanks, Val.",
+      "expect": "medium",
+      "recorded_low_answer": "I cannot place the booking myself, but I can draft a request or guide you through the steps to secure the venue."
+    },
+    {
+      "id": "k02",
+      "previous_owner": "Nothing else, except cancel the meeting on Tuesday.",
+      "previous_answer": "Good evening, my lord. I have noted your request to cancel the meeting on Tuesday. I do not possess a direct means of executing that action within this conversation, but I will record the intent in the house record.",
+      "utterance": "Talk soon, Val.",
+      "expect": "medium",
+      "recorded_low_answer": "Understood. I will proceed accordingly."
+    }
+  ],
+  "development": [
+    {
+      "id": "d01",
+      "kind": "generic offer of service",
+      "previous_owner": "Good evening, Val.",
+      "previous_answer": "Good evening, my lord. How may I assist you this evening?",
+      "utterance": "Thank you, Val.",
+      "expect": "medium",
+      "note": "Re-expected after generated-answer verification (26 September 2026): a bare thanks after a greeting-only exchange is withheld from LOW, which answered it as a greeting in 1 of 2 runs after the request correction (3 of 7 before). The routing itself was courtesy; the class is withheld on answer quality."
+    },
+    {
+      "id": "d02",
+      "kind": "specific proposal awaiting a decision",
+      "previous_owner": "Plan the reading for Friday.",
+      "previous_answer": "I propose the library at seven, my lord, with the second act read first. Shall I set it so?",
+      "utterance": "Thank you, Val.",
+      "expect": "medium"
+    },
+    {
+      "id": "d03",
+      "kind": "refusal / inability",
+      "previous_owner": "Post the invitation.",
+      "previous_answer": "I cannot post anything from here, my lord.",
+      "utterance": "Good night, Val.",
+      "expect": "medium"
+    },
+    {
+      "id": "d04",
+      "kind": "claimed recorded intention without completion",
+      "previous_owner": "Cancel Thursday.",
+      "previous_answer": "I have recorded that Thursday is to be cancelled, my lord.",
+      "utterance": "Thanks. Talk soon.",
+      "expect": "medium"
+    },
+    {
+      "id": "d05",
+      "kind": "earlier unresolved work then courteous closing",
+      "previous_owner": "Draft the letter, then tell me about the weather.",
+      "previous_answer": "I have no weather to report, my lord, and the letter awaits your direction on its recipient. How may I assist you further?",
+      "utterance": "Thank you, Val.",
+      "expect": "medium"
+    },
+    {
+      "id": "d06",
+      "kind": "correction",
+      "previous_owner": "Not the hall, the chapel.",
+      "previous_answer": "The chapel, my lord. Corrected.",
+      "utterance": "Thank you.",
+      "expect": "medium"
+    },
+    {
+      "id": "d07",
+      "kind": "withdrawn instruction",
+      "previous_owner": "Never mind the letter.",
+      "previous_answer": "Very well, my lord; the letter is set aside.",
+      "utterance": "Good night.",
+      "expect": "medium"
+    },
+    {
+      "id": "d08",
+      "kind": "thanks authorising nothing",
+      "previous_owner": "Is the house quiet?",
+      "previous_answer": "It is, my lord.",
+      "utterance": "Thank you, Val.",
+      "expect": "light"
+    },
+    {
+      "id": "d09",
+      "kind": "farewell authorising nothing",
+      "previous_owner": "How are you tonight?",
+      "previous_answer": "Well, my lord. And you?",
+      "utterance": "Well enough. Good night.",
+      "expect": "medium"
+    },
+    {
+      "id": "d10",
+      "kind": "mixed utterance with an instruction",
+      "previous_owner": "Good evening, Val.",
+      "previous_answer": "Good evening, my lord.",
+      "utterance": "Thank you, and send the reply.",
+      "expect": "medium"
+    }
+  ]
+}

@@ -42,7 +42,7 @@ class Primer:
         self.entered = threading.Event()
         self.hold = hold
 
-    def __call__(self, still_wanted: Callable[[], bool]) -> object:
+    def __call__(self, still_wanted: Callable[[], bool], routes: object = None) -> object:
         self.runs.append(still_wanted())
         self.entered.set()
         if self.hold is not None:
@@ -59,8 +59,16 @@ def wait_for(condition: Callable[[], bool], timeout: float = 5.0) -> None:
     raise AssertionError("never happened")
 
 
-def test_voice_on_alone_does_not_prime(store: Engine) -> None:  # noqa: F811
-    """Priming at Voice On overlapped his speaking and slowed the recognizer."""
+def test_voice_on_primes_when_he_is_not_speaking(store: Engine) -> None:  # noqa: F811
+    """Amended 26 September 2026 (owner order, Milestone A §2).
+
+    This pinned the 25 September decision that Voice On alone does not prime, because
+    a prime overlapping his speaking slowed the recognizer's final decode. The order of
+    26 September asks that the prefixes be ready before "Ready" is advertised, so the
+    session now primes at Voice On **when he is not speaking**, and stands aside
+    (marked `skipped`) when he is — which keeps the 25 September concern answered.
+    `test_voice_readiness.py` holds the standing-aside case.
+    """
     primer = Primer()
     session = VoiceSession(
         store,
@@ -70,8 +78,9 @@ def test_voice_on_alone_does_not_prime(store: Engine) -> None:  # noqa: F811
         prime=primer,
     )
     session.start()
-    time.sleep(0.2)
-    assert primer.runs == []
+    wait_for(lambda: len(session.primes) == 1)
+    assert primer.runs == [True]
+    assert session.primes[0]["kind"] == "initial"  # type: ignore[index]
     session.close()
 
 
@@ -116,18 +125,26 @@ def test_the_prime_is_refreshed_once_the_turn_is_over_and_not_during_it(
     )
     busy_when_called: list[bool] = []
 
-    def primer(still_wanted: Callable[[], bool]) -> object:
+    def primer(still_wanted: Callable[[], bool], routes: object = None) -> object:
         # Neither her cognition nor her voice may still be running for his turn.
         busy_when_called.append(session._cognition_busy or session._inflight is not None)
         return {"primed": True, "outcome": "established", "wanted": still_wanted()}
 
-    session._prime = primer
-    session._initial_prime_started = True  # this test is about the refresh alone
-    session.feed(MARKER)
-    settle(session, clock)
-    wait_for(lambda: len(session.primes) == 1)
-    assert busy_when_called == [False], "after the whole turn, never during any part of it"
-    assert session.primes[0]["kind"] == "refresh"  # type: ignore[index]
+    # Amended 26 September 2026 (Milestone A §3): the refresh is dispatched once the
+    # session has been idle for `REFRESH_IDLE_SECONDS`, so the test waits for it.
+    import val_gateway.voice as voice_module
+
+    voice_module.REFRESH_IDLE_SECONDS = 0.2
+    try:
+        session._prime = primer
+        session._initial_prime_started = True  # this test is about the refresh alone
+        session.feed(MARKER)
+        settle(session, clock)
+        wait_for(lambda: len(session.primes) == 1, timeout=10.0)
+        assert busy_when_called == [False], "after the whole turn, never during any part of it"
+        assert session.primes[0]["kind"] == "refresh"  # type: ignore[index]
+    finally:
+        voice_module.REFRESH_IDLE_SECONDS = 1.0
     session.close()
 
 

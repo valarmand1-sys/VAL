@@ -89,6 +89,23 @@ def test_the_tier_1_request_keeps_the_last_exchange_and_states_what_it_left_out(
     assert instruction["contract"] == list(TIER1_CONTRACT)
 
 
+def test_a_light_previous_exchange_is_left_out(store: Engine) -> None:
+    adapter = ScriptedAdapter([ok("Good evening, my lord.")])
+    conversation = a_conversation(store)
+    spoken(store, adapter, "Good evening, Val.", conversation)
+    thread = conversations.working(store, conversation)
+    messages, projection = tier1_messages(
+        thread,
+        Message(role="user", content="Thank you, Val."),
+        before_sequence=3,
+        egress=sealed(LocalOnlyReason.CONVERSATION_SEALED),
+    )
+    assert [m.role for m in messages] == ["user", "user", "user"], "no greeting pair carried"
+    assert not projection.retained_exchange and projection.prior_messages_in_record == 2
+    record = json.loads(messages[0].content.split("\n", 1)[1])["record_state"]
+    assert record["same_conversation_history"]["earlier_messages_in_record_not_shown"] == 2
+
+
 def test_a_first_greeting_carries_no_exchange_and_says_so(store: Engine) -> None:
     conversation = a_conversation(store)
     thread = conversations.working(store, conversation)
@@ -115,7 +132,8 @@ def test_thanks_after_an_open_question_stays_on_medium(
     assert all(call.config_slug != LIGHT_CANDIDATE_SLUG for call in adapter.sent)
     thread = conversations.working(store, conversation)
     verdict = tier1_eligibility(thread, "Thank you, Val.", 3, TIER_ONE)
-    assert verdict.tier is None and "open" in verdict.reason
+    assert verdict.tier is None
+    assert "open" in verdict.reason or "action or a decision" in verdict.reason
 
 
 def test_a_turn_after_a_corrected_message_stays_on_medium(store: Engine) -> None:

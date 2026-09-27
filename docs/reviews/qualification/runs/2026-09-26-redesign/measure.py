@@ -63,7 +63,9 @@ if "VAL_MEASURE_PLAN" in os.environ:
         _first, _last = (int(x) for x in os.environ["VAL_MEASURE_PLAN_ROWS"].split(":"))
         PLAN = PLAN[_first:_last]
     sessions = len(PLAN)
-PAUSE_S = 2.0
+#: The pause between his phrases (Milestone A §3: shortened to make his next words arrive
+#: while a refresh would still be running).
+PAUSE_S = float(os.environ.get("VAL_MEASURE_PAUSE_S", "2.0"))
 log_path = HERE / f"service-{condition}.log"
 
 
@@ -101,7 +103,7 @@ def sample_machine() -> None:
         time.sleep(1.0)
 
 
-env = {**os.environ, "VAL_SCRATCH_MODEL_IDENTIFIER": "openai/gpt-oss-20b", "DRIVE_LEAD_S": "1.0"}
+env = {**os.environ, "VAL_SCRATCH_MODEL_IDENTIFIER": "openai/gpt-oss-20b", "DRIVE_LEAD_S": os.environ.get("DRIVE_LEAD_S", "1.0")}
 with log_path.open("w") as log:
     server = subprocess.Popen(
         ["uv", "run", "--project", str(checkout), "python", str(SERVE)],
@@ -177,7 +179,7 @@ lines = log_path.read_text().splitlines()
 timelines = [json.loads(line.split("voice turn timeline: ", 1)[1])
              for line in lines if "voice turn timeline: " in line]
 primes = [json.loads(line.split("voice prime: ", 1)[1]) | {"wall": float(line.split()[0])}
-          for line in lines if "voice prime: " in line]
+          for line in lines if "voice prime: {" in line]  # the JSON records only
 warms = [line for line in lines if "voice warm" in line or "warmed" in line][:20]
 
 
@@ -195,6 +197,7 @@ def logged(prefix: str) -> list[dict]:
 
 
 routes = logged("fast route: ")
+readiness = logged("voice readiness: ")
 completions = logged("turn completion: ")
 speculation_lines = [
     {"wall": float(line.split()[0]), "text": line.split("speculation: ", 1)[1].strip()}
@@ -251,6 +254,7 @@ report = {
     "preparations": preparations,
     "calls": calls,
     "routes": routes,
+    "readiness": readiness,
     "completions": completions,
     "speculation_log": speculation_lines,
     "fast_route_tiers": os.environ.get("VAL_FAST_ROUTE_TIERS", ""),

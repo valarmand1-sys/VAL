@@ -537,18 +537,37 @@ class Gateway:
         )
         return order[0] if order else None
 
-    def prime_prefix(self, still_wanted: Callable[[], bool] = lambda: True) -> Mapping[str, object]:
+    def prime_prefix(
+        self,
+        still_wanted: Callable[[], bool] = lambda: True,
+        routes: tuple[str, ...] = ("partner", "light"),
+    ) -> Mapping[str, object]:
         """Prime the spoken turn's route — and the light route too, when one is admitted.
 
         Owner order, 26 September 2026 (§9): exact persona-prefix reuse is qualified for
         the fast model as for the Partner route, by the same plan, on its own instance.
         The Partner route's result is this method's result, as before; the light
         route's rides alongside as `light`.
+
+        `routes` (Milestone A §3, 26 September 2026) names which entries to prime:
+        both by default; a refresh after a turn primes only the effort that turn did
+        not use, since the used effort's own prompt is resident in the runtime.
         """
-        result = dict(self._prime_route(TaskType.CONVERSATION, still_wanted))
+        # The light entry first and the Partner entry last, so the Partner checkpoint
+        # is the runtime's most recent entry when his next turn — most often
+        # substantive — arrives (Milestone A §3, 26 September 2026: the runtime's
+        # prompt cache holds very few entries and evicts by age).
         light = self._spoken_turn_route(TaskType.LIGHT_CONVERSATION)
+        light_result: object = {"primed": True, "outcome": "not_requested"}
+        if light is not None and "light" in routes:
+            light_result = self._prime_route(TaskType.LIGHT_CONVERSATION, still_wanted)
+        result: dict[str, object] = (
+            dict(self._prime_route(TaskType.CONVERSATION, still_wanted))
+            if "partner" in routes
+            else {"primed": True, "outcome": "not_requested"}
+        )
         if light is not None:
-            result["light"] = self._prime_route(TaskType.LIGHT_CONVERSATION, still_wanted)
+            result["light"] = light_result
         return result
 
     def _prime_route(

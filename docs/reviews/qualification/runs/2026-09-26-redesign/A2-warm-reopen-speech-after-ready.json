@@ -1,0 +1,659 @@
+{
+ "condition": "A2-warm-reopen-speech-after-ready",
+ "checkout": "/Users/josepharmand/Projects/val",
+ "revision": "18aef943e200d2dbea828531d946671cd9f2df42",
+ "dirty": true,
+ "sessions": [
+  {
+   "label": "A2-warm-reopen-speech-after-ready session 1",
+   "session": "ff9df7ce-486f-45c5-bad3-81a2c9f61366",
+   "voice_on_to_first_speech_start_ms": 12393.5,
+   "turns": [
+    {
+     "phrase": "Good evening, Val, it's me.",
+     "speech_end_to": {
+      "endpoint_seen": 1002.6,
+      "words_provisional_after": 1002.6,
+      "committed_seen": 2125.4,
+      "owner_message_canonical": 2133.6,
+      "answered_seen": 3861.0,
+      "answer_read_via_answered": 3867.6,
+      "turn_appended": 4721.4,
+      "answer_read_via_turn": 4729.9,
+      "first_playback_start": 4394.0
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good evening, my lord.",
+       "message_id": "01a0e067-bd51-798b-b2db-7d3869fe31fd",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.6,
+       "arrived_ms": 4394.0,
+       "playback_start_ms": 4394.0,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 336.0,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    },
+    {
+     "phrase": "What do you think of the second act?",
+     "speech_end_to": {
+      "endpoint_seen": 924.0,
+      "words_provisional_after": 924.0,
+      "committed_seen": 2037.2,
+      "owner_message_canonical": 2052.7,
+      "answered_seen": 9323.2,
+      "answer_read_via_answered": 9338.0,
+      "turn_appended": 11306.4,
+      "answer_read_via_turn": 11316.6,
+      "first_playback_start": 9715.6
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 36,
+       "text": "I have no book on this yet, my lord.",
+       "message_id": "01a0e067-fa14-72c1-969d-4b886a717d46",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.16,
+       "arrived_ms": 9715.6,
+       "playback_start_ms": 9715.6,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 1601.0,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 2,
+       "chars": 48,
+       "text": "Could you tell me what the second act refers to?",
+       "message_id": "01a0e067-fa14-72c1-969d-4b886a717d46",
+       "pieces": 3,
+       "underrun_ms": 0.0,
+       "duration_s": 2.48,
+       "arrived_ms": 10635.8,
+       "playback_start_ms": 11875.6,
+       "waited_for_previous_ms": 1239.8,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -559.0,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "ineligible"
+    },
+    {
+     "phrase": "Good morning to you, Val.",
+     "speech_end_to": {
+      "endpoint_seen": 947.4,
+      "words_provisional_after": 947.4,
+      "committed_seen": 2056.8,
+      "owner_message_canonical": 2078.7,
+      "answered_seen": 17225.7,
+      "answer_read_via_answered": 17242.1,
+      "turn_appended": 22542.9,
+      "answer_read_via_turn": 22559.1,
+      "first_playback_start": 16190.4
+     },
+     "segments": [
+      {
+       "index": 1,
+       "chars": 22,
+       "text": "Good morning, my lord.",
+       "message_id": "00000000-0000-0000-0000-000000000000",
+       "pieces": 2,
+       "underrun_ms": 0.0,
+       "duration_s": 1.44,
+       "arrived_ms": 16190.4,
+       "playback_start_ms": 16190.4,
+       "waited_for_previous_ms": 0.0,
+       "gap_after_previous_ms": null,
+       "text_offset_before_ms": 6368.7,
+       "text_offset_after_ms": 1051.8
+      },
+      {
+       "index": 2,
+       "chars": 65,
+       "text": "It is evening here\u2014perhaps you meant the time in your own region.",
+       "message_id": "01a0e068-5fdf-7d76-847f-b19fc87263cd",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.04,
+       "arrived_ms": 17270.3,
+       "playback_start_ms": 17630.4,
+       "waited_for_previous_ms": 360.0,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 4928.7,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 3,
+       "chars": 48,
+       "text": "I have no volume on a \u201csecond act\u201d to draw upon.",
+       "message_id": "01a0e068-5fdf-7d76-847f-b19fc87263cd",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 2.96,
+       "arrived_ms": 18518.9,
+       "playback_start_ms": 20670.4,
+       "waited_for_previous_ms": 2151.4,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": 1888.7,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 4,
+       "chars": 118,
+       "text": "Could you tell me what it refers to? Is it the next phase of a project, a scene in a play, or something else entirely?",
+       "message_id": "01a0e068-5fdf-7d76-847f-b19fc87263cd",
+       "pieces": 7,
+       "underrun_ms": 0.0,
+       "duration_s": 6.4,
+       "arrived_ms": 19673.3,
+       "playback_start_ms": 23630.4,
+       "waited_for_previous_ms": 3957.1,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -1071.3,
+       "text_offset_after_ms": 0.0
+      },
+      {
+       "index": 5,
+       "chars": 60,
+       "text": "Once I know the context, I can give you an informed opinion.",
+       "message_id": "01a0e068-5fdf-7d76-847f-b19fc87263cd",
+       "pieces": 4,
+       "underrun_ms": 0.0,
+       "duration_s": 3.12,
+       "arrived_ms": 21756.1,
+       "playback_start_ms": 30030.4,
+       "waited_for_previous_ms": 8274.3,
+       "gap_after_previous_ms": 0.0,
+       "text_offset_before_ms": -7471.3,
+       "text_offset_after_ms": 0.0
+      }
+     ],
+     "group": "tier_1"
+    }
+   ]
+  }
+ ],
+ "service_components": [
+  {
+   "anchor_wall": "2026-09-27T01:08:07.216+00:00",
+   "request_ready_to_first_output_ms": 1743.4,
+   "first_output_to_visible_text_ms": null,
+   "request_ready_to_first_speech_text_ms": 1748.0,
+   "first_tts_ms": 800.5,
+   "first_segment_to_first_audio_ms": 582.8,
+   "first_visible_to_first_audio_ms": 599.1,
+   "request_ready_to_first_audio_ms": 2347.1,
+   "cognition_complete_ms": 10.7,
+   "marks": [
+    "audio_at_sink",
+    "conversation_created",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "scope_resolved",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:08:17.257+00:00",
+   "request_ready_to_first_output_ms": 2642.6,
+   "first_output_to_visible_text_ms": 4435.4,
+   "request_ready_to_first_speech_text_ms": 7078.0,
+   "first_tts_ms": 911.7,
+   "first_segment_to_first_audio_ms": 500.4,
+   "first_visible_to_first_audio_ms": 639.2,
+   "request_ready_to_first_audio_ms": 7717.2,
+   "cognition_complete_ms": 8.1,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  },
+  {
+   "anchor_wall": "2026-09-27T01:08:35.483+00:00",
+   "request_ready_to_first_output_ms": 8695.9,
+   "first_output_to_visible_text_ms": 4528.2,
+   "request_ready_to_first_speech_text_ms": 13224.1,
+   "first_tts_ms": 1175.9,
+   "first_segment_to_first_audio_ms": 789.2,
+   "first_visible_to_first_audio_ms": 868.4,
+   "request_ready_to_first_audio_ms": 14092.5,
+   "cognition_complete_ms": 9.0,
+   "marks": [
+    "assembly_end",
+    "assembly_start",
+    "audio_at_sink",
+    "egress_decided",
+    "endpoint",
+    "exact_preflight_end",
+    "exact_preflight_start",
+    "message_append_start",
+    "message_persisted",
+    "owner_message_committed",
+    "owner_turn_submitted",
+    "provider_chunk",
+    "provider_dispatch",
+    "provider_visible_text",
+    "record_state_assembled",
+    "runtime_ready_end",
+    "runtime_ready_start",
+    "speech_first_visible_text",
+    "speech_segment_queued",
+    "transcript_final_processed",
+    "transcript_final_received",
+    "tts_synthesize_return",
+    "tts_synthesize_start",
+    "turn_start"
+   ]
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "routes": [
+    "partner",
+    "light"
+   ],
+   "seconds": 2.464,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0e067-8f10-7bae-84d9-0d4b96fac533",
+    "seconds": 1.504,
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e067-9129-7264-9a3f-3acaba261510",
+     "seconds": 0.23
+    }
+   },
+   "wall": 1790471278.892
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "partner"
+   ],
+   "seconds": 0.48,
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5048,
+    "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+    "prime_tokens": 5059,
+    "model_call_id": "01a0e067-c6bf-7c77-a6fc-9c2b0a5f07ca",
+    "seconds": 0.306,
+    "light": {
+     "primed": true,
+     "outcome": "not_requested"
+    }
+   },
+   "wall": 1790471292.621
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.479,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e068-07cf-708a-8ec5-68ab2dcc4c6f",
+     "seconds": 0.312
+    }
+   },
+   "wall": 1790471309.265
+  },
+  {
+   "kind": "refresh",
+   "routes": [
+    "light"
+   ],
+   "seconds": 0.467,
+   "result": {
+    "primed": true,
+    "outcome": "not_requested",
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e068-7ad8-76c9-9f20-27dd5a9075d9",
+     "seconds": 0.291
+    }
+   },
+   "wall": 1790471338.716
+  }
+ ],
+ "machine": {
+  "samples": 78,
+  "min_free_percent": 38,
+  "swap_used_mb_first": 1435.31,
+  "swap_used_mb_last": 1435.31,
+  "max_resident_speech_rss_mb": 3185.4,
+  "max_one_shot_speech_rss_mb": null,
+  "resident_alive_after_close": false
+ },
+ "measured_at": "2026-09-26T20:09:14",
+ "serve": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-26-redesign/serve_variant.py",
+ "first_pause": "on",
+ "dialogue": [
+  {
+   "id": "01a0e067-b684-7726-a8c1-4d3400e59d56",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "sequence": 1,
+   "role": "user",
+   "content": "Good evening, Val, it's me.",
+   "created_at": "2026-09-26T20:08:08.451846-05:00",
+   "route": null,
+   "own_calls": "light_conversation@de3c53f0-7db1-4d1a-8fa5-52381e8a7f96"
+  },
+  {
+   "id": "01a0e067-bd51-798b-b2db-7d3869fe31fd",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "sequence": 2,
+   "role": "val",
+   "content": "Good evening, my lord.",
+   "created_at": "2026-09-26T20:08:10.192606-05:00",
+   "route": "light_conversation@de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e067-dde1-75ea-87c7-cbef5e6b0043",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "sequence": 3,
+   "role": "user",
+   "content": "What do you think of the second act?",
+   "created_at": "2026-09-26T20:08:18.528054-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e067-fa14-72c1-969d-4b886a717d46",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "sequence": 4,
+   "role": "val",
+   "content": "I have no book on this yet, my lord. Could you tell me what the second act refers to?",
+   "created_at": "2026-09-26T20:08:25.747348-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  },
+  {
+   "id": "01a0e068-24fb-781c-a767-972e50e84748",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "sequence": 5,
+   "role": "user",
+   "content": "Good morning to you, Val.",
+   "created_at": "2026-09-26T20:08:36.729732-05:00",
+   "route": null,
+   "own_calls": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"
+  },
+  {
+   "id": "01a0e068-5fdf-7d76-847f-b19fc87263cd",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "sequence": 6,
+   "role": "val",
+   "content": "Good morning, my lord. It is evening here\u2014perhaps you meant the time in your own region.\n\nI have no volume on a \u201csecond act\u201d to draw upon. Could you tell me what it refers to? Is it the next phase of a project, a scene in a play, or something else entirely? Once I know the context, I can give you an informed opinion.",
+   "created_at": "2026-09-26T20:08:51.806338-05:00",
+   "route": "conversation@3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "own_calls": null
+  }
+ ],
+ "preparations": [],
+ "calls": [
+  {
+   "id": "01a0e067-8f10-7bae-84d9-0d4b96fac533",
+   "task_type": "prefix_prime",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 1467,
+   "created_at": "2026-09-26T20:07:58.352203-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e067-9129-7264-9a3f-3acaba261510",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 199,
+   "created_at": "2026-09-26T20:07:58.887875-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e067-bd4d-725c-8729-55c67c9a799d",
+   "task_type": "light_conversation",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "message_id": "01a0e067-b684-7726-a8c1-4d3400e59d56",
+   "status": "ok",
+   "tokens_in": 5746,
+   "tokens_out": 31,
+   "cost": 0.0,
+   "latency_ms": 1672,
+   "created_at": "2026-09-26T20:08:10.188731-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e067-c6bf-7c77-a6fc-9c2b0a5f07ca",
+   "task_type": "prefix_prime",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 251,
+   "created_at": "2026-09-26T20:08:12.606674-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e067-fa0d-78f4-8f1b-4e270bea5f2b",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "message_id": "01a0e067-dde1-75ea-87c7-cbef5e6b0043",
+   "status": "ok",
+   "tokens_in": 6392,
+   "tokens_out": 294,
+   "cost": 0.0,
+   "latency_ms": 7130,
+   "created_at": "2026-09-26T20:08:25.740958-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e068-07cf-708a-8ec5-68ab2dcc4c6f",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 271,
+   "created_at": "2026-09-26T20:08:29.262266-05:00",
+   "terminal_state": "truncated"
+  },
+  {
+   "id": "01a0e068-5fc8-7e3d-80a7-537a7d72cb77",
+   "task_type": "conversation",
+   "model_config_id": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+   "conversation_id": "01a0e067-b682-71d1-9e73-b293ef75d8d4",
+   "message_id": "01a0e068-24fb-781c-a767-972e50e84748",
+   "status": "ok",
+   "tokens_in": 5945,
+   "tokens_out": 360,
+   "cost": 0.0,
+   "latency_ms": 14975,
+   "created_at": "2026-09-26T20:08:51.784069-05:00",
+   "terminal_state": "complete"
+  },
+  {
+   "id": "01a0e068-7ad8-76c9-9f20-27dd5a9075d9",
+   "task_type": "prefix_prime",
+   "model_config_id": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+   "conversation_id": null,
+   "message_id": null,
+   "status": "ok",
+   "tokens_in": 5059,
+   "tokens_out": 0,
+   "cost": 0.0,
+   "latency_ms": 250,
+   "created_at": "2026-09-26T20:08:58.712093-05:00",
+   "terminal_state": "truncated"
+  }
+ ],
+ "routes": [
+  {
+   "wall": 1790471288.459,
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell, greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790471298.536,
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "wall": 1790471316.742,
+   "tier": null,
+   "reason": "her last answer asked or offered something in particular",
+   "tiers": [
+    1
+   ]
+  }
+ ],
+ "readiness": [
+  {
+   "wall": 1790471276.428,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "warming",
+   "prefix_light": "not_applicable",
+   "detail": null
+  },
+  {
+   "wall": 1790471278.893,
+   "ready": true,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "primed",
+   "prefix_light": "primed",
+   "detail": null
+  },
+  {
+   "wall": 1790471292.621,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "primed",
+   "prefix_light": "failed",
+   "detail": null
+  },
+  {
+   "wall": 1790471309.265,
+   "ready": false,
+   "cognition": "ready",
+   "voice": "ready",
+   "prefix_partner": "failed",
+   "prefix_light": "primed",
+   "detail": null
+  }
+ ],
+ "completions": [],
+ "speculation_log": [],
+ "fast_route_tiers": "1",
+ "tier1_route": "low",
+ "speculation": "",
+ "adaptive_grace": "",
+ "plan": "/Users/josepharmand/Projects/val/docs/reviews/qualification/runs/2026-09-26-redesign/plan_readiness.json"
+}

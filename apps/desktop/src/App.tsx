@@ -1172,10 +1172,22 @@ export function ResponseProgress(props: { session: VoiceSessionView }): React.JS
   const { session } = props;
   const lines: string[] = [];
   const stage = session.progress ?? null;
-  if (stage === "thinking") lines.push("Val is thinking…");
+  if (stage === "warming") lines.push("Val is warming up — your words are heard and will be answered.");
+  else if (stage === "thinking") lines.push("Val is thinking…");
   else if (stage === "writing") lines.push("Val is writing…");
   else if (stage === "voicing") lines.push("Preparing her voice…");
   if (session.queued) lines.push("Your next words are waiting for her current answer.");
+  const readiness = session.readiness ?? null;
+  if (readiness !== null && !readiness.ready && stage === null) {
+    const failed = Object.entries(readiness)
+      .filter(([key, value]) => key !== "ready" && key !== "detail" && value === "failed")
+      .map(([key]) => key.replace("prefix_", "").replace("_", " "));
+    lines.push(
+      failed.length > 0
+        ? `Voice is degraded: ${failed.join(", ")} unavailable${readiness.detail ? ` (${readiness.detail})` : ""}.`
+        : "Warming up… you can speak; the first answer may take longer.",
+    );
+  }
   if (lines.length === 0) return null;
   return (
     <div className="response-progress" aria-live="polite">

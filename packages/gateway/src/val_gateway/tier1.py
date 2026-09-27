@@ -43,10 +43,13 @@ from val_domain.egress import EgressDecision
 from val_domain.gateway import Message
 from val_gateway.context import CAPABILITY_STATE, LOCAL_ONLY_NOTE
 from val_gateway.loop import local_now
+from val_policy.light_conversation import ConversationState, decide
 
 #: The marker on the Tier-1 record-state block, distinct from the ordinary envelope's
 #: so that a reader of the record can tell which shape the model saw.
 TIER1_STATE_MARKER = "VAL-TIER1-STATE-V1"
+#: Both light tiers, for recognising a previous exchange that was itself light.
+LIGHT_TIERS = frozenset({1, 2})
 #: The marker on Core's instruction block for the turn.
 TIER1_INSTRUCTION_MARKER = "VAL-TIER1-INSTRUCTION-V1"
 
@@ -85,7 +88,15 @@ class Tier1Projection:
 
 
 def last_exchange(thread: WorkingThread, before_sequence: int) -> tuple[Message, ...]:
-    """His previous message and her answer to it, wording in force, or nothing."""
+    """His previous message and her answer to it, wording in force, or nothing.
+
+    A previous exchange that was itself light — his greeting and her greeting back —
+    is not context a thanks or a farewell needs, and it is left out (Milestone A §4,
+    26 September 2026): with it in the request, LOW answered "Thank you, Val." with
+    "Good evening, my lord." three times in seven, copying its own previous line;
+    without it, the same words drew "You're most welcome, my lord." A substantive
+    exchange stays, because "thank you" answers *that*.
+    """
     records = [
         record
         for record in thread.live_records()
@@ -99,6 +110,11 @@ def last_exchange(thread: WorkingThread, before_sequence: int) -> tuple[Message,
     exchange = [records[answer_index]]
     if answer_index > 0 and records[answer_index - 1].role is StoredRole.USER:
         exchange.insert(0, records[answer_index - 1])
+    if (
+        len(exchange) == 2
+        and decide(exchange[0].content, ConversationState(None, 0), LIGHT_TIERS).tier is not None
+    ):
+        return ()
     return tuple(
         Message(role="user" if r.role is StoredRole.USER else "assistant", content=r.content)
         for r in exchange

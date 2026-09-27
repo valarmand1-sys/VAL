@@ -1033,6 +1033,23 @@ class VoiceSessionView(BaseModel):
     #: behind it; that is a queue, and is never shown as reasoning.
     progress: str | None = None
     queued: bool = False
+    #: What is actually ready, component by component (owner order of 26 September
+    #: 2026, Milestone A §2): the cognition runtime, the voice worker, the Partner
+    #: prefix and the light prefix. `ready` only when every applicable one is.
+    readiness: ReadinessView | None = None
+
+
+class ReadinessView(BaseModel):
+    """Component readiness, as the session observed it — never inferred from a flag."""
+
+    model_config = ConfigDict(frozen=True)
+
+    ready: bool
+    cognition: str
+    voice: str
+    prefix_partner: str
+    prefix_light: str
+    detail: str | None = None
 
 
 class SpeechEndView(BaseModel):

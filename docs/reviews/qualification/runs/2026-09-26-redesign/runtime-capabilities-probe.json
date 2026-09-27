@@ -1,0 +1,67 @@
+{
+ "max_tokens_0_cold": {
+  "status": 400,
+  "seconds": 0.02,
+  "usage": null,
+  "finish": null,
+  "content_len": 0,
+  "error": "Field with key llm.prediction.maxPredictedTokens does not satisfy the schema:[\n  {\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Number must be greater than or equal to 1\",\n    \"path\": [\n      \"value\"\n    ]\n  }\n]"
+ },
+ "max_tokens_1_after": {
+  "status": 200,
+  "seconds": 10.478,
+  "usage": {
+   "prompt_tokens": 8065,
+   "completion_tokens": 0,
+   "total_tokens": 8065,
+   "completion_tokens_details": {
+    "reasoning_tokens": 0
+   }
+  },
+  "finish": "length",
+  "content_len": 0,
+  "error": null
+ },
+ "max_tokens_0_warm": {
+  "status": 400,
+  "seconds": 0.004,
+  "usage": null,
+  "finish": null,
+  "content_len": 0,
+  "error": "Field with key llm.prediction.maxPredictedTokens does not satisfy the schema:[\n  {\n    \"code\": \"too_small\",\n    \"minimum\": 1,\n    \"type\": \"number\",\n    \"inclusive\": true,\n    \"exact\": false,\n    \"message\": \"Number must be greater than or equal to 1\",\n    \"path\": [\n      \"value\"\n    ]\n  }\n]"
+ },
+ "abandon_stream": {
+  "chunks_before_close": 44,
+  "closed_after_s": 1.526,
+  "tiny_request_after_close": {
+   "status": 200,
+   "seconds": 0.202,
+   "usage": {
+    "prompt_tokens": 70,
+    "completion_tokens": 3,
+    "total_tokens": 73,
+    "completion_tokens_details": {
+     "reasoning_tokens": 0
+    }
+   },
+   "finish": "length",
+   "content_len": 0,
+   "error": null
+  }
+ },
+ "tiny_request_control": {
+  "status": 200,
+  "seconds": 0.256,
+  "usage": {
+   "prompt_tokens": 70,
+   "completion_tokens": 3,
+   "total_tokens": 73,
+   "completion_tokens_details": {
+    "reasoning_tokens": 0
+   }
+  },
+  "finish": "length",
+  "content_len": 0,
+  "error": null
+ }
+}

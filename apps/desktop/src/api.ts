@@ -380,6 +380,16 @@ export interface VoiceSessionView {
   // whether his next words are queued behind it (26 September 2026).
   progress?: string | null;
   queued?: boolean;
+  // What is actually ready, component by component (Milestone A §2, 26 September
+  // 2026): the desktop no longer says Ready on the session's existence alone.
+  readiness?: {
+    ready: boolean;
+    cognition: string;
+    voice: string;
+    prefix_partner: string;
+    prefix_light: string;
+    detail?: string | null;
+  } | null;
   // When his most recent settled utterance's speech ended, as milliseconds before this
   // response was written: the endpoint less the silence that confirmed it. A
   // VAD-derived estimate, never an acoustic observation.
