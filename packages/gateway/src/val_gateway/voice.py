@@ -96,6 +96,9 @@ SPECULATION_WAIT_SECONDS = 8.0
 REFRESH_IDLE_SECONDS = 1.0
 #: How long a scheduled refresh keeps waiting for that idleness before giving up.
 REFRESH_PATIENCE_SECONDS = 60.0
+#: How long past the duration estimate a handed-over segment without a completion report
+#: still counts as playing (release-gaps corrections, 27 September 2026, §6).
+PLAYBACK_REPORT_GRACE_SECONDS = 3.0
 
 
 @dataclass(frozen=True)
@@ -602,6 +605,12 @@ class VoiceSession:
         #: hand-offs' own durations, serially; brought forward by barge-in or a
         #: playback report that the speakers stopped. Owner work for maintenance.
         self._heard_until = 0.0
+        #: Segments handed to the desktop whose playback it has not yet reported ended
+        #: (release-gaps corrections, 27 September 2026, §6): actual playback state,
+        #: preferred over the duration estimate while a report is outstanding, and
+        #: bounded — a report that never comes stops counting `PLAYBACK_REPORT_GRACE_SECONDS`
+        #: after the estimate would have ended.
+        self._outstanding_playback: dict[tuple[object, int], float] = {}
         #: How the local runtime's persona prefix is primed and refreshed (owner
         #: order, 25 September 2026). Optional maintenance: it never starts while a
         #: request of his is waiting, and one run at a time.
@@ -807,25 +816,67 @@ class VoiceSession:
         self._recognizer.flush()
         self.advance()
 
-    def speech_handed_over(self, duration_seconds: float) -> None:
-        """A piece of her answer has left for the desktop: it will be heard for this long.
+    def speech_handed_over(
+        self, duration_seconds: float, *, segment: tuple[object, int] | None = None
+    ) -> None:
+        """A piece of her answer has left for the desktop: it will be heard for about this long.
 
         Release-gaps order of 26 September 2026 (§7). The scheduler's idle clock used to
         start when synthesis ended, while the desktop was still speaking the tail of the
         answer — the collision runs of Milestone A show every refresh dispatched one
         second after the turn's completion and 2.7 to 19.6 s before his next words, which
-        began 0.3 s after the *player* fell silent. Audio handed over is counted as
-        heard, serially, for its own duration; nothing here is a claim about a speaker.
+        began 0.3 s after the *player* fell silent. The elapsed duration of handed-over
+        audio, summed serially, is an **estimate of playback occupancy**, not a
+        measurement of a speaker; where the desktop reports what its speakers did, that
+        report is preferred (`playback_reported`), and a missing report is handled within
+        a bound rather than trusted for ever.
         """
         with self._lock:
             now = time.monotonic()
             self._heard_until = max(self._heard_until, now) + max(0.0, duration_seconds)
+            if segment is not None:
+                # Expected to have ended by the estimate plus the grace; after that a
+                # missing report is forgotten rather than trusted for ever.
+                self._outstanding_playback[segment] = (
+                    self._heard_until + PLAYBACK_REPORT_GRACE_SECONDS
+                )
 
-    def playback_reported(self, state: str) -> None:
-        """The desktop reported what its speakers did; a stop ends what is counted as heard."""
-        if state in ("playback_interrupted", "playback_failed"):
-            with self._lock:
+    def playback_reported(self, state: str, *, segment: tuple[object, int] | None = None) -> None:
+        """The desktop reported what its speakers did with one segment.
+
+        A stop (interrupted, failed) ends what is counted as heard at once. A completion
+        clears that segment; when nothing handed over is still playing, occupancy ends
+        even if the estimate would have run on — the actual state is preferred.
+        """
+        with self._lock:
+            if state in ("playback_interrupted", "playback_failed"):
                 self._heard_until = min(self._heard_until, time.monotonic())
+                self._outstanding_playback.clear()
+            elif state == "playback_completed" and segment is not None:
+                self._outstanding_playback.pop(segment, None)
+                self._expire_outstanding_locked()
+                if not self._outstanding_playback:
+                    self._heard_until = min(self._heard_until, time.monotonic())
+
+    def _expire_outstanding_locked(self) -> None:
+        now = time.monotonic()
+        for key in [k for k, until in self._outstanding_playback.items() if until <= now]:
+            del self._outstanding_playback[key]
+
+    def _playback_occupied_locked(self) -> bool:
+        """Is handed-over audio still to be counted as sounding? (lock held)
+
+        The estimate governs first; while the desktop has not yet reported a handed-over
+        segment ended, occupancy extends past the estimate by at most
+        `PLAYBACK_REPORT_GRACE_SECONDS` — so delayed playback cannot let maintenance start
+        while the desktop is still audibly active, and a report that never comes cannot
+        hold maintenance for ever.
+        """
+        now = time.monotonic()
+        if now < self._heard_until:
+            return True
+        self._expire_outstanding_locked()
+        return bool(self._outstanding_playback)
 
     @property
     def speech_handover(self) -> Delivery | None:
@@ -1483,7 +1534,7 @@ class VoiceSession:
                 or self._cognition_busy
                 or self._inflight is not None
                 or (including_speech and self._current is not None)
-                or (including_speech and time.monotonic() < self._heard_until)
+                or (including_speech and self._playback_occupied_locked())
             )
 
     def _maintain(

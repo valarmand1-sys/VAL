@@ -1,0 +1,886 @@
+{
+ "case": "F1-final-greeting-farewell",
+ "plan": {
+  "total_s": 81.804,
+  "phrases": [
+   {
+    "phrase": "Good evening, Val.",
+    "speech_start_s": 45.0,
+    "speech_end_s": 46.434
+   },
+   {
+    "phrase": "Good night, Val.",
+    "speech_start_s": 62.434,
+    "speech_end_s": 63.804
+   }
+  ]
+ },
+ "voice_on_click_wall": 1790490846352,
+ "service_clock": {
+  "voice_on_to_ready_s": 19.732,
+  "readiness_lines": [
+   {
+    "wall": 1790490851.667,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "warming",
+    "prefix_light": "not_applicable",
+    "detail": null
+   },
+   {
+    "wall": 1790490866.084,
+    "ready": true,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "primed",
+    "prefix_light": "primed",
+    "detail": null
+   }
+  ],
+  "warm": [
+   "began 2026-09-27T06:34:06.763+00:00",
+   "ended 2026-09-27T06:34:11.666+00:00 after 4.904s: {\"cognition\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx-lmstudio-partner\", \"server_found_running\": true, \"server_started\": false, \"model_found_loaded\": true, \"model_loaded\": false, \"requested_context_tokens\": 32768, \"loaded_context_tokens\": 32768, \"base_url\": \"http://127.0.0.1:1234/v1\", \"light\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx"
+  ],
+  "primes": [
+   {
+    "kind": "initial",
+    "routes": [
+     "partner",
+     "light"
+    ],
+    "seconds": 14.417,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e192-71a0-7635-b675-1b20abf92460",
+     "seconds": 6.416,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e192-573f-7d18-8525-20ec55fb2e65",
+      "seconds": 6.996
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.898,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e193-1b1a-70d6-a539-610f27ea9017",
+     "seconds": 0.248,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e193-197f-7643-bc16-e4cbd1189685",
+      "seconds": 0.3
+     }
+    }
+   },
+   "refresh after a light_conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.876,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e193-3d96-7a87-bc1f-97ffc62d0ac3",
+     "seconds": 0.246,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e193-3c04-74eb-90f9-6acf292f68c7",
+      "seconds": 0.297
+     }
+    }
+   }
+  ],
+  "fast_route": [
+   {
+    "tier": null,
+    "reason": "not within the admitted light scope: 'Vowel.'",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": 1,
+    "reason": "tier 1: greeting, thanks or farewell",
+    "tiers": [
+     1
+    ]
+   }
+  ],
+  "endpoints": [
+   "utterance=1 {\"reason\": \"silence\", \"endpoint_mono\": 595427.431130458, \"final_received_mono\": 595427.546223958, \"final_processed_mono\": 595427.574871333, \"decode_ms\": 115.1, \"voiced_s\": 1.28, \"silence_s\": 0.672, \"gap_before_s\": null, \"utterance_s\": 2.224, \"first_sample\": 718592, \"samples\": 35584, \"run_start_sample\": 0, \"received_samples\": 754240}",
+   "utterance=2 {\"reason\": \"silence\", \"endpoint_mono\": 595444.8616566671, \"final_received_mono\": 595444.96703325, \"final_processed_mono\": 595444.975334375, \"decode_ms\": 105.4, \"voiced_s\": 1.248, \"silence_s\": 0.672, \"gap_before_s\": 15.504, \"utterance_s\": 2.16, \"first_sample\": 997632, \"samples\": 34560, \"run_start_sample\": 0, \"received_samples\": 1032320}"
+  ],
+  "desktop_timing_reports": [
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": 2068.0,
+    "owner_message_dom_to_playback_start_ms": 8367.0,
+    "speech_end_to_playback_start_ms": 10434.0,
+    "committed_seen_to_owner_message_dom_ms": 16.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 860.0,
+    "segment_text_offsets_ms": [
+     5.0
+    ],
+    "segment_gaps_ms": [
+     1.0
+    ],
+    "segments": 2
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": 1918.0,
+    "owner_message_dom_to_playback_start_ms": 2036.0,
+    "speech_end_to_playback_start_ms": 3953.0,
+    "committed_seen_to_owner_message_dom_ms": 13.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 829.0,
+    "segment_text_offsets_ms": [
+     3.0
+    ],
+    "segment_gaps_ms": [],
+    "segments": 1
+   }
+  ],
+  "turn_timelines": [
+   {
+    "utterance": 1,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T06:34:54.143+00:00",
+    "conversation_id": "01a0e192-e435-7b1a-99f3-ec771f21c39d",
+    "message_id": "01a0e192-e444-70cf-bd59-789b00204f19",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 115.1,
+     "transcript_final_processed": 143.7,
+     "owner_turn_submitted": 1266.0,
+     "turn_start": 1269.1,
+     "scope_resolved": 1269.2,
+     "conversation_created": 1281.4,
+     "message_append_start": 1281.4,
+     "message_persisted": 1294.3,
+     "owner_message_committed": 1294.3,
+     "egress_decided": 1295.9,
+     "assembly_start": 1303.4,
+     "record_state_assembled": 1313.0,
+     "assembly_end": 1313.1,
+     "runtime_ready_start": 1322.3,
+     "runtime_ready_end": 1335.9,
+     "exact_preflight_start": 1336.0,
+     "exact_preflight_end": 1373.6,
+     "provider_dispatch": 1376.2,
+     "provider_chunk": 2972.2,
+     "provider_visible_text": 9058.2,
+     "speech_first_visible_text": 9058.2,
+     "speech_segment_queued": 9084.6,
+     "tts_synthesize_start": 9086.0,
+     "audio_at_sink": 9674.6,
+     "tts_synthesize_return": 9825.0
+    }
+   },
+   {
+    "utterance": 2,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T06:35:11.574+00:00",
+    "conversation_id": "01a0e192-e435-7b1a-99f3-ec771f21c39d",
+    "message_id": "01a0e193-2819-7074-b5f4-d41c0518ff82",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 105.4,
+     "transcript_final_processed": 113.7,
+     "owner_turn_submitted": 1214.3,
+     "turn_start": 1215.5,
+     "message_append_start": 1218.1,
+     "message_persisted": 1220.1,
+     "owner_message_committed": 1220.1,
+     "egress_decided": 1220.6,
+     "runtime_ready_start": 1233.8,
+     "runtime_ready_end": 1246.0,
+     "exact_preflight_start": 1246.1,
+     "exact_preflight_end": 1277.2,
+     "provider_dispatch": 1279.9,
+     "provider_chunk": 2766.3,
+     "speech_first_visible_text": 2769.0,
+     "speech_segment_queued": 2779.0,
+     "tts_synthesize_start": 2779.1,
+     "audio_at_sink": 3267.2,
+     "tts_synthesize_return": 3469.5
+    }
+   }
+  ]
+ },
+ "desktop_display": {
+  "voice_on_to_warming_shown_s": 0.417,
+  "voice_on_to_ready_displayed_s": 19.783,
+  "events": [
+   {
+    "wall": 1790490846351,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790490846358,
+    "voice": "Voice Starting\u2026",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790490846769,
+    "voice": "Voice Starting\u2026",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790490846919,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790490866135,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790490892772,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790490893490,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790490894211,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790490894328,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790490894334,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790490895414,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790490895526,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790490895539,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790490895542,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790490903211,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790490903329,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790490903337,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790490903910,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790490903925,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790490905006,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790490905261,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this"
+    ]
+   },
+   {
+    "wall": 1790490905373,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this"
+    ]
+   },
+   {
+    "wall": 1790490910289,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790490910887,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGoodnight, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790490911606,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790490911731,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790490911735,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790490912810,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790490912820,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790490912823,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790490914373,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790490914386,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790490914852,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790490914859,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790490915209,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790490915246,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790490931365,
+    "voice": "Voice Stopping\u2026",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790490931596,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you this evening?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   }
+  ],
+  "console": [
+   "[vite] connecting...",
+   "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+   "[vite] connected.",
+   "val.voice.capture {\"echoCancellation\":true,\"noiseSuppression\":true,\"autoGainControl\":true,\"sampleRate\":48000,\"channelCount\":1}"
+  ]
+ },
+ "store": {
+  "messages": [
+   {
+    "id": "01a0e192-e444-70cf-bd59-789b00204f19",
+    "conversation": "01a0e192-e435-7b1a-99f3-ec771f21c39d",
+    "sequence": 1,
+    "role": "user",
+    "content": "Good evening, Vowel.",
+    "created": "1790490895.425"
+   },
+   {
+    "id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "conversation": "01a0e192-e435-7b1a-99f3-ec771f21c39d",
+    "sequence": 2,
+    "role": "val",
+    "content": "Good evening, my lord. How may I assist you this evening?",
+    "created": "1790490903.233"
+   },
+   {
+    "id": "01a0e193-2819-7074-b5f4-d41c0518ff82",
+    "conversation": "01a0e192-e435-7b1a-99f3-ec771f21c39d",
+    "sequence": 3,
+    "role": "user",
+    "content": "Good night, Val.",
+    "created": "1790490912.792"
+   },
+   {
+    "id": "01a0e193-2e28-747f-a453-19b1eb48644d",
+    "conversation": "01a0e192-e435-7b1a-99f3-ec771f21c39d",
+    "sequence": 4,
+    "role": "val",
+    "content": "Good evening, my lord.",
+    "created": "1790490914.343"
+   }
+  ],
+  "model_calls": [
+   {
+    "id": "01a0e192-573f-7d18-8525-20ec55fb2e65",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6945,
+    "created": "1790490859.327"
+   },
+   {
+    "id": "01a0e192-71a0-7635-b675-1b20abf92460",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6383,
+    "created": "1790490866.080"
+   },
+   {
+    "id": "01a0e193-02be-7648-81c7-17b4b541ac16",
+    "message_id": "01a0e192-e444-70cf-bd59-789b00204f19",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 7710,
+    "created": "1790490903.230"
+   },
+   {
+    "id": "01a0e193-197f-7643-bc16-e4cbd1189685",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 252,
+    "created": "1790490909.055"
+   },
+   {
+    "id": "01a0e193-1b1a-70d6-a539-610f27ea9017",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 212,
+    "created": "1790490909.466"
+   },
+   {
+    "id": "01a0e193-2e24-7e42-86b2-506d3c5c20b7",
+    "message_id": "01a0e193-2819-7074-b5f4-d41c0518ff82",
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "light_conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 1486,
+    "created": "1790490914.341"
+   },
+   {
+    "id": "01a0e193-3c04-74eb-90f9-6acf292f68c7",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 260,
+    "created": "1790490917.892"
+   },
+   {
+    "id": "01a0e193-3d96-7a87-bc1f-97ffc62d0ac3",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 213,
+    "created": "1790490918.294"
+   }
+  ],
+  "deliveries": [
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790490903.244"
+   },
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 8407,
+    "segments": "1/2",
+    "reason": null,
+    "recorded": "1790490903.818"
+   },
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 8407,
+    "segments": "2/2",
+    "reason": null,
+    "recorded": "1790490904.942"
+   },
+   {
+    "message_id": "01a0e193-2e28-747f-a453-19b1eb48644d",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790490914.352"
+   },
+   {
+    "message_id": "01a0e193-2e28-747f-a453-19b1eb48644d",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 2052,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790490914.842"
+   },
+   {
+    "message_id": "01a0e193-2e28-747f-a453-19b1eb48644d",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 2052,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790490915.145"
+   }
+  ],
+  "playbacks": [
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490903.887"
+   },
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490903.911"
+   },
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490904.450"
+   },
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490905.261"
+   },
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490905.274"
+   },
+   {
+    "message_id": "01a0e193-02c1-7d5b-97dc-a65e2e55ee82",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490907.500"
+   },
+   {
+    "message_id": "01a0e193-2e28-747f-a453-19b1eb48644d",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490914.847"
+   },
+   {
+    "message_id": "01a0e193-2e28-747f-a453-19b1eb48644d",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490914.860"
+   },
+   {
+    "message_id": "01a0e193-2e28-747f-a453-19b1eb48644d",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790490916.370"
+   }
+  ]
+ }
+}

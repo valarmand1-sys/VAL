@@ -1,0 +1,169 @@
+{
+ "date_range": [
+  "2026-09-24",
+  "2026-09-26"
+ ],
+ "total_spoken_turns": 27,
+ "conversations": 11,
+ "diagnostic_conversations": 7,
+ "diagnostic_rule": "testing your|hear me|voice model|checking your|tuning|speed of the conversation|faster if possible|what you heard me say|how fast are you",
+ "splits": {
+  "all": {
+   "turns": 27,
+   "groups": {
+    "tier_1": {
+     "count": 7,
+     "percent": 25.9,
+     "endpoint_to_first_audio": {
+      "n": 3,
+      "median_ms": 10374,
+      "min_ms": 6286,
+      "max_ms": 16156
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 3,
+      "median_ms": 7692,
+      "min_ms": 4926,
+      "max_ms": 13293
+     },
+     "turns_without_timing_record": 4
+    },
+    "tier_2": {
+     "count": 0,
+     "percent": 0.0,
+     "endpoint_to_first_audio": {
+      "n": 0
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 0
+     },
+     "turns_without_timing_record": 0
+    },
+    "substantive": {
+     "count": 20,
+     "percent": 74.1,
+     "endpoint_to_first_audio": {
+      "n": 8,
+      "median_ms": 11715,
+      "min_ms": 6672,
+      "max_ms": 54027
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 9,
+      "median_ms": 10402,
+      "min_ms": 4749,
+      "max_ms": 47188
+     },
+     "turns_without_timing_record": 12
+    }
+   }
+  },
+  "ordinary_use": {
+   "turns": 7,
+   "groups": {
+    "tier_1": {
+     "count": 4,
+     "percent": 57.1,
+     "endpoint_to_first_audio": {
+      "n": 1,
+      "median_ms": 16156,
+      "min_ms": 16156,
+      "max_ms": 16156
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 1,
+      "median_ms": 13293,
+      "min_ms": 13293,
+      "max_ms": 13293
+     },
+     "turns_without_timing_record": 3
+    },
+    "tier_2": {
+     "count": 0,
+     "percent": 0.0,
+     "endpoint_to_first_audio": {
+      "n": 0
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 0
+     },
+     "turns_without_timing_record": 0
+    },
+    "substantive": {
+     "count": 3,
+     "percent": 42.9,
+     "endpoint_to_first_audio": {
+      "n": 2,
+      "median_ms": 14428,
+      "min_ms": 11556,
+      "max_ms": 17299
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 3,
+      "median_ms": 11295,
+      "min_ms": 10402,
+      "max_ms": 11658
+     },
+     "turns_without_timing_record": 1
+    }
+   }
+  },
+  "diagnostic": {
+   "turns": 20,
+   "groups": {
+    "tier_1": {
+     "count": 3,
+     "percent": 15.0,
+     "endpoint_to_first_audio": {
+      "n": 2,
+      "median_ms": 8330,
+      "min_ms": 6286,
+      "max_ms": 10374
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 2,
+      "median_ms": 6309,
+      "min_ms": 4926,
+      "max_ms": 7692
+     },
+     "turns_without_timing_record": 1
+    },
+    "tier_2": {
+     "count": 0,
+     "percent": 0.0,
+     "endpoint_to_first_audio": {
+      "n": 0
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 0
+     },
+     "turns_without_timing_record": 0
+    },
+    "substantive": {
+     "count": 17,
+     "percent": 85.0,
+     "endpoint_to_first_audio": {
+      "n": 6,
+      "median_ms": 10962,
+      "min_ms": 6672,
+      "max_ms": 54027
+     },
+     "endpoint_to_first_visible_text": {
+      "n": 6,
+      "median_ms": 7884,
+      "min_ms": 4749,
+      "max_ms": 47188
+     },
+     "turns_without_timing_record": 11
+    }
+   }
+  }
+ },
+ "tiers": [
+  1
+ ],
+ "unclassifiable": {
+  "count": 0,
+  "reason": "every spoken turn had its wording in force and its preceding context available; none was unclassifiable"
+ }
+}

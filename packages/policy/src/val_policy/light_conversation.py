@@ -145,15 +145,6 @@ _COURTESY_CLOSING = re.compile(
 )
 
 
-#: How far back the decision looks for unresolved work: his previous message, and this
-#: many exchanges before it (owner order of 26 September 2026, "CORRECT THE RELEASE
-#: GAPS" §6: an earlier task is not settled merely because a later exchange was social).
-#: Bounded, so a long conversation that has moved on does not lose courtesy for ever
-#: over a request made an hour ago; wide enough that a greeting and a remark about the
-#: weather after an unmet request do not make it look settled.
-PENDING_WINDOW_EXCHANGES = 3
-
-
 def _answer_leaves_open(answer: str) -> str | None:
     """Whether one answer of hers asks or offers something in particular (rule 2)."""
     for sentence in _sentences(answer):
@@ -194,14 +185,18 @@ def pending_matter(state: ConversationState) -> str | None:
        Those closings are courtesy when nothing else is open; they never override
        an open matter found by rule 1.
     3. Nothing readable to decide on when there were earlier turns → uncertain → MEDIUM.
-    4. **Earlier exchanges in the window** (release-gaps order of 26 September 2026,
-       §6): rules 1 and 2 applied to each of the `PENDING_WINDOW_EXCHANGES` exchanges
-       before the previous one, walking back from the most recent, **until a message
-       of his that is itself work** — he moved on to something else, and his courtesy
-       attaches to that. A message of his that the frozen router reads as social (a
-       greeting, thanks, a farewell, a pleasantry, a bare acknowledgement) settles
-       nothing, so an unmet request followed by "Good evening" and "Quiet tonight" is
-       still unmet.
+    4. **Earlier exchanges, without a bound** (release-gaps corrections of 27 September
+       2026): walking back from the previous exchange over every exchange the frozen
+       router reads as social — a greeting, thanks, a farewell, a pleasantry, a bare
+       acknowledgement — until a message of his that is itself work. Social exchanges
+       settle nothing, however many there are, so an unmet request followed by any
+       number of "Good evening"s is still unmet. A work message of his ends the walk
+       because **his courtesy then answers that exchange**, which rules 1 and 2 have
+       already judged; it does **not** mean an older request is settled — nothing here
+       infers completion from her claims, from elapsed conversation or from social
+       exchanges, and an older request stays on the record exactly as it is (`decide`
+       says so in its reason). What does settle a request is authoritative state: a
+       withdrawn message leaves the working conversation and is not seen here at all.
     """
     previous_owner = (state.previous_owner_message or "").strip()
     previous = (state.previous_answer or "").strip()
@@ -214,13 +209,15 @@ def pending_matter(state: ConversationState) -> str | None:
         if open_reason is not None:
             return f"her last answer {open_reason}"
     following = previous_owner
-    for owner, answer in reversed(state.earlier_exchanges[-PENDING_WINDOW_EXCHANGES:]):
+    for owner, answer in reversed(state.earlier_exchanges):
         if following and _classify_core(_core(following))[0] is None:
-            break  # what he said after this exchange was work of its own; it moved on
+            # He said something that is itself work after this exchange: his courtesy
+            # answers that, and nothing older is inferred settled by it.
+            break
         if _ACTION_REQUEST.search(owner):
             return (
                 "an earlier message of his asked for an action or a decision, and only "
-                "social exchanges have followed it"
+                "social exchanges have followed it; nothing establishes it settled"
             )
         if answer:
             open_reason = _answer_leaves_open(answer)
@@ -282,7 +279,7 @@ class ConversationState:
     previous_owner_message: str | None = None
     #: The exchanges before the previous one, oldest first — (his message, her answer
     #: or None where none is readable) — as far back as the caller keeps them; the
-    #: decision reads the last `PENDING_WINDOW_EXCHANGES` of them.
+    #: decision reads all of them, walking back over social exchanges without a bound.
     earlier_exchanges: tuple[tuple[str, str | None], ...] = ()
 
 
@@ -378,13 +375,29 @@ def decide(text: str, state: ConversationState, tiers: frozenset[int]) -> RouteD
     # after the request was corrected, 3 of 7 before). Only that class is withheld:
     # farewells after a greeting exchange answered correctly every time, and thanks
     # after a settled substantive answer did too.
+    # Release-gaps corrections of 27 September 2026 (§6): the same withholding for a
+    # farewell after a greeting-only exchange. With the courtesy pair correctly left out
+    # of the request, the final-build desktop check still drew "Good evening, my lord."
+    # for "Good night, Val." (1 wrong in 9 generated answers since the repair). Only the
+    # classes that answered right in every run are released: a greeting into an empty or
+    # settled context, and thanks or a farewell after a settled substantive exchange.
     previous_owner = (state.previous_owner_message or "").strip()
-    if previous_owner and _THANKS_ONLY.match(_core(stripped)):
-        previous_light = _classify_core(_core(previous_owner))[0]
-        if previous_light is not None and _GREETING.match(_core(previous_owner)):
+    if previous_owner and _GREETING.match(_core(previous_owner)):
+        core_now = _core(stripped)
+        if _THANKS_ONLY.match(core_now):
             return RouteDecision(
                 None,
                 "thanks after a greeting exchange: LOW answered it as a greeting in verification",
+            )
+        if _FAREWELL.match(core_now) or all(
+            _classify_core(_core(clause))[0] == 1 and not _GREETING.match(_core(clause))
+            for clause in re.split(r",|\band\b|;|(?<=[.!?])\s+", stripped)
+            if _core(clause)
+        ):
+            return RouteDecision(
+                None,
+                "a farewell or thanks after a greeting exchange: LOW answered it as a greeting "
+                "in the final-build check (27 September 2026)",
             )
     highest = 0
     for sentence in sentences:
@@ -397,7 +410,25 @@ def decide(text: str, state: ConversationState, tiers: frozenset[int]) -> RouteD
     if highest not in tiers:
         return RouteDecision(None, f"tier {highest} is not enabled")
     reasons = ", ".join(classify_sentence(sentence)[1] for sentence in sentences)
+    older = older_requests_on_record(state)
+    if older:
+        # Said as a positive fact (release-gaps corrections, 27 September 2026): the
+        # route answers the most recent exchange; it settles nothing older.
+        reasons += (
+            f"; {older} earlier request{'s' if older != 1 else ''} of his remain on the "
+            "record as they are, not inferred settled"
+        )
     return RouteDecision(highest, f"tier {highest}: {reasons}")
+
+
+def older_requests_on_record(state: ConversationState) -> int:
+    """How many of his earlier messages asked for an action or a decision.
+
+    Counts every such message the working conversation still holds (a withdrawn one is
+    not in it), whatever followed it. Reported, never acted on: the light route may
+    answer the most recent exchange while these stand exactly as they were.
+    """
+    return sum(1 for owner, _ in state.earlier_exchanges if _ACTION_REQUEST.search(owner))
 
 
 @dataclass(frozen=True)

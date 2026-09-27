@@ -165,8 +165,9 @@ is the recurring cost of two warm prefixes on this runtime, stated as measured.
 ## 4. Courtesy against genuine pending work (§4)
 
 **The decision** (`val_policy.light_conversation.pending_matter`, called from
-`deliberate.tier1_eligibility` with the full working thread): a social utterance may
-take the Tier-1 route only when the context holds no open matter, read in this order —
+`deliberate.tier1_eligibility` with the full working thread; **its reach corrected 27
+September, §8.9**): a social utterance may take the Tier-1 route only when the context
+holds no open matter, read in this order —
 
 1. **His previous message asked for an action or a decision** (or was itself a
    correction or withdrawal: "not the…", "I meant", "never mind", "wait,"). Nothing she
@@ -352,8 +353,10 @@ switches set, the first light turn would write `model_calls.task_type =
 **Deployment, on his approval:** apply the migration; add the two settings to
 `~/Library/LaunchAgents/house.armand.val.api.plist`; `launchctl kickstart -k
 gui/$(id -u)/house.armand.val.api`; confirm the startup line "CANDIDATE fast route
-enabled … effort low" and `/health`; optionally install the desktop build for the
-readiness display.
+enabled … effort low" and `/health`; **then install the paired desktop build** (§8.6) —
+`ditto` the staged bundle into `/Applications`, move the previous bundle to
+`~/Val previous builds.noindex`, run `infrastructure/ci/check_desktop_deployment.py`. The
+desktop is not optional: the readiness claim is made through it.
 
 **Rollback:** remove the two settings and kickstart. **This restores today's routing
 exactly, and no more:** the light calls already recorded stay in `model_calls` as the
@@ -369,18 +372,21 @@ stop reading "Warming up…" (warm: about 8 s after Voice On; cold, with the mod
 loaded: about 26 s), then —
 
 1. "Good evening, Val." → the light route; her reply should begin about **4–5 s** after
-   your words end (the desktop's own measurement in §8.3 was 4.1 s), one short sentence
+   your words end (the desktop-boundary figures are in §8.3 and §8.9), one short sentence
    in her voice.
-2. "Good night, Val." straight after → **still the light route** (a farewell after a
-   greeting exchange is a released class), about 4–5 s, a farewell back — never a
-   greeting. Then keep going; the test is not over.
+2. "Good night, Val." straight after → **MEDIUM** (about 6–10 s): a farewell after a
+   greeting-only exchange is **withheld** since 27 September (§8.9) — the final-build
+   check drew a greeting for it once. A farewell back, never a greeting. Then keep going;
+   the test is not over.
 3. "What do you think of the second act?" → an ordinary **MEDIUM** answer, about 6–11 s
    to her first words depending on how long she reasons.
 4. "Thank you, Val." straight after → **MEDIUM** if her answer asked you anything (it
    usually does on that question) — the courtesy decision holding — and no
    acknowledgement of work she did not do; if her answer ended in only a generic
-   closing, the light route in about 4–5 s with a plain "you're welcome" in her manner.
-   Either is correct; what would be wrong is a fast answer that ignores an open question.
+   closing, the light route in about 4–5 s with a plain "you're welcome" in her manner
+   (this is the released class: thanks or a farewell after a settled substantive
+   exchange). Either is correct; what would be wrong is a fast answer that ignores an
+   open question.
 5. In a fresh chat: "Good evening, Val.", then "Thank you, Val." → the second stays on
    **MEDIUM** (about 6–10 s): this class is withheld, on the generated-answer evidence of
    §4, and the release does not claim it.
@@ -596,3 +602,99 @@ routing rollback is the removal of the two settings. What remains after deployme
 before the package is called complete is his: the physical acceptance test of §6 in the
 room (acoustic onset and the sound of the voice), and the two-minute coordinated offline
 check of §8.5. Neither can be done for him.
+
+### 8.9 Corrections of 27 September 2026 (owner order "finish the current Voice candidates", §1, §6, §7)
+
+**The pending-work boundary (§1).** The three-exchange window of §8.2 read a bound as
+settlement: a request that fell outside it was treated as eligible context even when
+every exchange since had been social. That interpretation is withdrawn. The decision
+now walks back from the previous exchange over social exchanges **without a bound**;
+an unmet request behind any number of greetings and remarks about the weather keeps
+courtesy on MEDIUM, and the reason says "nothing establishes it settled". A message of
+his that is itself work ends the walk because his courtesy then answers *that*
+exchange — which rules 1 and 2 have already judged — and it does **not** mean an older
+request is settled: nothing infers completion from her claim ("Done, my lord; it went
+out" settles nothing), from elapsed conversation, or from social exchanges, and when
+the route is taken the routing reason names how many earlier requests of his remain on
+the record exactly as they were. What does settle a request is authoritative state: a
+**withdrawn** message leaves the working conversation and the decision never sees it —
+verified at the gateway level with a real retraction (`test_tier1_request.py`:
+standing → MEDIUM, retracted → the route). Verified completion of an action does not
+exist in Layer 0 (Val has no tools that complete anything), so no such state is
+consulted and none is invented. Tests: `test_courtesy_window.py` (unresolved beyond any
+number of social exchanges, her claim of completion, withdrawal, courtesy after an
+unrelated answered question naming the older request). The fixture sets stand as
+written; their light counts under the corrected decision are recorded beside the
+26 September figures, which stay as history. Historical coverage, recomputed read-only
+(`coverage-recent-spoken-use-corrected-guard.json`): unchanged, 7 of 27.
+
+**The 4.1 s figure (§6).** The 4.1 s desktop-boundary result of §8.3 came from the W2
+farewell that was answered with the wrong greeting before the omission repair. It stays
+in §8.3 as the timing of that run and is **not** a correct-final-build greeting
+measurement. The final-build checks are below.
+
+**Final-build desktop check 1 (`desktop-integration-F1-final-greeting-farewell.json`),
+recorded as it happened.** Voice On → Ready 19.7 s (both primes cold after the day's
+runs). "Good evening, Val." was heard as **"Good evening, Vowel."** — the driver's
+synthetic voice again — so the greeting went to MEDIUM as designed (10.4 s to playback
+at the desktop). "Good night, Val." was heard correctly, took the light route with **no
+previous exchange in its request** (`retained_exchange: false`, the omission working),
+reached playback in **3.95 s** — and was answered **"Good evening, my lord."** A wrong
+answer with the request built exactly as intended, so a model error on the class itself:
+with the corrected request, farewells after a greeting-only exchange are now **8 right
+in 9** generated answers. **Class decision, symmetric with §4's:** a farewell after a
+greeting-only exchange is **withheld** from LOW alongside a bare thanks after one
+(routing reason recorded). What the release admits to LOW is now exactly: a greeting
+into an empty or settled context; thanks or a farewell after a settled substantive
+exchange. Fresh-set light coverage becomes 5 of 20 and 7 of 10 (all misses safe); the
+3.95 s is timing evidence of a light turn that answered wrongly, not a measurement of a
+correct one.
+
+**Final-build desktop check 2 (`desktop-integration-F2-final-released-classes.json`),
+the released classes on the final build, warm, speech after Ready (7.3 s to Ready, the
+display within 0.06 s of it):**
+
+| turn | heard as | route | answer | speech end → desktop playback start |
+|---|---|---|---|---|
+| "Good evening." | "Good evening." (correct) | light | "Good evening, my lord." — correct | **4.47 s** |
+| "Explain what a caesura is." | "Explain what a **cesarean** is." (misheard; the driver's voice) | MEDIUM | an answer about caesarean sections — correct for the words heard | 9.28 s |
+| "Good night." | "Good night." (correct) | light (a farewell after a settled substantive exchange — a released class) | "Good night, my lord." — correct | **7.89 s**, of which **3.13 s** was its exact preflight waiting behind a cold refresh prime that had started 3.1 s before his words (the light call itself 1.96 s) |
+
+Two facts from this run belong in the release's claims. The correctly recognised
+greeting after Ready reached playback at the desktop boundary in **4.47 s** — the
+figure the physical test's step 1 should be read against, replacing the 4.1 s of the
+wrong-answer run. And the refresh after the MEDIUM turn was dispatched **23 s** after
+that turn's completion — once the desktop had reported her answer's last segment played
+and a second of idleness had passed — which is the playback-aware occupancy doing what
+§6 asked; the cold prime it then ran (7.4 s) was still in flight when his farewell
+arrived 3 s later, and the farewell waited **3.1 s** behind it. That is the residual §3
+collision, unchanged in kind: a cold prime is not cancellable, and it still runs after
+about every second turn.
+
+**Maintenance occupancy, described accurately and tightened (§6).** The elapsed duration
+of handed-over audio is an **estimate of playback occupancy**, not a measurement of the
+speakers. Where the desktop reports what its speakers did, that report is now preferred:
+each handed-over segment stays "outstanding" until its `playback_completed` report, so
+delayed playback cannot let maintenance start while the desktop is still audibly active;
+a report that never comes is forgotten `PLAYBACK_REPORT_GRACE_SECONDS` (3 s) after the
+estimate would have ended, so a missing report cannot hold maintenance for ever; a
+completion report for the last outstanding segment ends occupancy even before the
+estimate would (`_playback_occupied_locked`, `test_prime_waits_for_playback.py`). A
+barge-in or a reported stop still ends it at once.
+
+**Warm-up, stated again.** Waiting for Ready moves the warm-up and the primes before the
+first turn; it removes none of that work. Cold, about 26 s to Ready (19.7 s in F1 with
+the model loaded but both prefixes cold); warm, 6–8 s.
+
+**The offline check (§7).** `offline_check.sh` is rewritten: it records the enabled or
+disabled state of **every** network service (this Mac carries Wi-Fi, Thunderbolt Bridge,
+an iPhone USB service and a VPN service, so Wi-Fi alone proved nothing), turns every
+enabled one off, restores exactly the recorded state on any exit, requires **two
+completed deliveries** in the live store (not two owner-message provenance rows) before
+it ends, samples the runtime's processes by executable path every second for
+non-loopback connections, records the default route before and during, and writes what
+it establishes and what it does not into its result. It has not been run; it needs his
+coordination.
+
+**Deployment wording (§6).** "Optionally install the desktop" is gone from §6: the paired
+desktop is installed after the service, and the readiness claim is made through it.
