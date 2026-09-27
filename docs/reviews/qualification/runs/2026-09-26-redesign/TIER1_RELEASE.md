@@ -311,19 +311,28 @@ memory.
 
 ## 6. Release identity, deployment, rollback, physical test (§5)
 
-**Release candidate:** the commit that carries this document — the Milestone A commit on `master` following `18aef94`, whose hash and CI result are stated in the handoff (a record cannot carry its own hash) — with these settings in the service's launchd environment and nothing else
-changed:
+**Release candidate (corrected by the release-gaps order of 26 September 2026, §6C):**
+the head of the branch **`release/tier1-low-2026-09-26`**, tagged
+**`tier1-low-release-2026-09-26`** — cut from the Milestone A commit `3fbebf5` and
+carrying only the gap closures of §8 below; **it does not contain Milestone B**
+(`d03dc74`, the owner-precedence switch and the provider-stream contract change), which
+is on `master` only. The tag's commit hash and its CI result are stated in the handoff
+(a record cannot carry its own hash). Service and desktop are one pair: the service is
+that commit's Python, and the desktop is the bundle built from that same commit, whose
+identity (bundle version, binary digest, build time) §8.6 records. With these settings
+in the service's launchd environment and nothing else changed:
 
 ```
 VAL_FAST_ROUTE_TIERS=1
 VAL_TIER1_ROUTE=low
 ```
 
-`VAL_SPECULATION` and `VAL_ADAPTIVE_GRACE` **unset**. The desktop needs no new build for
-routing; the readiness display (§2) is in this commit's desktop source and needs a
-desktop build and install (`npm run tauri build`, preserve the previous bundle, `ditto`,
-`check_desktop_deployment.py`) — it is presentation only and the service works without
-it.
+`VAL_SPECULATION`, `VAL_ADAPTIVE_GRACE` and `VAL_OWNER_PRECEDENCE` **unset**. **The
+desktop build is part of the release, not optional** (§6B): the readiness display is what
+makes "Ready" truthful, and a service reporting readiness to a desktop that cannot show it
+would be a release claiming what the owner cannot see. Install order: service, then
+desktop (`ditto` the staged bundle into `/Applications`, move the previous bundle to
+`~/Val previous builds.noindex`, run `check_desktop_deployment.py`).
 
 **Migration.** The live store is at `0031_prefix_prime`; this release needs
 **`0032_light_conversation`** and no other: two values added to `model_call_task_type`
@@ -353,17 +362,32 @@ enabled); the schema stays at `0032` — its downgrade is forward-only in intent
 `0031`'s, and **refuses** while any light or speculative call is on record. Rollback of
 routing is a setting; rollback of the schema is a separate act with its own conditions.
 
-**Physical acceptance test (concise):** with the release deployed and Voice on, wait
-for the status to read ready (not "Warming up…"), then — (1) "Good evening, Val."
-→ expect her reply to begin in about 4–5 s from the end of your words, one short
-sentence in her voice; (2) "What do you think of the second act?" → an ordinary
-MEDIUM answer, ~8–10 s; (3) "Thank you, Val." straight after → **MEDIUM again** (her
-answer asked you something), no acknowledgement of work she did not do; (4) "Good
-evening, Val." into a fresh chat, then "Thank you, Val." → the second in ~4–5 s, a
-plain "you're welcome" in her manner. Listen for clicks or a changed timbre (the audio
-repair's physical acceptance is still pending) and for whether the pauses feel natural.
-What this does not test: acoustic onset in the room (the figures here are the
-software's), or Milestone B.
+**Physical acceptance test (corrected, release-gaps order §6A — the expected routes now
+match the final implementation, in which a bare thanks after a greeting-only exchange
+is withheld from LOW):** with the release deployed and Voice on, wait for the status to
+stop reading "Warming up…" (warm: about 8 s after Voice On; cold, with the model not
+loaded: about 26 s), then —
+
+1. "Good evening, Val." → the light route; her reply should begin about **4–5 s** after
+   your words end (the desktop's own measurement in §8.3 was 4.1 s), one short sentence
+   in her voice.
+2. "Good night, Val." straight after → **still the light route** (a farewell after a
+   greeting exchange is a released class), about 4–5 s, a farewell back — never a
+   greeting. Then keep going; the test is not over.
+3. "What do you think of the second act?" → an ordinary **MEDIUM** answer, about 6–11 s
+   to her first words depending on how long she reasons.
+4. "Thank you, Val." straight after → **MEDIUM** if her answer asked you anything (it
+   usually does on that question) — the courtesy decision holding — and no
+   acknowledgement of work she did not do; if her answer ended in only a generic
+   closing, the light route in about 4–5 s with a plain "you're welcome" in her manner.
+   Either is correct; what would be wrong is a fast answer that ignores an open question.
+5. In a fresh chat: "Good evening, Val.", then "Thank you, Val." → the second stays on
+   **MEDIUM** (about 6–10 s): this class is withheld, on the generated-answer evidence of
+   §4, and the release does not claim it.
+
+Listen for clicks or a changed timbre (the audio repair's physical acceptance is still
+pending) and for whether the pauses feel natural. What this does not test: acoustic onset
+in the room (every figure here is the software's), or Milestone B.
 
 ## 7. Release identity and gates
 
@@ -376,3 +400,199 @@ the readiness display. Gates (full CI mirror, green before the commit): secrets,
 scope, boundaries, ruff, format, mypy; store-free 1,034 passed + 2 recorded xfails;
 domain 406; gateway 941; providers 278; api 111; desktop tests and build; cargo. CI on
 the pushed commit: stated in the handoff.
+
+## 8. The release gaps, closed — owner order "CORRECT THE RELEASE GAPS…", 26 September 2026 (§6–§8)
+
+Same labels as above. Every model call in this section was local at a known $0; production
+was not touched (service pid 50184 on `13b3cb8`'s code, live store `0031`, no setting in
+the launchd environment, production Voice not opened: 16 sessions before and after).
+
+### 8.1 Release identity (§6C)
+
+`master` at the time of this order carried Milestone B (`d03dc74`). The release is
+therefore **not** a master checkout: it is the branch `release/tier1-low-2026-09-26`, cut
+from the Milestone A commit `3fbebf5`, plus the closures below, tagged
+`tier1-low-release-2026-09-26` at its head. It contains none of Milestone B — no
+owner-precedence switch, no `cancelled` in the provider stream contract, no
+experiment switches — so what it contains is exactly what §1–§7 and this section
+qualify. Master receives the same closures by merge; the tag, not master, is the release.
+
+### 8.2 The courtesy decision beyond the previous exchange (§6D)
+
+**History, preserved and named.** The fresh set of §4 was evaluated twice; after the
+p14 tightening its pending half is **no longer unseen evidence for the action and offer
+patterns** and this document does not call it that. The evidence for the widened rule is
+a **second fresh set** (`courtesy_pending_window.json`, 12 pending + 10 courtesy
+contexts of one to three exchanges), written before the rule was widened, focused on an
+unmet request followed by a social exchange and then courtesy, on the tightened
+action/offer boundaries ("read", "show", "find", "look up", "check", "I'll", "put it in
+front of me"), and on informational earlier exchanges that a social turn must not turn
+into pending work. It was evaluated **once** (`WINDOW_FIRST_EVALUATION` in
+`test_courtesy_window.py`): **12/12 pending on MEDIUM, 9/10 courtesy on the route**, the
+one miss (r10, "the guest **list**") the known imprecision of the action list matching an
+informational question — safe, left as it is.
+
+**The rule (`pending_matter`, `PENDING_WINDOW_EXCHANGES = 3`):** rules 1 and 2 are now
+applied to the three exchanges before the previous one as well, walking back from the
+most recent **until a message of his that is itself work** — he moved on, and his
+courtesy attaches to that — because a message the frozen router reads as social (a
+greeting, thanks, a farewell, a pleasantry, a bare acknowledgement) settles nothing.
+"Send the invitation tonight." → "I will see to it." → "Lovely evening." → "It is." →
+"Thank you, Val." stays on MEDIUM; the same request followed by "Explain what a caesura
+is." and its answer, then "Thank you, Val.", takes the route. The window is bounded so a
+conversation that has moved on does not lose courtesy for ever over a request an hour
+old; the bound is a house choice, recorded, not evidence. `tier1_eligibility` pairs the
+thread's messages exactly as the read-only coverage script does.
+
+**Historical coverage, recomputed read-only with the window
+(`coverage-recent-spoken-use-window-guard.json`): unchanged** — 7 of 27 spoken turns tier 1,
+0 tier 2, 20 substantive; the seven were first turns or greetings into settled contexts.
+
+**A defect the desktop run found, and its repair.** In run W2 (§8.3) the recognizer heard
+the synthetic driver's "Good evening, Val." as "Good evening, Vowel." — not a greeting to
+the router, so the exchange stayed in the Tier-1 request; her answer to it was a greeting
+back; and LOW answered "Good night, Val." with **"Good evening, my lord."** — the same
+copying that withheld bare thanks after a greeting exchange in §4, reached through a
+misheard name. The omission of a courtesy-only previous exchange (`tier1.last_exchange`)
+now reads **her answer's shape as well as his words** (`answer_is_courtesy`: every
+sentence a greeting, thanks, farewell, pleasantry, acknowledgement or generic closing of
+service once "my lord" is removed), so a misheard greeting no longer carries a greeting
+pair into the request. Verified on the real path (`courtesy_answers_3.py` →
+`courtesy-answers-3.json`, six two-turn conversations, openers the router does not call
+light): **5 farewells on LOW, 5 right** ("Good night, my lord." ×4, "Until tomorrow, my
+lord."); the sixth stayed on MEDIUM (her answer "How may I serve you this night?" is
+not in the closing list — a safe miss) and **MEDIUM answered it with "Good evening, my
+lord. I shall retire now; please summon me if any matter requires attention."** — the
+wrong-turn class of `ORDINARY_TURN.md` §6, on the ordinary route, recorded for Milestone
+B §4. The same mishearing occurred in the 26 September qualification run (`Q-low.json`:
+five utterances ending "Vowel", every one routed MEDIUM as out of scope), so part of that
+run's "safe misses" were the driver's voice, not the router; a property of the synthetic
+driver, and one reason the physical test is his.
+
+### 8.3 Through the real desktop (§6, the required integration evidence)
+
+**Method.** The unmodified `apps/desktop` frontend, served by its own dev server and
+pointed at the scratch service on port 8766 (the one build-time override `VITE_VAL_API_BASE`,
+inert in the packaged application, whose content-security policy admits no origin but
+production's), in headless Brave whose microphone is a prepared WAV of the driver's
+voice (`desktop_owner_audio.py`; Chromium's fake capture device; the browser's same-origin
+enforcement disabled for the scratch origin, nothing in Val changed for it). The driver
+(`desktop_integration.mjs`) clicks the visible "Voice on" control once, watches the DOM
+on the page's clock, and clicks "Voice off" at the end. The desktop's **own timing
+report** (`speech_end_to_playback_start_ms`, posted to the service as in production) and
+its playback reports are the desktop-output figures. **Three boundaries, kept apart:**
+the *harness* figures of §5 (a software player in the driver); the *desktop-output*
+figures here (the real frontend's worklet clock, headless — no speaker); *acoustic* onset
+in the room, which only he measures. Records: `desktop-integration-W1-speech-before-ready.json`,
+`desktop-integration-W2-warm-after-ready.json`, and their service logs.
+
+| run | Voice On → Ready (service / displayed) | turn | route taken | speech end → her words on screen | speech end → playback start (desktop) |
+|---|---|---|---|---|---|
+| **W1** — warm runtime, speech **12 s** after Voice On (turned out to be *before* Ready: warm-up 12.6 s, then the initial prime) | 35.5 s / 46.0 s (the display was occupied by turns until then) | "Good evening, Val." | light | 2.05 s | **11.0 s** — the request waited ~7.6 s behind the cold light prime that had begun 1.0 s after his (not yet detected) speech onset |
+| | | "What do you think of the second act?" | MEDIUM | 2.56 s | 11.1 s (Partner prefix cold: its prime had stood aside) |
+| | | "Thank you, Val." | MEDIUM (her answer asked) | 2.01 s | 6.4 s |
+| | | "Good night, Val." | MEDIUM (her answer asked) | 1.94 s | 6.0 s |
+| **W2** — warm, speech **45 s** after Voice On (after Ready) | **7.9 s / 8.0 s** | "Good evening, Vowel." (misheard) | MEDIUM (out of scope) | 2.06 s | 11.1 s |
+| | | "Good night, Val." | **light** | 2.02 s | **4.1 s** (answer wrong before the §8.2 repair) |
+| | | "Explain what a caesarean is." (misheard "caesura") | MEDIUM | 2.02 s | 6.1 s |
+| | | "Thank you, Vowel." | MEDIUM (her answer asked) | 2.05 s | 6.5 s |
+
+What the runs show, and only that: the readiness display appears within 0.4 s of the
+click and clears when the service reports ready (W2: 7.9 s service, 8.0 s displayed; W1:
+the service was ready at 35.5 s and the display could show it only once the turns'
+stage lines cleared, at 46.0 s); a turn spoken before readiness shows "Val is warming up —
+your words are heard and will be answered." (W2, turn 3, when the Partner prefix had
+been skipped); the routing decision reached the desktop as the rule predicts in all
+eight turns; every segment handed over was reported played by the real frontend
+(W1: 10 segments, W2: 9 — `available_to_desktop` → `playback_started` →
+`playback_completed` each); and **the desktop-output first-audio figure for a light turn
+after Ready was 4.1 s**, against the harness's 4.4–4.8 s. The W1 first turn is the
+harness's "speech during warming" case seen through the desktop: **the initial prime
+began 1.0 s after his speech onset and 0.4 s before the recognizer detected it**, and a
+prime in progress cannot be stopped, so his request waited behind it. Nothing
+deterministic knows he is about to speak; this is the structural residual of §3, now
+observed at the desktop boundary rather than inferred.
+
+**Not done at the desktop boundary:** the cold case (the model not loaded) — it requires
+unloading the shared runtime while he is at the machine; the harness's 26.4 s / 15.2 s
+figures stand for it — and the physical speaker, which the headless browser has not.
+
+### 8.4 Readiness and maintenance, without overclaiming (§7)
+
+**The trade, stated plainly:** about **26 s** to full readiness in the measured cold
+case, **8 s** warm; about **4–5 s** to the first reply after readiness on the light
+route (4.1 s at the desktop boundary, 4.4–4.8 s in the harness); **6–11 s** for an
+ordinary MEDIUM reply; and **longer waiting** — 11–15 s — when speech arrives during cold
+startup or while a cold prime is running. This is not near-instant conversation, and this
+document does not call it that.
+
+**The apparent contradiction, reconciled from the recorded timestamps.** §3 said "the
+refresh has just started when the request arrives" for his words 0.3 s after her answer.
+The service logs of both collision runs (`service-A3b-collision-pause-*.log`) say
+otherwise: **every** refresh was dispatched 1.03–1.05 s after the turn's own completion
+line and **2.7–19.6 s before his next speech onset**; on the 0.3 s runs the cold primes
+had been running for 2.7–6.7 s of their 7–8 s when he spoke. No refresh started after
+speech began — the sentence was an explanation error. What the timestamps also show is
+**where the idle second came from**: the service's turn completed (synthesis done) while
+the harness's player was still speaking the tail of her answer for several seconds; the
+scheduler counted "no answer being voiced" from synthesis end, not from the end of
+playback, so a refresh could begin while she was still audibly speaking and be mid-prefill
+when he answered her. **That is a defect of the idle definition, and it is repaired:**
+audio handed to the desktop is now counted as heard for its own duration, serially
+(`speech_handed_over` on each hand-off; a barge-in or a reported stop ends it), and the
+refresh's idle clock starts when that ends (`test_prime_waits_for_playback.py`, 2). The
+desktop runs above ran with the repair; under it the refresh after a turn began after
+the last segment's duration had elapsed, and no request waited behind a refresh in either
+run. **The sub-second collision figures of §3 remain observations for those trials, not a
+bound**: a prime in progress is not cancellable, and a request arriving during a cold one
+waits for its remainder, up to ~7 s.
+
+**One more display truth, from W1:** a turn that reached cognition before readiness
+showed "Val is thinking…" once its delivery object existed, though nothing had been
+written and the warming it waited on had not ended. `_progress_locked` now applies the
+same rule whether or not a delivery exists ("warming" until ready), and W2's turn 3 shows
+the line.
+
+### 8.5 Offline (§8)
+
+The boundary is unchanged and stated as it is: the service, driver and voice worker ran
+under the loopback-only sandbox; **LM Studio itself was observed by sampling with the
+network up, not constrained.** The shortest coordinated check is prepared as
+`offline_check.sh`: Wi-Fi off, two spoken turns on the deployed release (or two minutes),
+the runtime's connections sampled every second, Wi-Fi back on, always, on any exit; what
+it can establish and what it cannot are in its header. **It has not been run** — it needs
+his machine's network and his two minutes — and whole-stack network denial is **not**
+described here as verified.
+
+### 8.6 The desktop build (§6B)
+
+Built from the release tree (`npm run tauri build`), staged **outside** the launchable
+locations as `~/Val previous builds.noindex/Val (release tier1-low 2026-09-26, staged, not
+installed).app`, **not installed**: identity below. Installing it is the second half of the
+deployment step in §6, on his approval, followed by `check_desktop_deployment.py`.
+
+| | |
+|---|---|
+| bundle | `Val.app`, `CFBundleIdentifier` `house.armand.val`, `CFBundleShortVersionString` `0.0.0` (the bundle version is not bumped per build; the digest and build time identify it) |
+| binary digest (SHA-256 of `Contents/MacOS/val_desktop`) | `fa994941cb0791ff60dea8d520ba872be24cbba9ee7b0faf55f47cc93b50231d` |
+| built | 2026-09-26 22:46:33 CDT, from the release tree (desktop source identical to the tagged commit) |
+| the installed production desktop, for contrast | `21b8e948023713798ef74bbf9fa77eb3d5528ce9a925d2a58cd06d992a9b3895` (the `13b3cb8` build), untouched |
+
+### 8.7 Gates on the release branch
+
+Full CI mirror, green before the tag: secrets, pins, scope, boundaries, ruff, format,
+mypy; store-free suite with its two recorded xfails; domain; gateway (with
+`test_prime_waits_for_playback` 2 and the misheard-greeting Tier-1 request test); policy
+(with `test_courtesy_window`: 12 pending, coverage recorded, the answer-shape cases);
+providers; api; desktop tests (240) and build; cargo. CI on the pushed tag and on the
+merge to `master`: stated in the handoff.
+
+### 8.8 Deployment recommendation
+
+**Recommended for his decision, with the remaining checks named:** the release is fit to
+deploy as specified in §6 — migration `0032_light_conversation` explicitly, the two
+settings, kickstart, then the staged desktop build and the deployment check — and its
+routing rollback is the removal of the two settings. What remains after deployment and
+before the package is called complete is his: the physical acceptance test of §6 in the
+room (acoustic onset and the sound of the voice), and the two-minute coordinated offline
+check of §8.5. Neither can be done for him.

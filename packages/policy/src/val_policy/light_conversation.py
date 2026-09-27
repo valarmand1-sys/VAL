@@ -145,6 +145,39 @@ _COURTESY_CLOSING = re.compile(
 )
 
 
+#: How far back the decision looks for unresolved work: his previous message, and this
+#: many exchanges before it (owner order of 26 September 2026, "CORRECT THE RELEASE
+#: GAPS" §6: an earlier task is not settled merely because a later exchange was social).
+#: Bounded, so a long conversation that has moved on does not lose courtesy for ever
+#: over a request made an hour ago; wide enough that a greeting and a remark about the
+#: weather after an unmet request do not make it look settled.
+PENDING_WINDOW_EXCHANGES = 3
+
+
+def _answer_leaves_open(answer: str) -> str | None:
+    """Whether one answer of hers asks or offers something in particular (rule 2)."""
+    for sentence in _sentences(answer):
+        core = re.sub(r"[.!?,;:]+$", "", sentence.strip().replace(chr(0x2019), "'"))
+        core = re.sub(r"\s+", " ", core)
+        if _COURTESY_CLOSING.match(core.strip()):
+            continue
+        if "?" in sentence or _OPEN_QUESTION.search(sentence):
+            return "asked or offered something in particular"
+        # Tightened after the fresh set's first evaluation (26 September 2026,
+        # case p14: "Put it in front of me and I'll read it now"): an offer in a
+        # contraction, and an instruction to him, both leave the matter open.
+        if re.search(
+            r"\b(?:i(?: could| can| would| will| shall|'ll|'d) (?:suggest|draft|prepare|"
+            r"begin|set|read|go on|adjust|arrange|have|keep|record|review|compare|do)|"
+            r"if you wish|shall i|would you like|i propose|put it|give me|provide|"
+            r"send me|let me know|specify|describe it|name the)\b",
+            sentence,
+            re.IGNORECASE,
+        ):
+            return "offered something in particular"
+    return None
+
+
 def pending_matter(state: ConversationState) -> str | None:
     """Why the context is not settled, or None when a social turn may be answered as such.
 
@@ -161,6 +194,14 @@ def pending_matter(state: ConversationState) -> str | None:
        Those closings are courtesy when nothing else is open; they never override
        an open matter found by rule 1.
     3. Nothing readable to decide on when there were earlier turns → uncertain → MEDIUM.
+    4. **Earlier exchanges in the window** (release-gaps order of 26 September 2026,
+       §6): rules 1 and 2 applied to each of the `PENDING_WINDOW_EXCHANGES` exchanges
+       before the previous one, walking back from the most recent, **until a message
+       of his that is itself work** — he moved on to something else, and his courtesy
+       attaches to that. A message of his that the frozen router reads as social (a
+       greeting, thanks, a farewell, a pleasantry, a bare acknowledgement) settles
+       nothing, so an unmet request followed by "Good evening" and "Quiet tonight" is
+       still unmet.
     """
     previous_owner = (state.previous_owner_message or "").strip()
     previous = (state.previous_answer or "").strip()
@@ -169,30 +210,63 @@ def pending_matter(state: ConversationState) -> str | None:
     if previous_owner and _ACTION_REQUEST.search(previous_owner):
         return "his previous message asked for an action or a decision, which nothing here settles"
     if previous:
-        for sentence in _sentences(previous):
-            core = re.sub(r"[.!?,;:]+$", "", sentence.strip().replace(chr(0x2019), "'"))
-            core = re.sub(r"\s+", " ", core)
-            if _COURTESY_CLOSING.match(core.strip()):
-                continue
-            if "?" in sentence or _OPEN_QUESTION.search(sentence):
-                return "her last answer asked or offered something in particular"
-            # Tightened after the fresh set's first evaluation (26 September 2026,
-            # case p14: "Put it in front of me and I'll read it now"): an offer in a
-            # contraction, and an instruction to him, both leave the matter open.
-            if re.search(
-                r"\b(?:i(?: could| can| would| will| shall|'ll|'d) (?:suggest|draft|prepare|"
-                r"begin|set|read|go on|adjust|arrange|have|keep|record|review|compare|do)|"
-                r"if you wish|shall i|would you like|i propose|put it|give me|provide|"
-                r"send me|let me know|specify|describe it|name the)\b",
-                sentence,
-                re.IGNORECASE,
-            ):
-                return "her last answer offered something in particular"
+        open_reason = _answer_leaves_open(previous)
+        if open_reason is not None:
+            return f"her last answer {open_reason}"
+    following = previous_owner
+    for owner, answer in reversed(state.earlier_exchanges[-PENDING_WINDOW_EXCHANGES:]):
+        if following and _classify_core(_core(following))[0] is None:
+            break  # what he said after this exchange was work of its own; it moved on
+        if _ACTION_REQUEST.search(owner):
+            return (
+                "an earlier message of his asked for an action or a decision, and only "
+                "social exchanges have followed it"
+            )
+        if answer:
+            open_reason = _answer_leaves_open(answer)
+            if open_reason is not None:
+                return (
+                    f"an earlier answer of hers {open_reason}, and only social exchanges "
+                    "have followed it"
+                )
+        following = owner
     return None
 
 
 #: A thanks alone (the class withheld after a greeting exchange, above).
 _THANKS_ONLY = _THANKS
+
+#: How she addresses him inside an answer; removed before an answer's shape is read.
+_HER_ADDRESS = re.compile(r"\b(?:my lord|my lady|sir|madam)\b", re.IGNORECASE)
+
+
+def answer_is_courtesy(answer: str) -> bool:
+    """Whether an answer of hers is courtesy only — a greeting back, a closing of service.
+
+    Release-gaps order of 26 September 2026 (§6): the Tier-1 request leaves out a
+    previous exchange that was only a greeting pair, because LOW copies its own
+    greeting from one. The desktop-integration run showed the omission failing when
+    **his** words were misheard ("Good evening, Vowel." is not a greeting to the
+    router) while **her** answer was still a greeting — and LOW answered "Good night,
+    Val." with "Good evening, my lord." So the exchange's shape is read from her answer
+    too: every sentence a greeting, thanks, farewell, pleasantry, bare acknowledgement
+    or generic closing of courtesy, once her address to him is removed. Anything else
+    in it is context, and the exchange stays.
+    """
+    sentences = _sentences(answer or "")
+    if not sentences:
+        return False
+    for sentence in sentences:
+        bare = re.sub(r"\s+", " ", _HER_ADDRESS.sub(" ", sentence)).strip()
+        core = re.sub(r"[.!?,;:" + chr(0x2026) + r"]+$", "", bare.replace(chr(0x2019), "'"))
+        core = re.sub(r"\s*,\s*", ", ", core).strip(" ,")
+        if _COURTESY_CLOSING.match(core):
+            continue
+        if classify_sentence(core)[0] is not None:
+            continue
+        return False
+    return True
+
 
 MAX_WORDS = 12
 
@@ -206,6 +280,10 @@ class ConversationState:
     prior_turns: int
     #: His previous message, wording in force; None when this is his first.
     previous_owner_message: str | None = None
+    #: The exchanges before the previous one, oldest first — (his message, her answer
+    #: or None where none is readable) — as far back as the caller keeps them; the
+    #: decision reads the last `PENDING_WINDOW_EXCHANGES` of them.
+    earlier_exchanges: tuple[tuple[str, str | None], ...] = ()
 
 
 @dataclass(frozen=True)

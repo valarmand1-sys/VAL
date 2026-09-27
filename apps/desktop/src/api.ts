@@ -7,7 +7,15 @@
 import { EventFrameParser } from "./sse";
 import type { TurnStage } from "./timing";
 
-export const API_BASE = "http://127.0.0.1:8756";
+// The service address is fixed at build time. `VITE_VAL_API_BASE` exists for one
+// purpose — the verification of 26 September 2026 drove this exact frontend, served
+// by the dev server outside Tauri, against the isolated scratch service — and it is
+// inert in the shipped application: the bundle is built without it, and the packaged
+// content-security policy (`src-tauri/tauri.conf.json`, `connect-src`) admits no origin
+// but the production service, so no environment can point the installed desktop
+// anywhere else.
+export const API_BASE: string =
+  (import.meta.env.VITE_VAL_API_BASE as string | undefined) ?? "http://127.0.0.1:8756";
 
 export interface ProjectView {
   id: string;

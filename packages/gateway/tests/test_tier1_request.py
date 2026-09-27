@@ -209,3 +209,25 @@ def test_a_tier_1_answer_that_hits_its_cap_is_not_delivered_and_the_partner_answ
             .all()
         )
     assert roles == ["user", "val"], "exactly one answer"
+
+
+def test_a_courtesy_exchange_is_left_out_when_his_words_were_misheard(store: Engine) -> None:
+    """Release-gaps order §6 (26 September 2026): read from her answer, not only his words.
+
+    The desktop-integration run heard "Good evening, Val." as "Good evening, Vowel." —
+    not light to the router — so the greeting pair stayed in the request and LOW answered
+    "Good night, Val." with "Good evening, my lord." Her answer was a greeting back and a
+    closing of service: courtesy only, and the pair is left out on that reading too.
+    """
+    adapter = ScriptedAdapter([ok("Good evening, my lord. How may I assist you tonight?")])
+    conversation = a_conversation(store)
+    spoken(store, adapter, "Good evening, Vowel.", conversation)
+    thread = conversations.working(store, conversation)
+    messages, projection = tier1_messages(
+        thread,
+        Message(role="user", content="Good night, Val."),
+        before_sequence=3,
+        egress=sealed(LocalOnlyReason.CONVERSATION_SEALED),
+    )
+    assert [m.role for m in messages] == ["user", "user", "user"], "no greeting pair carried"
+    assert not projection.retained_exchange and projection.prior_messages_in_record == 2
