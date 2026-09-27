@@ -25,6 +25,7 @@ echo "=== scratch service $(date +%H:%M:%S)"
 export VAL_SCRATCH_MODEL_IDENTIFIER=openai/gpt-oss-20b VAL_FAST_ROUTE_TIERS=1 VAL_TIER1_ROUTE=low
 unset VAL_SPECULATION VAL_ADAPTIVE_GRACE
 if [[ "${PRECEDENCE:-off}" == "on" ]]; then export VAL_OWNER_PRECEDENCE=on; else unset VAL_OWNER_PRECEDENCE; fi
+if [[ "${ENVELOPE_IN_SYSTEM:-off}" == "on" ]]; then export VAL_EXPERIMENT_ENVELOPE_IN_SYSTEM=1; else unset VAL_EXPERIMENT_ENVELOPE_IN_SYSTEM; fi
 uv run --project $ROOT python $D/serve_variant.py > $D/service-desktop-$CASE.log 2>&1 &
 SERVICE=$!
 for i in $(seq 1 360); do curl -fsS http://127.0.0.1:8766/health >/dev/null 2>&1 && break; sleep 0.5; done

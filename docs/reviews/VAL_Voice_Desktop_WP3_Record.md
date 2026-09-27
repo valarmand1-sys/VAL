@@ -1419,3 +1419,50 @@ is used. **The memory-limit suggestion is withdrawn**; the option is an engine p
 (`history_capacity`, or renewal on hit), ~120–155 MB per additional entry (computed, not
 measured). The prefix-prefill conclusion is narrowed to the method tested; the
 checkpoint-aligned conversation prime is the open ruling and was not run.
+
+## 32. Handoff — the corrections of 27 September 2026: Milestone A's guard and classes; Milestone B's classifier, cleanup and controlled construction comparison
+
+**WP3 remains PARTIAL. Nothing deployed.** Two independent decisions are returned.
+
+**Milestone A — the corrected release.** Branch `release/tier1-low-2026-09-26`, tag
+**`tier1-low-release-2026-09-27`** = commit `e5963d4` (CI run 36301002855 success),
+merged into master as `beee2cb` (CI 36301090519 success). Desktop: the staged build
+`fa994941…231d` (desktop source unchanged on the branch since it was built). Record:
+`TIER1_RELEASE.md` §8.9. The pending-work decision walks back over social exchanges
+**without a bound**; withdrawal is the authoritative settlement and nothing else is
+(not her claim, not elapsed conversation, not social exchanges); a work message of his
+ends the walk because his courtesy answers that exchange, and the reason names the older
+requests that remain on the record. A farewell after a greeting-only exchange is
+withheld from LOW alongside a bare thanks (the final-build check drew a greeting for it,
+8 right in 9 since the repair); released to LOW: a greeting into an empty or settled
+context, thanks or a farewell after a settled substantive exchange. Maintenance
+occupancy is an estimate with actual playback state preferred within a 3 s bound; the
+final-build check shows the refresh dispatched 23 s after a MEDIUM turn, once her answer
+had been played. Final-build figures: a correctly recognised greeting **4.47 s** to
+desktop playback; a correctly answered farewell after a substantive exchange 7.89 s, 3.1 s
+of it behind a cold refresh prime; "Good evening, Val." heard as "Vowel" once (the
+driver's voice). Migration `alembic -x deploy=live upgrade 0032_light_conversation`;
+settings `VAL_FAST_ROUTE_TIERS=1`, `VAL_TIER1_ROUTE=low`; then the paired desktop; rollback
+removes the settings only. `offline_check.sh` rewritten for every network service; not
+run.
+
+**Milestone B — two recommendations, separately.** Record: `ORDINARY_TURN.md` §13–§18
+(evidence index §119). (1) The **supersession classifier** is clause-based and
+conservative (`val_policy/precedence.py`, 60 cases; the five reproduced false
+cancellations and fifteen neighbours keep the request; a leading "and" never overrides
+an explicit stop). (2) The **cancellation lifecycle**: the adapter shuts the superseded
+stream's socket down before closing it — reader released in 10 ms against the 600 s the
+close alone left it blocked (`socket-shutdown-probe.json`); each superseded call gets one
+prompt record; repeated replacements accumulate nothing; the runtime's slot is released
+only when its prefill ends (5.6 s in the probe). (3) The **construction comparison on
+frozen histories** (`construction-frozen.json`, 19 paired calls, alternating, primed):
+9/19 wrong-turn answers as the request stands, 0/19 with the envelope in the developer
+block; first visible text 4.96 → 3.98 s; the planted "SYSTEM OVERRIDE" inside the envelope
+ignored by both; the prime verified to carry only persona and separator; the light route's
+prime kept at the persona boundary after a 7.9 s cold-prefill regression on LOW was found
+and repaired. (4) Through the desktop, one run each: light turns equal (4.2–4.5 s to
+playback); MEDIUM turns dominated by reasoning variance, the candidate's single run
+slower; **no audible-response improvement is claimed**. Recommendations: the request
+construction as a candidate for his ruling; owner precedence as ready to enable behind its
+switch. One does not admit the other. Engine-cache patch and conversation-content priming
+deferred, as ordered.

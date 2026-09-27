@@ -1,0 +1,2195 @@
+{
+ "case": "V1-voice-as_is",
+ "plan": {
+  "total_s": 192.824,
+  "phrases": [
+   {
+    "phrase": "Good evening.",
+    "speech_start_s": 45.0,
+    "speech_end_s": 45.74
+   },
+   {
+    "phrase": "Explain what a caesura is.",
+    "speech_start_s": 61.74,
+    "speech_end_s": 63.476
+   },
+   {
+    "phrase": "Thank you.",
+    "speech_start_s": 108.476,
+    "speech_end_s": 109.217
+   },
+   {
+    "phrase": "What do you think of the second act?",
+    "speech_start_s": 127.217,
+    "speech_end_s": 129.136
+   },
+   {
+    "phrase": "Good night.",
+    "speech_start_s": 174.136,
+    "speech_end_s": 174.824
+   }
+  ]
+ },
+ "voice_on_click_wall": 1790492979034,
+ "service_clock": {
+  "voice_on_to_ready_s": 19.09,
+  "readiness_lines": [
+   {
+    "wall": 1790492983.97,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "warming",
+    "prefix_light": "not_applicable",
+    "detail": null
+   },
+   {
+    "wall": 1790492998.124,
+    "ready": true,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "primed",
+    "prefix_light": "primed",
+    "detail": null
+   }
+  ],
+  "warm": [
+   "began 2026-09-27T07:09:39.423+00:00",
+   "ended 2026-09-27T07:09:43.969+00:00 after 4.546s: {\"cognition\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx-lmstudio-partner\", \"server_found_running\": true, \"server_started\": false, \"model_found_loaded\": true, \"model_loaded\": false, \"requested_context_tokens\": 32768, \"loaded_context_tokens\": 32768, \"base_url\": \"http://127.0.0.1:1234/v1\", \"light\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx"
+  ],
+  "primes": [
+   {
+    "kind": "initial",
+    "routes": [
+     "partner",
+     "light"
+    ],
+    "seconds": 14.154,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e1b2-f9e9-7522-9b5f-d69563aeb15a",
+     "seconds": 6.456,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e1b2-df5f-7ac1-90a2-d61edda66fa3",
+      "seconds": 6.947
+     }
+    }
+   },
+   "refresh after a light_conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.894,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e1b3-8470-7056-9672-2ea350f84a6f",
+     "seconds": 0.251,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e1b3-82ce-7eb2-be59-6797a8e52306",
+      "seconds": 0.297
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.929,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e1b4-5708-7a0e-8a6f-618e3457fce0",
+     "seconds": 0.266,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e1b4-5551-7843-92b6-02fa29d6702c",
+      "seconds": 0.307
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 13.389,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e1b5-1579-7d0e-b695-e0e1869531b1",
+     "seconds": 6.496,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e1b4-fb6b-70b0-98b4-49d74256c063",
+      "seconds": 6.542
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.876,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e1b5-7f0a-7bba-9a9e-7f6466e9c34b",
+     "seconds": 0.251,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e1b5-7d6e-77a3-98c8-2cd595a5abd9",
+      "seconds": 0.289
+     }
+    }
+   }
+  ],
+  "fast_route": [
+   {
+    "tier": 1,
+    "reason": "tier 1: greeting, thanks or farewell",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "asks for work, judgment, memory or her capabilities",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "her last answer asked or offered something in particular",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "asks for work, judgment, memory or her capabilities",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "her last answer asked or offered something in particular",
+    "tiers": [
+     1
+    ]
+   }
+  ],
+  "endpoints": [
+   "utterance=1 {\"reason\": \"silence\", \"endpoint_mono\": 597559.354400708, \"final_received_mono\": 597559.455310833, \"final_processed_mono\": 597559.468844333, \"decode_ms\": 100.9, \"voiced_s\": 0.768, \"silence_s\": 0.672, \"gap_before_s\": null, \"utterance_s\": 1.52, \"first_sample\": 718592, \"samples\": 24320, \"run_start_sample\": 0, \"received_samples\": 743040}",
+   "utterance=2 {\"reason\": \"silence\", \"endpoint_mono\": 597577.111208916, \"final_received_mono\": 597577.237936541, \"final_processed_mono\": 597577.248900208, \"decode_ms\": 126.7, \"voiced_s\": 1.76, \"silence_s\": 0.672, \"gap_before_s\": 15.555, \"utterance_s\": 2.512, \"first_sample\": 986880, \"samples\": 40192, \"run_start_sample\": 0, \"received_samples\": 1027200}",
+   "utterance=3 {\"reason\": \"silence\", \"endpoint_mono\": 597622.830441334, \"final_received_mono\": 597622.943203, \"final_processed_mono\": 597622.94888575, \"decode_ms\": 112.8, \"voiced_s\": 0.672, \"silence_s\": 0.672, \"gap_before_s\": 44.598, \"utterance_s\": 1.424, \"first_sample\": 1735936, \"samples\": 22784, \"run_start_sample\": 0, \"received_samples\": 1758720}",
+   "utterance=4 {\"reason\": \"silence\", \"endpoint_mono\": 597642.769227625, \"final_received_mono\": 597642.8944885, \"final_processed_mono\": 597642.90910175, \"decode_ms\": 125.3, \"voiced_s\": 1.92, \"silence_s\": 0.672, \"gap_before_s\": 17.703, \"utterance_s\": 2.672, \"first_sample\": 2034944, \"samples\": 42752, \"run_start_sample\": 0, \"received_samples\": 2077760}",
+   "utterance=5 {\"reason\": \"silence\", \"endpoint_mono\": 597688.518909875, \"final_received_mono\": 597688.619138666, \"final_processed_mono\": 597688.628983041, \"decode_ms\": 100.2, \"voiced_s\": 0.704, \"silence_s\": 0.672, \"gap_before_s\": 44.521, \"utterance_s\": 1.456, \"first_sample\": 2785024, \"samples\": 23296, \"run_start_sample\": 0, \"received_samples\": 2808320}"
+  ],
+  "desktop_timing_reports": [
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": 1960.0,
+    "owner_message_dom_to_playback_start_ms": 2544.0,
+    "speech_end_to_playback_start_ms": 4504.0,
+    "committed_seen_to_owner_message_dom_ms": 25.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 861.0,
+    "segment_text_offsets_ms": [
+     5.0
+    ],
+    "segment_gaps_ms": [],
+    "segments": 1
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": 1973.0,
+    "owner_message_dom_to_playback_start_ms": 4534.0,
+    "speech_end_to_playback_start_ms": 6507.0,
+    "committed_seen_to_owner_message_dom_ms": 16.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 864.0,
+    "segment_text_offsets_ms": [
+     1676.0,
+     3.0,
+     4.0,
+     5.0
+    ],
+    "segment_gaps_ms": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "segments": 5
+   },
+   {
+    "utterance": 3,
+    "speech_end_to_owner_message_dom_ms": 1956.0,
+    "owner_message_dom_to_playback_start_ms": 5711.0,
+    "speech_end_to_playback_start_ms": 7667.0,
+    "committed_seen_to_owner_message_dom_ms": 15.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 3,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 867.0,
+    "segment_text_offsets_ms": [
+     1592.0,
+     3.0,
+     3.0
+    ],
+    "segment_gaps_ms": [
+     0.0,
+     0.0
+    ],
+    "segments": 3
+   },
+   {
+    "utterance": 4,
+    "speech_end_to_owner_message_dom_ms": 2053.0,
+    "owner_message_dom_to_playback_start_ms": 5194.0,
+    "speech_end_to_playback_start_ms": 7246.0,
+    "committed_seen_to_owner_message_dom_ms": 13.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 4,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 850.0,
+    "segment_text_offsets_ms": [
+     4.0
+    ],
+    "segment_gaps_ms": [
+     0.0
+    ],
+    "segments": 2
+   },
+   {
+    "utterance": 5,
+    "speech_end_to_owner_message_dom_ms": 1922.0,
+    "owner_message_dom_to_playback_start_ms": 3413.0,
+    "speech_end_to_playback_start_ms": 5334.0,
+    "committed_seen_to_owner_message_dom_ms": 28.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 5,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 819.0,
+    "segment_text_offsets_ms": [
+     4.0
+    ],
+    "segment_gaps_ms": [],
+    "segments": 1
+   }
+  ],
+  "precedence": [],
+  "turn_timelines": [
+   {
+    "utterance": 1,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T07:10:26.076+00:00",
+    "conversation_id": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "message_id": "01a0e1b3-6be8-7042-940b-e83cec213575",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 100.9,
+     "transcript_final_processed": 114.4,
+     "owner_turn_submitted": 1214.7,
+     "turn_start": 1216.5,
+     "scope_resolved": 1216.5,
+     "conversation_created": 1224.7,
+     "message_append_start": 1224.7,
+     "message_persisted": 1237.2,
+     "owner_message_committed": 1237.2,
+     "egress_decided": 1238.7,
+     "runtime_ready_start": 1265.0,
+     "runtime_ready_end": 1279.6,
+     "exact_preflight_start": 1279.7,
+     "exact_preflight_end": 1310.2,
+     "provider_dispatch": 1312.6,
+     "provider_chunk": 3127.3,
+     "speech_first_visible_text": 3130.7,
+     "speech_segment_queued": 3148.4,
+     "tts_synthesize_start": 3148.6,
+     "audio_at_sink": 3808.2,
+     "tts_synthesize_return": 4053.0
+    }
+   },
+   {
+    "utterance": 2,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T07:10:43.833+00:00",
+    "conversation_id": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "message_id": "01a0e1b3-b154-779b-a60a-f79a54298436",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 126.7,
+     "transcript_final_processed": 137.7,
+     "owner_turn_submitted": 1238.2,
+     "turn_start": 1240.4,
+     "message_append_start": 1242.2,
+     "message_persisted": 1247.2,
+     "owner_message_committed": 1247.2,
+     "egress_decided": 1248.2,
+     "assembly_start": 1252.7,
+     "record_state_assembled": 1262.4,
+     "assembly_end": 1262.6,
+     "runtime_ready_start": 1271.9,
+     "runtime_ready_end": 1286.0,
+     "exact_preflight_start": 1286.1,
+     "exact_preflight_end": 1315.5,
+     "provider_dispatch": 1317.7,
+     "provider_chunk": 2999.6,
+     "provider_visible_text": 4804.7,
+     "speech_first_visible_text": 4804.7,
+     "speech_segment_queued": 4980.6,
+     "tts_synthesize_start": 4981.0,
+     "audio_at_sink": 5755.1,
+     "tts_synthesize_return": 6524.0
+    }
+   },
+   {
+    "utterance": 3,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T07:11:29.553+00:00",
+    "conversation_id": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "message_id": "01a0e1b4-63d8-7f3d-86db-4e2de0850ef9",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 112.8,
+     "transcript_final_processed": 118.4,
+     "owner_turn_submitted": 1219.2,
+     "turn_start": 1221.2,
+     "message_append_start": 1222.9,
+     "message_persisted": 1225.5,
+     "owner_message_committed": 1225.5,
+     "egress_decided": 1226.7,
+     "assembly_start": 1230.7,
+     "record_state_assembled": 1238.0,
+     "assembly_end": 1238.2,
+     "runtime_ready_start": 1249.0,
+     "runtime_ready_end": 1263.6,
+     "exact_preflight_start": 1263.7,
+     "exact_preflight_end": 1296.9,
+     "provider_dispatch": 1298.8,
+     "provider_chunk": 3110.4,
+     "provider_visible_text": 5972.9,
+     "speech_first_visible_text": 5972.9,
+     "speech_segment_queued": 6180.2,
+     "tts_synthesize_start": 6180.6,
+     "audio_at_sink": 6958.4,
+     "tts_synthesize_return": 8042.6
+    }
+   },
+   {
+    "utterance": 4,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T07:11:49.491+00:00",
+    "conversation_id": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "message_id": "01a0e1b4-b1cf-7a4d-8343-22ea41fe7f7e",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 125.3,
+     "transcript_final_processed": 139.9,
+     "owner_turn_submitted": 1240.0,
+     "turn_start": 1241.3,
+     "message_append_start": 1242.3,
+     "message_persisted": 1249.1,
+     "owner_message_committed": 1249.1,
+     "egress_decided": 1249.8,
+     "assembly_start": 1253.0,
+     "record_state_assembled": 1261.5,
+     "assembly_end": 1261.6,
+     "runtime_ready_start": 1269.0,
+     "runtime_ready_end": 1282.0,
+     "exact_preflight_start": 1282.1,
+     "exact_preflight_end": 1317.1,
+     "provider_dispatch": 1319.1,
+     "provider_chunk": 4186.5,
+     "provider_visible_text": 5904.9,
+     "speech_first_visible_text": 5904.9,
+     "speech_segment_queued": 6066.1,
+     "tts_synthesize_start": 6066.2,
+     "audio_at_sink": 6550.3,
+     "tts_synthesize_return": 7044.2
+    }
+   },
+   {
+    "utterance": 5,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T07:12:35.242+00:00",
+    "conversation_id": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "message_id": "01a0e1b5-6468-7166-ad55-ea713c413766",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 100.2,
+     "transcript_final_processed": 110.1,
+     "owner_turn_submitted": 1210.6,
+     "turn_start": 1211.9,
+     "message_append_start": 1213.0,
+     "message_persisted": 1216.3,
+     "owner_message_committed": 1216.3,
+     "egress_decided": 1217.5,
+     "assembly_start": 1223.3,
+     "record_state_assembled": 1229.2,
+     "assembly_end": 1229.4,
+     "runtime_ready_start": 1238.3,
+     "runtime_ready_end": 1251.6,
+     "exact_preflight_start": 1251.6,
+     "exact_preflight_end": 1283.9,
+     "provider_dispatch": 1285.6,
+     "provider_chunk": 3556.9,
+     "provider_visible_text": 4124.0,
+     "speech_first_visible_text": 4124.0,
+     "speech_segment_queued": 4134.1,
+     "tts_synthesize_start": 4134.2,
+     "audio_at_sink": 4615.9,
+     "tts_synthesize_return": 4793.9
+    }
+   }
+  ]
+ },
+ "desktop_display": {
+  "voice_on_to_warming_shown_s": 0.396,
+  "voice_on_to_ready_displayed_s": 19.149,
+  "events": [
+   {
+    "wall": 1790492979033,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790492979041,
+    "voice": "Voice Starting\u2026",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790492979430,
+    "voice": "Voice Starting\u2026",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790492979577,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790492998183,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790493025422,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493026144,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493026263,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493026269,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493027343,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493027361,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493027368,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493029263,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493029274,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790493029913,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493029983,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493030302,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493030344,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493042227,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493042948,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what is Europe Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493043668,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493043905,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493044026,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493044030,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493045123,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493045135,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493045138,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493048705,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493048822,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493049672,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014"
+    ]
+   },
+   {
+    "wall": 1790493051353,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014Judge this"
+    ]
+   },
+   {
+    "wall": 1790493051462,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014Judge this"
+    ]
+   },
+   {
+    "wall": 1790493051824,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen"
+    ]
+   },
+   {
+    "wall": 1790493059422,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen"
+    ]
+   },
+   {
+    "wall": 1790493061905,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen"
+    ]
+   },
+   {
+    "wall": 1790493071184,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen"
+    ]
+   },
+   {
+    "wall": 1790493071270,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen"
+    ]
+   },
+   {
+    "wall": 1790493080384,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen"
+    ]
+   },
+   {
+    "wall": 1790493080390,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen"
+    ]
+   },
+   {
+    "wall": 1790493089028,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493089630,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493089749,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493089754,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493090826,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493090838,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493090842,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493095624,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493095743,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493096552,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014"
+    ]
+   },
+   {
+    "wall": 1790493098152,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014Judge this"
+    ]
+   },
+   {
+    "wall": 1790493098264,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014Judge this"
+    ]
+   },
+   {
+    "wall": 1790493099272,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus.Judge thi"
+    ]
+   },
+   {
+    "wall": 1790493105112,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper"
+    ]
+   },
+   {
+    "wall": 1790493107262,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper"
+    ]
+   },
+   {
+    "wall": 1790493107267,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper"
+    ]
+   },
+   {
+    "wall": 1790493107343,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper"
+    ]
+   },
+   {
+    "wall": 1790493107506,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a cesarean is.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper"
+    ]
+   },
+   {
+    "wall": 1790493107744,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think? Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493108464,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493109185,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act? Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493109549,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act? Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493109670,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act? Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493109673,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act? Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493110746,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act? Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493110863,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act? Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493110872,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493110875,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493115424,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493115664,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen",
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493115677,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790493116069,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493116145,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493117824,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493118545,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this"
+    ]
+   },
+   {
+    "wall": 1790493118550,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you.Mark consequentialEditRemove",
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this"
+    ]
+   },
+   {
+    "wall": 1790493154672,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493155268,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790493155389,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493155393,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493156468,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790493156491,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493156495,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493159467,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "ValMy lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The oper",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790493159479,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790493159908,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove",
+     "ValGood night, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493159947,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove",
+     "ValGood night, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493160192,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove",
+     "ValGood night, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493160223,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove",
+     "ValGood night, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493175049,
+    "voice": "Voice Stopping\u2026",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove",
+     "ValGood night, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790493175247,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValI do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?Judge this",
+     "Lord ArmandGood night.Mark consequentialEditRemove",
+     "ValGood night, my lord.Judge this"
+    ]
+   }
+  ],
+  "console": [
+   "[vite] connecting...",
+   "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+   "[vite] connected.",
+   "val.voice.capture {\"echoCancellation\":true,\"noiseSuppression\":true,\"autoGainControl\":true,\"sampleRate\":48000,\"channelCount\":1}"
+  ]
+ },
+ "store": {
+  "messages": [
+   {
+    "id": "01a0e1b3-6be8-7042-940b-e83cec213575",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 1,
+    "role": "user",
+    "content": "Good evening.",
+    "created": "1790493027.301"
+   },
+   {
+    "id": "01a0e1b3-7357-7be5-afcf-dc94d0a7f5ab",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 2,
+    "role": "val",
+    "content": "Good evening, my lord.",
+    "created": "1790493029.207"
+   },
+   {
+    "id": "01a0e1b3-b154-779b-a60a-f79a54298436",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 3,
+    "role": "user",
+    "content": "Explain what a cesarean is.",
+    "created": "1790493045.076"
+   },
+   {
+    "id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 4,
+    "role": "val",
+    "content": "My lord, a cesarean section\u2014commonly called a C\u2011section\u2014is a surgical operation in which a baby is delivered through an incision made in the mother\u2019s abdomen and uterus. The procedure is performed when a vaginal delivery would pose significant risk to either the mother or the child, such as in cases of fetal distress, abnormal positioning of the fetus, placental complications, or maternal health concerns. The surgeon opens the abdominal wall, then carefully enters the uterine cavity to remove the baby before closing the incisions. It is a common, well\u2011established method for ensuring safe delivery when circumstances warrant it.",
+    "created": "1790493051.254"
+   },
+   {
+    "id": "01a0e1b4-63d8-7f3d-86db-4e2de0850ef9",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 5,
+    "role": "user",
+    "content": "Thank you.",
+    "created": "1790493090.776"
+   },
+   {
+    "id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 6,
+    "role": "val",
+    "content": "My lord, a cesarean section\u2014often called a C\u2011section\u2014is the surgical delivery of a baby through an incision made in the mother\u2019s abdomen and uterus. The operation is undertaken when a vaginal birth would present undue danger to either the mother or the child, such as fetal distress, malposition of the fetus, placental complications, or maternal health concerns. The surgeon opens the abdominal wall, enters the uterine cavity, removes the infant, and then closes both incisions. It is a common, well\u2011established procedure used to ensure the safety of mother and child when circumstances warrant it.",
+    "created": "1790493098.091"
+   },
+   {
+    "id": "01a0e1b4-b1cf-7a4d-8343-22ea41fe7f7e",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 7,
+    "role": "user",
+    "content": "What do you think of the second act?",
+    "created": "1790493110.734"
+   },
+   {
+    "id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 8,
+    "role": "val",
+    "content": "I do not have that in the record I can see. Could you specify which \u201csecond act\u201d you are referring to?",
+    "created": "1790493115.596"
+   },
+   {
+    "id": "01a0e1b5-6468-7166-ad55-ea713c413766",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 9,
+    "role": "user",
+    "content": "Good night.",
+    "created": "1790493156.455"
+   },
+   {
+    "id": "01a0e1b5-6fca-7aea-aa49-70b6d77a0f12",
+    "conversation": "01a0e1b3-6bde-7878-9d55-f8dc3fed3263",
+    "sequence": 10,
+    "role": "val",
+    "content": "Good night, my lord.",
+    "created": "1790493159.370"
+   }
+  ],
+  "model_calls": [
+   {
+    "id": "01a0e1b2-df5f-7ac1-90a2-d61edda66fa3",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6902,
+    "created": "1790492991.327"
+   },
+   {
+    "id": "01a0e1b2-f9e9-7522-9b5f-d69563aeb15a",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6423,
+    "created": "1790492998.120"
+   },
+   {
+    "id": "01a0e1b3-7354-7656-ab49-4e5482506b6e",
+    "message_id": "01a0e1b3-6be8-7042-940b-e83cec213575",
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "light_conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 1814,
+    "created": "1790493029.204"
+   },
+   {
+    "id": "01a0e1b3-82ce-7eb2-be59-6797a8e52306",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 255,
+    "created": "1790493033.167"
+   },
+   {
+    "id": "01a0e1b3-8470-7056-9672-2ea350f84a6f",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 215,
+    "created": "1790493033.584"
+   },
+   {
+    "id": "01a0e1b3-c96f-7a8e-af21-540d213de6e7",
+    "message_id": "01a0e1b3-b154-779b-a60a-f79a54298436",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 6095,
+    "created": "1790493051.247"
+   },
+   {
+    "id": "01a0e1b4-5551-7843-92b6-02fa29d6702c",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 266,
+    "created": "1790493087.057"
+   },
+   {
+    "id": "01a0e1b4-5708-7a0e-8a6f-618e3457fce0",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 231,
+    "created": "1790493087.496"
+   },
+   {
+    "id": "01a0e1b4-8068-7114-be2e-33860a847b39",
+    "message_id": "01a0e1b4-63d8-7f3d-86db-4e2de0850ef9",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 7235,
+    "created": "1790493098.088"
+   },
+   {
+    "id": "01a0e1b4-c4c8-7ced-a9b3-e113d09d6269",
+    "message_id": "01a0e1b4-b1cf-7a4d-8343-22ea41fe7f7e",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 4780,
+    "created": "1790493115.592"
+   },
+   {
+    "id": "01a0e1b4-fb6b-70b0-98b4-49d74256c063",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6490,
+    "created": "1790493129.578"
+   },
+   {
+    "id": "01a0e1b5-1579-7d0e-b695-e0e1869531b1",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6457,
+    "created": "1790493136.249"
+   },
+   {
+    "id": "01a0e1b5-6fc7-72a5-b09d-8214a05c525f",
+    "message_id": "01a0e1b5-6468-7166-ad55-ea713c413766",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 2838,
+    "created": "1790493159.367"
+   },
+   {
+    "id": "01a0e1b5-7d6e-77a3-98c8-2cd595a5abd9",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 256,
+    "created": "1790493162.862"
+   },
+   {
+    "id": "01a0e1b5-7f0a-7bba-9a9e-7f6466e9c34b",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 221,
+    "created": "1790493163.274"
+   }
+  ],
+  "deliveries": [
+   {
+    "message_id": "01a0e1b3-7357-7be5-afcf-dc94d0a7f5ab",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790493029.220"
+   },
+   {
+    "message_id": "01a0e1b3-7357-7be5-afcf-dc94d0a7f5ab",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 2593,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790493029.885"
+   },
+   {
+    "message_id": "01a0e1b3-7357-7be5-afcf-dc94d0a7f5ab",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 2593,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790493030.239"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "event": 1,
+    "state": "started",
+    "first_audio_ms": 4516,
+    "segments": "2/None",
+    "reason": null,
+    "recorded": "1790493051.263"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "event": 2,
+    "state": "completed",
+    "first_audio_ms": 4516,
+    "segments": "5/5",
+    "reason": null,
+    "recorded": "1790493061.851"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "event": 1,
+    "state": "started",
+    "first_audio_ms": 5738,
+    "segments": "1/None",
+    "reason": null,
+    "recorded": "1790493098.096"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "event": 2,
+    "state": "interrupted",
+    "first_audio_ms": 5738,
+    "segments": "5/5",
+    "reason": "the owner began speaking",
+    "recorded": "1790493107.259"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790493115.602"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 5310,
+    "segments": "1/2",
+    "reason": null,
+    "recorded": "1790493116.042"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 5310,
+    "segments": "2/2",
+    "reason": null,
+    "recorded": "1790493117.815"
+   },
+   {
+    "message_id": "01a0e1b5-6fca-7aea-aa49-70b6d77a0f12",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790493159.375"
+   },
+   {
+    "message_id": "01a0e1b5-6fca-7aea-aa49-70b6d77a0f12",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 3405,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790493159.858"
+   },
+   {
+    "message_id": "01a0e1b5-6fca-7aea-aa49-70b6d77a0f12",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 3405,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790493160.146"
+   }
+  ],
+  "playbacks": [
+   {
+    "message_id": "01a0e1b3-7357-7be5-afcf-dc94d0a7f5ab",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493029.898"
+   },
+   {
+    "message_id": "01a0e1b3-7357-7be5-afcf-dc94d0a7f5ab",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493029.914"
+   },
+   {
+    "message_id": "01a0e1b3-7357-7be5-afcf-dc94d0a7f5ab",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493031.583"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493049.660"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493049.672"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493051.179"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493051.824"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493051.824"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 3,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493053.741"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 4,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493057.473"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 3,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493059.422"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493059.422"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 5,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493060.459"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 4,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493071.183"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 3,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493071.183"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 4,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493080.384"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 5,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493080.385"
+   },
+   {
+    "message_id": "01a0e1b3-c977-711d-b6c8-8d6d283ab1ac",
+    "segment": 5,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493085.503"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493096.541"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493096.554"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493098.300"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493099.273"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493099.273"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 3,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493100.299"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 4,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493104.300"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 3,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493105.113"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493105.113"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 5,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493106.620"
+   },
+   {
+    "message_id": "01a0e1b4-806b-7b66-9237-79f55cdacfbb",
+    "segment": 3,
+    "event": 3,
+    "state": "playback_interrupted",
+    "elapsed_ms": null,
+    "reason": "the owner began speaking",
+    "recorded": "1790493107.263"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493116.059"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493116.070"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493117.021"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493118.546"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493118.558"
+   },
+   {
+    "message_id": "01a0e1b4-c4cc-778f-8540-02d0df912e70",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493121.744"
+   },
+   {
+    "message_id": "01a0e1b5-6fca-7aea-aa49-70b6d77a0f12",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493159.899"
+   },
+   {
+    "message_id": "01a0e1b5-6fca-7aea-aa49-70b6d77a0f12",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493159.908"
+   },
+   {
+    "message_id": "01a0e1b5-6fca-7aea-aa49-70b6d77a0f12",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790493161.335"
+   }
+  ]
+ }
+}

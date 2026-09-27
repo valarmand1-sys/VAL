@@ -1,9 +1,9 @@
-"""What his next words are to the answer still being made — owner order of 26 September 2026.
+"""What his next words are to the answer still being made (owner orders, 26 and 27 September 2026).
 
-"CORRECT THE RELEASE GAPS…", §1. When he speaks again while her answer to his previous
-words is still being generated and none of it has been heard, the relationship between
-the two utterances decides what happens to that answer — and it is **his words** that
-decide it, deterministically, never the fact that words arrived:
+When he speaks again while her answer to his previous words is still being generated and
+none of it has been heard, the relationship between the two utterances decides what
+happens to that answer — and it is **his words** that decide it, deterministically, never
+the fact that words arrived:
 
 * a **stop** — "Stop.", "Never mind.", "Forget it." — with nothing else in it ends the
   obsolete answer and asks for nothing new;
@@ -16,9 +16,33 @@ decide it, deterministically, never the fact that words arrived:
 * anything else is **ambiguous**, and ambiguity never cancels: the earlier answer is
   finished and the new words wait, as they always did.
 
-The rules are closed, cheap and readable; no model is asked. They fail toward keeping
-both requests: a marker has to be at the front of what he said (or be one of the few
-that mean replacement wherever they stand) before an answer is set aside.
+**Corrected 27 September 2026.** The first rule read broad leading words and markers
+anywhere in the utterance as cancellation, and so cancelled on "No rush, take your
+time.", "Do not forget the invitation.", "What does 'never mind' mean?", "Actually, that
+sounds good." and "Can you explain why she said 'start over'?" — and read "And actually,
+never mind. Stop." as a continuation because it opened with "and". None of those is
+cancellation intent. The rule is now clause-based and recognises only **explicit**
+cancellation or replacement of the pending answer:
+
+- quoted spans are data and are removed before anything is matched;
+- a clause that is a question is never a marker (it may be the new request after one);
+- a clause that opens with a negation ("don't", "do not", "must not", "never" before a
+  verb) is never a marker;
+- a stop phrase must be the **whole** clause, once politeness and her name are set
+  aside — "Stop the reading list at ten." and "Cancel that meeting." are requests, not
+  stops — and the weak pauses "wait" and "hold on" count only alone or before an
+  explicit correction;
+- "actually", "sorry", "no rush", "take your time" and the like are discourse markers
+  and mean nothing here;
+- a clause is a replacement only in an explicit form: "I meant …", "I mean …", "that's
+  not what I meant", "let me rephrase", "start over", "not that one", "not the …",
+  a request that ends in "instead", a bare "no" followed by a correction, or a stop
+  followed by a new request;
+- a stop or replacement clause anywhere in the utterance decides, so a leading "and"
+  never turns an explicit stop into a continuation; a continuation is only an utterance
+  that opens (or closes) as an addition and contains no such clause.
+
+When uncertain, the earlier request is preserved. No model is asked.
 """
 
 from __future__ import annotations
@@ -29,39 +53,70 @@ from typing import Literal
 
 Kind = Literal["stop", "replacement", "continuation", "ambiguous"]
 
-#: The name, as he says it, and the small politenesses that carry no meaning here.
+#: Her name, and the small politenesses that carry no meaning here.
 _ADDRESS = re.compile(r"\b(?:val|please|there|thank you|thanks)\b", re.IGNORECASE)
-
-#: A stop with nothing else in it.
+#: Quoted spans: data, whatever they say. Straight single quotes count only as a pair
+#: around a span that begins after a space (so "don't" keeps its apostrophe).
+_QUOTED = re.compile(
+    r"[\"\u201c\u201d]([^\"\u201c\u201d]{1,120})[\"\u201c\u201d]"
+    r"|(?:(?<=\s)|^)'([^']{1,120})'(?=[\s.,;:!?]|$)"
+    r"|\u2018([^\u2019]{1,120})\u2019"
+)
+#: Discourse markers at the front of a clause, set aside repeatedly.
+_DISCOURSE = re.compile(
+    r"^(?:actually|sorry|well|oh|hmm|um|erm|okay|ok|right|so|no rush|no hurry|no worries|"
+    r"no problem|take your time|and|but|then|also|now|look|listen)(?=$|[\s,:;-])",
+    re.IGNORECASE,
+)
+#: A stop, and nothing else, in a clause.
 _STOP = re.compile(
-    r"^(?:stop|never mind|nevermind|forget (?:it|that|about it)|scratch that|cancel(?: that| it)?|"
-    r"that(?:'s| is| will be) enough|enough|hold (?:on|it)|wait|belay that|leave it|"
-    r"don'?t bother|no need|not now|drop it|let it go|never mind that)$",
+    r"^(?:stop|never ?mind|never mind that|forget (?:it|that|about it)|scratch that|"
+    r"cancel (?:that|it)|that(?:'s| is) enough|enough|leave it|drop it|belay that|not now|"
+    r"(?:don't|do not) bother|no need|let it go)$",
     re.IGNORECASE,
 )
-
-#: Markers that mean replacement wherever they stand in the utterance.
-_REPLACEMENT_ANYWHERE = re.compile(
-    r"\b(?:instead|never ?mind|forget (?:it|that|about|the)|scratch that|cancel that|belay that|"
-    r"i meant|i mean|let me rephrase|start (?:over|again)|not that one|rather than that)\b",
+#: The weak pauses: a stop only alone, or before an explicit correction.
+_WEAK_STOP = re.compile(r"^(?:wait|hold (?:on|it)|one moment|hang on)$", re.IGNORECASE)
+#: A clause that opens with a negation is an instruction or a statement, never a marker.
+_NEGATED = re.compile(
+    r"^(?:don't|do not|never(?! ?mind)|please don't|you mustn't|must not|mustn't|no longer|"
+    r"it(?:'s| is) not|that(?:'s| is) not (?!what i meant))",
     re.IGNORECASE,
 )
-#: Markers that mean replacement when they open what he says.
-_REPLACEMENT_LEADING = re.compile(
-    r"^(?:actually|no|nope|wait|hold on|sorry|correction|not that|stop|rather|on second thought|"
-    r"change of plan|different(?:ly)?|make that|let me change that)\b",
+#: A clause that is a question: never a marker.
+_QUESTION = re.compile(
+    r"^(?:what|why|how|when|where|who|whom|whose|which|can you|could you|would you|will you|"
+    r"do you|does|did|is|are|was|were|shall|should|may i|might)\b",
     re.IGNORECASE,
 )
-#: Openings that add to the earlier request rather than replace it.
-_CONTINUATION_LEADING = re.compile(
-    r"^(?:and|also|then|after that|afterwards|as well|plus|next|too|additionally|on top of that|"
-    r"while you'?re at it|in addition|once you'?ve done that|when you'?re done|and then|"
-    r"after you'?ve done that|following that)\b",
+#: Explicit replacement or correction openers.
+_REPLACEMENT_OPENER = re.compile(
+    r"^(?:i meant|i mean|that(?:'s| is) not what i meant|let me rephrase|"
+    r"let me put it another way|start (?:over|again)|make that|change that to|not that one|"
+    r"not the |not that |rather the |forget (?:the|about the|about) |never ?mind the |"
+    r"never ?mind about )",
     re.IGNORECASE,
 )
-_CONTINUATION_TRAILING = re.compile(
-    r"\b(?:too|as well|also|after that|afterwards)[.!?]*$", re.IGNORECASE
+#: A request that ends in "instead".
+_INSTEAD = re.compile(r"\binstead$", re.IGNORECASE)
+#: A bare "no" (or "nope"): a correction only when what follows corrects.
+_BARE_NO = re.compile(r"^(?:no|nope|not)$", re.IGNORECASE)
+_CORRECTION_FOLLOWS = re.compile(
+    r"^(?:the|that|this|those|these|a|an|my|our|his|her|its|tell|give|explain|show|read|"
+    r"describe|make|draft|send|find|look|list|name|use|put|take|try|do|let)\b",
+    re.IGNORECASE,
 )
+#: Courtesy that follows a bare "no": a decline, not a correction.
+_COURTESY = re.compile(
+    r"^(?:thank you|thanks|that(?:'s| is) (?:all|fine|kind)|i(?:'m| am) fine)$", re.IGNORECASE
+)
+_CONTINUATION_OPENER = re.compile(
+    r"^(?:and|also|then|after that|afterwards|as well|plus|next|additionally|on top of that|"
+    r"while you'?re at it|in addition|once you'?ve done that|when you'?re done|following that|"
+    r"and then|after you'?ve done that)(?=$|[\s,])",
+    re.IGNORECASE,
+)
+_CONTINUATION_CLOSER = re.compile(r"\b(?:too|as well|also|after that|afterwards)$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -75,26 +130,78 @@ class FollowUp:
         return self.kind in ("stop", "replacement")
 
 
-def _bare(text: str) -> str:
-    lowered = text.strip().lower().replace(chr(0x2019), "'").replace(chr(0x2014), " ")
-    lowered = _ADDRESS.sub(" ", lowered)
-    lowered = re.sub(r"[,.!?;:" + chr(0x2026) + r"]+", " ", lowered)
-    return re.sub(r"\s+", " ", lowered).strip()
+def _prepare(text: str) -> str:
+    prepared = text.strip().replace(chr(0x2019), "'")
+    prepared = prepared.replace(chr(0x2014), " - ").replace(chr(0x2013), " - ")
+    return _QUOTED.sub(" ", prepared)
+
+
+def _clauses(text: str) -> list[tuple[str, bool]]:
+    """Clauses, oldest first, each with her name and its discourse markers set aside,
+    and whether the clause ended with a question mark."""
+    out: list[tuple[str, bool]] = []
+    for piece in re.finditer(r"[^.!?;:]+[.!?;:]*", text):
+        raw = piece.group(0)
+        asked = raw.rstrip().endswith("?")
+        for part in re.split(r"\s+-\s+|,\s*|\s+\band\b\s+|\s+\bbut\b\s+", raw.rstrip(".!?;: ")):
+            clause = _ADDRESS.sub(" ", part or "")
+            clause = re.sub(r"\s+", " ", clause).strip(" ,")
+            while True:
+                stripped = _DISCOURSE.sub("", clause).strip(" ,:-")
+                if stripped == clause:
+                    break
+                clause = stripped
+            if clause:
+                out.append((clause, asked))
+    return out
 
 
 def follow_up(utterance: str) -> FollowUp:
     """The relationship of his new words to the request still being answered."""
-    bare = _bare(utterance)
-    if not bare:
-        return FollowUp("ambiguous", "nothing said")
-    if _STOP.match(bare):
-        return FollowUp("stop", f"a stop and nothing else: {bare!r}")
-    if _CONTINUATION_LEADING.match(bare):
-        return FollowUp("continuation", "opens as an addition to the earlier request")
-    if _REPLACEMENT_LEADING.match(bare) or _REPLACEMENT_ANYWHERE.search(bare):
+    lowered = _prepare(utterance).lower()
+    clauses = _clauses(lowered)
+    if not clauses:
+        return FollowUp("ambiguous", "nothing said, or only discourse markers")
+    stops: list[int] = []
+    weak_stops: list[int] = []
+    replacements: list[int] = []
+    requests: list[int] = []  # substantive clauses: the new request, if any
+    for index, (clause, asked) in enumerate(clauses):
+        question = asked or bool(_QUESTION.match(clause))
+        if not question and _STOP.match(clause):
+            stops.append(index)
+            continue
+        if _NEGATED.match(clause):
+            requests.append(index)
+            continue
+        if not question and _WEAK_STOP.match(clause):
+            weak_stops.append(index)
+            continue
+        if not question and (_REPLACEMENT_OPENER.match(clause) or _INSTEAD.search(clause)):
+            replacements.append(index)
+            continue
+        if not question and _BARE_NO.match(clause):
+            following = clauses[index + 1][0] if index + 1 < len(clauses) else ""
+            if (
+                following
+                and _CORRECTION_FOLLOWS.match(following)
+                and not _COURTESY.match(following)
+            ):
+                replacements.append(index)
+            continue
+        requests.append(index)
+    if replacements:
         return FollowUp(
-            "replacement", "a correction, withdrawal or redirection of the earlier request"
+            "replacement",
+            "an explicit correction, withdrawal or redirection of the earlier request",
         )
-    if _CONTINUATION_TRAILING.search(bare):
-        return FollowUp("continuation", "closes as an addition to the earlier request")
-    return FollowUp("ambiguous", "neither a clear replacement nor a clear continuation")
+    if stops:
+        if requests:
+            return FollowUp("replacement", "an explicit stop followed by a new request")
+        return FollowUp("stop", f"a stop and nothing else: {clauses[stops[0]][0]!r}")
+    if weak_stops and not requests:
+        return FollowUp("stop", f"a pause and nothing else: {clauses[weak_stops[0]][0]!r}")
+    opening = _ADDRESS.sub(" ", re.split(r"[.!?;:,]", lowered.strip())[0]).strip()
+    if _CONTINUATION_OPENER.match(opening) or _CONTINUATION_CLOSER.search(clauses[-1][0]):
+        return FollowUp("continuation", "opens or closes as an addition to the earlier request")
+    return FollowUp("ambiguous", "neither an explicit stop or replacement nor a clear continuation")

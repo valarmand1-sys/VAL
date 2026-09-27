@@ -45,8 +45,10 @@ only a live loopback call proves it (`docs/reviews/qualification/runs/`).
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import logging
+import socket
 import threading
 from collections.abc import Callable, Iterator, Mapping
 from typing import Any, Literal
@@ -146,6 +148,39 @@ def canonicalize_turns(turns: list[dict[str, str]]) -> list[dict[str, str]]:
         else:
             canonical.append({"role": turn["role"], "content": turn["content"]})
     return canonical
+
+
+def _shut_down_stream(chunks: object) -> None:
+    """End a superseded stream so the reader stops at once (§3, 27 September 2026).
+
+    Closing the response is not enough: the runtime stops generating when the client
+    disconnects but keeps its side of the socket open, so a reader blocked in `recv`
+    stayed blocked for the client's whole read timeout (measured: 600.0 s). Shutting the
+    socket down first — through httpcore's `network_stream` extension, then
+    `get_extra_info("socket")` — makes the read fail immediately (measured: 10 ms), so the
+    call is recorded at once and no reader or socket accumulates. **Client-side
+    cancellation only:** the runtime's inference slot is released only when it finishes
+    what it is doing, and a prefill in progress runs to its end (measured: 5.6 s to the
+    next request after a shutdown 1 s into a cold prefill).
+    """
+    response = getattr(chunks, "response", None)
+    extensions = getattr(response, "extensions", None) or {}
+    network_stream = extensions.get("network_stream") if isinstance(extensions, dict) else None
+    sock = None
+    if network_stream is not None:
+        try:
+            sock = network_stream.get_extra_info("socket")
+        except Exception:
+            sock = None
+    if sock is not None:
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+    close = getattr(chunks, "close", None)
+    if callable(close):
+        with contextlib.suppress(Exception):  # already shut down
+            close()
 
 
 def _chat_turns(messages: tuple[Message, ...], system: str | None) -> list[dict[str, str]]:
@@ -525,18 +560,14 @@ class LMStudioAdapter:
                 def watch() -> None:
                     while not watch_stop.wait(0.05):
                         if cancelled():
-                            close = getattr(chunks, "close", None)
-                            if callable(close):
-                                close()
+                            _shut_down_stream(chunks)
                             return
 
                 threading.Thread(target=watch, name="lmstudio-supersede", daemon=True).start()
             for chunk in chunks:
                 mark("provider_chunk")
                 if cancelled is not None and cancelled():
-                    close = getattr(chunks, "close", None)
-                    if callable(close):
-                        close()
+                    _shut_down_stream(chunks)
                     raise superseded
                 model = getattr(chunk, "model", None)
                 if isinstance(model, str) and model:

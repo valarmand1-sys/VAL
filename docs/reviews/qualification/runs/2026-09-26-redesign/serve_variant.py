@@ -14,6 +14,13 @@ from pathlib import Path
 
 from val_policy.speech_segments import SpeechSegmenter
 
+# Request-construction experiment (release-gaps orders of 26–27 September 2026, §4): an
+# isolated, authorised exception set only in this scratch process, never in production.
+if os.environ.get("VAL_EXPERIMENT_ENVELOPE_IN_SYSTEM") == "1":
+    import val_gateway.context as _context
+
+    _context.ENVELOPE_IN_SYSTEM = True
+
 if os.environ.get("VAL_SCRATCH_FIRST_PAUSE", "on") == "off":
     defaults = SpeechSegmenter.__init__.__kwdefaults__
     assert defaults is not None

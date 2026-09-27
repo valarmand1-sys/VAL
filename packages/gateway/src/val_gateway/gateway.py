@@ -632,7 +632,13 @@ class Gateway:
         # inside the system message, the prefix every turn shares ends at the separator,
         # not at the persona, so that is the boundary the checkpoint must land on.
         primed_system = persona.content
-        if _context.ENVELOPE_IN_SYSTEM:  # read at call time: the harness sets it
+        # The boundary follows the route's own construction: the ordinary conversation
+        # request relocates its envelope under the switch, so its shared prefix ends at
+        # the separator inside the developer block; the Tier-1 request does not relocate
+        # anything, so its prefix still ends at the persona and its prime must too (the
+        # desktop comparison of 27 September paid a 7.9 s cold prefill on the light route
+        # when both primes moved).
+        if _context.ENVELOPE_IN_SYSTEM and task_type is TaskType.CONVERSATION:
             primed_system = persona.content + _context.ENVELOPE_SYSTEM_SEPARATOR
             plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(
                 config, primed_system, boundary="developer_end"

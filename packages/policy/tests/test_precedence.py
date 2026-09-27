@@ -90,3 +90,58 @@ def test_ambiguous_speech_never_supersedes(words: str) -> None:
 def test_nothing_said_is_ambiguous() -> None:
     assert follow_up("  ").kind == "ambiguous"
     assert follow_up("Val.").kind == "ambiguous"
+
+
+# Corrected 27 September 2026: the five false cancellations Astra reproduced with the first
+# rule, and fresh negative cases near them. None of these may set an answer aside.
+@pytest.mark.parametrize(
+    "words",
+    [
+        "No rush, take your time.",
+        "Do not forget the invitation.",
+        "What does 'never mind' mean?",
+        "Actually, that sounds good.",
+        "Can you explain why she said 'start over'?",
+        # fresh negatives nearby
+        "Please don't stop the reading list.",
+        "The invitation must not be cancelled.",
+        "I actually liked the second ending.",
+        "Instead of worrying, tell me a story.",
+        "No, thank you.",
+        "Wait, was that the second act?",
+        "Stop the reading list at ten.",
+        "Cancel that meeting for Tuesday.",
+        "She told me to forget it.",
+        "It's enough for tonight, thank you.",
+        "Hold on, is the venue confirmed?",
+        "Never mind what she said — is the chapel free?",
+        "Actually, yes, please continue.",
+        "Do you mean the second one?",
+        "That's enough detail on the venue; what about the date?",
+    ],
+)
+def test_the_reproduced_false_cancellations_and_their_neighbours_keep_the_request(
+    words: str,
+) -> None:
+    got = follow_up(words)
+    assert not got.supersedes, (words, got.kind, got.reason)
+
+
+def test_a_leading_and_does_not_override_an_explicit_stop() -> None:
+    got = follow_up("And actually, never mind. Stop.")
+    assert got.kind == "stop", got.reason
+    got = follow_up("And no, never mind that. Tell me about the venue.")
+    assert got.kind == "replacement", got.reason
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "Okay, never mind.",
+        "That's not what I meant — the chapel.",
+        "Cancel that. When is the reading?",
+        "Never mind the invitation, Val. Where did we leave the third chapter?",
+    ],
+)
+def test_mixed_clauses_with_an_explicit_marker_supersede(words: str) -> None:
+    assert follow_up(words).supersedes, words

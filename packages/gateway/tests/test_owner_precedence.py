@@ -282,11 +282,22 @@ def test_a_continuation_keeps_the_earlier_request_and_both_are_answered(store: E
     session.close()
 
 
-def test_ambiguous_new_speech_never_cancels(store: Engine) -> None:
+@pytest.mark.parametrize(
+    "words",
+    [
+        "What time is the reading?",
+        # Corrected 27 September 2026: the first rule's false cancellations, through the
+        # session — both requests must stand and both be answered, in order.
+        "No rush, take your time.",
+        "Do not forget the invitation.",
+        "Actually, that sounds good.",
+    ],
+)
+def test_ambiguous_new_speech_never_cancels(store: Engine, words: str) -> None:
     adapter = SlowStreamingAdapter(
         [ok(" ".join(["garden"] * 20)), ok("Seven, my lord.")], delay=0.02
     )
-    session, _ = _session(store, adapter, "What time is the reading?", precedence=True)
+    session, _ = _session(store, adapter, words, precedence=True)
     _speak_twice(session)
     _drain(session, store, val_messages=2)
     got = rows(store, "select role::text from messages order by sequence")
@@ -523,4 +534,79 @@ def test_the_replacement_is_dispatched_without_waiting_for_the_stuck_call(
     assert [r[0] for r in got] == ["user", "user", "val"], got
     assert got[2][1].startswith("The venue")
     assert session.snapshot().superseded is not None and session.error is None
+    session.close()
+
+
+def test_repeated_replacements_each_end_with_one_record_and_one_answer(store: Engine) -> None:
+    """§3, 27 September 2026: two replacements in a row — each superseded call recorded
+    once, no reader accumulating, the last words answered as the one message."""
+    adapter = SlowStreamingAdapter(
+        [
+            ok(" ".join(["garden"] * 60)),
+            ok(" ".join(["venue"] * 60)),
+            ok("The orchard, my lord, is beyond the wall."),
+        ]
+    )
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [started(1), final(1, "Tell me about the garden.")],
+            [started(2), final(2, "Actually, never mind. Tell me about the venue instead.")],
+            [started(3), final(3, "No, the orchard instead.")],
+        ]
+    )
+    gateway = build_gateway(store, adapter)
+    catalogue = load_catalogue(store)
+
+    def submit(content: str, existing: UUID | None, **kwargs: object) -> object:
+        return send(
+            store,
+            gateway,
+            content,
+            catalogue=catalogue,
+            conversation_id=existing,
+            spoken=True,
+            seal_route=SealRoute.UTTERANCE_FINALIZED,
+            on_delta=kwargs.get("on_delta"),  # type: ignore[arg-type]
+            cancelled=kwargs.get("cancelled"),  # type: ignore[arg-type]
+            withhold_answer=bool(kwargs.get("withhold_answer", False)),
+        )
+
+    def unheard_delivery() -> HeldVoice:
+        held = UnheardDelivery()
+        held.audible = False
+        return held
+
+    clock = {"now": 1000.0}
+    session = VoiceSession(
+        store,
+        recognizer,
+        submit=submit,  # type: ignore[arg-type]
+        conversation_id=a_conversation(store),
+        clock=lambda: clock["now"],
+        speech=unheard_delivery,  # type: ignore[arg-type]
+        owner_precedence=True,
+    )
+    session.start()
+    for _ in range(3):
+        session.feed(MARKER)
+        clock["now"] += 5.0
+        session.advance()
+        time.sleep(0.3)
+    session.await_turn(timeout=20)
+    for _ in range(80):
+        session.advance()
+        if rows(store, "select count(*) from messages where role = 'val'")[0][0] >= 1:
+            break
+        time.sleep(0.1)
+    session.await_turn(timeout=20)
+    got = rows(store, "select role::text, content from messages order by sequence")
+    assert [r[0] for r in got] == ["user", "user", "user", "val"], got
+    assert got[3][1].startswith("The orchard")
+    calls = rows(
+        store,
+        "select status::text, tokens_out from model_calls where task_type::text = 'conversation' "
+        "order by created_at",
+    )
+    assert calls == [("error", None), ("error", None), ("ok", calls[2][1])], calls
+    assert adapter.released == [True, True], "each superseded stream released exactly once"
     session.close()
