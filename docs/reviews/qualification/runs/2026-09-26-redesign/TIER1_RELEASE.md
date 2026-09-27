@@ -698,3 +698,29 @@ coordination.
 
 **Deployment wording (§6).** "Optionally install the desktop" is gone from §6: the paired
 desktop is installed after the service, and the readiness claim is made through it.
+
+### 8.10 Defects found after the tag `tier1-low-release-2026-09-27` (recorded 27 September 2026)
+
+Found by the later latency work (`LATENCY_CANDIDATE.md`, `../2026-09-27-cache/CACHE_EXPERIMENT.md`),
+recorded here so that the tag is never deployed as if they were unknown. The tag itself
+is unchanged; repairs, where made, are on master only.
+
+1. **An owed refresh prime is dropped after 60 s without idleness.** An answer longer
+   than a minute leaves the persona prefix evicted and his next turn prefilling cold
+   (12.3 s against 4.6 s once repaired). Repaired on master in `ed0da98`
+   (`VoiceSession._schedule_refresh` waits for as long as the session is open).
+2. **Courtesy after a self-corrected request goes to LOW and is answered wrongly** —
+   "Thanks." after "…No, a famous ghost story." re-answered the question in 2 of 5 runs
+   and drew a greeting in 1; the guard could not see a sentence opening "No," and its
+   "wait," never matched. Withheld on master in `ed0da98` (`_SELF_CORRECTION`).
+3. **Playback reports can be lost**: a segment's held start and completion, released
+   together, collide on the event number and one is refused (HTTP 500) — in every bench
+   run. Repaired on master in `175c380` (serialised, idempotent `record_playback`).
+4. **Runaway speech is unbounded**: a segment can play for 327.7 s (the library's
+   4,096-token default). Bounded on master behind `VAL_TTS_LENGTH_BOUND` (`ed0da98`; its failure
+   path in `175c380`).
+5. **Barge-in does not stop an answer whose synthesis has finished**: the session holds no
+   active delivery, so his onset leaves the desktop playing, and the delivery record
+   still reads completed. Not repaired (it touches the ruled delivery-truth records).
+6. **The spoken-path facts' gate fires on "pacing"**, adding ~490 tokens (~0.65 s) of
+   state to a request that does not ask about her speed. Not repaired.

@@ -54,7 +54,9 @@ PERSONA_TOKENS = 5000
 log: list[dict] = []
 bound_lines: list[str] = []
 for line in Path(log_path).read_text(errors="replace").splitlines():
-    if "speech length bound reached" in line:
+    # The delivery's own failure line, not any line quoting it: later turns' record-state
+    # blocks carry the reason as a spoken-delivery fact, which is correct and not a new hit.
+    if "speech length bound reached" in line and "val.loop:prior record state" not in line:
         bound_lines.append(line[:300])
     m = re.match(
         r"(\d+\.\d+) INFO:val\.[a-z_.]+:(voice desktop timing|fast route|turn completion|voice resume|"
@@ -307,7 +309,11 @@ report = {
     "resumptions": [e["data"] for e in log if e["kind"] == "voice resume"],
     "precedence": [e["data"] for e in log if e["kind"] == "voice precedence"],
     "fast_route": [e["data"] for e in log if e["kind"] == "fast route"],
-    "deliveries_not_completed": [d for d in deliveries if d[1] != "completed"],
+    # Each answer's last recorded delivery state (the table records every transition).
+    "deliveries_not_completed": [
+        [mid, state, reason] for mid, (state, reason) in {d[0]: (d[1], d[2]) for d in deliveries}.items()
+        if state != "completed"
+    ],
     "speech_bound_reached": bound_lines,
     "memory": memory,
 }

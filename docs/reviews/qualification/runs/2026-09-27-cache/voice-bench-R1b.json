@@ -1,0 +1,6564 @@
+{
+ "condition": "renewal_on",
+ "run": "R1b",
+ "turns": [
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "greeting",
+   "class": "social",
+   "said": "Good evening.",
+   "heard": "Good evening.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e460-98a9-79ea-a352-30515a07d341",
+   "answer": "Good evening, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5592,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5600.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e460-881f-7b64-ab88-8e9abb8c2efc",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 256.9,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 4139,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 588,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5741,
+     "cold": false,
+     "fully_cached_suffix_tokens": 693
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "class": "ordinary",
+   "said": "What is the capital of Portugal?",
+   "heard": "What is the capital of Portugal?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e460-bdfa-71a1-bb8b-2bcee184b0f1",
+   "answer": "Lisbon.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5260,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5202.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e460-ae5c-78ac-80c5-7f405743cae2",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 237.0,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 1641,
+    "dispatch_to_visible_ms": 3917,
+    "visible_to_segment_ms": 9,
+    "segment_to_audio_ms": 474,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 5945,
+     "cold": false,
+     "fully_cached_suffix_tokens": 856
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e460-d9f2-7031-b082-5e836198244c",
+   "answer": "You are most welcome, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 3942,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3902.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e460-cf54-78f9-a90c-0b73214f433d",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.3,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 2649,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 484,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5769,
+     "cold": false,
+     "fully_cached_suffix_tokens": 721
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "class": "ordinary",
+   "said": "Explain the difference between suspense and surprise in a scene.",
+   "heard": "Explain the difference between suspense and surprise in a scene.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e461-1b41-7b2a-a5fc-152fa842244b",
+   "answer": "My lord, the distinction lies in timing and emotional payoff.\n\n**Suspense** is a sustained sense of anticipation. The audience knows that something significant will happen, yet the details or outcome ",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 6449,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 6422.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e460-f7df-744e-bf7f-232ff8ade55a",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 277.9,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 1686,
+    "dispatch_to_visible_ms": 4654,
+    "visible_to_segment_ms": 198,
+    "segment_to_audio_ms": 758,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 5990,
+     "cold": false,
+     "fully_cached_suffix_tokens": 901
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "class": "ordinary",
+   "said": "Which of those works better in a short story?",
+   "heard": "Which of those works better in a short story?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e462-23ea-7752-a6d1-1c322ddb3b73",
+   "answer": "Surprise often serves short stories better than suspense, because the format favours a sharp payoff over prolonged tension. A well‑placed twist can reframe the whole narrative in one scene, delivering",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5429,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5325.0,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e462-0887-7351-9a14-993cde3d3503",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 261.1,
+    "preflight_wait_ms": 29,
+    "dispatch_to_first_chunk_ms": 1960,
+    "dispatch_to_visible_ms": 3591,
+    "visible_to_segment_ms": 185,
+    "segment_to_audio_ms": 769,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6216,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1127
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "farewell after an answer",
+   "class": "social",
+   "said": "Good night.",
+   "heard": "Good night.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e462-e33d-7f19-9c52-ee5f4b628fa5",
+   "answer": "Good night, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 3762,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3745.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e462-d91e-7f68-bc26-c7c4fee50972",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 237.0,
+    "preflight_wait_ms": 30,
+    "dispatch_to_first_chunk_ms": 2190,
+    "dispatch_to_visible_ms": 2519,
+    "visible_to_segment_ms": 11,
+    "segment_to_audio_ms": 481,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6385,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1296
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "greeting",
+   "class": "social",
+   "said": "Hello.",
+   "heard": "Hello.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e463-356d-7f53-a046-c6003831c9f8",
+   "answer": "Good day, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 6801,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 6783.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e463-202b-7179-9a2a-e56d8b5d7171",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 239.9,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 5371,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 625,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5740,
+     "cold": false,
+     "fully_cached_suffix_tokens": 692
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "conversational",
+   "class": "ordinary",
+   "said": "How long should a first chapter be?",
+   "heard": "How long should a first chapter be?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e463-7b87-7d1e-85f7-1e90749b0651",
+   "answer": "Good day, my lord.\n\nA first chapter should be long enough to establish the world, introduce your protagonist or central conflict, and hook the reader, but not so long that it exhausts them before thei",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 7724,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 7681.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e463-4c22-7ea0-839b-90fcc22cbdbf",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 243.0,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 2226,
+    "dispatch_to_visible_ms": 6100,
+    "visible_to_segment_ms": 47,
+    "segment_to_audio_ms": 774,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6431,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1342
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "continuation after a pause",
+   "class": "ordinary",
+   "said": "Tell me about a good opening line, and why it works.",
+   "heard": "Tell me about a good opening line. and why it works.",
+   "withdrawn_fragments": 1,
+   "answer_message_id": "01a0e464-e934-7c35-8ec5-93eb1042ac54",
+   "answer": "Good day, my lord.  \n\nA line that often proves effective is:  \n**“When I first saw the sea, it had already begun to forget how deep it could be.”**  \n\nWhy it works:\n\n1. **Immediate intrigue** – The ph",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 9563,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 9527.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    0.8
+   ],
+   "message_id": "01a0e464-b721-7c13-bb4e-1210d96a672c",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 24,
+    "dispatch_to_first_chunk_ms": 2198,
+    "dispatch_to_visible_ms": 7793,
+    "visible_to_segment_ms": 110,
+    "segment_to_audio_ms": 768,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6375,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1286
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "hesitation",
+   "class": "ordinary",
+   "said": "I was wondering, um, whether prologues are useful.",
+   "heard": "I was wondering... Um. Weather Prologs are useful.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e465-f63f-752f-a6e7-c4a3a4affe04",
+   "answer": "Good day, my lord.  \n\nWeather prologues serve several practical functions for a house’s narrative:\n\n1. **Establishing tone and stakes** – The climate sets the emotional color before any plot unfolds, ",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 6028,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5947.0,
+   "completion": {
+    "utterance": 7,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    0.8,
+    0.8
+   ],
+   "message_id": "01a0e465-d584-7ec4-ac5f-7a23b097a598",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 261.4,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2617,
+    "dispatch_to_visible_ms": 4314,
+    "visible_to_segment_ms": 31,
+    "segment_to_audio_ms": 772,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6625,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1536
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "correction after a pause",
+   "class": "ordinary",
+   "said": "Name a famous mystery novel. No, a famous ghost story.",
+   "heard": "Name a famous mystery novel. No, a famous ghost story.",
+   "withdrawn_fragments": 1,
+   "answer_message_id": "01a0e466-f464-7b7e-b221-8d5990d40803",
+   "answer": "The *Turn of the Screw*, by Henry James.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 8128,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 8089.0,
+   "completion": {
+    "utterance": 9,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    0.8
+   ],
+   "message_id": "01a0e466-d9e3-7e0b-b013-dcfbf88f82ac",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 25,
+    "dispatch_to_first_chunk_ms": 2825,
+    "dispatch_to_visible_ms": 6724,
+    "visible_to_segment_ms": 11,
+    "segment_to_audio_ms": 474,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6846,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1757
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e467-1838-75be-9495-85c4ac2d9d21",
+   "answer": "You’re welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5032,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5045.0,
+   "completion": {
+    "utterance": 10,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e467-08f2-762a-947e-1f3dedd91980",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 227.0,
+    "preflight_wait_ms": 31,
+    "dispatch_to_first_chunk_ms": 2839,
+    "dispatch_to_visible_ms": 3838,
+    "visible_to_segment_ms": 10,
+    "segment_to_audio_ms": 473,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6872,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1783
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "ordinary",
+   "class": "ordinary",
+   "said": "Name two ways to end a chapter.",
+   "heard": "Name two ways to end a chapter.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e467-7c23-791a-a7c6-f2a0bea9c3df",
+   "answer": "Good evening, my lord.  \nTwo common ways to close a chapter are:  \n\n1. **Cliff‑hanger** – leave an unresolved question or imminent danger that pulls the reader into the next chapter.  \n2. **Reflective",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 9269,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 9221.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e467-5a44-7d0f-ad15-31f125a46dea",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 277.7,
+    "preflight_wait_ms": 31,
+    "dispatch_to_first_chunk_ms": 1584,
+    "dispatch_to_visible_ms": 7391,
+    "visible_to_segment_ms": 124,
+    "segment_to_audio_ms": 917,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 5921,
+     "cold": false,
+     "fully_cached_suffix_tokens": 832
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "follow-up, quick",
+   "class": "ordinary",
+   "said": "Which of those is better at night?",
+   "heard": "Which of those is better at night?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e467-e7e4-75bc-8709-47b64a8e94b7",
+   "answer": "My lord, for reading at night a **reflective resolution** tends to be more suitable. It offers calm closure and lets the mind settle before sleep, whereas a cliff‑hanger keeps the tension high and may",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 7454,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 7368.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e467-ce6d-7c92-ab2d-0e0292f419e8",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 249.9,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 1708,
+    "dispatch_to_visible_ms": 5663,
+    "visible_to_segment_ms": 274,
+    "segment_to_audio_ms": 642,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6012,
+     "cold": false,
+     "fully_cached_suffix_tokens": 923
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "factual, into maintenance",
+   "class": "ordinary",
+   "said": "What is a caesura?",
+   "heard": "What is a caesura?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e468-4c61-726c-b9a9-c49327986c82",
+   "answer": "My lord, a **caesura** is a deliberate pause or break in the middle of a line—whether in poetry, prose, or verse. It is often marked by punctuation such as a comma, dash, ellipsis, or even a line brea",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 7937,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 7894.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e468-2932-7c63-87b6-068c355ed4e8",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 253.3,
+    "preflight_wait_ms": 31,
+    "dispatch_to_first_chunk_ms": 1824,
+    "dispatch_to_visible_ms": 6033,
+    "visible_to_segment_ms": 321,
+    "segment_to_audio_ms": 764,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6075,
+     "cold": false,
+     "fully_cached_suffix_tokens": 986
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "to be replaced",
+   "class": "ordinary",
+   "said": "Describe a haunted house in one sentence.",
+   "heard": "Describe a haunted house in one sentence.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": null,
+   "answer": null,
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "error"
+   ],
+   "worklet_ms": null,
+   "worklet_attribution": "no sound",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e468-e98f-7107-96af-61ee2a7a4dd3",
+   "stages": {}
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "explicit replacement",
+   "class": "ordinary",
+   "said": "Actually, never mind. Describe a lighthouse instead.",
+   "heard": "Actually, never mind. Describe a lighthouse instead.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e469-12b2-7403-8dbb-5584c9836d9f",
+   "answer": "A solitary beacon of stone, its lantern flame cutting a steady ribbon through night’s blackness, guiding wandering ships to safety.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5914,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5867.0,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e468-fffc-7090-8a1d-330efceff303",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 324.0,
+    "preflight_wait_ms": 19,
+    "dispatch_to_first_chunk_ms": 1980,
+    "dispatch_to_visible_ms": 4344,
+    "visible_to_segment_ms": 169,
+    "segment_to_audio_ms": 507,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6253,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1164
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "thanks after an answer, into maintenance",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e469-50e2-7632-b339-2c3de4935e05",
+   "answer": "You're most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4671,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4639.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e469-433b-7847-87a5-9683b1b1561b",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 237.3,
+    "preflight_wait_ms": 29,
+    "dispatch_to_first_chunk_ms": 2059,
+    "dispatch_to_visible_ms": 3433,
+    "visible_to_segment_ms": 11,
+    "segment_to_audio_ms": 475,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6291,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1202
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "greeting",
+   "class": "social",
+   "said": "Good evening.",
+   "heard": "Good evening.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e469-98a3-72e2-94eb-21ff7adb7cde",
+   "answer": "Good evening, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4005,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4005.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e469-8e61-795e-9aaa-91f4a7f004d4",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 241.4,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2553,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 650,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5741,
+     "cold": false,
+     "fully_cached_suffix_tokens": 693
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "class": "ordinary",
+   "said": "What is the capital of Portugal?",
+   "heard": "What is the capital of Portugal?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e469-c14d-7e14-b9c1-a04ed798a088",
+   "answer": "Lisbon.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5980,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5922.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e469-aede-7207-8470-6ab31634289f",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 243.7,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 1631,
+    "dispatch_to_visible_ms": 4644,
+    "visible_to_segment_ms": 10,
+    "segment_to_audio_ms": 480,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 5945,
+     "cold": false,
+     "fully_cached_suffix_tokens": 856
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e469-dc2c-7d36-b7b5-23db9b89989f",
+   "answer": "You're welcome, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 3867,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3862.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e469-d1c9-7b30-962d-795213b82e18",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 238.0,
+    "preflight_wait_ms": 28,
+    "dispatch_to_first_chunk_ms": 2595,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 473,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5769,
+     "cold": false,
+     "fully_cached_suffix_tokens": 721
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "class": "ordinary",
+   "said": "What is a caesura?",
+   "heard": "What is a caesura?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e469-ffbc-71c3-826c-72c5c0affc08",
+   "answer": "A caesura is a deliberate pause or break in the flow of a line.  \nIn poetry it marks an interruption in meter, often indicated by a punctuation mark such as a slash (/) or an em‑dash.  \nIn music it de",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4810,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4762.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e469-ef66-7682-a60a-81eb50c94a1c",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 243.2,
+    "preflight_wait_ms": 31,
+    "dispatch_to_first_chunk_ms": 1688,
+    "dispatch_to_visible_ms": 2968,
+    "visible_to_segment_ms": 232,
+    "segment_to_audio_ms": 769,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 5984,
+     "cold": false,
+     "fully_cached_suffix_tokens": 895
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46a-5b53-7ab5-8ee1-7f34807081b7",
+   "answer": "You're most welcome, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4721,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4678.0,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46a-4dc7-784d-a6fd-6f4ec87d7601",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 241.0,
+    "preflight_wait_ms": 28,
+    "dispatch_to_first_chunk_ms": 3400,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 478,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5829,
+     "cold": false,
+     "fully_cached_suffix_tokens": 781
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "conversational",
+   "class": "ordinary",
+   "said": "How long should a first chapter be?",
+   "heard": "How long should a first chapter be?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46a-9551-7bf8-83f1-d0185f4bb114",
+   "answer": "The length of a first chapter varies with the story’s purpose and form, but a useful rule of thumb is to aim for roughly 2 000–4 000 words.  \nThat span is long enough to establish the setting, introdu",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 6617,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 6584.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46a-718f-7894-9197-976b94030b7f",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.9,
+    "preflight_wait_ms": 36,
+    "dispatch_to_first_chunk_ms": 2456,
+    "dispatch_to_visible_ms": 4715,
+    "visible_to_segment_ms": 309,
+    "segment_to_audio_ms": 767,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6571,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1482
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46b-6d0f-7500-8e05-884054292a23",
+   "answer": "You’re most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5214,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5154.0,
+   "completion": {
+    "utterance": 7,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46b-5dbc-703c-8edb-73de15d9a279",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 259.8,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2142,
+    "dispatch_to_visible_ms": 3847,
+    "visible_to_segment_ms": 11,
+    "segment_to_audio_ms": 477,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6305,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1216
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "ordinary",
+   "class": "ordinary",
+   "said": "Name two ways to end a chapter.",
+   "heard": "Name two ways to end a chapter.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46b-9940-70d1-9a12-6bbf02cd3f05",
+   "answer": "My lord, chapters may conclude in a variety of ways; two common approaches are:\n\n1. **Cliffhanger** – leave the narrative on an unresolved tension or a sudden twist that compels the reader to continue",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 6102,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 6103.0,
+   "completion": {
+    "utterance": 8,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46b-8248-7d24-a562-0b9b617ee175",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 238.2,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 2153,
+    "dispatch_to_visible_ms": 4394,
+    "visible_to_segment_ms": 215,
+    "segment_to_audio_ms": 764,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6331,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1242
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46c-06fb-7895-9ae8-ad22756cf5dd",
+   "answer": "You're most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5280,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5225.0,
+   "completion": {
+    "utterance": 9,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46b-f71a-768c-9fdf-b20c85e3f3ee",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 223.0,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2246,
+    "dispatch_to_visible_ms": 3993,
+    "visible_to_segment_ms": 10,
+    "segment_to_audio_ms": 469,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6419,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1330
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "follow-up, quick",
+   "class": "ordinary",
+   "said": "Which of those is better at night?",
+   "heard": "Which of those is better at night?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46c-3e08-760c-9065-5e5d3fb08084",
+   "answer": "At night, most readers gravitate toward a sense of closure after a session of reading.  \nConsequently, ending with **resolution of a key conflict** tends to feel more satisfying; it lets the mind sett",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 7801,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 7705.0,
+   "completion": {
+    "utterance": 10,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46c-1dad-7042-b1ee-1b3e4cbf7e0a",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 263.2,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2280,
+    "dispatch_to_visible_ms": 5891,
+    "visible_to_segment_ms": 277,
+    "segment_to_audio_ms": 766,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6444,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1355
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer, into maintenance",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46c-cae3-7f10-ac34-34a58c883d0f",
+   "answer": "You're most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4745,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4709.0,
+   "completion": {
+    "utterance": 11,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46c-bd18-782f-a9e0-5949be4aa6b2",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 242.7,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 2442,
+    "dispatch_to_visible_ms": 3465,
+    "visible_to_segment_ms": 6,
+    "segment_to_audio_ms": 471,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6575,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1486
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "substantive",
+   "class": "ordinary",
+   "said": "Explain the difference between suspense and surprise in a scene.",
+   "heard": "Explain the difference between suspense and surprise in a scene.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46d-0d5c-7cb0-b270-8eab7a160d41",
+   "answer": "My lord,\n\nSuspense and surprise are both tools for stirring a reader’s attention, but they work in different ways.\n\n**Suspense**  \n- Builds over time.  \n- Creates a clear expectation—something is abou",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 7003,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 6943.0,
+   "completion": {
+    "utterance": 12,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46c-e865-7268-9f59-a84f5bc0f403",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 287.8,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 2427,
+    "dispatch_to_visible_ms": 5058,
+    "visible_to_segment_ms": 293,
+    "segment_to_audio_ms": 771,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6603,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1514
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46d-ff78-74f8-8669-34a4a327538b",
+   "answer": "You're welcome, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4230,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4180.0,
+   "completion": {
+    "utterance": 13,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46d-f3ca-73db-95ec-516f14146e45",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 219.1,
+    "preflight_wait_ms": 26,
+    "dispatch_to_first_chunk_ms": 2940,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 467,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5975,
+     "cold": false,
+     "fully_cached_suffix_tokens": 927
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S4-sustained-alternation",
+   "label": "farewell after an answer",
+   "class": "social",
+   "said": "Good night.",
+   "heard": "Good night.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e46e-226c-7066-9ab9-5014e2816d6e",
+   "answer": "Rest well, my lord. May the night bring you calm and quiet.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5609,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5557.0,
+   "completion": {
+    "utterance": 14,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0e46e-113e-7f06-b0d4-15ab65f89048",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 243.3,
+    "preflight_wait_ms": 26,
+    "dispatch_to_first_chunk_ms": 4343,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 472,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5048,
+     "prompt_tokens": 5747,
+     "cold": false,
+     "fully_cached_suffix_tokens": 699
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "continuation, pause 0.8 s",
+   "class": "ordinary",
+   "said": "Tell me about a good opening line. And why it works.",
+   "heard": "Tell me about a good opening line. and why it works.",
+   "withdrawn_fragments": 1,
+   "answer_message_id": "01a0e46e-a6f6-72d9-bc8d-329fd6e9aa2d",
+   "answer": "Good evening, my lord.   \nA concise opening line that serves a house well is:  \n\n> **“Good evening, my lord. May I direct your attention to a matter that will secure the house’s prosperity.”**\n\nIt wor",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 11114,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 11089.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    0.8
+   ],
+   "message_id": "01a0e46e-73c8-79b8-9c9b-83f44800b3bf",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 25,
+    "dispatch_to_first_chunk_ms": 1768,
+    "dispatch_to_visible_ms": 9218,
+    "visible_to_segment_ms": 93,
+    "segment_to_audio_ms": 933,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6062,
+     "cold": false,
+     "fully_cached_suffix_tokens": 973
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "correction, pause 1.2 s",
+   "class": "ordinary",
+   "said": "Name a famous mystery novel. No, a famous ghost story.",
+   "heard": "Name a famous mystery novel. No, a famous ghost story.",
+   "withdrawn_fragments": 1,
+   "answer_message_id": "01a0e46f-7a9a-7320-8659-a8c3eadab53e",
+   "answer": "*The Woman in Black* by Susan Hill.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4602,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4530.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    1.2
+   ],
+   "message_id": "01a0e46f-6de1-7bf6-93fc-c8d4cafd8d55",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 2042,
+    "dispatch_to_visible_ms": 3182,
+    "visible_to_segment_ms": 11,
+    "segment_to_audio_ms": 480,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6274,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1185
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "greeting then request, pause 1.2 s",
+   "class": "ordinary",
+   "said": "Good evening. What is a sonnet?",
+   "heard": "Good evening. What is a sonnet?",
+   "withdrawn_fragments": 1,
+   "answer_message_id": "01a0e46f-b458-76d7-ae80-0808de12effd",
+   "answer": "Good evening, my lord.\n\nA sonnet is a poetic form of fourteen lines, traditionally written in iambic pentameter. It follows one of two principal structures:\n\n1. **The Italian (Petrarchan) sonnet** – a",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4998,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4952.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    1.2
+   ],
+   "message_id": "01a0e46f-97a9-7b8a-ad90-9eff7a351dbf",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 27,
+    "dispatch_to_first_chunk_ms": 2093,
+    "dispatch_to_visible_ms": 3364,
+    "visible_to_segment_ms": 46,
+    "segment_to_audio_ms": 763,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6315,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1226
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "continuation, pause 1.6 s (window end)",
+   "class": "ordinary",
+   "said": "Tell me about a good closing line. And why it works.",
+   "heard": "and why it works.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e470-d9b6-76d8-9621-c56024524bff",
+   "answer": "Good evening, my lord.\n\nThe line **“May the decisions we make today endure long after this night.”** is effective for several reasons:\n\n1. **Reinforces purpose** – It reminds everyone present that the",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 35927,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 35894.0,
+   "completion": {
+    "utterance": 8,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    1.6
+   ],
+   "message_id": "01a0e470-b4ce-7ad5-aa45-e69610c5e0ca",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 15016.7,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 2555,
+    "dispatch_to_visible_ms": 5277,
+    "visible_to_segment_ms": 47,
+    "segment_to_audio_ms": 768,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6645,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1556
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "correction, pause 1.6 s (window end)",
+   "class": "ordinary",
+   "said": "Name a famous ghost story. No, a famous mystery novel.",
+   "heard": "Name a famous ghost story. No, a famous mystery novel.",
+   "withdrawn_fragments": 1,
+   "answer_message_id": "01a0e472-1c02-7025-b70a-8dedda0bab1c",
+   "answer": "My lord, a famous mystery novel is *Murder on the Orient Express* by Agatha Christie.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 8856,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 8805.0,
+   "completion": {
+    "utterance": 10,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    1.6
+   ],
+   "message_id": "01a0e471-fe84-787f-a7cb-fce8fa9787f2",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 28,
+    "dispatch_to_first_chunk_ms": 2817,
+    "dispatch_to_visible_ms": 7350,
+    "visible_to_segment_ms": 145,
+    "segment_to_audio_ms": 472,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6873,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1784
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "greeting then request, pause 1.6 s (window end)",
+   "class": "ordinary",
+   "said": "Hello. What is a haiku?",
+   "heard": "What is a haiku?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e472-7b87-7bdd-a444-d0dd652ca95a",
+   "answer": "Good evening, my lord.  \n\nA haiku is a brief poem of three lines that traditionally follows a 5‑7‑5 syllable pattern in English, or a 5‑7‑5 morae structure in Japanese. It often captures a single mome",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 12823,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 12766.0,
+   "completion": {
+    "utterance": 12,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    1.6
+   ],
+   "message_id": "01a0e472-5894-7905-9073-9e49fc08933d",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 4620.4,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2932,
+    "dispatch_to_visible_ms": 6784,
+    "visible_to_segment_ms": 47,
+    "segment_to_audio_ms": 771,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 6935,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1846
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "correction, pause 2.3 s (past the window)",
+   "class": "ordinary",
+   "said": "Name a famous poem. No, a famous play.",
+   "heard": "No, a famous play.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e473-0f6a-7ace-aaf5-9097b85f7654",
+   "answer": "Good evening, my lord. A famous play is *Hamlet* by William Shakespeare.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 7238,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 7187.0,
+   "completion": {
+    "utterance": 14,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    2.3
+   ],
+   "message_id": "01a0e472-f832-7ed2-8f2f-d3eab5936845",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 301.4,
+    "preflight_wait_ms": 21,
+    "dispatch_to_first_chunk_ms": 3151,
+    "dispatch_to_visible_ms": 5835,
+    "visible_to_segment_ms": 56,
+    "segment_to_audio_ms": 472,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 7055,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1966
+    }
+   }
+  },
+  {
+   "condition": "renewal_on",
+   "run": "R1b",
+   "session": "S5-merge-window",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0e476-b96e-744f-9203-f9ed914b6a88",
+   "answer": "Good evening, my lord. I’m glad to be of service. How else may I assist you today?",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5482,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 5452.0,
+   "completion": {
+    "utterance": 15,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": true,
+   "spoken_over_her_audio": true,
+   "internal_pauses_s": [],
+   "message_id": "01a0e476-a882-74f2-8443-8e1d9095a62c",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 227.6,
+    "preflight_wait_ms": 217,
+    "dispatch_to_first_chunk_ms": 3156,
+    "dispatch_to_visible_ms": 3932,
+    "visible_to_segment_ms": 79,
+    "segment_to_audio_ms": 487,
+    "engine_cache": {
+     "attribution": "identity",
+     "cached_tokens": 5089,
+     "prompt_tokens": 7086,
+     "cold": false,
+     "fully_cached_suffix_tokens": 1997
+    }
+   }
+  }
+ ],
+ "readiness": [
+  {
+   "session": "S1-greeting-factual-substantive",
+   "voice_on_to_ready_displayed_s": 20.016
+  },
+  {
+   "session": "S2-pauses-and-corrections",
+   "voice_on_to_ready_displayed_s": 7.668
+  },
+  {
+   "session": "S3-collisions-and-replacement",
+   "voice_on_to_ready_displayed_s": 7.17
+  },
+  {
+   "session": "S4-sustained-alternation",
+   "voice_on_to_ready_displayed_s": 7.069
+  },
+  {
+   "session": "S5-merge-window",
+   "voice_on_to_ready_displayed_s": 6.753
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 14.029,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.487,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.485,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.491,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.495,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.482,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.899,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "initial",
+   "seconds": 2.233,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.477,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.478,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.489,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.471,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.474,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.879,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "initial",
+   "seconds": 2.082,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.927,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.489,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.913,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.897,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "initial",
+   "seconds": 2.105,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.506,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.481,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.484,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.489,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.483,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.48,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.484,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.483,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.879,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.474,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.474,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.468,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.856,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "initial",
+   "seconds": 2.02,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.491,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.486,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.476,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.484,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.481,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.47,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.882,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.851,
+   "partner": "established",
+   "light": "established"
+  }
+ ],
+ "prime_calls": [
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 6771,
+   "attribution": "identity",
+   "cached_tokens": 0,
+   "prompt_tokens": 5059,
+   "cold": true,
+   "fully_cached_suffix_tokens": 5059
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 6436,
+   "attribution": "identity",
+   "cached_tokens": 0,
+   "prompt_tokens": 5100,
+   "cold": true,
+   "fully_cached_suffix_tokens": 5100
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 254,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 256,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 259,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 259,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 264,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 254,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 227,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 1579,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 218,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 251,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 255,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 257,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 256,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 259,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 261,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 216,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 1435,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 225,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 270,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 222,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 261,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 266,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 231,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 262,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 222,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 1451,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 228,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 263,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 254,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 258,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 263,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 255,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 258,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 256,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 259,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 258,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 218,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 256,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 263,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 257,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 259,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 212,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 1376,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 228,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 263,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 253,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 258,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 261,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 259,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 258,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 267,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 213,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5059,
+   "latency_ms": 256,
+   "attribution": "identity",
+   "cached_tokens": 5048,
+   "prompt_tokens": 5059,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "tokens_in": 5100,
+   "latency_ms": 213,
+   "attribution": "identity",
+   "cached_tokens": 5089,
+   "prompt_tokens": 5100,
+   "cold": false,
+   "fully_cached_suffix_tokens": 11
+  }
+ ],
+ "engine_lines_in_run": 108,
+ "request_bodies": [
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1024"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "6144"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "low",
+   "max_tokens": "1"
+  },
+  {
+   "model": "val-exp-gpt-oss-20b",
+   "reasoning_effort": "medium",
+   "max_tokens": "1"
+  }
+ ],
+ "call_models": [
+  "val-exp-gpt-oss-20b"
+ ],
+ "timelines": [
+  {
+   "utterance": 1,
+   "message_id": "01a0e460-881f-7b64-ab88-8e9abb8c2efc",
+   "endpoint": 0.0,
+   "transcript_final_received": 106.4,
+   "transcript_final_processed": 118.4,
+   "owner_turn_submitted": 256.9,
+   "turn_start": 261.4,
+   "scope_resolved": 261.5,
+   "conversation_created": 268.1,
+   "message_append_start": 268.1,
+   "message_persisted": 281.3,
+   "owner_message_committed": 281.3,
+   "egress_decided": 282.6,
+   "runtime_ready_start": 311.9,
+   "runtime_ready_end": 325.0,
+   "exact_preflight_start": 325.0,
+   "exact_preflight_end": 357.6,
+   "provider_dispatch": 360.8,
+   "provider_chunk": 4499.6,
+   "speech_first_visible_text": 4503.9,
+   "speech_segment_queued": 4520.8,
+   "tts_synthesize_start": 4521.0,
+   "audio_at_sink": 5108.5,
+   "tts_synthesize_return": 5236.7
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0e460-ae5c-78ac-80c5-7f405743cae2",
+   "endpoint": 0.0,
+   "transcript_final_received": 115.3,
+   "transcript_final_processed": 115.5,
+   "owner_turn_submitted": 237.0,
+   "turn_start": 238.5,
+   "message_append_start": 240.1,
+   "message_persisted": 245.8,
+   "owner_message_committed": 245.8,
+   "egress_decided": 246.5,
+   "assembly_start": 250.6,
+   "record_state_assembled": 259.9,
+   "assembly_end": 260.0,
+   "runtime_ready_start": 268.5,
+   "runtime_ready_end": 282.8,
+   "exact_preflight_start": 282.9,
+   "exact_preflight_end": 314.8,
+   "provider_dispatch": 316.7,
+   "provider_chunk": 1957.9,
+   "provider_visible_text": 4233.7,
+   "speech_first_visible_text": 4233.7,
+   "speech_segment_queued": 4243.1,
+   "tts_synthesize_start": 4243.2,
+   "audio_at_sink": 4716.6,
+   "tts_synthesize_return": 4869.5
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0e460-cf54-78f9-a90c-0b73214f433d",
+   "endpoint": 0.0,
+   "transcript_final_received": 100.0,
+   "transcript_final_processed": 121.1,
+   "owner_turn_submitted": 260.3,
+   "turn_start": 261.5,
+   "message_append_start": 262.9,
+   "message_persisted": 265.9,
+   "owner_message_committed": 265.9,
+   "egress_decided": 266.6,
+   "runtime_ready_start": 278.5,
+   "runtime_ready_end": 291.7,
+   "exact_preflight_start": 291.8,
+   "exact_preflight_end": 325.4,
+   "provider_dispatch": 327.0,
+   "provider_chunk": 2976.4,
+   "speech_first_visible_text": 2980.6,
+   "speech_segment_queued": 2986.3,
+   "tts_synthesize_start": 2986.4,
+   "audio_at_sink": 3470.8,
+   "tts_synthesize_return": 3740.4
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0e460-f7df-744e-bf7f-232ff8ade55a",
+   "endpoint": 0.0,
+   "transcript_final_received": 146.8,
+   "transcript_final_processed": 156.1,
+   "owner_turn_submitted": 277.9,
+   "turn_start": 279.0,
+   "message_append_start": 279.9,
+   "message_persisted": 282.6,
+   "owner_message_committed": 282.6,
+   "egress_decided": 283.2,
+   "assembly_start": 285.6,
+   "record_state_assembled": 290.6,
+   "assembly_end": 290.7,
+   "runtime_ready_start": 299.0,
+   "runtime_ready_end": 312.5,
+   "exact_preflight_start": 312.6,
+   "exact_preflight_end": 344.6,
+   "provider_dispatch": 347.2,
+   "provider_chunk": 2032.8,
+   "provider_visible_text": 5001.5,
+   "speech_first_visible_text": 5001.5,
+   "speech_segment_queued": 5199.9,
+   "tts_synthesize_start": 5200.1,
+   "audio_at_sink": 5958.1,
+   "tts_synthesize_return": 8030.6
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0e462-0887-7351-9a14-993cde3d3503",
+   "endpoint": 0.0,
+   "transcript_final_received": 125.0,
+   "transcript_final_processed": 139.0,
+   "owner_turn_submitted": 261.1,
+   "turn_start": 262.9,
+   "message_append_start": 263.9,
+   "message_persisted": 266.6,
+   "owner_message_committed": 266.6,
+   "egress_decided": 267.5,
+   "assembly_start": 272.1,
+   "record_state_assembled": 280.0,
+   "assembly_end": 280.1,
+   "runtime_ready_start": 288.0,
+   "runtime_ready_end": 300.6,
+   "exact_preflight_start": 300.7,
+   "exact_preflight_end": 329.4,
+   "provider_dispatch": 331.7,
+   "provider_chunk": 2292.0,
+   "provider_visible_text": 3923.0,
+   "speech_first_visible_text": 3923.0,
+   "speech_segment_queued": 4107.6,
+   "tts_synthesize_start": 4108.0,
+   "audio_at_sink": 4876.4,
+   "tts_synthesize_return": 6282.0
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0e462-d91e-7f68-bc26-c7c4fee50972",
+   "endpoint": 0.0,
+   "transcript_final_received": 100.3,
+   "transcript_final_processed": 115.2,
+   "owner_turn_submitted": 237.0,
+   "turn_start": 238.1,
+   "message_append_start": 239.1,
+   "message_persisted": 245.8,
+   "owner_message_committed": 245.8,
+   "egress_decided": 246.5,
+   "assembly_start": 249.5,
+   "record_state_assembled": 255.2,
+   "assembly_end": 255.3,
+   "runtime_ready_start": 262.7,
+   "runtime_ready_end": 274.9,
+   "exact_preflight_start": 275.0,
+   "exact_preflight_end": 305.1,
+   "provider_dispatch": 307.0,
+   "provider_chunk": 2496.6,
+   "provider_visible_text": 2826.1,
+   "speech_first_visible_text": 2826.1,
+   "speech_segment_queued": 2837.3,
+   "tts_synthesize_start": 2837.5,
+   "audio_at_sink": 3318.6,
+   "tts_synthesize_return": 3424.8
+  },
+  {
+   "utterance": 1,
+   "message_id": "01a0e463-202b-7179-9a2a-e56d8b5d7171",
+   "endpoint": 0.0,
+   "transcript_final_received": 98.5,
+   "transcript_final_processed": 115.3,
+   "owner_turn_submitted": 239.9,
+   "turn_start": 242.3,
+   "scope_resolved": 242.4,
+   "conversation_created": 244.9,
+   "message_append_start": 244.9,
+   "message_persisted": 248.8,
+   "owner_message_committed": 248.8,
+   "egress_decided": 249.6,
+   "runtime_ready_start": 262.5,
+   "runtime_ready_end": 277.1,
+   "exact_preflight_start": 277.2,
+   "exact_preflight_end": 311.0,
+   "provider_dispatch": 314.7,
+   "provider_chunk": 5685.9,
+   "speech_first_visible_text": 5688.7,
+   "speech_segment_queued": 5693.2,
+   "tts_synthesize_start": 5693.3,
+   "audio_at_sink": 6317.9,
+   "tts_synthesize_return": 6468.8
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0e463-4c22-7ea0-839b-90fcc22cbdbf",
+   "endpoint": 0.0,
+   "transcript_final_received": 120.6,
+   "transcript_final_processed": 121.3,
+   "owner_turn_submitted": 243.0,
+   "turn_start": 244.3,
+   "message_append_start": 245.5,
+   "message_persisted": 248.0,
+   "owner_message_committed": 248.0,
+   "egress_decided": 249.3,
+   "assembly_start": 252.6,
+   "record_state_assembled": 259.7,
+   "assembly_end": 259.9,
+   "runtime_ready_start": 269.8,
+   "runtime_ready_end": 284.6,
+   "exact_preflight_start": 284.6,
+   "exact_preflight_end": 319.1,
+   "provider_dispatch": 321.4,
+   "provider_chunk": 2547.9,
+   "provider_visible_text": 6421.9,
+   "speech_first_visible_text": 6421.9,
+   "speech_segment_queued": 6469.0,
+   "tts_synthesize_start": 6469.4,
+   "audio_at_sink": 7242.9,
+   "tts_synthesize_return": 7729.4
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0e464-af14-7813-af0a-eb46386aea96",
+   "endpoint": 0.0,
+   "transcript_final_received": 121.7,
+   "transcript_final_processed": 121.9,
+   "owner_turn_submitted": 246.3,
+   "turn_start": 247.9,
+   "message_append_start": 251.7,
+   "message_persisted": 257.3,
+   "owner_message_committed": 257.3,
+   "egress_decided": 257.9,
+   "assembly_start": 260.9,
+   "record_state_assembled": 271.8,
+   "assembly_end": 272.0,
+   "runtime_ready_start": 281.6,
+   "runtime_ready_end": 294.9,
+   "exact_preflight_start": 294.9,
+   "exact_preflight_end": 329.9,
+   "provider_dispatch": 335.7,
+   "superseded_decided": 2141.8,
+   "superseded_stream_closed": 2160.3,
+   "superseded_call_ended": 2169.5
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0e464-b721-7c13-bb4e-1210d96a672c",
+   "turn_start": 0.7,
+   "message_append_start": 1.8,
+   "message_persisted": 4.5,
+   "owner_message_committed": 4.5,
+   "egress_decided": 5.1,
+   "assembly_start": 8.2,
+   "record_state_assembled": 15.3,
+   "assembly_end": 15.4,
+   "runtime_ready_start": 22.5,
+   "runtime_ready_end": 32.4,
+   "exact_preflight_start": 32.4,
+   "exact_preflight_end": 55.9,
+   "provider_dispatch": 58.3,
+   "provider_chunk": 2255.9,
+   "provider_visible_text": 7851.3,
+   "speech_first_visible_text": 7851.4,
+   "speech_segment_queued": 7960.9,
+   "tts_synthesize_start": 7961.2,
+   "audio_at_sink": 8728.5,
+   "tts_synthesize_return": 8886.0
+  },
+  {
+   "utterance": 7,
+   "message_id": "01a0e465-d584-7ec4-ac5f-7a23b097a598",
+   "endpoint": 0.0,
+   "transcript_final_received": 124.1,
+   "transcript_final_processed": 139.0,
+   "owner_turn_submitted": 261.4,
+   "turn_start": 262.9,
+   "message_append_start": 267.4,
+   "message_persisted": 270.0,
+   "owner_message_committed": 270.0,
+   "egress_decided": 271.3,
+   "assembly_start": 275.4,
+   "record_state_assembled": 286.2,
+   "assembly_end": 286.3,
+   "runtime_ready_start": 294.3,
+   "runtime_ready_end": 307.5,
+   "exact_preflight_start": 307.6,
+   "exact_preflight_end": 340.5,
+   "provider_dispatch": 345.6,
+   "provider_chunk": 2963.0,
+   "provider_visible_text": 4659.5,
+   "speech_first_visible_text": 4659.5,
+   "speech_segment_queued": 4690.5,
+   "tts_synthesize_start": 4690.6,
+   "audio_at_sink": 5462.4,
+   "tts_synthesize_return": 5889.0
+  },
+  {
+   "utterance": 8,
+   "message_id": "01a0e466-ce93-7014-a00d-4a597a65f3a4",
+   "endpoint": 0.0,
+   "transcript_final_received": 107.9,
+   "transcript_final_processed": 124.1,
+   "owner_turn_submitted": 263.4,
+   "turn_start": 264.4,
+   "message_append_start": 265.9,
+   "message_persisted": 268.5,
+   "owner_message_committed": 268.5,
+   "egress_decided": 269.2,
+   "assembly_start": 273.0,
+   "record_state_assembled": 280.2,
+   "assembly_end": 280.3,
+   "runtime_ready_start": 289.6,
+   "runtime_ready_end": 303.7,
+   "exact_preflight_start": 303.8,
+   "exact_preflight_end": 340.4,
+   "provider_dispatch": 342.3,
+   "superseded_decided": 3003.3,
+   "superseded_stream_closed": 3023.3,
+   "superseded_call_ended": 3030.8
+  },
+  {
+   "utterance": 9,
+   "message_id": "01a0e466-d9e3-7e0b-b013-dcfbf88f82ac",
+   "turn_start": 1.4,
+   "message_append_start": 2.6,
+   "message_persisted": 4.9,
+   "owner_message_committed": 4.9,
+   "egress_decided": 5.6,
+   "assembly_start": 8.4,
+   "record_state_assembled": 14.7,
+   "assembly_end": 14.8,
+   "runtime_ready_start": 21.8,
+   "runtime_ready_end": 31.7,
+   "exact_preflight_start": 31.7,
+   "exact_preflight_end": 57.1,
+   "provider_dispatch": 58.9,
+   "provider_chunk": 2883.5,
+   "provider_visible_text": 6783.0,
+   "speech_first_visible_text": 6783.0,
+   "speech_segment_queued": 6794.2,
+   "tts_synthesize_start": 6794.3,
+   "audio_at_sink": 7268.2,
+   "tts_synthesize_return": 7707.3
+  },
+  {
+   "utterance": 10,
+   "message_id": "01a0e467-08f2-762a-947e-1f3dedd91980",
+   "endpoint": 0.0,
+   "transcript_final_received": 94.3,
+   "transcript_final_processed": 103.8,
+   "owner_turn_submitted": 227.0,
+   "turn_start": 228.1,
+   "message_append_start": 229.0,
+   "message_persisted": 235.3,
+   "owner_message_committed": 235.3,
+   "egress_decided": 236.2,
+   "assembly_start": 238.9,
+   "record_state_assembled": 245.9,
+   "assembly_end": 246.0,
+   "runtime_ready_start": 252.6,
+   "runtime_ready_end": 263.9,
+   "exact_preflight_start": 264.0,
+   "exact_preflight_end": 294.8,
+   "provider_dispatch": 297.1,
+   "provider_chunk": 3135.9,
+   "provider_visible_text": 4135.4,
+   "speech_first_visible_text": 4135.4,
+   "speech_segment_queued": 4145.6,
+   "tts_synthesize_start": 4145.8,
+   "audio_at_sink": 4618.9,
+   "tts_synthesize_return": 4865.0
+  },
+  {
+   "utterance": 1,
+   "message_id": "01a0e467-5a44-7d0f-ad15-31f125a46dea",
+   "endpoint": 0.0,
+   "transcript_final_received": 119.9,
+   "transcript_final_processed": 138.5,
+   "owner_turn_submitted": 277.7,
+   "turn_start": 279.5,
+   "scope_resolved": 279.6,
+   "conversation_created": 282.4,
+   "message_append_start": 282.4,
+   "message_persisted": 286.5,
+   "owner_message_committed": 286.5,
+   "egress_decided": 288.0,
+   "assembly_start": 291.4,
+   "record_state_assembled": 296.6,
+   "assembly_end": 296.8,
+   "runtime_ready_start": 307.4,
+   "runtime_ready_end": 326.5,
+   "exact_preflight_start": 326.8,
+   "exact_preflight_end": 358.1,
+   "provider_dispatch": 361.4,
+   "provider_chunk": 1945.8,
+   "provider_visible_text": 7752.0,
+   "speech_first_visible_text": 7752.0,
+   "speech_segment_queued": 7875.8,
+   "tts_synthesize_start": 7875.9,
+   "audio_at_sink": 8793.2,
+   "tts_synthesize_return": 9065.6
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0e467-ce6d-7c92-ab2d-0e0292f419e8",
+   "endpoint": 0.0,
+   "transcript_final_received": 116.5,
+   "transcript_final_processed": 127.4,
+   "owner_turn_submitted": 249.9,
+   "turn_start": 251.5,
+   "message_append_start": 252.5,
+   "message_persisted": 255.2,
+   "owner_message_committed": 255.2,
+   "egress_decided": 256.0,
+   "assembly_start": 259.1,
+   "record_state_assembled": 269.8,
+   "assembly_end": 269.9,
+   "runtime_ready_start": 279.6,
+   "runtime_ready_end": 294.9,
+   "exact_preflight_start": 294.9,
+   "exact_preflight_end": 329.5,
+   "provider_dispatch": 332.8,
+   "provider_chunk": 2040.5,
+   "provider_visible_text": 5996.0,
+   "speech_first_visible_text": 5996.0,
+   "speech_segment_queued": 6270.5,
+   "tts_synthesize_start": 6270.8,
+   "audio_at_sink": 6913.0,
+   "tts_synthesize_return": 7932.8
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0e468-2932-7c63-87b6-068c355ed4e8",
+   "endpoint": 0.0,
+   "transcript_final_received": 117.5,
+   "transcript_final_processed": 118.4,
+   "owner_turn_submitted": 253.3,
+   "turn_start": 254.5,
+   "message_append_start": 255.7,
+   "message_persisted": 258.9,
+   "owner_message_committed": 258.9,
+   "egress_decided": 259.6,
+   "assembly_start": 263.8,
+   "record_state_assembled": 270.6,
+   "assembly_end": 270.7,
+   "runtime_ready_start": 278.8,
+   "runtime_ready_end": 291.9,
+   "exact_preflight_start": 292.0,
+   "exact_preflight_end": 323.4,
+   "provider_dispatch": 326.8,
+   "provider_chunk": 2150.9,
+   "provider_visible_text": 6359.4,
+   "speech_first_visible_text": 6359.4,
+   "speech_segment_queued": 6680.6,
+   "tts_synthesize_start": 6680.8,
+   "audio_at_sink": 7444.4,
+   "tts_synthesize_return": 9579.4
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0e468-fffc-7090-8a1d-330efceff303",
+   "endpoint": 0.0,
+   "transcript_final_received": 125.2,
+   "transcript_final_processed": 144.4,
+   "owner_turn_submitted": 284.4,
+   "turn_start": 285.8,
+   "message_append_start": 287.0,
+   "message_persisted": 289.6,
+   "owner_message_committed": 289.6,
+   "egress_decided": 290.3,
+   "assembly_start": 292.9,
+   "record_state_assembled": 299.9,
+   "assembly_end": 300.0,
+   "runtime_ready_start": 307.8,
+   "runtime_ready_end": 321.4,
+   "exact_preflight_start": 321.5,
+   "exact_preflight_end": 354.9,
+   "provider_dispatch": 356.9,
+   "provider_chunk": 2433.9,
+   "superseded_decided": 6025.9,
+   "superseded_stream_closed": 6028.2,
+   "superseded_call_ended": 6037.3
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0e468-fffc-7090-8a1d-330efceff303",
+   "endpoint": 0.0,
+   "transcript_final_received": 188.9,
+   "transcript_final_processed": 201.5,
+   "owner_turn_submitted": 324.0,
+   "turn_start": 325.1,
+   "message_append_start": 325.9,
+   "message_persisted": 328.3,
+   "owner_message_committed": 328.3,
+   "egress_decided": 329.1,
+   "assembly_start": 332.3,
+   "record_state_assembled": 337.5,
+   "assembly_end": 337.6,
+   "runtime_ready_start": 349.2,
+   "runtime_ready_end": 359.1,
+   "exact_preflight_start": 359.1,
+   "exact_preflight_end": 377.7,
+   "provider_dispatch": 379.9,
+   "provider_chunk": 2360.3,
+   "provider_visible_text": 4724.4,
+   "speech_first_visible_text": 4724.4,
+   "speech_segment_queued": 4893.2,
+   "tts_synthesize_start": 4893.3,
+   "audio_at_sink": 5400.4,
+   "tts_synthesize_return": 5819.0
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0e469-433b-7847-87a5-9683b1b1561b",
+   "endpoint": 0.0,
+   "transcript_final_received": 100.3,
+   "transcript_final_processed": 115.2,
+   "owner_turn_submitted": 237.3,
+   "turn_start": 238.1,
+   "message_append_start": 238.8,
+   "message_persisted": 240.1,
+   "owner_message_committed": 240.1,
+   "egress_decided": 240.6,
+   "assembly_start": 243.4,
+   "record_state_assembled": 248.6,
+   "assembly_end": 248.6,
+   "runtime_ready_start": 253.6,
+   "runtime_ready_end": 264.1,
+   "exact_preflight_start": 264.2,
+   "exact_preflight_end": 293.3,
+   "provider_dispatch": 295.8,
+   "provider_chunk": 2354.9,
+   "provider_visible_text": 3728.6,
+   "speech_first_visible_text": 3728.7,
+   "speech_segment_queued": 3739.6,
+   "tts_synthesize_start": 3739.8,
+   "audio_at_sink": 4214.9,
+   "tts_synthesize_return": 4485.1
+  },
+  {
+   "utterance": 1,
+   "message_id": "01a0e469-8e61-795e-9aaa-91f4a7f004d4",
+   "endpoint": 0.0,
+   "transcript_final_received": 105.7,
+   "transcript_final_processed": 119.4,
+   "owner_turn_submitted": 241.4,
+   "turn_start": 243.6,
+   "scope_resolved": 243.7,
+   "conversation_created": 245.4,
+   "message_append_start": 245.4,
+   "message_persisted": 248.8,
+   "owner_message_committed": 248.8,
+   "egress_decided": 249.9,
+   "runtime_ready_start": 264.6,
+   "runtime_ready_end": 279.3,
+   "exact_preflight_start": 279.4,
+   "exact_preflight_end": 312.8,
+   "provider_dispatch": 315.3,
+   "provider_chunk": 2868.5,
+   "speech_first_visible_text": 2871.6,
+   "speech_segment_queued": 2878.5,
+   "tts_synthesize_start": 2878.6,
+   "audio_at_sink": 3528.8,
+   "tts_synthesize_return": 3683.9
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0e469-aede-7207-8470-6ab31634289f",
+   "endpoint": 0.0,
+   "transcript_final_received": 113.9,
+   "transcript_final_processed": 121.7,
+   "owner_turn_submitted": 243.7,
+   "turn_start": 244.9,
+   "message_append_start": 246.0,
+   "message_persisted": 248.3,
+   "owner_message_committed": 248.3,
+   "egress_decided": 249.1,
+   "assembly_start": 252.5,
+   "record_state_assembled": 257.4,
+   "assembly_end": 257.5,
+   "runtime_ready_start": 267.5,
+   "runtime_ready_end": 281.5,
+   "exact_preflight_start": 281.5,
+   "exact_preflight_end": 313.9,
+   "provider_dispatch": 317.2,
+   "provider_chunk": 1948.4,
+   "provider_visible_text": 4961.6,
+   "speech_first_visible_text": 4961.6,
+   "speech_segment_queued": 4971.9,
+   "tts_synthesize_start": 4972.0,
+   "audio_at_sink": 5452.3,
+   "tts_synthesize_return": 5558.7
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0e469-d1c9-7b30-962d-795213b82e18",
+   "endpoint": 0.0,
+   "transcript_final_received": 97.1,
+   "transcript_final_processed": 98.7,
+   "owner_turn_submitted": 238.0,
+   "turn_start": 239.4,
+   "message_append_start": 240.6,
+   "message_persisted": 243.1,
+   "owner_message_committed": 243.1,
+   "egress_decided": 243.8,
+   "runtime_ready_start": 256.1,
+   "runtime_ready_end": 269.5,
+   "exact_preflight_start": 269.7,
+   "exact_preflight_end": 297.8,
+   "provider_dispatch": 300.6,
+   "provider_chunk": 2895.3,
+   "speech_first_visible_text": 2899.9,
+   "speech_segment_queued": 2907.5,
+   "tts_synthesize_start": 2907.6,
+   "audio_at_sink": 3380.9,
+   "tts_synthesize_return": 3582.7
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0e469-ef66-7682-a60a-81eb50c94a1c",
+   "endpoint": 0.0,
+   "transcript_final_received": 111.6,
+   "transcript_final_processed": 121.2,
+   "owner_turn_submitted": 243.2,
+   "turn_start": 244.2,
+   "message_append_start": 245.2,
+   "message_persisted": 248.2,
+   "owner_message_committed": 248.2,
+   "egress_decided": 248.7,
+   "assembly_start": 251.3,
+   "record_state_assembled": 258.1,
+   "assembly_end": 258.2,
+   "runtime_ready_start": 266.3,
+   "runtime_ready_end": 279.5,
+   "exact_preflight_start": 279.6,
+   "exact_preflight_end": 311.0,
+   "provider_dispatch": 313.3,
+   "provider_chunk": 2001.7,
+   "provider_visible_text": 3281.2,
+   "speech_first_visible_text": 3281.2,
+   "speech_segment_queued": 3513.2,
+   "tts_synthesize_start": 3513.5,
+   "audio_at_sink": 4281.8,
+   "tts_synthesize_return": 5361.9
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0e46a-4dc7-784d-a6fd-6f4ec87d7601",
+   "endpoint": 0.0,
+   "transcript_final_received": 96.2,
+   "transcript_final_processed": 119.0,
+   "owner_turn_submitted": 241.0,
+   "turn_start": 242.2,
+   "message_append_start": 243.5,
+   "message_persisted": 246.6,
+   "owner_message_committed": 246.6,
+   "egress_decided": 247.0,
+   "runtime_ready_start": 262.0,
+   "runtime_ready_end": 276.7,
+   "exact_preflight_start": 276.9,
+   "exact_preflight_end": 305.0,
+   "provider_dispatch": 307.7,
+   "provider_chunk": 3707.5,
+   "speech_first_visible_text": 3711.6,
+   "speech_segment_queued": 3719.9,
+   "tts_synthesize_start": 3720.0,
+   "audio_at_sink": 4198.0,
+   "tts_synthesize_return": 4349.7
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0e46a-718f-7894-9197-976b94030b7f",
+   "endpoint": 0.0,
+   "transcript_final_received": 117.3,
+   "transcript_final_processed": 121.4,
+   "owner_turn_submitted": 260.9,
+   "turn_start": 262.0,
+   "message_append_start": 263.2,
+   "message_persisted": 265.5,
+   "owner_message_committed": 265.5,
+   "egress_decided": 266.3,
+   "assembly_start": 269.6,
+   "record_state_assembled": 275.5,
+   "assembly_end": 275.7,
+   "runtime_ready_start": 284.1,
+   "runtime_ready_end": 297.1,
+   "exact_preflight_start": 297.2,
+   "exact_preflight_end": 333.4,
+   "provider_dispatch": 336.9,
+   "provider_chunk": 2792.7,
+   "provider_visible_text": 5051.6,
+   "speech_first_visible_text": 5051.6,
+   "speech_segment_queued": 5360.4,
+   "tts_synthesize_start": 5360.6,
+   "audio_at_sink": 6127.3,
+   "tts_synthesize_return": 7816.4
+  },
+  {
+   "utterance": 7,
+   "message_id": "01a0e46b-5dbc-703c-8edb-73de15d9a279",
+   "endpoint": 0.0,
+   "transcript_final_received": 100.9,
+   "transcript_final_processed": 121.4,
+   "owner_turn_submitted": 259.8,
+   "turn_start": 261.5,
+   "message_append_start": 263.5,
+   "message_persisted": 266.7,
+   "owner_message_committed": 266.7,
+   "egress_decided": 267.7,
+   "assembly_start": 271.7,
+   "record_state_assembled": 279.1,
+   "assembly_end": 279.2,
+   "runtime_ready_start": 287.4,
+   "runtime_ready_end": 299.6,
+   "exact_preflight_start": 299.6,
+   "exact_preflight_end": 332.4,
+   "provider_dispatch": 335.4,
+   "provider_chunk": 2476.9,
+   "provider_visible_text": 4182.8,
+   "speech_first_visible_text": 4182.8,
+   "speech_segment_queued": 4193.9,
+   "tts_synthesize_start": 4194.0,
+   "audio_at_sink": 4671.0,
+   "tts_synthesize_return": 4824.4
+  },
+  {
+   "utterance": 8,
+   "message_id": "01a0e46b-8248-7d24-a562-0b9b617ee175",
+   "endpoint": 0.0,
+   "transcript_final_received": 115.4,
+   "transcript_final_processed": 116.1,
+   "owner_turn_submitted": 238.2,
+   "turn_start": 239.5,
+   "message_append_start": 240.7,
+   "message_persisted": 243.5,
+   "owner_message_committed": 243.5,
+   "egress_decided": 244.2,
+   "assembly_start": 248.1,
+   "record_state_assembled": 254.4,
+   "assembly_end": 254.6,
+   "runtime_ready_start": 261.7,
+   "runtime_ready_end": 273.2,
+   "exact_preflight_start": 273.3,
+   "exact_preflight_end": 305.5,
+   "provider_dispatch": 308.1,
+   "provider_chunk": 2460.7,
+   "provider_visible_text": 4702.4,
+   "speech_first_visible_text": 4702.4,
+   "speech_segment_queued": 4917.7,
+   "tts_synthesize_start": 4918.0,
+   "audio_at_sink": 5681.5,
+   "tts_synthesize_return": 6849.7
+  },
+  {
+   "utterance": 9,
+   "message_id": "01a0e46b-f71a-768c-9fdf-b20c85e3f3ee",
+   "endpoint": 0.0,
+   "transcript_final_received": 96.1,
+   "transcript_final_processed": 97.3,
+   "owner_turn_submitted": 223.0,
+   "turn_start": 224.1,
+   "message_append_start": 225.9,
+   "message_persisted": 229.6,
+   "owner_message_committed": 229.6,
+   "egress_decided": 230.3,
+   "assembly_start": 234.0,
+   "record_state_assembled": 241.5,
+   "assembly_end": 241.6,
+   "runtime_ready_start": 248.0,
+   "runtime_ready_end": 258.2,
+   "exact_preflight_start": 258.2,
+   "exact_preflight_end": 291.1,
+   "provider_dispatch": 294.1,
+   "provider_chunk": 2539.8,
+   "provider_visible_text": 4287.5,
+   "speech_first_visible_text": 4287.5,
+   "speech_segment_queued": 4297.0,
+   "tts_synthesize_start": 4297.1,
+   "audio_at_sink": 4766.2,
+   "tts_synthesize_return": 5157.9
+  },
+  {
+   "utterance": 10,
+   "message_id": "01a0e46c-1dad-7042-b1ee-1b3e4cbf7e0a",
+   "endpoint": 0.0,
+   "transcript_final_received": 112.3,
+   "transcript_final_processed": 124.1,
+   "owner_turn_submitted": 263.2,
+   "turn_start": 264.1,
+   "message_append_start": 265.0,
+   "message_persisted": 267.7,
+   "owner_message_committed": 267.7,
+   "egress_decided": 268.4,
+   "assembly_start": 271.0,
+   "record_state_assembled": 277.9,
+   "assembly_end": 278.0,
+   "runtime_ready_start": 285.8,
+   "runtime_ready_end": 297.6,
+   "exact_preflight_start": 297.6,
+   "exact_preflight_end": 330.8,
+   "provider_dispatch": 333.9,
+   "provider_chunk": 2614.1,
+   "provider_visible_text": 6224.7,
+   "speech_first_visible_text": 6224.7,
+   "speech_segment_queued": 6501.9,
+   "tts_synthesize_start": 6502.1,
+   "audio_at_sink": 7268.4,
+   "tts_synthesize_return": 9041.7
+  },
+  {
+   "utterance": 11,
+   "message_id": "01a0e46c-bd18-782f-a9e0-5949be4aa6b2",
+   "endpoint": 0.0,
+   "transcript_final_received": 96.6,
+   "transcript_final_processed": 104.0,
+   "owner_turn_submitted": 242.7,
+   "turn_start": 243.6,
+   "message_append_start": 244.3,
+   "message_persisted": 246.1,
+   "owner_message_committed": 246.1,
+   "egress_decided": 246.4,
+   "assembly_start": 249.1,
+   "record_state_assembled": 254.6,
+   "assembly_end": 254.7,
+   "runtime_ready_start": 260.8,
+   "runtime_ready_end": 272.0,
+   "exact_preflight_start": 272.0,
+   "exact_preflight_end": 306.5,
+   "provider_dispatch": 308.3,
+   "provider_chunk": 2750.1,
+   "provider_visible_text": 3773.7,
+   "speech_first_visible_text": 3773.7,
+   "speech_segment_queued": 3780.2,
+   "tts_synthesize_start": 3780.3,
+   "audio_at_sink": 4251.5,
+   "tts_synthesize_return": 4473.8
+  },
+  {
+   "utterance": 12,
+   "message_id": "01a0e46c-e865-7268-9f59-a84f5bc0f403",
+   "endpoint": 0.0,
+   "transcript_final_received": 146.5,
+   "transcript_final_processed": 160.1,
+   "owner_turn_submitted": 287.8,
+   "turn_start": 288.7,
+   "message_append_start": 289.5,
+   "message_persisted": 291.3,
+   "owner_message_committed": 291.3,
+   "egress_decided": 292.1,
+   "assembly_start": 295.0,
+   "record_state_assembled": 299.4,
+   "assembly_end": 299.5,
+   "runtime_ready_start": 305.9,
+   "runtime_ready_end": 316.1,
+   "exact_preflight_start": 316.1,
+   "exact_preflight_end": 350.5,
+   "provider_dispatch": 352.7,
+   "provider_chunk": 2779.3,
+   "provider_visible_text": 5411.0,
+   "speech_first_visible_text": 5411.0,
+   "speech_segment_queued": 5704.1,
+   "tts_synthesize_start": 5704.3,
+   "audio_at_sink": 6474.9,
+   "tts_synthesize_return": 8759.3
+  },
+  {
+   "utterance": 13,
+   "message_id": "01a0e46d-f3ca-73db-95ec-516f14146e45",
+   "endpoint": 0.0,
+   "transcript_final_received": 93.5,
+   "transcript_final_processed": 97.2,
+   "owner_turn_submitted": 219.1,
+   "turn_start": 219.8,
+   "message_append_start": 220.4,
+   "message_persisted": 222.1,
+   "owner_message_committed": 222.1,
+   "egress_decided": 222.6,
+   "runtime_ready_start": 231.0,
+   "runtime_ready_end": 240.6,
+   "exact_preflight_start": 240.7,
+   "exact_preflight_end": 266.9,
+   "provider_dispatch": 268.7,
+   "provider_chunk": 3208.4,
+   "speech_first_visible_text": 3210.7,
+   "speech_segment_queued": 3213.8,
+   "tts_synthesize_start": 3213.9,
+   "audio_at_sink": 3681.1,
+   "tts_synthesize_return": 3878.2
+  },
+  {
+   "utterance": 14,
+   "message_id": "01a0e46e-113e-7f06-b0d4-15ab65f89048",
+   "endpoint": 0.0,
+   "transcript_final_received": 102.8,
+   "transcript_final_processed": 104.5,
+   "owner_turn_submitted": 243.3,
+   "turn_start": 244.0,
+   "message_append_start": 244.8,
+   "message_persisted": 246.8,
+   "owner_message_committed": 246.8,
+   "egress_decided": 247.2,
+   "runtime_ready_start": 256.9,
+   "runtime_ready_end": 267.9,
+   "exact_preflight_start": 268.0,
+   "exact_preflight_end": 294.5,
+   "provider_dispatch": 297.0,
+   "provider_chunk": 4639.6,
+   "speech_first_visible_text": 4642.0,
+   "speech_segment_queued": 4642.0,
+   "tts_synthesize_start": 4642.3,
+   "audio_at_sink": 5113.7,
+   "tts_synthesize_return": 5290.8
+  },
+  {
+   "utterance": 1,
+   "message_id": "01a0e46e-6bff-79b5-8372-0a159f1592fe",
+   "endpoint": 0.0,
+   "transcript_final_received": 120.5,
+   "transcript_final_processed": 138.2,
+   "owner_turn_submitted": 277.8,
+   "turn_start": 279.5,
+   "scope_resolved": 279.6,
+   "conversation_created": 282.1,
+   "message_append_start": 282.1,
+   "message_persisted": 285.8,
+   "owner_message_committed": 285.8,
+   "egress_decided": 287.0,
+   "assembly_start": 290.6,
+   "record_state_assembled": 295.4,
+   "assembly_end": 295.6,
+   "runtime_ready_start": 307.0,
+   "runtime_ready_end": 321.6,
+   "exact_preflight_start": 321.7,
+   "exact_preflight_end": 351.6,
+   "provider_dispatch": 354.3,
+   "provider_chunk": 2088.9,
+   "superseded_decided": 2117.1,
+   "superseded_stream_closed": 2122.2,
+   "superseded_call_ended": 2134.1
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0e46e-73c8-79b8-9c9b-83f44800b3bf",
+   "turn_start": 1.0,
+   "message_append_start": 2.3,
+   "message_persisted": 4.7,
+   "owner_message_committed": 4.7,
+   "egress_decided": 5.4,
+   "assembly_start": 8.2,
+   "record_state_assembled": 13.1,
+   "assembly_end": 13.2,
+   "runtime_ready_start": 21.4,
+   "runtime_ready_end": 34.7,
+   "exact_preflight_start": 34.8,
+   "exact_preflight_end": 59.9,
+   "provider_dispatch": 62.9,
+   "provider_chunk": 1831.2,
+   "provider_visible_text": 9281.1,
+   "speech_first_visible_text": 9281.1,
+   "speech_segment_queued": 9373.9,
+   "tts_synthesize_start": 9374.2,
+   "audio_at_sink": 10307.2,
+   "tts_synthesize_return": 10603.5
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0e46f-60e8-797b-89b7-5a62035cf861",
+   "endpoint": 0.0,
+   "transcript_final_received": 110.4,
+   "transcript_final_processed": 122.2,
+   "owner_turn_submitted": 261.6,
+   "turn_start": 263.3,
+   "message_append_start": 264.4,
+   "message_persisted": 267.7,
+   "owner_message_committed": 267.7,
+   "egress_decided": 268.5,
+   "assembly_start": 272.5,
+   "record_state_assembled": 280.5,
+   "assembly_end": 280.7,
+   "runtime_ready_start": 289.3,
+   "runtime_ready_end": 304.4,
+   "exact_preflight_start": 304.6,
+   "exact_preflight_end": 341.3,
+   "provider_dispatch": 345.2,
+   "provider_chunk": 2568.4,
+   "superseded_decided": 3401.9,
+   "superseded_stream_closed": 3421.2,
+   "superseded_call_ended": 3436.5
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0e46f-6de1-7bf6-93fc-c8d4cafd8d55",
+   "turn_start": 1.6,
+   "message_append_start": 3.0,
+   "message_persisted": 6.5,
+   "owner_message_committed": 6.5,
+   "egress_decided": 7.1,
+   "assembly_start": 10.4,
+   "record_state_assembled": 16.5,
+   "assembly_end": 16.6,
+   "runtime_ready_start": 25.5,
+   "runtime_ready_end": 38.2,
+   "exact_preflight_start": 38.3,
+   "exact_preflight_end": 72.3,
+   "provider_dispatch": 74.8,
+   "provider_chunk": 2116.7,
+   "provider_visible_text": 3256.4,
+   "speech_first_visible_text": 3256.4,
+   "speech_segment_queued": 3267.4,
+   "tts_synthesize_start": 3267.5,
+   "audio_at_sink": 3747.5,
+   "tts_synthesize_return": 4164.1
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0e46f-8f3a-7980-852d-39abc62ca0f7",
+   "endpoint": 0.0,
+   "transcript_final_received": 112.3,
+   "transcript_final_processed": 114.7,
+   "owner_turn_submitted": 236.9,
+   "turn_start": 237.9,
+   "message_append_start": 238.8,
+   "message_persisted": 241.6,
+   "owner_message_committed": 241.6,
+   "egress_decided": 242.4,
+   "assembly_start": 245.4,
+   "record_state_assembled": 251.9,
+   "assembly_end": 252.0,
+   "runtime_ready_start": 261.1,
+   "runtime_ready_end": 274.7,
+   "exact_preflight_start": 274.8,
+   "exact_preflight_end": 308.5,
+   "provider_dispatch": 311.0,
+   "superseded_decided": 2257.7,
+   "superseded_stream_closed": 2263.9,
+   "superseded_call_ended": 2272.0
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0e46f-97a9-7b8a-ad90-9eff7a351dbf",
+   "turn_start": 0.5,
+   "message_append_start": 1.4,
+   "message_persisted": 4.0,
+   "owner_message_committed": 4.0,
+   "egress_decided": 4.6,
+   "assembly_start": 7.1,
+   "record_state_assembled": 12.2,
+   "assembly_end": 12.3,
+   "runtime_ready_start": 20.6,
+   "runtime_ready_end": 30.9,
+   "exact_preflight_start": 30.9,
+   "exact_preflight_end": 58.3,
+   "provider_dispatch": 60.9,
+   "provider_chunk": 2153.5,
+   "provider_visible_text": 3425.3,
+   "speech_first_visible_text": 3425.4,
+   "speech_segment_queued": 3471.3,
+   "tts_synthesize_start": 3471.8,
+   "audio_at_sink": 4234.4,
+   "tts_synthesize_return": 4392.7
+  },
+  {
+   "utterance": 7,
+   "message_id": "01a0e470-7050-7424-bb6c-5cf9ff3a2427",
+   "endpoint": 0.0,
+   "transcript_final_received": 115.6,
+   "transcript_final_processed": 116.0,
+   "owner_turn_submitted": 238.2,
+   "turn_start": 239.6,
+   "message_append_start": 241.0,
+   "message_persisted": 243.5,
+   "owner_message_committed": 243.5,
+   "egress_decided": 244.2,
+   "assembly_start": 247.5,
+   "record_state_assembled": 254.2,
+   "assembly_end": 254.3,
+   "runtime_ready_start": 262.9,
+   "runtime_ready_end": 275.1,
+   "exact_preflight_start": 275.2,
+   "exact_preflight_end": 308.2,
+   "provider_dispatch": 310.7,
+   "provider_chunk": 2756.3,
+   "provider_visible_text": 6016.8,
+   "speech_first_visible_text": 6016.8,
+   "speech_segment_queued": 6078.0,
+   "tts_synthesize_start": 6078.6,
+   "audio_at_sink": 6846.3,
+   "tts_synthesize_return": 6958.3
+  },
+  {
+   "utterance": 8,
+   "message_id": "01a0e470-b4ce-7ad5-aa45-e69610c5e0ca",
+   "endpoint": 0.0,
+   "transcript_final_received": 148.3,
+   "transcript_final_processed": 162.1,
+   "owner_turn_submitted": 15016.7,
+   "turn_start": 15017.4,
+   "message_append_start": 15018.0,
+   "message_persisted": 15019.8,
+   "owner_message_committed": 15019.8,
+   "egress_decided": 15020.2,
+   "assembly_start": 15022.3,
+   "record_state_assembled": 15026.7,
+   "assembly_end": 15026.8,
+   "runtime_ready_start": 15033.0,
+   "runtime_ready_end": 15044.4,
+   "exact_preflight_start": 15044.4,
+   "exact_preflight_end": 15075.9,
+   "provider_dispatch": 15077.9,
+   "provider_chunk": 17632.7,
+   "provider_visible_text": 20354.4,
+   "speech_first_visible_text": 20354.4,
+   "speech_segment_queued": 20401.1,
+   "tts_synthesize_start": 20401.3,
+   "audio_at_sink": 21169.3,
+   "tts_synthesize_return": 21465.5
+  },
+  {
+   "utterance": 9,
+   "message_id": "01a0e471-f013-7a40-86f4-b30023728b3c",
+   "endpoint": 0.0,
+   "transcript_final_received": 106.9,
+   "transcript_final_processed": 122.1,
+   "owner_turn_submitted": 247.3,
+   "turn_start": 248.4,
+   "message_append_start": 249.4,
+   "message_persisted": 252.0,
+   "owner_message_committed": 252.0,
+   "egress_decided": 252.7,
+   "assembly_start": 256.1,
+   "record_state_assembled": 261.1,
+   "assembly_end": 261.2,
+   "runtime_ready_start": 268.5,
+   "runtime_ready_end": 280.5,
+   "exact_preflight_start": 280.5,
+   "exact_preflight_end": 315.8,
+   "provider_dispatch": 317.9,
+   "provider_chunk": 3290.0,
+   "superseded_decided": 3805.0,
+   "superseded_stream_closed": 3811.0,
+   "superseded_call_ended": 3817.0
+  },
+  {
+   "utterance": 10,
+   "message_id": "01a0e471-fe84-787f-a7cb-fce8fa9787f2",
+   "turn_start": 0.9,
+   "message_append_start": 1.9,
+   "message_persisted": 4.4,
+   "owner_message_committed": 4.4,
+   "egress_decided": 5.0,
+   "assembly_start": 7.9,
+   "record_state_assembled": 14.7,
+   "assembly_end": 14.8,
+   "runtime_ready_start": 21.7,
+   "runtime_ready_end": 33.0,
+   "exact_preflight_start": 33.0,
+   "exact_preflight_end": 60.7,
+   "provider_dispatch": 62.4,
+   "provider_chunk": 2879.8,
+   "provider_visible_text": 7412.6,
+   "speech_first_visible_text": 7412.6,
+   "speech_segment_queued": 7557.3,
+   "tts_synthesize_start": 7557.6,
+   "audio_at_sink": 8029.8,
+   "tts_synthesize_return": 9469.0
+  },
+  {
+   "utterance": 11,
+   "message_id": "01a0e472-3d53-7718-b880-0adfa800a4e7",
+   "endpoint": 0.0,
+   "transcript_final_received": 93.8,
+   "transcript_final_processed": 104.2,
+   "owner_turn_submitted": 243.3,
+   "turn_start": 244.3,
+   "message_append_start": 245.0,
+   "message_persisted": 247.0,
+   "owner_message_committed": 247.0,
+   "egress_decided": 247.4,
+   "assembly_start": 250.7,
+   "record_state_assembled": 256.8,
+   "assembly_end": 256.9,
+   "runtime_ready_start": 265.6,
+   "runtime_ready_end": 276.2,
+   "exact_preflight_start": 276.3,
+   "exact_preflight_end": 307.0,
+   "provider_dispatch": 310.2,
+   "provider_chunk": 3337.9,
+   "provider_visible_text": 5823.1,
+   "speech_first_visible_text": 5823.1,
+   "speech_segment_queued": 5823.5,
+   "tts_synthesize_start": 5824.4,
+   "audio_at_sink": 6321.8,
+   "tts_synthesize_return": 6505.4
+  },
+  {
+   "utterance": 12,
+   "message_id": "01a0e472-5894-7905-9073-9e49fc08933d",
+   "endpoint": 0.0,
+   "transcript_final_received": 350.5,
+   "transcript_final_processed": 359.7,
+   "owner_turn_submitted": 4620.4,
+   "turn_start": 4620.9,
+   "message_append_start": 4621.7,
+   "message_persisted": 4623.3,
+   "owner_message_committed": 4623.3,
+   "egress_decided": 4623.9,
+   "assembly_start": 4626.2,
+   "record_state_assembled": 4631.0,
+   "assembly_end": 4631.1,
+   "runtime_ready_start": 4636.4,
+   "runtime_ready_end": 4646.4,
+   "exact_preflight_start": 4646.5,
+   "exact_preflight_end": 4679.6,
+   "provider_dispatch": 4681.8,
+   "provider_chunk": 7613.9,
+   "provider_visible_text": 11465.7,
+   "speech_first_visible_text": 11465.7,
+   "speech_segment_queued": 11513.0,
+   "tts_synthesize_start": 11513.3,
+   "audio_at_sink": 12283.7,
+   "tts_synthesize_return": 12716.4
+  },
+  {
+   "utterance": 13,
+   "message_id": "01a0e472-f832-7ed2-8f2f-d3eab5936845",
+   "endpoint": 0.0,
+   "transcript_final_received": 103.6,
+   "transcript_final_processed": 120.2,
+   "owner_turn_submitted": 245.1,
+   "turn_start": 246.0,
+   "message_append_start": 246.7,
+   "message_persisted": 248.6,
+   "owner_message_committed": 248.6,
+   "egress_decided": 249.0,
+   "assembly_start": 251.4,
+   "record_state_assembled": 256.4,
+   "assembly_end": 256.5,
+   "runtime_ready_start": 263.3,
+   "runtime_ready_end": 273.3,
+   "exact_preflight_start": 273.3,
+   "exact_preflight_end": 306.9,
+   "provider_dispatch": 309.4,
+   "provider_chunk": 3594.4,
+   "superseded_decided": 4260.6,
+   "superseded_stream_closed": 4265.5,
+   "superseded_call_ended": 4271.6
+  },
+  {
+   "utterance": 14,
+   "message_id": "01a0e472-f832-7ed2-8f2f-d3eab5936845",
+   "endpoint": 0.0,
+   "transcript_final_received": 156.6,
+   "transcript_final_processed": 161.9,
+   "owner_turn_submitted": 301.4,
+   "turn_start": 302.3,
+   "message_append_start": 303.1,
+   "message_persisted": 305.2,
+   "owner_message_committed": 305.2,
+   "egress_decided": 305.6,
+   "assembly_start": 308.0,
+   "record_state_assembled": 313.8,
+   "assembly_end": 313.9,
+   "runtime_ready_start": 320.4,
+   "runtime_ready_end": 329.2,
+   "exact_preflight_start": 329.3,
+   "exact_preflight_end": 349.9,
+   "provider_dispatch": 352.0,
+   "provider_chunk": 3503.0,
+   "provider_visible_text": 6187.0,
+   "speech_first_visible_text": 6187.0,
+   "speech_segment_queued": 6242.5,
+   "tts_synthesize_start": 6243.4,
+   "audio_at_sink": 6714.8,
+   "tts_synthesize_return": 6914.4
+  },
+  {
+   "utterance": 15,
+   "message_id": "01a0e476-a882-74f2-8443-8e1d9095a62c",
+   "endpoint": 0.0,
+   "transcript_final_received": 96.7,
+   "transcript_final_processed": 101.9,
+   "owner_turn_submitted": 227.6,
+   "turn_start": 228.5,
+   "message_append_start": 229.1,
+   "message_persisted": 230.7,
+   "owner_message_committed": 230.7,
+   "egress_decided": 231.0,
+   "assembly_start": 232.8,
+   "record_state_assembled": 236.8,
+   "assembly_end": 236.9,
+   "runtime_ready_start": 242.2,
+   "runtime_ready_end": 251.2,
+   "exact_preflight_start": 251.2,
+   "exact_preflight_end": 467.9,
+   "provider_dispatch": 469.9,
+   "provider_chunk": 3625.4,
+   "provider_visible_text": 4402.3,
+   "speech_first_visible_text": 4402.3,
+   "speech_segment_queued": 4481.0,
+   "tts_synthesize_start": 4481.4,
+   "audio_at_sink": 4968.0,
+   "tts_synthesize_return": 5164.4
+  }
+ ],
+ "resumptions": [
+  {
+   "early_utterance": 3,
+   "resumed_by": 4,
+   "pause_s": 0.564,
+   "decided_mono": 624638.622357458
+  },
+  {
+   "early_utterance": 8,
+   "resumed_by": 9,
+   "pause_s": 0.56,
+   "decided_mono": 624778.6042115
+  },
+  {
+   "early_utterance": 1,
+   "resumed_by": 2,
+   "pause_s": 0.581,
+   "decided_mono": 625276.764357916
+  },
+  {
+   "early_utterance": 3,
+   "resumed_by": 4,
+   "pause_s": 0.944,
+   "decided_mono": 625340.76447875
+  },
+  {
+   "early_utterance": 5,
+   "resumed_by": 6,
+   "pause_s": 0.957,
+   "decided_mono": 625351.504403083
+  },
+  {
+   "early_utterance": 9,
+   "resumed_by": 10,
+   "pause_s": 1.321,
+   "decided_mono": 625508.906419375
+  }
+ ],
+ "precedence": [
+  {
+   "released_utterance": 3,
+   "superseded_call_ended_mono": 624638.650061958
+  },
+  {
+   "released_utterance": 8,
+   "superseded_call_ended_mono": 624778.631617916
+  },
+  {
+   "superseded_utterance": 4,
+   "by_utterance": 5,
+   "relation": "replacement",
+   "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+   "answer_heard": false,
+   "decided_mono": 624919.585474791,
+   "outcome": "superseded"
+  },
+  {
+   "released_utterance": 4,
+   "superseded_call_ended_mono": 624919.596865
+  },
+  {
+   "released_utterance": 1,
+   "superseded_call_ended_mono": 625276.781375083
+  },
+  {
+   "released_utterance": 3,
+   "superseded_call_ended_mono": 625340.799137416
+  },
+  {
+   "released_utterance": 5,
+   "superseded_call_ended_mono": 625351.51876325
+  },
+  {
+   "superseded_utterance": 7,
+   "by_utterance": 8,
+   "relation": "continuation",
+   "reason": "opens or closes as an addition to the earlier request",
+   "answer_heard": false,
+   "decided_mono": 625409.925296083,
+   "outcome": "kept"
+  },
+  {
+   "released_utterance": 9,
+   "superseded_call_ended_mono": 625508.918439458
+  },
+  {
+   "superseded_utterance": 11,
+   "by_utterance": 12,
+   "relation": "ambiguous",
+   "reason": "neither an explicit stop or replacement nor a clear continuation",
+   "answer_heard": false,
+   "decided_mono": 625527.963978458,
+   "outcome": "kept"
+  },
+  {
+   "superseded_utterance": 13,
+   "by_utterance": 14,
+   "relation": "replacement",
+   "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+   "answer_heard": false,
+   "decided_mono": 625572.964531041,
+   "outcome": "superseded"
+  },
+  {
+   "released_utterance": 13,
+   "superseded_call_ended_mono": 625572.97548675
+  }
+ ],
+ "fast_route": [
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'What is the capital of Portugal?'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'I was wondering...'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'Name a famous mystery novel.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'Name a famous mystery novel.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message corrected itself, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'What is the capital of Portugal?'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'What is a caesura?'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "her last answer offered something in particular",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "her last answer offered something in particular",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell; 1 earlier request of his remain on the record as they are, not inferred settled",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell; 1 earlier request of his remain on the record as they are, not inferred settled",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "her last answer asked or offered something in particular",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "her last answer asked or offered something in particular",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message corrected itself, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message corrected itself, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'and why it works.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'Name a famous ghost story.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'Name a famous ghost story.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message corrected itself, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "an earlier message of his asked for an action or a decision, and only social exchanges have followed it; nothing establishes it settled",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'name a famous poem.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  }
+ ],
+ "deliveries_not_completed": [],
+ "speech_bound_reached": [],
+ "memory": [
+  {
+   "at": 1790537899.0,
+   "free_percent": 82,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537904.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537909.0,
+   "free_percent": 41,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537914.0,
+   "free_percent": 63,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537919.0,
+   "free_percent": 63,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537924.0,
+   "free_percent": 51,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537929.0,
+   "free_percent": 51,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537934.0,
+   "free_percent": 53,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537939.0,
+   "free_percent": 53,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537944.0,
+   "free_percent": 51,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537949.0,
+   "free_percent": 79,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537954.0,
+   "free_percent": 78,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537959.0,
+   "free_percent": 52,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537964.0,
+   "free_percent": 41,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537969.0,
+   "free_percent": 72,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537974.0,
+   "free_percent": 65,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537979.0,
+   "free_percent": 72,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537984.0,
+   "free_percent": 79,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537989.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537994.0,
+   "free_percent": 79,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790537999.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538005.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538010.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538015.0,
+   "free_percent": 79,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538020.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538025.0,
+   "free_percent": 79,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538030.0,
+   "free_percent": 41,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538035.0,
+   "free_percent": 73,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538040.0,
+   "free_percent": 69,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538045.0,
+   "free_percent": 67,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538050.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538055.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538060.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538065.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538070.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538075.0,
+   "free_percent": 80,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538080.0,
+   "free_percent": 64,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538085.0,
+   "free_percent": 54,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538090.0,
+   "free_percent": 43,
+   "swap_used_mb": 1626.0
+  },
+  {
+   "at": 1790538095.0,
+   "free_percent": 77,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538100.0,
+   "free_percent": 50,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538105.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538110.0,
+   "free_percent": 53,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538115.0,
+   "free_percent": 42,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538120.0,
+   "free_percent": 46,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538125.0,
+   "free_percent": 74,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538130.0,
+   "free_percent": 73,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538135.0,
+   "free_percent": 73,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538140.0,
+   "free_percent": 68,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538145.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538150.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538155.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538160.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538165.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538170.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538175.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538180.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538185.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538190.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538195.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538200.0,
+   "free_percent": 57,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538205.0,
+   "free_percent": 53,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538210.0,
+   "free_percent": 40,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538215.0,
+   "free_percent": 71,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538220.0,
+   "free_percent": 71,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538225.0,
+   "free_percent": 68,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538230.0,
+   "free_percent": 76,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538235.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538240.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538245.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538250.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538255.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538260.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538265.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538270.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538275.0,
+   "free_percent": 65,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538281.0,
+   "free_percent": 42,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538286.0,
+   "free_percent": 68,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538291.0,
+   "free_percent": 74,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538296.0,
+   "free_percent": 73,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538301.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538306.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538311.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538316.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538321.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538326.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538331.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538336.0,
+   "free_percent": 53,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538341.0,
+   "free_percent": 51,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538346.0,
+   "free_percent": 53,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538351.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538356.0,
+   "free_percent": 52,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538361.0,
+   "free_percent": 55,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538366.0,
+   "free_percent": 47,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538371.0,
+   "free_percent": 78,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538376.0,
+   "free_percent": 50,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538381.0,
+   "free_percent": 44,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538386.0,
+   "free_percent": 67,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538391.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538396.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538401.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538406.0,
+   "free_percent": 52,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538411.0,
+   "free_percent": 67,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538416.0,
+   "free_percent": 79,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538421.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538426.0,
+   "free_percent": 79,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538431.0,
+   "free_percent": 52,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538436.0,
+   "free_percent": 39,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538441.0,
+   "free_percent": 73,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538446.0,
+   "free_percent": 75,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538451.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538456.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538461.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538466.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538471.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538476.0,
+   "free_percent": 63,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538481.0,
+   "free_percent": 50,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538486.0,
+   "free_percent": 39,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538491.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538496.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538501.0,
+   "free_percent": 53,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538506.0,
+   "free_percent": 54,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538511.0,
+   "free_percent": 46,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538517.0,
+   "free_percent": 77,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538522.0,
+   "free_percent": 71,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538527.0,
+   "free_percent": 63,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538532.0,
+   "free_percent": 42,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538537.0,
+   "free_percent": 52,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538542.0,
+   "free_percent": 51,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538547.0,
+   "free_percent": 39,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538552.0,
+   "free_percent": 72,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538557.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538562.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538567.0,
+   "free_percent": 51,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538572.0,
+   "free_percent": 75,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538577.0,
+   "free_percent": 65,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538582.0,
+   "free_percent": 39,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538587.0,
+   "free_percent": 69,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538592.0,
+   "free_percent": 72,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538597.0,
+   "free_percent": 72,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538602.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538607.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538612.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538617.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538622.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538627.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538632.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538637.0,
+   "free_percent": 67,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538642.0,
+   "free_percent": 80,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538647.0,
+   "free_percent": 63,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538652.0,
+   "free_percent": 42,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538657.0,
+   "free_percent": 74,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538662.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538667.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538672.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538677.0,
+   "free_percent": 64,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538682.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538687.0,
+   "free_percent": 65,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538692.0,
+   "free_percent": 47,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538697.0,
+   "free_percent": 71,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538702.0,
+   "free_percent": 69,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538707.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538712.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538717.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538722.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538727.0,
+   "free_percent": 66,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538732.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538737.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538742.0,
+   "free_percent": 53,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538747.0,
+   "free_percent": 43,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538752.0,
+   "free_percent": 68,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538757.0,
+   "free_percent": 71,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538762.0,
+   "free_percent": 75,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538767.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538772.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538777.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538782.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538787.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538792.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538797.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538802.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538807.0,
+   "free_percent": 54,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538812.0,
+   "free_percent": 54,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538818.0,
+   "free_percent": 53,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538823.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538828.0,
+   "free_percent": 81,
+   "swap_used_mb": 2271.75
+  },
+  {
+   "at": 1790538833.0,
+   "free_percent": 51,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538838.0,
+   "free_percent": 57,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538843.0,
+   "free_percent": 51,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538848.0,
+   "free_percent": 51,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538853.0,
+   "free_percent": 42,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538858.0,
+   "free_percent": 71,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538863.0,
+   "free_percent": 74,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538868.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538873.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538878.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538883.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538888.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538893.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538898.0,
+   "free_percent": 53,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538903.0,
+   "free_percent": 52,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538908.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538913.0,
+   "free_percent": 64,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538918.0,
+   "free_percent": 42,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538923.0,
+   "free_percent": 70,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538928.0,
+   "free_percent": 71,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538933.0,
+   "free_percent": 69,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538938.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538943.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538948.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538953.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538958.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538963.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538968.0,
+   "free_percent": 80,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538973.0,
+   "free_percent": 53,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538978.0,
+   "free_percent": 45,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538983.0,
+   "free_percent": 74,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538988.0,
+   "free_percent": 67,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538993.0,
+   "free_percent": 42,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790538998.0,
+   "free_percent": 75,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539003.0,
+   "free_percent": 71,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539008.0,
+   "free_percent": 74,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539013.0,
+   "free_percent": 76,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539018.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539023.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539028.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539033.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539038.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539043.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539048.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539053.0,
+   "free_percent": 80,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539058.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539063.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539068.0,
+   "free_percent": 66,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539073.0,
+   "free_percent": 53,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539078.0,
+   "free_percent": 46,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539083.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539088.0,
+   "free_percent": 67,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539093.0,
+   "free_percent": 39,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539098.0,
+   "free_percent": 53,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539103.0,
+   "free_percent": 43,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539108.0,
+   "free_percent": 76,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539113.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539118.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539124.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539129.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539134.0,
+   "free_percent": 53,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539139.0,
+   "free_percent": 54,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539144.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539149.0,
+   "free_percent": 53,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539154.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539159.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539164.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539169.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539174.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539179.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539184.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539189.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539194.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539199.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539204.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539209.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539214.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539219.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539224.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539229.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539234.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539239.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539244.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539249.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539254.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539259.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539264.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539269.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539274.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539279.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539284.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539289.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539294.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539299.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539304.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539309.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539314.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539319.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539324.0,
+   "free_percent": 81,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539329.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539334.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539339.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539344.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539349.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539354.0,
+   "free_percent": 83,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539359.0,
+   "free_percent": 83,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539364.0,
+   "free_percent": 83,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539369.0,
+   "free_percent": 83,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539374.0,
+   "free_percent": 83,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539379.0,
+   "free_percent": 70,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539384.0,
+   "free_percent": 82,
+   "swap_used_mb": 2263.75
+  },
+  {
+   "at": 1790539389.0,
+   "free_percent": 83,
+   "swap_used_mb": 2263.75
+  }
+ ]
+}

@@ -1534,3 +1534,53 @@ an answer of hers). The durable live-voice seal is applied when the fragment fir
 canonical, as before, so the joined message is written into a conversation already sealed. OP-6 (greeting
 length) is not touched: the envelope's note text is unchanged. No other checkpoint names
 this work.
+
+## 34. Handoff — the live cache experiment and the integrated candidate (owner order of 27 September 2026, "Continue the latency work")
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged; no physical test
+requested.** Record: `qualification/runs/2026-09-27-cache/CACHE_EXPERIMENT.md` (evidence
+index §121). Candidate code frozen at `175c380`.
+
+**The cache correction, live.** All four authorised steps were submitted and approved
+(clone, allowlist, digest-pinned hook, experiment instance `val-exp-gpt-oss-20b`); a
+separate experimental engine is not supported by LM Studio (one engine per model format).
+With renewal on a hit, across two alternating runs each: **no turn of 124 prefilled cold
+or waited behind maintenance** (off: 17 of 47 MEDIUM turns cold, 16 waits over 1 s, 32
+cold primes); the only cold primes are the two after each reload (initial loading).
+Every reused prefix was exactly its route's persona boundary; every call named the
+experiment instance; effort on the wire as intended; production's instance declined by
+the hook. **Integrated candidate against the same afternoon's baseline** (same frozen
+code, switches off, engine as shipped): social **4.77 s** median (p90 6.68, worst 8.15)
+against 7.29 (11.04, 15.31); ordinary **6.64 s** (9.27, 12.21) against 9.57 (13.96, 19.84).
+Time of day matters: LOW's hidden reasoning ran 73–259 tokens this afternoon against ~32
+at night.
+
+**Also done:** the merge window holds an early answer's audio until it closes (28 paused
+utterances, no sound of hers during any; corrections kept; the edge at a measured 1.37 s
+gap splits a 1.6 s pause either way); playback reports serialised and idempotent (tests
+fail on the old writer); the speech bound's failure path (a runaway ends as a named
+failure, "segment N began and did not complete"; forced at 2 s on the real voice; one
+live runaway in the runs stopped at its bound); identity attribution in the harness.
+
+**Blocked on him — production across restarts.** A pinned release directory
+`~/Projects/val-releases/13b3cb8` is built and verified, but repointing the launchd job
+was refused by the automatic review ("[Production Deploy]"); the step-by-step procedure
+with verification and rollback is in the record, §2. Until then a restart of production
+loads the working tree (master).
+
+**The remaining decision.** In a warm ordinary turn now: MEDIUM's hidden reasoning
+~2.2 s, prefill ~2.0 s (Core's state block ~1.1 s every turn; history ~1.33 ms per token,
+seconds for a quarter of his real turns), confirmation ~0.8 s, speech ~1.0 s. On this
+runtime no request ordering can reuse history (one checkpoint per request, 11 tokens from
+its end; untrimmable caches; the template hoists every system message to the top), so
+the §8 variant was stopped. **Recommended experiment (needs his authorisation):** a hook
+checkpoint at the point where a request diverges from what the store holds, with the
+stable state kept in the developer block and only the per-turn counts and minute after
+his words — expected to remove the state block's ~1.1 s and most history prefill.
+
+**Found and recorded (not repaired):** barge-in does not stop an answer whose synthesis
+has finished (production and both releases); the spoken-path gate fires on "pacing".
+Post-tag defects of `tier1-low-release-2026-09-27` are recorded in `TIER1_RELEASE.md`
+§8.10. **Open problems reviewed:** OP-1 (retraction) — the merge window's withdrawals
+make no claim (no answer to a withdrawn fragment was played in 28 cases); no other
+checkpoint names this work.

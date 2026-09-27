@@ -11,7 +11,10 @@
 # service, store, desktop and model instance are not touched, and the run never starts
 # while production Voice is in use.
 #
-# Usage: run_cache_bench.sh renewal_off|renewal_on RUN_LABEL [SESSIONS]
+# Usage: run_cache_bench.sh renewal_off|renewal_on|baseline RUN_LABEL [SESSIONS]
+#   baseline: the same frozen code with every candidate switch unset and the engine as
+#   shipped (renewal off) — the tested undeployed configuration production's settings
+#   would give, measured the same afternoon, on the same experiment instance.
 set -u
 CONDITION=$1; LABEL=$2; SESSIONS=${3:-"0 1 2 3 4"}
 ROOT=/Users/josepharmand/Projects/val
@@ -26,14 +29,20 @@ cd $ROOT
 case $CONDITION in
   renewal_off) RENEW=false ;;
   renewal_on) RENEW=true ;;
+  baseline) RENEW=false ;;
   *) echo "unknown condition $CONDITION"; exit 2 ;;
 esac
 printf '{\n  "model_paths": ["%s"],\n  "renewal": %s\n}\n' "$CLONE" "$RENEW" > $HOME/.lmstudio/val-cache-renewal.json
 # The frozen candidate.
 unset VAL_SPECULATION VAL_ADAPTIVE_GRACE VAL_EXPERIMENT_ENVELOPE_IN_SYSTEM
-export VAL_FAST_ROUTE_TIERS=1 VAL_TIER1_ROUTE=low VAL_ADAPTIVE_ENDPOINT=on \
-  VAL_REQUEST_CONSTRUCTION=envelope_in_system VAL_OWNER_PRECEDENCE=on VAL_TTS_LENGTH_BOUND=on \
-  VAL_EXPERIMENT_MODEL_IDENTIFIER=$EXP
+export VAL_EXPERIMENT_MODEL_IDENTIFIER=$EXP
+if [[ "$CONDITION" == renewal_* ]]; then
+  export VAL_FAST_ROUTE_TIERS=1 VAL_TIER1_ROUTE=low VAL_ADAPTIVE_ENDPOINT=on \
+    VAL_REQUEST_CONSTRUCTION=envelope_in_system VAL_OWNER_PRECEDENCE=on VAL_TTS_LENGTH_BOUND=on
+else
+  unset VAL_FAST_ROUTE_TIERS VAL_TIER1_ROUTE VAL_ADAPTIVE_ENDPOINT VAL_REQUEST_CONSTRUCTION \
+    VAL_OWNER_PRECEDENCE VAL_TTS_LENGTH_BOUND
+fi
 echo "=== $LABEL ($CONDITION) $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps infrastructure | wc -l | tr -d ' ')"
 # The same empty cache for both conditions: reload the experiment instance.
 $LMS unload $EXP > /dev/null 2>&1
