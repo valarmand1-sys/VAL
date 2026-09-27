@@ -344,7 +344,13 @@ class PrefixPrimePlan:
 class PrefixPrimingAdapter(Protocol):
     """An adapter that can plan a prefix prime for a configuration it serves."""
 
-    def plan_prefix_prime(self, config: ModelConfig, system: str) -> PrefixPrimePlan: ...
+    def plan_prefix_prime(
+        self, config: ModelConfig, system: str, *, boundary: str = "user_header"
+    ) -> PrefixPrimePlan:
+        """`boundary` names the shared prefix the checkpoint must land on: the production
+        `user_header` (through `<|start|>user<|message|>`), or `developer_end` (the end of
+        the developer content) for the §4 request-construction experiment only."""
+        ...
 
 
 def supports_prefix_priming(adapter: object) -> bool:

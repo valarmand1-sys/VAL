@@ -1356,3 +1356,66 @@ was wrong, the idle definition was the defect. A turn reaching cognition before
 readiness now shows "warming" whether or not its delivery exists. **Offline:** boundary
 unchanged and stated; `offline_check.sh` prepared, not run. **Recommendation:** deploy on
 his decision per §6; remaining: his physical test and the coordinated offline check.
+
+**Closing line (the identities a record cannot carry for itself):** the tag
+`tier1-low-release-2026-09-26` is commit `2dedda8` on `release/tier1-low-2026-09-26`; CI on that
+push (run 36292787225) **success**; the merge into `master` is `e42f8e1`, CI run 36292828528
+**success**. Nothing deployed.
+
+## 31. Handoff — Milestone B corrected: owner precedence by his words, the request-construction experiment, the cache mechanism established, 27 September 2026
+
+**WP3 remains PARTIAL. Nothing deployed; `VAL_OWNER_PRECEDENCE` unset in production; the
+experiment switches (`context.ENVELOPE_IN_SYSTEM`, `loop.TURN_KIND_FACT`,
+`context.COMPACT_NOTES`) are off in source.** Record: `ORDINARY_TURN.md` §10–§12
+(evidence index §118). Production still runs `13b3cb8`'s code; the Tier-1 release of §30
+is unchanged and separate.
+
+**Precedence, corrected (§1–§3).** The decision is his words' (`val_policy.precedence`,
+deterministic): a stop or a clear replacement supersedes an answer he has not begun to
+hear; a continuation or anything ambiguous leaves it in force and both are answered in
+order — "And after that, tell me about the orchard." is the continuation regression case.
+"Heard" is the desktop's playback report, not synthesis and not the hand-off; his onset
+against an unheard answer **holds** its hand-off instead of stopping it (barge-in
+unchanged once playback has begun), and the decision at confirmation discards or releases
+it. A stop asks for nothing (`OWNER_STOP`, no cognition call; the desktop says "Stopped at
+your word — nothing was said."). The superseded call's reason is on its measurement row,
+usage NULL; late tokens attach to nothing; late playback reports are refused. The LM
+Studio adapter closes a superseded stream from a watcher at once; the session no longer
+waits for that thread (a runtime that stops on disconnect but keeps the socket open left
+it blocked — P4c). **Measured on the real service** (software player) and **through the
+real desktop**: where the runtime is generating, decision → stream closed **15–21 ms**,
+replacement dispatched within **50 ms**; the wait to the replacement's first audio is its
+own MEDIUM turn (10–14 s here). Where the runtime is **prefilling**, nothing the client
+does stops it (the engine's own words); the remaining delay is the prefill, measured in
+§10.1 (P4d). The text-begun-but-unplayed window (0.3–0.9 s) is shorter than onset
+detection and is proved by unit test, not reproduced live. Tests: `test_owner_precedence`
+(10), `test_precedence` (35), desktop +3.
+
+**Request construction (§4).** The wire, inspected: the envelope and his words render as
+one last user block that begins with ~3.6 KB of JSON and ends with his words, and two
+application-level user messages are joined again by the ingress. Behind
+`context.ENVELOPE_IN_SYSTEM` the envelope follows the persona inside the developer block
+(recall excerpts stay in the user role) and the last user block is his words alone. On
+nineteen matched contexts, both constructions primed and read: **8/19 wrong-turn or false
+answers as the request stands (the envelope recapped as his, closings re-answered,
+"the state you supplied", a claimed draft, "no audio input"), 0/19 with the envelope in
+the developer block** (one off-register opener; "say that again" paraphrased in both; one
+run of the candidate made an unsupported speed claim). **Timing:** the first two
+forms of the candidate lost the persona checkpoint (first visible text 10.3–10.6 s against
+5.4 s) because the engine's checkpoint is sized to land after the user-message header,
+which a turn whose developer block continues never renders; with the prime's target moved
+to the end of the developer content (`boundary="developer_end"`, under the switch) every
+turn reused **5,089** tokens and first visible text fell to **4.0 s** against 5.4 s, with
+half the reasoning tokens. **A
+ruling, not an implementation:** it touches the 10 and 17 September rulings and the
+prime's boundary.
+
+**Cache and prefill (§5).** The mechanism is established from the installed source and
+the engine's own log: `LRUPromptCache(max_size=10)`, two insertions per distinct request,
+no renewal on a hit, identical requests replace, eviction alternating between the two
+queues; GPT-OSS's cache is not trimmable, so reuse needs an entry that is exactly a
+prefix. A persona checkpoint lives about four or five distinct requests however often it
+is used. **The memory-limit suggestion is withdrawn**; the option is an engine patch
+(`history_capacity`, or renewal on hit), ~120–155 MB per additional entry (computed, not
+measured). The prefix-prefill conclusion is narrowed to the method tested; the
+checkpoint-aligned conversation prime is the open ruling and was not run.

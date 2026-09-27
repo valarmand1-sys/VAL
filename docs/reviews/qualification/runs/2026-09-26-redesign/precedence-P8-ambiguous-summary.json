@@ -1,0 +1,854 @@
+{
+ "case": "P8-ambiguous",
+ "trigger": "t:1.5",
+ "phrases": [
+  "Tell me about the invitation for the reading.",
+  "What time is the reading?"
+ ],
+ "messages": [
+  [
+   "user",
+   "Tell me about the invitation for the reading."
+  ],
+  [
+   "val",
+   "My lord, I have no record of an invitation to a reading in the house’s archives. If you ar"
+  ],
+  [
+   "user",
+   "What time is the reading?"
+  ],
+  [
+   "val",
+   "My lord, I have no record of a scheduled reading in the house’s archives. If you can give "
+  ]
+ ],
+ "decision": {
+  "wall": 1790482864.177,
+  "superseded_utterance": 1,
+  "by_utterance": 2,
+  "relation": "ambiguous",
+  "reason": "neither a clear replacement nor a clear continuation",
+  "answer_heard": false,
+  "decided_mono": 587397.563414791,
+  "outcome": "kept"
+ },
+ "release": null,
+ "first_turn_marks": {
+  "endpoint": 0.0,
+  "transcript_final_received": 129.5,
+  "transcript_final_processed": 142.4,
+  "owner_turn_submitted": 1246.0,
+  "turn_start": 1247.7,
+  "scope_resolved": 1247.7,
+  "conversation_created": 1251.4,
+  "message_append_start": 1251.4,
+  "message_persisted": 1257.5,
+  "owner_message_committed": 1257.5,
+  "egress_decided": 1257.9,
+  "assembly_start": 1261.9,
+  "record_state_assembled": 1265.9,
+  "assembly_end": 1266.0,
+  "runtime_ready_start": 1271.4,
+  "runtime_ready_end": 1280.8,
+  "exact_preflight_start": 1280.9,
+  "exact_preflight_end": 1308.1,
+  "provider_dispatch": 1311.0,
+  "provider_chunk": 3205.4,
+  "provider_visible_text": 10333.6,
+  "speech_first_visible_text": 10333.6,
+  "speech_segment_queued": 10621.1,
+  "tts_synthesize_start": 10621.5,
+  "audio_at_sink": 11230.3,
+  "tts_synthesize_return": 12381.7
+ },
+ "second_turn_marks": {
+  "endpoint": 0.0,
+  "transcript_final_received": 154.6,
+  "transcript_final_processed": 160.8,
+  "owner_turn_submitted": 11339.5,
+  "turn_start": 11340.3,
+  "message_append_start": 11341.2,
+  "message_persisted": 11344.0,
+  "owner_message_committed": 11344.0,
+  "egress_decided": 11344.9,
+  "assembly_start": 11347.9,
+  "record_state_assembled": 11358.9,
+  "assembly_end": 11359.2,
+  "runtime_ready_start": 11366.0,
+  "runtime_ready_end": 11377.4,
+  "exact_preflight_start": 11377.4,
+  "exact_preflight_end": 11413.7,
+  "provider_dispatch": 11417.9,
+  "provider_chunk": 13722.0,
+  "provider_visible_text": 14986.7,
+  "speech_first_visible_text": 14986.7,
+  "speech_segment_queued": 15259.5,
+  "tts_synthesize_start": 15259.7,
+  "audio_at_sink": 15833.7,
+  "tts_synthesize_return": 16716.2
+ },
+ "intervals_s": {
+  "second_speech_end_to_confirmation": 2.047,
+  "confirmation_to_supersession_decision": null,
+  "decision_to_stream_closed": null,
+  "decision_to_lane_free": null,
+  "lane_free_to_replacement_dispatch": null,
+  "second_speech_end_to_replacement_first_audio": null,
+  "second_speech_end_to_endpoint": 0.768,
+  "second_speech_end_to_owner_turn_submitted": 12.107,
+  "second_speech_end_to_runtime_ready_start": 12.134,
+  "second_speech_end_to_provider_visible_text": 15.755,
+  "second_speech_end_to_audio_at_sink": 16.602
+ },
+ "calls": [
+  {
+   "message": "Tell me about the invitation for the reading.",
+   "task": "conversation",
+   "status": "ok",
+   "terminal": "complete",
+   "tokens_out": 499,
+   "latency_ms": 9708,
+   "superseded_reason": null
+  },
+  {
+   "message": "What time is the reading?",
+   "task": "conversation",
+   "status": "ok",
+   "terminal": "complete",
+   "tokens_out": 122,
+   "latency_ms": 4205,
+   "superseded_reason": null
+  }
+ ],
+ "playbacks": [
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "state": "available_to_desktop",
+   "epoch": "1790482871.274479"
+  },
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "state": "playback_started",
+   "epoch": "1790482871.283216"
+  },
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "state": "available_to_desktop",
+   "epoch": "1790482872.964412"
+  },
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "state": "playback_started",
+   "epoch": "1790482876.004121"
+  },
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "state": "playback_completed",
+   "epoch": "1790482876.009678"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "state": "available_to_desktop",
+   "epoch": "1790482878.764241"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "state": "available_to_desktop",
+   "epoch": "1790482880.131744"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "state": "playback_started",
+   "epoch": "1790482880.963530"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "state": "playback_completed",
+   "epoch": "1790482884.811826"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "state": "playback_started",
+   "epoch": "1790482884.813082"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "state": "playback_completed",
+   "epoch": "1790482889.687775"
+  }
+ ],
+ "deliveries": [
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "state": "not_started",
+   "reason": null,
+   "delivered_characters": 0,
+   "epoch": "1790482871.066768"
+  },
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "state": "started",
+   "reason": null,
+   "delivered_characters": 80,
+   "epoch": "1790482871.264789"
+  },
+  {
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "state": "completed",
+   "reason": null,
+   "delivered_characters": 189,
+   "epoch": "1790482874.222854"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "state": "not_started",
+   "reason": null,
+   "delivered_characters": 0,
+   "epoch": "1790482878.533630"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "state": "started",
+   "reason": null,
+   "delivered_characters": 73,
+   "epoch": "1790482878.732559"
+  },
+  {
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "state": "completed",
+   "reason": null,
+   "delivered_characters": 163,
+   "epoch": "1790482881.391387"
+  }
+ ],
+ "handoffs": [
+  {
+   "mono": 587404.666287875,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of an invitation to a reading in the house’s archives."
+  },
+  {
+   "mono": 587404.987218708,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of an invitation to a reading in the house’s archives."
+  },
+  {
+   "mono": 587405.233157583,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of an invitation to a reading in the house’s archives."
+  },
+  {
+   "mono": 587405.576235083,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of an invitation to a reading in the house’s archives."
+  },
+  {
+   "mono": 587405.827733041,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.88,
+   "bytes": 42284,
+   "text": "My lord, I have no record of an invitation to a reading in the house’s archives."
+  },
+  {
+   "mono": 587405.908603,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 1,
+   "chunk": 5,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "My lord, I have no record of an invitation to a reading in the house’s archives."
+  },
+  {
+   "mono": 587406.352440541,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you are referring to a particular event, please let me know which one so I ca"
+  },
+  {
+   "mono": 587406.614672041,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you are referring to a particular event, please let me know which one so I ca"
+  },
+  {
+   "mono": 587406.882735875,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you are referring to a particular event, please let me know which one so I ca"
+  },
+  {
+   "mono": 587407.14548275,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you are referring to a particular event, please let me know which one so I ca"
+  },
+  {
+   "mono": 587407.496028791,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you are referring to a particular event, please let me know which one so I ca"
+  },
+  {
+   "mono": 587407.586172875,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "segment": 2,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.16,
+   "bytes": 7724,
+   "text": "If you are referring to a particular event, please let me know which one so I ca"
+  },
+  {
+   "mono": 587412.152097583,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of a scheduled reading in the house’s archives."
+  },
+  {
+   "mono": 587412.484554958,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of a scheduled reading in the house’s archives."
+  },
+  {
+   "mono": 587412.73724375,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of a scheduled reading in the house’s archives."
+  },
+  {
+   "mono": 587412.997176791,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I have no record of a scheduled reading in the house’s archives."
+  },
+  {
+   "mono": 587413.082512916,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 1,
+   "chunk": 4,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "My lord, I have no record of a scheduled reading in the house’s archives."
+  },
+  {
+   "mono": 587413.51947275,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you can give me the date or any detail that might be stored, I will locate it"
+  },
+  {
+   "mono": 587413.783217458,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you can give me the date or any detail that might be stored, I will locate it"
+  },
+  {
+   "mono": 587414.131682541,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you can give me the date or any detail that might be stored, I will locate it"
+  },
+  {
+   "mono": 587414.401021666,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you can give me the date or any detail that might be stored, I will locate it"
+  },
+  {
+   "mono": 587414.659451083,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you can give me the date or any detail that might be stored, I will locate it"
+  },
+  {
+   "mono": 587414.749914625,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.08,
+   "bytes": 3884,
+   "text": "If you can give me the date or any detail that might be stored, I will locate it"
+  },
+  {
+   "mono": 587414.837333,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "segment": 2,
+   "chunk": 6,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "If you can give me the date or any detail that might be stored, I will locate it"
+  }
+ ],
+ "reports": [
+  {
+   "mono": 587404.6715095,
+   "state": "playback_started",
+   "segment": 1,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "http": 200
+  },
+  {
+   "mono": 587409.394132166,
+   "state": "playback_started",
+   "segment": 2,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "http": 200
+  },
+  {
+   "mono": 587409.397613083,
+   "state": "playback_completed",
+   "segment": 1,
+   "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+   "http": 200
+  },
+  {
+   "mono": 587414.351791166,
+   "state": "playback_started",
+   "segment": 1,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "http": 200
+  },
+  {
+   "mono": 587418.201951333,
+   "state": "playback_completed",
+   "segment": 1,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "http": 200
+  },
+  {
+   "mono": 587418.202338291,
+   "state": "playback_started",
+   "segment": 2,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "http": 200
+  },
+  {
+   "mono": 587423.080814958,
+   "state": "playback_completed",
+   "segment": 2,
+   "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+   "http": 200
+  }
+ ],
+ "events": [
+  {
+   "mono": 587378.326476916,
+   "event": "voice_on"
+  },
+  {
+   "mono": 587390.785748583,
+   "event": "speech_start",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 587390.326477583
+  },
+  {
+   "mono": 587392.63090325,
+   "event": "speech_end",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 587392.6314150831
+  },
+  {
+   "mono": 587394.215356083,
+   "event": "trigger_fired",
+   "trigger": "t:1.5"
+  },
+  {
+   "mono": 587394.6620975,
+   "event": "speech_start",
+   "phrase": "What time is the reading?",
+   "at": 587394.231415083
+  },
+  {
+   "mono": 587395.516253708,
+   "event": "speech_end",
+   "phrase": "What time is the reading?",
+   "at": 587395.5164150831
+  }
+ ],
+ "views": [
+  {
+   "mono": 587378.357040791,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587390.875541291,
+   "state": "hearing",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587393.465827416,
+   "state": "thinking",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587393.570896,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587394.711040291,
+   "state": "hearing",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-4ce7-73f7-b98f-f67b4114fa52",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587396.376409666,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-4ce7-73f7-b98f-f67b4114fa52",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587396.48143475,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "What time is the reading?",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-4ce7-73f7-b98f-f67b4114fa52",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587403.756904333,
+   "state": "thinking",
+   "progress": "writing",
+   "pending": "What time is the reading?",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-4ce7-73f7-b98f-f67b4114fa52",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587404.071439041,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "What time is the reading?",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-4ce7-73f7-b98f-f67b4114fa52",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587404.483781875,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "What time is the reading?",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-4ce7-73f7-b98f-f67b4114fa52",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587404.693646208,
+   "state": "thinking",
+   "progress": "speaking",
+   "pending": "What time is the reading?",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-4ce7-73f7-b98f-f67b4114fa52",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587407.662495166,
+   "state": "listening",
+   "progress": "thinking",
+   "pending": "What time is the reading?",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7f81-7f46-86f0-e58795948777",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 587411.2906535,
+   "state": "listening",
+   "progress": "writing",
+   "pending": "What time is the reading?",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7f81-7f46-86f0-e58795948777",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 587411.5922345,
+   "state": "listening",
+   "progress": "voicing",
+   "pending": "What time is the reading?",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7f81-7f46-86f0-e58795948777",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7312-75cf-8360-35d3429d4aba",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 587412.013242916,
+   "state": "listening",
+   "progress": "voicing",
+   "pending": "What time is the reading?",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7f81-7f46-86f0-e58795948777",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 587412.222845666,
+   "state": "listening",
+   "progress": "speaking",
+   "pending": "What time is the reading?",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7f81-7f46-86f0-e58795948777",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 587414.784735833,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-7f81-7f46-86f0-e58795948777",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e118-4ce2-7fec-80a7-54988ca18c01",
+    "message_id": "01a0e118-903f-7b8f-869f-46d0cbe6663a",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 2
+  }
+ ]
+}

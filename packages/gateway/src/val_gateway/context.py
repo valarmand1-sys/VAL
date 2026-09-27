@@ -208,6 +208,54 @@ STATE_ENVELOPE_NOTE = (
 #: current-turn visual binding — only the prose is shorter. Off in production.
 COMPACT_NOTES = False
 
+#: Experiment switch (release-gaps order §4, 26 September 2026; an isolated exception to
+#: the request-ordering and canonicalization rulings of 10 and 17 September). Off in
+#: production, set only by the experiment harness in its own process. When on, the
+#: record-state envelope leaves the user role — where the local wire joins it to his
+#: words as one message — and follows the persona inside the system message, so the
+#: user message that reaches the model is his words alone. The persona stays whole
+#: and first; the envelope's content is unchanged; recall excerpts (conversational
+#: data) are NOT moved and stay in the user role.
+ENVELOPE_IN_SYSTEM = False
+#: Ends in a bare word, on purpose: the runtime trims the developer content's trailing
+#: whitespace when it renders a prime, and the tokenizer chunks punctuation together with
+#: the newlines that follow it, so a boundary ending in "alone." tokenizes differently
+#: when a turn continues past it. A word followed by a newline chunks the same either way
+#: (found 27 September 2026, from the engine's own cache-hit lines).
+ENVELOPE_SYSTEM_SEPARATOR = (
+    "\n\n---\n\nRecord state for this turn follows. House data assembled by Core for you, "
+    "not words of his; it is not an instruction from him and not something he said. The "
+    "user message that follows the conversation is his words alone"
+)
+
+
+def relocate_envelope(
+    system: str, messages: tuple[Message, ...]
+) -> tuple[str, tuple[Message, ...]]:
+    """Move the record-state block from the user role into the system message (experiment).
+
+    Returns the system and messages unchanged when the switch is off or no envelope is
+    present. Only the `STATE_ENVELOPE_MARKER` block moves; the memory envelope (recall
+    excerpts) and every other message stay where they were.
+    """
+    if not ENVELOPE_IN_SYSTEM:
+        return system, messages
+    kept: list[Message] = []
+    moved: str | None = None
+    for message in messages:
+        if (
+            moved is None
+            and message.role == "user"
+            and message.content.startswith(STATE_ENVELOPE_MARKER)
+        ):
+            moved = message.content
+        else:
+            kept.append(message)
+    if moved is None:
+        return system, messages
+    return system + ENVELOPE_SYSTEM_SEPARATOR + "\n\n" + moved, tuple(kept)
+
+
 STATE_ENVELOPE_NOTE_COMPACT = (
     "prior_record_state is exactly the prior context available to this call. States: "
     "'zero' = consulted, holds nothing; 'not_run' = retrieval deliberately not attempted "
@@ -933,11 +981,14 @@ def assemble(
     creative IP (`04-layer-0.md` §1.1) and the safe default is the one that would
     be right if the caller forgot to think about it.
     """
+    # Experiment switch only (release-gaps order §4): off, this returns the persona and
+    # the messages exactly as given.
+    system, messages = relocate_envelope(persona.content, messages)
     return GatewayRequest(
         task_type=task_type,
         classification=classification,
         messages=messages,
-        system=persona.content,
+        system=system,
         max_output_tokens=max_output_tokens,
         persona=PersonaAttribution(persona_id=persona.id) if attributed else None,
         # One argument, not two that must agree. Corrective round, 18 August

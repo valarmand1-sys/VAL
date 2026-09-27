@@ -1,0 +1,1487 @@
+{
+ "case": "P4-replace-during-prefill",
+ "trigger": "t:1.5",
+ "phrases": [
+  "Tell me about the invitation for the reading.",
+  "Actually, never mind. Tell me about the venue instead."
+ ],
+ "messages": [
+  [
+   "user",
+   "Tell me about the invitation for the reading."
+  ],
+  [
+   "user",
+   "Actually, never mind. Tell me about the venue instead."
+  ]
+ ],
+ "decision": {
+  "wall": 1790482552.589,
+  "superseded_utterance": 1,
+  "by_utterance": 2,
+  "relation": "replacement",
+  "reason": "a correction, withdrawal or redirection of the earlier request",
+  "answer_heard": false,
+  "decided_mono": 587085.976563791,
+  "outcome": "superseded"
+ },
+ "release": {
+  "wall": 1790482568.919,
+  "released_utterance": 1,
+  "lane_free_mono": 587102.306552458
+ },
+ "first_turn_marks": {
+  "endpoint": 0.0,
+  "transcript_final_received": 175.1,
+  "transcript_final_processed": 175.2,
+  "owner_turn_submitted": 1351.0,
+  "turn_start": 1354.2,
+  "scope_resolved": 1354.3,
+  "conversation_created": 1359.6,
+  "message_append_start": 1359.6,
+  "message_persisted": 1368.8,
+  "owner_message_committed": 1368.8,
+  "egress_decided": 1369.3,
+  "assembly_start": 1374.5,
+  "record_state_assembled": 1382.7,
+  "assembly_end": 1382.8,
+  "runtime_ready_start": 1389.5,
+  "runtime_ready_end": 1399.1,
+  "exact_preflight_start": 1399.2,
+  "superseded_decided": 8874.0,
+  "exact_preflight_end": 12007.3,
+  "provider_dispatch": 12023.5,
+  "provider_chunk": 25183.1,
+  "superseded_stream_closed": 25183.4,
+  "lane_free": 25204.0
+ },
+ "second_turn_marks": null,
+ "intervals_s": {
+  "second_speech_end_to_confirmation": 4.352,
+  "confirmation_to_supersession_decision": 0.0,
+  "decision_to_stream_closed": 16.309,
+  "decision_to_lane_free": 16.33,
+  "lane_free_to_replacement_dispatch": null,
+  "second_speech_end_to_replacement_first_audio": null
+ },
+ "calls": [
+  {
+   "message": "Tell me about the invitation for the reading.",
+   "task": "conversation",
+   "status": "error",
+   "terminal": "failed",
+   "tokens_out": null,
+   "latency_ms": 13159,
+   "superseded_reason": "superseded: the call was superseded by a newer confirmed owner turn before any of its answer was heard; the provider stream was closed"
+  },
+  {
+   "message": "Actually, never mind. Tell me about the venue inst",
+   "task": "conversation",
+   "status": "ok",
+   "terminal": "complete",
+   "tokens_out": 290,
+   "latency_ms": 25519,
+   "superseded_reason": null
+  }
+ ],
+ "playbacks": [],
+ "deliveries": [
+  {
+   "message_id": "01a0e114-3ae0-7a69-906f-c5b4682a5f95",
+   "state": "not_started",
+   "reason": null,
+   "delivered_characters": 0,
+   "epoch": "1790482594.534667"
+  },
+  {
+   "message_id": "01a0e114-3ae0-7a69-906f-c5b4682a5f95",
+   "state": "started",
+   "reason": null,
+   "delivered_characters": 52,
+   "epoch": "1790482594.673123"
+  }
+ ],
+ "handoffs": [],
+ "reports": [],
+ "events": [
+  {
+   "mono": 587073.04779575,
+   "event": "voice_on"
+  },
+  {
+   "mono": 587074.525064208,
+   "event": "speech_start",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 587074.047796541
+  },
+  {
+   "mono": 587076.353400541,
+   "event": "speech_end",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 587076.352734041
+  },
+  {
+   "mono": 587077.936904916,
+   "event": "trigger_fired",
+   "trigger": "t:1.5"
+  },
+  {
+   "mono": 587078.450389166,
+   "event": "speech_start",
+   "phrase": "Actually, never mind. Tell me about the venue instead.",
+   "at": 587077.952734041
+  },
+  {
+   "mono": 587081.62136125,
+   "event": "speech_end",
+   "phrase": "Actually, never mind. Tell me about the venue instead.",
+   "at": 587081.624359041
+  },
+  {
+   "mono": 587086.008085666,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.091301708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.171357125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.256956,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.339321458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.420594,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.50119575,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.591071458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.680102458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.761656041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.841784416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587086.931866833,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.012697125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.096277166,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.189270541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.273169291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.362259333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.451448875,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.538034708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.618885541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.705289083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.79131825,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.87823075,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587087.966659958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.057130375,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.137809375,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.226050833,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.313343208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.403043791,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.492593,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.573569416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.656874833,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.735821541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.81530075,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.901829625,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587088.986694291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.075821291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.156718041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.238849708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.321016416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.401085916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.4893425,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.57057675,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.659812958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.746982541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.836733916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587089.921608541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.011141083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.098804083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.182537291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.27076625,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.353185125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.433447166,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.523417916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.613718541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.701473208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.781074333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.863577708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587090.95181425,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.038102416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.117417166,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.208870875,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.29525925,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.385423583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.474620625,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.5560505,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.644207458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.731164916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.817722041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.90027425,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587091.988531208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.074062708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.15580475,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.24004025,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.324873958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.411288583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.494139291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.574677958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.658071458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.738293708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.828490583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.916095,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587092.997764458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.086203875,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.167065333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.253971625,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.3385705,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.426317208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.514976416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.599942416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.686830083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.773120666,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.853733,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587093.937859458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.024838416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.105268875,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.193342666,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.273294791,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.355609583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.441623375,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.526715833,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.61920375,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.697468458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.787768583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.872022708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587094.957943125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.040318,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.125649583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.209964958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.300700083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.385198416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.471502666,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.560010333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.641909416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.729967041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.818358125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.906222583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587095.988709666,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.075867958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.163518166,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.247306916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.334084958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.41562275,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.503973541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.590893125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.673205208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.759938166,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.841076291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587096.932934,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.01738675,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.107666,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.197530375,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.282232833,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.373959333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.459195208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.5483955,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.631978166,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.715494958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.802120958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.892303291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587097.9752635,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.059574416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.148270125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.236998208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.325719708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.410605625,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.492488958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.583824708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.66423825,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.745182041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.840084333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587098.924807083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.007556583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.098840333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.180546958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.26546,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.349599083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.432840791,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.518181875,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.602267625,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.683713916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.770106041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.851401166,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587099.940925916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.016462541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.102344833,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.184628916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.269909625,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.36109525,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.441020458,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.525629666,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.608353083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.693082041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.777293791,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.862490333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587100.944586416,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.032689958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.111767583,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.192550208,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.27812575,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.363271083,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.447169291,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.531937958,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.621256333,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.701374916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.78395,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.866868,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587101.95222775,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587102.041440708,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587102.122589541,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587102.208783125,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  },
+  {
+   "mono": 587102.288496916,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  }
+ ],
+ "views": [
+  {
+   "mono": 587073.050691291,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587074.6332865,
+   "state": "hearing",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587077.187025333,
+   "state": "thinking",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587077.289397625,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587078.469256625,
+   "state": "hearing",
+   "progress": "warming",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587078.578741125,
+   "state": "hearing",
+   "progress": "warming",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e113-79ae-7351-98a1-e74d8fdb8fe5",
+    "message_id": "01a0e113-79b3-7fe3-8a57-81e4e40026a5",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587083.432642333,
+   "state": "thinking",
+   "progress": "warming",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e113-79ae-7351-98a1-e74d8fdb8fe5",
+    "message_id": "01a0e113-79b3-7fe3-8a57-81e4e40026a5",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 587084.897179458,
+   "state": "thinking",
+   "progress": "warming",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e113-79ae-7351-98a1-e74d8fdb8fe5",
+    "message_id": "01a0e113-79b3-7fe3-8a57-81e4e40026a5",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587086.044953416,
+   "state": "thinking",
+   "progress": "warming",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e113-79ae-7351-98a1-e74d8fdb8fe5",
+    "message_id": "01a0e113-79b3-7fe3-8a57-81e4e40026a5",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 587102.344835125,
+   "state": "listening",
+   "progress": "warming",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e113-79ae-7351-98a1-e74d8fdb8fe5",
+    "message_id": "01a0e113-d6e3-797d-8779-f595d3354700",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 587126.140107791,
+   "state": "listening",
+   "progress": "writing",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e113-79ae-7351-98a1-e74d8fdb8fe5",
+    "message_id": "01a0e113-d6e3-797d-8779-f595d3354700",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 587126.5530605,
+   "state": "listening",
+   "progress": "voicing",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e113-79ae-7351-98a1-e74d8fdb8fe5",
+    "message_id": "01a0e113-d6e3-797d-8779-f595d3354700",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  }
+ ]
+}

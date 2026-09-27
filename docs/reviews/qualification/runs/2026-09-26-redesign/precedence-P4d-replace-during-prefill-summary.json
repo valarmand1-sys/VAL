@@ -1,0 +1,1117 @@
+{
+ "case": "P4d-replace-during-prefill",
+ "trigger": "t:3.0",
+ "phrases": [
+  "Tell me about the invitation for the reading.",
+  "Actually, never mind. Tell me about the venue instead."
+ ],
+ "messages": [
+  [
+   "user",
+   "Tell me about the invitation for the reading."
+  ],
+  [
+   "user",
+   "Actually, never mind. Tell me about the venue instead."
+  ],
+  [
+   "val",
+   "Good evening, my lord.  \nThe venue for the forthcoming reading is the House’s great study—"
+  ]
+ ],
+ "decision": {
+  "wall": 1790486679.558,
+  "superseded_utterance": 1,
+  "by_utterance": 2,
+  "relation": "replacement",
+  "reason": "a correction, withdrawal or redirection of the earlier request",
+  "answer_heard": false,
+  "decided_mono": 591212.919870666,
+  "outcome": "superseded"
+ },
+ "release": null,
+ "first_turn_marks": null,
+ "second_turn_marks": {
+  "endpoint": 0.0,
+  "transcript_final_received": 899.3,
+  "transcript_final_processed": 909.6,
+  "owner_turn_submitted": 2016.0,
+  "turn_start": 2018.5,
+  "message_append_start": 2021.6,
+  "message_persisted": 2025.7,
+  "owner_message_committed": 2025.7,
+  "egress_decided": 2026.5,
+  "assembly_start": 2029.7,
+  "record_state_assembled": 2034.2,
+  "assembly_end": 2034.4,
+  "runtime_ready_start": 2044.9,
+  "runtime_ready_end": 2052.4,
+  "exact_preflight_start": 2052.5,
+  "exact_preflight_end": 2071.2,
+  "provider_dispatch": 2072.9,
+  "provider_chunk": 9700.5,
+  "provider_visible_text": 14391.2,
+  "speech_first_visible_text": 14391.2,
+  "speech_segment_queued": 14468.1,
+  "tts_synthesize_start": 14468.6,
+  "audio_at_sink": 15353.5,
+  "tts_synthesize_return": 15721.4
+ },
+ "intervals_s": {
+  "second_speech_end_to_confirmation": 3.329,
+  "confirmation_to_supersession_decision": 0.0,
+  "decision_to_stream_closed": null,
+  "decision_to_superseded_call_ended": null,
+  "second_speech_end_to_endpoint": 1.312,
+  "second_speech_end_to_owner_turn_submitted": 3.328,
+  "second_speech_end_to_runtime_ready_start": 3.357,
+  "second_speech_end_to_provider_visible_text": 15.703,
+  "second_speech_end_to_audio_at_sink": 16.665
+ },
+ "calls": [
+  {
+   "message": "Actually, never mind. Tell me about the venue inst",
+   "task": "conversation",
+   "status": "ok",
+   "terminal": "complete",
+   "tokens_out": 461,
+   "latency_ms": 15392,
+   "superseded_reason": null
+  }
+ ],
+ "playbacks": [
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 1,
+   "state": "available_to_desktop",
+   "epoch": "1790486692.976521"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "state": "available_to_desktop",
+   "epoch": "1790486694.074926"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "state": "available_to_desktop",
+   "epoch": "1790486697.610640"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "state": "available_to_desktop",
+   "epoch": "1790486699.673514"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "state": "available_to_desktop",
+   "epoch": "1790486701.824656"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "state": "available_to_desktop",
+   "epoch": "1790486703.629837"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "state": "playback_started",
+   "epoch": "1790486704.343086"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "state": "playback_completed",
+   "epoch": "1790486704.348296"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "state": "available_to_desktop",
+   "epoch": "1790486705.667224"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "state": "playback_started",
+   "epoch": "1790486710.663859"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "state": "playback_completed",
+   "epoch": "1790486710.664049"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "state": "playback_completed",
+   "epoch": "1790486717.384334"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "state": "playback_started",
+   "epoch": "1790486717.385190"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "state": "playback_started",
+   "epoch": "1790486722.839477"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "state": "playback_completed",
+   "epoch": "1790486722.839915"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "state": "playback_started",
+   "epoch": "1790486728.982710"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "state": "playback_completed",
+   "epoch": "1790486728.982882"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "state": "playback_completed",
+   "epoch": "1790486733.062520"
+  }
+ ],
+ "deliveries": [
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "state": "started",
+   "reason": null,
+   "delivered_characters": 178,
+   "epoch": "1790486695.027458"
+  },
+  {
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "state": "completed",
+   "reason": null,
+   "delivered_characters": 704,
+   "epoch": "1790486706.660929"
+  }
+ ],
+ "handoffs": [
+  {
+   "mono": 591226.339693875,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "Good evening, my lord."
+  },
+  {
+   "mono": 591226.686443208,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.56,
+   "bytes": 26924,
+   "text": "Good evening, my lord."
+  },
+  {
+   "mono": 591226.776310916,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 2,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "Good evening, my lord."
+  },
+  {
+   "mono": 591227.43785075,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591227.94426025,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591228.467066541,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591228.722248333,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591228.986678333,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591229.248639666,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591229.604061791,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591229.856106041,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 7,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591230.107439875,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 8,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591230.456054916,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 9,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591230.545737833,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 10,
+   "last": false,
+   "duration_s": 0.24,
+   "bytes": 11564,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591230.634946708,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 2,
+   "chunk": 11,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "The venue for the forthcoming reading is the House’s great study— a vaulted cham"
+  },
+  {
+   "mono": 591230.975110041,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591231.227091083,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591231.572045625,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591231.818772958,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591232.084944416,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591232.346023916,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591232.602195833,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.56,
+   "bytes": 26924,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591232.691803333,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 3,
+   "chunk": 7,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "The walls are lined with floor‑to‑ceiling shelves, each holding the volumes that"
+  },
+  {
+   "mono": 591233.037758083,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591233.300574291,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591233.560771541,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591233.900813708,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591234.161066791,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591234.414094833,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591234.748446,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591234.838394125,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 4,
+   "chunk": 7,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "The great table at its heart is spread with parchment, ink, and quills, ready fo"
+  },
+  {
+   "mono": 591235.1887195,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If a more public setting is desired, I can arrange for the reading to take place"
+  },
+  {
+   "mono": 591235.452923833,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If a more public setting is desired, I can arrange for the reading to take place"
+  },
+  {
+   "mono": 591235.788504208,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If a more public setting is desired, I can arrange for the reading to take place"
+  },
+  {
+   "mono": 591236.049041541,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If a more public setting is desired, I can arrange for the reading to take place"
+  },
+  {
+   "mono": 591236.313536666,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If a more public setting is desired, I can arrange for the reading to take place"
+  },
+  {
+   "mono": 591236.563496583,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.64,
+   "bytes": 30764,
+   "text": "If a more public setting is desired, I can arrange for the reading to take place"
+  },
+  {
+   "mono": 591236.652982541,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 5,
+   "chunk": 6,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "If a more public setting is desired, I can arrange for the reading to take place"
+  },
+  {
+   "mono": 591236.994517041,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591237.244480333,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591237.581318166,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591237.845953208,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591238.098678833,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591238.441279375,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591238.531631875,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.4,
+   "bytes": 19244,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591238.615343458,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 6,
+   "chunk": 7,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "where the great banners of House Armand hang proudly and a choir of attendants c"
+  },
+  {
+   "mono": 591239.031422041,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "Please advise which setting you prefer, and I shall prepare accordingly."
+  },
+  {
+   "mono": 591239.278357291,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "Please advise which setting you prefer, and I shall prepare accordingly."
+  },
+  {
+   "mono": 591239.536988541,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "Please advise which setting you prefer, and I shall prepare accordingly."
+  },
+  {
+   "mono": 591239.875052291,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "Please advise which setting you prefer, and I shall prepare accordingly."
+  },
+  {
+   "mono": 591239.960112125,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.24,
+   "bytes": 11564,
+   "text": "Please advise which setting you prefer, and I shall prepare accordingly."
+  },
+  {
+   "mono": 591240.042247791,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "segment": 7,
+   "chunk": 5,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "Please advise which setting you prefer, and I shall prepare accordingly."
+  }
+ ],
+ "reports": [
+  {
+   "mono": 591226.342925666,
+   "state": "playback_started",
+   "segment": 1,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "http": 409
+  },
+  {
+   "mono": 591227.865140625,
+   "state": "playback_started",
+   "segment": 2,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "http": 409
+  },
+  {
+   "mono": 591227.877960583,
+   "state": "playback_completed",
+   "segment": 1,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "http": 409
+  },
+  {
+   "mono": 591237.707272208,
+   "state": "playback_started",
+   "segment": 3,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591237.7118635,
+   "state": "playback_completed",
+   "segment": 2,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591244.039979958,
+   "state": "playback_completed",
+   "segment": 3,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591244.04010825,
+   "state": "playback_started",
+   "segment": 4,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591250.750729458,
+   "state": "playback_started",
+   "segment": 5,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591250.750854791,
+   "state": "playback_completed",
+   "segment": 4,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591256.203655166,
+   "state": "playback_started",
+   "segment": 6,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591256.203750375,
+   "state": "playback_completed",
+   "segment": 5,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591262.348858666,
+   "state": "playback_completed",
+   "segment": 6,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591262.350193333,
+   "state": "playback_started",
+   "segment": 7,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  },
+  {
+   "mono": 591266.428868041,
+   "state": "playback_completed",
+   "segment": 7,
+   "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+   "http": 200
+  }
+ ],
+ "events": [
+  {
+   "mono": 591184.714344125,
+   "event": "voice_on"
+  },
+  {
+   "mono": 591200.4228865,
+   "event": "checkpoints_evicted"
+  },
+  {
+   "mono": 591200.951809041,
+   "event": "speech_start",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 591200.5143448331
+  },
+  {
+   "mono": 591202.820597083,
+   "event": "speech_end",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 591202.8192823331
+  },
+  {
+   "mono": 591205.905888458,
+   "event": "trigger_fired",
+   "trigger": "t:3.0"
+  },
+  {
+   "mono": 591206.390955125,
+   "event": "speech_start",
+   "phrase": "Actually, never mind. Tell me about the venue instead.",
+   "at": 591205.919282333
+  },
+  {
+   "mono": 591209.582146416,
+   "event": "speech_end",
+   "phrase": "Actually, never mind. Tell me about the venue instead.",
+   "at": 591209.590907333
+  }
+ ],
+ "views": [
+  {
+   "mono": 591184.741464041,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591201.038269208,
+   "state": "hearing",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 591203.691158333,
+   "state": "thinking",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 591203.797308,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591204.975208375,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-709d-76a6-8f98-d06afe42ee0f",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591206.454755208,
+   "state": "hearing",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-709d-76a6-8f98-d06afe42ee0f",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 591210.963907625,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-709d-76a6-8f98-d06afe42ee0f",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 591211.81658075,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-709d-76a6-8f98-d06afe42ee0f",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591212.980553208,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-900c-7b70-bf56-3a436a9c3fd5",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591225.351850375,
+   "state": "thinking",
+   "progress": "writing",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-900c-7b70-bf56-3a436a9c3fd5",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591225.461871833,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-900c-7b70-bf56-3a436a9c3fd5",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591226.416183166,
+   "state": "thinking",
+   "progress": "speaking",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-900c-7b70-bf56-3a436a9c3fd5",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591228.39417275,
+   "state": "thinking",
+   "progress": "speaking",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-900c-7b70-bf56-3a436a9c3fd5",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+    "utterance": 2
+   },
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 591240.040494333,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-900c-7b70-bf56-3a436a9c3fd5",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e152-709b-7273-8521-231be5868c52",
+    "message_id": "01a0e152-cc67-773c-b9c2-175545e051d2",
+    "utterance": 2
+   },
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  }
+ ]
+}

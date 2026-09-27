@@ -1,0 +1,1117 @@
+{
+ "case": "P3b-replace-during-playback",
+ "trigger": "played",
+ "phrases": [
+  "Tell me about the invitation for the reading.",
+  "Actually, never mind. Tell me about the venue instead."
+ ],
+ "messages": [
+  [
+   "user",
+   "Tell me about the invitation for the reading."
+  ],
+  [
+   "val",
+   "My lord, I do not have that in the record I can see. If you provide further detail or a re"
+  ],
+  [
+   "user",
+   "Actually, never mind. Tell me about the venue instead."
+  ],
+  [
+   "val",
+   "My lord, I do not have that in the record I can see. If you provide details of the venue o"
+  ]
+ ],
+ "decision": null,
+ "release": null,
+ "first_turn_marks": {
+  "endpoint": 0.0,
+  "transcript_final_received": 129.2,
+  "transcript_final_processed": 144.8,
+  "owner_turn_submitted": 1247.0,
+  "turn_start": 1250.5,
+  "scope_resolved": 1250.6,
+  "conversation_created": 1256.5,
+  "message_append_start": 1256.5,
+  "message_persisted": 1264.7,
+  "owner_message_committed": 1264.7,
+  "egress_decided": 1265.3,
+  "assembly_start": 1269.9,
+  "record_state_assembled": 1275.0,
+  "assembly_end": 1275.2,
+  "runtime_ready_start": 1282.9,
+  "runtime_ready_end": 1296.2,
+  "exact_preflight_start": 1296.3,
+  "exact_preflight_end": 1326.7,
+  "provider_dispatch": 1330.1,
+  "provider_chunk": 2999.3,
+  "provider_visible_text": 9947.2,
+  "speech_first_visible_text": 9947.2,
+  "speech_segment_queued": 10109.2,
+  "tts_synthesize_start": 10109.5,
+  "audio_at_sink": 10720.9
+ },
+ "second_turn_marks": {
+  "endpoint": 0.0,
+  "transcript_final_received": 139.0,
+  "transcript_final_processed": 142.7,
+  "owner_turn_submitted": 1258.3,
+  "turn_start": 1259.9,
+  "message_append_start": 1261.3,
+  "message_persisted": 1270.6,
+  "owner_message_committed": 1270.6,
+  "egress_decided": 1271.6,
+  "assembly_start": 1277.4,
+  "record_state_assembled": 1287.1,
+  "assembly_end": 1287.2,
+  "runtime_ready_start": 1297.1,
+  "runtime_ready_end": 1313.0,
+  "exact_preflight_start": 1313.1,
+  "exact_preflight_end": 1348.3,
+  "provider_dispatch": 1352.4,
+  "provider_chunk": 3234.9,
+  "provider_visible_text": 7096.2,
+  "speech_first_visible_text": 7096.2,
+  "speech_segment_queued": 7275.5,
+  "tts_synthesize_start": 7276.7,
+  "audio_at_sink": 7872.5,
+  "tts_synthesize_return": 8835.6
+ },
+ "intervals_s": {
+  "second_speech_end_to_confirmation": 2.071,
+  "confirmation_to_supersession_decision": null,
+  "decision_to_stream_closed": null,
+  "decision_to_lane_free": null
+ },
+ "calls": [
+  {
+   "message": "Tell me about the invitation for the reading.",
+   "task": "conversation",
+   "status": "ok",
+   "terminal": "complete",
+   "tokens_out": 472,
+   "latency_ms": 8995,
+   "superseded_reason": null
+  },
+  {
+   "message": "Actually, never mind. Tell me about the venue inst",
+   "task": "conversation",
+   "status": "ok",
+   "terminal": "complete",
+   "tokens_out": 275,
+   "latency_ms": 6312,
+   "superseded_reason": null
+  }
+ ],
+ "playbacks": [
+  {
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "segment": 1,
+   "state": "available_to_desktop",
+   "epoch": "1790484151.714685"
+  },
+  {
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "segment": 1,
+   "state": "playback_started",
+   "epoch": "1790484151.718613"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "state": "available_to_desktop",
+   "epoch": "1790484164.042739"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "state": "playback_started",
+   "epoch": "1790484164.046442"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "state": "available_to_desktop",
+   "epoch": "1790484165.499457"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "state": "playback_started",
+   "epoch": "1790484168.053719"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "state": "playback_completed",
+   "epoch": "1790484168.053818"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "state": "playback_completed",
+   "epoch": "1790484173.574062"
+  }
+ ],
+ "deliveries": [
+  {
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "state": "not_started",
+   "reason": null,
+   "delivered_characters": 0,
+   "epoch": "1790484151.285474"
+  },
+  {
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "state": "started",
+   "reason": null,
+   "delivered_characters": 52,
+   "epoch": "1790484151.671197"
+  },
+  {
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "state": "interrupted",
+   "reason": "the owner began speaking",
+   "delivered_characters": 52,
+   "epoch": "1790484152.276927"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "state": "not_started",
+   "reason": null,
+   "delivered_characters": 0,
+   "epoch": "1790484163.839270"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "state": "started",
+   "reason": null,
+   "delivered_characters": 52,
+   "epoch": "1790484164.037231"
+  },
+  {
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "state": "completed",
+   "reason": null,
+   "delivered_characters": 156,
+   "epoch": "1790484167.022403"
+  }
+ ],
+ "handoffs": [
+  {
+   "mono": 588685.129177541,
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "segment": 1,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588685.378795208,
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "segment": 1,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588697.456737625,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588697.797193708,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588698.04532125,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588698.394053375,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588698.481365958,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.16,
+   "bytes": 7724,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588698.565401333,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 1,
+   "chunk": 5,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "My lord, I do not have that in the record I can see."
+  },
+  {
+   "mono": 588698.913669333,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you provide details of the venue or a reference to where it is recorded, I wi"
+  },
+  {
+   "mono": 588699.245281333,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you provide details of the venue or a reference to where it is recorded, I wi"
+  },
+  {
+   "mono": 588699.495008291,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you provide details of the venue or a reference to where it is recorded, I wi"
+  },
+  {
+   "mono": 588699.839325708,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you provide details of the venue or a reference to where it is recorded, I wi"
+  },
+  {
+   "mono": 588700.101679333,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "If you provide details of the venue or a reference to where it is recorded, I wi"
+  },
+  {
+   "mono": 588700.358569291,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.72,
+   "bytes": 34604,
+   "text": "If you provide details of the venue or a reference to where it is recorded, I wi"
+  },
+  {
+   "mono": 588700.444927208,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "segment": 2,
+   "chunk": 6,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "If you provide details of the venue or a reference to where it is recorded, I wi"
+  }
+ ],
+ "reports": [
+  {
+   "mono": 588685.132398958,
+   "state": "playback_started",
+   "segment": 1,
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+   "http": 200
+  },
+  {
+   "mono": 588697.460681875,
+   "state": "playback_started",
+   "segment": 1,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "http": 200
+  },
+  {
+   "mono": 588701.470371833,
+   "state": "playback_started",
+   "segment": 2,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "http": 200
+  },
+  {
+   "mono": 588701.470473708,
+   "state": "playback_completed",
+   "segment": 1,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "http": 200
+  },
+  {
+   "mono": 588706.990250833,
+   "state": "playback_completed",
+   "segment": 2,
+   "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+   "http": 200
+  }
+ ],
+ "events": [
+  {
+   "mono": 588659.269809333,
+   "event": "voice_on"
+  },
+  {
+   "mono": 588671.738338833,
+   "event": "speech_start",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 588671.269809958
+  },
+  {
+   "mono": 588673.576719166,
+   "event": "speech_end",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 588673.574747458
+  },
+  {
+   "mono": 588685.160440625,
+   "event": "trigger_fired",
+   "trigger": "played"
+  },
+  {
+   "mono": 588685.655829583,
+   "event": "speech_start",
+   "phrase": "Actually, never mind. Tell me about the venue instead.",
+   "at": 588685.174747458
+  },
+  {
+   "mono": 588685.724250625,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588685.810343208,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588685.895026333,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588685.983625041,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.072485166,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.16192175,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.252090958,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.33397625,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.41568375,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.504027333,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.589291875,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.67687475,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.764867875,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.853820458,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588686.94359625,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.034543791,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.124273791,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.213624208,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.295982083,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.385229416,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.474413,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.565114916,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.645450791,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.731267208,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.822559416,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.911147458,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588687.997033083,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.078607583,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.162233125,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.252766416,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.336218291,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.427549208,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.509538666,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.595541125,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.686930125,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.774848666,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.841403125,
+   "event": "speech_end",
+   "phrase": "Actually, never mind. Tell me about the venue instead.",
+   "at": 588688.8463724579
+  },
+  {
+   "mono": 588688.86457325,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588688.95409,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.038907625,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.121413708,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.212993041,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.29756775,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.385398041,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.466286125,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.556184958,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.6431645,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.728201625,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.817439166,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.904816875,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588689.986665458,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.070152708,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.161821166,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.245159125,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.328516833,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.418463625,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.503606791,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.598361458,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.681398875,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  },
+  {
+   "mono": 588690.76298275,
+   "event": "stop_offered",
+   "reason": "the owner began speaking",
+   "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3"
+  }
+ ],
+ "views": [
+  {
+   "mono": 588659.300061041,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588671.746094458,
+   "state": "hearing",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 588674.428714375,
+   "state": "thinking",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 588674.538734875,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588675.699426791,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588684.408787875,
+   "state": "thinking",
+   "progress": "writing",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588684.515779583,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588684.729768125,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588685.162306,
+   "state": "thinking",
+   "progress": "speaking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588685.7017705,
+   "state": "hearing",
+   "progress": "speaking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 588685.808708375,
+   "state": "hearing",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": true,
+   "turns": 1
+  },
+  {
+   "mono": 588689.630982166,
+   "state": "thinking",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": true,
+   "turns": 1
+  },
+  {
+   "mono": 588689.738118875,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-d881-753f-82ee-81b7efb8438d",
+    "utterance": 1
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 588690.917082125,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-13f4-732b-b0fe-b93f039b50b8",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 588696.766093666,
+   "state": "thinking",
+   "progress": "writing",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-13f4-732b-b0fe-b93f039b50b8",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 588696.875140541,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-13f4-732b-b0fe-b93f039b50b8",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12b-fbee-77f0-a444-eccaa5b8a1a3",
+    "utterance": 1
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 588697.313126375,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-13f4-732b-b0fe-b93f039b50b8",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 588697.529803166,
+   "state": "thinking",
+   "progress": "speaking",
+   "pending": "Actually, never mind. Tell me about the venue instead.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-13f4-732b-b0fe-b93f039b50b8",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 588700.49372875,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-13f4-732b-b0fe-b93f039b50b8",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12b-d87a-7be8-846d-6a53a6e4f8e5",
+    "message_id": "01a0e12c-2cfa-7a3b-8e5c-cf9909fee078",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 2
+  }
+ ]
+}

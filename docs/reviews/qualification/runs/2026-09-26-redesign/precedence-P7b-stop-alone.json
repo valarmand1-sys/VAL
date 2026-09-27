@@ -1,0 +1,341 @@
+{
+ "label": "P7b-stop-alone",
+ "session": "ea7af68c-0ef9-4e36-8511-6984b76e0b14",
+ "trigger": "t:1.5",
+ "phrases": [
+  "Tell me about the invitation for the reading.",
+  "Never mind, Val."
+ ],
+ "speech_end_mono": [
+  588886.174304083,
+  588889.2910540829
+ ],
+ "events": [
+  {
+   "mono": 588871.869365791,
+   "event": "voice_on"
+  },
+  {
+   "mono": 588884.340956625,
+   "event": "speech_start",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 588883.869366583
+  },
+  {
+   "mono": 588886.176167416,
+   "event": "speech_end",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 588886.174304083
+  },
+  {
+   "mono": 588887.76043375,
+   "event": "trigger_fired",
+   "trigger": "t:1.5"
+  },
+  {
+   "mono": 588888.2274735,
+   "event": "speech_start",
+   "phrase": "Never mind, Val.",
+   "at": 588887.774304083
+  },
+  {
+   "mono": 588889.280270791,
+   "event": "speech_end",
+   "phrase": "Never mind, Val.",
+   "at": 588889.2910540829
+  }
+ ],
+ "views": [
+  {
+   "mono": 588871.900102166,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588884.443865708,
+   "state": "hearing",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 588887.54231225,
+   "state": "thinking",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 588888.179941291,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588888.289525833,
+   "state": "hearing",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 588890.085597958,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 588890.300644208,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading. Nevermind, VAL.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588891.357815791,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading. Nevermind, VAL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-231b-7c3c-827e-a7aa1089ad30",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588897.490309458,
+   "state": "thinking",
+   "progress": "writing",
+   "pending": "Tell me about the invitation for the reading. Nevermind, VAL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-231b-7c3c-827e-a7aa1089ad30",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588897.598189541,
+   "state": "thinking",
+   "progress": "voicing",
+   "pending": "Tell me about the invitation for the reading. Nevermind, VAL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-231b-7c3c-827e-a7aa1089ad30",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588898.131471833,
+   "state": "thinking",
+   "progress": "speaking",
+   "pending": "Tell me about the invitation for the reading. Nevermind, VAL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-231b-7c3c-827e-a7aa1089ad30",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 588899.30148375,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-231b-7c3c-827e-a7aa1089ad30",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e12f-2316-7fd2-a492-f10bd39819ef",
+    "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+    "utterance": 2
+   },
+   "superseded": null,
+   "hearing": false,
+   "turns": 1
+  }
+ ],
+ "handoffs": [
+  {
+   "mono": 588898.093982333,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "segment": 1,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "Very well, my lord."
+  },
+  {
+   "mono": 588898.266052,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "segment": 1,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.56,
+   "bytes": 26924,
+   "text": "Very well, my lord."
+  },
+  {
+   "mono": 588898.348852708,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "segment": 1,
+   "chunk": 2,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "Very well, my lord."
+  },
+  {
+   "mono": 588898.701204833,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "segment": 2,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "I will not pursue the invitation further."
+  },
+  {
+   "mono": 588899.051562875,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "segment": 2,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "I will not pursue the invitation further."
+  },
+  {
+   "mono": 588899.138917791,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "segment": 2,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.4,
+   "bytes": 19244,
+   "text": "I will not pursue the invitation further."
+  },
+  {
+   "mono": 588899.228758375,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "segment": 2,
+   "chunk": 3,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "I will not pursue the invitation further."
+  }
+ ],
+ "reports": [
+  {
+   "mono": 588898.097524583,
+   "state": "playback_started",
+   "segment": 1,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "http": 200
+  },
+  {
+   "mono": 588899.629311791,
+   "state": "playback_completed",
+   "segment": 1,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "http": 200
+  },
+  {
+   "mono": 588899.632059708,
+   "state": "playback_started",
+   "segment": 2,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "http": 200
+  },
+  {
+   "mono": 588901.945890833,
+   "state": "playback_completed",
+   "segment": 2,
+   "message_id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16",
+   "http": 200
+  }
+ ],
+ "messages": [
+  {
+   "role": "user",
+   "content": "Tell me about the invitation for the reading. Nevermind, VAL.",
+   "id": "01a0e12f-231b-7c3c-827e-a7aa1089ad30"
+  },
+  {
+   "role": "val",
+   "content": "Very well, my lord. I will not pursue the invitation further.",
+   "id": "01a0e12f-3b55-7b6f-b10a-7df93b0e8f16"
+  }
+ ],
+ "conversation": "01a0e12f-2316-7fd2-a492-f10bd39819ef"
+}

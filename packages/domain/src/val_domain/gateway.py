@@ -225,6 +225,11 @@ class GatewayErrorKind(StrEnum):
     #: confirmed owner turn took precedence over an answer he had not begun to hear. The
     #: provider stream was closed; the row records what ran, and no message is written.
     SUPERSEDED = "superseded"
+    #: Release-gaps order §2 (26 September 2026): his words were a stop and nothing
+    #: else, spoken while an answer he had not begun to hear was being made. That answer
+    #: is superseded and **no new answer is asked for**: the message is his, on the
+    #: record, and the turn ends unanswered by his own decision, not by a failure.
+    OWNER_STOP = "owner_stop"
     #: Ruling, 13 September 2026: admitting the next call would take one user
     #: exchange past its configured spending envelope. Not retryable on another
     #: route — a cheaper configuration is never substituted to fit the envelope —

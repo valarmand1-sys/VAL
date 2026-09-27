@@ -69,6 +69,7 @@ from val_gateway.loop import TruncatedTurn, Turn, UnansweredTurn
 from val_gateway.revisions import RevisionRefusedError, retract
 from val_gateway.speculation import record_preparation
 from val_policy.egress import LiveVoiceConversations
+from val_policy.precedence import follow_up
 from val_policy.turn_completion import completion_of
 
 _LOGGER = logging.getLogger("val.voice")
@@ -189,6 +190,7 @@ class Submit(Protocol):
         on_persisted: Callable[[UUID, UUID], None] | None = None,
         prepared: object | None = None,
         cancelled: Callable[[], bool] | None = None,
+        withhold_answer: bool = False,
     ) -> DeliberatedOutcome: ...
 
 
@@ -369,6 +371,11 @@ class VoiceSessionView:
     queued: bool = False
     #: Component readiness (Milestone A §2): what is warm, what is not, what failed.
     readiness: VoiceReadiness = VoiceReadiness()
+    #: The most recent time his confirmed words set aside an answer he had not begun to
+    #: hear (release-gaps order §1 and §2): ``kind`` (``stop`` or ``replacement``), the
+    #: utterance set aside, the utterance that did it, and ``heard: False``. ``None``
+    #: when it has not happened in this session. A record, not a state to act on.
+    superseded: dict[str, object] | None = None
 
 
 @dataclass
@@ -406,6 +413,15 @@ class _Pending:
     #: provider stream between chunks; the call then ends `superseded` and no message is
     #: written for it.
     superseded: threading.Event = field(default_factory=threading.Event)
+    #: Release-gaps order §1 (26 September 2026): what his words were to the answer in
+    #: flight when they were confirmed — ``stop``, ``replacement``, ``continuation`` or
+    #: ``ambiguous`` — once decided (so it is decided and logged once), and whether they
+    #: were a stop and nothing else, in which case no new answer is asked for.
+    follow_up: str | None = None
+    stop_only: bool = False
+    #: This turn's stopwatch, so a decision taken on another thread (supersession) can
+    #: be marked on the turn it concerns.
+    recorder: timings.TurnTimings | None = None
     #: How long this utterance's resume window is: the default, or the adaptive
     #: value its own final transcript earned (owner order §7).
     grace_seconds: float = RESUME_GRACE_SECONDS
@@ -609,6 +625,11 @@ class VoiceSession:
         #: hand-offs' own durations, serially; brought forward by barge-in or a
         #: playback report that the speakers stopped. Owner work for maintenance.
         self._heard_until = 0.0
+        #: Whether the desktop has reported that playback of the answer in flight began
+        #: (release-gaps order §2: the heard boundary is the speakers, not synthesis and
+        #: not the hand-off). Reset when a turn is submitted.
+        self._playback_started = False
+        self._last_supersession: dict[str, object] | None = None
         #: How the local runtime's persona prefix is primed and refreshed (owner
         #: order, 25 September 2026). Optional maintenance: it never starts while a
         #: request of his is waiting, and one run at a time.
@@ -833,9 +854,51 @@ class VoiceSession:
 
     def playback_reported(self, state: str) -> None:
         """The desktop reported what its speakers did; a stop ends what is counted as heard."""
-        if state in ("playback_interrupted", "playback_failed"):
-            with self._lock:
+        with self._lock:
+            if state == "playback_started":
+                self._playback_started = True
+            if state in ("playback_interrupted", "playback_failed"):
                 self._heard_until = min(self._heard_until, time.monotonic())
+
+    def _heard_locked(self) -> bool:
+        """Has he begun to hear the answer in flight? (lock held)
+
+        Release-gaps order §2 (26 September 2026). With a desktop collecting the audio,
+        the service's own hand-off is not hearing: only the desktop's report that
+        playback began is. Without a hand-off sink (a direct sink, or a test's), the
+        delivery's own audible boundary is the fact available.
+        """
+        delivery = self._delivery
+        if delivery is None:
+            return False
+        sink = getattr(delivery, "sink", None)
+        if sink is not None and hasattr(sink, "collect"):
+            return self._playback_started
+        return bool(delivery.audible)
+
+    @property
+    def speech_hold(self) -> bool:
+        """Whether the hand-off of an unheard answer is held while his words are in the air.
+
+        Release-gaps order §1 and §2 (26 September 2026), owner precedence on. True from
+        the onset of his speech until his words are confirmed and decided, when the
+        answer in flight has not begun to be heard: a continuation or ambiguous words
+        release it and the answer plays after him; a stop or a replacement discards it.
+        Nothing is held once playback has begun — that is barge-in's ground.
+        """
+        if not self._owner_precedence:
+            return False
+        with self._lock:
+            delivery = self._delivery
+            if delivery is None or not delivery.active or self._heard_locked():
+                return False
+            speaking = self._current is not None
+            undecided = (
+                self._pending is not None
+                and self._inflight is not None
+                and self._pending.follow_up is None
+            )
+            return speaking or undecided
 
     @property
     def speech_handover(self) -> Delivery | None:
@@ -925,8 +988,17 @@ class VoiceSession:
         # is not talking over him. Nothing already executed is undone — speech
         # stopping is not a time machine — and the exact prefix he heard goes on
         # the record rather than being reconstructed later.
+        #
+        # Release-gaps order §1 and §2 (26 September 2026), with owner precedence on:
+        # an answer he has **not** begun to hear is not stopped by the onset of his
+        # words — that would infer a cancellation from an arrival. Its hand-off is
+        # **held** instead (`speech_hold`) so nothing of it plays over him, and what
+        # becomes of it is decided when his words are confirmed: set aside, or played.
         if delivering is not None and delivering.active:
-            self.cancellations.append(delivering.interrupt("the owner began speaking"))
+            with self._lock:
+                heard = self._heard_locked()
+            if not self._owner_precedence or heard:
+                self.cancellations.append(delivering.interrupt("the owner began speaking"))
 
     def _guessed(self, event: RecognizerEvent) -> None:
         """A revised guess: held in memory, and journalled on a throttle."""
@@ -1291,32 +1363,56 @@ class VoiceSession:
                 return
             inflight = self._inflight
             if inflight is not None:
-                # Milestone B §8 (owner precedence, isolated): his next words are a
-                # confirmed turn, and the answer in flight has not been heard — nothing
-                # of it audible, no synthesis begun. Then that answer is superseded: its
-                # stream is closed at the next chunk, the call is recorded as superseded,
-                # no message is written for it, his earlier message stays as it was,
-                # and this turn is submitted as soon as the lane is free. An answer he
-                # has begun to hear is never cut off by this rule.
-                delivery = self._delivery
-                unheard = delivery is None or (
-                    not delivery.audible and delivery.first_tts_start_ms is None
-                )
-                if self._owner_precedence and unheard and not inflight.superseded.is_set():
-                    inflight.superseded.set()
-                    _LOGGER.info(
-                        "voice precedence: %s",
-                        json.dumps(
-                            {
-                                "superseded_utterance": inflight.utterance.utterance,
-                                "by_utterance": pending.utterance.utterance,
-                                "answer_heard": False,
-                            }
-                        ),
-                    )
-                    if delivery is not None:
-                        delivery.interrupt("superseded by the owner's next confirmed turn")
-                return
+                # Owner precedence (Milestone B §8, corrected by the release-gaps order
+                # §1 and §2, 26 September 2026): his next words are a confirmed turn while
+                # an answer is still being made. **His words decide**, deterministically:
+                # a stop or a clear replacement, correction or redirection sets that
+                # answer aside — if he has not begun to hear it (the desktop's playback
+                # report, not synthesis, not the hand-off) — its stream is closed at the
+                # next chunk, the call is recorded as superseded, no message is written
+                # for it and his earlier message stays as it was; a continuation or
+                # anything ambiguous leaves it in force and these words wait, as they
+                # always did. An answer he has begun to hear is never cut by this rule;
+                # his speaking over it is barge-in, which stopped the speakers already.
+                if self._owner_precedence and pending.follow_up is None:
+                    relation = follow_up(pending.utterance.text)
+                    pending.follow_up = relation.kind
+                    heard = self._heard_locked()
+                    decision: dict[str, object] = {
+                        "superseded_utterance": inflight.utterance.utterance,
+                        "by_utterance": pending.utterance.utterance,
+                        "relation": relation.kind,
+                        "reason": relation.reason,
+                        "answer_heard": heard,
+                        "decided_mono": time.monotonic(),
+                    }
+                    if relation.supersedes and not heard and not inflight.superseded.is_set():
+                        inflight.superseded.set()
+                        pending.stop_only = relation.kind == "stop"
+                        if inflight.recorder is not None:
+                            inflight.recorder.mark("superseded_decided")
+                        decision["outcome"] = "superseded"
+                        self._last_supersession = {
+                            "kind": relation.kind,
+                            "superseded_utterance": inflight.utterance.utterance,
+                            "by_utterance": pending.utterance.utterance,
+                            "heard": False,
+                        }
+                        delivery = self._delivery
+                        if delivery is not None:
+                            delivery.interrupt("superseded by the owner's next confirmed turn")
+                    else:
+                        decision["outcome"] = "kept" if not heard else "kept: already heard"
+                    _LOGGER.info("voice precedence: %s", json.dumps(decision))
+                if not inflight.superseded.is_set():
+                    return
+                # The superseded call's thread is not waited for (release-gaps order §3,
+                # P4c): a runtime that stops generation on disconnect but keeps the
+                # socket open leaves that thread blocked until its read times out, and a
+                # prefill in progress runs to its end whatever the client does. His words
+                # go out now; the runtime serialises them behind whatever it is still
+                # finishing, and that wait is measured on their own timeline. The old
+                # thread's writes to the shared state are guarded by identity below.
             self._pending = None
             self._inflight = pending
             self._cognition_busy = True
@@ -1389,6 +1485,7 @@ class VoiceSession:
         the wall clock so it can be laid beside the store's own timestamps.
         """
         live = recorder if recorder is not None else _turn_stopwatch(pending.evidence)
+        pending.recorder = live
         with timings.recording(live):
             self._run_turn(pending)
         self._log_timeline(pending, live)
@@ -1436,6 +1533,7 @@ class VoiceSession:
         delivery = None if self._speech is None else self._speech()
         with self._lock:
             self._delivery = delivery
+            self._playback_started = False
             # The previous turn's hand-off ends when this one begins: one delivery
             # is collectable at a time, and an older one is released here.
             self._recent = None
@@ -1448,6 +1546,11 @@ class VoiceSession:
             extra["prepared"] = prepared
         if self._owner_precedence:
             extra["cancelled"] = pending.superseded.is_set  # Milestone B §8
+        if pending.stop_only:
+            # A stop and nothing else (release-gaps order §2): his words go on the
+            # record; no new answer is asked for, and the turn ends unanswered by his
+            # decision rather than by a failure.
+            extra["withhold_answer"] = True
         try:
             outcome = self._submit(
                 utterance.text,
@@ -1468,16 +1571,20 @@ class VoiceSession:
             )
         except Exception as failure:
             with self._lock:
-                self._cognition_busy = False
+                if self._inflight is pending:
+                    self._cognition_busy = False
             if delivery is not None:
                 delivery.interrupt("the turn failed before it could be spoken")
             self._fail(f"the spoken turn could not be submitted: {failure}")
             with self._lock:
-                self._inflight = None
-                self._delivery = None
+                if self._inflight is pending:
+                    self._inflight = None
+                if self._delivery is delivery:
+                    self._delivery = None
             return
         with self._lock:
-            self._cognition_busy = False
+            if self._inflight is pending:
+                self._cognition_busy = False
             # Her answer is in the store now; say so at once rather than when her
             # voice has finished synthesising it, which is when `turns` learns of it.
             answered = _answered(outcome)
@@ -1506,15 +1613,33 @@ class VoiceSession:
             )
         finally:
             with self._lock:
-                self._inflight = None
-                # The delivery leaves `_delivery` and stays collectable through
-                # `_recent`, so the last synthesised segment of an answer is not
-                # thrown away between the turn ending and the desktop's next poll.
-                if self._delivery is not None:
-                    self._recent = self._delivery
-                self._delivery = None
-                if self.state is VoiceSessionState.THINKING:
+                # Guarded by identity: a superseded turn's thread may end after the words
+                # that superseded it have become the turn in flight (§3).
+                if self._inflight is pending:
+                    self._inflight = None
+                if self._delivery is delivery:
+                    # The delivery leaves `_delivery` and stays collectable through
+                    # `_recent`, so the last synthesised segment of an answer is not
+                    # thrown away between the turn ending and the desktop's next poll.
+                    if self._delivery is not None:
+                        self._recent = self._delivery
+                    self._delivery = None
+                if self.state is VoiceSessionState.THINKING and self._inflight is None:
                     self.state = VoiceSessionState.LISTENING
+            if pending.superseded.is_set():
+                # The superseded call's thread has ended — when the runtime answered,
+                # closed, or the read timed out. Logged so the wait can be measured (§3).
+                if pending.recorder is not None:
+                    pending.recorder.mark("superseded_call_ended")
+                _LOGGER.info(
+                    "voice precedence: %s",
+                    json.dumps(
+                        {
+                            "released_utterance": utterance.utterance,
+                            "superseded_call_ended_mono": time.monotonic(),
+                        }
+                    ),
+                )
 
     def _owner_waiting(self, *, including_speech: bool = False) -> bool:
         """Whether any part of his turn is under way: waiting, thinking, or being voiced.
@@ -1864,6 +1989,7 @@ class VoiceSession:
                 progress=self._progress_locked(),
                 queued=self._pending is not None and self._inflight is not None,
                 readiness=self.readiness,
+                superseded=self._last_supersession,
             )
 
     def _progress_locked(self) -> str | None:
@@ -1877,6 +2003,12 @@ class VoiceSession:
             # reasoning (Milestone A §2).
             return "warming" if not self.readiness.ready else "thinking"
         if delivery.audible:
+            # With a desktop collecting the audio, "speaking" is the desktop's report that
+            # playback began, not audio waiting at the hand-off (release-gaps order §2;
+            # the P2 precedence run showed "speaking" while every segment was still held).
+            sink = getattr(delivery, "sink", None)
+            if sink is not None and hasattr(sink, "collect") and not self._playback_started:
+                return "voicing"
             return "speaking"
         if delivery.first_tts_start_ms is not None:
             return "voicing"

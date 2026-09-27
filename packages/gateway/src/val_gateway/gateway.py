@@ -54,6 +54,7 @@ from datetime import date
 from typing import cast
 from uuid import UUID
 
+import val_gateway.context as _context
 from val_domain.egress import Egress
 from val_domain.gateway import (
     PERSONA_ATTRIBUTED_TASKS,
@@ -627,7 +628,17 @@ class Gateway:
                 "reason": "an owner request is waiting; maintenance never starts ahead of it",
             }
         persona = self._persona_loader.active()
-        plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(config, persona.content)
+        # Experiment only (release-gaps order §4): when the envelope follows the persona
+        # inside the system message, the prefix every turn shares ends at the separator,
+        # not at the persona, so that is the boundary the checkpoint must land on.
+        primed_system = persona.content
+        if _context.ENVELOPE_IN_SYSTEM:  # read at call time: the harness sets it
+            primed_system = persona.content + _context.ENVELOPE_SYSTEM_SEPARATOR
+            plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(
+                config, primed_system, boundary="developer_end"
+            )
+        else:
+            plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(config, primed_system)
         if plan.refused is not None:
             return {
                 "primed": False,
@@ -652,8 +663,10 @@ class Gateway:
             egress=Egress.LOCAL_ONLY,
         ).model_copy(
             # It carries the persona whole, so it names the revision it carried —
-            # the same rule as every persona-bearing call that is not a turn.
-            update={"persona": PersonaAttribution(persona_id=persona.id)}
+            # the same rule as every persona-bearing call that is not a turn. Under the
+            # §4 experiment switch the primed system is the persona plus the separator,
+            # the prefix every turn then shares (the plan above was sized for it).
+            update={"persona": PersonaAttribution(persona_id=persona.id), "system": primed_system}
         )
         started = time.monotonic()
         try:
@@ -1434,6 +1447,9 @@ class Gateway:
                     cache_ttl=cache_ttl,
                 )
         except GatewayError as error:
+            if error.kind is GatewayErrorKind.SUPERSEDED:
+                # The provider stream is closed here, on the turn's own clock (§3).
+                mark("superseded_stream_closed")
             call_id = self._settle_unknown(
                 request, config, claim, error, self._elapsed(started), streamed=streamed
             )
@@ -1740,7 +1756,18 @@ class Gateway:
                     reasoning_output_tokens=None,
                     provider_cached_input_tokens=None,
                     provider_cache_write_tokens=None,
-                    runtime_diagnostics=_runtime_diagnostics(config, None),
+                    # Release-gaps order §2 (26 September 2026): a call Core cut off
+                    # because his confirmed words superseded it is distinguishable from
+                    # an ordinary failure on the record — the same measurement row every
+                    # call gets carries the reason; the usage stays NULL, never zero.
+                    runtime_diagnostics=(
+                        {
+                            **dict(_runtime_diagnostics(config, None) or {}),
+                            "superseded": {"reason": str(error)},
+                        }
+                        if error.kind is GatewayErrorKind.SUPERSEDED
+                        else _runtime_diagnostics(config, None)
+                    ),
                 ),
             )
         )

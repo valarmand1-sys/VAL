@@ -413,3 +413,40 @@ describe("response-in-progress feedback", () => {
     expect(text()).toBe("");
   });
 });
+
+// Release-gaps order §1 and §2 (26 September 2026): when his confirmed words set aside
+// an answer he had not begun to hear, the interface says so — and for a stop, that
+// nothing was said.
+describe("supersession, said plainly", () => {
+  const show = (over: Partial<VoiceSessionView>) =>
+    act(() => root.render(<ResponseProgress session={session(over)} />));
+  const committed = { conversation_id: "c", message_id: "m", utterance: 2 };
+
+  it("says a stop stopped her, and that nothing was said", () => {
+    show({
+      progress: null,
+      committed,
+      superseded: { kind: "stop", superseded_utterance: 1, by_utterance: 2, heard: false },
+    });
+    expect(text()).toBe("Stopped at your word — nothing was said.");
+  });
+
+  it("says the earlier answer was set aside while the replacement is being answered", () => {
+    show({
+      progress: "thinking",
+      committed,
+      superseded: { kind: "replacement", superseded_utterance: 1, by_utterance: 2, heard: false },
+    });
+    expect(text()).toContain("Her earlier answer was set aside for this.");
+    expect(text()).toContain("Val is thinking…");
+  });
+
+  it("says nothing about it once he has spoken again", () => {
+    show({
+      progress: "thinking",
+      committed: { ...committed, utterance: 3 },
+      superseded: { kind: "replacement", superseded_utterance: 1, by_utterance: 2, heard: false },
+    });
+    expect(text()).toBe("Val is thinking…");
+  });
+});

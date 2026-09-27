@@ -398,6 +398,15 @@ export interface VoiceSessionView {
     prefix_light: string;
     detail?: string | null;
   } | null;
+  // The most recent time his confirmed words set aside an answer he had not begun to
+  // hear (release-gaps order §1–§2, 26 September 2026): a stop, or a replacement. A
+  // record the interface says plainly, never a state it acts on.
+  superseded?: {
+    kind: string;
+    superseded_utterance: number;
+    by_utterance: number;
+    heard: boolean;
+  } | null;
   // When his most recent settled utterance's speech ended, as milliseconds before this
   // response was written: the endpoint less the silence that confirmed it. A
   // VAD-derived estimate, never an acoustic observation.

@@ -1037,6 +1037,11 @@ class VoiceSessionView(BaseModel):
     #: 2026, Milestone A §2): the cognition runtime, the voice worker, the Partner
     #: prefix and the light prefix. `ready` only when every applicable one is.
     readiness: ReadinessView | None = None
+    #: Release-gaps order §1 and §2 (26 September 2026): the most recent time his confirmed
+    #: words set aside an answer he had not begun to hear — `kind` ("stop" or
+    #: "replacement"), `superseded_utterance`, `by_utterance`, `heard` (False). A record
+    #: for the interface to say plainly; never a state it acts on.
+    superseded: dict[str, object] | None = None
 
 
 class ReadinessView(BaseModel):

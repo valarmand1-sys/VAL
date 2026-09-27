@@ -1177,6 +1177,14 @@ export function ResponseProgress(props: { session: VoiceSessionView }): React.JS
   else if (stage === "writing") lines.push("Val is writing…");
   else if (stage === "voicing") lines.push("Preparing her voice…");
   if (session.queued) lines.push("Your next words are waiting for her current answer.");
+  // Release-gaps order §1–§2 (26 September 2026): when his words set aside an answer he
+  // had not begun to hear, say so — and for a stop, say that nothing was said, rather
+  // than leave his message standing with no answer and no explanation.
+  const superseded = session.superseded ?? null;
+  if (superseded !== null && session.committed?.utterance === superseded.by_utterance) {
+    if (superseded.kind === "stop") lines.push("Stopped at your word — nothing was said.");
+    else if (stage !== null) lines.push("Her earlier answer was set aside for this.");
+  }
   const readiness = session.readiness ?? null;
   if (readiness !== null && !readiness.ready && stage === null) {
     const failed = Object.entries(readiness)

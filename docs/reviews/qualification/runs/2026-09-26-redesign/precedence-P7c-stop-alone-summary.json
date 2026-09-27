@@ -1,0 +1,1070 @@
+{
+ "case": "P7c-stop-alone",
+ "trigger": "t:3.0",
+ "phrases": [
+  "Tell me about the invitation for the reading.",
+  "Never mind, Val."
+ ],
+ "messages": [
+  [
+   "user",
+   "Tell me about the invitation for the reading."
+  ],
+  [
+   "user",
+   "Nevermind, VOWL."
+  ],
+  [
+   "val",
+   "My lord, the Visual Language for Ontology Modeling—commonly called **VOWL**—is a graphical"
+  ]
+ ],
+ "decision": {
+  "wall": 1790485492.9,
+  "superseded_utterance": 1,
+  "by_utterance": 2,
+  "relation": "replacement",
+  "reason": "a correction, withdrawal or redirection of the earlier request",
+  "answer_heard": false,
+  "decided_mono": 590026.301154166,
+  "outcome": "superseded"
+ },
+ "release": {
+  "wall": 1790485492.929,
+  "released_utterance": 1,
+  "lane_free_mono": 590026.330387583
+ },
+ "first_turn_marks": {
+  "endpoint": 0.0,
+  "transcript_final_received": 596.3,
+  "transcript_final_processed": 618.5,
+  "owner_turn_submitted": 1732.8,
+  "turn_start": 1735.0,
+  "scope_resolved": 1735.1,
+  "conversation_created": 1738.3,
+  "message_append_start": 1738.3,
+  "message_persisted": 1746.4,
+  "owner_message_committed": 1746.4,
+  "egress_decided": 1747.2,
+  "assembly_start": 1754.1,
+  "record_state_assembled": 1760.4,
+  "assembly_end": 1760.6,
+  "runtime_ready_start": 1772.3,
+  "runtime_ready_end": 1781.0,
+  "exact_preflight_start": 1781.0,
+  "exact_preflight_end": 1966.0,
+  "provider_dispatch": 1980.0,
+  "provider_chunk": 3701.1,
+  "superseded_decided": 5709.6,
+  "superseded_stream_closed": 5720.5,
+  "lane_free": 5738.8
+ },
+ "second_turn_marks": null,
+ "intervals_s": {
+  "second_speech_end_to_confirmation": 2.189,
+  "confirmation_to_supersession_decision": 0.0,
+  "decision_to_stream_closed": 0.011,
+  "decision_to_lane_free": 0.029
+ },
+ "calls": [
+  {
+   "message": "Tell me about the invitation for the reading.",
+   "task": "conversation",
+   "status": "error",
+   "terminal": "failed",
+   "tokens_out": null,
+   "latency_ms": 3740,
+   "superseded_reason": "superseded: the call was superseded by a newer confirmed owner turn before any of its answer was heard; the provider stream was closed"
+  },
+  {
+   "message": "Nevermind, VOWL.",
+   "task": "conversation",
+   "status": "ok",
+   "terminal": "complete",
+   "tokens_out": 817,
+   "latency_ms": 16259,
+   "superseded_reason": null
+  }
+ ],
+ "playbacks": [
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 1,
+   "state": "available_to_desktop",
+   "epoch": "1790485503.958744"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 2,
+   "state": "available_to_desktop",
+   "epoch": "1790485506.100890"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "state": "available_to_desktop",
+   "epoch": "1790485509.450501"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "state": "available_to_desktop",
+   "epoch": "1790485511.611986"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 2,
+   "state": "playback_completed",
+   "epoch": "1790485512.767102"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "state": "playback_started",
+   "epoch": "1790485512.767179"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "state": "available_to_desktop",
+   "epoch": "1790485513.758148"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "state": "available_to_desktop",
+   "epoch": "1790485516.784638"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "state": "playback_completed",
+   "epoch": "1790485519.011073"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "state": "playback_started",
+   "epoch": "1790485519.011152"
+  },
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "state": "available_to_desktop",
+   "epoch": "1790485519.043185"
+  }
+ ],
+ "deliveries": [
+  {
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "state": "started",
+   "reason": null,
+   "delivered_characters": 166,
+   "epoch": "1790485509.295614"
+  }
+ ],
+ "handoffs": [
+  {
+   "mono": 590037.360677291,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, the Visual Language for Ontology Modeling—"
+  },
+  {
+   "mono": 590037.947873125,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, the Visual Language for Ontology Modeling—"
+  },
+  {
+   "mono": 590038.471896458,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "My lord, the Visual Language for Ontology Modeling—"
+  },
+  {
+   "mono": 590038.7281475,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.32,
+   "bytes": 15404,
+   "text": "My lord, the Visual Language for Ontology Modeling—"
+  },
+  {
+   "mono": 590038.811055083,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 1,
+   "chunk": 4,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "My lord, the Visual Language for Ontology Modeling—"
+  },
+  {
+   "mono": 590039.503051875,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "commonly called **VOWL**—is a graphical notation devised to make ontological str"
+  },
+  {
+   "mono": 590040.1021595,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "commonly called **VOWL**—is a graphical notation devised to make ontological str"
+  },
+  {
+   "mono": 590040.6211755,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "commonly called **VOWL**—is a graphical notation devised to make ontological str"
+  },
+  {
+   "mono": 590041.14751975,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "commonly called **VOWL**—is a graphical notation devised to make ontological str"
+  },
+  {
+   "mono": 590041.7371215,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "commonly called **VOWL**—is a graphical notation devised to make ontological str"
+  },
+  {
+   "mono": 590042.231585083,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.8,
+   "bytes": 38444,
+   "text": "commonly called **VOWL**—is a graphical notation devised to make ontological str"
+  },
+  {
+   "mono": 590042.321191541,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "segment": 2,
+   "chunk": 6,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "commonly called **VOWL**—is a graphical notation devised to make ontological str"
+  },
+  {
+   "mono": 590042.854333291,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590043.202191833,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590043.462132208,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590043.723713875,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590044.060314,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590044.313493583,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590044.490777458,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.48,
+   "bytes": 23084,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590044.577698333,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 3,
+   "chunk": 7,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "It maps the formal elements of OWL (classes, properties, individuals) onto intui"
+  },
+  {
+   "mono": 590045.014793416,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590045.281104708,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590045.527965,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590045.869479875,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590046.13112275,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590046.387567583,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590046.649543875,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.8,
+   "bytes": 38444,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590046.729844875,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 4,
+   "chunk": 7,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "circles for classes, ellipses for data properties, arrows for object properties,"
+  },
+  {
+   "mono": 590047.161281708,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590047.416496708,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590047.760837208,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590048.022215416,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590048.285784,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590048.636017041,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590048.891572791,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590049.157628083,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 7,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590049.503669958,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 8,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590049.759635375,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 9,
+   "last": false,
+   "duration_s": 0.72,
+   "bytes": 34604,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590049.844292708,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 5,
+   "chunk": 10,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "The layout is typically radial or layered, so related concepts cluster together "
+  },
+  {
+   "mono": 590050.188487,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590050.445413,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590050.793055333,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590051.058141833,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590051.394616625,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590051.655722208,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590051.9168895,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590052.003889125,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 7,
+   "last": false,
+   "duration_s": 0.08,
+   "bytes": 3884,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590052.093971083,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 6,
+   "chunk": 8,
+   "last": true,
+   "duration_s": 0.0,
+   "bytes": 0,
+   "text": "The main purpose of VOWL is to bridge the gap between the machine‑readable OWL s"
+  },
+  {
+   "mono": 590052.446249,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "chunk": 0,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "By presenting an ontology as a diagram, stakeholders can quickly grasp the domai"
+  },
+  {
+   "mono": 590052.788709208,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "chunk": 1,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "By presenting an ontology as a diagram, stakeholders can quickly grasp the domai"
+  },
+  {
+   "mono": 590053.051709541,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "chunk": 2,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "By presenting an ontology as a diagram, stakeholders can quickly grasp the domai"
+  },
+  {
+   "mono": 590053.302930583,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "chunk": 3,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "By presenting an ontology as a diagram, stakeholders can quickly grasp the domai"
+  },
+  {
+   "mono": 590053.644920041,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "chunk": 4,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "By presenting an ontology as a diagram, stakeholders can quickly grasp the domai"
+  },
+  {
+   "mono": 590053.911706083,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "chunk": 5,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "By presenting an ontology as a diagram, stakeholders can quickly grasp the domai"
+  },
+  {
+   "mono": 590054.161574166,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "segment": 7,
+   "chunk": 6,
+   "last": false,
+   "duration_s": 0.96,
+   "bytes": 46124,
+   "text": "By presenting an ontology as a diagram, stakeholders can quickly grasp the domai"
+  }
+ ],
+ "reports": [
+  {
+   "mono": 590037.363954583,
+   "state": "playback_started",
+   "segment": 1,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "http": 409
+  },
+  {
+   "mono": 590040.57030825,
+   "state": "playback_started",
+   "segment": 2,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "http": 409
+  },
+  {
+   "mono": 590040.570379708,
+   "state": "playback_completed",
+   "segment": 1,
+   "message_id": "00000000-0000-0000-0000-000000000000",
+   "http": 409
+  },
+  {
+   "mono": 590046.170479583,
+   "state": "playback_started",
+   "segment": 3,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "http": 200
+  },
+  {
+   "mono": 590046.170541208,
+   "state": "playback_completed",
+   "segment": 2,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "http": 200
+  },
+  {
+   "mono": 590052.414621083,
+   "state": "playback_started",
+   "segment": 4,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "http": 200
+  },
+  {
+   "mono": 590052.414800458,
+   "state": "playback_completed",
+   "segment": 3,
+   "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+   "http": 200
+  }
+ ],
+ "events": [
+  {
+   "mono": 590005.190828375,
+   "event": "voice_on"
+  },
+  {
+   "mono": 590017.67857275,
+   "event": "speech_start",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 590017.190829125
+  },
+  {
+   "mono": 590019.498281666,
+   "event": "speech_end",
+   "phrase": "Tell me about the invitation for the reading.",
+   "at": 590019.495766625
+  },
+  {
+   "mono": 590022.585352166,
+   "event": "trigger_fired",
+   "trigger": "t:3.0"
+  },
+  {
+   "mono": 590023.040740833,
+   "event": "speech_start",
+   "phrase": "Never mind, Val.",
+   "at": 590022.595766625
+  },
+  {
+   "mono": 590024.103360625,
+   "event": "speech_end",
+   "phrase": "Never mind, Val.",
+   "at": 590024.112516625
+  },
+  {
+   "mono": 590026.334906041,
+   "event": "stop_offered",
+   "reason": "superseded by the owner's next confirmed turn",
+   "message_id": null
+  }
+ ],
+ "views": [
+  {
+   "mono": 590005.221909875,
+   "state": "listening",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 590017.754120791,
+   "state": "hearing",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 590020.635982625,
+   "state": "thinking",
+   "progress": null,
+   "pending": "",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 590021.285835625,
+   "state": "thinking",
+   "progress": null,
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": null,
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 590022.363548916,
+   "state": "thinking",
+   "progress": "warming",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-6523-7116-94a2-5b697e56bc34",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 590022.57560275,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-6523-7116-94a2-5b697e56bc34",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 590023.101641625,
+   "state": "hearing",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-6523-7116-94a2-5b697e56bc34",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 590025.0516685,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Tell me about the invitation for the reading.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-6523-7116-94a2-5b697e56bc34",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": true,
+   "turns": 0
+  },
+  {
+   "mono": 590025.265910375,
+   "state": "thinking",
+   "progress": "thinking",
+   "pending": "Nevermind, VOWL.",
+   "queued": true,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-6523-7116-94a2-5b697e56bc34",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": null,
+   "hearing": false,
+   "turns": 0
+  },
+  {
+   "mono": 590026.349687375,
+   "state": "listening",
+   "progress": "thinking",
+   "pending": "Nevermind, VOWL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-6523-7116-94a2-5b697e56bc34",
+    "utterance": 1
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 590026.450805166,
+   "state": "listening",
+   "progress": "thinking",
+   "pending": "Nevermind, VOWL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-74d9-7cad-a951-72a8c5b4cb8f",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 590036.372364208,
+   "state": "listening",
+   "progress": "writing",
+   "pending": "Nevermind, VOWL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-74d9-7cad-a951-72a8c5b4cb8f",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 590036.577843041,
+   "state": "listening",
+   "progress": "voicing",
+   "pending": "Nevermind, VOWL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-74d9-7cad-a951-72a8c5b4cb8f",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 590037.442450583,
+   "state": "listening",
+   "progress": "speaking",
+   "pending": "Nevermind, VOWL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-74d9-7cad-a951-72a8c5b4cb8f",
+    "utterance": 2
+   },
+   "answered": null,
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  },
+  {
+   "mono": 590042.759781666,
+   "state": "listening",
+   "progress": "speaking",
+   "pending": "Nevermind, VOWL.",
+   "queued": false,
+   "committed": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-74d9-7cad-a951-72a8c5b4cb8f",
+    "utterance": 2
+   },
+   "answered": {
+    "conversation_id": "01a0e140-651e-7a5e-bf57-281e5fdacab6",
+    "message_id": "01a0e140-b4a9-77aa-8b74-78f9ae92cc1b",
+    "utterance": 2
+   },
+   "superseded": {
+    "kind": "replacement",
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "heard": false
+   },
+   "hearing": false,
+   "turns": 1
+  }
+ ]
+}

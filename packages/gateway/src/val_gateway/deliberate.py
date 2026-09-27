@@ -344,8 +344,16 @@ def send(
     fast_route: FastRoute | None = None,
     prepared: PreparedAnswer | None = None,
     cancelled: Callable[[], bool] | None = None,
+    withhold_answer: bool = False,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
+
+    `withhold_answer` (release-gaps order §2, 26 September 2026): his words were a stop
+    and nothing else, spoken while an answer he had not begun to hear was being made.
+    They are persisted as his message exactly as any other; no classification, recall,
+    assembly or provider call follows, and the turn returns unanswered with
+    `OWNER_STOP` as its reason — his decision on the record, never a failure and never
+    a fabricated acknowledgement.
 
     `fast_route` (owner order, 26 September 2026 §5) is the candidate's enabled light
     tiers, `None` or disabled in production. On a **sealed** turn — the only place it
@@ -427,6 +435,18 @@ def send(
             on_persisted(opened.conversation.id, opened.user_message.id)
         except Exception:  # presentation must never cost the turn
             _LOGGER.exception("the persisted-message sink failed; the turn continues")
+    if withhold_answer:
+        _LOGGER.info("owner stop: message %s recorded; no answer asked for", opened.user_message.id)
+        return UnansweredTurn(
+            conversation=opened.conversation,
+            scope=opened.scope,
+            user_message=opened.user_message,
+            error=GatewayError(
+                GatewayErrorKind.OWNER_STOP,
+                "a stop and nothing else, spoken while an unheard answer was being made; "
+                "the earlier answer was set aside and no new answer was asked for",
+            ),
+        )
     _stage(on_stage, TurnStage.UNDERSTANDING)
 
     # Owner ruling, 19 September 2026 (Track C §12). The turn's images are

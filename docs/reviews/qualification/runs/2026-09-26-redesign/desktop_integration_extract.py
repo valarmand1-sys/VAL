@@ -96,6 +96,7 @@ summary = {
         "fast_route": [e["data"] for e in log_events if e["kind"] == "fast route"],
         "endpoints": [e["data"] for e in log_events if e["kind"] == "voice endpoint"],
         "desktop_timing_reports": [e["data"] for e in log_events if e["kind"] == "voice desktop timing"],
+        "precedence": [{"wall": e["wall"], **e["data"]} for e in log_events if e["kind"] == "voice precedence" and isinstance(e["data"], dict)],
         "turn_timelines": [
             {k: v for k, v in e["data"].items() if k != "marks"}
             | {"marks": {k: v["first_ms"] for k, v in e["data"]["marks"].items()}}
@@ -138,5 +139,7 @@ brief = {
     "fast_route": summary["service_clock"]["fast_route"],
     "playback_states": [(p["segment"], p["state"], p["elapsed_ms"]) for p in summary["store"]["playbacks"]],
     "dom_events": len(dom_events),
+    "precedence": summary["service_clock"]["precedence"],
+    "supersession_lines_displayed": sorted({e["progress"] for e in dom_events if e.get("progress") and ("Stopped at your word" in e["progress"] or "set aside" in e["progress"])}),
 }
 print(json.dumps(brief, default=str))

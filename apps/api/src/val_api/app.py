@@ -936,6 +936,7 @@ def create_app(
             progress=view.progress,
             queued=view.queued,
             readiness=ReadinessView(**view.readiness.as_record()),  # type: ignore[arg-type]
+            superseded=view.superseded,
             turns=[
                 VoiceTurnView(
                     message_id=turn.message_id,
@@ -1035,6 +1036,7 @@ def create_app(
             on_persisted: Callable[[UUID, UUID], None] | None = None,
             prepared: object | None = None,
             cancelled: Callable[[], bool] | None = None,
+            withhold_answer: bool = False,
         ) -> DeliberatedOutcome:
             """The ordinary door. A spoken turn is an ordinary turn.
 
@@ -1076,6 +1078,7 @@ def create_app(
                 prepared=prepared if isinstance(prepared, PreparedAnswer) else None,
                 # Milestone B §8: the session's supersede signal for this turn, if any.
                 cancelled=cancelled,
+                withhold_answer=withhold_answer,
             )
 
         def prepare(content: str, conversation_id: UUID | None) -> object | None:
@@ -1245,6 +1248,10 @@ def create_app(
         if speaking is None:
             return SpeechOfferView(delivery_state="none", stop=False)
         state = speaking.state.value
+        if live.speech_hold:
+            # His words are in the air and the answer has not begun to be heard: nothing
+            # is handed over until they are decided (release-gaps order §1 and §2).
+            return SpeechOfferView(delivery_state=state, stop=False, message_id=speaking.message_id)
         speaks = speaking.message_id
         sink = getattr(speaking, "sink", None)
         # Stop when delivery ended other than by completing. `active` is False for a

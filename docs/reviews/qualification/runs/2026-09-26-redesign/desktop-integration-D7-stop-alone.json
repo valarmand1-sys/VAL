@@ -1,0 +1,476 @@
+{
+ "case": "D7-stop-alone",
+ "plan": {
+  "total_s": 50.822,
+  "phrases": [
+   {
+    "phrase": "Tell me about the invitation for the reading.",
+    "speech_start_s": 14.0,
+    "speech_end_s": 16.305
+   },
+   {
+    "phrase": "Never mind, Val.",
+    "speech_start_s": 19.305,
+    "speech_end_s": 20.822
+   }
+  ]
+ },
+ "voice_on_click_wall": 1790485742434,
+ "service_clock": {
+  "voice_on_to_ready_s": 6.496,
+  "readiness_lines": [
+   {
+    "wall": 1790485746.464,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "warming",
+    "prefix_light": "not_applicable",
+    "detail": null
+   },
+   {
+    "wall": 1790485748.93,
+    "ready": true,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "primed",
+    "prefix_light": "primed",
+    "detail": null
+   }
+  ],
+  "warm": [
+   "began 2026-09-27T05:09:02.816+00:00",
+   "ended 2026-09-27T05:09:06.464+00:00 after 3.648s: {\"cognition\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx-lmstudio-partner\", \"server_found_running\": true, \"server_started\": false, \"model_found_loaded\": true, \"model_loaded\": false, \"requested_context_tokens\": 32768, \"loaded_context_tokens\": 32768, \"base_url\": \"http://127.0.0.1:1234/v1\", \"light\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx"
+  ],
+  "primes": [
+   {
+    "kind": "initial",
+    "routes": [
+     "partner",
+     "light"
+    ],
+    "seconds": 2.465,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e144-5cbe-765e-80df-ea10be0e331b",
+     "seconds": 0.25,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e144-5a74-70bf-be41-1875fc546866",
+      "seconds": 1.544
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.925,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e144-a6ae-7522-b142-72bd31aa6132",
+     "seconds": 0.26,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "9cf92e0913cd5c9dadbc93444396e45e973dd0f0e181f531764511b7dd830ab6",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e144-a505-71a5-955a-ca6c02316a4c",
+      "seconds": 0.317
+     }
+    }
+   }
+  ],
+  "fast_route": [
+   {
+    "tier": null,
+    "reason": "asks for work, judgment, memory or her capabilities",
+    "tiers": [
+     1
+    ]
+   }
+  ],
+  "endpoints": [
+   "utterance=1 {\"reason\": \"silence\", \"endpoint_mono\": 590293.303106624, \"final_received_mono\": 590293.425109916, \"final_processed_mono\": 590293.443404875, \"decode_ms\": 122.0, \"voiced_s\": 2.208, \"silence_s\": 0.672, \"gap_before_s\": null, \"utterance_s\": 2.96, \"first_sample\": 223488, \"samples\": 47360, \"run_start_sample\": 0, \"received_samples\": 271040}",
+   "utterance=2 {\"reason\": \"silence\", \"endpoint_mono\": 590297.9447167069, \"final_received_mono\": 590298.097207916, \"final_processed_mono\": 590298.10405, \"decode_ms\": 152.5, \"voiced_s\": 1.44, \"silence_s\": 0.672, \"gap_before_s\": 2.62, \"utterance_s\": 2.32, \"first_sample\": 307968, \"samples\": 37120, \"run_start_sample\": 0, \"received_samples\": 345280}"
+  ],
+  "desktop_timing_reports": [],
+  "precedence": [
+   {
+    "wall": 1790485765.846,
+    "superseded_utterance": 1,
+    "by_utterance": 2,
+    "relation": "stop",
+    "reason": "a stop and nothing else: 'nevermind'",
+    "answer_heard": false,
+    "decided_mono": 590299.213330708,
+    "outcome": "superseded"
+   },
+   {
+    "wall": 1790485765.876,
+    "released_utterance": 1,
+    "superseded_call_ended_mono": 590299.242622916
+   }
+  ],
+  "turn_timelines": [
+   {
+    "utterance": 2,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T05:09:24.577+00:00",
+    "conversation_id": "01a0e144-8cb5-7590-b5c9-5fb8015a92b5",
+    "message_id": "01a0e144-9ed9-7ae4-851a-5b35c2204bc2",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 152.5,
+     "transcript_final_processed": 159.3,
+     "owner_turn_submitted": 1268.7,
+     "turn_start": 1269.9,
+     "message_append_start": 1271.1,
+     "message_persisted": 1273.4,
+     "owner_message_committed": 1273.4
+    }
+   },
+   {
+    "utterance": 1,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T05:09:19.936+00:00",
+    "conversation_id": "01a0e144-8cb5-7590-b5c9-5fb8015a92b5",
+    "message_id": "01a0e144-9ed9-7ae4-851a-5b35c2204bc2",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 122.0,
+     "transcript_final_processed": 140.3,
+     "owner_turn_submitted": 1261.7,
+     "turn_start": 1265.4,
+     "scope_resolved": 1265.5,
+     "conversation_created": 1273.7,
+     "message_append_start": 1273.7,
+     "message_persisted": 1286.5,
+     "owner_message_committed": 1286.5,
+     "egress_decided": 1287.6,
+     "assembly_start": 1297.9,
+     "record_state_assembled": 1307.7,
+     "assembly_end": 1307.8,
+     "runtime_ready_start": 1320.6,
+     "runtime_ready_end": 1336.3,
+     "exact_preflight_start": 1336.3,
+     "exact_preflight_end": 1370.5,
+     "provider_dispatch": 1376.8,
+     "provider_chunk": 2976.0,
+     "superseded_decided": 5910.2,
+     "superseded_stream_closed": 5931.2,
+     "superseded_call_ended": 5939.5
+    }
+   }
+  ]
+ },
+ "desktop_display": {
+  "voice_on_to_warming_shown_s": 0.387,
+  "voice_on_to_ready_displayed_s": 6.548,
+  "events": [
+   {
+    "wall": 1790485742433,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790485742440,
+    "voice": "Voice Starting\u2026",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790485742821,
+    "voice": "Voice Starting\u2026",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790485742970,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790485748982,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790485757852,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandTell me about Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790485758574,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandTell me about the invitation. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790485759293,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790485760015,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790485760138,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790485760144,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790485761221,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790485761361,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790485761366,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790485762653,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790485763142,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790485763858,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, that'll- Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790485764581,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, VAL. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790485764812,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026Your next words are waiting for her current answer.",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, VAL. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790485764815,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026Your next words are waiting for her current answer.",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, VAL. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790485765896,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Stopped at your word \u2014 nothing was said.",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790485765905,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Stopped at your word \u2014 nothing was said.",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, VAL.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790485765908,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Stopped at your word \u2014 nothing was said.",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, VAL.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790485796443,
+    "voice": "Voice Stopping\u2026",
+    "progress": "Stopped at your word \u2014 nothing was said.",
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, VAL.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790485796686,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": [
+     "Lord ArmandTell me about the invitation for the reading.Mark consequentialEditRemove",
+     "Lord ArmandNevermind, VAL.Mark consequentialEditRemove"
+    ]
+   }
+  ],
+  "console": [
+   "[vite] connecting...",
+   "[vite] connected.",
+   "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+   "val.voice.capture {\"echoCancellation\":true,\"noiseSuppression\":true,\"autoGainControl\":true,\"sampleRate\":48000,\"channelCount\":1}"
+  ]
+ },
+ "store": {
+  "messages": [
+   {
+    "id": "01a0e144-8cbd-7b40-b864-332ed1559355",
+    "conversation": "01a0e144-8cb5-7590-b5c9-5fb8015a92b5",
+    "sequence": 1,
+    "role": "user",
+    "content": "Tell me about the invitation for the reading.",
+    "created": "1790485761.210"
+   },
+   {
+    "id": "01a0e144-9ed9-7ae4-851a-5b35c2204bc2",
+    "conversation": "01a0e144-8cb5-7590-b5c9-5fb8015a92b5",
+    "sequence": 2,
+    "role": "user",
+    "content": "Nevermind, VAL.",
+    "created": "1790485765.849"
+   }
+  ],
+  "model_calls": [
+   {
+    "id": "01a0e144-5a74-70bf-be41-1875fc546866",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 1496,
+    "created": "1790485748.339"
+   },
+   {
+    "id": "01a0e144-5cbe-765e-80df-ea10be0e331b",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 215,
+    "created": "1790485748.926"
+   },
+   {
+    "id": "01a0e144-9eec-71a1-b134-dc80e5a90505",
+    "message_id": "01a0e144-8cbd-7b40-b864-332ed1559355",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "error",
+    "terminal": "failed",
+    "latency_ms": 4554,
+    "created": "1790485765.868"
+   },
+   {
+    "id": "01a0e144-a505-71a5-955a-ca6c02316a4c",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 277,
+    "created": "1790485767.429"
+   },
+   {
+    "id": "01a0e144-a6ae-7522-b142-72bd31aa6132",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 226,
+    "created": "1790485767.854"
+   }
+  ],
+  "deliveries": [],
+  "playbacks": []
+ }
+}

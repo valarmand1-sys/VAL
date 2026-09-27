@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import threading
 from collections.abc import Callable, Iterator, Mapping
 from typing import Any, Literal
 from urllib.parse import urlparse
@@ -246,7 +247,7 @@ class LMStudioAdapter:
         self._runtime = runtime or LMStudioRuntime(self._base_url, token)
         #: Prefix-prime plans, by instance, persona digest and engine: the filler that
         #: lands the checkpoint on the boundary does not change while those do not.
-        self._prime_plans: dict[tuple[str, str, str, ReasoningEffort], PrefixPrimePlan] = {}
+        self._prime_plans: dict[tuple[str, str, str, ReasoningEffort, str], PrefixPrimePlan] = {}
 
     # --- bringing the runtime up (owner ruling, 21 September 2026) ------------
 
@@ -262,7 +263,9 @@ class LMStudioAdapter:
 
     # --- prefix priming (owner order, 25 September 2026) ----------------------
 
-    def plan_prefix_prime(self, config: ModelConfig, system: str) -> PrefixPrimePlan:
+    def plan_prefix_prime(
+        self, config: ModelConfig, system: str, *, boundary: str = "user_header"
+    ) -> PrefixPrimePlan:
         """How to place the runtime's checkpoint on the persona boundary — or why not.
 
         Declaring `val_domain.provider.PrefixPrimingAdapter` by implementing it. The
@@ -327,12 +330,22 @@ class LMStudioAdapter:
             hashlib.sha256(system.encode()).hexdigest(),
             label,
             config.reasoning_effort,
+            boundary,
         )
         remembered = self._prime_plans.get(key)
         if remembered is not None:
             return remembered
         try:
             opening = self._inspector.opening_tokens(config.model_identifier, system)
+            if boundary == "developer_end":
+                # Experiment only (release-gaps order §4, 27 September 2026): when the
+                # envelope follows the persona inside the developer block, a turn's
+                # developer content continues past the primed system, so the boundary
+                # every turn shares ends with the developer content itself — before the
+                # `<|end|><|start|>user<|message|>` the production boundary includes.
+                # Those four tokens are dropped from the target; the filler is then
+                # sized so the checkpoint lands there.
+                opening = opening[:-4]
             for words in range(1, 64):
                 filler = " ".join(["ok"] * words)
                 prime = self._inspector.tokens(
@@ -489,27 +502,42 @@ class LMStudioAdapter:
         usage: object | None = None
         reported_model: str | None = None
         extras: dict[str, object] = {}
+        superseded = GatewayError(
+            GatewayErrorKind.SUPERSEDED,
+            "the call was superseded by a newer confirmed owner turn before any "
+            "of its answer was heard; the provider stream was closed",
+        )
+        watch_stop = threading.Event()
         try:
             mark("provider_dispatch")
             chunks = self._client.chat.completions.create(
                 stream=True, stream_options={"include_usage": True}, **kwargs
             )
+            if cancelled is not None:
+                # Release-gaps order §2 and §3 (26 September 2026): the close no longer
+                # waits for the next chunk. A watcher closes the stream the moment the
+                # call is superseded, so a runtime that streams nothing while it
+                # prefills or reasons is still disconnected at once. Closing the
+                # stream releases the engine's generation (0.20 s, measured); a prefill
+                # in progress runs to its end whatever the client does — the server
+                # itself says so ("if the model is busy processing the prompt, it will
+                # finish first") — and the caller knows that from the record.
+                def watch() -> None:
+                    while not watch_stop.wait(0.05):
+                        if cancelled():
+                            close = getattr(chunks, "close", None)
+                            if callable(close):
+                                close()
+                            return
+
+                threading.Thread(target=watch, name="lmstudio-supersede", daemon=True).start()
             for chunk in chunks:
                 mark("provider_chunk")
                 if cancelled is not None and cancelled():
-                    # Milestone B §8: closing the stream releases the engine's generation
-                    # (measured 26 September 2026: a following request answered in
-                    # 0.20 s against a 10 s queue when the abandoned answer ran on). A
-                    # prefill still in progress cannot be released this way; the caller
-                    # knows that from the record.
                     close = getattr(chunks, "close", None)
                     if callable(close):
                         close()
-                    raise GatewayError(
-                        GatewayErrorKind.SUPERSEDED,
-                        "the call was superseded by a newer confirmed owner turn before any "
-                        "of its answer was heard; the provider stream was closed",
-                    )
+                    raise superseded
                 model = getattr(chunk, "model", None)
                 if isinstance(model, str) and model:
                     reported_model = model
@@ -538,7 +566,16 @@ class LMStudioAdapter:
         except GatewayError:
             raise
         except Exception as error:
+            if cancelled is not None and cancelled():
+                # The watcher closed the stream under the iterator: that is the
+                # supersession, not a provider failure.
+                raise superseded from error
             raise self._normalized(error) from error
+        finally:
+            watch_stop.set()
+        if cancelled is not None and cancelled():
+            # The stream ended (closed by the watcher) without a terminal result.
+            raise superseded
         yield self._assemble(
             config,
             text="".join(text_parts),
