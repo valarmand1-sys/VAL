@@ -215,6 +215,7 @@ def create_app(
     speculation: bool = False,
     adaptive_grace: bool = False,
     owner_precedence: bool = False,
+    adaptive_endpoint: bool = False,
 ) -> FastAPI:
     """The service, wired to an already-started house.
 
@@ -1126,6 +1127,7 @@ def create_app(
             prepare=prepare if speculation else None,
             adaptive_grace=adaptive_grace,
             owner_precedence=owner_precedence,
+            adaptive_endpoint=adaptive_endpoint,
         )
         try:
             live.start()
@@ -1277,6 +1279,7 @@ def create_app(
         live.speech_handed_over(
             offer.duration_seconds,
             segment=(speaking.message_id, offer.segment_index) if offer.chunk == 0 else None,
+            current=speaking is live.delivery,
         )
         message_id = speaking.message_id
         if offer.chunk > 0:

@@ -1,0 +1,1124 @@
+{
+ "session": "S2-pauses-and-corrections",
+ "voice_on_click_wall": 1790500989514,
+ "ready_displayed_wall": 1790500992697,
+ "voice_on_to_ready_displayed_s": 3.183,
+ "turns": [
+  {
+   "label": "greeting",
+   "class": "social",
+   "text": "Hello.",
+   "when": "after_playback",
+   "gap_s": 1,
+   "internal_pauses_s": [],
+   "speech_start_wall": 1790500993783,
+   "speech_end_wall": 1790500994333,
+   "previous_answer_idle_since": null,
+   "previous_wait_timed_out": false,
+   "worklet_first_started_wall": 1790501000710,
+   "worklet_underruns": 0
+  },
+  {
+   "label": "conversational",
+   "class": "ordinary",
+   "text": "How long should a first chapter be?",
+   "when": "after_playback",
+   "gap_s": 1,
+   "internal_pauses_s": [],
+   "speech_start_wall": 1790501011789,
+   "speech_end_wall": 1790501013780,
+   "previous_answer_idle_since": 1790501010700,
+   "previous_wait_timed_out": false,
+   "worklet_first_started_wall": 1790501020714,
+   "worklet_underruns": 0
+  },
+  {
+   "label": "continuation after a pause",
+   "class": "ordinary",
+   "text": "Tell me about a good opening line, and why it works.",
+   "when": "after_playback",
+   "gap_s": 1,
+   "internal_pauses_s": [
+    0.8
+   ],
+   "speech_start_wall": 1790501082677,
+   "speech_end_wall": 1790501086603,
+   "previous_answer_idle_since": 1790501081585,
+   "previous_wait_timed_out": false,
+   "worklet_first_started_wall": 1790501096464,
+   "worklet_underruns": 0
+  },
+  {
+   "label": "hesitation",
+   "class": "ordinary",
+   "text": "I was wondering, um, whether prologues are useful.",
+   "when": "after_playback",
+   "gap_s": 1,
+   "internal_pauses_s": [
+    0.8,
+    0.8
+   ],
+   "speech_start_wall": 1790501157234,
+   "speech_end_wall": 1790501161640,
+   "previous_answer_idle_since": 1790501156139,
+   "previous_wait_timed_out": false,
+   "worklet_first_started_wall": 1790501172393,
+   "worklet_underruns": 0
+  },
+  {
+   "label": "correction after a pause",
+   "class": "ordinary",
+   "text": "Name a famous mystery novel. No, a famous ghost story.",
+   "when": "after_playback",
+   "gap_s": 1,
+   "internal_pauses_s": [
+    0.8
+   ],
+   "speech_start_wall": 1790501294761,
+   "speech_end_wall": 1790501299315,
+   "previous_answer_idle_since": 1790501293666,
+   "previous_wait_timed_out": false,
+   "worklet_first_started_wall": 1790501314390,
+   "worklet_underruns": 0
+  },
+  {
+   "label": "thanks after an answer",
+   "class": "social",
+   "text": "Thanks.",
+   "when": "after_playback",
+   "gap_s": 1,
+   "internal_pauses_s": [],
+   "speech_start_wall": 1790501320181,
+   "speech_end_wall": 1790501320873,
+   "previous_answer_idle_since": 1790501319098,
+   "previous_wait_timed_out": false,
+   "worklet_first_started_wall": 1790501337187,
+   "worklet_underruns": 0
+  }
+ ],
+ "last_answer_idle": {
+  "idle_since": 1790501338864,
+  "saw_answer": true
+ },
+ "voice_off_wall": 1790501340971,
+ "playback_events": [
+  {
+   "wall": 1790501000710,
+   "type": "started",
+   "key": "1:1",
+   "frame": 0
+  },
+  {
+   "wall": 1790501001894,
+   "type": "completed",
+   "key": "1:1",
+   "frame": 28928
+  },
+  {
+   "wall": 1790501001894,
+   "type": "started",
+   "key": "1:2",
+   "frame": 28928
+  },
+  {
+   "wall": 1790501008465,
+   "type": "completed",
+   "key": "1:2",
+   "frame": 186368
+  },
+  {
+   "wall": 1790501008466,
+   "type": "started",
+   "key": "1:3",
+   "frame": 186368
+  },
+  {
+   "wall": 1790501010700,
+   "type": "completed",
+   "key": "1:3",
+   "frame": 240128
+  },
+  {
+   "wall": 1790501020714,
+   "type": "started",
+   "key": "2:1",
+   "frame": 480384
+  },
+  {
+   "wall": 1790501023826,
+   "type": "completed",
+   "key": "2:1",
+   "frame": 555136
+  },
+  {
+   "wall": 1790501023826,
+   "type": "started",
+   "key": "2:2",
+   "frame": 555136
+  },
+  {
+   "wall": 1790501027987,
+   "type": "completed",
+   "key": "2:2",
+   "frame": 654976
+  },
+  {
+   "wall": 1790501027988,
+   "type": "started",
+   "key": "2:3",
+   "frame": 654976
+  },
+  {
+   "wall": 1790501033264,
+   "type": "completed",
+   "key": "2:3",
+   "frame": 781696
+  },
+  {
+   "wall": 1790501033264,
+   "type": "started",
+   "key": "2:4",
+   "frame": 781696
+  },
+  {
+   "wall": 1790501040864,
+   "type": "completed",
+   "key": "2:4",
+   "frame": 964096
+  },
+  {
+   "wall": 1790501040865,
+   "type": "started",
+   "key": "2:5",
+   "frame": 964096
+  },
+  {
+   "wall": 1790501044706,
+   "type": "completed",
+   "key": "2:5",
+   "frame": 1056256
+  },
+  {
+   "wall": 1790501044706,
+   "type": "started",
+   "key": "2:6",
+   "frame": 1056256
+  },
+  {
+   "wall": 1790501049983,
+   "type": "completed",
+   "key": "2:6",
+   "frame": 1182976
+  },
+  {
+   "wall": 1790501049983,
+   "type": "started",
+   "key": "2:7",
+   "frame": 1182976
+  },
+  {
+   "wall": 1790501059184,
+   "type": "completed",
+   "key": "2:7",
+   "frame": 1403776
+  },
+  {
+   "wall": 1790501059184,
+   "type": "started",
+   "key": "2:8",
+   "frame": 1403776
+  },
+  {
+   "wall": 1790501065587,
+   "type": "completed",
+   "key": "2:8",
+   "frame": 1557376
+  },
+  {
+   "wall": 1790501065587,
+   "type": "started",
+   "key": "2:9",
+   "frame": 1557376
+  },
+  {
+   "wall": 1790501070144,
+   "type": "completed",
+   "key": "2:9",
+   "frame": 1666816
+  },
+  {
+   "wall": 1790501070144,
+   "type": "started",
+   "key": "2:10",
+   "frame": 1666816
+  },
+  {
+   "wall": 1790501073824,
+   "type": "completed",
+   "key": "2:10",
+   "frame": 1755136
+  },
+  {
+   "wall": 1790501073825,
+   "type": "started",
+   "key": "2:11",
+   "frame": 1755136
+  },
+  {
+   "wall": 1790501081585,
+   "type": "completed",
+   "key": "2:11",
+   "frame": 1941376
+  },
+  {
+   "wall": 1790501096464,
+   "type": "started",
+   "key": "3:1",
+   "frame": 2298496
+  },
+  {
+   "wall": 1790501099900,
+   "type": "completed",
+   "key": "3:1",
+   "frame": 2380928
+  },
+  {
+   "wall": 1790501099901,
+   "type": "started",
+   "key": "3:2",
+   "frame": 2380928
+  },
+  {
+   "wall": 1790501103981,
+   "type": "completed",
+   "key": "3:2",
+   "frame": 2478848
+  },
+  {
+   "wall": 1790501103981,
+   "type": "started",
+   "key": "3:3",
+   "frame": 2478848
+  },
+  {
+   "wall": 1790501111185,
+   "type": "completed",
+   "key": "3:3",
+   "frame": 2651648
+  },
+  {
+   "wall": 1790501111186,
+   "type": "started",
+   "key": "3:4",
+   "frame": 2651648
+  },
+  {
+   "wall": 1790501117019,
+   "type": "completed",
+   "key": "3:4",
+   "frame": 2791808
+  },
+  {
+   "wall": 1790501117020,
+   "type": "started",
+   "key": "3:5",
+   "frame": 2791808
+  },
+  {
+   "wall": 1790501123103,
+   "type": "completed",
+   "key": "3:5",
+   "frame": 2937728
+  },
+  {
+   "wall": 1790501123103,
+   "type": "started",
+   "key": "3:6",
+   "frame": 2937728
+  },
+  {
+   "wall": 1790501129744,
+   "type": "completed",
+   "key": "3:6",
+   "frame": 3097088
+  },
+  {
+   "wall": 1790501129745,
+   "type": "started",
+   "key": "3:7",
+   "frame": 3097088
+  },
+  {
+   "wall": 1790501134940,
+   "type": "completed",
+   "key": "3:7",
+   "frame": 3221888
+  },
+  {
+   "wall": 1790501134940,
+   "type": "started",
+   "key": "3:8",
+   "frame": 3221888
+  },
+  {
+   "wall": 1790501140861,
+   "type": "completed",
+   "key": "3:8",
+   "frame": 3363968
+  },
+  {
+   "wall": 1790501140861,
+   "type": "started",
+   "key": "3:9",
+   "frame": 3363968
+  },
+  {
+   "wall": 1790501148378,
+   "type": "completed",
+   "key": "3:9",
+   "frame": 3544448
+  },
+  {
+   "wall": 1790501148378,
+   "type": "started",
+   "key": "3:10",
+   "frame": 3544448
+  },
+  {
+   "wall": 1790501156139,
+   "type": "completed",
+   "key": "3:10",
+   "frame": 3730688
+  },
+  {
+   "wall": 1790501172393,
+   "type": "started",
+   "key": "4:1",
+   "frame": 4120704
+  },
+  {
+   "wall": 1790501175424,
+   "type": "completed",
+   "key": "4:1",
+   "frame": 4193536
+  },
+  {
+   "wall": 1790501175424,
+   "type": "started",
+   "key": "4:2",
+   "frame": 4193536
+  },
+  {
+   "wall": 1790501179505,
+   "type": "completed",
+   "key": "4:2",
+   "frame": 4291456
+  },
+  {
+   "wall": 1790501179505,
+   "type": "started",
+   "key": "4:3",
+   "frame": 4291456
+  },
+  {
+   "wall": 1790501186941,
+   "type": "completed",
+   "key": "4:3",
+   "frame": 4470016
+  },
+  {
+   "wall": 1790501186941,
+   "type": "started",
+   "key": "4:4",
+   "frame": 4470016
+  },
+  {
+   "wall": 1790501196786,
+   "type": "completed",
+   "key": "4:4",
+   "frame": 4706176
+  },
+  {
+   "wall": 1790501196786,
+   "type": "started",
+   "key": "4:5",
+   "frame": 4706176
+  },
+  {
+   "wall": 1790501201188,
+   "type": "completed",
+   "key": "4:5",
+   "frame": 4811776
+  },
+  {
+   "wall": 1790501201188,
+   "type": "started",
+   "key": "4:6",
+   "frame": 4811776
+  },
+  {
+   "wall": 1790501210069,
+   "type": "completed",
+   "key": "4:6",
+   "frame": 5024896
+  },
+  {
+   "wall": 1790501210069,
+   "type": "started",
+   "key": "4:7",
+   "frame": 5024896
+  },
+  {
+   "wall": 1790501216706,
+   "type": "completed",
+   "key": "4:7",
+   "frame": 5184256
+  },
+  {
+   "wall": 1790501216707,
+   "type": "started",
+   "key": "4:8",
+   "frame": 5184256
+  },
+  {
+   "wall": 1790501223902,
+   "type": "completed",
+   "key": "4:8",
+   "frame": 5357056
+  },
+  {
+   "wall": 1790501223902,
+   "type": "started",
+   "key": "4:9",
+   "frame": 5357056
+  },
+  {
+   "wall": 1790501229904,
+   "type": "completed",
+   "key": "4:9",
+   "frame": 5501056
+  },
+  {
+   "wall": 1790501229904,
+   "type": "started",
+   "key": "4:10",
+   "frame": 5501056
+  },
+  {
+   "wall": 1790501239105,
+   "type": "completed",
+   "key": "4:10",
+   "frame": 5721856
+  },
+  {
+   "wall": 1790501239105,
+   "type": "started",
+   "key": "4:11",
+   "frame": 5721856
+  },
+  {
+   "wall": 1790501245264,
+   "type": "completed",
+   "key": "4:11",
+   "frame": 5869696
+  },
+  {
+   "wall": 1790501245264,
+   "type": "started",
+   "key": "4:12",
+   "frame": 5869696
+  },
+  {
+   "wall": 1790501251342,
+   "type": "completed",
+   "key": "4:12",
+   "frame": 6015616
+  },
+  {
+   "wall": 1790501251343,
+   "type": "started",
+   "key": "4:13",
+   "frame": 6015616
+  },
+  {
+   "wall": 1790501259986,
+   "type": "completed",
+   "key": "4:13",
+   "frame": 6222976
+  },
+  {
+   "wall": 1790501259986,
+   "type": "started",
+   "key": "4:14",
+   "frame": 6222976
+  },
+  {
+   "wall": 1790501267428,
+   "type": "completed",
+   "key": "4:14",
+   "frame": 6401536
+  },
+  {
+   "wall": 1790501267428,
+   "type": "started",
+   "key": "4:15",
+   "frame": 6401536
+  },
+  {
+   "wall": 1790501276623,
+   "type": "completed",
+   "key": "4:15",
+   "frame": 6622336
+  },
+  {
+   "wall": 1790501276623,
+   "type": "started",
+   "key": "4:16",
+   "frame": 6622336
+  },
+  {
+   "wall": 1790501283107,
+   "type": "completed",
+   "key": "4:16",
+   "frame": 6777856
+  },
+  {
+   "wall": 1790501283107,
+   "type": "started",
+   "key": "4:17",
+   "frame": 6777856
+  },
+  {
+   "wall": 1790501287025,
+   "type": "completed",
+   "key": "4:17",
+   "frame": 6871936
+  },
+  {
+   "wall": 1790501287026,
+   "type": "started",
+   "key": "4:18",
+   "frame": 6871936
+  },
+  {
+   "wall": 1790501291669,
+   "type": "completed",
+   "key": "4:18",
+   "frame": 6983296
+  },
+  {
+   "wall": 1790501291670,
+   "type": "started",
+   "key": "4:19",
+   "frame": 6983296
+  },
+  {
+   "wall": 1790501293666,
+   "type": "completed",
+   "key": "4:19",
+   "frame": 7031296
+  },
+  {
+   "wall": 1790501314390,
+   "type": "started",
+   "key": "5:1",
+   "frame": 7528576
+  },
+  {
+   "wall": 1790501319098,
+   "type": "completed",
+   "key": "5:1",
+   "frame": 7641728
+  },
+  {
+   "wall": 1790501337187,
+   "type": "started",
+   "key": "6:1",
+   "frame": 8075776
+  },
+  {
+   "wall": 1790501338864,
+   "type": "completed",
+   "key": "6:1",
+   "frame": 8115968
+  }
+ ],
+ "dom_events": [
+  {
+   "wall": 1790500989520,
+   "voice": "Voice Starting…",
+   "progress": null
+  },
+  {
+   "wall": 1790500989735,
+   "voice": "Voice Starting…",
+   "progress": "Warming up… you can speak; the first answer may take longer."
+  },
+  {
+   "wall": 1790500989740,
+   "voice": "Voice On · Mic Listening",
+   "progress": "Warming up… you can speak; the first answer may take longer."
+  },
+  {
+   "wall": 1790500992626,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790500994667,
+   "voice": "Voice On · Mic Listening · Transcribing",
+   "progress": null
+  },
+  {
+   "wall": 1790500995148,
+   "voice": "Voice On · Mic Listening · Val Thinking",
+   "progress": null
+  },
+  {
+   "wall": 1790500996344,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is thinking…"
+  },
+  {
+   "wall": 1790500999946,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is writing…"
+  },
+  {
+   "wall": 1790501000063,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Preparing her voice…"
+  },
+  {
+   "wall": 1790501000784,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501003906,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501008471,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501008477,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501012669,
+   "voice": "Voice On · Mic Listening · Transcribing",
+   "progress": null
+  },
+  {
+   "wall": 1790501014588,
+   "voice": "Voice On · Mic Listening · Val Thinking",
+   "progress": null
+  },
+  {
+   "wall": 1790501015796,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is thinking…"
+  },
+  {
+   "wall": 1790501019749,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is writing…"
+  },
+  {
+   "wall": 1790501019985,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Preparing her voice…"
+  },
+  {
+   "wall": 1790501024904,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501042309,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501044711,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501044718,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501059186,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501059227,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501065592,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501065599,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501070150,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501070158,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501073830,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501073867,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501083470,
+   "voice": "Voice On · Mic Listening · Transcribing",
+   "progress": null
+  },
+  {
+   "wall": 1790501085391,
+   "voice": "Voice On · Mic Listening · Val Thinking",
+   "progress": null
+  },
+  {
+   "wall": 1790501088627,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is thinking…"
+  },
+  {
+   "wall": 1790501095593,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is writing…"
+  },
+  {
+   "wall": 1790501095709,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Preparing her voice…"
+  },
+  {
+   "wall": 1790501100388,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501117430,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501123108,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501123189,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501129751,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501129789,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501134947,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501134954,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501140866,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501140952,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501148383,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501148396,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501158114,
+   "voice": "Voice On · Mic Listening · Transcribing",
+   "progress": null
+  },
+  {
+   "wall": 1790501158957,
+   "voice": "Voice On · Mic Listening · Val Thinking",
+   "progress": null
+  },
+  {
+   "wall": 1790501163640,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is thinking…"
+  },
+  {
+   "wall": 1790501171551,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is writing…"
+  },
+  {
+   "wall": 1790501171670,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Preparing her voice…"
+  },
+  {
+   "wall": 1790501181027,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501215471,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501216711,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501216790,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501223908,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501223994,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501229910,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501229997,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501239111,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501239119,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501245270,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501245356,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501251349,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501251360,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501259990,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501259997,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501267434,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501267440,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501276629,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501276674,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501283113,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501283151,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501287031,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501287111,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501291676,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501291683,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501295639,
+   "voice": "Voice On · Mic Listening · Transcribing",
+   "progress": null
+  },
+  {
+   "wall": 1790501297318,
+   "voice": "Voice On · Mic Listening · Val Thinking",
+   "progress": null
+  },
+  {
+   "wall": 1790501301513,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is thinking…"
+  },
+  {
+   "wall": 1790501313757,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is writing…"
+  },
+  {
+   "wall": 1790501313873,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Preparing her voice…"
+  },
+  {
+   "wall": 1790501314468,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501315556,
+   "voice": "Voice On · Mic Listening · Val Thinking",
+   "progress": null
+  },
+  {
+   "wall": 1790501315678,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501321438,
+   "voice": "Voice On · Mic Listening · Transcribing",
+   "progress": null
+  },
+  {
+   "wall": 1790501321675,
+   "voice": "Voice On · Mic Listening · Val Thinking",
+   "progress": null
+  },
+  {
+   "wall": 1790501323231,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Val is thinking…"
+  },
+  {
+   "wall": 1790501336796,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": "Preparing her voice…"
+  },
+  {
+   "wall": 1790501337270,
+   "voice": "Voice On · Mic Listening · Val Speaking",
+   "progress": null
+  },
+  {
+   "wall": 1790501337511,
+   "voice": "Voice On · Mic Listening",
+   "progress": null
+  },
+  {
+   "wall": 1790501340980,
+   "voice": "Voice Stopping…",
+   "progress": null
+  },
+  {
+   "wall": 1790501341166,
+   "voice": "Voice Off",
+   "progress": null
+  }
+ ],
+ "console": [
+  "[vite] connecting...",
+  "[vite] connected.",
+  "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+  "val.voice.capture {\"echoCancellation\":null,\"noiseSuppression\":null,\"autoGainControl\":null,\"sampleRate\":48000,\"channelCount\":2}"
+ ]
+}

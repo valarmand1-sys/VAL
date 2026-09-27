@@ -32,7 +32,7 @@ from val_domain.gateway import Admission, CacheTtl, CapabilityProfile, ModelConf
 from val_domain.perception import PerceptionProvider
 from val_domain.registry import active, by_slug
 from val_domain.speech import SpeechUnavailableError, VoiceConditioning
-from val_domain.voice import LiveRecognizer
+from val_domain.voice import EndpointConfiguration, LiveRecognizer
 from val_gateway.gateway import Gateway, check_startup
 from val_gateway.ledger import DatabaseLedger
 from val_gateway.memory import (
@@ -46,6 +46,7 @@ from val_gateway.provenance import verifier
 from val_gateway.speech import register_voice
 from val_policy.light_conversation import FastRoute
 from val_policy.routing import is_admitted, satisfies_profile
+from val_policy.turn_completion import ADAPTIVE_MIN_SILENCE_MS
 from val_providers.anthropic_adapter import AnthropicAdapter
 from val_providers.base import ProviderAdapter
 from val_providers.llamacpp_adapter import DEFAULT_BASE_URL as LLAMACPP_DEFAULT_BASE_URL
@@ -58,6 +59,7 @@ from val_providers.mlxvlm_perception import MLXVLMPerception
 from val_providers.omni_audio_perception import OmniAudioPerception
 from val_providers.openai_adapter import OpenAIAdapter
 from val_providers.qwen_tts_speech import (
+    BOUNDED_RUNNER,
     QwenTTSSpeech,
     canonical_voice_description,
     load_canonical_voice,
@@ -118,6 +120,14 @@ class Startup:
     #: Milestone B §8 (26 September 2026), isolated: a confirmed new turn may supersede an
     #: answer he has not begun to hear. `VAL_OWNER_PRECEDENCE=on`; off in production.
     owner_precedence: bool = False
+    #: Owner order of 27 September 2026 (§3), isolated: the recognizer endpoints after a
+    #: shorter silence and the resume window is sized from the words' own shape, within
+    #: the fixed path's silence bound. `VAL_ADAPTIVE_ENDPOINT=on`; off in production.
+    adaptive_endpoint: bool = False
+    #: Owner order of 27 September 2026 (§1, §4): the request-construction candidate —
+    #: the record-state envelope in the developer block after the persona, with per-route
+    #: prime boundaries. `VAL_REQUEST_CONSTRUCTION=envelope_in_system`; off in production.
+    request_construction: str = "as_is"
 
 
 #: The prompt-cache lifetime the gateway requests on cacheable calls.
@@ -137,6 +147,8 @@ FAST_ROUTE_SETTING = "VAL_FAST_ROUTE_TIERS"
 SPECULATION_SETTING = "VAL_SPECULATION"
 ADAPTIVE_GRACE_SETTING = "VAL_ADAPTIVE_GRACE"
 OWNER_PRECEDENCE_SETTING = "VAL_OWNER_PRECEDENCE"
+ADAPTIVE_ENDPOINT_SETTING = "VAL_ADAPTIVE_ENDPOINT"
+REQUEST_CONSTRUCTION_SETTING = "VAL_REQUEST_CONSTRUCTION"
 LIGHT_CANDIDATE_SLUG = "qwen3-4b-instruct-2507-mlx-lmstudio-light"
 
 #: Ruling, 16 September 2026: where the local LM Studio server listens. Read
@@ -319,6 +331,36 @@ TIER1_ROUTES = {
 }
 
 
+def configured_adaptive_endpoint() -> tuple[bool, str | None]:
+    """`VAL_ADAPTIVE_ENDPOINT`: unset (the fixed path) or `on` (27 September 2026, §3)."""
+    raw = os.environ.get(ADAPTIVE_ENDPOINT_SETTING, "").strip().lower()
+    if raw not in ("", "on"):
+        return False, f"{ADAPTIVE_ENDPOINT_SETTING}: must be unset or 'on', not {raw!r}"
+    return raw == "on", None
+
+
+def configured_request_construction() -> tuple[str, str | None]:
+    """`VAL_REQUEST_CONSTRUCTION`: `as_is` (default) or `envelope_in_system` (§1, §4)."""
+    raw = os.environ.get(REQUEST_CONSTRUCTION_SETTING, "").strip().lower()
+    if raw not in ("", "as_is", "envelope_in_system"):
+        return "as_is", (
+            f"{REQUEST_CONSTRUCTION_SETTING}: must be unset, 'as_is' or "
+            f"'envelope_in_system', not {raw!r}"
+        )
+    return raw or "as_is", None
+
+
+TTS_LENGTH_BOUND_SETTING = "VAL_TTS_LENGTH_BOUND"
+
+
+def configured_tts_bound() -> tuple[bool, str | None]:
+    """`VAL_TTS_LENGTH_BOUND`: unset (the runner as deployed) or `on` (27 September 2026)."""
+    raw = os.environ.get(TTS_LENGTH_BOUND_SETTING, "").strip().lower()
+    if raw not in ("", "on"):
+        return False, f"{TTS_LENGTH_BOUND_SETTING}: must be unset or 'on', not {raw!r}"
+    return raw == "on", None
+
+
 def configured_tier1_route() -> tuple[str, str | None]:
     raw = os.environ.get(TIER1_ROUTE_SETTING, "").strip().lower() or "qwen"
     if raw not in TIER1_ROUTES:
@@ -381,11 +423,38 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             "CANDIDATE owner precedence enabled for this process: a confirmed new turn may "
             "supersede an answer he has not begun to hear (Milestone B §8, isolated)."
         )
+    adaptive_endpoint, endpoint_problem = configured_adaptive_endpoint()
+    request_construction, construction_problem = configured_request_construction()
+    tts_bound, bound_problem = configured_tts_bound()
+    problems = [x for x in (endpoint_problem, construction_problem, bound_problem) if x is not None]
+    if tts_bound:
+        _LOGGER.warning(
+            "CANDIDATE speech length bound for this process: each segment's synthesis "
+            "is bounded in proportion to its text."
+        )
+    if problems:
+        raise StartupRefusedError(problems)
+    if request_construction == "envelope_in_system":
+        import val_gateway.context as request_context
+
+        request_context.ENVELOPE_IN_SYSTEM = True
+        _LOGGER.warning(
+            "CANDIDATE request construction for this process: the record-state envelope "
+            "follows the persona in the developer block; per-route prime boundaries."
+        )
+    if adaptive_endpoint:
+        _LOGGER.warning(
+            "CANDIDATE adaptive endpoint for this process: endpoint after %d ms of silence, "
+            "the resume window sized from the words within the fixed silence bound.",
+            ADAPTIVE_MIN_SILENCE_MS,
+        )
     tier1_route, route_problem = configured_tier1_route()
     if route_problem is not None:
         raise StartupRefusedError([route_problem])
+    light_slug = LIGHT_CANDIDATE_SLUG
     if fast_route.enabled:
         promoted = enable_light_candidate(tier1_route)
+        light_slug = promoted.slug
         _LOGGER.warning(
             "CANDIDATE fast route enabled for this process: tiers %s on %s (%s, effort %s). The "
             "registry is unchanged on disk; this promotion is not an admission.",
@@ -515,7 +584,14 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         is_admitted(config) and satisfies_profile(config, CapabilityProfile.SPEECH)
         for config in active()
     ):
-        speech = QwenTTSSpeech()
+        # Candidate only (27 September 2026): the same runner with a per-segment
+        # length bound, so a runaway segment cannot play for minutes. With the switch
+        # unset the construction is exactly what it was.
+        speech = (
+            QwenTTSSpeech(runner_path=BOUNDED_RUNNER)
+            if configured_tts_bound()[0]
+            else QwenTTSSpeech()
+        )
         unavailable = speech.available()
         if unavailable is not None:
             warnings.append(
@@ -572,6 +648,12 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             "called. Typed conversation is unaffected."
         )
     recognizers: Callable[[], LiveRecognizer] = WhisperRecognizer
+    if adaptive_endpoint:
+
+        def recognizers() -> LiveRecognizer:
+            return WhisperRecognizer(
+                endpoint=EndpointConfiguration(min_silence_ms=ADAPTIVE_MIN_SILENCE_MS)
+            )
 
     persona_loader = DatabasePersonaLoader(engine)
     try:
@@ -616,7 +698,7 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     if fast_route.enabled:
         warnings.append(
             f"candidate fast route enabled: light tiers {sorted(fast_route.tiers)} on "
-            f"{LIGHT_CANDIDATE_SLUG}, promoted for this process only (not an admission)."
+            f"{light_slug}, promoted for this process only (not an admission)."
         )
     if speculation or adaptive_grace:
         warnings.append(
@@ -631,4 +713,6 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         speculation=speculation,
         adaptive_grace=adaptive_grace,
         owner_precedence=owner_precedence,
+        adaptive_endpoint=adaptive_endpoint,
+        request_construction=request_construction,
     )

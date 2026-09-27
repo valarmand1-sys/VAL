@@ -98,3 +98,38 @@ def test_fresh_courtesy_coverage_is_recorded_not_required() -> None:
     assert len(light) + len(misses) == len(FRESH["courtesy"])
     assert len(light) == FRESH_FINAL_EVALUATION["courtesy_light"], (light, misses)
     print(json.dumps({"fresh_courtesy_light": light, "fresh_courtesy_safe_misses": misses}))
+
+
+@pytest.mark.parametrize(
+    "previous_owner",
+    [
+        "Name a famous mystery novel. No, a famous ghost story.",
+        "Wait, the other one.",
+        "I want the second chapter, no, the third.",
+        "Sorry, I meant Lisbon.",
+    ],
+)
+def test_courtesy_after_a_self_corrected_request_stays_on_medium(previous_owner: str) -> None:
+    """Remaining latency work, 27 September 2026: in the candidate bench a bare "Thanks."
+    after "Name a famous mystery novel. No, a famous ghost story." drew the corrected
+    answer again from LOW in 2 of 5 runs and a greeting in 1 — the class did not answer
+    right every time, so it is withheld. "Wait, …" was also invisible to the old pattern
+    (a word boundary after its comma never matched before a space)."""
+    state = ConversationState(
+        previous_answer="My lord, a celebrated ghost story is The Haunting of Hill House.",
+        prior_turns=6,
+        previous_owner_message=previous_owner,
+    )
+    decision = decide("Thanks.", state, TIER_ONE)
+    assert decision.tier is None
+    assert "corrected itself" in decision.reason or "action or a decision" in decision.reason
+
+
+def test_courtesy_after_a_settled_factual_answer_is_still_light() -> None:
+    """The released class that answered right in all five candidate runs stays released."""
+    state = ConversationState(
+        previous_answer="My lord, the capital of Portugal is Lisbon.",
+        prior_turns=4,
+        previous_owner_message="What is the capital of Portugal?",
+    )
+    assert decide("Thank you.", state, TIER_ONE).tier == 1

@@ -105,3 +105,39 @@ def test_actual_playback_state_is_preferred_within_a_bound(store: Engine) -> Non
     session.playback_reported("playback_completed", segment=("m", 3))
     assert session._owner_waiting(including_speech=True)
     session.close()
+
+
+def test_an_owed_refresh_outlasts_a_long_answer(store: Engine) -> None:
+    """Remaining latency work, 27 September 2026: an owed refresh is never dropped for
+    want of idleness. An answer of hers longer than the old 60 s patience left the persona
+    prefix evicted and his next turn cold; the refresh now waits for as long as the
+    session is open and runs at the first idle second after she stops."""
+    recognizer = ScriptedRecognizer(batches=[[started(1), final(1, "Good evening, Val.")]])
+    session, _, clock = a_session(
+        store, recognizer, adapter=ScriptedAdapter([ok("Good evening, my lord.")])
+    )
+    called_at: list[float] = []
+
+    def primer(still_wanted: Callable[[], bool], routes: object = None) -> object:
+        called_at.append(time.monotonic())
+        return {"primed": True, "outcome": "established", "wanted": still_wanted()}
+
+    voice_module.REFRESH_IDLE_SECONDS = 0.2
+    try:
+        session._prime = primer
+        session._initial_prime_started = True
+        # Her answer keeps sounding, piece after piece, for many idle intervals.
+        session.speech_handed_over(0.8)
+        session.feed(MARKER)
+        settle(session, clock)
+        for _ in range(6):
+            time.sleep(0.3)
+            session.speech_handed_over(0.3)
+            assert not called_at, "no refresh while she is still being heard"
+        heard_until = session._heard_until
+        wait_for(lambda: len(session.primes) == 1, timeout=10.0)
+        assert session.primes[0]["kind"] == "refresh"  # type: ignore[index]
+        assert called_at[0] >= heard_until + 0.15
+    finally:
+        voice_module.REFRESH_IDLE_SECONDS = 1.0
+    session.close()

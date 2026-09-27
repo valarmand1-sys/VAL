@@ -70,7 +70,12 @@ from val_gateway.revisions import RevisionRefusedError, retract
 from val_gateway.speculation import record_preparation
 from val_policy.egress import LiveVoiceConversations
 from val_policy.precedence import follow_up
-from val_policy.turn_completion import completion_of
+from val_policy.turn_completion import (
+    ADAPTIVE_MIN_SILENCE_MS,
+    RESUME_SILENCE_BOUND_S,
+    completion_of,
+    endpoint_completion,
+)
 
 _LOGGER = logging.getLogger("val.voice")
 
@@ -95,8 +100,6 @@ SPECULATION_WAIT_SECONDS = 8.0
 #: turn ended ran into his next words often enough to be measured; this makes owner
 #: work the thing that is never made to wait for maintenance that could have waited.
 REFRESH_IDLE_SECONDS = 1.0
-#: How long a scheduled refresh keeps waiting for that idleness before giving up.
-REFRESH_PATIENCE_SECONDS = 60.0
 #: How long past the duration estimate a handed-over segment without a completion report
 #: still counts as playing (release-gaps corrections, 27 September 2026, §6).
 PLAYBACK_REPORT_GRACE_SECONDS = 3.0
@@ -422,6 +425,10 @@ class _Pending:
     #: were a stop and nothing else, in which case no new answer is asked for.
     follow_up: str | None = None
     stop_only: bool = False
+    #: Owner order of 27 September 2026 (§3): speech that resumed inside the silence
+    #: bound after this turn was submitted early — the rest of the same utterance. The
+    #: turn is cancelled; when its thread ends the halves are joined and submitted.
+    resumed_with: list[tuple[VoiceUtterance, int]] = field(default_factory=list)
     #: This turn's stopwatch, so a decision taken on another thread (supersession) can
     #: be marked on the turn it concerns.
     recorder: timings.TurnTimings | None = None
@@ -558,6 +565,7 @@ class VoiceSession:
         prepare: Prepare | None = None,
         adaptive_grace: bool = False,
         owner_precedence: bool = False,
+        adaptive_endpoint: bool = False,
     ) -> None:
         self._engine = engine
         self._recognizer = recognizer
@@ -632,6 +640,12 @@ class VoiceSession:
         #: (release-gaps order §2: the heard boundary is the speakers, not synthesis and
         #: not the hand-off). Reset when a turn is submitted.
         self._playback_started = False
+        #: When, by the playback-occupancy estimate, the first handed-over piece of the
+        #: answer in flight begins to sound on the desktop (27 September 2026). The
+        #: desktop holds its reports for pieces voiced before her answer is written, so
+        #: a streamed answer can be audible for seconds before any report names it;
+        #: "heard" may not wait for that report.
+        self._first_play_est: float | None = None
         self._last_supersession: dict[str, object] | None = None
         #: Segments handed to the desktop whose playback it has not yet reported ended
         #: (release-gaps corrections, 27 September 2026, §6): actual playback state,
@@ -651,6 +665,18 @@ class VoiceSession:
         #: Milestone B §8, isolated: a confirmed new turn may supersede an answer he has
         #: not begun to hear. Off in production.
         self._owner_precedence = owner_precedence
+        #: Owner order of 27 September 2026 (§3): the recognizer endpoints sooner, the
+        #: window is sized by `endpoint_completion`, and speech resuming inside the fixed
+        #: path's total silence bound joins the utterance even after an early submission
+        #: (the early turn is cancelled and withdrawn, the halves submitted as one).
+        self._adaptive_endpoint = adaptive_endpoint
+        #: The resume bound from an endpoint: the fixed path's total silence, less the
+        #: endpoint silence this recognizer uses.
+        self._resume_window = (
+            RESUME_SILENCE_BOUND_S - ADAPTIVE_MIN_SILENCE_MS / 1000 - 0.13
+            if adaptive_endpoint
+            else self._grace
+        )
         self.speculations: list[dict[str, object]] = []
         self._maintaining = threading.Lock()
         #: True from the moment a turn is submitted until its cognition returns —
@@ -848,7 +874,11 @@ class VoiceSession:
         self.advance()
 
     def speech_handed_over(
-        self, duration_seconds: float, *, segment: tuple[object, int] | None = None
+        self,
+        duration_seconds: float,
+        *,
+        segment: tuple[object, int] | None = None,
+        current: bool = False,
     ) -> None:
         """A piece of her answer has left for the desktop: it will be heard for about this long.
 
@@ -864,7 +894,12 @@ class VoiceSession:
         """
         with self._lock:
             now = time.monotonic()
-            self._heard_until = max(self._heard_until, now) + max(0.0, duration_seconds)
+            starts = max(self._heard_until, now)
+            if current and self._first_play_est is None:
+                # The answer in flight: its first piece sounds once whatever was already
+                # handed over ahead of it has played (a previous answer's tail).
+                self._first_play_est = starts
+            self._heard_until = starts + max(0.0, duration_seconds)
             if segment is not None:
                 # Expected to have ended by the estimate plus the grace; after that a
                 # missing report is forgotten rather than trusted for ever.
@@ -881,8 +916,13 @@ class VoiceSession:
         estimate would have run on — the actual state is preferred.
         """
         with self._lock:
-            if state == "playback_started":
-                self._playback_started = True
+            if state == "playback_started" and segment is not None:
+                # Only a report for the answer in flight says it has been heard; a late
+                # report for an earlier answer's piece must not (found 27 September 2026:
+                # a previous answer's tail marked a new, unplayed answer heard).
+                current_answer = getattr(self._delivery, "message_id", None)
+                if current_answer is not None and str(segment[0]) == str(current_answer):
+                    self._playback_started = True
             if state in ("playback_interrupted", "playback_failed"):
                 self._heard_until = min(self._heard_until, time.monotonic())
                 self._outstanding_playback.clear()
@@ -925,7 +965,9 @@ class VoiceSession:
             return False
         sink = getattr(delivery, "sink", None)
         if sink is not None and hasattr(sink, "collect"):
-            return self._playback_started
+            if self._playback_started:
+                return True
+            return self._first_play_est is not None and time.monotonic() >= self._first_play_est
         return bool(delivery.audible)
 
     @property
@@ -938,7 +980,7 @@ class VoiceSession:
         release it and the answer plays after him; a stop or a replacement discards it.
         Nothing is held once playback has begun — that is barge-in's ground.
         """
-        if not self._owner_precedence:
+        if not (self._owner_precedence or self._adaptive_endpoint):
             return False
         with self._lock:
             delivery = self._delivery
@@ -1049,7 +1091,7 @@ class VoiceSession:
         if delivering is not None and delivering.active:
             with self._lock:
                 heard = self._heard_locked()
-            if not self._owner_precedence or heard:
+            if not (self._owner_precedence or self._adaptive_endpoint) or heard:
                 self.cancellations.append(delivering.interrupt("the owner began speaking"))
 
     def _guessed(self, event: RecognizerEvent) -> None:
@@ -1136,6 +1178,43 @@ class VoiceSession:
                 self._speculate(self._pending)
                 self.state = VoiceSessionState.THINKING
                 return
+            # Owner order of 27 September 2026 (§3). Under the adaptive endpoint a turn
+            # may have been submitted early and still be in flight: speech that resumed
+            # inside the fixed path's silence bound, before he heard any of her answer,
+            # is the rest of the same utterance. The early turn is cancelled (its stream
+            # closed, its hand-off never played) and, when its thread ends, withdrawn and
+            # joined with these words as one new turn.
+            inflight = self._inflight
+            if (
+                self._adaptive_endpoint
+                and inflight is not None
+                and not self._heard_locked()
+                and settled.speech_start_at
+                and inflight.utterance.endpoint_at
+                and settled.speech_start_at - inflight.utterance.endpoint_at <= self._resume_window
+            ):
+                inflight.resumed_with.append((settled, events))
+                inflight.superseded.set()
+                if inflight.recorder is not None:
+                    inflight.recorder.mark("superseded_decided")
+                delivery = self._delivery
+                _LOGGER.info(
+                    "voice resume: %s",
+                    json.dumps(
+                        {
+                            "early_utterance": inflight.utterance.utterance,
+                            "resumed_by": settled.utterance,
+                            "pause_s": round(
+                                settled.speech_start_at - inflight.utterance.endpoint_at, 3
+                            ),
+                            "decided_mono": time.monotonic(),
+                        }
+                    ),
+                )
+                if delivery is not None:
+                    delivery.interrupt("the owner was still speaking; this answer is superseded")
+                self.state = VoiceSessionState.THINKING
+                return
             # Nothing waiting. If a turn has been submitted and Val has not yet
             # delivered it, this is the same intended utterance arriving late.
             merge_into_submitted = self._mergeable(settled) is not None
@@ -1162,6 +1241,27 @@ class VoiceSession:
         self._merge_after_submission(settled, events)
         with self._lock:
             self.state = VoiceSessionState.LISTENING
+
+    def _join_resumed(self, early: _Pending) -> None:
+        """Withdraw an early-submitted fragment and submit it joined with its rest (§3)."""
+        (first, first_events), *rest = early.resumed_with
+        self._merge_after_submission(first, first_events)
+        with self._lock:
+            if self._pending is None:
+                # Nothing was persisted for the fragment (or the merge was refused on
+                # record): his resumed words are not lost — they become the turn.
+                self._pending = _Pending(
+                    utterance=first, provisional_events=first_events, settled_at=self._now()
+                )
+            for later, events in rest:
+                pending = self._pending
+                self._pending = _Pending(
+                    utterance=pending.utterance.merged_with(later),
+                    provisional_events=pending.provisional_events + events,
+                    settled_at=self._now(),
+                )
+            joined = self._pending
+        self._size_grace(joined)
 
     def _mergeable(self, resumed: VoiceUtterance | None = None) -> VoiceTurn | None:
         """The turn a resumed utterance may still be joining, or None.
@@ -1207,7 +1307,7 @@ class VoiceSession:
         # monotonic marks.
         pause = resumed.speech_start_at - candidate.utterance.endpoint_at
         if resumed.speech_start_at and candidate.utterance.endpoint_at:
-            return None if pause > self._grace else candidate
+            return None if pause > self._resume_window else candidate
         # **A recognizer that reported no marks does not thereby unlock an unbounded
         # merge.** Falling back to the session's own clock: how long this turn has been
         # waiting for an answer he has not heard. It is a looser measure than the pause
@@ -1308,9 +1408,12 @@ class VoiceSession:
 
     def _size_grace(self, pending: _Pending) -> None:
         """Adaptive turn completion (owner order §7): the window this utterance earns."""
-        if not self._adaptive_grace:
+        if self._adaptive_endpoint:
+            completion = endpoint_completion(pending.utterance.text)
+        elif self._adaptive_grace:
+            completion = completion_of(pending.utterance.text, self._grace)
+        else:
             return
-        completion = completion_of(pending.utterance.text, self._grace)
         pending.grace_seconds = completion.grace_seconds
         pending.grace_reason = completion.state
         _LOGGER.info(
@@ -1502,7 +1605,7 @@ class VoiceSession:
             return False
         began, ended = current.speech_start_at, pending.utterance.endpoint_at
         if began and ended:
-            return began - ended <= self._grace
+            return began - ended <= self._resume_window
         # A recognizer that reported no marks: held for at most one grace more.
         return self._now() - pending.settled_at <= self._grace * 2
 
@@ -1541,6 +1644,8 @@ class VoiceSession:
         with timings.recording(live):
             self._run_turn(pending)
         self._log_timeline(pending, live)
+        if pending.resumed_with:
+            self._join_resumed(pending)
         # The turn is over — answered, and her voice synthesised — so a refresh is owed:
         # it is dispatched once the session is idle, never while any part of his turn
         # is running or his next words are being heard (Milestone A §3). Qualification
@@ -1586,6 +1691,7 @@ class VoiceSession:
         with self._lock:
             self._delivery = delivery
             self._playback_started = False
+            self._first_play_est = None
             # The previous turn's hand-off ends when this one begins: one delivery
             # is collectable at a time, and an older one is released here.
             self._recent = None
@@ -1596,7 +1702,7 @@ class VoiceSession:
         extra: dict[str, Any] = {}
         if prepared is not None:
             extra["prepared"] = prepared
-        if self._owner_precedence:
+        if self._owner_precedence or self._adaptive_endpoint:
             extra["cancelled"] = pending.superseded.is_set  # Milestone B §8
         if pending.stop_only:
             # A stop and nothing else (release-gaps order §2): his words go on the
@@ -1790,9 +1896,14 @@ class VoiceSession:
         speech, no settled utterance, no turn in flight, no answer being voiced and no
         handed-over audio still expected to be sounding (`_heard_until`), the condition
         being rechecked at dispatch and again inside the prime before each call. Two
-        turns finishing close together owe one refresh, not two. If the session never
-        falls idle within `REFRESH_PATIENCE_SECONDS` the refresh is dropped and the next
-        turn's completion schedules a new one.
+        turns finishing close together owe one refresh, not two.
+
+        An owed refresh waits for as long as the session is open (remaining latency
+        work, 27 September 2026). It used to be dropped after 60 s without idleness, and
+        an answer of hers longer than that — two minutes of speech is ordinary for a
+        substantive question — left the persona prefix evicted with nothing to restore
+        it, so his next turn paid a cold prefill (~8 s in the bench). Waiting costs a
+        sleeping thread; dropping cost him the wait.
         """
         if self._prime is None:
             return
@@ -1804,10 +1915,9 @@ class VoiceSession:
             self._refresh_scheduled = True
 
         def wait_then_run() -> None:
-            deadline = time.monotonic() + REFRESH_PATIENCE_SECONDS
             idle_since: float | None = None
             try:
-                while time.monotonic() < deadline:
+                while True:
                     with self._lock:
                         closed = self.state in (VoiceSessionState.CLOSED, VoiceSessionState.ERROR)
                         owed = self._refresh_owed
@@ -1820,9 +1930,6 @@ class VoiceSession:
                     elif time.monotonic() - idle_since >= REFRESH_IDLE_SECONDS:
                         break
                     time.sleep(0.1)
-                else:
-                    _LOGGER.info("voice prime: refresh dropped (the session never fell idle)")
-                    return
             finally:
                 with self._lock:
                     self._refresh_scheduled = False

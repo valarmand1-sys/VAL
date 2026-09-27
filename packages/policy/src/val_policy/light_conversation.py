@@ -127,6 +127,25 @@ _ACTION_REQUEST = re.compile(
     r")\b",
     re.IGNORECASE,
 )
+#: A sentence of his that corrects itself: "…a mystery novel. No, a ghost story.",
+#: "Wait, the other one." (remaining latency work, 27 September 2026). `_ACTION_REQUEST`
+#: already names "actually", "instead", "never mind"; it could not see a sentence that
+#: opens with "No," at all, and its "wait," never matched before a space (a word boundary
+#: after a comma needs a word next). In the candidate bench a bare "Thanks." after such
+#: a request drew the corrected answer again from LOW in 2 of 5 runs and a greeting in 1.
+_SELF_CORRECTION = re.compile(
+    r"(?:^|[.!?"
+    + chr(0x2026)
+    + r";]\s+|,\s*)(?:no|nope|wait|sorry|i mean|scratch that|correction)\b",
+    re.IGNORECASE,
+)
+
+
+def _asks_or_corrects(message: str) -> bool:
+    """A message of his that asked for an action or a decision, or corrected itself."""
+    return bool(_ACTION_REQUEST.search(message) or _SELF_CORRECTION.search(message))
+
+
 #: Her generic closings of courtesy: an offer of service in general, not of anything in
 #: particular. A closing here leaves no matter open; anything else that asks or offers
 #: does.
@@ -204,6 +223,8 @@ def pending_matter(state: ConversationState) -> str | None:
         return "uncertain state: earlier turns but no answer of hers to read"
     if previous_owner and _ACTION_REQUEST.search(previous_owner):
         return "his previous message asked for an action or a decision, which nothing here settles"
+    if previous_owner and _SELF_CORRECTION.search(previous_owner):
+        return "his previous message corrected itself, which nothing here settles"
     if previous:
         open_reason = _answer_leaves_open(previous)
         if open_reason is not None:
@@ -214,7 +235,7 @@ def pending_matter(state: ConversationState) -> str | None:
             # He said something that is itself work after this exchange: his courtesy
             # answers that, and nothing older is inferred settled by it.
             break
-        if _ACTION_REQUEST.search(owner):
+        if _asks_or_corrects(owner):
             return (
                 "an earlier message of his asked for an action or a decision, and only "
                 "social exchanges have followed it; nothing establishes it settled"
@@ -428,7 +449,7 @@ def older_requests_on_record(state: ConversationState) -> int:
     not in it), whatever followed it. Reported, never acted on: the light route may
     answer the most recent exchange while these stand exactly as they were.
     """
-    return sum(1 for owner, _ in state.earlier_exchanges if _ACTION_REQUEST.search(owner))
+    return sum(1 for owner, _ in state.earlier_exchanges if _asks_or_corrects(owner))
 
 
 @dataclass(frozen=True)

@@ -1466,3 +1466,71 @@ slower; **no audible-response improvement is claimed**. Recommendations: the req
 construction as a candidate for his ruling; owner precedence as ready to enable behind its
 switch. One does not admit the other. Engine-cache patch and conversation-content priming
 deferred, as ordered.
+
+## 33. Handoff — the remaining latency work (owner order of 27 September 2026, "complete the remaining latency work")
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged; every candidate switch
+unset in production; no physical test requested.** Record:
+`qualification/runs/2026-09-26-redesign/LATENCY_CANDIDATE.md` (evidence index §120).
+Outcome **B**: a substantial median improvement demonstrated through the real desktop
+frontend and player against the isolated service; the upper tail unchanged and owned by
+the engine's cache; one authorisation needed before the cache work can be measured.
+
+**Measured (speech end → first audio the real playback worklet started; baseline three
+runs, candidate as built three, final configuration two; eighteen turns each):** social
+turns **8.98 → 3.25 s** median (3.17 s final; greetings and thanks on LOW ~3.0 s);
+ordinary turns **9.66 → 6.96 s** (7.65 s final). On the turns the engine's cache did not
+intervene in: social ~7.5 → ~3.1 s, ordinary ~9.3 → ~6.1–6.7 s, ordinary p90 ~12.3 →
+~8.8–9.6 s. A turn that prefilled cold or waited behind a cold prime cost 11–24 s in every
+condition (baseline 11 of 46 turns, final 8 of 33), so **the upper tail is not improved**.
+Corrections preserved every time; a request with a pause inside it answered whole;
+replacements superseded unheard; no underrun; no substantive turn on LOW.
+
+**Done in this order:** the adaptive endpoint (400 ms silence; the resume window sized from
+the words, never punctuation alone, ambiguous waits as long as today, unfinished waits
+longer; resumption after an early submission cancels and withdraws the early turn and
+joins the halves); "heard" scoped to the answer in flight; a speech-length bound through a
+wrapper around the unchanged runner (a segment played 327.7 s — 4,096 codec tokens at 12.5
+per second, the library's default — and production has the same exposure); **an owed
+refresh prime is no longer dropped after 60 s** (an answer of two minutes left the persona
+prefix evicted and his next turn cold, 12.3 s; repaired, 4.58 s; ungated, master only);
+**courtesy after a self-corrected request stays on MEDIUM** ("Thanks." after "…No, a famous
+ghost story." re-answered on LOW in 2 of 5 runs and drew a greeting in 1; the guard could
+not see "No," and its "wait," never matched). The last two are findings against the
+released tag `tier1-low-release-2026-09-27` as well. Switches: `VAL_FAST_ROUTE_TIERS=1
+VAL_TIER1_ROUTE=low VAL_ADAPTIVE_ENDPOINT=on VAL_REQUEST_CONSTRUCTION=envelope_in_system
+VAL_OWNER_PRECEDENCE=on VAL_TTS_LENGTH_BOUND=on`, migration `0032` for the light route;
+rollback removes them.
+
+**Blocked on his authorisation — the cache correction.** The engine's prompt store renews
+nothing on a hit, so Val's persona checkpoints are evicted every few turns (a replay on
+the engine's own cache class: 8 cold primes in sixteen turns as shipped, 0 with recency
+renewed on a hit). The fix is written (`infrastructure/lmstudio/cache_renewal/`),
+digest-pinned, allowlisted to an experiment copy of the model and reversible. Installing
+it puts a hook into LM Studio's shared engine directory, imported by every instance
+including production's (inert there); cloning the model and loading a ~12 GB experiment
+instance beside production's is also needed. These were refused by the session's
+permission classifier and not attempted otherwise. Its effect is NOT MEASURED.
+
+**The architectural finding.** In an ordinary turn now, MEDIUM's hidden reasoning (~2.6 s)
+and the prefill of envelope, history and his words (~2.0 s) are two-thirds of the wait;
+nothing authorised reduces them further. The ~1 s target is not reachable while an answer
+is generated after he stops speaking (the fastest class, a greeting on LOW, is ~3.0 s).
+Alternatives, each his decision: LOW for ordinary turns (≈25% sooner, one
+correction-preservation loss on the frozen checks), a different model (none qualified),
+or no change.
+
+**Found and not repaired (outside the order):** two held playback reports for one segment
+can compute the same event number and one is refused with HTTP 500, losing a record of
+what the speakers did (both conditions; 15 of 146 turns' first-audio rows one segment late;
+a retry of the refused insert would fix it).
+
+**Open problems reviewed (procedural rule):** OP-1 names message retraction as a
+checkpoint, and the adaptive endpoint withdraws an early fragment through that machinery.
+The withdrawal makes no claim: the early turn's answer is cancelled before it is handed
+over, so no answer of hers to a fragment is persisted or played (`test_adaptive_endpoint.py`;
+in the last run's scratch store, rebuilt per run, no withdrawn message of his is followed by
+an answer of hers). The durable live-voice seal is applied when the fragment first becomes
+canonical, as before, so the joined message is written into a conversation already sealed. OP-6 (greeting
+length) is not touched: the envelope's note text is unchanged. No other checkpoint names
+this work.

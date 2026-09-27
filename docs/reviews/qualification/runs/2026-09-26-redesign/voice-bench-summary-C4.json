@@ -1,0 +1,339 @@
+{
+ "candidate_bound": {
+  "runs": [
+   "C4"
+  ],
+  "excluded_spoken_over_her_audio": [],
+  "kept_after_driver_timeout": [
+   {
+    "run": "C4",
+    "session": "S1-greeting-factual-substantive",
+    "label": "follow-up"
+   }
+  ],
+  "social": {
+   "turns": 6,
+   "answered_and_played": 6,
+   "worklet": {
+    "n": 6,
+    "median_ms": 4044,
+    "p90_ms": 5548,
+    "max_ms": 8233
+   },
+   "store_record": {
+    "n": 6,
+    "median_ms": 4046,
+    "p90_ms": 5550,
+    "max_ms": 8235
+   },
+   "store_record_late_by_over_300ms": 0,
+   "desktop": {
+    "n": 6,
+    "median_ms": 4004,
+    "p90_ms": 5504,
+    "max_ms": 8161
+   },
+   "routes": {
+    "light_conversation": 4,
+    "conversation": 2
+   }
+  },
+  "ordinary": {
+   "turns": 11,
+   "answered_and_played": 11,
+   "worklet": {
+    "n": 11,
+    "median_ms": 11305,
+    "p90_ms": 19240,
+    "max_ms": 19902
+   },
+   "store_record": {
+    "n": 11,
+    "median_ms": 11308,
+    "p90_ms": 19243,
+    "max_ms": 19905
+   },
+   "store_record_late_by_over_300ms": 0,
+   "desktop": {
+    "n": 11,
+    "median_ms": 11240,
+    "p90_ms": 19205,
+    "max_ms": 19827
+   },
+   "routes": {
+    "light_conversation": 0,
+    "conversation": 11
+   }
+  },
+  "by_label_worklet": {
+   "greeting": {
+    "n": 2,
+    "median_ms": 2958,
+    "p90_ms": 2966,
+    "max_ms": 2966
+   },
+   "factual": {
+    "n": 1,
+    "median_ms": 8226,
+    "p90_ms": 8226,
+    "max_ms": 8226
+   },
+   "thanks after an answer": {
+    "n": 2,
+    "median_ms": 5625,
+    "p90_ms": 8233,
+    "max_ms": 8233
+   },
+   "substantive": {
+    "n": 1,
+    "median_ms": 11793,
+    "p90_ms": 11793,
+    "max_ms": 11793
+   },
+   "follow-up": {
+    "n": 1,
+    "median_ms": 12314,
+    "p90_ms": 12314,
+    "max_ms": 12314
+   },
+   "farewell after an answer": {
+    "n": 1,
+    "median_ms": 5070,
+    "p90_ms": 5070,
+    "max_ms": 5070
+   },
+   "conversational": {
+    "n": 1,
+    "median_ms": 9493,
+    "p90_ms": 9493,
+    "max_ms": 9493
+   },
+   "continuation after a pause": {
+    "n": 1,
+    "median_ms": 14218,
+    "p90_ms": 14218,
+    "max_ms": 14218
+   },
+   "hesitation": {
+    "n": 1,
+    "median_ms": 11305,
+    "p90_ms": 11305,
+    "max_ms": 11305
+   },
+   "correction after a pause": {
+    "n": 1,
+    "median_ms": 19240,
+    "p90_ms": 19240,
+    "max_ms": 19240
+   },
+   "ordinary": {
+    "n": 1,
+    "median_ms": 10884,
+    "p90_ms": 10884,
+    "max_ms": 10884
+   },
+   "follow-up, quick": {
+    "n": 1,
+    "median_ms": 7081,
+    "p90_ms": 7081,
+    "max_ms": 7081
+   },
+   "factual, into maintenance": {
+    "n": 1,
+    "median_ms": 8011,
+    "p90_ms": 8011,
+    "max_ms": 8011
+   },
+   "to be replaced": {
+    "n": 0
+   },
+   "explicit replacement": {
+    "n": 1,
+    "median_ms": 19902,
+    "p90_ms": 19902,
+    "max_ms": 19902
+   },
+   "thanks after an answer, into maintenance": {
+    "n": 1,
+    "median_ms": 5548,
+    "p90_ms": 5548,
+    "max_ms": 5548
+   }
+  },
+  "no_played_answer": [],
+  "replaced_turn_played": [
+   {
+    "run": "C4",
+    "worklet_ms": null,
+    "store_ms": null
+   }
+  ],
+  "withdrawn_early_fragments": 2,
+  "resumptions": 2,
+  "precedence_decisions": [
+   {
+    "relation": "replacement",
+    "outcome": "superseded",
+    "answer_heard": false
+   }
+  ],
+  "primes": {
+   "total": 16,
+   "cold_over_3s": 7,
+   "cold_seconds": [
+    6.809,
+    6.997,
+    7.458,
+    6.805,
+    7.01,
+    6.949,
+    7.007
+   ]
+  },
+  "preflight_wait_ms": {
+   "n": 20,
+   "over_300ms": [
+    2920,
+    3615,
+    4975,
+    5435,
+    5733
+   ],
+   "max": 5733
+  },
+  "endpoint_to_submitted_ms": {
+   "n": 18,
+   "median_ms": 262,
+   "p90_ms": 645,
+   "max_ms": 933
+  },
+  "dispatch_to_visible_ms": {
+   "n": 13,
+   "median_ms": 9042,
+   "p90_ms": 12404,
+   "max_ms": 12506
+  },
+  "readiness_s": [
+   5.14,
+   5.639,
+   3.794
+  ],
+  "stages_light_conversation": {
+   "to_submitted_ms": {
+    "n": 4,
+    "median_ms": 261,
+    "p90_ms": 645,
+    "max_ms": 645
+   },
+   "preflight_wait_ms": {
+    "n": 4,
+    "median_ms": 32,
+    "p90_ms": 4975,
+    "max_ms": 4975
+   },
+   "dispatch_to_first_chunk_ms": {
+    "n": 4,
+    "median_ms": 1625,
+    "p90_ms": 1661,
+    "max_ms": 1661
+   },
+   "dispatch_to_visible_ms": {
+    "n": 0
+   },
+   "visible_to_segment_ms": {
+    "n": 0
+   },
+   "segment_to_audio_ms": {
+    "n": 4,
+    "median_ms": 473,
+    "p90_ms": 511,
+    "max_ms": 511
+   },
+   "engine_cache": {
+    "turns_seen": 4,
+    "cold": 0
+   }
+  },
+  "stages_conversation": {
+   "to_submitted_ms": {
+    "n": 11,
+    "median_ms": 261,
+    "p90_ms": 288,
+    "max_ms": 737
+   },
+   "preflight_wait_ms": {
+    "n": 13,
+    "median_ms": 35,
+    "p90_ms": 5435,
+    "max_ms": 5733
+   },
+   "dispatch_to_first_chunk_ms": {
+    "n": 13,
+    "median_ms": 2578,
+    "p90_ms": 8527,
+    "max_ms": 8960
+   },
+   "dispatch_to_visible_ms": {
+    "n": 13,
+    "median_ms": 9042,
+    "p90_ms": 12404,
+    "max_ms": 12506
+   },
+   "visible_to_segment_ms": {
+    "n": 13,
+    "median_ms": 201,
+    "p90_ms": 232,
+    "max_ms": 327
+   },
+   "segment_to_audio_ms": {
+    "n": 13,
+    "median_ms": 739,
+    "p90_ms": 750,
+    "max_ms": 758
+   },
+   "engine_cache": {
+    "turns_seen": 13,
+    "cold": 6
+   }
+  },
+  "cold_prefill_turns": [
+   {
+    "run": "C4",
+    "label": "substantive",
+    "worklet_ms": 11793
+   },
+   {
+    "run": "C4",
+    "label": "follow-up",
+    "worklet_ms": 12314
+   },
+   {
+    "run": "C4",
+    "label": "continuation after a pause",
+    "worklet_ms": 14218
+   },
+   {
+    "run": "C4",
+    "label": "hesitation",
+    "worklet_ms": 11305
+   },
+   {
+    "run": "C4",
+    "label": "correction after a pause",
+    "worklet_ms": 19240
+   },
+   {
+    "run": "C4",
+    "label": "explicit replacement",
+    "worklet_ms": 19902
+   }
+  ],
+  "ordinary_worklet_warm_checkpoint_only": {
+   "n": 5,
+   "median_ms": 8226,
+   "p90_ms": 10884,
+   "max_ms": 10884
+  },
+  "underruns": 0
+ }
+}

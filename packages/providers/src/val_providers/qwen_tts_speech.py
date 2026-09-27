@@ -93,6 +93,9 @@ def clone_prompt_for(reference_sha256: str, directory: Path = VOICE_DIR) -> Path
 
 #: The runner, resolved from this file rather than from a working directory.
 RUNNER = Path(__file__).resolve().parents[4] / "infrastructure" / "speech" / "qwen_tts_speak.py"
+#: The same runner with a per-segment length bound (candidate only, 27 September 2026):
+#: `infrastructure/speech/qwen_tts_speak_bounded.py`, which runs the unmodified runner.
+BOUNDED_RUNNER = RUNNER.with_name("qwen_tts_speak_bounded.py")
 
 #: A sentence takes a few seconds once the model is warm and about fifteen when
 #: it is not. This is the ceiling before a run is called failed.
@@ -167,12 +170,14 @@ class QwenTTSSpeech:
         model_path: Path = MODEL_PATH,
         voice_dir: Path = VOICE_DIR,
         runner: _Runner | None = None,
+        runner_path: Path | None = None,
         timeout: float = RUN_TIMEOUT_SECONDS,
     ) -> None:
         self._python = python
         self._model_path = model_path
         self._voice_dir = voice_dir
         self._runner = runner or _Runner()
+        self._runner_path = runner_path or RUNNER
         self._timeout = timeout
         #: The resident worker (owner order, 25 September 2026, Voice-mode repair §5):
         #: the runner in `serve` mode, the model loaded once, requests one per line.
@@ -194,8 +199,8 @@ class QwenTTSSpeech:
             return f"the dedicated speech runtime is not installed at {self._python}"
         if not self._model_path.is_dir():
             return f"the admitted speech artifact is not present at {self._model_path}"
-        if not RUNNER.is_file():
-            return f"the speech runner is missing at {RUNNER}"
+        if not self._runner_path.is_file():
+            return f"the speech runner is missing at {self._runner_path}"
         return None
 
     # --- the one entry point ------------------------------------------------------
@@ -398,7 +403,7 @@ class QwenTTSSpeech:
                 return {"warmed": True, "resident": True, "already_running": True}
             self._resident_ready.clear()
             try:
-                process = self._runner.start([str(self._python), str(RUNNER), "serve"])
+                process = self._runner.start([str(self._python), str(self._runner_path), "serve"])
             except OSError as failure:
                 return {"warmed": False, "reason": f"the voice runtime could not start: {failure}"}
             self._resident = process
@@ -563,7 +568,7 @@ class QwenTTSSpeech:
             else:
                 try:
                     code, out, err = self._runner.run(
-                        [str(self._python), str(RUNNER)], payload, self._timeout
+                        [str(self._python), str(self._runner_path)], payload, self._timeout
                     )
                 except subprocess.TimeoutExpired as expired:
                     raise SpeechUnavailableError(

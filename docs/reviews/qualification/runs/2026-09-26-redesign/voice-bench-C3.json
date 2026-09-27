@@ -1,0 +1,1271 @@
+{
+ "condition": "candidate",
+ "run": "C3",
+ "turns": [
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S1-greeting-factual-substantive",
+   "label": "greeting",
+   "class": "social",
+   "said": "Good evening.",
+   "heard": "Good evening.",
+   "withdrawn_fragments": 0,
+   "answer": "Good evening, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 2906,
+   "worklet_ms": 2902,
+   "underruns": 0,
+   "desktop_ms": 2862.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e235-629f-7532-8cbf-49fc77426aa8",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.3,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 1555,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 481,
+    "engine_cache": {
+     "cached_tokens": 5048,
+     "prompt_tokens": 5741,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "class": "ordinary",
+   "said": "What is the capital of Portugal?",
+   "heard": "What is the capital of Portugal?",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, the capital of Portugal is Lisbon.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 5972,
+   "worklet_ms": 5969,
+   "underruns": 0,
+   "desktop_ms": 5917.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e235-7f8f-7b66-93f9-ec519ada8000",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.6,
+    "preflight_wait_ms": 31,
+    "dispatch_to_first_chunk_ms": 1605,
+    "dispatch_to_visible_ms": 4616,
+    "visible_to_segment_ms": 14,
+    "segment_to_audio_ms": 473,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 5945,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S1-greeting-factual-substantive",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer": "You’re most welcome, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 2975,
+   "worklet_ms": 2973,
+   "underruns": 0,
+   "desktop_ms": 2936.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e235-af77-7b34-a63d-beca9fc31d5e",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 261.3,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 1655,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 473,
+    "engine_cache": {
+     "cached_tokens": 5048,
+     "prompt_tokens": 5776,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "class": "ordinary",
+   "said": "Explain the difference between suspense and surprise in a scene.",
+   "heard": "Explain the difference between suspense and surprise in a scene.",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, suspense and surprise are two distinct devices used to shape a scene’s emotional arc.\n\n**Suspense**  \n*Purpose*: To create an uneasy expectation that s",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 6763,
+   "worklet_ms": 6761,
+   "underruns": 0,
+   "desktop_ms": 6724.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e235-d364-7c7b-bf35-e643e84f2838",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 283.8,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 1690,
+    "dispatch_to_visible_ms": 4783,
+    "visible_to_segment_ms": 338,
+    "segment_to_audio_ms": 752,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 5997,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "class": "ordinary",
+   "said": "Which of those works better in a short story?",
+   "heard": "Which of those works better in a short story?",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, in a short story the choice hinges on what you wish to achieve.\n\n**Surprise**  \n*Pros*:  \n- A twist can deliver a punchy payoff in the limited pages, l",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 10030,
+   "worklet_ms": 5309,
+   "underruns": 0,
+   "desktop_ms": 5184.0,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e237-3f23-73b9-a37d-cd06dc8269bc",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 262.5,
+    "preflight_wait_ms": 40,
+    "dispatch_to_first_chunk_ms": 1983,
+    "dispatch_to_visible_ms": 3316,
+    "visible_to_segment_ms": 309,
+    "segment_to_audio_ms": 744,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6249,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S1-greeting-factual-substantive",
+   "label": "farewell after an answer",
+   "class": "social",
+   "said": "Good night.",
+   "heard": "Good night.",
+   "withdrawn_fragments": 0,
+   "answer": "Good night, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 5026,
+   "worklet_ms": 5024,
+   "underruns": 0,
+   "desktop_ms": 4999.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e238-bd05-7931-abdb-a527bbbedb11",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 243.7,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 2475,
+    "dispatch_to_visible_ms": 3702,
+    "visible_to_segment_ms": 13,
+    "segment_to_audio_ms": 470,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6592,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S2-pauses-and-corrections",
+   "label": "greeting",
+   "class": "social",
+   "said": "Hello.",
+   "heard": "Hello.",
+   "withdrawn_fragments": 0,
+   "answer": "Good morning, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 2793,
+   "worklet_ms": 2790,
+   "underruns": 0,
+   "desktop_ms": 2762.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e239-0571-770c-a85d-2f4889266b12",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 235.6,
+    "preflight_wait_ms": 30,
+    "dispatch_to_first_chunk_ms": 1458,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 498,
+    "engine_cache": {
+     "cached_tokens": 5048,
+     "prompt_tokens": 5740,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S2-pauses-and-corrections",
+   "label": "conversational",
+   "class": "ordinary",
+   "said": "How long should a first chapter be?",
+   "heard": "How long should a first chapter be?",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, I have no volume on chapter length in the house’s library. In practice, a first chapter is usually long enough to establish setting and characters yet ",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 8366,
+   "worklet_ms": 8364,
+   "underruns": 0,
+   "desktop_ms": 8336.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e239-212a-70f0-b1ca-d1141c327034",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 278.0,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 2222,
+    "dispatch_to_visible_ms": 6543,
+    "visible_to_segment_ms": 234,
+    "segment_to_audio_ms": 752,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6431,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S2-pauses-and-corrections",
+   "label": "continuation after a pause",
+   "class": "ordinary",
+   "said": "Tell me about a good opening line, and why it works.",
+   "heard": "Tell me about a good opening line. and why it works.",
+   "withdrawn_fragments": 1,
+   "answer": "My lord, I have no volume on opening lines in the house’s library. Nonetheless, a line that immediately stakes a narrative can be found in the craft of many res",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 10024,
+   "worklet_ms": 10021,
+   "underruns": 0,
+   "desktop_ms": 9986.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23a-1dec-7fba-abcb-b5b9dd72cb71",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 1976,
+    "dispatch_to_visible_ms": 8153,
+    "visible_to_segment_ms": 232,
+    "segment_to_audio_ms": 743,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6244,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S2-pauses-and-corrections",
+   "label": "hesitation",
+   "class": "ordinary",
+   "said": "I was wondering, um, whether prologues are useful.",
+   "heard": "I was wondering. Um. Weather Prologs are useful.",
+   "withdrawn_fragments": 0,
+   "answer": "Yes, weather prologues can be useful when they serve the story’s needs. They work best in three situations:\n\n1. **Mood and tone** – A sudden storm or a calm daw",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 13866,
+   "worklet_ms": 13864,
+   "underruns": 0,
+   "desktop_ms": 13823.0,
+   "completion": {
+    "utterance": 7,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23b-56b9-75c2-8f1c-aae4d9302dbf",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.9,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 2361,
+    "dispatch_to_visible_ms": 12029,
+    "visible_to_segment_ms": 281,
+    "segment_to_audio_ms": 741,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6496,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S2-pauses-and-corrections",
+   "label": "correction after a pause",
+   "class": "ordinary",
+   "said": "Name a famous mystery novel. No, a famous ghost story.",
+   "heard": "Name a famous mystery novel. No, a famous ghost story.",
+   "withdrawn_fragments": 1,
+   "answer": "A classic example is *The Turn of the Screw* by Henry James.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 6762,
+   "worklet_ms": 6759,
+   "underruns": 0,
+   "desktop_ms": 6695.0,
+   "completion": {
+    "utterance": 9,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23c-784e-776b-ad6f-0db147cca621",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2650,
+    "dispatch_to_visible_ms": 5292,
+    "visible_to_segment_ms": 50,
+    "segment_to_audio_ms": 470,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6721,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S2-pauses-and-corrections",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer": "Good day, my lord.",
+   "routes": [
+    "light_conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 3183,
+   "worklet_ms": 3181,
+   "underruns": 0,
+   "desktop_ms": 3111.0,
+   "completion": {
+    "utterance": 10,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23c-dc3c-7b4e-9823-b381b6ff5ab9",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 237.4,
+    "preflight_wait_ms": 31,
+    "dispatch_to_first_chunk_ms": 1868,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": 466,
+    "engine_cache": {
+     "cached_tokens": 5048,
+     "prompt_tokens": 5786,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S3-collisions-and-replacement",
+   "label": "ordinary",
+   "class": "ordinary",
+   "said": "Name two ways to end a chapter.",
+   "heard": "Name two ways to end a chapter.",
+   "withdrawn_fragments": 0,
+   "answer": "My lord,\n\nTwo conventional methods for concluding a chapter are:\n\n1) **Resolution** – bring the central conflict to a clear, satisfying close so the reader feel",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 9629,
+   "worklet_ms": 9627,
+   "underruns": 0,
+   "desktop_ms": 9586.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23d-1e2c-7283-adfa-bac30678b160",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 262.3,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 1596,
+    "dispatch_to_visible_ms": 7738,
+    "visible_to_segment_ms": 232,
+    "segment_to_audio_ms": 840,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 5921,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S3-collisions-and-replacement",
+   "label": "follow-up, quick",
+   "class": "ordinary",
+   "said": "Which of those is better at night?",
+   "heard": "Which of those is better at night?",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, for nighttime reading a **resolution** is generally preferable; it offers closure and allows the mind to rest. A cliffhanger, by contrast, often keeps ",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 9536,
+   "worklet_ms": 9533,
+   "underruns": 0,
+   "desktop_ms": 9431.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23d-9d40-7ee2-8ac3-476e1dc95d33",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 251.4,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 1730,
+    "dispatch_to_visible_ms": 7775,
+    "visible_to_segment_ms": 232,
+    "segment_to_audio_ms": 618,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6018,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S3-collisions-and-replacement",
+   "label": "factual, into maintenance",
+   "class": "ordinary",
+   "said": "What is a caesura?",
+   "heard": "What is a caesura?",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, a caesura is a deliberate pause or break in the flow of music or poetry. In musical notation it marks an intentional silence, often used to create cont",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 7453,
+   "worklet_ms": 7451,
+   "underruns": 0,
+   "desktop_ms": 7395.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23d-fa8e-7534-a0b1-b92e1b0e1a9e",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 262.5,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 1846,
+    "dispatch_to_visible_ms": 5582,
+    "visible_to_segment_ms": 247,
+    "segment_to_audio_ms": 751,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6077,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S3-collisions-and-replacement",
+   "label": "to be replaced",
+   "class": "ordinary",
+   "said": "Describe a haunted house in one sentence.",
+   "heard": "Describe a haunted house in one sentence.",
+   "withdrawn_fragments": 0,
+   "answer": null,
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "error"
+   ],
+   "exact_ms": null,
+   "worklet_ms": null,
+   "underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23e-8c2b-7584-a1e7-f157d81c41cb",
+   "stages": {},
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S3-collisions-and-replacement",
+   "label": "explicit replacement",
+   "class": "ordinary",
+   "said": "Actually, never mind. Describe a lighthouse instead.",
+   "heard": "Actually, never mind. Describe a lighthouse instead.",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, a solitary lighthouse stands upon a craggy coast, its lantern casting a steady beam over the restless sea.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 23905,
+   "worklet_ms": 23903,
+   "underruns": 0,
+   "desktop_ms": 23298.0,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23e-a48b-72f2-9c07-a0b9aaa616e4",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 879.0,
+    "preflight_wait_ms": 4733,
+    "dispatch_to_first_chunk_ms": 8069,
+    "dispatch_to_visible_ms": 16513,
+    "visible_to_segment_ms": 186,
+    "segment_to_audio_ms": 467,
+    "engine_cache": {
+     "cached_tokens": 0,
+     "prompt_tokens": 6186,
+     "cold": true
+    }
+   },
+   "spoken_over_her_audio": false
+  },
+  {
+   "condition": "candidate",
+   "run": "C3",
+   "session": "S3-collisions-and-replacement",
+   "label": "thanks after an answer, into maintenance",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer": "My lord, I am pleased to have been of service.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "exact_ms": 5773,
+   "worklet_ms": 5771,
+   "underruns": 0,
+   "desktop_ms": 5718.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "message_id": "01a0e23f-3c54-73f9-9325-bd169298012b",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 237.5,
+    "preflight_wait_ms": 38,
+    "dispatch_to_first_chunk_ms": 1950,
+    "dispatch_to_visible_ms": 4445,
+    "visible_to_segment_ms": 13,
+    "segment_to_audio_ms": 471,
+    "engine_cache": {
+     "cached_tokens": 5089,
+     "prompt_tokens": 6224,
+     "cold": false
+    }
+   },
+   "spoken_over_her_audio": false
+  }
+ ],
+ "readiness": [
+  {
+   "session": "S1-greeting-factual-substantive",
+   "voice_on_to_ready_displayed_s": 17.034
+  },
+  {
+   "session": "S2-pauses-and-corrections",
+   "voice_on_to_ready_displayed_s": 4.85
+  },
+  {
+   "session": "S3-collisions-and-replacement",
+   "voice_on_to_ready_displayed_s": 5.585
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 13.647,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.479,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.898,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.466,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 13.054,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.471,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.889,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "initial",
+   "seconds": 1.59,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.476,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 13.065,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.467,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 13.097,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.861,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "initial",
+   "seconds": 1.869,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.894,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 6.968,
+   "partner": "skipped",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 7.033,
+   "partner": "established",
+   "light": "established"
+  },
+  {
+   "kind": "refresh",
+   "seconds": 0.87,
+   "partner": "established",
+   "light": "established"
+  }
+ ],
+ "timelines": [
+  {
+   "utterance": 1,
+   "endpoint_to_submitted_ms": 260.3,
+   "preflight_wait_ms": 32,
+   "dispatch_to_first_chunk_ms": 1555,
+   "dispatch_to_visible_ms": null,
+   "endpoint_to_segment_ms": 1935.0,
+   "endpoint_to_audio_ms": 2415.7
+  },
+  {
+   "utterance": 2,
+   "endpoint_to_submitted_ms": 260.6,
+   "preflight_wait_ms": 31,
+   "dispatch_to_first_chunk_ms": 1605,
+   "dispatch_to_visible_ms": 4616,
+   "endpoint_to_segment_ms": 4976.9,
+   "endpoint_to_audio_ms": 5450.2
+  },
+  {
+   "utterance": 3,
+   "endpoint_to_submitted_ms": 261.3,
+   "preflight_wait_ms": 33,
+   "dispatch_to_first_chunk_ms": 1655,
+   "dispatch_to_visible_ms": null,
+   "endpoint_to_segment_ms": 2010.2,
+   "endpoint_to_audio_ms": 2482.9
+  },
+  {
+   "utterance": 4,
+   "endpoint_to_submitted_ms": 283.8,
+   "preflight_wait_ms": 35,
+   "dispatch_to_first_chunk_ms": 1690,
+   "dispatch_to_visible_ms": 4783,
+   "endpoint_to_segment_ms": 5481.9,
+   "endpoint_to_audio_ms": 6233.4
+  },
+  {
+   "utterance": 5,
+   "endpoint_to_submitted_ms": 262.5,
+   "preflight_wait_ms": 40,
+   "dispatch_to_first_chunk_ms": 1983,
+   "dispatch_to_visible_ms": 3316,
+   "endpoint_to_segment_ms": 3970.2,
+   "endpoint_to_audio_ms": 4713.9
+  },
+  {
+   "utterance": 6,
+   "endpoint_to_submitted_ms": 243.7,
+   "preflight_wait_ms": 35,
+   "dispatch_to_first_chunk_ms": 2475,
+   "dispatch_to_visible_ms": 3702,
+   "endpoint_to_segment_ms": 4036.3,
+   "endpoint_to_audio_ms": 4506.0
+  },
+  {
+   "utterance": 1,
+   "endpoint_to_submitted_ms": 235.6,
+   "preflight_wait_ms": 30,
+   "dispatch_to_first_chunk_ms": 1458,
+   "dispatch_to_visible_ms": null,
+   "endpoint_to_segment_ms": 1783.2,
+   "endpoint_to_audio_ms": 2281.2
+  },
+  {
+   "utterance": 2,
+   "endpoint_to_submitted_ms": 278.0,
+   "preflight_wait_ms": 35,
+   "dispatch_to_first_chunk_ms": 2222,
+   "dispatch_to_visible_ms": 6543,
+   "endpoint_to_segment_ms": 7137.0,
+   "endpoint_to_audio_ms": 7888.9
+  },
+  {
+   "utterance": 3,
+   "endpoint_to_submitted_ms": 258.0,
+   "preflight_wait_ms": 36,
+   "dispatch_to_first_chunk_ms": null,
+   "dispatch_to_visible_ms": null,
+   "endpoint_to_segment_ms": null,
+   "endpoint_to_audio_ms": null
+  },
+  {
+   "utterance": 4,
+   "endpoint_to_submitted_ms": null,
+   "preflight_wait_ms": 35,
+   "dispatch_to_first_chunk_ms": 1976,
+   "dispatch_to_visible_ms": 8153,
+   "endpoint_to_segment_ms": 8454.9,
+   "endpoint_to_audio_ms": 9198.0
+  },
+  {
+   "utterance": 7,
+   "endpoint_to_submitted_ms": 260.9,
+   "preflight_wait_ms": 34,
+   "dispatch_to_first_chunk_ms": 2361,
+   "dispatch_to_visible_ms": 12029,
+   "endpoint_to_segment_ms": 12650.1,
+   "endpoint_to_audio_ms": 13391.0
+  },
+  {
+   "utterance": 8,
+   "endpoint_to_submitted_ms": 260.6,
+   "preflight_wait_ms": 35,
+   "dispatch_to_first_chunk_ms": null,
+   "dispatch_to_visible_ms": null,
+   "endpoint_to_segment_ms": null,
+   "endpoint_to_audio_ms": null
+  },
+  {
+   "utterance": 9,
+   "endpoint_to_submitted_ms": null,
+   "preflight_wait_ms": 33,
+   "dispatch_to_first_chunk_ms": 2650,
+   "dispatch_to_visible_ms": 5292,
+   "endpoint_to_segment_ms": 5412.1,
+   "endpoint_to_audio_ms": 5882.0
+  },
+  {
+   "utterance": 10,
+   "endpoint_to_submitted_ms": 237.4,
+   "preflight_wait_ms": 31,
+   "dispatch_to_first_chunk_ms": 1868,
+   "dispatch_to_visible_ms": null,
+   "endpoint_to_segment_ms": 2171.8,
+   "endpoint_to_audio_ms": 2637.6
+  },
+  {
+   "utterance": 1,
+   "endpoint_to_submitted_ms": 262.3,
+   "preflight_wait_ms": 34,
+   "dispatch_to_first_chunk_ms": 1596,
+   "dispatch_to_visible_ms": 7738,
+   "endpoint_to_segment_ms": 8314.2,
+   "endpoint_to_audio_ms": 9153.7
+  },
+  {
+   "utterance": 2,
+   "endpoint_to_submitted_ms": 251.4,
+   "preflight_wait_ms": 33,
+   "dispatch_to_first_chunk_ms": 1730,
+   "dispatch_to_visible_ms": 7775,
+   "endpoint_to_segment_ms": 8336.6,
+   "endpoint_to_audio_ms": 8954.7
+  },
+  {
+   "utterance": 3,
+   "endpoint_to_submitted_ms": 262.5,
+   "preflight_wait_ms": 32,
+   "dispatch_to_first_chunk_ms": 1846,
+   "dispatch_to_visible_ms": 5582,
+   "endpoint_to_segment_ms": 6171.7,
+   "endpoint_to_audio_ms": 6922.9
+  },
+  {
+   "utterance": 4,
+   "endpoint_to_submitted_ms": 897.8,
+   "preflight_wait_ms": 3012,
+   "dispatch_to_first_chunk_ms": null,
+   "dispatch_to_visible_ms": null,
+   "endpoint_to_segment_ms": null,
+   "endpoint_to_audio_ms": null
+  },
+  {
+   "utterance": 5,
+   "endpoint_to_submitted_ms": 879.0,
+   "preflight_wait_ms": 4733,
+   "dispatch_to_first_chunk_ms": 8069,
+   "dispatch_to_visible_ms": 16513,
+   "endpoint_to_segment_ms": 22346.6,
+   "endpoint_to_audio_ms": 22814.0
+  },
+  {
+   "utterance": 6,
+   "endpoint_to_submitted_ms": 237.5,
+   "preflight_wait_ms": 38,
+   "dispatch_to_first_chunk_ms": 1950,
+   "dispatch_to_visible_ms": 4445,
+   "endpoint_to_segment_ms": 4773.6,
+   "endpoint_to_audio_ms": 5245.0
+  }
+ ],
+ "resumptions": [
+  {
+   "early_utterance": 3,
+   "resumed_by": 4,
+   "pause_s": 0.578,
+   "decided_mono": 606387.846516041
+  },
+  {
+   "early_utterance": 8,
+   "resumed_by": 9,
+   "pause_s": 0.54,
+   "decided_mono": 606542.087456041
+  }
+ ],
+ "precedence": [
+  {
+   "released_utterance": 3,
+   "superseded_call_ended_mono": 606387.870658
+  },
+  {
+   "released_utterance": 8,
+   "superseded_call_ended_mono": 606542.112806416
+  },
+  {
+   "superseded_utterance": 4,
+   "by_utterance": 5,
+   "relation": "replacement",
+   "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+   "answer_heard": false,
+   "decided_mono": 606684.639773375,
+   "outcome": "superseded"
+  },
+  {
+   "released_utterance": 4,
+   "superseded_call_ended_mono": 606684.669045041
+  }
+ ],
+ "fast_route": [
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'What is the capital of Portugal?'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "her last answer asked or offered something in particular",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'Name a famous mystery novel.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "not within the admitted light scope: 'Name a famous mystery novel.'",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": 1,
+   "reason": "tier 1: greeting, thanks or farewell",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "asks for work, judgment, memory or her capabilities",
+   "tiers": [
+    1
+   ]
+  },
+  {
+   "tier": null,
+   "reason": "his previous message asked for an action or a decision, which nothing here settles",
+   "tiers": [
+    1
+   ]
+  }
+ ],
+ "deliveries_interrupted": []
+}

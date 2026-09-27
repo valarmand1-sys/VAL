@@ -1,0 +1,317 @@
+{
+ "candidate_bound": {
+  "runs": [
+   "C5"
+  ],
+  "excluded_spoken_over_her_audio": [
+   {
+    "run": "C5",
+    "session": "S3-collisions-and-replacement",
+    "label": "thanks after an answer, into maintenance"
+   }
+  ],
+  "kept_after_driver_timeout": [],
+  "social": {
+   "turns": 5,
+   "answered_and_played": 5,
+   "worklet": {
+    "n": 5,
+    "median_ms": 3088,
+    "p90_ms": 9519,
+    "max_ms": 9519
+   },
+   "store_record": {
+    "n": 5,
+    "median_ms": 3091,
+    "p90_ms": 9522,
+    "max_ms": 9522
+   },
+   "store_record_late_by_over_300ms": 0,
+   "desktop": {
+    "n": 5,
+    "median_ms": 3061,
+    "p90_ms": 9455,
+    "max_ms": 9455
+   },
+   "routes": {
+    "light_conversation": 4,
+    "conversation": 1
+   }
+  },
+  "ordinary": {
+   "turns": 11,
+   "answered_and_played": 11,
+   "worklet": {
+    "n": 11,
+    "median_ms": 7744,
+    "p90_ms": 14044,
+    "max_ms": 14786
+   },
+   "store_record": {
+    "n": 11,
+    "median_ms": 7869,
+    "p90_ms": 14049,
+    "max_ms": 14788
+   },
+   "store_record_late_by_over_300ms": 1,
+   "desktop": {
+    "n": 11,
+    "median_ms": 7516,
+    "p90_ms": 13993,
+    "max_ms": 14738
+   },
+   "routes": {
+    "light_conversation": 0,
+    "conversation": 11
+   }
+  },
+  "by_label_worklet": {
+   "greeting": {
+    "n": 2,
+    "median_ms": 3070,
+    "p90_ms": 3088,
+    "max_ms": 3088
+   },
+   "factual": {
+    "n": 1,
+    "median_ms": 7744,
+    "p90_ms": 7744,
+    "max_ms": 7744
+   },
+   "thanks after an answer": {
+    "n": 2,
+    "median_ms": 3132,
+    "p90_ms": 3267,
+    "max_ms": 3267
+   },
+   "substantive": {
+    "n": 1,
+    "median_ms": 13066,
+    "p90_ms": 13066,
+    "max_ms": 13066
+   },
+   "follow-up": {
+    "n": 1,
+    "median_ms": 4583,
+    "p90_ms": 4583,
+    "max_ms": 4583
+   },
+   "farewell after an answer": {
+    "n": 1,
+    "median_ms": 9519,
+    "p90_ms": 9519,
+    "max_ms": 9519
+   },
+   "conversational": {
+    "n": 1,
+    "median_ms": 7569,
+    "p90_ms": 7569,
+    "max_ms": 7569
+   },
+   "continuation after a pause": {
+    "n": 1,
+    "median_ms": 4508,
+    "p90_ms": 4508,
+    "max_ms": 4508
+   },
+   "hesitation": {
+    "n": 1,
+    "median_ms": 12271,
+    "p90_ms": 12271,
+    "max_ms": 12271
+   },
+   "correction after a pause": {
+    "n": 1,
+    "median_ms": 14044,
+    "p90_ms": 14044,
+    "max_ms": 14044
+   },
+   "ordinary": {
+    "n": 1,
+    "median_ms": 8689,
+    "p90_ms": 8689,
+    "max_ms": 8689
+   },
+   "follow-up, quick": {
+    "n": 1,
+    "median_ms": 7298,
+    "p90_ms": 7298,
+    "max_ms": 7298
+   },
+   "factual, into maintenance": {
+    "n": 1,
+    "median_ms": 4420,
+    "p90_ms": 4420,
+    "max_ms": 4420
+   },
+   "to be replaced": {
+    "n": 0
+   },
+   "explicit replacement": {
+    "n": 1,
+    "median_ms": 14786,
+    "p90_ms": 14786,
+    "max_ms": 14786
+   }
+  },
+  "no_played_answer": [],
+  "replaced_turn_played": [
+   {
+    "run": "C5",
+    "worklet_ms": null,
+    "store_ms": null
+   }
+  ],
+  "withdrawn_early_fragments": 2,
+  "resumptions": 2,
+  "precedence_decisions": [
+   {
+    "relation": "replacement",
+    "outcome": "superseded",
+    "answer_heard": false
+   }
+  ],
+  "primes": {
+   "total": 19,
+   "cold_over_3s": 8,
+   "cold_seconds": [
+    6.798,
+    6.997,
+    6.702,
+    6.993,
+    7.116,
+    7.013,
+    7.005,
+    13.055
+   ]
+  },
+  "preflight_wait_ms": {
+   "n": 20,
+   "over_300ms": [
+    1071,
+    3438,
+    4818
+   ],
+   "max": 4818
+  },
+  "endpoint_to_submitted_ms": {
+   "n": 18,
+   "median_ms": 261,
+   "p90_ms": 653,
+   "max_ms": 722
+  },
+  "dispatch_to_visible_ms": {
+   "n": 14,
+   "median_ms": 5407,
+   "p90_ms": 12566,
+   "max_ms": 13068
+  },
+  "readiness_s": [
+   5.435,
+   3.595,
+   9.559
+  ],
+  "stages_light_conversation": {
+   "to_submitted_ms": {
+    "n": 4,
+    "median_ms": 249,
+    "p90_ms": 261,
+    "max_ms": 261
+   },
+   "preflight_wait_ms": {
+    "n": 4,
+    "median_ms": 32,
+    "p90_ms": 36,
+    "max_ms": 36
+   },
+   "dispatch_to_first_chunk_ms": {
+    "n": 4,
+    "median_ms": 1754,
+    "p90_ms": 1949,
+    "max_ms": 1949
+   },
+   "dispatch_to_visible_ms": {
+    "n": 0
+   },
+   "visible_to_segment_ms": {
+    "n": 0
+   },
+   "segment_to_audio_ms": {
+    "n": 4,
+    "median_ms": 478,
+    "p90_ms": 484,
+    "max_ms": 484
+   },
+   "engine_cache": {
+    "turns_seen": 4,
+    "cold": 0
+   }
+  },
+  "stages_conversation": {
+   "to_submitted_ms": {
+    "n": 10,
+    "median_ms": 279,
+    "p90_ms": 722,
+    "max_ms": 722
+   },
+   "preflight_wait_ms": {
+    "n": 12,
+    "median_ms": 36,
+    "p90_ms": 3438,
+    "max_ms": 4818
+   },
+   "dispatch_to_first_chunk_ms": {
+    "n": 12,
+    "median_ms": 2160,
+    "p90_ms": 8956,
+    "max_ms": 9105
+   },
+   "dispatch_to_visible_ms": {
+    "n": 12,
+    "median_ms": 5630,
+    "p90_ms": 12566,
+    "max_ms": 13068
+   },
+   "visible_to_segment_ms": {
+    "n": 12,
+    "median_ms": 202,
+    "p90_ms": 264,
+    "max_ms": 277
+   },
+   "segment_to_audio_ms": {
+    "n": 12,
+    "median_ms": 741,
+    "p90_ms": 743,
+    "max_ms": 749
+   },
+   "engine_cache": {
+    "turns_seen": 12,
+    "cold": 3
+   }
+  },
+  "cold_prefill_turns": [
+   {
+    "run": "C5",
+    "label": "substantive",
+    "worklet_ms": 13066
+   },
+   {
+    "run": "C5",
+    "label": "correction after a pause",
+    "worklet_ms": 14044
+   },
+   {
+    "run": "C5",
+    "label": "explicit replacement",
+    "worklet_ms": 14786
+   }
+  ],
+  "ordinary_worklet_warm_checkpoint_only": {
+   "n": 8,
+   "median_ms": 7434,
+   "p90_ms": 8689,
+   "max_ms": 12271
+  },
+  "underruns": 0
+ }
+}

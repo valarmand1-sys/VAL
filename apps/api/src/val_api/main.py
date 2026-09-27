@@ -74,6 +74,7 @@ def build() -> tuple[FastAPI, Settings]:
             speculation=started.speculation,
             adaptive_grace=started.adaptive_grace,
             owner_precedence=started.owner_precedence,
+            adaptive_endpoint=started.adaptive_endpoint,
         ),
         settings,
     )

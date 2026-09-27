@@ -1,0 +1,355 @@
+{
+ "candidate_bound": {
+  "runs": [
+   "C5",
+   "C6"
+  ],
+  "excluded_spoken_over_her_audio": [
+   {
+    "run": "C5",
+    "session": "S3-collisions-and-replacement",
+    "label": "thanks after an answer, into maintenance"
+   }
+  ],
+  "kept_after_driver_timeout": [],
+  "social": {
+   "turns": 11,
+   "answered_and_played": 11,
+   "worklet": {
+    "n": 11,
+    "median_ms": 3175,
+    "p90_ms": 9519,
+    "max_ms": 15908
+   },
+   "store_record": {
+    "n": 11,
+    "median_ms": 3177,
+    "p90_ms": 9522,
+    "max_ms": 15910
+   },
+   "store_record_late_by_over_300ms": 0,
+   "desktop": {
+    "n": 11,
+    "median_ms": 3159,
+    "p90_ms": 9455,
+    "max_ms": 15860
+   },
+   "routes": {
+    "light_conversation": 7,
+    "conversation": 4
+   }
+  },
+  "ordinary": {
+   "turns": 22,
+   "answered_and_played": 22,
+   "worklet": {
+    "n": 22,
+    "median_ms": 7646,
+    "p90_ms": 14044,
+    "max_ms": 16584
+   },
+   "store_record": {
+    "n": 22,
+    "median_ms": 7770,
+    "p90_ms": 14049,
+    "max_ms": 16586
+   },
+   "store_record_late_by_over_300ms": 2,
+   "desktop": {
+    "n": 22,
+    "median_ms": 7440,
+    "p90_ms": 13993,
+    "max_ms": 16532
+   },
+   "routes": {
+    "light_conversation": 0,
+    "conversation": 22
+   }
+  },
+  "by_label_worklet": {
+   "greeting": {
+    "n": 4,
+    "median_ms": 2992,
+    "p90_ms": 3088,
+    "max_ms": 3088
+   },
+   "factual": {
+    "n": 2,
+    "median_ms": 5542,
+    "p90_ms": 7744,
+    "max_ms": 7744
+   },
+   "thanks after an answer": {
+    "n": 4,
+    "median_ms": 3221,
+    "p90_ms": 15908,
+    "max_ms": 15908
+   },
+   "substantive": {
+    "n": 2,
+    "median_ms": 14825,
+    "p90_ms": 16584,
+    "max_ms": 16584
+   },
+   "follow-up": {
+    "n": 2,
+    "median_ms": 4999,
+    "p90_ms": 5415,
+    "max_ms": 5415
+   },
+   "farewell after an answer": {
+    "n": 2,
+    "median_ms": 6874,
+    "p90_ms": 9519,
+    "max_ms": 9519
+   },
+   "conversational": {
+    "n": 2,
+    "median_ms": 7646,
+    "p90_ms": 7722,
+    "max_ms": 7722
+   },
+   "continuation after a pause": {
+    "n": 2,
+    "median_ms": 5383,
+    "p90_ms": 6258,
+    "max_ms": 6258
+   },
+   "hesitation": {
+    "n": 2,
+    "median_ms": 9110,
+    "p90_ms": 12271,
+    "max_ms": 12271
+   },
+   "correction after a pause": {
+    "n": 2,
+    "median_ms": 11410,
+    "p90_ms": 14044,
+    "max_ms": 14044
+   },
+   "ordinary": {
+    "n": 2,
+    "median_ms": 8602,
+    "p90_ms": 8689,
+    "max_ms": 8689
+   },
+   "follow-up, quick": {
+    "n": 2,
+    "median_ms": 8707,
+    "p90_ms": 10116,
+    "max_ms": 10116
+   },
+   "factual, into maintenance": {
+    "n": 2,
+    "median_ms": 4898,
+    "p90_ms": 5376,
+    "max_ms": 5376
+   },
+   "to be replaced": {
+    "n": 0
+   },
+   "explicit replacement": {
+    "n": 2,
+    "median_ms": 10114,
+    "p90_ms": 14786,
+    "max_ms": 14786
+   },
+   "thanks after an answer, into maintenance": {
+    "n": 1,
+    "median_ms": 7160,
+    "p90_ms": 7160,
+    "max_ms": 7160
+   }
+  },
+  "no_played_answer": [],
+  "replaced_turn_played": [
+   {
+    "run": "C5",
+    "worklet_ms": null,
+    "store_ms": null
+   },
+   {
+    "run": "C6",
+    "worklet_ms": null,
+    "store_ms": null
+   }
+  ],
+  "withdrawn_early_fragments": 4,
+  "resumptions": 4,
+  "precedence_decisions": [
+   {
+    "relation": "replacement",
+    "outcome": "superseded",
+    "answer_heard": false
+   },
+   {
+    "relation": "replacement",
+    "outcome": "superseded",
+    "answer_heard": false
+   }
+  ],
+  "primes": {
+   "total": 38,
+   "cold_over_3s": 14,
+   "cold_seconds": [
+    6.798,
+    6.997,
+    6.702,
+    6.993,
+    7.116,
+    7.013,
+    7.005,
+    13.055,
+    6.884,
+    6.995,
+    13.058,
+    6.682,
+    7.008,
+    13.054
+   ]
+  },
+  "preflight_wait_ms": {
+   "n": 40,
+   "over_300ms": [
+    1071,
+    1755,
+    3438,
+    4818,
+    4954
+   ],
+   "max": 4954
+  },
+  "endpoint_to_submitted_ms": {
+   "n": 36,
+   "median_ms": 261,
+   "p90_ms": 653,
+   "max_ms": 997
+  },
+  "dispatch_to_visible_ms": {
+   "n": 28,
+   "median_ms": 5407,
+   "p90_ms": 11228,
+   "max_ms": 13068
+  },
+  "readiness_s": [
+   5.435,
+   3.595,
+   9.559,
+   4.917,
+   4.515,
+   5.66
+  ],
+  "stages_light_conversation": {
+   "to_submitted_ms": {
+    "n": 7,
+    "median_ms": 238,
+    "p90_ms": 260,
+    "max_ms": 261
+   },
+   "preflight_wait_ms": {
+    "n": 7,
+    "median_ms": 32,
+    "p90_ms": 36,
+    "max_ms": 37
+   },
+   "dispatch_to_first_chunk_ms": {
+    "n": 7,
+    "median_ms": 1692,
+    "p90_ms": 1907,
+    "max_ms": 1949
+   },
+   "dispatch_to_visible_ms": {
+    "n": 0
+   },
+   "visible_to_segment_ms": {
+    "n": 0
+   },
+   "segment_to_audio_ms": {
+    "n": 7,
+    "median_ms": 479,
+    "p90_ms": 484,
+    "max_ms": 498
+   },
+   "engine_cache": {
+    "turns_seen": 7,
+    "cold": 0
+   }
+  },
+  "stages_conversation": {
+   "to_submitted_ms": {
+    "n": 22,
+    "median_ms": 277,
+    "p90_ms": 722,
+    "max_ms": 997
+   },
+   "preflight_wait_ms": {
+    "n": 26,
+    "median_ms": 36,
+    "p90_ms": 1755,
+    "max_ms": 4954
+   },
+   "dispatch_to_first_chunk_ms": {
+    "n": 26,
+    "median_ms": 2057,
+    "p90_ms": 7790,
+    "max_ms": 9105
+   },
+   "dispatch_to_visible_ms": {
+    "n": 26,
+    "median_ms": 5630,
+    "p90_ms": 11228,
+    "max_ms": 13068
+   },
+   "visible_to_segment_ms": {
+    "n": 26,
+    "median_ms": 181,
+    "p90_ms": 247,
+    "max_ms": 277
+   },
+   "segment_to_audio_ms": {
+    "n": 26,
+    "median_ms": 741,
+    "p90_ms": 745,
+    "max_ms": 861
+   },
+   "engine_cache": {
+    "turns_seen": 26,
+    "cold": 5
+   }
+  },
+  "cold_prefill_turns": [
+   {
+    "run": "C5",
+    "label": "substantive",
+    "worklet_ms": 13066
+   },
+   {
+    "run": "C5",
+    "label": "correction after a pause",
+    "worklet_ms": 14044
+   },
+   {
+    "run": "C5",
+    "label": "explicit replacement",
+    "worklet_ms": 14786
+   },
+   {
+    "run": "C6",
+    "label": "substantive",
+    "worklet_ms": 16584
+   },
+   {
+    "run": "C6",
+    "label": "thanks after an answer",
+    "worklet_ms": 15908
+   }
+  ],
+  "ordinary_worklet_warm_checkpoint_only": {
+   "n": 18,
+   "median_ms": 6778,
+   "p90_ms": 8777,
+   "max_ms": 12271
+  },
+  "underruns": 0
+ }
+}

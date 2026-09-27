@@ -355,7 +355,8 @@ def test_an_answer_he_has_begun_to_hear_is_not_cut_by_this_rule(store: Engine) -
     session, _ = _session(
         store, adapter, "Actually, never mind. Tell me about the venue instead.", precedence=True
     )
-    _speak_twice(session, between=lambda: session.playback_reported("playback_started"))
+    # Her first piece handed to the desktop and, by the occupancy estimate, playing.
+    _speak_twice(session, between=lambda: session.speech_handed_over(3.0, current=True))
     _drain(session, store, val_messages=2)
     got = rows(store, "select role::text from messages order by sequence")
     assert [r[0] for r in got] == ["user", "val", "user", "val"], got
@@ -609,4 +610,28 @@ def test_repeated_replacements_each_end_with_one_record_and_one_answer(store: En
     )
     assert calls == [("error", None), ("error", None), ("ok", calls[2][1])], calls
     assert adapter.released == [True, True], "each superseded stream released exactly once"
+    session.close()
+
+
+def test_a_late_report_for_an_earlier_answer_does_not_mark_the_new_one_heard(
+    store: Engine,
+) -> None:
+    """27 September 2026: a previous answer's tail report must not make a new, unplayed
+    answer "heard" — the replacement still supersedes it."""
+    adapter = SlowStreamingAdapter(
+        [ok(" ".join(["garden"] * 60)), ok("The venue, my lord, is the library.")]
+    )
+    session, _ = _session(
+        store, adapter, "Actually, never mind. Tell me about the venue instead.", precedence=True
+    )
+    _speak_twice(
+        session,
+        between=lambda: session.playback_reported(
+            "playback_started", segment=("an-earlier-answer", 3)
+        ),
+    )
+    _drain(session, store, val_messages=1)
+    got = rows(store, "select role::text from messages order by sequence")
+    assert [r[0] for r in got] == ["user", "user", "val"], got
+    assert adapter.released == [True]
     session.close()
