@@ -1320,3 +1320,39 @@ worse honesty outcomes — **not adopted**. The measured limit is stated with th
 trades a further change would require, none made.
 
 ---
+## 30. Handoff — the Tier-1 release gaps closed (Milestone A return under the release-gaps order), 26 September 2026
+
+**WP3 remains PARTIAL. Nothing deployed; production admission is his.** Record:
+`docs/reviews/qualification/runs/2026-09-26-redesign/TIER1_RELEASE.md` §8 (evidence index
+§117). **Release identity:** branch `release/tier1-low-2026-09-26`, tag
+`tier1-low-release-2026-09-26` — cut from `3fbebf5` (Milestone A) and carrying only the
+gap closures; **Milestone B (`d03dc74`) is not in it.** The tag's commit and CI result:
+this section's closing line. Desktop: built from that tree, staged at
+`~/Val previous builds.noindex/Val (release tier1-low 2026-09-26, staged, not installed).app`,
+digest `fa994941…231d`, not installed; the installed desktop is still the `13b3cb8` build.
+
+**What closed:** (§6A) the physical test now expects the routes the final decision
+takes — a farewell after a greeting exchange on the light route, a bare thanks after one
+withheld; (§6B) the desktop build is part of the release, with an exact identity; (§6C)
+the release is the tag, not a master checkout; (§6D) the pending-work decision reads up
+to three earlier exchanges, walking back until a message of his that is itself work,
+because a social exchange settles nothing — a second fresh set (`courtesy_pending_window.json`,
+12 + 10) evaluated once: 12/12 pending on MEDIUM, 9/10 courtesy on the route, r10 the
+known "list" imprecision; historical coverage unchanged (7/27). **The real desktop was
+driven** (unmodified frontend, dev server, headless Brave with a WAV microphone, DevTools
+protocol): eight turns in two runs, every route as predicted, every hand-off reported
+played by the frontend, light-route first audio **4.1 s** at the desktop boundary after
+Ready (Voice On → Ready 7.9 s warm), and the speech-during-warming case observed at
+that boundary (11.0 s, a request waiting behind a cold prime that began 1.0 s after his
+undetected speech onset). **Two defects found and repaired:** (1) the recognizer's
+"Vowel" for the driver's "Val" kept a greeting pair in the Tier-1 request and LOW
+answered a farewell with a greeting — the omission now reads her answer's shape too
+(`answer_is_courtesy`), verified 5/5 right on the real path; (2) the refresh's idle
+clock ran from synthesis end while the player still spoke — handed-over audio now counts
+as owner work for its duration (`speech_handed_over`, `test_prime_waits_for_playback`).
+**§7 reconciled from timestamps:** no refresh ever started after speech began (dispatch
+1.03–1.05 s after turn completion, 2.7–19.6 s before his onset); the report's sentence
+was wrong, the idle definition was the defect. A turn reaching cognition before
+readiness now shows "warming" whether or not its delivery exists. **Offline:** boundary
+unchanged and stated; `offline_check.sh` prepared, not run. **Recommendation:** deploy on
+his decision per §6; remaining: his physical test and the coordinated offline check.

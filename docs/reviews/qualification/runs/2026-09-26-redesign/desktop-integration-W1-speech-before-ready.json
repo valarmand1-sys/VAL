@@ -1,0 +1,1847 @@
+{
+ "case": "W1-warm-after-ready",
+ "plan": {
+  "total_s": 124.151,
+  "phrases": [
+   {
+    "phrase": "Good evening, Val.",
+    "speech_start_s": 12.0,
+    "speech_end_s": 13.434
+   },
+   {
+    "phrase": "What do you think of the second act?",
+    "speech_start_s": 29.434,
+    "speech_end_s": 31.354
+   },
+   {
+    "phrase": "Thank you, Val.",
+    "speech_start_s": 81.354,
+    "speech_end_s": 82.781
+   },
+   {
+    "phrase": "Good night, Val.",
+    "speech_start_s": 104.781,
+    "speech_end_s": 106.151
+   }
+  ]
+ },
+ "voice_on_click_wall": 1790480001965,
+ "service_clock": {
+  "voice_on_to_ready_s": 35.506,
+  "readiness_lines": [
+   {
+    "wall": 1790480014.964,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "warming",
+    "prefix_light": "not_applicable",
+    "detail": null
+   },
+   {
+    "wall": 1790480014.964,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "skipped",
+    "prefix_light": "not_applicable",
+    "detail": null
+   },
+   {
+    "wall": 1790480024.534,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "skipped",
+    "prefix_light": "primed",
+    "detail": null
+   },
+   {
+    "wall": 1790480037.471,
+    "ready": true,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "primed",
+    "prefix_light": "primed",
+    "detail": null
+   },
+   {
+    "wall": 1790480107.651,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "skipped",
+    "prefix_light": "primed",
+    "detail": null
+   },
+   {
+    "wall": 1790480128.62,
+    "ready": true,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "primed",
+    "prefix_light": "primed",
+    "detail": null
+   }
+  ],
+  "warm": [
+   "began 2026-09-27T03:33:22.343+00:00",
+   "ended 2026-09-27T03:33:34.963+00:00 after 12.620s: {\"cognition\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx-lmstudio-partner\", \"server_found_running\": true, \"server_started\": false, \"model_found_loaded\": false, \"model_loaded\": true, \"requested_context_tokens\": 32768, \"loaded_context_tokens\": 32768, \"base_url\": \"http://127.0.0.1:1234/v1\", \"light\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-ml"
+  ],
+  "primes": [
+   {
+    "kind": "initial",
+    "routes": [
+     "partner",
+     "light"
+    ],
+    "seconds": 7.646,
+    "result": {
+     "primed": false,
+     "outcome": "skipped",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "reason": "an owner request is waiting; maintenance never starts ahead of it",
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0ed-03c7-742c-8935-910b8a3882c3",
+      "seconds": 7.075
+     }
+    }
+   },
+   "refresh after a light_conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 7.77,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e0ed-365b-76e5-857f-96aea7d8ce89",
+     "seconds": 6.952,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0ed-19e3-75f8-981a-82b094a8d338",
+      "seconds": 0.302
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.923,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e0ed-7f77-7edd-ad95-6d5ecf42f1c8",
+     "seconds": 0.265,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0ed-7dca-7816-8963-880e41f443ad",
+      "seconds": 0.313
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.667,
+    "result": {
+     "primed": false,
+     "outcome": "skipped",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "reason": "an owner request is waiting; maintenance never starts ahead of it",
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0ee-47da-7506-9363-89efeb7e0c59",
+      "seconds": 0.316
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 7.239,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e0ee-9a6a-7351-a886-134feec1bbbc",
+     "seconds": 0.256,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0ee-98bb-7beb-b6ed-dddaa794325d",
+      "seconds": 6.634
+     }
+    }
+   }
+  ],
+  "fast_route": [
+   {
+    "tier": 1,
+    "reason": "tier 1: greeting, thanks or farewell",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "asks for work, judgment, memory or her capabilities",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "her last answer asked or offered something in particular",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "her last answer asked or offered something in particular",
+    "tiers": [
+     1
+    ]
+   }
+  ],
+  "endpoints": [
+   "utterance=1 {\"reason\": \"silence\", \"endpoint_mono\": 584550.1514167079, \"final_received_mono\": 584550.267741625, \"final_processed_mono\": 584550.285074958, \"decode_ms\": 116.3, \"voiced_s\": 1.28, \"silence_s\": 0.672, \"gap_before_s\": null, \"utterance_s\": 2.192, \"first_sample\": 191744, \"samples\": 35072, \"run_start_sample\": 0, \"received_samples\": 226880}",
+   "utterance=2 {\"reason\": \"silence\", \"endpoint_mono\": 584567.994581667, \"final_received_mono\": 584568.711812958, \"final_processed_mono\": 584568.714878541, \"decode_ms\": 717.2, \"voiced_s\": 1.952, \"silence_s\": 0.672, \"gap_before_s\": 15.456, \"utterance_s\": 2.704, \"first_sample\": 470272, \"samples\": 43264, \"run_start_sample\": 0, \"received_samples\": 513600}",
+   "utterance=3 {\"reason\": \"silence\", \"endpoint_mono\": 584619.427151166, \"final_received_mono\": 584619.551761833, \"final_processed_mono\": 584619.554811583, \"decode_ms\": 124.6, \"voiced_s\": 1.248, \"silence_s\": 0.672, \"gap_before_s\": 49.612, \"utterance_s\": 2.128, \"first_sample\": 1302272, \"samples\": 34048, \"run_start_sample\": 0, \"received_samples\": 1336320}",
+   "utterance=4 {\"reason\": \"silence\", \"endpoint_mono\": 584642.897220916, \"final_received_mono\": 584643.005129041, \"final_processed_mono\": 584643.005195583, \"decode_ms\": 107.9, \"voiced_s\": 1.28, \"silence_s\": 0.672, \"gap_before_s\": 21.538, \"utterance_s\": 2.16, \"first_sample\": 1676032, \"samples\": 34560, \"run_start_sample\": 0, \"received_samples\": 1710720}"
+  ],
+  "desktop_timing_reports": [
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": 2053.0,
+    "owner_message_dom_to_playback_start_ms": 8944.0,
+    "speech_end_to_playback_start_ms": 10998.0,
+    "committed_seen_to_owner_message_dom_ms": 27.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 837.0,
+    "segment_text_offsets_ms": [
+     4.0
+    ],
+    "segment_gaps_ms": [],
+    "segments": 1
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": 2563.0,
+    "owner_message_dom_to_playback_start_ms": 8507.0,
+    "speech_end_to_playback_start_ms": 11070.0,
+    "committed_seen_to_owner_message_dom_ms": 19.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 1471.0,
+    "segment_text_offsets_ms": [
+     3.0
+    ],
+    "segment_gaps_ms": [
+     1.0
+    ],
+    "segments": 2
+   },
+   {
+    "utterance": 3,
+    "speech_end_to_owner_message_dom_ms": 2005.0,
+    "owner_message_dom_to_playback_start_ms": 4434.0,
+    "speech_end_to_playback_start_ms": 6439.0,
+    "committed_seen_to_owner_message_dom_ms": 12.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 3,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 918.0,
+    "segment_text_offsets_ms": [
+     2.0,
+     3.0,
+     5.0
+    ],
+    "segment_gaps_ms": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "segments": 4
+   },
+   {
+    "utterance": 4,
+    "speech_end_to_owner_message_dom_ms": 1938.0,
+    "owner_message_dom_to_playback_start_ms": 4070.0,
+    "speech_end_to_playback_start_ms": 6007.0,
+    "committed_seen_to_owner_message_dom_ms": 13.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 4,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 848.0,
+    "segment_text_offsets_ms": [
+     3.0,
+     4.0
+    ],
+    "segment_gaps_ms": [
+     0.0,
+     0.0
+    ],
+    "segments": 3
+   }
+  ],
+  "turn_timelines": [
+   {
+    "utterance": 1,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:33:36.753+00:00",
+    "conversation_id": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "message_id": "01a0e0ec-ea4d-7a61-babd-7a5cffebc6e3",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 116.3,
+     "transcript_final_processed": 133.7,
+     "owner_turn_submitted": 1234.6,
+     "turn_start": 1236.8,
+     "scope_resolved": 1237.0,
+     "conversation_created": 1241.9,
+     "message_append_start": 1241.9,
+     "message_persisted": 1258.4,
+     "owner_message_committed": 1258.4,
+     "egress_decided": 1259.7,
+     "runtime_ready_start": 1280.8,
+     "runtime_ready_end": 1291.8,
+     "exact_preflight_start": 1292.0,
+     "exact_preflight_end": 7760.2,
+     "provider_dispatch": 7767.0,
+     "provider_chunk": 9540.9,
+     "speech_first_visible_text": 9545.5,
+     "speech_segment_queued": 9561.2,
+     "tts_synthesize_start": 9561.4,
+     "audio_at_sink": 10254.5,
+     "tts_synthesize_return": 10460.8
+    }
+   },
+   {
+    "utterance": 2,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:33:54.596+00:00",
+    "conversation_id": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "message_id": "01a0e0ed-3252-7838-af99-157accad12a5",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 717.2,
+     "transcript_final_processed": 720.3,
+     "owner_turn_submitted": 1831.6,
+     "turn_start": 1834.3,
+     "message_append_start": 1836.7,
+     "message_persisted": 1839.9,
+     "owner_message_committed": 1840.0,
+     "egress_decided": 1841.2,
+     "assembly_start": 1844.2,
+     "record_state_assembled": 1858.6,
+     "assembly_end": 1858.9,
+     "runtime_ready_start": 1867.6,
+     "runtime_ready_end": 1879.9,
+     "exact_preflight_start": 1879.9,
+     "exact_preflight_end": 2872.3,
+     "provider_dispatch": 2874.6,
+     "provider_chunk": 5202.3,
+     "provider_visible_text": 9574.8,
+     "speech_first_visible_text": 9574.8,
+     "speech_segment_queued": 9758.4,
+     "tts_synthesize_start": 9758.5,
+     "audio_at_sink": 10380.0,
+     "tts_synthesize_return": 11165.7
+    }
+   },
+   {
+    "utterance": 3,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:34:46.029+00:00",
+    "conversation_id": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "message_id": "01a0e0ed-f8e7-7e91-bb6c-9d9aaf7bf822",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 124.6,
+     "transcript_final_processed": 127.7,
+     "owner_turn_submitted": 1238.2,
+     "turn_start": 1239.7,
+     "message_append_start": 1241.9,
+     "message_persisted": 1244.0,
+     "owner_message_committed": 1244.0,
+     "egress_decided": 1244.7,
+     "assembly_start": 1249.2,
+     "record_state_assembled": 1257.6,
+     "assembly_end": 1257.7,
+     "runtime_ready_start": 1266.4,
+     "runtime_ready_end": 1279.9,
+     "exact_preflight_start": 1280.0,
+     "exact_preflight_end": 1310.1,
+     "provider_dispatch": 1312.2,
+     "provider_chunk": 3027.7,
+     "provider_visible_text": 4675.8,
+     "speech_first_visible_text": 4675.8,
+     "speech_segment_queued": 4954.8,
+     "tts_synthesize_start": 4955.2,
+     "audio_at_sink": 5694.1,
+     "tts_synthesize_return": 6711.6
+    }
+   },
+   {
+    "utterance": 4,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:35:09.498+00:00",
+    "conversation_id": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "message_id": "01a0e0ee-5477-777c-984e-3840ed1403c0",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 107.9,
+     "transcript_final_processed": 108.0,
+     "owner_turn_submitted": 1208.4,
+     "turn_start": 1209.9,
+     "message_append_start": 1211.2,
+     "message_persisted": 1214.2,
+     "owner_message_committed": 1214.2,
+     "egress_decided": 1215.0,
+     "assembly_start": 1218.6,
+     "record_state_assembled": 1225.4,
+     "assembly_end": 1225.5,
+     "runtime_ready_start": 1234.7,
+     "runtime_ready_end": 1247.8,
+     "exact_preflight_start": 1248.2,
+     "exact_preflight_end": 1279.7,
+     "provider_dispatch": 1281.4,
+     "provider_chunk": 3110.4,
+     "provider_visible_text": 4688.1,
+     "speech_first_visible_text": 4688.1,
+     "speech_segment_queued": 4737.3,
+     "tts_synthesize_start": 4737.5,
+     "audio_at_sink": 5297.6,
+     "tts_synthesize_return": 5382.6
+    }
+   }
+  ]
+ },
+ "desktop_display": {
+  "voice_on_to_warming_shown_s": 0.384,
+  "voice_on_to_ready_displayed_s": 46.029,
+  "events": [
+   {
+    "wall": 1790480001964,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790480001970,
+    "voice": "Voice Starting\u2026",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790480002349,
+    "voice": "Voice Starting\u2026",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790480002507,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790480015354,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480016072,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480016793,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480016913,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480016921,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480017993,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480018132,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480018139,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480026391,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480026399,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480027083,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480027110,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480027354,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480027394,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480033233,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you th- Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480034435,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act? Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480034678,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act? Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480035395,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act? Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480035400,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act? Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480036473,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act? Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480036488,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480036491,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480044276,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480044393,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480044882,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480044993,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480044998,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480047994,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480048351,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us"
+    ]
+   },
+   {
+    "wall": 1790480048364,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us"
+    ]
+   },
+   {
+    "wall": 1790480084833,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480085557,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480086154,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480086275,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480086278,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480087352,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480087362,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480087364,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480090712,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480091071,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480091791,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480091798,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library."
+    ]
+   },
+   {
+    "wall": 1790480091800,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480095948,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or"
+    ]
+   },
+   {
+    "wall": 1790480096594,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or"
+    ]
+   },
+   {
+    "wall": 1790480099469,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or"
+    ]
+   },
+   {
+    "wall": 1790480099477,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or"
+    ]
+   },
+   {
+    "wall": 1790480102428,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or"
+    ]
+   },
+   {
+    "wall": 1790480102473,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or"
+    ]
+   },
+   {
+    "wall": 1790480107752,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandWhat do you think of the second act?Mark consequentialEditRemove",
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or"
+    ]
+   },
+   {
+    "wall": 1790480108115,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480108832,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480109554,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480109674,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480109678,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480110755,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480110765,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480110767,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480114232,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480114354,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "ValMy lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a us",
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480114605,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480114833,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480114837,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480115948,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480116753,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480118911,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480118930,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480128633,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480129974,
+    "voice": "Voice Stopping\u2026",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480130196,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": [
+     "Lord ArmandThank you, Val.Mark consequentialEditRemove",
+     "ValMy lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.Judge this"
+    ]
+   }
+  ],
+  "console": [
+   "[vite] connecting...",
+   "[vite] connected.",
+   "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+   "val.voice.capture {\"echoCancellation\":true,\"noiseSuppression\":true,\"autoGainControl\":true,\"sampleRate\":48000,\"channelCount\":1}"
+  ]
+ },
+ "store": {
+  "messages": [
+   {
+    "id": "01a0e0ec-ea4d-7a61-babd-7a5cffebc6e3",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 1,
+    "role": "user",
+    "content": "Good evening, Val.",
+    "created": "1790480017.996"
+   },
+   {
+    "id": "01a0e0ed-0abc-741e-a630-480286fc41ef",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 2,
+    "role": "val",
+    "content": "Good evening, my lord.",
+    "created": "1790480026.299"
+   },
+   {
+    "id": "01a0e0ed-3252-7838-af99-157accad12a5",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 3,
+    "role": "user",
+    "content": "What do you think of the second act?",
+    "created": "1790480036.434"
+   },
+   {
+    "id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 4,
+    "role": "val",
+    "content": "My lord, I do not have that in the record I can see. Could you specify which second act you are referring to, and any particulars that will help me give a useful assessment?",
+    "created": "1790480044.777"
+   },
+   {
+    "id": "01a0e0ed-f8e7-7e91-bb6c-9d9aaf7bf822",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 5,
+    "role": "user",
+    "content": "Thank you, Val.",
+    "created": "1790480087.271"
+   },
+   {
+    "id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 6,
+    "role": "val",
+    "content": "My lord, I have no volume on that second act in the house\u2019s library. Without a record of it, I cannot give an informed opinion. Could you describe the act or provide any excerpts? Once I have that, I can review it and offer my assessment.",
+    "created": "1790480091.661"
+   },
+   {
+    "id": "01a0e0ee-5477-777c-984e-3840ed1403c0",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 7,
+    "role": "user",
+    "content": "Good night, Val.",
+    "created": "1790480110.710"
+   },
+   {
+    "id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "conversation": "01a0e0ec-ea47-7c6e-b23f-c06cca37395d",
+    "sequence": 8,
+    "role": "val",
+    "content": "Good night, my lord. I will remain at the desk until your thoughts call for them again. Rest well.",
+    "created": "1790480114.546"
+   }
+  ],
+  "model_calls": [
+   {
+    "id": "01a0e0ed-03c7-742c-8935-910b8a3882c3",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 7031,
+    "created": "1790480024.519"
+   },
+   {
+    "id": "01a0e0ed-0ab7-73aa-95c4-5fe804484316",
+    "message_id": "01a0e0ec-ea4d-7a61-babd-7a5cffebc6e3",
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "light_conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 1773,
+    "created": "1790480026.295"
+   },
+   {
+    "id": "01a0e0ed-19e3-75f8-981a-82b094a8d338",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 257,
+    "created": "1790480030.179"
+   },
+   {
+    "id": "01a0e0ed-365b-76e5-857f-96aea7d8ce89",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6917,
+    "created": "1790480037.466"
+   },
+   {
+    "id": "01a0e0ed-52e5-79a5-8504-8046dd1d5ddc",
+    "message_id": "01a0e0ed-3252-7838-af99-157accad12a5",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 7301,
+    "created": "1790480044.773"
+   },
+   {
+    "id": "01a0e0ed-7dca-7816-8963-880e41f443ad",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 273,
+    "created": "1790480055.754"
+   },
+   {
+    "id": "01a0e0ed-7f77-7edd-ad95-6d5ecf42f1c8",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 230,
+    "created": "1790480056.183"
+   },
+   {
+    "id": "01a0e0ee-0a0a-790a-ad7a-c850ca852d5b",
+    "message_id": "01a0e0ed-f8e7-7e91-bb6c-9d9aaf7bf822",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 4316,
+    "created": "1790480091.658"
+   },
+   {
+    "id": "01a0e0ee-47da-7506-9363-89efeb7e0c59",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 275,
+    "created": "1790480107.482"
+   },
+   {
+    "id": "01a0e0ee-636e-7a0d-8836-2f25ad1c7e58",
+    "message_id": "01a0e0ee-5477-777c-984e-3840ed1403c0",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 3761,
+    "created": "1790480114.542"
+   },
+   {
+    "id": "01a0e0ee-98bb-7beb-b6ed-dddaa794325d",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6593,
+    "created": "1790480128.188"
+   },
+   {
+    "id": "01a0e0ee-9a6a-7351-a886-134feec1bbbc",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 215,
+    "created": "1790480128.618"
+   }
+  ],
+  "deliveries": [
+   {
+    "message_id": "01a0e0ed-0abc-741e-a630-480286fc41ef",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790480026.313"
+   },
+   {
+    "message_id": "01a0e0ed-0abc-741e-a630-480286fc41ef",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 9019,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790480027.008"
+   },
+   {
+    "message_id": "01a0e0ed-0abc-741e-a630-480286fc41ef",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 9019,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790480027.319"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790480044.785"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 8548,
+    "segments": "1/2",
+    "reason": null,
+    "recorded": "1790480044.977"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 8548,
+    "segments": "2/2",
+    "reason": null,
+    "recorded": "1790480047.913"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790480091.672"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 4455,
+    "segments": "1/4",
+    "reason": null,
+    "recorded": "1790480091.723"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 4455,
+    "segments": "4/4",
+    "reason": null,
+    "recorded": "1790480096.547"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790480114.553"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 4088,
+    "segments": "1/3",
+    "reason": null,
+    "recorded": "1790480114.797"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 4088,
+    "segments": "3/3",
+    "reason": null,
+    "recorded": "1790480116.723"
+   }
+  ],
+  "playbacks": [
+   {
+    "message_id": "01a0e0ed-0abc-741e-a630-480286fc41ef",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480027.068"
+   },
+   {
+    "message_id": "01a0e0ed-0abc-741e-a630-480286fc41ef",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480027.084"
+   },
+   {
+    "message_id": "01a0e0ed-0abc-741e-a630-480286fc41ef",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480028.602"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480044.989"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480044.998"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480046.268"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480048.351"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480048.360"
+   },
+   {
+    "message_id": "01a0e0ed-52e9-7eb9-8cce-90092452de23",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480054.190"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480091.787"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480091.800"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480093.229"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 3,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480094.587"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 4,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480095.707"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480095.949"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480095.952"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 3,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480099.470"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480099.470"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 3,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480102.429"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 4,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480102.429"
+   },
+   {
+    "message_id": "01a0e0ee-0a0d-79f0-8440-74f359020278",
+    "segment": 4,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480105.870"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480114.828"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480114.838"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480115.387"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480115.948"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480115.948"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 3,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480116.508"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480118.911"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 3,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480118.927"
+   },
+   {
+    "message_id": "01a0e0ee-6373-73fb-aaff-e77b3c5e2244",
+    "segment": 3,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480120.269"
+   }
+  ]
+ }
+}

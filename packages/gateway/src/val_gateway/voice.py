@@ -604,6 +604,11 @@ class VoiceSession:
         #: Counts the turns that have used the runtime, so a prime that finishes can
         #: tell whether a refresh owed *after it began* is still owed.
         self._use_generation = 0
+        #: Until when, on the monotonic clock, audio already handed to the desktop is
+        #: expected to be sounding (release-gaps order of 26 September 2026, §7): the
+        #: hand-offs' own durations, serially; brought forward by barge-in or a
+        #: playback report that the speakers stopped. Owner work for maintenance.
+        self._heard_until = 0.0
         #: How the local runtime's persona prefix is primed and refreshed (owner
         #: order, 25 September 2026). Optional maintenance: it never starts while a
         #: request of his is waiting, and one run at a time.
@@ -812,6 +817,26 @@ class VoiceSession:
         self._recognizer.flush()
         self.advance()
 
+    def speech_handed_over(self, duration_seconds: float) -> None:
+        """A piece of her answer has left for the desktop: it will be heard for this long.
+
+        Release-gaps order of 26 September 2026 (§7). The scheduler's idle clock used to
+        start when synthesis ended, while the desktop was still speaking the tail of the
+        answer — the collision runs of Milestone A show every refresh dispatched one
+        second after the turn's completion and 2.7 to 19.6 s before his next words, which
+        began 0.3 s after the *player* fell silent. Audio handed over is counted as
+        heard, serially, for its own duration; nothing here is a claim about a speaker.
+        """
+        with self._lock:
+            now = time.monotonic()
+            self._heard_until = max(self._heard_until, now) + max(0.0, duration_seconds)
+
+    def playback_reported(self, state: str) -> None:
+        """The desktop reported what its speakers did; a stop ends what is counted as heard."""
+        if state in ("playback_interrupted", "playback_failed"):
+            with self._lock:
+                self._heard_until = min(self._heard_until, time.monotonic())
+
     @property
     def speech_handover(self) -> Delivery | None:
         """The delivery whose audio the desktop may still collect.
@@ -844,6 +869,9 @@ class VoiceSession:
             return None
         elapsed = delivering.interrupt(reason)
         self.cancellations.append(elapsed)
+        with self._lock:
+            # What the desktop had not yet played it discards on the stop it collects.
+            self._heard_until = min(self._heard_until, time.monotonic())
         return elapsed
 
     def deliver(self, message_id: UUID) -> None:
@@ -1501,6 +1529,7 @@ class VoiceSession:
                 or self._cognition_busy
                 or self._inflight is not None
                 or (including_speech and self._current is not None)
+                or (including_speech and time.monotonic() < self._heard_until)
             )
 
     def _maintain(
@@ -1581,11 +1610,12 @@ class VoiceSession:
 
         Milestone A §3 (owner order of 26 September 2026). A turn has used the runtime,
         so a refresh is owed; it is dispatched only after `REFRESH_IDLE_SECONDS` with no
-        speech, no settled utterance, no turn in flight and no answer being voiced, the
-        condition being rechecked at dispatch and again inside the prime before each
-        call. Two turns finishing close together owe one refresh, not two. If the
-        session never falls idle within `REFRESH_PATIENCE_SECONDS` the refresh is
-        dropped and the next turn's completion schedules a new one.
+        speech, no settled utterance, no turn in flight, no answer being voiced and no
+        handed-over audio still expected to be sounding (`_heard_until`), the condition
+        being rechecked at dispatch and again inside the prime before each call. Two
+        turns finishing close together owe one refresh, not two. If the session never
+        falls idle within `REFRESH_PATIENCE_SECONDS` the refresh is dropped and the next
+        turn's completion schedules a new one.
         """
         if self._prime is None:
             return
@@ -1852,7 +1882,11 @@ class VoiceSession:
             return "voicing"
         if delivery.has_text:
             return "writing"
-        return "thinking"
+        # Release-gaps order §7 (26 September 2026): the desktop-integration run showed a
+        # spoken turn that reached cognition before readiness displayed as "thinking" the
+        # moment its delivery existed, though nothing had been written yet — the warming
+        # it was waiting on had not ended. Same rule, whether or not a delivery exists.
+        return "warming" if not self.readiness.ready else "thinking"
 
     def __enter__(self) -> VoiceSession:
         self.start()

@@ -43,7 +43,7 @@ from val_domain.egress import EgressDecision
 from val_domain.gateway import Message
 from val_gateway.context import CAPABILITY_STATE, LOCAL_ONLY_NOTE
 from val_gateway.loop import local_now
-from val_policy.light_conversation import ConversationState, decide
+from val_policy.light_conversation import ConversationState, answer_is_courtesy, decide
 
 #: The marker on the Tier-1 record-state block, distinct from the ordinary envelope's
 #: so that a reader of the record can tell which shape the model saw.
@@ -110,10 +110,16 @@ def last_exchange(thread: WorkingThread, before_sequence: int) -> tuple[Message,
     exchange = [records[answer_index]]
     if answer_index > 0 and records[answer_index - 1].role is StoredRole.USER:
         exchange.insert(0, records[answer_index - 1])
-    if (
-        len(exchange) == 2
-        and decide(exchange[0].content, ConversationState(None, 0), LIGHT_TIERS).tier is not None
+    # Read from both sides (release-gaps order, 26 September 2026, §6): his words may be
+    # misheard ("Good evening, Vowel." is not light to the router) while her answer is
+    # still a greeting back — and with that pair in the request LOW answered a farewell
+    # with "Good evening, my lord." in the desktop-integration run.
+    if len(exchange) == 2 and (
+        decide(exchange[0].content, ConversationState(None, 0), LIGHT_TIERS).tier is not None
+        or answer_is_courtesy(exchange[-1].content)
     ):
+        return ()
+    if len(exchange) == 1 and answer_is_courtesy(exchange[0].content):
         return ()
     return tuple(
         Message(role="user" if r.role is StoredRole.USER else "assistant", content=r.content)

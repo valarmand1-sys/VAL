@@ -1,0 +1,1807 @@
+{
+ "case": "W2-warm-after-ready",
+ "plan": {
+  "total_s": 145.969,
+  "phrases": [
+   {
+    "phrase": "Good evening, Val.",
+    "speech_start_s": 45.0,
+    "speech_end_s": 46.434
+   },
+   {
+    "phrase": "Good night, Val.",
+    "speech_start_s": 62.434,
+    "speech_end_s": 63.804
+   },
+   {
+    "phrase": "Explain what a caesura is.",
+    "speech_start_s": 79.804,
+    "speech_end_s": 81.541
+   },
+   {
+    "phrase": "Thank you, Val.",
+    "speech_start_s": 126.541,
+    "speech_end_s": 127.969
+   }
+  ]
+ },
+ "voice_on_click_wall": 1790480345823,
+ "service_clock": {
+  "voice_on_to_ready_s": 7.909,
+  "readiness_lines": [
+   {
+    "wall": 1790480350.842,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "warming",
+    "prefix_light": "not_applicable",
+    "detail": null
+   },
+   {
+    "wall": 1790480353.732,
+    "ready": true,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "primed",
+    "prefix_light": "primed",
+    "detail": null
+   },
+   {
+    "wall": 1790480409.178,
+    "ready": false,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "skipped",
+    "prefix_light": "primed",
+    "detail": null
+   },
+   {
+    "wall": 1790480423.647,
+    "ready": true,
+    "cognition": "ready",
+    "voice": "ready",
+    "prefix_partner": "primed",
+    "prefix_light": "primed",
+    "detail": null
+   }
+  ],
+  "warm": [
+   "began 2026-09-27T03:39:06.228+00:00",
+   "ended 2026-09-27T03:39:10.842+00:00 after 4.614s: {\"cognition\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx-lmstudio-partner\", \"server_found_running\": true, \"server_started\": false, \"model_found_loaded\": true, \"model_loaded\": false, \"requested_context_tokens\": 32768, \"loaded_context_tokens\": 32768, \"base_url\": \"http://127.0.0.1:1234/v1\", \"light\": {\"warmed\": true, \"slug\": \"gpt-oss-20b-mxfp4-mlx"
+  ],
+  "primes": [
+   {
+    "kind": "initial",
+    "routes": [
+     "partner",
+     "light"
+    ],
+    "seconds": 2.889,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e0f2-09c1-787a-ae63-a4c097ac68a8",
+     "seconds": 0.235,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0f2-0786-7ac1-b3bb-5a5472051f18",
+      "seconds": 1.679
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.644,
+    "result": {
+     "primed": false,
+     "outcome": "skipped",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "reason": "an owner request is waiting; maintenance never starts ahead of it",
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0f2-e1b4-7fac-8c69-8b65a579e5a4",
+      "seconds": 0.312
+     }
+    }
+   },
+   "refresh after a light_conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 6.983,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e0f3-1adb-7fbc-9784-d47244e903bb",
+     "seconds": 6.349,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0f3-0171-737c-8781-963791b3d670",
+      "seconds": 0.298
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 0.898,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e0f3-bae9-7e4b-89ea-b8910ddc086e",
+     "seconds": 0.253,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0f3-b945-71e2-ad76-abe5745e61af",
+      "seconds": 0.302
+     }
+    }
+   },
+   "refresh after a conversation turn",
+   {
+    "kind": "refresh",
+    "routes": [
+     "light",
+     "partner"
+    ],
+    "seconds": 6.937,
+    "result": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5048,
+     "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+     "prime_tokens": 5059,
+     "model_call_id": "01a0e0f4-3332-79bf-be76-e1bb824999e8",
+     "seconds": 0.263,
+     "light": {
+      "primed": true,
+      "outcome": "established",
+      "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+      "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+      "boundary_tokens": 5048,
+      "boundary_sha256": "e219f7797fd6002f42fec45b95086a4f8eff4835469ff8ddbf1c23ee37107061",
+      "prime_tokens": 5059,
+      "model_call_id": "01a0e0f4-31a0-7d77-a623-3b6909d04403",
+      "seconds": 6.362
+     }
+    }
+   }
+  ],
+  "fast_route": [
+   {
+    "tier": null,
+    "reason": "not within the admitted light scope: 'Vowel.'",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": 1,
+    "reason": "tier 1: greeting, thanks or farewell",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "asks for work, judgment, memory or her capabilities",
+    "tiers": [
+     1
+    ]
+   },
+   {
+    "tier": null,
+    "reason": "her last answer asked or offered something in particular",
+    "tiers": [
+     1
+    ]
+   }
+  ],
+  "endpoints": [
+   "utterance=1 {\"reason\": \"silence\", \"endpoint_mono\": 584927.0203716251, \"final_received_mono\": 584927.1388105, \"final_processed_mono\": 584927.143963041, \"decode_ms\": 118.4, \"voiced_s\": 1.312, \"silence_s\": 0.672, \"gap_before_s\": null, \"utterance_s\": 2.224, \"first_sample\": 719104, \"samples\": 35584, \"run_start_sample\": 0, \"received_samples\": 754880}",
+   "utterance=2 {\"reason\": \"silence\", \"endpoint_mono\": 584944.4433512499, \"final_received_mono\": 584944.548643125, \"final_processed_mono\": 584944.553843916, \"decode_ms\": 105.3, \"voiced_s\": 1.248, \"silence_s\": 0.672, \"gap_before_s\": 15.484, \"utterance_s\": 2.16, \"first_sample\": 998144, \"samples\": 34560, \"run_start_sample\": 0, \"received_samples\": 1032960}",
+   "utterance=3 {\"reason\": \"silence\", \"endpoint_mono\": 584962.084694542, \"final_received_mono\": 584962.208972, \"final_processed_mono\": 584962.218731, \"decode_ms\": 124.3, \"voiced_s\": 1.792, \"silence_s\": 0.672, \"gap_before_s\": 15.401, \"utterance_s\": 2.544, \"first_sample\": 1275648, \"samples\": 40704, \"run_start_sample\": 0, \"received_samples\": 1316480}",
+   "utterance=4 {\"reason\": \"silence\", \"endpoint_mono\": 585008.6190919161, \"final_received_mono\": 585008.737163541, \"final_processed_mono\": 585008.764303958, \"decode_ms\": 118.1, \"voiced_s\": 1.248, \"silence_s\": 0.672, \"gap_before_s\": 44.58, \"utterance_s\": 2.16, \"first_sample\": 2024704, \"samples\": 34560, \"run_start_sample\": 0, \"received_samples\": 2059520}"
+  ],
+  "desktop_timing_reports": [
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": 2055.0,
+    "owner_message_dom_to_playback_start_ms": 9067.0,
+    "speech_end_to_playback_start_ms": 11122.0,
+    "committed_seen_to_owner_message_dom_ms": 26.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 1,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 835.0,
+    "segment_text_offsets_ms": [
+     5.0
+    ],
+    "segment_gaps_ms": [
+     0.0
+    ],
+    "segments": 2
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": 2020.0,
+    "owner_message_dom_to_playback_start_ms": 2071.0,
+    "speech_end_to_playback_start_ms": 4091.0,
+    "committed_seen_to_owner_message_dom_ms": 12.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 2,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 815.0,
+    "segment_text_offsets_ms": [
+     4.0
+    ],
+    "segment_gaps_ms": [],
+    "segments": 1
+   },
+   {
+    "utterance": 3,
+    "speech_end_to_owner_message_dom_ms": 2017.0,
+    "owner_message_dom_to_playback_start_ms": 4113.0,
+    "speech_end_to_playback_start_ms": 6130.0,
+    "committed_seen_to_owner_message_dom_ms": 12.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 3,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 813.0,
+    "segment_text_offsets_ms": [
+     921.0,
+     5.0,
+     3.0
+    ],
+    "segment_gaps_ms": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "segments": 4
+   },
+   {
+    "utterance": 4,
+    "speech_end_to_owner_message_dom_ms": 2048.0,
+    "owner_message_dom_to_playback_start_ms": 4437.0,
+    "speech_end_to_playback_start_ms": 6485.0,
+    "committed_seen_to_owner_message_dom_ms": 13.0,
+    "speech_end_to_owner_words_provisional_ms": null,
+    "segment_text_offsets_ms": null,
+    "segment_gaps_ms": null,
+    "segments": null
+   },
+   {
+    "utterance": 4,
+    "speech_end_to_owner_message_dom_ms": null,
+    "owner_message_dom_to_playback_start_ms": null,
+    "speech_end_to_playback_start_ms": null,
+    "committed_seen_to_owner_message_dom_ms": null,
+    "speech_end_to_owner_words_provisional_ms": 839.0,
+    "segment_text_offsets_ms": [
+     3.0
+    ],
+    "segment_gaps_ms": [
+     0.0
+    ],
+    "segments": 2
+   }
+  ],
+  "turn_timelines": [
+   {
+    "utterance": 1,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:39:53.620+00:00",
+    "conversation_id": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "message_id": "01a0e0f2-aa69-7f03-9c2b-ab8d6eb77ed9",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 118.4,
+     "transcript_final_processed": 123.6,
+     "owner_turn_submitted": 1226.4,
+     "turn_start": 1228.2,
+     "scope_resolved": 1228.3,
+     "conversation_created": 1233.5,
+     "message_append_start": 1233.5,
+     "message_persisted": 1245.3,
+     "owner_message_committed": 1245.3,
+     "egress_decided": 1246.4,
+     "assembly_start": 1253.0,
+     "record_state_assembled": 1260.9,
+     "assembly_end": 1261.0,
+     "runtime_ready_start": 1269.3,
+     "runtime_ready_end": 1280.7,
+     "exact_preflight_start": 1280.8,
+     "exact_preflight_end": 1306.3,
+     "provider_dispatch": 1308.6,
+     "provider_chunk": 2959.9,
+     "provider_visible_text": 9799.1,
+     "speech_first_visible_text": 9799.1,
+     "speech_segment_queued": 9800.0,
+     "tts_synthesize_start": 9802.3,
+     "audio_at_sink": 10424.1,
+     "tts_synthesize_return": 10648.5
+    }
+   },
+   {
+    "utterance": 2,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:40:11.043+00:00",
+    "conversation_id": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "message_id": "01a0e0f2-ee6d-7300-8675-d7ef0b7f3b78",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 105.3,
+     "transcript_final_processed": 110.5,
+     "owner_turn_submitted": 1218.3,
+     "turn_start": 1219.9,
+     "message_append_start": 1223.9,
+     "message_persisted": 1226.6,
+     "owner_message_committed": 1226.6,
+     "egress_decided": 1227.5,
+     "runtime_ready_start": 1243.6,
+     "runtime_ready_end": 1256.7,
+     "exact_preflight_start": 1256.7,
+     "exact_preflight_end": 1288.9,
+     "provider_dispatch": 1291.0,
+     "provider_chunk": 2889.0,
+     "speech_first_visible_text": 2892.8,
+     "speech_segment_queued": 2902.2,
+     "tts_synthesize_start": 2902.3,
+     "audio_at_sink": 3371.7,
+     "tts_synthesize_return": 3453.1
+    }
+   },
+   {
+    "utterance": 3,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:40:28.684+00:00",
+    "conversation_id": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "message_id": "01a0e0f3-3367-7c84-aa84-6b6c0fdad3e5",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 124.3,
+     "transcript_final_processed": 134.0,
+     "owner_turn_submitted": 1239.2,
+     "turn_start": 1240.4,
+     "message_append_start": 1241.4,
+     "message_persisted": 1253.2,
+     "owner_message_committed": 1253.2,
+     "egress_decided": 1254.2,
+     "assembly_start": 1256.7,
+     "record_state_assembled": 1265.1,
+     "assembly_end": 1265.2,
+     "runtime_ready_start": 1273.7,
+     "runtime_ready_end": 1287.9,
+     "exact_preflight_start": 1288.0,
+     "exact_preflight_end": 1323.2,
+     "provider_dispatch": 1324.9,
+     "provider_chunk": 2945.2,
+     "provider_visible_text": 4469.8,
+     "speech_first_visible_text": 4469.8,
+     "speech_segment_queued": 4640.8,
+     "tts_synthesize_start": 4641.1,
+     "audio_at_sink": 5381.1,
+     "tts_synthesize_return": 6467.6
+    }
+   },
+   {
+    "utterance": 4,
+    "anchor": "endpoint",
+    "anchor_wall": "2026-09-27T03:41:15.219+00:00",
+    "conversation_id": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "message_id": "01a0e0f3-e948-71db-bb9a-d24cd4da88bc",
+    "marks": {
+     "endpoint": 0.0,
+     "transcript_final_received": 118.1,
+     "transcript_final_processed": 145.2,
+     "owner_turn_submitted": 1265.3,
+     "turn_start": 1266.9,
+     "message_append_start": 1267.9,
+     "message_persisted": 1270.3,
+     "owner_message_committed": 1270.3,
+     "egress_decided": 1271.1,
+     "assembly_start": 1273.9,
+     "record_state_assembled": 1281.2,
+     "assembly_end": 1281.4,
+     "runtime_ready_start": 1289.5,
+     "runtime_ready_end": 1303.0,
+     "exact_preflight_start": 1303.1,
+     "exact_preflight_end": 1339.6,
+     "provider_dispatch": 1342.2,
+     "provider_chunk": 3111.4,
+     "provider_visible_text": 5076.2,
+     "speech_first_visible_text": 5076.2,
+     "speech_segment_queued": 5255.4,
+     "tts_synthesize_start": 5257.1,
+     "audio_at_sink": 5729.1,
+     "tts_synthesize_return": 6443.0
+    }
+   }
+  ]
+ },
+ "desktop_display": {
+  "voice_on_to_warming_shown_s": 0.411,
+  "voice_on_to_ready_displayed_s": 8.003,
+  "events": [
+   {
+    "wall": 1790480345822,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790480345828,
+    "voice": "Voice Starting\u2026",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790480346234,
+    "voice": "Voice Starting\u2026",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790480346377,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": []
+   },
+   {
+    "wall": 1790480353826,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": []
+   },
+   {
+    "wall": 1790480392223,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480392942,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480393663,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480393781,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480393787,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480394861,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480395001,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480395007,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480403506,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480403514,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480404075,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480404100,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480405185,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480405669,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this"
+    ]
+   },
+   {
+    "wall": 1790480405783,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this"
+    ]
+   },
+   {
+    "wall": 1790480409264,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this"
+    ]
+   },
+   {
+    "wall": 1790480409745,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480410344,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480411064,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480411187,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480411190,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480412270,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is warming up \u2014 your words are heard and will be answered.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480412383,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is warming up \u2014 your words are heard and will be answered.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480412392,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is warming up \u2014 your words are heard and will be answered.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480412394,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is warming up \u2014 your words are heard and will be answered.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480413941,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480414064,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480414073,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480414424,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480414466,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480414662,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480414701,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": "Warming up\u2026 you can speak; the first answer may take longer.",
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480423666,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood evening, Vowel.Mark consequentialEditRemove",
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this"
+    ]
+   },
+   {
+    "wall": 1790480427025,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandEXPLAINED Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480427749,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what is this euro Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480428467,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480428706,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480428826,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480428830,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480430022,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480430030,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480430033,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480433264,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480433386,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480434102,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord. How may I assist you tonight?Judge this",
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480434146,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section,"
+    ]
+   },
+   {
+    "wall": 1790480435075,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section,Judge this"
+    ]
+   },
+   {
+    "wall": 1790480437177,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u"
+    ]
+   },
+   {
+    "wall": 1790480442866,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u"
+    ]
+   },
+   {
+    "wall": 1790480443466,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u"
+    ]
+   },
+   {
+    "wall": 1790480454298,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u"
+    ]
+   },
+   {
+    "wall": 1790480454386,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandGood night, Val.Mark consequentialEditRemove",
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u"
+    ]
+   },
+   {
+    "wall": 1790480473826,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480474547,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Transcribing",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Val. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480475271,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel. Hearing\u2026"
+    ]
+   },
+   {
+    "wall": 1790480475386,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480475390,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Thinking",
+    "progress": null,
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480476585,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel. Heard \u2014 not yet your message"
+    ]
+   },
+   {
+    "wall": 1790480476596,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480476598,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is thinking\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480480309,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Val is writing\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480480544,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "ValGood evening, my lord.Judge this",
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove"
+    ]
+   },
+   {
+    "wall": 1790480480555,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": "Preparing her voice\u2026",
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480481026,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "Val\u2026Judge this"
+    ]
+   },
+   {
+    "wall": 1790480481036,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "ValI have taken note of the record state you provided,Judge this"
+    ]
+   },
+   {
+    "wall": 1790480482944,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "ValI have taken note of the record state you provided,Judge this"
+    ]
+   },
+   {
+    "wall": 1790480484319,
+    "voice": "Voice On \u00b7 Mic Listening \u00b7 Val Speaking",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "ValI have taken note of the record state you provided, my lord. How may I further serve our house?Judge this"
+    ]
+   },
+   {
+    "wall": 1790480484387,
+    "voice": "Voice On \u00b7 Mic Listening",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "ValI have taken note of the record state you provided, my lord. How may I further serve our house?Judge this"
+    ]
+   },
+   {
+    "wall": 1790480494831,
+    "voice": "Voice Stopping\u2026",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "ValI have taken note of the record state you provided, my lord. How may I further serve our house?Judge this"
+    ]
+   },
+   {
+    "wall": 1790480495062,
+    "voice": "Voice Off",
+    "progress": null,
+    "messages": [
+     "Lord ArmandExplain what a caesarean is.Mark consequentialEditRemove",
+     "ValA caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and u",
+     "Lord ArmandThank you, Vowel.Mark consequentialEditRemove",
+     "ValI have taken note of the record state you provided, my lord. How may I further serve our house?Judge this"
+    ]
+   }
+  ],
+  "console": [
+   "[vite] connecting...",
+   "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+   "[vite] connected.",
+   "val.voice.capture {\"echoCancellation\":true,\"noiseSuppression\":true,\"autoGainControl\":true,\"sampleRate\":48000,\"channelCount\":1}"
+  ]
+ },
+ "store": {
+  "messages": [
+   {
+    "id": "01a0e0f2-aa69-7f03-9c2b-ab8d6eb77ed9",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 1,
+    "role": "user",
+    "content": "Good evening, Vowel.",
+    "created": "1790480394.855"
+   },
+   {
+    "id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 2,
+    "role": "val",
+    "content": "Good evening, my lord. How may I assist you tonight?",
+    "created": "1790480403.427"
+   },
+   {
+    "id": "01a0e0f2-ee6d-7300-8675-d7ef0b7f3b78",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 3,
+    "role": "user",
+    "content": "Good night, Val.",
+    "created": "1790480412.268"
+   },
+   {
+    "id": "01a0e0f2-f4f1-7fdd-bbd8-db324952ab8e",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 4,
+    "role": "val",
+    "content": "Good evening, my lord.",
+    "created": "1790480413.937"
+   },
+   {
+    "id": "01a0e0f3-3367-7c84-aa84-6b6c0fdad3e5",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 5,
+    "role": "user",
+    "content": "Explain what a caesarean is.",
+    "created": "1790480429.927"
+   },
+   {
+    "id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 6,
+    "role": "val",
+    "content": "A caesarean section, commonly called a C\u2011section, is a surgical procedure in which a baby is delivered through an incision made in the mother\u2019s abdomen and uterus. The operation is performed when a vaginal birth would pose significant risk to either the mother or the child, such as in cases of fetal distress, abnormal presentation, maternal health complications, or certain obstetric conditions. The incision is closed after the delivery, and recovery typically requires several weeks of rest and medical monitoring.",
+    "created": "1790480434.979"
+   },
+   {
+    "id": "01a0e0f3-e948-71db-bb9a-d24cd4da88bc",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 7,
+    "role": "user",
+    "content": "Thank you, Vowel.",
+    "created": "1790480476.487"
+   },
+   {
+    "id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "conversation": "01a0e0f2-aa62-740f-a84c-0433156bd494",
+    "sequence": 8,
+    "role": "val",
+    "content": "I have taken note of the record state you provided, my lord. How may I further serve our house?",
+    "created": "1790480480.479"
+   }
+  ],
+  "model_calls": [
+   {
+    "id": "01a0e0f2-0786-7ac1-b3bb-5a5472051f18",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 1630,
+    "created": "1790480353.158"
+   },
+   {
+    "id": "01a0e0f2-09c1-787a-ae63-a4c097ac68a8",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 205,
+    "created": "1790480353.729"
+   },
+   {
+    "id": "01a0e0f2-cbe0-768d-8f18-2e396f7faa20",
+    "message_id": "01a0e0f2-aa69-7f03-9c2b-ab8d6eb77ed9",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 8493,
+    "created": "1790480403.424"
+   },
+   {
+    "id": "01a0e0f2-e1b4-7fac-8c69-8b65a579e5a4",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 265,
+    "created": "1790480409.012"
+   },
+   {
+    "id": "01a0e0f2-f4ed-76f8-8ad1-1c54d29e7092",
+    "message_id": "01a0e0f2-ee6d-7300-8675-d7ef0b7f3b78",
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "light_conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 1598,
+    "created": "1790480413.933"
+   },
+   {
+    "id": "01a0e0f3-0171-737c-8781-963791b3d670",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 255,
+    "created": "1790480417.137"
+   },
+   {
+    "id": "01a0e0f3-1adb-7fbc-9784-d47244e903bb",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6316,
+    "created": "1790480423.644"
+   },
+   {
+    "id": "01a0e0f3-4720-7c8d-9786-2eba2c3ef554",
+    "message_id": "01a0e0f3-3367-7c84-aa84-6b6c0fdad3e5",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 4966,
+    "created": "1790480434.976"
+   },
+   {
+    "id": "01a0e0f3-b945-71e2-ad76-abe5745e61af",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 260,
+    "created": "1790480464.197"
+   },
+   {
+    "id": "01a0e0f3-bae9-7e4b-89ea-b8910ddc086e",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 218,
+    "created": "1790480464.617"
+   },
+   {
+    "id": "01a0e0f3-f8dc-7fa6-bdfc-846fe3c25869",
+    "message_id": "01a0e0f3-e948-71db-bb9a-d24cd4da88bc",
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "conversation",
+    "status": "ok",
+    "terminal": "complete",
+    "latency_ms": 3915,
+    "created": "1790480480.477"
+   },
+   {
+    "id": "01a0e0f4-31a0-7d77-a623-3b6909d04403",
+    "message_id": null,
+    "config": "de3c53f0-7db1-4d1a-8fa5-52381e8a7f96",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 6327,
+    "created": "1790480495.008"
+   },
+   {
+    "id": "01a0e0f4-3332-79bf-be76-e1bb824999e8",
+    "message_id": null,
+    "config": "3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21",
+    "task": "prefix_prime",
+    "status": "ok",
+    "terminal": "truncated",
+    "latency_ms": 220,
+    "created": "1790480495.410"
+   }
+  ],
+  "deliveries": [
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790480403.440"
+   },
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 9197,
+    "segments": "1/2",
+    "reason": null,
+    "recorded": "1790480404.045"
+   },
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 9197,
+    "segments": "2/2",
+    "reason": null,
+    "recorded": "1790480405.098"
+   },
+   {
+    "message_id": "01a0e0f2-f4f1-7fdd-bbd8-db324952ab8e",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790480413.945"
+   },
+   {
+    "message_id": "01a0e0f2-f4f1-7fdd-bbd8-db324952ab8e",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 2153,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790480414.416"
+   },
+   {
+    "message_id": "01a0e0f2-f4f1-7fdd-bbd8-db324952ab8e",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 2153,
+    "segments": "1/1",
+    "reason": null,
+    "recorded": "1790480414.598"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "event": 1,
+    "state": "started",
+    "first_audio_ms": 4141,
+    "segments": "1/None",
+    "reason": null,
+    "recorded": "1790480434.983"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "event": 2,
+    "state": "completed",
+    "first_audio_ms": 4141,
+    "segments": "4/4",
+    "reason": null,
+    "recorded": "1790480443.442"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "event": 1,
+    "state": "not_started",
+    "first_audio_ms": null,
+    "segments": "0/None",
+    "reason": null,
+    "recorded": "1790480480.484"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "event": 2,
+    "state": "started",
+    "first_audio_ms": 4463,
+    "segments": "1/2",
+    "reason": null,
+    "recorded": "1790480480.948"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "event": 3,
+    "state": "completed",
+    "first_audio_ms": 4463,
+    "segments": "2/2",
+    "reason": null,
+    "recorded": "1790480482.893"
+   }
+  ],
+  "playbacks": [
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480404.058"
+   },
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480404.076"
+   },
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480404.777"
+   },
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480405.668"
+   },
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480405.680"
+   },
+   {
+    "message_id": "01a0e0f2-cbe3-7e46-8a6b-f3ccb2b3816f",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480407.416"
+   },
+   {
+    "message_id": "01a0e0f2-f4f1-7fdd-bbd8-db324952ab8e",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480414.458"
+   },
+   {
+    "message_id": "01a0e0f2-f4f1-7fdd-bbd8-db324952ab8e",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480414.467"
+   },
+   {
+    "message_id": "01a0e0f2-f4f1-7fdd-bbd8-db324952ab8e",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480415.580"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480434.139"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480434.146"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480435.662"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480437.176"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480437.176"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 3,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480437.503"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 4,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480441.182"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 3,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480442.865"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480442.865"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 3,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480454.297"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 4,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480454.297"
+   },
+   {
+    "message_id": "01a0e0f3-4723-7969-8155-8633005cb610",
+    "segment": 4,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480462.616"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "segment": 1,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480481.022"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "segment": 1,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480481.036"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "segment": 2,
+    "event": 1,
+    "state": "available_to_desktop",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480482.141"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "segment": 1,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480484.318"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "segment": 2,
+    "event": 2,
+    "state": "playback_started",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480484.325"
+   },
+   {
+    "message_id": "01a0e0f3-f8df-78c6-993f-999a87f70944",
+    "segment": 2,
+    "event": 3,
+    "state": "playback_completed",
+    "elapsed_ms": null,
+    "reason": null,
+    "recorded": "1790480487.438"
+   }
+  ]
+ }
+}

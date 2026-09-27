@@ -54,6 +54,13 @@ with psycopg.connect(URL, options="-c default_transaction_read_only=on") as conn
         order by m.created_at
         """
     ).fetchall()
+    # Release-gaps order §6 (26 September 2026): the pending-work window reads the
+    # exchanges before the previous one, so every conversation's wording in force is
+    # loaded once and paired in Python exactly as `deliberate.tier1_eligibility` pairs it.
+    history_rows = connection.execute(
+        "select conversation_id, sequence, role::text, content from messages_current "
+        "where role in ('user', 'val') order by conversation_id, sequence"
+    ).fetchall()
     owner_texts = connection.execute(
         "select conversation_id, string_agg(content, ' ') from messages_current "
         "where role = 'user' group by conversation_id"
@@ -85,11 +92,29 @@ def q(values: list[float]) -> dict:
             "min_ms": round(values[0]), "max_ms": round(values[-1])}
 
 
+history: dict = {}
+for cid_, seq_, role_, content_ in history_rows:
+    history.setdefault(cid_, []).append((seq_, role_, content_))
+
+
+def earlier_exchanges(cid, seq):  # noqa: ANN001, ANN201
+    exchanges: list[tuple[str, str | None]] = []
+    for s_, role_, content_ in history.get(cid, []):
+        if s_ >= seq:
+            break
+        if role_ == "user":
+            exchanges.append((content_, None))
+        elif exchanges and exchanges[-1][1] is None:
+            exchanges[-1] = (exchanges[-1][0], content_)
+    return tuple(exchanges[:-1])
+
+
 turns = []
 for mid, cid, seq, created, content, previous, prior, previous_owner, answer_id in rows:
     verdict = decide(
         content,
-        ConversationState(previous_answer=previous, prior_turns=prior, previous_owner_message=previous_owner),
+        ConversationState(previous_answer=previous, prior_turns=prior, previous_owner_message=previous_owner,
+                          earlier_exchanges=earlier_exchanges(cid, seq)),
         TIERS,
     )
     group = {1: "tier_1", 2: "tier_2", None: "substantive"}[verdict.tier]

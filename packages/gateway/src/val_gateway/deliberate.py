@@ -1212,12 +1212,22 @@ def tier1_eligibility(
         m.record.sequence == sequence for m in live if m.state is not MessageState.CURRENT
     ):
         return RouteDecision(None, "correction-sensitive: this message carries a revision")
+    # The exchanges before the previous one, for the pending-work window (release-gaps
+    # order of 26 September 2026, §6): his message paired with the answer that followed
+    # it, or None where none did. The policy bounds how far back it reads.
+    exchanges: list[tuple[str, str | None]] = []
+    for m in earlier:
+        if m.record.role is StoredRole.USER:
+            exchanges.append((m.record.content, None))
+        elif exchanges and exchanges[-1][1] is None:
+            exchanges[-1] = (exchanges[-1][0], m.record.content)
     return fast_route.decide(
         content,
         ConversationState(
             previous_answer=previous,
             prior_turns=prior_turns,
             previous_owner_message=None if last_user is None else last_user.record.content,
+            earlier_exchanges=tuple(exchanges[:-1]),
         ),
     )
 
