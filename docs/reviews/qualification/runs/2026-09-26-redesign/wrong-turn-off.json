@@ -1,0 +1,165 @@
+{
+ "condition": "off",
+ "rows": [
+  {
+   "label": "wrong-turn d10",
+   "history": [
+    {
+     "said": "Val, explain three ways to make a film scene feel tense without using dialogue.",
+     "answer": "My lord, to infuse a scene with tension without spoken words you may rely on three pillars of cinematic language:\n\n1. **Visual Composition and Movement** –  \n   • *Camera framing*: a tight, close‑up can make the subject feel claustrophobic; an over‑the‑shoulder shot forces the audience to share a character’s anxious gaze.  \n   • *Blocking*: place characters in asymmetrical or off‑center positions, letting the frame itself suggest unease.  \n   • *Motion*: a lingering pan or an abrupt dolly shot can mirror the rhythm of a heart beating faster, building suspense through movement alone.\n\n2. **Soundscape and Silence** –  \n   • *Ambient noise*: the creak of floorboards, distant thunder, or a subtle wind can undercut the scene with an unspoken threat.  \n   • *Music*: a low, sustained chord or a sudden dissonant note can raise stakes without dialogue.  \n   • *Strategic silence*: pausing before a reveal lets the audience anticipate what is about to occur, turning quiet into an active source of tension.\n\n3. **Physical Performance and Blocking** –  \n   • *Body language*: a hesitant step, a clenched jaw, or a sudden freeze can communicate dread.  \n   • *Interaction with the set*: a character hesitating before touching a key object, or deliberately avoiding eye contact, signals internal conflict.  \n   • *Timing*: delaying a character’s reaction to an event—waiting before turning, lingering in a doorway—creates a build‑up that relies solely on the actor’s physicality.\n\nThese techniques, when combined or applied selectively, can render a scene palpably tense without the need for spoken words."
+    }
+   ],
+   "utterance": "Thank you, Val.",
+   "answer": "My lord, you are most welcome.",
+   "tokens_out": 112,
+   "latency_ms": 9625
+  },
+  {
+   "label": "wrong-turn f08",
+   "history": [
+    {
+     "said": "Give me one line of advice on pacing a chase sequence.",
+     "answer": "My lord, sustain tension by alternating swift chases with strategic pauses that test the pursuer’s resolve."
+    }
+   ],
+   "utterance": "Much obliged.",
+   "answer": "My lord, sustain tension by alternating swift chases with strategic pauses that test the pursuer’s resolve.",
+   "tokens_out": 250,
+   "latency_ms": 11221
+  },
+  {
+   "label": "wrong-turn f09",
+   "history": [
+    {
+     "said": "Explain the difference between suspense and surprise in a scene.",
+     "answer": "Good evening, my lord.  \nSuspense and surprise are both devices that affect a scene’s emotional rhythm, but they operate in distinct ways.\n\n**Suspense** is the sustained sense of anticipation. It builds over time, often by withholding information or creating a threat that has not yet been resolved. The audience feels the weight of uncertainty and watches for how the tension will be released. Suspense is measured by *duration*; it keeps a character (and the audience) in a state of heightened vigilance until the payoff.\n\n**Surprise**, by contrast, is an abrupt shift in expectation. It delivers a sudden revelation or event that contradicts what the audience has been led to believe, but it does not necessarily extend over a long arc. The impact is immediate; the scene may return to its original pace after the shock has passed.\n\nIn practice, a suspenseful moment might involve a character pacing in darkness while the audience knows a threat looms but not when it will strike. A surprise would be the sudden appearance of that threat in an unexpected place, instantly altering the scene’s trajectory."
+    }
+   ],
+   "utterance": "Nothing else for now, thank you.",
+   "answer": "My lord,  \nSuspense is the deliberate maintenance of an unresolved expectation over time. It keeps a character—and the audience—watching for how and when that tension will be released, creating a steady build of anticipation.\n\nSurprise is an abrupt deviation from what has been anticipated. It delivers a sudden revelation or event that contradicts the current expectation, but it does not rely on an extended period of tension; its impact is immediate and then the scene may return to its previous pace.\n\nIn short, suspense is a sustained anticipation; surprise is an instant shock that changes the scene’s trajectory.",
+   "tokens_out": 258,
+   "latency_ms": 11627
+  },
+  {
+   "label": "pending: thanks after a draft request",
+   "history": [
+    {
+     "said": "Draft the reply to the reader.",
+     "answer": "Good evening, my lord. What shall we turn our attention to?"
+    }
+   ],
+   "utterance": "Thank you, Val.",
+   "answer": "You're welcome, my lord. How may I assist further?",
+   "tokens_out": 280,
+   "latency_ms": 11687
+  },
+  {
+   "label": "pending: farewell after a cancel request",
+   "history": [
+    {
+     "said": "Cancel the meeting on Tuesday.",
+     "answer": "My lord, I have no record in the house of a meeting scheduled for Tuesday. If you can provide the particulars—date, time, participants—or confirm that such an appointment exists in your own calendar, I will note it. However, I do not possess the capability to alter external schedules or cancel appointments on your behalf."
+    }
+   ],
+   "utterance": "Talk soon, Val.",
+   "answer": "My lord, I have no record of a meeting scheduled for Tuesday in the house’s archives. I am unable to cancel it on your behalf.",
+   "tokens_out": 353,
+   "latency_ms": 13592
+  },
+  {
+   "label": "pending: thanks after a decision question",
+   "history": [
+    {
+     "said": "Should I send the letter tonight or tomorrow?",
+     "answer": "My lord,\n\nI have no record of the letter you refer to, nor any indication of its content or the urgency with which it must reach its recipient. In order to advise you properly, I would need to know:\n\n1. The subject matter of the letter and any time‑sensitive points it contains.\n2. Whether there is a fixed deadline by which the recipient must receive it (for example, an answer required by a council meeting tomorrow morning).\n3. Whether the letter will be dispatched via courier, post, or electronic means, and what transit time those methods entail.\n\nWithout that information I cannot determine whether tonight or tomorrow is the safer choice. If you can provide those details, I will assess the risks and recommend the optimal time for dispatch.\n\nRespectfully,\nVal\nMaester of House Armand"
+    }
+   ],
+   "utterance": "Thank you.",
+   "answer": "My lord,\n\nI have no record of the letter you mention, nor any indication of its urgency or delivery method. To advise whether tonight or tomorrow is preferable, I need to know:\n\n1. The subject matter and any time‑sensitive points it contains.\n2. Whether a fixed deadline requires the recipient to receive it by tomorrow morning (or any other date).\n3. The means of dispatch—courier, post, electronic—and the transit time those options entail.\n\nOnce I have that information, I can assess the risks and recommend the optimal timing for sending.",
+   "tokens_out": 299,
+   "latency_ms": 12172
+  },
+  {
+   "label": "explicit repeat",
+   "history": [
+    {
+     "said": "Give me one line of advice on pacing a chase sequence.",
+     "answer": "My lord, maintain a steady rhythm by alternating brief bursts of high intensity with short pauses that allow the audience to catch their breath before the next surge."
+    }
+   ],
+   "utterance": "Say that again, please.",
+   "answer": "My lord, maintain a steady rhythm by alternating brief bursts of high intensity with short pauses that allow the audience to catch their breath before the next surge.",
+   "tokens_out": 207,
+   "latency_ms": 10579
+  },
+  {
+   "label": "explicit recap",
+   "history": [
+    {
+     "said": "Explain the difference between suspense and surprise in a scene.",
+     "answer": "Suspense and surprise are two distinct narrative tools, each serving a different purpose in a scene.\n\n**Suspense**  \n- *What it is*: A sustained state of uncertainty or dread that keeps the audience waiting for an outcome.  \n- *How it works*: The story reveals enough to hint at danger or conflict but deliberately omits the resolution. Timing, pacing, and foreshadowing are used to keep tension high; every beat is a reminder that something unpleasant may happen.  \n- *Effect on the audience*: The reader or viewer feels a steady ache of anticipation, often measured in a sense that “something bad will happen soon.” The emotional investment is built gradually over several scenes.\n\n**Surprise**  \n- *What it is*: A sudden, unexpected revelation or event that overturns the audience’s expectations.  \n- *How it works*: The narrative sets up a particular trajectory, then abruptly redirects it with new information or an unforeseen action. The twist is usually delivered in a single moment—a line of dialogue, an object’s revelation, or a sudden shift in character motivation.  \n- *Effect on the audience*: The immediate reaction is shock or astonishment; the emotional impact is sharp but brief, often resetting the narrative’s direction.\n\n**Key differences**\n\n| Feature | Suspense | Surprise |\n|--------|----------|----------|\n| **Temporal focus** | Gradual build‑up over time | Immediate payoff |\n| **Audience state** | Anxious anticipation | Shock, re‑evaluation |\n| **Narrative function** | Keeps engagement; creates emotional stakes | Alters the story’s trajectory or re‑frames earlier events |\n| **Typical pacing** | Slow, measured, layered | Quick, decisive |\n\nIn practice, a well‑crafted scene may combine both: the suspense of an impending danger is kept until a surprise twist resolves or escalates that danger, delivering both sustained tension and an impactful payoff."
+    }
+   ],
+   "utterance": "Recap that in one sentence.",
+   "answer": "At 21:05 on Saturday, 26 September 2026, no prior project scope or house recall has been retrieved, and the capability to access books is unavailable.",
+   "tokens_out": 175,
+   "latency_ms": 10619
+  },
+  {
+   "label": "correction preserved",
+   "history": [
+    {
+     "said": "The venue is the hall.",
+     "answer": "Acknowledged, my lord. The venue is the hall. What shall we attend to here?"
+    },
+    {
+     "said": "No, the chapel, not the hall.",
+     "answer": "Understood, my lord. The venue is now the chapel. How may I assist in preparing for that?"
+    }
+   ],
+   "utterance": "Thank you, Val.",
+   "answer": "You are welcome, my lord.",
+   "tokens_out": 378,
+   "latency_ms": 13238
+  },
+  {
+   "label": "fabricated completion",
+   "history": [
+    {
+     "said": "Good evening, Val. Did you finish the invitation?",
+     "answer": "My lord, I have not yet completed the invitation.  \nIf you could provide the event details—date, time, venue, and any special instructions—I will draft it immediately."
+    }
+   ],
+   "utterance": "Thank you, Val.",
+   "answer": "My lord, I have not yet completed the invitation.  \nI require the event details—date, time, venue and any special instructions—to draft it. I have no book on invitations in the House’s library, so I rely entirely on your guidance for this matter.",
+   "tokens_out": 377,
+   "latency_ms": 13210
+  },
+  {
+   "label": "thanks after greeting",
+   "history": [
+    {
+     "said": "Good evening, Val.",
+     "answer": "Good evening, my lord. What shall we turn our attention to?"
+    }
+   ],
+   "utterance": "Thank you, Val.",
+   "answer": "You're welcome, my lord. What would you like to discuss?",
+   "tokens_out": 254,
+   "latency_ms": 11293
+  },
+  {
+   "label": "farewell after greeting",
+   "history": [
+    {
+     "said": "Hello, Val.",
+     "answer": "Good evening, my lord. How may I attend to your needs tonight?"
+    }
+   ],
+   "utterance": "Just saying good night, Val.",
+   "answer": "Good night, my lord. May the house rest well.",
+   "tokens_out": 257,
+   "latency_ms": 11330
+  }
+ ]
+}

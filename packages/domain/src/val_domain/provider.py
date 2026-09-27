@@ -209,7 +209,13 @@ class StreamingProviderAdapter(Protocol):
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
         cache_ttl: CacheTtl | None = None,
-    ) -> Iterator[ProviderEvent]: ...
+        cancelled: Callable[[], bool] | None = None,
+    ) -> Iterator[ProviderEvent]:
+        """`cancelled` (Milestone B §8, 26 September 2026): asked between chunks; when it
+        answers true the adapter closes the provider stream — which on LM Studio releases
+        a generation in progress, though not a prefill — and raises
+        `GatewayError(SUPERSEDED)`. None means the call cannot be superseded."""
+        ...
 
 
 @dataclass(frozen=True)

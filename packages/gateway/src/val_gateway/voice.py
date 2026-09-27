@@ -44,9 +44,9 @@ import logging
 import threading
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta
-from typing import Protocol
+from typing import Any, Protocol
 from uuid import UUID
 
 from sqlalchemy import Engine, text
@@ -188,6 +188,7 @@ class Submit(Protocol):
         merged: bool = False,
         on_persisted: Callable[[UUID, UUID], None] | None = None,
         prepared: object | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> DeliberatedOutcome: ...
 
 
@@ -400,6 +401,11 @@ class _Pending:
     #: candidate enables speculation; a merged pending prepares nothing.
     speculation: threading.Thread | None = None
     prepared: object | None = None
+    #: Milestone B §8 (26 September 2026): set when a newer confirmed turn takes
+    #: precedence over this one before any of its answer has been heard. Read by the
+    #: provider stream between chunks; the call then ends `superseded` and no message is
+    #: written for it.
+    superseded: threading.Event = field(default_factory=threading.Event)
     #: How long this utterance's resume window is: the default, or the adaptive
     #: value its own final transcript earned (owner order §7).
     grace_seconds: float = RESUME_GRACE_SECONDS
@@ -532,6 +538,7 @@ class VoiceSession:
         prime: Callable[[Callable[[], bool]], object] | None = None,
         prepare: Prepare | None = None,
         adaptive_grace: bool = False,
+        owner_precedence: bool = False,
     ) -> None:
         self._engine = engine
         self._recognizer = recognizer
@@ -606,6 +613,9 @@ class VoiceSession:
         #: `adaptive_grace` sizes that window from the transcript's own cues.
         self._prepare = prepare
         self._adaptive_grace = adaptive_grace
+        #: Milestone B §8, isolated: a confirmed new turn may supersede an answer he has
+        #: not begun to hear. Off in production.
+        self._owner_precedence = owner_precedence
         self.speculations: list[dict[str, object]] = []
         self._maintaining = threading.Lock()
         #: True from the moment a turn is submitted until its cognition returns —
@@ -1245,11 +1255,39 @@ class VoiceSession:
         """Submit a pending utterance once the resume window has passed."""
         with self._lock:
             pending = self._pending
-            if pending is None or self._inflight is not None:
+            if pending is None:
                 return
             if self._now() - pending.settled_at < pending.grace_seconds:
                 return
             if self._resuming(pending):
+                return
+            inflight = self._inflight
+            if inflight is not None:
+                # Milestone B §8 (owner precedence, isolated): his next words are a
+                # confirmed turn, and the answer in flight has not been heard — nothing
+                # of it audible, no synthesis begun. Then that answer is superseded: its
+                # stream is closed at the next chunk, the call is recorded as superseded,
+                # no message is written for it, his earlier message stays as it was,
+                # and this turn is submitted as soon as the lane is free. An answer he
+                # has begun to hear is never cut off by this rule.
+                delivery = self._delivery
+                unheard = delivery is None or (
+                    not delivery.audible and delivery.first_tts_start_ms is None
+                )
+                if self._owner_precedence and unheard and not inflight.superseded.is_set():
+                    inflight.superseded.set()
+                    _LOGGER.info(
+                        "voice precedence: %s",
+                        json.dumps(
+                            {
+                                "superseded_utterance": inflight.utterance.utterance,
+                                "by_utterance": pending.utterance.utterance,
+                                "answer_heard": False,
+                            }
+                        ),
+                    )
+                    if delivery is not None:
+                        delivery.interrupt("superseded by the owner's next confirmed turn")
                 return
             self._pending = None
             self._inflight = pending
@@ -1374,6 +1412,14 @@ class VoiceSession:
             # is collectable at a time, and an older one is released here.
             self._recent = None
         prepared = self._prepared_for(pending)
+        # The optional arguments travel only when they exist, so a submit that knows
+        # nothing of preparation or precedence (production) is called as before; one
+        # Any-typed spread, because a protocol's optional parameters are typed.
+        extra: dict[str, Any] = {}
+        if prepared is not None:
+            extra["prepared"] = prepared
+        if self._owner_precedence:
+            extra["cancelled"] = pending.superseded.is_set  # Milestone B §8
         try:
             outcome = self._submit(
                 utterance.text,
@@ -1390,7 +1436,7 @@ class VoiceSession:
                 # one was and it is ready; Core decides whether it binds. Passed only
                 # when there is one, so a submit that knows nothing of preparation
                 # (there is no speculation in production) is called as before.
-                **({} if prepared is None else {"prepared": prepared}),
+                **extra,
             )
         except Exception as failure:
             with self._lock:

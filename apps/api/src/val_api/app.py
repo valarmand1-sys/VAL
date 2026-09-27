@@ -214,6 +214,7 @@ def create_app(
     fast_route: FastRoute | None = None,
     speculation: bool = False,
     adaptive_grace: bool = False,
+    owner_precedence: bool = False,
 ) -> FastAPI:
     """The service, wired to an already-started house.
 
@@ -1033,6 +1034,7 @@ def create_app(
             merged: bool = False,
             on_persisted: Callable[[UUID, UUID], None] | None = None,
             prepared: object | None = None,
+            cancelled: Callable[[], bool] | None = None,
         ) -> DeliberatedOutcome:
             """The ordinary door. A spoken turn is an ordinary turn.
 
@@ -1072,6 +1074,8 @@ def create_app(
                 # A light answer prepared during the resume window, for Core to bind or
                 # discard (owner order §6).
                 prepared=prepared if isinstance(prepared, PreparedAnswer) else None,
+                # Milestone B §8: the session's supersede signal for this turn, if any.
+                cancelled=cancelled,
             )
 
         def prepare(content: str, conversation_id: UUID | None) -> object | None:
@@ -1118,6 +1122,7 @@ def create_app(
             # resume window sized from the transcript's own cues.
             prepare=prepare if speculation else None,
             adaptive_grace=adaptive_grace,
+            owner_precedence=owner_precedence,
         )
         try:
             live.start()

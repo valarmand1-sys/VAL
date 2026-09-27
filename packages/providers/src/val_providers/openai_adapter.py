@@ -55,7 +55,7 @@ known, which is the defect the WP-0.4 cost doctrine exists to prevent.
 
 import hashlib
 from base64 import b64encode
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from typing import Any, Literal, cast
 
 import openai
@@ -302,7 +302,13 @@ class OpenAIAdapter:
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
         cache_ttl: CacheTtl | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> Iterator[ProviderEvent]:
+        # `cancelled` (Milestone B §8) is accepted for the contract and not acted on here:
+        # owner precedence is built for the spoken route, which is local. Stated rather
+        # than silently ignored.
+        del cancelled
+
         """The same call as `complete`, answered as text deltas then the final result."""
         kwargs = self._request(
             config, messages, system, max_output_tokens, output_schema, cache_ttl

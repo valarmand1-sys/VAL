@@ -761,6 +761,7 @@ class Gateway:
         configuration: ModelConfig | None = None,
         on_delta: DeltaSink | None = None,
         egress: Egress = Egress.ORDINARY,
+        cancelled: Callable[[], bool] | None = None,
     ) -> GatewayResponse:
         """Talk to Val. The persona is loaded, assembled whole, and attributed.
 
@@ -818,6 +819,7 @@ class Gateway:
             configuration=configuration,
             on_delta=on_delta,
             egress=egress,
+            cancelled=cancelled,
         )
 
     def converse_lightly(
@@ -871,6 +873,7 @@ class Gateway:
         configuration: ModelConfig | None,
         on_delta: DeltaSink | None,
         egress: Egress,
+        cancelled: Callable[[], bool] | None = None,
     ) -> GatewayResponse:
         """The body shared by `converse` and `converse_lightly`; each names its task."""
         if self._persona_loader is None:  # both callers checked; stated for the type
@@ -887,7 +890,7 @@ class Gateway:
             egress=egress,
         )
         if configuration is None:
-            return self._execute(request, on_delta=on_delta)
+            return self._execute(request, on_delta=on_delta, cancelled=cancelled)
 
         # The pinned conversational path — WP-0.9's same-configuration rule
         # (ruling, 19 August 2026). Still `converse`: the persona was loaded
@@ -902,7 +905,9 @@ class Gateway:
         known = self._verify_named_configuration(
             configuration, request.classification, request.task_type
         )
-        return self._attempt(request, known, content_parts(request), on_delta=on_delta)
+        return self._attempt(
+            request, known, content_parts(request), on_delta=on_delta, cancelled=cancelled
+        )
 
     def active_persona_content(self) -> str | None:
         """The active persona's content, for binding a prepared answer; None if none is loaded."""
@@ -970,7 +975,11 @@ class Gateway:
         return self._execute(request, on_delta=on_delta)
 
     def _execute(
-        self, request: GatewayRequest, *, on_delta: DeltaSink | None = None
+        self,
+        request: GatewayRequest,
+        *,
+        on_delta: DeltaSink | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> GatewayResponse:
         """The one execution body behind both entrances.
 
@@ -1032,7 +1041,7 @@ class Gateway:
         attempted: list[UUID] = []
         for config in order:
             try:
-                return self._attempt(request, config, parts, on_delta=on_delta)
+                return self._attempt(request, config, parts, on_delta=on_delta, cancelled=cancelled)
             except GatewayError as error:
                 last = error
                 attempted.extend(error.model_call_ids)
@@ -1197,6 +1206,7 @@ class Gateway:
         parts: tuple[str, ...],
         *,
         on_delta: DeltaSink | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> GatewayResponse:
         """Reserve, call, settle. Every exit leaves the reservation resolved."""
         # Owner ruling, 24 September 2026 (Voice work package 3 §1.5). **The
@@ -1335,7 +1345,14 @@ class Gateway:
             )
 
         return self._call_and_settle(
-            request, config, adapter, claim, cache_ttl, on_delta, feasibility=feasibility
+            request,
+            config,
+            adapter,
+            claim,
+            cache_ttl,
+            on_delta,
+            feasibility=feasibility,
+            cancelled=cancelled,
         )
 
     def _cache_ttl_for(self, config: ModelConfig, request: GatewayRequest) -> CacheTtl | None:
@@ -1386,6 +1403,7 @@ class Gateway:
         on_delta: DeltaSink | None = None,
         *,
         feasibility: ContextFeasibility | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> GatewayResponse:
         """Contact the provider with a reservation held, and always resolve it.
 
@@ -1404,7 +1422,7 @@ class Gateway:
         try:
             if streamed and on_delta is not None:
                 result, first_output_ms = self._stream(
-                    adapter, config, request, cache_ttl, on_delta, started
+                    adapter, config, request, cache_ttl, on_delta, started, cancelled
                 )
             else:
                 result = adapter.complete(
@@ -1615,6 +1633,7 @@ class Gateway:
         cache_ttl: CacheTtl | None,
         on_delta: DeltaSink,
         started: float,
+        cancelled: Callable[[], bool] | None = None,
     ) -> tuple[ProviderResult, int | None]:
         """Consume one streamed call, forwarding text deltas; return the terminal result.
 
@@ -1632,6 +1651,7 @@ class Gateway:
             request.max_output_tokens,
             output_schema=request.output_schema,
             cache_ttl=cache_ttl,
+            **({} if cancelled is None else {"cancelled": cancelled}),
         )
         first_output_ms: int | None = None
         for event in stream:

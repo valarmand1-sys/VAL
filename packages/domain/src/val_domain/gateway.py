@@ -221,6 +221,10 @@ class GatewayErrorKind(StrEnum):
     #: affordable. Truthful unavailability — never a reason to downgrade the
     #: content's classification or to reach for an unadmitted route.
     NO_ELIGIBLE_ROUTE = "no_eligible_route"
+    #: Milestone B §8 (26 September 2026): the call was cut off by Core because a newer
+    #: confirmed owner turn took precedence over an answer he had not begun to hear. The
+    #: provider stream was closed; the row records what ran, and no message is written.
+    SUPERSEDED = "superseded"
     #: Ruling, 13 September 2026: admitting the next call would take one user
     #: exchange past its configured spending envelope. Not retryable on another
     #: route — a cheaper configuration is never substituted to fit the envelope —

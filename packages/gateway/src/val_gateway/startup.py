@@ -115,6 +115,9 @@ class Startup:
     speculation: bool = False
     #: Owner order §7: size the resume window from the transcript's cues. Candidate only.
     adaptive_grace: bool = False
+    #: Milestone B §8 (26 September 2026), isolated: a confirmed new turn may supersede an
+    #: answer he has not begun to hear. `VAL_OWNER_PRECEDENCE=on`; off in production.
+    owner_precedence: bool = False
 
 
 #: The prompt-cache lifetime the gateway requests on cacheable calls.
@@ -133,6 +136,7 @@ FAST_ROUTE_SETTING = "VAL_FAST_ROUTE_TIERS"
 #: unset in production's launchd definition.
 SPECULATION_SETTING = "VAL_SPECULATION"
 ADAPTIVE_GRACE_SETTING = "VAL_ADAPTIVE_GRACE"
+OWNER_PRECEDENCE_SETTING = "VAL_OWNER_PRECEDENCE"
 LIGHT_CANDIDATE_SLUG = "qwen3-4b-instruct-2507-mlx-lmstudio-light"
 
 #: Ruling, 16 September 2026: where the local LM Studio server listens. Read
@@ -366,6 +370,17 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     speculation, adaptive_grace, switch_problem = configured_candidate_switches(fast_route)
     if switch_problem is not None:
         raise StartupRefusedError([switch_problem])
+    precedence_raw = os.environ.get(OWNER_PRECEDENCE_SETTING, "").strip().lower()
+    if precedence_raw not in ("", "on"):
+        raise StartupRefusedError(
+            [f"{OWNER_PRECEDENCE_SETTING}: must be unset or 'on', not {precedence_raw!r}"]
+        )
+    owner_precedence = precedence_raw == "on"
+    if owner_precedence:
+        _LOGGER.warning(
+            "CANDIDATE owner precedence enabled for this process: a confirmed new turn may "
+            "supersede an answer he has not begun to hear (Milestone B §8, isolated)."
+        )
     tier1_route, route_problem = configured_tier1_route()
     if route_problem is not None:
         raise StartupRefusedError([route_problem])
@@ -615,4 +630,5 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         fast_route=fast_route,
         speculation=speculation,
         adaptive_grace=adaptive_grace,
+        owner_precedence=owner_precedence,
     )

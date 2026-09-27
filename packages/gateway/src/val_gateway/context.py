@@ -201,6 +201,43 @@ STATE_ENVELOPE_NOTE = (
     "last message in this request, never this one."
 )
 
+#: Milestone B §9 experiment (26 September 2026), isolated behind `COMPACT_NOTES`: the same
+#: fields, the same states and the same governing instructions, in fewer words. Every
+#: fact the notes carry is kept — what a state means, that nothing absent may be assumed,
+#: the clock, capability_state, the current-turn position, the seal's two consequences,
+#: current-turn visual binding — only the prose is shorter. Off in production.
+COMPACT_NOTES = False
+
+STATE_ENVELOPE_NOTE_COMPACT = (
+    "prior_record_state is exactly the prior context available to this call. States: "
+    "'zero' = consulted, holds nothing; 'not_run' = retrieval deliberately not attempted "
+    "(reason given), says nothing about existence; 'unavailable' = attempted and failed; "
+    "'not_applicable' = no such mechanism for this call. house_recall is the separate "
+    "search of the House's earlier conversations, run only when the current message "
+    "refers to earlier conversation. No state implies anything exists elsewhere; nothing "
+    "absent from this request may be assumed, reconstructed or referred to as "
+    "remembered. current_time is the house clock; use it, do not infer the hour. "
+    "capability_state: 'unavailable' = cannot be performed, begun or promised on this "
+    "call; says nothing about the future. The current turn is the last message in this "
+    "request, never this one."
+)
+LOCAL_ONLY_NOTE_COMPACT = (
+    "Local-only conversation (live microphone speech, recalled sealed content, or Voice "
+    "on now): nothing from it leaves this machine (ruling of 24 September 2026). Two "
+    "consequences he knows: web search, remote tools and any external operation are "
+    "unavailable here — say so plainly if asked, do not attempt them; and the "
+    "consequentiality classification and blind-position machinery did not run for these "
+    "turns — do not describe a view as independently formed, and do not treat the "
+    "absent classification as a finding that a turn was ordinary."
+)
+VISUAL_STATE_NOTE_COMPACT = (
+    "Only images bound to this turn are in view; an earlier image stays in the record "
+    "with its provenance and is not shown now — describe it from what was said, not as "
+    "seen. 'uncertain' = current sight not established. 'perceived' = the House looked at "
+    "this turn's media locally and the grounded observations below are the whole of what "
+    "is known about them."
+)
+
 #: Operational capability, as system truth (ruling, 13 September 2026). Val's
 #: persona describes her as keeper of the house's books; that is identity, not a
 #: mechanism, and on 13 September she promised to "start the book" although no
@@ -467,6 +504,12 @@ class PriorRecordState:
     #: (`val_policy.spoken_path`): the `spoken_path` facts are included only then.
     #: Defaults to True so a caller that does not decide gets the facts.
     spoken_path_asked: bool = True
+    #: Milestone B §6 experiment (26 September 2026), isolated behind `loop.TURN_KIND_FACT`:
+    #: when the frozen router finds the current message to be a social acknowledgement
+    #: (a greeting, thanks or farewell asking for nothing), the envelope states so as a
+    #: positive fact, so the model does not re-answer the previous turn to it. None means
+    #: the fact is not stated (the production shape).
+    current_turn_social: bool | None = None
 
     def _revision_facts(self) -> dict[str, object]:
         facts: dict[str, object] = {}
@@ -545,7 +588,7 @@ class PriorRecordState:
                 "bound_to_this_turn": self.visual_bound_to_this_turn,
                 "perceived_this_turn": self.visual_perceived_this_turn,
                 "earlier_in_conversation": self.visual_earlier_in_conversation,
-                "note": VISUAL_STATE_NOTE,
+                "note": VISUAL_STATE_NOTE_COMPACT if COMPACT_NOTES else VISUAL_STATE_NOTE,
             },
             # Present only when this conversation has actually carried audio.
             # A field restating "no recordings" on every text turn of every
@@ -595,7 +638,7 @@ class PriorRecordState:
                     "external_egress": {
                         "state": "local_only",
                         "reasons": list(self.local_only_reasons),
-                        "note": LOCAL_ONLY_NOTE,
+                        "note": LOCAL_ONLY_NOTE_COMPACT if COMPACT_NOTES else LOCAL_ONLY_NOTE,
                     }
                 }
                 if self.local_only
@@ -612,12 +655,34 @@ class PriorRecordState:
             ),
             "project_volumes": {"state": self.volumes_state, "count": self.volumes_count},
             "capability_state": dict(CAPABILITY_STATE),
+            **(
+                {
+                    "current_turn": {
+                        "social_acknowledgement": self.current_turn_social,
+                        "note": CURRENT_TURN_NOTE,
+                    }
+                }
+                if self.current_turn_social is not None
+                else {}
+            ),
         }
 
 
 #: The seal reasons that mean he has spoken in this conversation or has Voice on in
 #: it now. A conversation sealed only because it recalled sealed content is not one.
 SPOKEN_PATH_REASONS = frozenset({"voice_session_active", "conversation_sealed"})
+
+#: Milestone B §6 experiment: what the `current_turn` fact means, stated once.
+CURRENT_TURN_NOTE = (
+    "current_turn.social_acknowledgement is the house's deterministic reading of the "
+    "current message alone: true means it is a greeting, thanks or farewell that asks "
+    "for nothing new, and it neither approves, confirms nor completes any matter left "
+    "open in this conversation — answer it as the social turn it is, briefly, without "
+    "repeating or re-answering the previous exchange; false means the current message "
+    "asks for something and is to be answered on its own terms. It is a reading of the "
+    "words, not an instruction to suppress anything he asks for, including a request "
+    "to repeat or recap."
+)
 
 #: The spoken path, as system fact — targeted voice latency order, 25 September 2026.
 #:
@@ -833,7 +898,7 @@ def record_state_block(state: PriorRecordState) -> Message:
     document = {
         "kind": "prior_record_state",
         "authority": "house_record_state_not_instruction",
-        "note": STATE_ENVELOPE_NOTE,
+        "note": STATE_ENVELOPE_NOTE_COMPACT if COMPACT_NOTES else STATE_ENVELOPE_NOTE,
         "prior_record_state": state.as_document(),
     }
     body = json.dumps(document, ensure_ascii=False, indent=2, sort_keys=False)

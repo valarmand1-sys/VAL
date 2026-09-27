@@ -668,6 +668,19 @@ def open_turn(
     )
 
 
+#: Milestone B §6 experiment switch (26 September 2026). A module attribute rather than a
+#: setting on purpose: the experiment harness sets it in its own process; nothing in the
+#: production composition root reads it, so production never states the fact.
+TURN_KIND_FACT = False
+
+
+def _social_acknowledgement(content: str) -> bool:
+    """The frozen router's reading of the current message alone: light under either tier."""
+    from val_policy.light_conversation import ConversationState, decide
+
+    return decide(content, ConversationState(None, 0), frozenset({1, 2})).tier is not None
+
+
 def local_now() -> datetime:
     """The gateway's clock, in the machine's local zone. Replaced in tests."""
     return datetime.now().astimezone()
@@ -865,6 +878,11 @@ def assemble_turn(
         local_only_reasons=tuple(reason.value for reason in egress.reasons),
         # Owner order, 26 September 2026: the spoken-path facts only when he asks.
         spoken_path_asked=asks_about_the_spoken_path(opened.user_message.content),
+        # Milestone B §6 experiment, isolated: off unless the harness turns the module
+        # switch on. Never set by production configuration in this pass.
+        current_turn_social=(
+            _social_acknowledgement(opened.user_message.content) if TURN_KIND_FACT else None
+        ),
     )
     if egress.local_only:
         # The gate's decision, stated as a positive fact either way (§5.5).

@@ -1,0 +1,350 @@
+{
+ "steps": [
+  {
+   "label": "without_prefill: prime",
+   "start": 1790475339.926535,
+   "end": 1790475346.930676,
+   "result": "established"
+  },
+  {
+   "label": "without_prefill: turn 1",
+   "start": 1790475347.335876,
+   "end": 1790475363.5073652,
+   "result": "01a0e0a5-a58b-7104-a59b-f816ba9dd54f"
+  },
+  {
+   "label": "without_prefill: prime after turn 1",
+   "start": 1790475363.917459,
+   "end": 1790475364.357625,
+   "result": {
+    "seconds": 0.44
+   }
+  },
+  {
+   "label": "without_prefill: turn 2",
+   "start": 1790475364.76779,
+   "end": 1790475370.9860969,
+   "result": "01a0e0a5-a58b-7104-a59b-f816ba9dd54f"
+  },
+  {
+   "label": "without_prefill: prime after turn 2",
+   "start": 1790475371.393229,
+   "end": 1790475371.8323588,
+   "result": {
+    "seconds": 0.439
+   }
+  },
+  {
+   "label": "without_prefill: turn 3",
+   "start": 1790475372.242461,
+   "end": 1790475377.266172,
+   "result": "01a0e0a5-a58b-7104-a59b-f816ba9dd54f"
+  },
+  {
+   "label": "without_prefill: prime after turn 3",
+   "start": 1790475377.674043,
+   "end": 1790475378.116986,
+   "result": {
+    "seconds": 0.443
+   }
+  },
+  {
+   "label": "without_prefill: turn 4",
+   "start": 1790475378.519191,
+   "end": 1790475386.87729,
+   "result": "01a0e0a5-a58b-7104-a59b-f816ba9dd54f"
+  },
+  {
+   "label": "without_prefill: prime after turn 4",
+   "start": 1790475387.28741,
+   "end": 1790475387.715978,
+   "result": {
+    "seconds": 0.429
+   }
+  },
+  {
+   "label": "with_prefill: prime",
+   "start": 1790475388.1221042,
+   "end": 1790475388.549414,
+   "result": "established"
+  },
+  {
+   "label": "with_prefill: turn 1",
+   "start": 1790475388.959529,
+   "end": 1790475399.783734,
+   "result": "01a0e0a6-4821-75e0-b828-3490d6689acf"
+  },
+  {
+   "label": "with_prefill: prefill after turn 1",
+   "start": 1790475400.193835,
+   "end": 1790475406.83804,
+   "result": {
+    "status": 200,
+    "seconds": 6.635,
+    "prompt_tokens": 5256
+   }
+  },
+  {
+   "label": "with_prefill: prime after turn 1",
+   "start": 1790475407.2432158,
+   "end": 1790475413.757867,
+   "result": {
+    "seconds": 6.515
+   }
+  },
+  {
+   "label": "with_prefill: turn 2",
+   "start": 1790475414.167962,
+   "end": 1790475418.6005409,
+   "result": "01a0e0a6-4821-75e0-b828-3490d6689acf"
+  },
+  {
+   "label": "with_prefill: prefill after turn 2",
+   "start": 1790475419.010632,
+   "end": 1790475425.695467,
+   "result": {
+    "status": 200,
+    "seconds": 6.679,
+    "prompt_tokens": 5352
+   }
+  },
+  {
+   "label": "with_prefill: prime after turn 2",
+   "start": 1790475426.100497,
+   "end": 1790475426.5258188,
+   "result": {
+    "seconds": 0.425
+   }
+  },
+  {
+   "label": "with_prefill: turn 3",
+   "start": 1790475426.935743,
+   "end": 1790475431.9015622,
+   "result": "01a0e0a6-4821-75e0-b828-3490d6689acf"
+  },
+  {
+   "label": "with_prefill: prefill after turn 3",
+   "start": 1790475432.307461,
+   "end": 1790475439.1366432,
+   "result": {
+    "status": 200,
+    "seconds": 6.824,
+    "prompt_tokens": 5456
+   }
+  },
+  {
+   "label": "with_prefill: prime after turn 3",
+   "start": 1790475439.542092,
+   "end": 1790475439.982503,
+   "result": {
+    "seconds": 0.44
+   }
+  },
+  {
+   "label": "with_prefill: turn 4",
+   "start": 1790475440.390833,
+   "end": 1790475449.1345952,
+   "result": "01a0e0a6-4821-75e0-b828-3490d6689acf"
+  },
+  {
+   "label": "with_prefill: prime after turn 4",
+   "start": 1790475449.5408,
+   "end": 1790475456.057952,
+   "result": {
+    "seconds": 6.517
+   }
+  },
+  {
+   "label": "stale: turn 1",
+   "start": 1790475456.4652212,
+   "end": 1790475465.146145,
+   "result": "01a0e0a7-4fd2-78f7-9003-e3b69f225c91"
+  },
+  {
+   "label": "stale: prefill",
+   "start": 1790475465.552423,
+   "end": 1790475472.14432,
+   "result": {
+    "status": 200,
+    "seconds": 6.585,
+    "prompt_tokens": 5271
+   }
+  },
+  {
+   "label": "stale: turn 2 after revision",
+   "start": 1790475472.56943,
+   "end": 1790475478.6687639,
+   "result": "01a0e0a7-4fd2-78f7-9003-e3b69f225c91"
+  }
+ ],
+ "predictions": [
+  {
+   "timestamp": 1790475346910,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "without_prefill: prime"
+  },
+  {
+   "timestamp": 1790475363499,
+   "prompt_tokens": 5881,
+   "ttft_s": 1.292,
+   "out": 953,
+   "step": "without_prefill: turn 1"
+  },
+  {
+   "timestamp": 1790475364351,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "without_prefill: prime after turn 1"
+  },
+  {
+   "timestamp": 1790475370978,
+   "prompt_tokens": 6178,
+   "ttft_s": 1.666,
+   "out": 286,
+   "step": "without_prefill: turn 2"
+  },
+  {
+   "timestamp": 1790475371826,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "without_prefill: prime after turn 2"
+  },
+  {
+   "timestamp": 1790475377258,
+   "prompt_tokens": 6374,
+   "ttft_s": 1.933,
+   "out": 192,
+   "step": "without_prefill: turn 3"
+  },
+  {
+   "timestamp": 1790475378109,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "without_prefill: prime after turn 3"
+  },
+  {
+   "timestamp": 1790475386870,
+   "prompt_tokens": 6518,
+   "ttft_s": 2.12,
+   "out": 394,
+   "step": "without_prefill: turn 4"
+  },
+  {
+   "timestamp": 1790475387709,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "without_prefill: prime after turn 4"
+  },
+  {
+   "timestamp": 1790475388543,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prime"
+  },
+  {
+   "timestamp": 1790475399770,
+   "prompt_tokens": 5881,
+   "ttft_s": 1.292,
+   "out": 611,
+   "step": "with_prefill: turn 1"
+  },
+  {
+   "timestamp": 1790475406836,
+   "prompt_tokens": 5256,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prefill after turn 1"
+  },
+  {
+   "timestamp": 1790475413749,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prime after turn 1"
+  },
+  {
+   "timestamp": 1790475418579,
+   "prompt_tokens": 6092,
+   "ttft_s": 1.577,
+   "out": 177,
+   "step": "with_prefill: turn 2"
+  },
+  {
+   "timestamp": 1790475425694,
+   "prompt_tokens": 5352,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prefill after turn 2"
+  },
+  {
+   "timestamp": 1790475426518,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prime after turn 2"
+  },
+  {
+   "timestamp": 1790475431895,
+   "prompt_tokens": 6192,
+   "ttft_s": 1.697,
+   "out": 204,
+   "step": "with_prefill: turn 3"
+  },
+  {
+   "timestamp": 1790475439135,
+   "prompt_tokens": 5456,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prefill after turn 3"
+  },
+  {
+   "timestamp": 1790475439976,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prime after turn 3"
+  },
+  {
+   "timestamp": 1790475449128,
+   "prompt_tokens": 6294,
+   "ttft_s": 1.826,
+   "out": 439,
+   "step": "with_prefill: turn 4"
+  },
+  {
+   "timestamp": 1790475456051,
+   "prompt_tokens": 5059,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "with_prefill: prime after turn 4"
+  },
+  {
+   "timestamp": 1790475465130,
+   "prompt_tokens": 5881,
+   "ttft_s": 1.299,
+   "out": 474,
+   "step": "stale: turn 1"
+  },
+  {
+   "timestamp": 1790475472142,
+   "prompt_tokens": 5271,
+   "ttft_s": 0,
+   "out": 0,
+   "step": "stale: prefill"
+  },
+  {
+   "timestamp": 1790475478660,
+   "prompt_tokens": 6245,
+   "ttft_s": 1.767,
+   "out": 272,
+   "step": "stale: turn 2 after revision"
+  }
+ ]
+}

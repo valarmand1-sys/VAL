@@ -47,7 +47,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from typing import Any, Literal
 from urllib.parse import urlparse
 
@@ -471,6 +471,7 @@ class LMStudioAdapter:
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
         cache_ttl: CacheTtl | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> Iterator[ProviderEvent]:
         """The same request, answered as content deltas then the final result.
 
@@ -495,6 +496,20 @@ class LMStudioAdapter:
             )
             for chunk in chunks:
                 mark("provider_chunk")
+                if cancelled is not None and cancelled():
+                    # Milestone B §8: closing the stream releases the engine's generation
+                    # (measured 26 September 2026: a following request answered in
+                    # 0.20 s against a 10 s queue when the abandoned answer ran on). A
+                    # prefill still in progress cannot be released this way; the caller
+                    # knows that from the record.
+                    close = getattr(chunks, "close", None)
+                    if callable(close):
+                        close()
+                    raise GatewayError(
+                        GatewayErrorKind.SUPERSEDED,
+                        "the call was superseded by a newer confirmed owner turn before any "
+                        "of its answer was heard; the provider stream was closed",
+                    )
                 model = getattr(chunk, "model", None)
                 if isinstance(model, str) and model:
                     reported_model = model

@@ -39,7 +39,7 @@ only observable difference is that text was available earlier.
 """
 
 import time
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from typing import Any, Literal
 
 import anthropic
@@ -114,7 +114,13 @@ class AnthropicAdapter:
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
         cache_ttl: CacheTtl | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> Iterator[ProviderEvent]:
+        # `cancelled` (Milestone B §8) is accepted for the contract and not acted on here:
+        # owner precedence is built for the spoken route, which is local. Stated rather
+        # than silently ignored.
+        del cancelled
+
         """The same call as `complete`, answered as text deltas then the final result.
 
         The SDK's `text_stream` yields only text-block deltas — never thinking

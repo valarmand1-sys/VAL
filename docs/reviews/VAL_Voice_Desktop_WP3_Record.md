@@ -1278,3 +1278,45 @@ the two-minute step is his to authorise). Memory: free ≥ 40%, swap flat, the s
 prefix's cost visible as cold primes. Physical acceptance test in §6.
 
 ---
+
+## 29. Handoff — Milestone B: ordinary-turn waiting and wrong-turn responses, investigated; owner precedence implemented in isolation, 26 September 2026
+
+**WP3 remains PARTIAL. Nothing deployed; nothing of this is in the Tier-1 release.**
+Record: `docs/reviews/qualification/runs/2026-09-26-redesign/ORDINARY_TURN.md`
+(evidence index §116). Every switch this milestone added is off in production:
+`loop.TURN_KIND_FACT`, `context.COMPACT_NOTES` (module switches, never set by
+configuration) and `VAL_OWNER_PRECEDENCE`.
+
+**§6 wrong-turn repetition:** the recorded re-answers were **model-generated**, not a
+delivery or association defect (own call rows; similarity 0.83/0.86 to the previous
+answer, not copies). A deterministic `current_turn` fact in the envelope settled one of
+two reproduced cases and paraphrased an exact "say that again" — **not adopted**. Both
+conditions exposed the likelier cause: asked to "recap that", MEDIUM recapped the
+**record-state envelope**, because his words are joined to it in one user message on the
+wire. Repairing that touches the 10 and 17 September constructions — **a ruling, put to
+him, not made**. The fabricated-completion class was not improved by any shape.
+
+**§7 preparation during confirmation:** Core's own work between his settled words and
+dispatch is ~80 ms; the 2.2 s is the endpoint (0.95 s) and the window (1.1 s), both held.
+The runtime has **no generation-free prefill** (`max_tokens: 0` refused); a
+conversation-prefix prefill is a one-token request, cost **6.6–6.8 s each**, bought
+0.1–0.3 s on the next turn, and **evicted a persona checkpoint two times in three** —
+a net cost until the runtime can hold a third cache entry (the reserved memory ruling).
+
+**§8 owner precedence:** engine-level cancellation observed — closing the stream releases
+**generation** (0.20 s to the next request) but **not prefill** (10.1 s). Implemented,
+isolated, behind `VAL_OWNER_PRECEDENCE=on`: a `cancelled` predicate through the
+provider contract (`GatewayErrorKind.SUPERSEDED`, LM Studio adapter closes the stream;
+other adapters accept and state they do not act); a confirmed new turn supersedes an
+answer he has not begun to hear, recorded as `error`/`failed` with NULL tokens, his
+message kept unanswered, no message fabricated; speech resumed within the grace still
+merges; an answer he has begun to hear is never cut off. Tests 3. End-to-end voice-path
+timing under the switch not yet measured.
+
+**§9 ordinary MEDIUM costs:** hidden reasoning **4.1 s median / 7.2 s p90 = 51% of the
+wait**; prompt processing 1.7 s (1.1 s tail); TTS 0.6 s. The one fact-preserving request
+change (compact notes) saved ~150 tokens ≈ 0.2 s and, in the same run, went with two
+worse honesty outcomes — **not adopted**. The measured limit is stated with the three
+trades a further change would require, none made.
+
+---

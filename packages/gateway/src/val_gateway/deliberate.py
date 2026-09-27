@@ -343,6 +343,7 @@ def send(
     on_persisted: PersistedSink | None = None,
     fast_route: FastRoute | None = None,
     prepared: PreparedAnswer | None = None,
+    cancelled: Callable[[], bool] | None = None,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -538,6 +539,7 @@ def send(
             egress=decision,
             light=_light_tier(engine, opened, content, fast_route),
             prepared=prepared,
+            cancelled=cancelled,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -1234,6 +1236,7 @@ def _ordinary(
     egress: EgressDecision = ORDINARY,
     light: int | None = None,
     prepared: PreparedAnswer | None = None,
+    cancelled: Callable[[], bool] | None = None,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """The WP-0.7 turn, from an already-opened state.
 
@@ -1364,6 +1367,9 @@ def _ordinary(
                         # Pinned to the route this turn's images were derived for;
                         # None on a text turn, where routing proceeds as always.
                         configuration=visual.configuration,
+                        # Milestone B §8: Core may supersede this answer for a newer
+                        # confirmed turn while none of it has been heard.
+                        cancelled=cancelled,
                     )
             except GatewayError as failure:
                 if task_type is not TaskType.LIGHT_CONVERSATION or delivered:

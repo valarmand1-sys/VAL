@@ -33,7 +33,7 @@ runtime whose thinking switch lives in a per-model UI preset cannot.
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from typing import Any
 
 import openai
@@ -224,7 +224,13 @@ class LlamaCppAdapter:
         max_output_tokens: int,
         output_schema: Mapping[str, object] | None = None,
         cache_ttl: CacheTtl | None = None,
+        cancelled: Callable[[], bool] | None = None,
     ) -> Iterator[ProviderEvent]:
+        # `cancelled` (Milestone B §8) is accepted for the contract and not acted on here:
+        # owner precedence is built for the spoken route, which is local. Stated rather
+        # than silently ignored.
+        del cancelled
+
         """The same body, answered as content deltas then the final result.
 
         Reasoning deltas are never yielded; their presence is recorded.
