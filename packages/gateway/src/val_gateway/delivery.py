@@ -258,6 +258,11 @@ class SpeechDelivery:
         #: Recorded for the §13.1 measurement: the interval from the barge-in
         #: signal arriving here to the sink being stopped.
         self.cancellation_ms: float | None = None
+        #: Set when the desktop has been told to stop an answer whose synthesis had
+        #: finished (§5): the stop is sent at once; the record waits for the desktop's
+        #: own word on what it cut (`playback_cut_reported`).
+        self.stop_requested: str | None = None
+        self._recorded_heard: int | None = None
         self.failure: str | None = None
 
         self._queue: queue.Queue[_Pending | None] = queue.Queue()
@@ -433,6 +438,110 @@ class SpeechDelivery:
         self._queue.put(None)
         self._record_event()
         return elapsed
+
+    def request_stop(self, reason: str) -> float | None:
+        """Tell the desktop to stop an answer whose synthesis has finished — record nothing yet.
+
+        Remaining latency work, 28 September 2026 (§5). Barge-in used to reach only a
+        delivery still being synthesised; once the last segment had been voiced the
+        session held no active delivery, so his onset left the desktop playing the rest.
+        Three things are kept apart: generation finished (Core's answer), hand-off
+        finished (every segment voiced and offered — the `completed` row already
+        written), and playback finished (the desktop's reports). Stopping after hand-off
+        stops the sink, so nothing still waiting is handed over, and marks the delivery
+        so the desktop's next poll is told to stop what it is playing.
+
+        **What was cut is the desktop's to say.** The service's estimate of whether audio
+        is still sounding can be wrong — with the desktop's reports delayed, a stop landed
+        on an answer that had finished playing a second earlier, and recording at once
+        wrote "cut off while playing" over an answer he had heard whole (B2, 28
+        September). So the `interrupted` row is appended only when the desktop reports
+        that it interrupted a segment of this answer (`playback_cut_reported`); an answer
+        that had in fact finished keeps its `completed` record.
+
+        Returns the service-side interval in ms, or None when there was nothing to stop.
+        """
+        signalled = self._now()
+        self.sink.stop(reason)
+        elapsed = (self._now() - signalled) * 1000
+        with self._lock:
+            if self.state in (DeliveryState.INTERRUPTED, DeliveryState.FAILED):
+                return None
+            self.stop_requested = reason
+            self.cancellation_ms = elapsed
+        return elapsed
+
+    def playback_cut_reported(self, segment_index: int) -> bool:
+        """The desktop reports it interrupted this answer's segment `segment_index`.
+
+        Appends one `interrupted` row — the existing append-only correction; earlier rows
+        stay as the facts they were — whose prefix is every segment up to and including
+        the one cut (segments play in order, and audible sound is never relabelled
+        unheard) and whose reason names the segment cut off and those never played. A
+        report that shows more was heard than the most recent row says (a delayed report after
+        a supersession was recorded) appends the larger truth; anything else is ignored.
+        Returns whether a row was written.
+        """
+        with self._lock:
+            ordered = sorted(self.spoken, key=lambda segment: segment.index)
+            if not any(segment.index == segment_index for segment in ordered):
+                return False
+            heard = [segment for segment in ordered if segment.index <= segment_index]
+            if self.state is DeliveryState.INTERRUPTED:
+                if len(heard) <= (self._recorded_heard or 0):
+                    return False
+            elif self.state is not DeliveryState.COMPLETED:
+                return False
+            reason = self.stop_requested or self.reason or "playback interrupted"
+            return self._append_cut_locked(reason, heard, ordered, cut=segment_index)
+
+    def cut_playback(self, reason: str, started_segments: set[int]) -> float | None:
+        """Set aside a finished answer the service knows he has not begun to hear.
+
+        The owner-precedence path (§6): his confirmed words superseded an answer while
+        its hand-off was held, so nothing of it was handed over while he spoke. The row
+        is written at once, naming the segments reported begun (none, normally); should a
+        delayed desktop report later show more was heard, `playback_cut_reported`
+        appends that. Returns the interval in ms, or None if already stopped.
+        """
+        elapsed = self.request_stop(reason)
+        if elapsed is None:
+            return None
+        with self._lock:
+            ordered = sorted(self.spoken, key=lambda segment: segment.index)
+            heard = [segment for segment in ordered if segment.index in started_segments]
+            cut = max((segment.index for segment in heard), default=None)
+            self._append_cut_locked(reason, heard, ordered, cut=cut)
+        return elapsed
+
+    def _append_cut_locked(
+        self,
+        reason: str,
+        heard: list[SpokenSegment],
+        ordered: list[SpokenSegment],
+        *,
+        cut: int | None,
+    ) -> bool:
+        heard_indices = {segment.index for segment in heard}
+        unplayed = [segment.index for segment in ordered if segment.index not in heard_indices]
+        detail = reason
+        if cut is not None:
+            detail += f"; segment {cut} was cut off while playing"
+        if unplayed:
+            detail += (
+                f"; segment{'s' if len(unplayed) > 1 else ''} "
+                + ", ".join(str(index) for index in unplayed)
+                + " never played"
+            )
+        self.state, self.reason = DeliveryState.INTERRUPTED, detail
+        self._recorded_heard = len(heard)
+        self._write(
+            {"state": DeliveryState.INTERRUPTED.value, "reason": detail},
+            prefix=" ".join(segment.text for segment in heard),
+            segments_delivered=len(heard),
+            segments_total=len(ordered),
+        )
+        return True
 
     # --- synthesis, on a worker ------------------------------------------------------
 
@@ -650,11 +759,19 @@ class SpeechDelivery:
     def _append(self, snapshot: dict[str, object]) -> None:
         self._write(snapshot)
 
-    def _write(self, snapshot: dict[str, object]) -> None:
+    def _write(
+        self,
+        snapshot: dict[str, object],
+        *,
+        prefix: str | None = None,
+        segments_delivered: int | None = None,
+        segments_total: int | None = None,
+    ) -> None:
         message_id = self.message_id
         if message_id is None:
             return
-        prefix = self.delivered_prefix
+        if prefix is None:
+            prefix = self.delivered_prefix
         state = str(snapshot["state"])
         # A `not_started` row must carry nothing delivered; the store's own check
         # says so, and the prefix is only non-empty once something was spoken.
@@ -680,9 +797,15 @@ class SpeechDelivery:
                     "state": state,
                     "delivered_prefix": prefix,
                     "delivered_characters": len(prefix),
-                    "segments_delivered": self.sink.segments_played,
+                    "segments_delivered": (
+                        self.sink.segments_played
+                        if segments_delivered is None
+                        else segments_delivered
+                    ),
                     "segments_total": (
-                        len(self.segmenter.segments) if self.segmenter._closed else None
+                        segments_total
+                        if segments_total is not None
+                        else (len(self.segmenter.segments) if self.segmenter._closed else None)
                     ),
                     "reason": snapshot.get("reason"),
                     "first_audio_ms": self.first_audio_ms,

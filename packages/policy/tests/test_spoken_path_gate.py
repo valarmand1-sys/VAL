@@ -49,3 +49,52 @@ def test_a_question_about_the_spoken_path_gets_the_facts(text: str) -> None:
 @pytest.mark.parametrize("text", ORDINARY)
 def test_an_ordinary_turn_does_not_carry_them(text: str) -> None:
     assert not asks_about_the_spoken_path(text)
+
+
+# --- Remaining latency work, 28 September 2026 (§4): a speed or time word that governs a
+# piece of work is about the work. In the cache experiment "Give me one line of advice on
+# pacing a chase sequence" drew ~490 tokens of her voice-performance facts (~0.65 s).
+
+ABOUT_THE_WORK = [
+    "Give me one line of advice on pacing a chase sequence.",
+    "How should I pace a film scene?",
+    "Can you help me with the pacing of a film scene?",
+    "Is the second act too slow?",
+    "Make the opening chapter faster.",
+    "How long should a first chapter be?",
+    "What tempo suits a montage?",
+    "Should the chase feel rushed?",
+    "Should the reveal come faster?",
+]
+
+ABOUT_HER = [
+    "How fast are you, Val?",
+    "You were so slow just now.",
+    "Why was your answer about the chapter so slow?",
+    "Can you hear me?",
+    "Your voice sounds different today.",
+    "How long did that take?",
+    "Wait a second, Val.",
+    "Can you pace your replies a little faster?",
+]
+
+
+@pytest.mark.parametrize("text", ABOUT_THE_WORK)
+def test_a_speed_word_about_a_piece_of_work_does_not_carry_them(text: str) -> None:
+    assert not asks_about_the_spoken_path(text)
+
+
+@pytest.mark.parametrize("text", ABOUT_HER)
+def test_the_same_words_about_her_still_carry_them(text: str) -> None:
+    assert asks_about_the_spoken_path(text)
+
+
+def test_a_short_follow_up_to_a_question_about_her_carries_them() -> None:
+    assert asks_about_the_spoken_path("Why?", previous="Why are you so slow tonight?")
+    assert asks_about_the_spoken_path("Is that normal?", previous="How long did that take?")
+    assert not asks_about_the_spoken_path("Why?", previous="Tell me about the garden.")
+    # A long new request after one is judged on its own words.
+    assert not asks_about_the_spoken_path(
+        "Now give me one line of advice on pacing a chase sequence, please, Val.",
+        previous="How fast are you, Val?",
+    )

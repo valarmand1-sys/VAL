@@ -1,0 +1,270 @@
+[
+ {
+  "index": 2,
+  "words": "Give me one line of advice on pacing a chase seque",
+  "tokens": 6247,
+  "persona_boundary": 5107,
+  "divergence_boundary": 5818,
+  "against_full": {
+   "persona": {
+    "positions": 429,
+    "mean_kl": 0.03002,
+    "max_kl": 1.193,
+    "argmax_agreement": 0.9324,
+    "max_abs_logit_difference": 11.0625
+   },
+   "divergence": {
+    "positions": 429,
+    "mean_kl": 0.02345,
+    "max_kl": 0.7469,
+    "argmax_agreement": 0.9487,
+    "max_abs_logit_difference": 8.625
+   },
+   "divergence_no_copy": {
+    "positions": 429,
+    "mean_kl": 0.02345,
+    "max_kl": 0.7469,
+    "argmax_agreement": 0.9487,
+    "max_abs_logit_difference": 8.625
+   },
+   "full_chunk_1024": {
+    "positions": 429,
+    "mean_kl": 0.02519,
+    "max_kl": 0.6836,
+    "argmax_agreement": 0.9371,
+    "max_abs_logit_difference": 8.2012
+   },
+   "wrong_prefix": {
+    "positions": 429,
+    "mean_kl": 0.3754,
+    "max_kl": 13.67,
+    "argmax_agreement": 0.7949,
+    "max_abs_logit_difference": 24.0977
+   }
+  },
+  "divergence_copy_vs_no_copy_identical": true,
+  "seconds": 48.4,
+  "peak_memory_gb": 15.88
+ },
+ {
+  "index": 3,
+  "words": "Explain the difference between suspense and surpri",
+  "tokens": 6318,
+  "persona_boundary": 5107,
+  "divergence_boundary": 5956,
+  "against_full": {
+   "persona": {
+    "positions": 362,
+    "mean_kl": 0.03116,
+    "max_kl": 1.036,
+    "argmax_agreement": 0.9282,
+    "max_abs_logit_difference": 8.6182
+   },
+   "divergence": {
+    "positions": 362,
+    "mean_kl": 0.04131,
+    "max_kl": 2.032,
+    "argmax_agreement": 0.9199,
+    "max_abs_logit_difference": 13.0625
+   },
+   "divergence_no_copy": {
+    "positions": 362,
+    "mean_kl": 0.04131,
+    "max_kl": 2.032,
+    "argmax_agreement": 0.9199,
+    "max_abs_logit_difference": 13.0625
+   },
+   "full_chunk_1024": {
+    "positions": 362,
+    "mean_kl": 0.02745,
+    "max_kl": 1.275,
+    "argmax_agreement": 0.9392,
+    "max_abs_logit_difference": 7.8594
+   },
+   "wrong_prefix": {
+    "positions": 362,
+    "mean_kl": 1.18,
+    "max_kl": 13.45,
+    "argmax_agreement": 0.6989,
+    "max_abs_logit_difference": 20.625
+   }
+  },
+  "divergence_copy_vs_no_copy_identical": true,
+  "seconds": 48.3,
+  "peak_memory_gb": 16.66
+ },
+ {
+  "index": 5,
+  "words": "What is a caesura?\n\n---\nRecord state for this turn",
+  "tokens": 6594,
+  "persona_boundary": 5107,
+  "divergence_boundary": 5107,
+  "against_full": {
+   "persona": {
+    "positions": 768,
+    "mean_kl": 0.02465,
+    "max_kl": 0.8109,
+    "argmax_agreement": 0.9193,
+    "max_abs_logit_difference": 7.7031
+   },
+   "divergence": {
+    "positions": 768,
+    "mean_kl": 0.02465,
+    "max_kl": 0.8109,
+    "argmax_agreement": 0.9193,
+    "max_abs_logit_difference": 7.7031
+   },
+   "divergence_no_copy": {
+    "positions": 768,
+    "mean_kl": 0.02465,
+    "max_kl": 0.8109,
+    "argmax_agreement": 0.9193,
+    "max_abs_logit_difference": 7.7031
+   },
+   "full_chunk_1024": {
+    "positions": 768,
+    "mean_kl": 0.02956,
+    "max_kl": 1.079,
+    "argmax_agreement": 0.9154,
+    "max_abs_logit_difference": 9.1719
+   }
+  },
+  "divergence_copy_vs_no_copy_identical": true,
+  "seconds": 47.6,
+  "peak_memory_gb": 18.26
+ },
+ {
+  "index": 6,
+  "words": "Tell me about a good opening line.\n\n---\nRecord sta",
+  "tokens": 5994,
+  "persona_boundary": 5107,
+  "divergence_boundary": 5107,
+  "against_full": {
+   "persona": {
+    "positions": 768,
+    "mean_kl": 0.04173,
+    "max_kl": 3.215,
+    "argmax_agreement": 0.8841,
+    "max_abs_logit_difference": 12.4844
+   },
+   "divergence": {
+    "positions": 768,
+    "mean_kl": 0.04173,
+    "max_kl": 3.215,
+    "argmax_agreement": 0.8841,
+    "max_abs_logit_difference": 12.4844
+   },
+   "divergence_no_copy": {
+    "positions": 768,
+    "mean_kl": 0.04173,
+    "max_kl": 3.215,
+    "argmax_agreement": 0.8841,
+    "max_abs_logit_difference": 12.4844
+   },
+   "full_chunk_1024": {
+    "positions": 768,
+    "mean_kl": 0.03945,
+    "max_kl": 1.247,
+    "argmax_agreement": 0.8685,
+    "max_abs_logit_difference": 9.9062
+   }
+  },
+  "divergence_copy_vs_no_copy_identical": true,
+  "seconds": 39.3,
+  "peak_memory_gb": 18.93
+ },
+ {
+  "index": 7,
+  "words": "How long should a first chapter be?\n\n---\nRecord st",
+  "tokens": 6729,
+  "persona_boundary": 5107,
+  "divergence_boundary": 5805,
+  "against_full": {
+   "persona": {
+    "positions": 768,
+    "mean_kl": 0.03653,
+    "max_kl": 2.08,
+    "argmax_agreement": 0.9089,
+    "max_abs_logit_difference": 9.875
+   },
+   "divergence": {
+    "positions": 768,
+    "mean_kl": 0.0446,
+    "max_kl": 3.615,
+    "argmax_agreement": 0.9102,
+    "max_abs_logit_difference": 11.8281
+   },
+   "divergence_no_copy": {
+    "positions": 768,
+    "mean_kl": 0.0446,
+    "max_kl": 3.615,
+    "argmax_agreement": 0.9102,
+    "max_abs_logit_difference": 11.8281
+   },
+   "full_chunk_1024": {
+    "positions": 768,
+    "mean_kl": 0.03627,
+    "max_kl": 1.57,
+    "argmax_agreement": 0.9154,
+    "max_abs_logit_difference": 8.7344
+   },
+   "wrong_prefix": {
+    "positions": 768,
+    "mean_kl": 0.1801,
+    "max_kl": 8.23,
+    "argmax_agreement": 0.8073,
+    "max_abs_logit_difference": 15.125
+   }
+  },
+  "divergence_copy_vs_no_copy_identical": true,
+  "seconds": 56.2,
+  "peak_memory_gb": 18.93
+ },
+ {
+  "index": 8,
+  "words": "VAL-MEMORY-V1\n{\n  \"kind\": \"retrieved_conversation_",
+  "tokens": 7554,
+  "persona_boundary": 5107,
+  "divergence_boundary": 6231,
+  "against_full": {
+   "persona": {
+    "positions": 768,
+    "mean_kl": 0.06325,
+    "max_kl": 2.214,
+    "argmax_agreement": 0.8633,
+    "max_abs_logit_difference": 11.1094
+   },
+   "divergence": {
+    "positions": 768,
+    "mean_kl": 0.06725,
+    "max_kl": 3.526,
+    "argmax_agreement": 0.8568,
+    "max_abs_logit_difference": 11.4141
+   },
+   "divergence_no_copy": {
+    "positions": 768,
+    "mean_kl": 0.06725,
+    "max_kl": 3.526,
+    "argmax_agreement": 0.8568,
+    "max_abs_logit_difference": 11.4141
+   },
+   "full_chunk_1024": {
+    "positions": 768,
+    "mean_kl": 0.08017,
+    "max_kl": 4.276,
+    "argmax_agreement": 0.8516,
+    "max_abs_logit_difference": 14.875
+   },
+   "wrong_prefix": {
+    "positions": 768,
+    "mean_kl": 0.5493,
+    "max_kl": 11.78,
+    "argmax_agreement": 0.625,
+    "max_abs_logit_difference": 19.4375
+   }
+  },
+  "divergence_copy_vs_no_copy_identical": true,
+  "seconds": 61.3,
+  "peak_memory_gb": 19.49
+ }
+]

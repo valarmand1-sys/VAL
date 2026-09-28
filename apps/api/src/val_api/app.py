@@ -216,6 +216,7 @@ def create_app(
     adaptive_grace: bool = False,
     owner_precedence: bool = False,
     adaptive_endpoint: bool = False,
+    combine_continuations: bool = False,
 ) -> FastAPI:
     """The service, wired to an already-started house.
 
@@ -1128,6 +1129,7 @@ def create_app(
             adaptive_grace=adaptive_grace,
             owner_precedence=owner_precedence,
             adaptive_endpoint=adaptive_endpoint,
+            combine_continuations=combine_continuations,
         )
         try:
             live.start()
@@ -1259,12 +1261,22 @@ def create_app(
         # Stop when delivery ended other than by completing. `active` is False for a
         # completed answer too, which is why the state decides rather than the flag.
         stopped_because = getattr(sink, "stopped_because", None)
-        should_stop = state in ("interrupted", "failed") or (
-            stopped_because is not None and state != "completed"
+        # A finished answer stopped after its hand-off (§5) still reads completed until
+        # the desktop says what it cut; the stop is sent now, the record follows.
+        stop_requested = getattr(speaking, "stop_requested", None)
+        should_stop = (
+            state in ("interrupted", "failed")
+            or (stopped_because is not None and state != "completed")
+            or stop_requested is not None
         )
         reason = None
         if should_stop:
-            reason = getattr(speaking, "reason", None) or stopped_because or "delivery ended"
+            reason = (
+                getattr(speaking, "reason", None)
+                or stop_requested
+                or stopped_because
+                or "delivery ended"
+            )
         if not isinstance(sink, DesktopSink):
             return SpeechOfferView(
                 delivery_state=state, stop=should_stop, reason=reason, message_id=speaks

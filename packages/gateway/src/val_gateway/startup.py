@@ -124,6 +124,10 @@ class Startup:
     #: shorter silence and the resume window is sized from the words' own shape, within
     #: the fixed path's silence bound. `VAL_ADAPTIVE_ENDPOINT=on`; off in production.
     adaptive_endpoint: bool = False
+    #: Remaining latency work, 28 September 2026 (§6), isolated: a clear continuation of an
+    #: answer he has not begun to hear is answered together with it.
+    #: `VAL_COMBINE_CONTINUATIONS=on`; off in production.
+    combine_continuations: bool = False
     #: Owner order of 27 September 2026 (§1, §4): the request-construction candidate —
     #: the record-state envelope in the developer block after the persona, with per-route
     #: prime boundaries. `VAL_REQUEST_CONSTRUCTION=envelope_in_system`; off in production.
@@ -148,6 +152,7 @@ SPECULATION_SETTING = "VAL_SPECULATION"
 ADAPTIVE_GRACE_SETTING = "VAL_ADAPTIVE_GRACE"
 OWNER_PRECEDENCE_SETTING = "VAL_OWNER_PRECEDENCE"
 ADAPTIVE_ENDPOINT_SETTING = "VAL_ADAPTIVE_ENDPOINT"
+COMBINE_CONTINUATIONS_SETTING = "VAL_COMBINE_CONTINUATIONS"
 REQUEST_CONSTRUCTION_SETTING = "VAL_REQUEST_CONSTRUCTION"
 LIGHT_CANDIDATE_SLUG = "qwen3-4b-instruct-2507-mlx-lmstudio-light"
 
@@ -339,13 +344,21 @@ def configured_adaptive_endpoint() -> tuple[bool, str | None]:
     return raw == "on", None
 
 
+def configured_combine_continuations() -> tuple[bool, str | None]:
+    """`VAL_COMBINE_CONTINUATIONS`: unset (off) or `on` (28 September 2026, §6)."""
+    raw = os.environ.get(COMBINE_CONTINUATIONS_SETTING, "").strip().lower()
+    if raw not in ("", "on"):
+        return False, f"{COMBINE_CONTINUATIONS_SETTING}: must be unset or 'on', not {raw!r}"
+    return raw == "on", None
+
+
 def configured_request_construction() -> tuple[str, str | None]:
     """`VAL_REQUEST_CONSTRUCTION`: `as_is` (default) or `envelope_in_system` (§1, §4)."""
     raw = os.environ.get(REQUEST_CONSTRUCTION_SETTING, "").strip().lower()
-    if raw not in ("", "as_is", "envelope_in_system"):
+    if raw not in ("", "as_is", "envelope_in_system", "split_state"):
         return "as_is", (
-            f"{REQUEST_CONSTRUCTION_SETTING}: must be unset, 'as_is' or "
-            f"'envelope_in_system', not {raw!r}"
+            f"{REQUEST_CONSTRUCTION_SETTING}: must be unset, 'as_is', 'envelope_in_system' or "
+            f"'split_state', not {raw!r}"
         )
     return raw or "as_is", None
 
@@ -426,7 +439,18 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     adaptive_endpoint, endpoint_problem = configured_adaptive_endpoint()
     request_construction, construction_problem = configured_request_construction()
     tts_bound, bound_problem = configured_tts_bound()
-    problems = [x for x in (endpoint_problem, construction_problem, bound_problem) if x is not None]
+    combine_continuations, combine_problem = configured_combine_continuations()
+    problems = [
+        x
+        for x in (endpoint_problem, construction_problem, bound_problem, combine_problem)
+        if x is not None
+    ]
+    if combine_continuations:
+        _LOGGER.warning(
+            "CANDIDATE combined continuations for this process: a clear continuation of an "
+            "answer he has not begun to hear is answered together with it (at most %d in a row).",
+            2,
+        )
     if tts_bound:
         _LOGGER.warning(
             "CANDIDATE speech length bound for this process: each segment's synthesis "
@@ -434,10 +458,13 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         )
     if problems:
         raise StartupRefusedError(problems)
-    if request_construction == "envelope_in_system":
+    if request_construction in ("envelope_in_system", "split_state"):
         import val_gateway.context as request_context
 
         request_context.ENVELOPE_IN_SYSTEM = True
+        # 28 September 2026 (§2, §3), isolated: the steady record state in the developer
+        # block, this turn's after his words.
+        request_context.SPLIT_STATE = request_construction == "split_state"
         _LOGGER.warning(
             "CANDIDATE request construction for this process: the record-state envelope "
             "follows the persona in the developer block; per-route prime boundaries."
@@ -714,5 +741,6 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         adaptive_grace=adaptive_grace,
         owner_precedence=owner_precedence,
         adaptive_endpoint=adaptive_endpoint,
+        combine_continuations=combine_continuations,
         request_construction=request_construction,
     )

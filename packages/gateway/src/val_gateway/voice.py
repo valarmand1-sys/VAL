@@ -105,6 +105,17 @@ REFRESH_IDLE_SECONDS = 1.0
 #: answer can play (remaining latency work, 27 September 2026, §4). The recognizer
 #: reports an onset only after a stretch of voiced frames; this covers it.
 MERGE_HOLD_MARGIN_SECONDS = 0.3
+#: How many clear continuations in a row may set an unheard answer aside so that one
+#: answer covers them all (28 September 2026, §6). Past this the continuation waits.
+MAX_COMBINED_RESTARTS = 2
+
+
+def _ended_short(delivery: object) -> bool:
+    """Whether this delivery already ended interrupted or failed."""
+    state = getattr(delivery, "state", None)
+    return getattr(state, "value", state) in ("interrupted", "failed")
+
+
 #: How long past the duration estimate a handed-over segment without a completion report
 #: still counts as playing (release-gaps corrections, 27 September 2026, §6).
 PLAYBACK_REPORT_GRACE_SECONDS = 3.0
@@ -439,6 +450,9 @@ class _Pending:
     #: which resumed speech would still be the rest of this same utterance, plus the
     #: onset margin. Set at submission under the adaptive endpoint; None otherwise.
     merge_window_until: float | None = None
+    #: §6 (28 September 2026): how many continuations in a row have set an unheard answer
+    #: aside to be answered together; bounded by `MAX_COMBINED_RESTARTS`.
+    combined_depth: int = 0
     #: This turn's stopwatch, so a decision taken on another thread (supersession) can
     #: be marked on the turn it concerns.
     recorder: timings.TurnTimings | None = None
@@ -576,6 +590,7 @@ class VoiceSession:
         adaptive_grace: bool = False,
         owner_precedence: bool = False,
         adaptive_endpoint: bool = False,
+        combine_continuations: bool = False,
     ) -> None:
         self._engine = engine
         self._recognizer = recognizer
@@ -680,6 +695,9 @@ class VoiceSession:
         #: path's total silence bound joins the utterance even after an early submission
         #: (the early turn is cancelled and withdrawn, the halves submitted as one).
         self._adaptive_endpoint = adaptive_endpoint
+        #: §6 (28 September 2026), candidate: a clear continuation of an unheard answer is
+        #: answered together with it (`VAL_COMBINE_CONTINUATIONS`). Off in production.
+        self._combine_continuations = combine_continuations
         #: The resume bound from an endpoint: the fixed path's total silence, less the
         #: endpoint silence this recognizer uses.
         self._resume_window = (
@@ -691,6 +709,13 @@ class VoiceSession:
         #: §4 (27 September 2026): (until, delivery) — the delivery whose audio is held
         #: until its turn's merge window has closed, on the session clock.
         self._merge_hold: tuple[float, object] | None = None
+        #: §5 (28 September 2026): when each handed-over segment is estimated to have begun
+        #: playing, and which the desktop has reported begun — by (message, segment).
+        self._segment_start_est: dict[tuple[str, int], float] = {}
+        self._reported_started: set[tuple[str, int]] = set()
+        #: Answers stopped after their hand-off, by message, awaiting the desktop's report
+        #: of what it cut (§5).
+        self._stopped_answers: dict[str, object] = {}
         self._maintaining = threading.Lock()
         #: True from the moment a turn is submitted until its cognition returns —
         #: the span in which his request is with the model or about to be.
@@ -914,6 +939,7 @@ class VoiceSession:
                 self._first_play_est = starts
             self._heard_until = starts + max(0.0, duration_seconds)
             if segment is not None:
+                self._segment_start_est[(str(segment[0]), int(segment[1]))] = starts
                 # Expected to have ended by the estimate plus the grace; after that a
                 # missing report is forgotten rather than trusted for ever.
                 self._outstanding_playback[segment] = (
@@ -930,20 +956,44 @@ class VoiceSession:
         """
         with self._lock:
             if state == "playback_started" and segment is not None:
-                # Only a report for the answer in flight says it has been heard; a late
-                # report for an earlier answer's piece must not (found 27 September 2026:
-                # a previous answer's tail marked a new, unplayed answer heard).
-                current_answer = getattr(self._delivery, "message_id", None)
+                self._reported_started.add((str(segment[0]), int(segment[1])))
+                # Only a report for the answer being handed over says it has been heard; a
+                # late report for an earlier answer's piece must not (found 27 September
+                # 2026: a previous answer's tail marked a new, unplayed answer heard). The
+                # answer being handed over includes one whose synthesis has finished
+                # (28 September 2026, §5): a short answer is often voiced whole before its
+                # first report arrives.
+                current_answer = getattr(self._handover_locked(), "message_id", None)
                 if current_answer is not None and str(segment[0]) == str(current_answer):
                     self._playback_started = True
+            stopped = None
             if state in ("playback_interrupted", "playback_failed"):
                 self._heard_until = min(self._heard_until, time.monotonic())
                 self._outstanding_playback.clear()
+                if state == "playback_interrupted" and segment is not None:
+                    stopped = self._stopped_answers.get(str(segment[0]))
             elif state == "playback_completed" and segment is not None:
                 self._outstanding_playback.pop(segment, None)
                 self._expire_outstanding_locked()
                 if not self._outstanding_playback:
                     self._heard_until = min(self._heard_until, time.monotonic())
+        # The desktop's word on what it cut of an answer the service stopped after its
+        # hand-off (§5): the record follows that word, never the service's estimate.
+        if stopped is not None and segment is not None:
+            reported = getattr(stopped, "playback_cut_reported", None)
+            if callable(reported):
+                reported(int(segment[1]))
+
+    #: How many answers stopped after hand-off are kept for their desktop reports.
+    STOPPED_ANSWERS_KEPT = 8
+
+    def _remember_stopped_locked(self, delivery: object) -> None:
+        message_id = getattr(delivery, "message_id", None)
+        if message_id is None:
+            return
+        self._stopped_answers[str(message_id)] = delivery
+        while len(self._stopped_answers) > self.STOPPED_ANSWERS_KEPT:
+            del self._stopped_answers[next(iter(self._stopped_answers))]
 
     def _expire_outstanding_locked(self) -> None:
         now = time.monotonic()
@@ -973,7 +1023,7 @@ class VoiceSession:
         playback began is. Without a hand-off sink (a direct sink, or a test's), the
         delivery's own audible boundary is the fact available.
         """
-        delivery = self._delivery
+        delivery = self._handover_locked()
         if delivery is None:
             return False
         sink = getattr(delivery, "sink", None)
@@ -982,6 +1032,70 @@ class VoiceSession:
                 return True
             return self._first_play_est is not None and time.monotonic() >= self._first_play_est
         return bool(delivery.audible)
+
+    def _handover_locked(self) -> Delivery | None:
+        """The answer whose audio the desktop may still be collecting or playing (lock held)."""
+        return self._delivery if self._delivery is not None else self._recent
+
+    def _started_segments_locked(self, message_id: object) -> set[int]:
+        """Segments of this answer that have begun playing, as far as is known (lock held).
+
+        A desktop report that a segment started, or — because reports are held and can
+        arrive late — the playback-occupancy estimate that its turn to play has come.
+        Either is enough: audible sound is never counted as unheard.
+        """
+        key = str(message_id)
+        now = time.monotonic()
+        started = {index for answer, index in self._reported_started if answer == key}
+        started |= {
+            index
+            for (answer, index), at in self._segment_start_est.items()
+            if answer == key and at <= now
+        }
+        return started
+
+    def _cut_finished_answer(self, reason: str) -> bool:
+        """Barge-in on an answer whose synthesis has finished but which is still sounding.
+
+        Remaining latency work, 28 September 2026 (§5). Returns whether anything was cut.
+        The same rule as barge-in on an answer in flight — his onset while she is audibly
+        playing stops her — applied once the delivery has left `_delivery`: its queued
+        audio is discarded, the desktop is told to stop (the delivery now reads
+        interrupted), and one `interrupted` row is appended saying which segment was cut
+        and which never played.
+        """
+        with self._lock:
+            recent = self._recent
+            if recent is None or self._delivery is not None:
+                return False
+            if not (self._heard_locked() and self._playback_occupied_locked()):
+                return False
+            started = self._started_segments_locked(getattr(recent, "message_id", None))
+        request = getattr(recent, "request_stop", None)
+        if not callable(request):
+            return False
+        interval = request(reason)
+        if interval is None:
+            return False
+        self.cancellations.append(interval)
+        with self._lock:
+            self._heard_until = min(self._heard_until, time.monotonic())
+            self._outstanding_playback.clear()
+            # What was cut is recorded when the desktop says what it cut — possibly after
+            # his next turn has begun, so the delivery is kept by its message here.
+            self._remember_stopped_locked(recent)
+        _LOGGER.info(
+            "voice barge-in after synthesis: %s",
+            json.dumps(
+                {
+                    "message_id": str(getattr(recent, "message_id", None)),
+                    "started_segments": sorted(started),
+                    "service_ms": round(interval, 3),
+                    "decided_mono": time.monotonic(),
+                }
+            ),
+        )
+        return True
 
     @property
     def speech_hold(self) -> bool:
@@ -1011,14 +1125,23 @@ class VoiceSession:
                 if handover is hold[1]:
                     return True
             delivery = self._delivery
-            if delivery is None or not delivery.active or self._heard_locked():
+            if delivery is not None:
+                if not delivery.active or self._heard_locked():
+                    return False
+                speaking = self._current is not None
+                undecided = (
+                    self._pending is not None
+                    and self._inflight is not None
+                    and self._pending.follow_up is None
+                )
+                return speaking or undecided
+            # A finished answer he has not begun to hear (28 September 2026, §5): held while
+            # his words are in the air or undecided, exactly as one still being written.
+            recent = self._recent
+            if recent is None or self._heard_locked() or _ended_short(recent):
                 return False
             speaking = self._current is not None
-            undecided = (
-                self._pending is not None
-                and self._inflight is not None
-                and self._pending.follow_up is None
-            )
+            undecided = self._pending is not None and self._pending.follow_up is None
             return speaking or undecided
 
     @property
@@ -1120,6 +1243,9 @@ class VoiceSession:
                 heard = self._heard_locked()
             if not (self._owner_precedence or self._adaptive_endpoint) or heard:
                 self.cancellations.append(delivering.interrupt("the owner began speaking"))
+        else:
+            # Her synthesis has finished and the desktop may still be playing it (§5).
+            self._cut_finished_answer("the owner began speaking while her answer was still playing")
 
     def _guessed(self, event: RecognizerEvent) -> None:
         """A revised guess: held in memory, and journalled on a throttle."""
@@ -1544,6 +1670,42 @@ class VoiceSession:
             if self._resuming(pending):
                 return
             inflight = self._inflight
+            recent = self._recent
+            if (
+                inflight is None
+                and self._owner_precedence
+                and pending.follow_up is None
+                and recent is not None
+                and not _ended_short(recent)
+                and not self._heard_locked()
+            ):
+                # His words arrive after her answer was finished but before any of it was
+                # heard (28 September 2026, §5): the same decision as for an answer still
+                # being written. A stop or a clear replacement sets it aside — its audio is
+                # discarded and the record says none of it was heard; anything else keeps it,
+                # and it plays after him.
+                relation = follow_up(pending.utterance.text)
+                pending.follow_up = relation.kind
+                finished: dict[str, object] = {
+                    "finished_answer": str(getattr(recent, "message_id", None)),
+                    "by_utterance": pending.utterance.utterance,
+                    "relation": relation.kind,
+                    "reason": relation.reason,
+                    "answer_heard": False,
+                    "decided_mono": time.monotonic(),
+                }
+                cut = getattr(recent, "cut_playback", None)
+                if relation.supersedes and callable(cut):
+                    cut(
+                        "superseded by the owner's next confirmed turn before any of it was heard",
+                        set(),
+                    )
+                    with self._lock:
+                        self._remember_stopped_locked(recent)
+                    finished["outcome"] = "superseded"
+                else:
+                    finished["outcome"] = "kept"
+                _LOGGER.info("voice precedence: %s", json.dumps(finished))
             if inflight is not None:
                 # Owner precedence (Milestone B §8, corrected by the release-gaps order
                 # §1 and §2, 26 September 2026): his next words are a confirmed turn while
@@ -1568,12 +1730,28 @@ class VoiceSession:
                         "answer_heard": heard,
                         "decided_mono": time.monotonic(),
                     }
-                    if relation.supersedes and not heard and not inflight.superseded.is_set():
+                    # §6 (28 September 2026), behind its switch: a clear continuation of an
+                    # answer he has not begun to hear sets that answer aside too, and the new
+                    # turn is answered with both of his messages in view — his earlier
+                    # message stays, canonical and unanswered, never withdrawn. At most
+                    # `MAX_COMBINED_RESTARTS` in a row, so speaking in many fragments cannot
+                    # restart her for ever; after that the continuation waits, as before.
+                    combine = (
+                        self._combine_continuations
+                        and relation.kind == "continuation"
+                        and inflight.combined_depth < MAX_COMBINED_RESTARTS
+                    )
+                    if (
+                        (relation.supersedes or combine)
+                        and not heard
+                        and not inflight.superseded.is_set()
+                    ):
                         inflight.superseded.set()
+                        pending.combined_depth = inflight.combined_depth + 1 if combine else 0
                         pending.stop_only = relation.kind == "stop"
                         if inflight.recorder is not None:
                             inflight.recorder.mark("superseded_decided")
-                        decision["outcome"] = "superseded"
+                        decision["outcome"] = "combined" if combine else "superseded"
                         self._last_supersession = {
                             "kind": relation.kind,
                             "superseded_utterance": inflight.utterance.utterance,

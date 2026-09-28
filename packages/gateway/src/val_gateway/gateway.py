@@ -639,7 +639,7 @@ class Gateway:
         # desktop comparison of 27 September paid a 7.9 s cold prefill on the light route
         # when both primes moved).
         if _context.ENVELOPE_IN_SYSTEM and task_type is TaskType.CONVERSATION:
-            primed_system = persona.content + _context.ENVELOPE_SYSTEM_SEPARATOR
+            primed_system = persona.content + _context.envelope_system_separator()
             plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(
                 config, primed_system, boundary="developer_end"
             )

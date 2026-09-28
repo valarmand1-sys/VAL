@@ -877,7 +877,19 @@ def assemble_turn(
         local_only=egress.local_only,
         local_only_reasons=tuple(reason.value for reason in egress.reasons),
         # Owner order, 26 September 2026: the spoken-path facts only when he asks.
-        spoken_path_asked=asks_about_the_spoken_path(opened.user_message.content),
+        spoken_path_asked=asks_about_the_spoken_path(
+            opened.user_message.content,
+            # A short follow-up to a question about her path carries the facts too
+            # (remaining latency work, 28 September 2026, §4).
+            previous=next(
+                (
+                    record.content
+                    for record in reversed(history[:-1])
+                    if record.role is StoredRole.USER
+                ),
+                None,
+            ),
+        ),
         # Milestone B §6 experiment, isolated: off unless the harness turns the module
         # switch on. Never set by production configuration in this pass.
         current_turn_social=(

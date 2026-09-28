@@ -1,0 +1,468 @@
+{
+ "turns": [
+  {
+   "session": "B1-barge-after-synthesis",
+   "label": "barge-in, replacement",
+   "delay_reports_ms": 0,
+   "all_offered_before_speech_ms": 1601,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 324,
+   "speech_start_to_worklet_stopped_ms": 326,
+   "stop_reason": "the owner began speaking while her answer was still playing",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  },
+  {
+   "session": "B1-barge-after-synthesis",
+   "label": "barge-in, stop",
+   "delay_reports_ms": 0,
+   "all_offered_before_speech_ms": 1592,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 418,
+   "speech_start_to_worklet_stopped_ms": 418,
+   "stop_reason": "the owner began speaking while her answer was still playing",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  },
+  {
+   "session": "B2-barge-after-synthesis-delayed-reports",
+   "label": "barge-in, replacement",
+   "delay_reports_ms": 1500,
+   "all_offered_before_speech_ms": 1602,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 323,
+   "speech_start_to_worklet_stopped_ms": 323,
+   "stop_reason": "the owner began speaking while her answer was still playing",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  },
+  {
+   "session": "B2-barge-after-synthesis-delayed-reports",
+   "label": "barge-in, stop",
+   "delay_reports_ms": 1500,
+   "all_offered_before_speech_ms": 1584,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 425,
+   "speech_start_to_worklet_stopped_ms": 425,
+   "stop_reason": "the owner began speaking while her answer was still playing",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  },
+  {
+   "session": "B3-barge-in-flight-control",
+   "label": "barge-in, replacement",
+   "delay_reports_ms": 0,
+   "all_offered_before_speech_ms": null,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 326,
+   "speech_start_to_worklet_stopped_ms": 326,
+   "stop_reason": "the owner began speaking",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  },
+  {
+   "session": "B3-barge-in-flight-control",
+   "label": "barge-in, stop",
+   "delay_reports_ms": 0,
+   "all_offered_before_speech_ms": null,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 386,
+   "speech_start_to_worklet_stopped_ms": 386,
+   "stop_reason": "the owner began speaking",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  }
+ ],
+ "records": [
+  {
+   "message_id": "01a0e926-2e8d-7db7-afae-18abf214b01d",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 3,
+     "segments_total": null,
+     "characters": 178,
+     "reason": null,
+     "at": "2026-09-28T12:53:08.756393-05:00"
+    },
+    {
+     "state": "completed",
+     "segments_delivered": 10,
+     "segments_total": 10,
+     "characters": 934,
+     "reason": null,
+     "at": "2026-09-28T12:53:25.252124-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 5,
+     "segments_total": 10,
+     "characters": 440,
+     "reason": "the owner began speaking while her answer was still playing; segment 5 was cut off while playing; segments 6, 7, 8, 9, 10 never played",
+     "at": "2026-09-28T12:53:27.191864-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T12:53:05.366152-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:53:07.272403-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_started",
+     "at": "2026-09-28T12:53:07.276855-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:53:09.505679-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_started",
+     "at": "2026-09-28T12:53:09.506064-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_started",
+     "at": "2026-09-28T12:53:15.426962-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:53:15.427049-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_started",
+     "at": "2026-09-28T12:53:22.869121-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:53:22.869237-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T12:53:27.194102-05:00"
+    }
+   ]
+  },
+  {
+   "message_id": "01a0e928-0bdc-7e16-9461-209fcadf0798",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 2,
+     "segments_total": null,
+     "characters": 168,
+     "reason": null,
+     "at": "2026-09-28T12:55:10.948213-05:00"
+    },
+    {
+     "state": "completed",
+     "segments_delivered": 10,
+     "segments_total": 10,
+     "characters": 1215,
+     "reason": null,
+     "at": "2026-09-28T12:55:30.936432-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 5,
+     "segments_total": 10,
+     "characters": 573,
+     "reason": "the owner began speaking while her answer was still playing; segment 5 was cut off while playing; segments 6, 7, 8, 9, 10 never played",
+     "at": "2026-09-28T12:55:33.025476-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T12:55:06.785873-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:55:12.616435-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_started",
+     "at": "2026-09-28T12:55:12.620668-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:55:16.528663-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_started",
+     "at": "2026-09-28T12:55:16.528723-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_started",
+     "at": "2026-09-28T12:55:24.052115-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:55:24.052231-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_started",
+     "at": "2026-09-28T12:55:30.455547-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:55:30.455648-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T12:55:33.026385-05:00"
+    }
+   ]
+  },
+  {
+   "message_id": "01a0e929-0c56-7310-8595-7062a51afbc6",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 2,
+     "segments_total": null,
+     "characters": 115,
+     "reason": null,
+     "at": "2026-09-28T12:56:16.605134-05:00"
+    },
+    {
+     "state": "completed",
+     "segments_delivered": 10,
+     "segments_total": 10,
+     "characters": 1043,
+     "reason": null,
+     "at": "2026-09-28T12:56:34.205188-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 5,
+     "segments_total": 10,
+     "characters": 450,
+     "reason": "the owner began speaking while her answer was still playing; segment 5 was cut off while playing; segments 6, 7, 8, 9, 10 never played",
+     "at": "2026-09-28T12:56:37.644846-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T12:56:14.373507-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:56:16.600394-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_started",
+     "at": "2026-09-28T12:56:16.601036-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_started",
+     "at": "2026-09-28T12:56:20.598812-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:56:20.598865-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_started",
+     "at": "2026-09-28T12:56:29.236851-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:56:29.236951-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:56:36.278688-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_started",
+     "at": "2026-09-28T12:56:36.278773-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T12:56:37.647922-05:00"
+    }
+   ]
+  },
+  {
+   "message_id": "01a0e92a-c947-73d0-b39f-c55a50ed0b25",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 2,
+     "segments_total": null,
+     "characters": 117,
+     "reason": null,
+     "at": "2026-09-28T12:58:10.508803-05:00"
+    },
+    {
+     "state": "completed",
+     "segments_delivered": 9,
+     "segments_total": 9,
+     "characters": 951,
+     "reason": null,
+     "at": "2026-09-28T12:58:27.255106-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 4,
+     "segments_total": 9,
+     "characters": 365,
+     "reason": "the owner began speaking while her answer was still playing; segment 4 was cut off while playing; segments 5, 6, 7, 8, 9 never played",
+     "at": "2026-09-28T12:58:30.846519-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T12:58:08.920518-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:58:13.472536-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_started",
+     "at": "2026-09-28T12:58:13.472681-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:58:16.595415-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_started",
+     "at": "2026-09-28T12:58:16.595508-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_completed",
+     "at": "2026-09-28T12:58:24.915448-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_started",
+     "at": "2026-09-28T12:58:24.915614-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T12:58:30.848036-05:00"
+    }
+   ]
+  },
+  {
+   "message_id": "01a0e92b-ecf3-72cc-9085-4ea2b42643cf",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 1,
+     "segments_total": null,
+     "characters": 111,
+     "reason": null,
+     "at": "2026-09-28T12:59:25.177809-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 2,
+     "segments_total": 8,
+     "characters": 200,
+     "reason": "the owner began speaking",
+     "at": "2026-09-28T12:59:25.911629-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T12:59:22.566269-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T12:59:25.993631-05:00"
+    }
+   ]
+  },
+  {
+   "message_id": "01a0e92d-39d7-7580-82dd-55e69b26fcb0",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 2,
+     "segments_total": null,
+     "characters": 127,
+     "reason": null,
+     "at": "2026-09-28T13:00:50.396795-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 2,
+     "segments_total": null,
+     "characters": 127,
+     "reason": "the owner began speaking",
+     "at": "2026-09-28T13:00:50.397725-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T13:00:46.728675-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_completed",
+     "at": "2026-09-28T13:00:50.157328-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_started",
+     "at": "2026-09-28T13:00:50.157941-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T13:00:50.246051-05:00"
+    }
+   ]
+  }
+ ]
+}
