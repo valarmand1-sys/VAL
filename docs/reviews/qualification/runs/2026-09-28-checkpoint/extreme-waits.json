@@ -1,0 +1,365 @@
+[
+ {
+  "set": "primary",
+  "run": "P1a",
+  "session": "S3-collisions-and-replacement (voice-bench-P1a-session-2.json)",
+  "turn_index": 5,
+  "label": "thanks after an answer, into maintenance",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0e937-75f6-77d6-871c-8f7e7f83f1a9 ('Actually, never mind. Describe a lighthouse instead.', utterance 5, which superseded utterance 4 'Describe a haunted house in one sentence.' as a replacement)",
+   "answer_message": "01a0e937-938e-7809-bb93-adc4076605f2",
+   "route": "conversation (partner, MEDIUM; fast route tier null), call ok",
+   "answer_chars": 166,
+   "segments": 2,
+   "answer": "My lord, the lighthouse rises steeply from the cliffside, its white lantern room gleaming against a storm-clouded sky and guiding ships with steady, unwavering light."
+  },
+  "wait_evidence": [
+   "previous speech end 13:12:00.352; timed-out turn spoken 13:16:02.251 (241.9 s); previous_wait_timed_out true at voice-bench-P1a-session-2.json:1728",
+   "last worklet event before the turn: 'started' key 5:2 at 13:12:12.648 (voice-bench-P1a-session-2.json:1876); no completed/stopped for 5:2 ever; next worklet event is the thanks answer's 6:1 at 13:16:07.376",
+   "speech/next went to delivery_state 'none' at 13:12:11.928 (voice-bench-P1a-session-2.json:1575), 28 ms after the replacement's timeline line and before segment 2 had begun playing; no 'completed' offer and no stop offer for this answer",
+   "page idle ('Voice On · Mic Listening', no progress text) from 13:12:20.932 (voice-bench-P1a-session-2.json:2121) until the driver spoke: the DOM half of the idle rule was met; only the worklet half never was",
+   "Mechanism (same in every 'd' case; read from code, consistent with every log ordering below): the superseded/combined earlier utterance's worker thread ends only after the replacement turn's _run_turn has set _delivery to the replacement's delivery (packages/gateway/src/val_gateway/voice.py:1907, 1918). The superseded thread's _record then runs the unguarded hand-off at voice.py:2242-2243 (self._recent = self._delivery; self._delivery = None), moving the REPLACEMENT's delivery into _recent. When the replacement turn itself finishes, its own _record runs the same lines with self._delivery already None, so _recent becomes None and GET speech/next returns delivery_state 'none' (apps/api/src/val_api/app.py:1251-1253). Any piece still queued in the sink is then uncollectable; the segment's empty closing piece (last=True, packages/gateway/src/val_gateway/playback.py:165-178) never reaches the desktop, so the playback worklet never posts 'completed' for that segment (apps/desktop/public/pcm-playback-worklet.js:81-83, master checkout) and never posts 'stopped' either (no stop is offered once the hand-off is gone). The driver's idle rule requires the worklet's last event to be completed/stopped (voice_bench.mjs:191), so it waits the full 240 s (voice_bench.mjs:196, 204). Runtime corroboration: while the replacement answer played, the session view's delivery (live.delivery = _delivery, app.py:927) was None, so the page showed 'Val Thinking' rather than 'Val Speaking' between segment starts."
+  ],
+  "previous_request_reached_core": "yes: precedence superseded 4 by 5 at service-P1a.log:40593; replacement classified 13:12:01.147 (:40597); superseded call 'failed with superseded' (:40598); superseded thread released only at 13:12:01.150 (:40602) - after the replacement turn began; replacement timeline utterance 5 at 13:12:11.900 (:41377, provider_visible_text 7341 ms, 2 segments queued/synthesised); delivered POST for 01a0e937-938e (:41435); extracted call_statuses ['ok']",
+  "what_followed": "Answer produced on time and played: 5:1 13:12:08.981-13:12:12.648 (3.67 s), 5:2 started 13:12:12.648 with 7 pieces collected (chunks 0-6). Session returned to listening; nothing else played until the next turn. Not in deliveries_not_completed (service delivery record completed).",
+  "audio_duration_s": "~9.4-10.4 (3.67 s measured + segment 2 of 7 streamed pieces, ~5.8-6.7 s assuming ~0.96 s pieces); her audio ended ~13:12:19, about 223 s before the driver spoke",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence - hand-off released before the last segment's closing piece was collected, so no playback completion was ever reported; not a driver error, not a stuck turn, answer on time and audible",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c, where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'You are most welcome, my lord.' (01a0e93b-35db-7811-b72a-55d081941e73, call ok, first audio 13:16:07.376). Extracted spoken_over_her_audio=true (voice-bench-P1a.json:840) is an artefact of the same missing 'completed' event (voice_bench_extract.py:237 looks only at the last worklet event); her audio had ended ~4 min earlier."
+ },
+ {
+  "set": "primary",
+  "run": "P1a",
+  "session": "S5-merge-window (voice-bench-P1a-session-4.json)",
+  "turn_index": 7,
+  "label": "thanks after an answer",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0e945-081a-7530-b75c-6de69388548c ('Name a famous poem. No, a famous play.', heard 'No, a famous play.'; utterance 14 superseded utterance 13 'Name a famous poem.' as a replacement)",
+   "answer_message": "01a0e945-2d9c-7e0c-b599-f27a1b23c1b8",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 60,
+   "segments": 1,
+   "answer": "My lord, a famous play is **Hamlet** by William Shakespeare."
+  },
+  "wait_evidence": [
+   "previous speech end 13:26:49.732; spoken 13:30:50.832 (241.1 s); previous_wait_timed_out true at voice-bench-P1a-session-4.json:5460",
+   "last worklet event: 'started' 14:1 at 13:27:00.630 (voice-bench-P1a-session-4.json:5922); never completed/stopped",
+   "speech/next 'none' at 13:27:01.667 (voice-bench-P1a-session-4.json:5202) after chunks 0-3 of segment 1; no completed/stop offer",
+   "page idle from 13:27:06.638 (voice-bench-P1a-session-4.json:6479)",
+   "same mechanism as P1a S3 (see that entry)"
+  ],
+  "previous_request_reached_core": "yes: precedence service-P1a.log:104146; replacement classified 13:26:50.525 (:104147); superseded call failed (:104155); superseded thread released 13:26:50.539 (:104156), after the replacement began; replacement timeline 13:27:01.655 (:104955, 1 segment); call ok",
+  "what_followed": "One-segment answer played from 13:27:00.630 (4 pieces collected); session back to listening; nothing further.",
+  "audio_duration_s": "~2.9-3.8 (4 streamed pieces, ~0.96 s each assumed); ended ~13:27:04",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence (closing piece of the only segment never collected)",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c, where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'You're welcome, my lord. Should anything else come to mind, I remain ready to serve.' (01a0e948-d1c3-79b0-89b2-95d47323aa71, ok). spoken_over_her_audio=true (voice-bench-P1a.json:1910) is an artefact."
+ },
+ {
+  "set": "primary",
+  "run": "P1b",
+  "session": "S3-collisions-and-replacement (voice-bench-P1b-session-2.json)",
+  "turn_index": 5,
+  "label": "thanks after an answer, into maintenance",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0e96d-e454-732f-905f-a4d547bb1c48 ('Actually, never mind. Describe a lighthouse instead.', replacement of utterance 4)",
+   "answer_message": "01a0e96e-0403-757c-9958-ba90a63d47e4",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 164,
+   "segments": 2,
+   "answer": "A lighthouse stands as a solitary sentinel against the gull-laden horizon, its tapered tower rising from cliff to sky, a steady beam cutting through storm and mist."
+  },
+  "wait_evidence": [
+   "previous speech end 14:11:27.699; spoken 14:15:29.773 (242.1 s); timed out at voice-bench-P1b-session-2.json:1782",
+   "last worklet event 'started' 5:2 at 14:11:41.394 (voice-bench-P1b-session-2.json:1926); never completed/stopped",
+   "speech/next 'none' at 14:11:39.792 (voice-bench-P1b-session-2.json:1638), before segment 2 began playing",
+   "page idle from 14:11:48.762 (voice-bench-P1b-session-2.json:2166)",
+   "same mechanism as P1a S3"
+  ],
+  "previous_request_reached_core": "yes: precedence service-P1b.log:44118; replacement classified 14:11:28.345 (:44120); superseded call failed (:44121); released 14:11:28.348 (:44124); replacement timeline 14:11:39.761 (:44949); delivered POST (:45069); call ok",
+  "what_followed": "Answer played: 5:1 14:11:36.761-14:11:41.394 (4.63 s), 5:2 from 14:11:41.394 (6 pieces collected); session back to listening.",
+  "audio_duration_s": "~9.4-10.4 (4.63 s measured + ~4.8-5.8 s); ended ~14:11:47",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c, where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'You're welcome, my lord.' (01a0e971-a856-72e4-80f6-4cbcb3507c6f, ok). spoken_over_her_audio=true (voice-bench-P1b.json:840) is an artefact."
+ },
+ {
+  "set": "primary",
+  "run": "P1b",
+  "session": "S5-merge-window (voice-bench-P1b-session-4.json)",
+  "turn_index": 7,
+  "label": "thanks after an answer",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0e97f-3a59-7501-9355-6fa2c6e9db99 ('Name a famous poem. No, a famous play.', heard 'No, a famous play.'; replacement of utterance 13)",
+   "answer_message": "01a0e97f-6b6d-72f9-a8e1-30710c20a63a",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 78,
+   "segments": 2,
+   "answer": "Good evening, my lord.  A well-known play is *Hamlet* by William Shakespeare."
+  },
+  "wait_evidence": [
+   "previous speech end 14:30:23.458; spoken 14:34:24.578 (241.1 s); timed out at voice-bench-P1b-session-4.json:9987",
+   "last worklet event 'started' 14:2 at 14:30:39.406 (voice-bench-P1b-session-4.json:10935); never completed/stopped",
+   "speech/next 'none' at 14:30:39.082 (voice-bench-P1b-session-4.json:9801)",
+   "page idle from 14:30:45.383 (voice-bench-P1b-session-4.json:11760)",
+   "same mechanism as P1a S3"
+  ],
+  "previous_request_reached_core": "yes: precedence service-P1b.log:125246; replacement classified 14:30:24.476 (:125247); superseded call failed (:125250); released 14:30:24.481 (:125252); replacement timeline 14:30:39.079 (:126305); delivered POST (:126334); call ok",
+  "what_followed": "Answer played: 14:1 14:30:37.571-14:30:39.406 (1.84 s), 14:2 from 14:30:39.406 (4 pieces); session back to listening.",
+  "audio_duration_s": "~4.7-5.7 (1.84 s measured + ~2.9-3.8 s); ended ~14:30:43",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c, where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'You're welcome, my lord.' (01a0e982-fefc-74d2-b539-cd47a28e0c36, ok). spoken_over_her_audio=true (voice-bench-P1b.json:1910) is an artefact."
+ },
+ {
+  "set": "primary",
+  "run": "C2b",
+  "session": "S3-collisions-and-replacement (voice-bench-C2b-session-2.json)",
+  "turn_index": 5,
+  "label": "thanks after an answer, into maintenance",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0e9f2-548d-77ea-8186-8c2b6e2ef95a ('Actually, never mind, describe a lighthouse instead.', replacement of utterance 4 whose own answer 01a0e9f2-49d3 was already being voiced and is recorded interrupted 'superseded by the owner's next confirmed turn')",
+   "answer_message": "01a0e9f2-6957-7bc5-86c7-480cf0ea4208",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 174,
+   "segments": 2,
+   "answer": "My lord, a solitary tower of whitewashed stone rises from a rugged coast, its lantern room gleaming like a steadfast eye amid moonlit spray while waves pound the cliff below."
+  },
+  "wait_evidence": [
+   "previous speech end 16:36:07.074; spoken 16:40:09.008 (241.9 s); timed out at voice-bench-C2b-session-2.json:1530",
+   "last worklet event 'started' 5:2 at 16:36:18.492 (voice-bench-C2b-session-2.json:1650); never completed/stopped",
+   "speech/next 'none' at 16:36:16.901 (voice-bench-C2b-session-2.json:1368), before segment 2 began playing",
+   "page idle from 16:36:26.745 (voice-bench-C2b-session-2.json:1895)",
+   "same mechanism as P1a S3 (here the superseded utterance had already finished generating, so there is no 'failed with superseded' line; its thread still released after the replacement began)"
+  ],
+  "previous_request_reached_core": "yes: precedence service-C2b.log:49816; replacement classified 16:36:07.826 (:49818); superseded thread released 16:36:07.933 (:49835); replacement timeline 16:36:16.875 (:50476); delivered POST (:50595); call ok",
+  "what_followed": "Answer played: 5:1 16:36:13.382-16:36:18.491 (5.11 s), 5:2 from 16:36:18.492 (7 pieces); session back to listening.",
+  "audio_duration_s": "~10.9-11.8 (5.11 s measured + ~5.8-6.7 s); ended ~16:36:25",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c, where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'My lord, you are most welcome.' (01a0e9f6-166f-737c-bb0b-e20f3af427b1, ok). spoken_over_her_audio=true (voice-bench-C2b.json:840) is an artefact."
+ },
+ {
+  "set": "primary",
+  "run": "C2b",
+  "session": "S5-merge-window (voice-bench-C2b-session-4.json)",
+  "turn_index": 7,
+  "label": "thanks after an answer",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0ea00-25db-7d65-89e5-ac01dc7715b5 ('Name a famous poem. No, a famous play.', heard 'No, a famous play.'; replacement of utterance 13)",
+   "answer_message": "01a0ea00-36b9-7571-8790-07b58fda0e6e",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 62,
+   "segments": 1,
+   "answer": "My lord, a famous play is **“Hamlet” by William Shakespeare.**"
+  },
+  "wait_evidence": [
+   "previous speech end 16:51:12.515; spoken 16:55:13.646 (241.1 s); timed out at voice-bench-C2b-session-4.json:4803",
+   "last worklet event 'started' 14:1 at 16:51:18.409 (voice-bench-C2b-session-4.json:5209); never completed/stopped",
+   "speech/next 'none' at 16:51:19.745 (voice-bench-C2b-session-4.json:4536)",
+   "page idle from 16:51:25.436 (voice-bench-C2b-session-4.json:5736)",
+   "same mechanism as P1a S3"
+  ],
+  "previous_request_reached_core": "yes: precedence service-C2b.log:114542; replacement classified 16:51:13.375 (:114543); superseded call failed (:114545); released 16:51:13.380 (:114547); replacement timeline 16:51:19.735 (:115003); call ok",
+  "what_followed": "One-segment answer played from 16:51:18.409 (5 pieces); session back to listening.",
+  "audio_duration_s": "~3.8-4.8 (5 streamed pieces); ended ~16:51:23",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c, where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'You're most welcome, my lord. If there's anything further you require, do let me know.' (01a0ea03-ee91-7902-b09e-e9638ed8599d, ok). spoken_over_her_audio=true (voice-bench-C2b.json:1910) is an artefact."
+ },
+ {
+  "set": "primary",
+  "run": "C2c",
+  "session": "S3-collisions-and-replacement (voice-bench-C2c-session-2.json)",
+  "turn_index": 5,
+  "label": "thanks after an answer, into maintenance",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0ea0f-cbbf-7cbb-89b2-7e18c1c65e1d ('Actually, never mind. Describe a lighthouse instead.', replacement of utterance 4 whose answer 01a0ea0f-c355 is recorded interrupted 'superseded by the owner's next confirmed turn')",
+   "answer_message": "01a0ea0f-db47-7b62-8d4a-defe25eb088e",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 122,
+   "segments": 2,
+   "answer": "A tall, weather-worn beacon of stone and glass rises above the churning sea, its steady glow cutting through foggy nights."
+  },
+  "wait_evidence": [
+   "previous speech end 17:08:18.123; spoken 17:12:20.030 (241.9 s); timed out at voice-bench-C2c-session-2.json:1773",
+   "last worklet event 'started' 5:2 at 17:08:28.918 (voice-bench-C2c-session-2.json:1905); never completed/stopped",
+   "speech/next 'none' at 17:08:25.957 (voice-bench-C2c-session-2.json:1620) after segment 2 chunks 0-2 (3 pieces); segment 2 is 2.800 s (store dump text line 2974), i.e. 3 audio pieces - so every audio piece was collected and only the empty closing piece was lost",
+   "page idle from 17:08:34.964 (voice-bench-C2c-session-2.json:2155)",
+   "store (pg_restore text of store-C2c.dump): speech_deliveries 'completed' 2/2 segments at 17:08:25.910 (line 2813); speech_playbacks segment 2 only 'available_to_desktop' (3340) and 'playback_started' 17:08:28.921 (3324), never 'playback_completed'; then 'playback_interrupted - voice mode ended' at 17:12:28.916 (3342), ~4 min after her audio actually ended",
+   "same mechanism as P1a S3"
+  ],
+  "previous_request_reached_core": "yes: precedence service-C2c.log:51954; replacement classified 17:08:18.882 (:51956); superseded thread released 17:08:18.930 (:51967); replacement timeline 17:08:25.914 (:52471); delivered POST (:52689); call ok",
+  "what_followed": "Answer played in full: 5:1 17:08:23.403-17:08:28.918 (generation 5.520 s, dump line 2973), 5:2 from 17:08:28.918 (generation 2.800 s). Session back to listening.",
+  "audio_duration_s": "8.32 exactly (5.520 + 2.800 from speech_generations); ended ~17:08:31.7",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence; proven here that no audible audio was lost - only the closing piece; the store also carries a false 'interrupted' record for segment 2",
+  "missing_evidence": "None.",
+  "next_turn_outcome": "Answered correctly: 'You're welcome, my lord.' (01a0ea13-8c89-766b-9b34-843b901c4fc4, ok). spoken_over_her_audio=true (voice-bench-C2c.json:840) is an artefact."
+ },
+ {
+  "set": "primary",
+  "run": "C2c",
+  "session": "S5-merge-window (voice-bench-C2c-session-4.json)",
+  "turn_index": 4,
+  "label": "correction, pause 1.6 s (window end)",
+  "said": "Name a famous ghost story. No, a famous mystery novel.",
+  "waited_on_message": {
+   "owner_message": "01a0ea1c-5b72-74f2-8621-b9f902423b8a ('Tell me about a good closing line. And why it works.'; utterance 8 'and why it works.' combined with utterance 7 - precedence relation continuation, outcome combined)",
+   "answer_message": "01a0ea1c-82c6-7abc-814c-62cc0354e00e",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": "not available in these files (extracted answer is cut at 200 characters; the delivery row counts 9 segments)",
+   "segments": "9 in the delivery record; only 2 ever voiced",
+   "answer": "Begins: 'Good evening, my lord.  A fitting closing line might be: > **“May our deeds today lay the roots of tomorrow’s prosperity.”** **Why it works** | Element | Effect | |---|---| | **Direct reference to action -' (markdown blockquote and table)"
+  },
+  "wait_evidence": [
+   "previous speech end 17:22:01.383; spoken 17:26:02.498 (241.1 s); timed out at voice-bench-C2c-session-4.json:4217",
+   "last worklet event 'started' 8:2 at 17:22:09.640 (voice-bench-C2c-session-4.json:4475); never completed/stopped before the next turn",
+   "speech/next 'none' at 17:22:23.000 (voice-bench-C2c-session-4.json:3177) after segment 2 chunks 0-41 (42 pieces); the delivery had FAILED at 17:22:22.937 but no stop was ever offered, because the hand-off was already gone",
+   "store: speech_deliveries 'failed' at 17:22:22.937 (dump text line 2862): 'segment 2 began and did not complete - the local voice stopped part-way through it: SpeechLengthBoundReached: ... a segment of 184 characters ran to its bound (510 codec tokens, 40.8 s of audio) ... not counted as spoken', 2 of 9 segments",
+   "page idle from 17:22:52.044 (voice-bench-C2c-session-4.json:4912)",
+   "store: speech_playbacks segment 2 'playback_started' 17:22:09.643 (3582) and then 'playback_interrupted - the owner was still speaking; this answer is superseded' at 17:26:08.502 (3534): recorded when the NEXT turn's early-half stop reset the desktop player, ~3 min after the runaway audio had ended",
+   "same hand-off mechanism as P1a S3 (superseded utterance 7 released at 17:22:02.122, after the combined turn began)"
+  ],
+  "previous_request_reached_core": "yes: precedence (combined) service-C2c.log:110709; combined turn classified 17:22:02.102 (:110711); superseded call failed (:110718); released 17:22:02.122 (:110721); combined timeline 17:22:22.941 (:112210); delivered POST (:111448); model call ok",
+  "what_followed": "Runaway TTS: segment 1 'Good evening, my lord.' (1.280 s, dump line 3050) played 17:22:08.363-17:22:09.640; segment 2 (184 characters of markdown blockquote/table) ran to the speech-length bound and was voiced as ~40.8 s of audio, all of it handed to the desktop (42 pieces); delivery failed; segments 3-9 never synthesised or spoken. No stop reached the desktop.",
+  "audio_duration_s": "~41.6-42.1 (1.28 s + runaway segment 2 of ~40.3-40.8 s); ended ~17:22:50 - about 192 s before the driver spoke",
+  "classification": "c",
+  "classification_detail": "actual missing/wrong answer: runaway TTS segment (speech length bound reached) and 7 of 9 segments never spoken; the 240 s wait itself is caused by the same hand-off release, which also kept the failure's stop from reaching the desktop",
+  "missing_evidence": "The full answer text (only the delivered prefix and the extractor's 200-character cut are in these files; the store dump's messages table was not read for it).",
+  "next_turn_outcome": "Answered correctly: 'Good evening, my lord.  A classic mystery novel is *The Hound of the Baskervilles* by Arthur Conan Doyle.' (01a0ea20-36df-7591-a8f8-95f381edc6bf, ok, first audio 17:26:15.152; its early half 'Name a famous ghost story.' withdrawn and stopped at 17:26:08.501). spoken_over_her_audio=true (voice-bench-C2c.json:1760) is an artefact."
+ },
+ {
+  "set": "primary",
+  "run": "C2c",
+  "session": "S5-merge-window (voice-bench-C2c-session-4.json)",
+  "turn_index": 7,
+  "label": "thanks after an answer",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0ea20-f4f3-7bac-93ee-105ccbf81aed ('Name a famous poem. No, a famous play.', heard 'No, a famous play.'; replacement of utterance 13)",
+   "answer_message": "01a0ea21-0a5c-76dd-b376-ae84468a2329",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 75,
+   "segments": 2,
+   "answer": "Good evening, my lord.  A famous play is *Othello* by William Shakespeare."
+  },
+  "wait_evidence": [
+   "previous speech end 17:27:02.710; spoken 17:31:03.831 (241.1 s); timed out at voice-bench-C2c-session-4.json:4263",
+   "last worklet event 'started' 14:2 at 17:27:11.220 (voice-bench-C2c-session-4.json:4597); never completed/stopped",
+   "speech/next 'none' at 17:27:10.978 (voice-bench-C2c-session-4.json:4068) after segment 2 chunks 0-3; segment 2 is 2.960 s (dump line 3048) = 4 audio pieces at ~0.96 s, so again only the closing piece was lost",
+   "page idle from 17:27:17.357 (voice-bench-C2c-session-4.json:5102)",
+   "store: delivery 'completed' 2/2 at 17:27:10.960 (dump 2852); segment 2 'playback_started' 17:27:11.229 (3593) never completed; 'playback_interrupted - voice mode ended' at 17:31:15.047 (3598)",
+   "same mechanism as P1a S3"
+  ],
+  "previous_request_reached_core": "yes: precedence service-C2c.log:132201; replacement classified 17:27:03.544 (:132202); superseded call failed (:132204); released 17:27:03.553 (:132209); replacement timeline 17:27:10.963 (:132747); delivered POST (:132772); call ok",
+  "what_followed": "Answer played in full: 14:1 17:27:09.549-17:27:11.220 (1.680 s), 14:2 from 17:27:11.220 (2.960 s). Session back to listening.",
+  "audio_duration_s": "4.64 exactly (1.680 + 2.960); ended ~17:27:14.2",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence; only the closing piece lost (proven from store durations); false 'interrupted' record written at Voice off",
+  "missing_evidence": "None.",
+  "next_turn_outcome": "Answered correctly: 'You're most welcome, my lord.' (01a0ea24-b9e1-7758-86bc-272ddb87d437, ok). spoken_over_her_audio=true (voice-bench-C2c.json:1910) is an artefact."
+ },
+ {
+  "set": "separate (C1a/C1b/R1)",
+  "run": "C1a",
+  "session": "S3-collisions-and-replacement (voice-bench-C1a-session-2.json)",
+  "turn_index": 5,
+  "label": "thanks after an answer, into maintenance",
+  "said": "Thank you.",
+  "waited_on_message": {
+   "owner_message": "01a0e953-b925-7e50-80aa-254c42c18cf1 ('Actually, never mind. Describe a lighthouse instead.', replacement of utterance 4 whose answer 01a0e953-af03 is recorded interrupted)",
+   "answer_message": "01a0e953-d1aa-70ac-a1ca-e9e7fc240bd7",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": 141,
+   "segments": 2,
+   "answer": "A solitary stone tower perched on a cliff, its lantern ring alight, projects a steady beam across the storm-tossed sea to guide ships safely."
+  },
+  "wait_evidence": [
+   "previous speech end 13:42:52.574; spoken 13:46:54.458 (241.9 s); timed out at voice-bench-C1a-session-2.json:1629",
+   "last worklet event 'started' 5:2 at 13:43:02.568 (voice-bench-C1a-session-2.json:1761); never completed/stopped",
+   "speech/next 'none' at 13:43:02.806 (voice-bench-C1a-session-2.json:1476)",
+   "page idle from 13:43:17.814 (voice-bench-C1a-session-2.json:2011)",
+   "same mechanism as P1a S3"
+  ],
+  "previous_request_reached_core": "yes: precedence service-C1a.log:49012; replacement classified 13:42:53.353 (:49014); released 13:42:53.402 (:49025); replacement timeline 13:43:02.789 (:49703); delivered POST (:49688); call ok",
+  "what_followed": "Answer played: 5:1 13:42:59.933-13:43:02.568 (2.64 s), 5:2 from 13:43:02.568 (8 pieces); session back to listening.",
+  "audio_duration_s": "~9.4-10.3 (2.64 s measured + ~6.7-7.7 s); ended ~13:43:10",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence (not the known C1a stall)",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c, where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'You're welcome, my lord.' (01a0e957-7d6d-7798-824b-91b2339760a7, ok). spoken_over_her_audio=true (voice-bench-C1a.json:840) is an artefact."
+ },
+ {
+  "set": "separate (C1a/C1b/R1)",
+  "run": "C1a",
+  "session": "S5-merge-window (voice-bench-C1a-session-4.json)",
+  "turn_index": 1,
+  "label": "correction, pause 1.2 s",
+  "said": "Name a famous mystery novel. No, a famous ghost story.",
+  "waited_on_message": {
+   "owner_message": "01a0e95c-0f7b-7268-845d-a4f7a3e114fb (turn 0 'Tell me about a good opening line. And why it works.'; utterance 1 'Tell me about a good opening line.' submitted early by the adaptive endpoint, resumed by utterance 2 after 0.548 s)",
+   "answer_message": null,
+   "route": "none recorded (extracted routes [] and call_statuses [])",
+   "answer_chars": 0,
+   "segments": 0
+  },
+  "wait_evidence": [
+   "C1a stall (known). previous speech end 13:52:01.101; spoken 13:56:02.383 (241.3 s); timed out at voice-bench-C1a-session-4.json:4403",
+   "NO worklet event at all between 13:52:01.101 and the next turn (the player was never prepared, so even the stop offer produced no worklet 'stopped')",
+   "stop offered at 13:52:01.630: 'the owner was still speaking; this answer is superseded' (voice-bench-C1a-session-4.json:27)",
+   "page stuck 'Voice On · Mic Listening · Val Thinking' with progress 'Val is thinking…' from 13:52:01.627 (voice-bench-C1a-session-4.json:4990) until 13:56:04.623 - the DOM half of the idle rule was never met either",
+   "service: voice resume early_utterance 1 resumed_by 2 at 13:52:01.556 (service-C1a.log:88009); then no line for utterance 1 or 2 (no timeline, no released_utterance, no joined turn) until utterance 3 at 13:56:04.560 (:105222, gap_before_s 241.083)"
+  ],
+  "previous_request_reached_core": "yes, partly: utterance 1 was classified (service-C1a.log:87870, message 01a0e95c-0f7b) and routed (fast route tier null, :87871); no model_calls row appears in the extraction (routes []), and its worker thread never returned - no 'superseded' record, no timeline, no joined turn",
+  "what_followed": "No answer and no audio for 243 s. At 13:56:04 utterance 3 arrived; precedence 'ambiguous', outcome 'kept' (:105234); utterance 3 was resumed by 4 (:105468); utterance 3's call failed superseded (:105470)",
+  "audio_duration_s": 0,
+  "classification": "b",
+  "classification_detail": "C1a stall (known): application turn failed to advance - the superseded early turn's worker never returned for 243 s, no answer, page stuck 'Val is thinking…'",
+  "missing_evidence": "Where the stalled worker thread was (no stack dump existed for this run; stall_watchdog.sh was added afterwards). No model_calls row or engine evidence for utterance 1 in these files beyond the classification line.",
+  "next_turn_outcome": "Answered, but to the wrong request: message 01a0e95f-d92f-7821-a139-ce037ebc9aca got answer 01a0e960-0c38-7131-89a7-0dfba95e9711 beginning 'Good opening lines are those that, in a single sentence, establish mood, hint at threat, and promise further revelation...' - it addresses the stalled opening-line request, not 'a famous ghost story' (matches CHECKPOINT_EXPERIMENT.md §11). First audio 13:56:19.495; spoken_over_her_audio=false (voice-bench-C1a.json:1586)."
+ },
+ {
+  "set": "separate (C1a/C1b/R1)",
+  "run": "R1",
+  "session": "S5-merge-window (voice-bench-R1-session-4.json)",
+  "turn_index": 4,
+  "label": "correction, pause 1.6 s (window end)",
+  "said": "Name a famous ghost story. No, a famous mystery novel.",
+  "waited_on_message": {
+   "owner_message": "01a0e9cc-0619-7928-b1cb-89d35bf11cf0 ('Tell me about a good closing line. And why it works.'; utterance 8 combined with utterance 7 - continuation, combined)",
+   "answer_message": "01a0e9cc-2af6-7cf0-a157-87453480d093",
+   "route": "conversation (partner, MEDIUM), call ok",
+   "answer_chars": "not available (extracted answer cut at 200 characters)",
+   "segments": 8,
+   "answer": "Begins: 'Good evening, my lord.  A strong closing line can be: > **“When we close this page, let us leave the next one open.”** **Why it works** 1. **Sense of completion and anticipation** - The phrase ack...'"
+  },
+  "wait_evidence": [
+   "previous speech end 15:54:16.569; spoken 15:58:17.709 (241.1 s); timed out at voice-bench-R1-session-4.json:5306",
+   "last worklet event 'started' 8:8 at 15:55:17.626 (voice-bench-R1-session-4.json:5660); segments 8:1-8:7 all completed; 8:8 never completed/stopped",
+   "speech/next 'none' at 15:54:44.028 (voice-bench-R1-session-4.json:3690) after segment 8 chunks 0-6 - all audio had been handed over ~34 s before the last segment began to play",
+   "page idle from 15:55:38.036 (voice-bench-R1-session-4.json:6219)",
+   "same hand-off mechanism (superseded utterance 7 released 15:54:17.381, after the combined turn began)"
+  ],
+  "previous_request_reached_core": "yes: precedence (combined) service-R1.log:201539; combined turn classified 15:54:17.373 (:201541); superseded call failed (:201544); released 15:54:17.381 (:201545); combined timeline 15:54:44.014 (:203454, 8 segments); delivered POST (:202235); call ok; not in deliveries_not_completed",
+  "what_followed": "Long (8-segment) answer played continuously 15:54:23.152 onward; 8:8 began 15:55:17.626 (7 pieces). Session back to listening.",
+  "audio_duration_s": "~60.2-61.2 (54.47 s to the start of 8:8 + ~5.8-6.7 s); ended ~15:55:24 - about 174 s before the driver spoke",
+  "classification": "d",
+  "classification_detail": "other (determinable): application speech hand-off defect after owner precedence (combined continuation); the answer was long (~61 s) but nowhere near 240 s",
+  "missing_evidence": "Nothing needed for the classification. Not recorded in these files: per-piece audio durations for this run (the driver logs segment/chunk indices only; the scratch store for this run was not dumped), so it cannot be PROVEN that the only piece lost was the empty closing piece rather than also a final audio piece; in C2c (not this run), where the store exists, the generation durations show every audio piece was collected and only the closing piece was lost.",
+  "next_turn_outcome": "Answered correctly: 'My lord, *The Hound of the Baskervilles* by Arthur Conan Doyle.' (01a0e9cf-db88-7330-bc73-89fcf7991a6e, ok, first audio 15:58:29.162). spoken_over_her_audio=true (voice-bench-R1.json:1432) is an artefact."
+ }
+]

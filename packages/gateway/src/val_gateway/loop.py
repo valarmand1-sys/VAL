@@ -66,6 +66,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
@@ -1052,8 +1053,14 @@ def settle_turn(
     response: GatewayResponse,
     *,
     spoken_text: str | None = None,
+    cancelled: Callable[[], bool] | None = None,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """Step 10: what happens to the text depends on how the call actually ended.
+
+    `cancelled` (remaining latency work, 28 September 2026): a turn superseded by his
+    newer confirmed words after its answer was generated does not have that answer
+    written — refused under the conversation lock, so it either precedes those words
+    or does not exist. The call's own record stays; the turn ends unanswered.
 
     **Ruling, 8 September 2026: a result with no valid user-visible text never
     becomes a Val message.** The 18 August doctrine below assumed a refusal
@@ -1099,12 +1106,29 @@ def settle_turn(
             response=response,
         )
 
-    val_message = conversations.append(
-        engine,
-        opened.conversation.id,
-        role=StoredRole.VAL,
-        content=spoken,
-    )
+    try:
+        val_message = conversations.append(
+            engine,
+            opened.conversation.id,
+            role=StoredRole.VAL,
+            content=spoken,
+            refuse_if=cancelled,
+        )
+    except conversations.AppendRefusedError:
+        _LOGGER.info(
+            "superseded answer not recorded: message %s's call completed, but his newer "
+            "confirmed words had superseded it; it is not her message",
+            opened.user_message.id,
+        )
+        return UnansweredTurn(
+            conversation=opened.conversation,
+            scope=opened.scope,
+            user_message=opened.user_message,
+            error=GatewayError(
+                GatewayErrorKind.SUPERSEDED,
+                "superseded after its answer was generated; the answer was not recorded",
+            ),
+        )
     # Ruling, 13 September 2026: bind the answer to the House Recall sources its
     # call received — provenance only, never content — so a later turn can know
     # it was grounded. Written after the message, failing toward no provenance.

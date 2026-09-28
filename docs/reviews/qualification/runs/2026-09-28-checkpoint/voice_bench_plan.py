@@ -128,6 +128,23 @@ SESSIONS = [
         for topic in ("a good opening line", "a good closing line", "a strong title", "a quiet scene",
                       "a memorable villain", "a short chapter", "a plain sentence", "a sudden ending")
     ]),
+    # Session 9 (28 September, the lifecycle repair): each changed path once, in one
+    # conversation — resumed speech; an explicit replacement; a continuation while the
+    # answer is being made (combined); a continuation spoken while a short answer
+    # finishes, so that it is complete but unheard when his words settle; speaking over
+    # her audio after synthesis; a closing thanks.
+    ("L-lifecycle", [
+        ("resumed speech, pause 0.8 s", "ordinary", "Tell me about a good opening line. || And why it works.", "after_playback", 1.0, 0.8),
+        ("to be replaced", "ordinary", "Describe a haunted house in one sentence.", "after_playback", 1.0),
+        ("explicit replacement", "ordinary", "Actually, never mind. Describe a lighthouse instead.", "after_speech", 2.0),
+        ("request", "ordinary", "Name a famous ghost story.", "after_playback", 1.0),
+        ("continuation while being made", "ordinary", "And who wrote it?", "after_speech", 1.6),
+        ("short request", "ordinary", "Name a colour.", "after_playback", 1.0),
+        ("continuation as it finishes", "ordinary", "And also name a fruit, if you would, please, my friend.", "after_speech", 3.2),
+        ("long answer", "ordinary", "Tell me a story about a lighthouse keeper, in eight sentences.", "after_playback", 1.0),
+        ("speaking over her audio", "ordinary", "Stop there.", "after_synthesis", 1.5),
+        ("thanks after an answer", "social", "Thank you.", "after_playback", 1.0),
+    ]),
 ]
 
 

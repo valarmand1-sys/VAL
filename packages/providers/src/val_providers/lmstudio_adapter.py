@@ -543,6 +543,16 @@ class LMStudioAdapter:
             "of its answer was heard; the provider stream was closed",
         )
         watch_stop = threading.Event()
+        if cancelled is not None and cancelled():
+            # Remaining latency work, 28 September 2026: a call superseded while it was
+            # still being prepared (C1b: 2.7 s in the exact preflight, queued behind the
+            # busy runtime) was then dispatched anyway, 2.7 s after it had stopped
+            # mattering. Stale work sends nothing.
+            raise GatewayError(
+                GatewayErrorKind.SUPERSEDED,
+                "the call was superseded by a newer confirmed owner turn before it was "
+                "dispatched; no request was sent",
+            )
         try:
             mark("provider_dispatch")
             chunks = self._client.chat.completions.create(

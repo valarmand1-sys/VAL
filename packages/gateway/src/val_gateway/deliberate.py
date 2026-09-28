@@ -413,6 +413,14 @@ def send(
     # "request start"**: the first instruction of the deliberated send, before the
     # owner's message is persisted and long before any provider is contacted.
     mark("turn_start")
+    if cancelled is not None and cancelled():
+        # Remaining latency work, 28 September 2026: a turn superseded before his words
+        # were recorded writes nothing — the words that superseded it carry them, and a
+        # late write would put them after, and out of order with, his newer words.
+        raise GatewayError(
+            GatewayErrorKind.SUPERSEDED,
+            "superseded before his words were recorded; nothing was written for this turn",
+        )
     opened = open_turn(
         engine,
         content,
@@ -1431,7 +1439,7 @@ def _ordinary(
     except GatewayError as failure:
         return unanswered_or_raise(opened, failure)
     bind_response(engine, response, visual)
-    return settle_turn(engine, opened, recalled, response)
+    return settle_turn(engine, opened, recalled, response, cancelled=cancelled)
 
 
 def _classify(

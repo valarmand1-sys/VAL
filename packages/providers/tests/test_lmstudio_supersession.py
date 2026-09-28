@@ -87,3 +87,15 @@ def test_an_unsuperseded_stream_is_never_shut_down() -> None:
     adapter, _ = _adapter(completions)
     events = list(adapter.stream(local(), HISTORY, PERSONA, 6_144, cancelled=lambda: False))
     assert any(getattr(e, "text", None) == "Good evening, my lord." for e in events)
+
+
+def test_a_call_superseded_before_dispatch_sends_nothing() -> None:
+    """28 September 2026 (C1b): a call superseded while it was still being prepared was
+    dispatched anyway, 2.7 s later. Stale work sends nothing."""
+    completions = _Completions(chunks=[_chunk(content="Good evening.", finish="stop")])
+    adapter, _ = _adapter(completions)
+    with pytest.raises(GatewayError) as ended:
+        list(adapter.stream(local(), HISTORY, PERSONA, 6_144, cancelled=lambda: True))
+    assert ended.value.kind is GatewayErrorKind.SUPERSEDED
+    assert "no request was sent" in str(ended.value)
+    assert completions.kwargs == {}, "nothing reached the runtime"

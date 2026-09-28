@@ -282,6 +282,14 @@ def resume(engine: Engine, conversation_id: UUID) -> tuple[ConversationRecord, P
     return conversation, conversation.scope(project)
 
 
+class AppendRefusedError(Exception):
+    """The caller's own condition refused the append once the lock was held."""
+
+    def __init__(self, conversation_id: UUID) -> None:
+        super().__init__(f"the append to conversation {conversation_id} was refused by its caller")
+        self.conversation_id = conversation_id
+
+
 def append(
     engine: Engine,
     conversation_id: UUID,
@@ -289,6 +297,7 @@ def append(
     role: StoredRole,
     content: str,
     also: Callable[[Connection, UUID], None] | None = None,
+    refuse_if: Callable[[], bool] | None = None,
 ) -> MessageRecord:
     """Append one message and return it as persisted.
 
@@ -306,11 +315,19 @@ def append(
     the attachment, the association and the message land together or not at all.
     If it raises, the message does not exist either, which is precisely the
     property that keeps a failed admission from leaving an orphan turn behind.
+
+    `refuse_if`, when given, is asked **after the conversation lock is held** and
+    before a sequence is taken (remaining latency work, 28 September 2026): a
+    superseded turn's answer must not land after the words that superseded it,
+    where the live-answer rule would attach it to them. Holding the lock is what
+    makes the answer either precede those words or not exist.
     """
     with engine.begin() as connection:
         locked = connection.execute(_LOCK_CONVERSATION, {"id": conversation_id}).one_or_none()
         if locked is None:
             raise ConversationNotFoundError(conversation_id)
+        if refuse_if is not None and refuse_if():
+            raise AppendRefusedError(conversation_id)
 
         sequence = connection.execute(_NEXT_SEQUENCE, {"id": conversation_id}).scalar_one()
         row = connection.execute(

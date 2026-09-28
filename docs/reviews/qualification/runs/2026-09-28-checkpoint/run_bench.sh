@@ -92,5 +92,9 @@ pkill -f "vite --host 127.0.0.1 --port 5173" 2>/dev/null
 kill $SERVICE 2>/dev/null; sleep 2
 kill $MEMORY 2>/dev/null
 tail -n +$((HOOKLOG_FROM + 1)) $HOME/.lmstudio/val-cache-renewal.log > $D/hook-$LABEL.log
+# The run's store, preserved before any later run rebuilds it (28 September: C2a's
+# attribution was lost that way). Local only: the repository ignores *.dump.
+/opt/homebrew/opt/postgresql@18/bin/pg_dump -h localhost -p 5433 -d val_test -Fc -f $D/store-$LABEL.dump \
+  && echo "store preserved: store-$LABEL.dump" || echo "STORE NOT PRESERVED for $LABEL"
 uv run --project $ROOT python $D/voice_bench_extract.py $CONDITION $LABEL $D/service-$LABEL.log $D/memory-$LABEL.tsv ${OUTS[@]} | cut -c1-200
 echo "DONE $LABEL $(date +%H:%M:%S)"

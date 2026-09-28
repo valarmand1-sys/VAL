@@ -41,8 +41,10 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 import threading
 import time
+import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta
@@ -52,6 +54,7 @@ from uuid import UUID
 from sqlalchemy import Engine, text
 
 from val_domain import timings
+from val_domain.gateway import GatewayError, GatewayErrorKind
 from val_domain.provider import DeltaSink
 from val_domain.speech import DeliveryState
 from val_domain.timings import mark
@@ -108,6 +111,19 @@ MERGE_HOLD_MARGIN_SECONDS = 0.3
 #: How many clear continuations in a row may set an unheard answer aside so that one
 #: answer covers them all (28 September 2026, §6). Past this the continuation waits.
 MAX_COMBINED_RESTARTS = 2
+#: How long, after a turn is superseded, the session waits for its worker to end before
+#: it stops waiting (28 September 2026, the C1a stall: a superseded worker never ended
+#: and his resumed words, joined only when it did, waited 243 s). A superseded worker
+#: ended 19 ms after the decision at the median, 53 ms at p90, in 87 of 88 measured
+#: supersessions; the slowest that ended (2.8 s) was queued in the exact preflight
+#: behind a busy runtime. Past the deadline nothing is gained by waiting — a superseded
+#: worker can no longer dispatch, record an answer, publish or play (each refused at its
+#: own write) — so his words go ahead without it, and the worker is abandoned: tracked,
+#: its stack and any database lock waits captured once, and its late return ignored.
+SUPERSEDED_WORKER_DEADLINE_SECONDS = 1.0
+#: Abandoned workers still alive past which the session fails closed (Voice ends, with
+#: the reason) rather than accumulate threads and connections without bound.
+MAX_ABANDONED_WORKERS = 3
 
 
 def _ended_short(delivery: object) -> bool:
@@ -456,6 +472,16 @@ class _Pending:
     #: This turn's stopwatch, so a decision taken on another thread (supersession) can
     #: be marked on the turn it concerns.
     recorder: timings.TurnTimings | None = None
+    #: The superseded-worker lifecycle (28 September 2026): when this turn was
+    #: superseded (monotonic), whether the session has stopped waiting for its worker,
+    #: whether the joining of resumed words has been taken by one side (worker end or
+    #: the session), the worker's thread, his persisted message and its delivery.
+    superseded_at: float | None = None
+    abandoned: bool = False
+    join_claimed: bool = False
+    thread_ident: int | None = None
+    message_id: UUID | None = None
+    delivery: object | None = None
     #: How long this utterance's resume window is: the default, or the adaptive
     #: value its own final transcript earned (owner order §7).
     grace_seconds: float = RESUME_GRACE_SECONDS
@@ -478,6 +504,17 @@ _OPEN_SESSION = text(
 _CLOSE_SESSION = text(
     "update voice_sessions set state = :state, closed_at = now(), closed_reason = :reason "
     " where id = :id and closed_at is null"
+)
+
+#: Store sessions waiting on a lock or idle inside a transaction — code-level facts only,
+#: for the abandoned-worker evidence (28 September 2026).
+_LOCK_WAITS = text(
+    "select a.pid, a.state, a.wait_event_type, a.wait_event, l.locktype, l.mode, "
+    "       l.granted, round(extract(epoch from now() - a.xact_start)::numeric, 3) as xact_age_s "
+    "  from pg_stat_activity a left join pg_locks l on l.pid = a.pid and not l.granted "
+    " where a.datname = current_database() and a.pid <> pg_backend_pid() "
+    "   and (l.pid is not null or a.state = 'idle in transaction') "
+    " limit 20"
 )
 
 _PROVENANCE = text(
@@ -716,6 +753,8 @@ class VoiceSession:
         #: Answers stopped after their hand-off, by message, awaiting the desktop's report
         #: of what it cut (§5).
         self._stopped_answers: dict[str, object] = {}
+        #: Superseded turns whose workers have not yet ended, by id (28 September 2026).
+        self._superseded_workers: dict[int, _Pending] = {}
         self._maintaining = threading.Lock()
         #: True from the moment a turn is submitted until its cognition returns —
         #: the span in which his request is with the model or about to be.
@@ -1206,6 +1245,7 @@ class VoiceSession:
         """
         for event in self._recognizer.drain():
             self._observe(event)
+        self._reap_superseded()
         self._submit_if_due()
 
     def _observe(self, event: RecognizerEvent) -> None:
@@ -1347,7 +1387,7 @@ class VoiceSession:
                 and settled.speech_start_at - inflight.utterance.endpoint_at <= self._resume_window
             ):
                 inflight.resumed_with.append((settled, events))
-                inflight.superseded.set()
+                self._mark_superseded(inflight)
                 if inflight.recorder is not None:
                     inflight.recorder.mark("superseded_decided")
                 delivery = self._delivery
@@ -1397,15 +1437,27 @@ class VoiceSession:
 
     def _join_resumed(self, early: _Pending) -> None:
         """Withdraw an early-submitted fragment and submit it joined with its rest (§3)."""
+        if early.abandoned:
+            self._join_abandoned(early)
+            return
         (first, first_events), *rest = early.resumed_with
         self._merge_after_submission(first, first_events)
         with self._lock:
             if self._pending is None:
-                # Nothing was persisted for the fragment (or the merge was refused on
-                # record): his resumed words are not lost — they become the turn.
-                self._pending = _Pending(
-                    utterance=first, provisional_events=first_events, settled_at=self._now()
-                )
+                # Nothing mergeable was recorded for the fragment. If his fragment was
+                # never written (superseded before it was recorded, 28 September 2026),
+                # its words lead the joined turn — nothing he said is lost; if it was
+                # written, it stays canonical and the rest follows it as its own turn.
+                if early.message_id is None:
+                    self._pending = _Pending(
+                        utterance=early.utterance.merged_with(first),
+                        provisional_events=early.provisional_events + first_events,
+                        settled_at=self._now(),
+                    )
+                else:
+                    self._pending = _Pending(
+                        utterance=first, provisional_events=first_events, settled_at=self._now()
+                    )
             for later, events in rest:
                 pending = self._pending
                 self._pending = _Pending(
@@ -1415,6 +1467,160 @@ class VoiceSession:
                 )
             joined = self._pending
         self._size_grace(joined)
+
+    def _join_abandoned(self, early: _Pending) -> None:
+        """His resumed words go ahead without the worker that never ended (28 Sept 2026).
+
+        The ordinary join waits for the early turn's worker to record the fragment and
+        then withdraws the exchange. When that worker is abandoned, the session does it:
+        the fragment, if it was written, is withdrawn (append-only; an answer written
+        before the supersession leaves with it, and none can be written after); and his
+        complete words, in the order he said them, become the new turn.
+        """
+        words = early.utterance
+        events = early.provisional_events
+        for later, later_events in early.resumed_with:
+            words = words.merged_with(later)
+            events += later_events
+        withdrawn = False
+        if early.message_id is not None:
+            try:
+                retract(
+                    self._engine,
+                    early.message_id,
+                    note=(
+                        "superseded: the owner resumed before delivery and the superseded "
+                        "turn's worker did not end within the recovery deadline; this "
+                        "fragment is withdrawn in favour of the complete wording"
+                    ),
+                )
+                withdrawn = True
+            except RevisionRefusedError as refused:
+                # The fragment stays canonical, on record why; the rest follows it.
+                _LOGGER.warning("voice lifecycle: fragment not withdrawn: %s", refused)
+                words, events = early.resumed_with[0][0], early.resumed_with[0][1]
+                for later, later_events in early.resumed_with[1:]:
+                    words = words.merged_with(later)
+                    events += later_events
+        with self._lock:
+            self._pending = _Pending(
+                utterance=words, provisional_events=events, settled_at=self._now()
+            )
+            joined = self._pending
+            self.state = VoiceSessionState.THINKING
+        _LOGGER.info(
+            "voice lifecycle: %s",
+            json.dumps(
+                {
+                    "joined_without_worker": early.utterance.utterance,
+                    "fragment_recorded": early.message_id is not None,
+                    "fragment_withdrawn": withdrawn,
+                    "joined_utterances": [
+                        early.utterance.utterance,
+                        *[later.utterance for later, _ in early.resumed_with],
+                    ],
+                }
+            ),
+        )
+        self._size_grace(joined)
+
+    def _mark_superseded(self, pending: _Pending) -> None:
+        """A newer confirmed turn takes precedence over this one (lock held)."""
+        pending.superseded.set()
+        pending.superseded_at = time.monotonic()
+        self._superseded_workers[id(pending)] = pending
+
+    def _claim_join(self, pending: _Pending) -> bool:
+        """Exactly one side — the worker's end or the session — joins resumed words."""
+        with self._lock:
+            if pending.join_claimed or not pending.resumed_with:
+                return False
+            pending.join_claimed = True
+            return True
+
+    def _reap_superseded(self) -> None:
+        """Stop waiting for superseded workers past the deadline (28 September 2026).
+
+        Containment, not a diagnosis: the C1a worker's blocking point is not known. A
+        worker still alive `SUPERSEDED_WORKER_DEADLINE_SECONDS` after its supersession is
+        abandoned — if the session was waiting on it (resumed words joined at its end),
+        the session takes the join and his words go ahead; its stack and any database
+        lock waits are captured once, so the next occurrence names its cause; and if more
+        than `MAX_ABANDONED_WORKERS` are alive at once, Voice ends with that reason rather
+        than accumulate them.
+        """
+        now = time.monotonic()
+        overdue: list[_Pending] = []
+        with self._lock:
+            for pending in self._superseded_workers.values():
+                if pending.abandoned or pending.superseded_at is None:
+                    continue
+                if now - pending.superseded_at < SUPERSEDED_WORKER_DEADLINE_SECONDS:
+                    continue
+                pending.abandoned = True
+                overdue.append(pending)
+            if not overdue:
+                return
+            joins = []
+            for pending in overdue:
+                if self._inflight is pending:
+                    self._inflight = None
+                    self._cognition_busy = False
+                if pending.delivery is not None and self._delivery is pending.delivery:
+                    self._delivery = None
+                if pending.resumed_with and not pending.join_claimed:
+                    pending.join_claimed = True
+                    joins.append(pending)
+            alive = sum(1 for pending in self._superseded_workers.values() if pending.abandoned)
+        for pending in overdue:
+            delivery = pending.delivery
+            interrupt = getattr(delivery, "interrupt", None)
+            if callable(interrupt):
+                interrupt("superseded, and its worker did not end within the recovery deadline")
+            _LOGGER.warning(
+                "voice lifecycle: %s",
+                json.dumps(
+                    {
+                        "abandoned_worker": pending.utterance.utterance,
+                        "superseded_seconds_ago": round(now - (pending.superseded_at or now), 3),
+                        "deadline_seconds": SUPERSEDED_WORKER_DEADLINE_SECONDS,
+                        "joins_resumed_words": pending in joins,
+                        "abandoned_alive": alive,
+                        "evidence": self._abandonment_evidence(pending),
+                    }
+                ),
+            )
+        for pending in joins:
+            self._join_abandoned(pending)
+        if alive > MAX_ABANDONED_WORKERS:
+            self._fail(
+                f"{alive} superseded voice workers have not ended; Voice stops rather than "
+                "keep accumulating them"
+            )
+
+    def _abandonment_evidence(self, pending: _Pending) -> dict[str, object]:
+        """Where the abandoned worker is: its stack, and any database lock waits.
+
+        Code locations only (no conversation content): the thread's frames, and for the
+        store, sessions waiting on a lock or idle inside a transaction — pid, state, wait
+        event, lock type and mode, transaction age. Best effort; a failure to look is
+        recorded as such.
+        """
+        evidence: dict[str, object] = {}
+        frame = sys._current_frames().get(pending.thread_ident or -1)
+        evidence["stack"] = (
+            [line.rstrip() for line in traceback.format_stack(frame)][-16:]
+            if frame is not None
+            else "the worker thread is no longer running"
+        )
+        try:
+            with self._engine.connect() as connection:
+                connection.execute(text("set local statement_timeout = 500"))
+                rows = connection.execute(_LOCK_WAITS).all()
+            evidence["database"] = [dict(row._mapping) for row in rows]
+        except Exception as failure:
+            evidence["database"] = f"not read: {type(failure).__name__}"
+        return evidence
 
     def _mergeable(self, resumed: VoiceUtterance | None = None) -> VoiceTurn | None:
         """The turn a resumed utterance may still be joining, or None.
@@ -1746,7 +1952,7 @@ class VoiceSession:
                         and not heard
                         and not inflight.superseded.is_set()
                     ):
-                        inflight.superseded.set()
+                        self._mark_superseded(inflight)
                         pending.combined_depth = inflight.combined_depth + 1 if combine else 0
                         pending.stop_only = relation.kind == "stop"
                         if inflight.recorder is not None:
@@ -1859,7 +2065,11 @@ class VoiceSession:
         with timings.recording(live):
             self._run_turn(pending)
         self._log_timeline(pending, live)
-        if pending.resumed_with:
+        with self._lock:
+            self._superseded_workers.pop(id(pending), None)
+        if pending.abandoned:
+            return
+        if self._claim_join(pending):
             self._join_resumed(pending)
         # The turn is over — answered, and her voice synthesised — so a refresh is owed:
         # it is dispatched once the session is idle, never while any part of his turn
@@ -1899,10 +2109,12 @@ class VoiceSession:
 
     def _run_turn(self, pending: _Pending) -> None:
         utterance = pending.utterance
+        pending.thread_ident = threading.get_ident()
         # Delivery is created before the turn is submitted, so Val can begin
         # speaking the first sentence while she is still writing the second. It
         # receives only Core's visible output, through Core's own delta sink.
         delivery = None if self._speech is None else self._speech()
+        pending.delivery = delivery
         with self._lock:
             self._delivery = delivery
             self._playback_started = False
@@ -1940,7 +2152,7 @@ class VoiceSession:
                 merged=bool(utterance.merged_from),
                 # His words are in the store now: say so, before she thinks.
                 on_persisted=lambda conversation, message: self._persisted(
-                    utterance.utterance, conversation, message
+                    utterance.utterance, conversation, message, pending=pending
                 ),
                 # The answer prepared for these words during the resume window, if
                 # one was and it is ready; Core decides whether it binds. Passed only
@@ -1949,6 +2161,28 @@ class VoiceSession:
                 **extra,
             )
         except Exception as failure:
+            if (
+                pending.superseded.is_set()
+                and isinstance(failure, GatewayError)
+                and failure.kind is GatewayErrorKind.SUPERSEDED
+            ):
+                # Superseded before anything was recorded for it (28 September 2026):
+                # not a failure of the session — the newer words carry his words.
+                with self._lock:
+                    if self._inflight is pending:
+                        self._inflight = None
+                        self._cognition_busy = False
+                    if self._delivery is delivery:
+                        self._delivery = None
+                if delivery is not None:
+                    delivery.interrupt("superseded before anything was recorded for it")
+                _LOGGER.info(
+                    "voice lifecycle: %s",
+                    json.dumps(
+                        {"superseded_unrecorded": utterance.utterance, "reason": str(failure)}
+                    ),
+                )
+                return
             with self._lock:
                 if self._inflight is pending:
                     self._cognition_busy = False
@@ -1960,6 +2194,24 @@ class VoiceSession:
                     self._inflight = None
                 if self._delivery is delivery:
                     self._delivery = None
+            return
+        if pending.abandoned:
+            # The session stopped waiting for this worker and went on without it: its
+            # late return publishes nothing, plays nothing and records no turn.
+            if delivery is not None:
+                delivery.interrupt("superseded, and its worker returned after the deadline")
+            _LOGGER.warning(
+                "voice lifecycle: %s",
+                json.dumps(
+                    {
+                        "late_return_of_abandoned_worker": utterance.utterance,
+                        "seconds_after_supersession": round(
+                            time.monotonic() - (pending.superseded_at or time.monotonic()), 3
+                        ),
+                        "answered": _answered(outcome) is not None,
+                    }
+                ),
+            )
             return
         with self._lock:
             if self._inflight is pending:
@@ -2166,10 +2418,22 @@ class VoiceSession:
 
         threading.Thread(target=wait_then_run, name="voice-prime-refresh-wait", daemon=True).start()
 
-    def _persisted(self, utterance: int, conversation_id: UUID, message_id: UUID) -> None:
+    def _persisted(
+        self,
+        utterance: int,
+        conversation_id: UUID,
+        message_id: UUID,
+        *,
+        pending: _Pending | None = None,
+    ) -> None:
         """His message is committed: visible to the next poll, before any answer."""
         mark("owner_message_committed")
+        if pending is not None:
+            pending.message_id = message_id
         with self._lock:
+            if pending is not None and pending.abandoned:
+                # A worker the session stopped waiting for announces nothing.
+                return
             if self.conversation_id is None:
                 # A brand-new chat's conversation exists from this commit onwards,
                 # and the desktop cannot read a conversation it has not been told of.
@@ -2239,8 +2503,14 @@ class VoiceSession:
             # 24 September 2026 (§11): it stays collectable through `_recent` until
             # the next turn begins, so the last segment of an answer is not dropped
             # between `record_segments` and the desktop's next poll.
-            self._recent = self._delivery
-            self._delivery = None
+            # Only its own delivery (28 September 2026): a superseded turn's worker that
+            # ends after the newer turn has begun must not take that turn's delivery out
+            # of hand-off — it did, and the newer answer's closing piece was never
+            # collected, the desktop showed her thinking while she spoke, and playback
+            # records were left "interrupted" minutes after the audio had ended.
+            if self._delivery is delivery:
+                self._recent = self._delivery
+                self._delivery = None
             self._turns.append(
                 VoiceTurn(
                     utterance=replace(utterance, session_id=session_id),
