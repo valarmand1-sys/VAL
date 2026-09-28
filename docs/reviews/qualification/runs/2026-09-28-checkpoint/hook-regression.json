@@ -6,7 +6,7 @@
    false
   ]
  },
- "v2.1": {
+ "v2.1+": {
   "completed": true,
   "consistent_after_every_step": true,
   "steps": [
@@ -19,5 +19,15 @@
    true,
    true
   ]
+ },
+ "persona_survives": {
+  "before (argv 1)": {
+   "persona_checkpoint_kept": false,
+   "consistent": true
+  },
+  "v2.3 (argv 2)": {
+   "persona_checkpoint_kept": true,
+   "consistent": true
+  }
  }
 }

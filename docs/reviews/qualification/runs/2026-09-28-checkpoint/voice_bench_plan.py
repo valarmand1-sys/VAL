@@ -121,6 +121,13 @@ SESSIONS = [
             ("B3-barge-in-flight-control", "during_playback", 3.0, {}),
         )
     ],
+    # Session 8: the resume case that stalled in C1a, eight times over.
+    ("R-resume-repeated", [
+        (f"continuation, pause 0.8 s ({topic})", "ordinary", f"Tell me about {topic}. || And why it works.",
+         "after_playback", 1.0, 0.8)
+        for topic in ("a good opening line", "a good closing line", "a strong title", "a quiet scene",
+                      "a memorable villain", "a short chapter", "a plain sentence", "a sudden ending")
+    ]),
 ]
 
 

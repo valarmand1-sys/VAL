@@ -12,8 +12,16 @@ flush the previous request, fetch (exact, then the one-shorter retry), keep the 
 list as the live tokens and append to it, insert until eviction — under each hook
 version, checking after every step that the queue and the trie hold the same keys.
 
+v2.3 (same day, integrated run C1): with divergence checkpoints a turn is served from a
+longer entry, so the persona checkpoint beneath it was never renewed and aged out;
+`persona_survives` shows it evicted under the earlier hook and kept under v2.3, which
+renews every stored prefix of the entry used, shortest last.
+
 Usage (engine interpreter, site-packages on PYTHONPATH):
-  python3.11 -B hook_regression.py <hook v2 path> <hook v2.1 path>
+  python3.11 -B hook_regression.py hook_v2_reconstructed.py <the repository's hook>
+
+`hook_v2_reconstructed.py` is the frozen candidate's hook (a5d9680) with the one-line
+copy undone — v2's renewal exactly, since v2 itself was replaced in place when installed.
 """
 
 from __future__ import annotations
@@ -81,4 +89,32 @@ def run(hook_path: str) -> dict:
         return {"completed": False, "error": f"KeyError: {error}", "steps": steps}
 
 
-print(json.dumps({"v2": run(sys.argv[1]), "v2.1": run(sys.argv[2])}, indent=1))
+def persona_survives(hook_path: str) -> dict:
+    """v2.3: turns served from longer entries must keep the persona checkpoint alive.
+
+    One persona checkpoint, then a conversation whose every turn reuses the previous
+    turn's longer checkpoint (never the persona entry itself) and stores two more
+    entries, as the engine does — past the store's capacity several times over.
+    """
+    spec = importlib.util.spec_from_file_location("hook_under_test", hook_path)
+    hook = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(hook)
+    hook._renewal_on = lambda: True
+    hook._divergence_on = lambda: True
+    history = LRUPromptCache(max_size=6)
+    hook._install_on(history)
+    persona = list(range(100, 140))
+    history.insert_cache("session", persona, [Fake()], cache_type="user")
+    conversation = list(persona)
+    for turn in range(12):
+        conversation += [1000 + 10 * turn + i for i in range(5)]
+        history.fetch_nearest_cache("session", list(conversation) + [7, 8])
+        history.insert_cache("session", list(conversation), [Fake()], cache_type="user")
+        history.insert_cache("session", list(conversation) + [7, 8, 9], [Fake()], cache_type="assistant")
+    kept = history._trie.search("session", persona).exact is not None
+    return {"persona_checkpoint_kept": kept, "consistent": consistent(history)}
+
+
+print(json.dumps({"v2": run(sys.argv[1]), "v2.1+": run(sys.argv[2]),
+                  "persona_survives": {"before (argv 1)": persona_survives(sys.argv[1]),
+                                       "v2.3 (argv 2)": persona_survives(sys.argv[2])}}, indent=1))

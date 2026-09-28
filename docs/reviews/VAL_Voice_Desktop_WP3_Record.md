@@ -1544,8 +1544,10 @@ index §121). Candidate code frozen at `175c380`.
 **The cache correction, live.** All four authorised steps were submitted and approved
 (clone, allowlist, digest-pinned hook, experiment instance `val-exp-gpt-oss-20b`); a
 separate experimental engine is not supported by LM Studio (one engine per model format).
-With renewal on a hit, across two alternating runs each: **no turn of 124 prefilled cold
-or waited behind maintenance** (off: 17 of 47 MEDIUM turns cold, 16 waits over 1 s, 32
+With renewal on a hit, across two alternating runs each: **none of the 62 counted turns
+prefilled cold or waited behind maintenance** (78 of 80 including S5 carried an
+identity-attributed engine line, none cold; *corrected 28 September 2026 — this said "no
+turn of 124", the same 62 counted twice*) (off: 17 of 47 MEDIUM turns cold, 16 waits over 1 s, 32
 cold primes); the only cold primes are the two after each reload (initial loading).
 Every reused prefix was exactly its route's persona boundary; every call named the
 experiment instance; effort on the wire as intended; production's instance declined by
@@ -1584,3 +1586,58 @@ Post-tag defects of `tier1-low-release-2026-09-27` are recorded in `TIER1_RELEAS
 §8.10. **Open problems reviewed:** OP-1 (retraction) — the merge window's withdrawals
 make no claim (no answer to a withdrawn fragment was played in 28 cases); no other
 checkpoint names this work.
+
+## 35. Handoff — the checkpoint and layout experiment and the Voice repairs (owner order of 28 September 2026, "Retain the demonstrated cache-renewal improvement…")
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged by this work; no physical
+test requested.** Record: `qualification/runs/2026-09-28-checkpoint/CHECKPOINT_EXPERIMENT.md`
+(evidence index §122). Branch `latency-2026-09-28` (candidate `a5d9680` + hook v2.3 in the
+records commit); not merged into master (below).
+
+**First: production runs master since the 00:10 reboot** (`6bad617`, pid 958 from 00:21;
+live store `0031`): no candidate switch is set, but master's ungated repairs are live
+without a deployment decision. Isolation remains his (step 1 re-verified; steps 2–4 his).
+
+**Correction:** "no turn of 124" (27 September) was the same 62 counted turns twice; 78 of
+80 turns including S5 carried an engine line, none cold. Corrected in place, marked.
+
+**The checkpoint (authorised, isolated).** Hook v2.3 on the experiment instance only: the
+engine's own one checkpoint per request is placed where the request diverges from what the
+store holds (engine-captured, complete, never truncated, re-keyed or associated with a
+shorter prefix), only with ≥ 128 tokens gained and ≥ 64 before the end; a renewed
+exact-hit key queued as a copy (an aliasing defect since v1, reproduced, closed); every
+stored prefix of the entry used renewed with it, shortest last (the persona checkpoints
+had aged out — found in the integrated run). **Correctness gate passed:** 0 invalid hits
+in 117 staged requests; logits over every post-boundary position within the no-cache
+noise floor (mean KL 0.023–0.067 against 0.025–0.080) with a wrong-prefix control plainly
+visible (0.18–1.18); greedy text is not a valid test here and was not used as one.
+**Net benefit:** 25% fewer uncached tokens staged; 44% fewer in the integrated runs.
+**Split record-state layout** (`VAL_REQUEST_CONSTRUCTION=split_state`): per-turn fields
+after his words, steady fields after the persona, every value current.
+
+**Also:** the Voice-facts gate no longer fires on pacing a scene (follow-ups kept); the
+time-of-day hypothesis is not supported (142 vs 154 reasoning tokens; the clock is used,
+not stumbled over) and the clock was kept; **barge-in after synthesis repaired** — the
+desktop stops at once and the record follows the desktop's own report of the segment it
+cut (a first version recorded from the estimate and, with reports delayed, marked an
+answer heard whole as cut; repaired), 323–425 ms to silence; **combined continuations**
+behind `VAL_COMBINE_CONTINUATIONS` — the window-end continuation 67.6 / 129.7 s → 4.2 / 7.0 s.
+
+**Integrated (real desktop and player; prior P1a/P1b against final C2b/C2c):** social
+4.77 → **4.45 s** median (p90 6.27 → 5.92); **ordinary 6.19 → 6.38 s median — not
+improved** (p90 9.76 → 8.53, worst 10.14 → 11.19); replacement 8.85 → 5.79 s median.
+Critical path of an ordinary turn now (mean): endpoint 0.47 s, confirmation 0.26, Core
+0.06, prefill 1.52 (was 1.94), **hidden reasoning 3.36 (51%)**, first segment 0.20,
+synthesis 0.72, playback 0.05; no maintenance queue; the merge hold never bound.
+
+**OPEN — the stalled turn:** in C1a one superseded early turn's thread never returned;
+his joined words waited 243 s. 1 of 63 resumes; not reproduced; stack instrumentation in
+place. The adaptive endpoint's resume path is not fit for admission until it is found.
+
+**Not merged, deliberately:** the barge-in repair and the gate are not behind switches,
+and production launches from the main checkout's master, so a merge would reach
+production at its next restart. **Next:** correctness first — find and bound the stall;
+then two rulings of his: a conversation-level prime after each answer (≈ −0.7 to −0.9 s,
+conversation content in an idle prime) and reasoning effort for ordinary turns (the only
+lever on the 3 s). **Open problems reviewed:** OP-1 — combined continuations keep both
+messages canonical and write no revision; nothing else names this work.

@@ -379,8 +379,14 @@ after a withdrawal included).
 
 ## 9. The remaining decision (§9)
 
-**Retained.** Live cache renewal removes the recurring long waits: with it, no turn of
-124 prefilled cold or waited behind maintenance, and the integrated candidate is
+**Retained.** Live cache renewal removes the recurring long waits: with it, none of the
+62 counted turns (S1–S4 of the two renewal-on runs, R1a and R1b: 28 social, 34 ordinary)
+prefilled cold or waited behind maintenance; including S5, 78 of the runs' 80 turns
+carried an identity-attributed engine line and none was cold (the other two are the
+superseded "to be replaced" turns, whose calls ended before any cache line). *Corrected
+28 September 2026 (reporting only, no rerun): this sentence said "no turn of 124" — the
+same 62 turns counted twice, once in §3's table and once in §3a's, which report one
+population.* The integrated candidate is
 **social 4.77 s, ordinary 6.64 s median; 6.68 s and 9.27 s at the 90th percentile; worst
 8.15 s and 12.21 s** (§3a), against 7.29 / 9.57 s, 11.04 / 13.96 s and 15.31 / 19.84 s for the
 baseline the same afternoon.

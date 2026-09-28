@@ -68,6 +68,11 @@ def fresh_store() -> None:
 
 
 if __name__ == "__main__":
+    # 28 September: every thread's stack on SIGUSR1, to see a stalled turn (C1a).
+    import faulthandler
+    import signal
+
+    faulthandler.register(signal.SIGUSR1, all_threads=True)
     fresh_store()
     for logger in logging.Logger.manager.loggerDict.values():
         if isinstance(logger, logging.Logger):

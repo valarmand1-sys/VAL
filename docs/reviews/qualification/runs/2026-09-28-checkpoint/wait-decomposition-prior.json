@@ -1,0 +1,747 @@
+{
+ "summary": {
+  "runs": [
+   "P1a",
+   "P1b"
+  ],
+  "turns": 30,
+  "missing": [
+   {
+    "run": "P1a",
+    "label": "continuation after a pause",
+    "missing": "timeline or speech end"
+   },
+   {
+    "run": "P1a",
+    "label": "correction after a pause",
+    "missing": "timeline or speech end"
+   },
+   {
+    "run": "P1b",
+    "label": "continuation after a pause",
+    "missing": "timeline or speech end"
+   },
+   {
+    "run": "P1b",
+    "label": "correction after a pause",
+    "missing": "timeline or speech end"
+   }
+  ],
+  "total_ms": {
+   "n": 30,
+   "median": 6188,
+   "p90": 9555,
+   "max": 10139
+  },
+  "pieces_ms": {
+   "endpoint": {
+    "n": 30,
+    "median": 417,
+    "p90": 489,
+    "max": 511
+   },
+   "confirmation": {
+    "n": 30,
+    "median": 260,
+    "p90": 282,
+    "max": 341
+   },
+   "core": {
+    "n": 30,
+    "median": 62,
+    "p90": 70,
+    "max": 72
+   },
+   "prefill": {
+    "n": 30,
+    "median": 1822,
+    "p90": 2448,
+    "max": 2745
+   },
+   "reasoning": {
+    "n": 30,
+    "median": 2762,
+    "p90": 6253,
+    "max": 6686
+   },
+   "segment": {
+    "n": 30,
+    "median": 198,
+    "p90": 259,
+    "max": 309
+   },
+   "synthesis": {
+    "n": 30,
+    "median": 756,
+    "p90": 780,
+    "max": 795
+   },
+   "playback": {
+    "n": 30,
+    "median": 52,
+    "p90": 77,
+    "max": 111
+   }
+  },
+  "mean_ms": {
+   "endpoint": 399,
+   "confirmation": 262,
+   "core": 63,
+   "prefill": 1942,
+   "reasoning": 3024,
+   "segment": 182,
+   "synthesis": 705,
+   "playback": 46
+  },
+  "engine_update_cache_ms": {
+   "n": 30,
+   "median": 1415,
+   "p90": 2084,
+   "max": 2354
+  },
+  "uncached_tokens": {
+   "n": 30,
+   "median": 1013,
+   "p90": 1462,
+   "max": 1697
+  },
+  "sum_check_ms": {
+   "n": 30,
+   "median": 0,
+   "p90": 0,
+   "max": 0
+  },
+  "share_of_mean": {
+   "endpoint": 0.06,
+   "confirmation": 0.04,
+   "core": 0.01,
+   "prefill": 0.293,
+   "reasoning": 0.457,
+   "segment": 0.027,
+   "synthesis": 0.106,
+   "playback": 0.007
+  }
+ },
+ "turns": [
+  {
+   "run": "P1a",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "total": 6077,
+   "pieces": {
+    "endpoint": 472,
+    "confirmation": 241,
+    "core": 72,
+    "prefill": 1613,
+    "reasoning": 3181,
+    "segment": 18,
+    "synthesis": 471,
+    "playback": 10
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1213.3,
+   "uncached_tokens": 856,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "P1a",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "total": 6611,
+   "pieces": {
+    "endpoint": 443,
+    "confirmation": 301,
+    "core": 68,
+    "prefill": 1723,
+    "reasoning": 2978,
+    "segment": 259,
+    "synthesis": 763,
+    "playback": 77
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1292.6,
+   "uncached_tokens": 912,
+   "preflight_wait_ms": 25
+  },
+  {
+   "run": "P1a",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "total": 4713,
+   "pieces": {
+    "endpoint": 511,
+    "confirmation": 249,
+    "core": 61,
+    "prefill": 2112,
+    "reasoning": 776,
+    "segment": 200,
+    "synthesis": 789,
+    "playback": 15
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1682.3,
+   "uncached_tokens": 1214,
+   "preflight_wait_ms": 25
+  },
+  {
+   "run": "P1a",
+   "session": "S2-pauses-and-corrections",
+   "label": "conversational",
+   "total": 6602,
+   "pieces": {
+    "endpoint": 476,
+    "confirmation": 258,
+    "core": 61,
+    "prefill": 1664,
+    "reasoning": 3149,
+    "segment": 166,
+    "synthesis": 755,
+    "playback": 72
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1216.5,
+   "uncached_tokens": 856,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "P1a",
+   "label": "continuation after a pause",
+   "missing": "timeline or speech end"
+  },
+  {
+   "run": "P1a",
+   "session": "S2-pauses-and-corrections",
+   "label": "hesitation",
+   "total": 6269,
+   "pieces": {
+    "endpoint": 479,
+    "confirmation": 242,
+    "core": 55,
+    "prefill": 2448,
+    "reasoning": 1943,
+    "segment": 309,
+    "synthesis": 772,
+    "playback": 22
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 2018.1,
+   "uncached_tokens": 1410,
+   "preflight_wait_ms": 24
+  },
+  {
+   "run": "P1a",
+   "label": "correction after a pause",
+   "missing": "timeline or speech end"
+  },
+  {
+   "run": "P1a",
+   "session": "S3-collisions-and-replacement",
+   "label": "ordinary",
+   "total": 9758,
+   "pieces": {
+    "endpoint": 465,
+    "confirmation": 282,
+    "core": 62,
+    "prefill": 1611,
+    "reasoning": 6400,
+    "segment": 93,
+    "synthesis": 762,
+    "playback": 83
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1182.6,
+   "uncached_tokens": 832,
+   "preflight_wait_ms": 27
+  },
+  {
+   "run": "P1a",
+   "session": "S3-collisions-and-replacement",
+   "label": "follow-up, quick",
+   "total": 4837,
+   "pieces": {
+    "endpoint": 488,
+    "confirmation": 266,
+    "core": 63,
+    "prefill": 1747,
+    "reasoning": 1362,
+    "segment": 195,
+    "synthesis": 659,
+    "playback": 56
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1328.6,
+   "uncached_tokens": 950,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "P1a",
+   "session": "S3-collisions-and-replacement",
+   "label": "factual, into maintenance",
+   "total": 5375,
+   "pieces": {
+    "endpoint": 489,
+    "confirmation": 239,
+    "core": 56,
+    "prefill": 1868,
+    "reasoning": 1706,
+    "segment": 241,
+    "synthesis": 753,
+    "playback": 24
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1410.7,
+   "uncached_tokens": 1011,
+   "preflight_wait_ms": 25
+  },
+  {
+   "run": "P1a",
+   "session": "S3-collisions-and-replacement",
+   "label": "explicit replacement",
+   "total": 8629,
+   "pieces": {
+    "endpoint": 456,
+    "confirmation": 322,
+    "core": 61,
+    "prefill": 1905,
+    "reasoning": 5054,
+    "segment": 213,
+    "synthesis": 562,
+    "playback": 56
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1543.9,
+   "uncached_tokens": 1117,
+   "preflight_wait_ms": 19
+  },
+  {
+   "run": "P1a",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 3588,
+   "pieces": {
+    "endpoint": 469,
+    "confirmation": 236,
+    "core": 61,
+    "prefill": 1594,
+    "reasoning": 733,
+    "segment": 10,
+    "synthesis": 469,
+    "playback": 16
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1204.1,
+   "uncached_tokens": 856,
+   "preflight_wait_ms": 27
+  },
+  {
+   "run": "P1a",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 4016,
+   "pieces": {
+    "endpoint": 419,
+    "confirmation": 272,
+    "core": 62,
+    "prefill": 1689,
+    "reasoning": 559,
+    "segment": 196,
+    "synthesis": 756,
+    "playback": 62
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1251.4,
+   "uncached_tokens": 896,
+   "preflight_wait_ms": 28
+  },
+  {
+   "run": "P1a",
+   "session": "S4-sustained-alternation",
+   "label": "conversational",
+   "total": 6694,
+   "pieces": {
+    "endpoint": 446,
+    "confirmation": 258,
+    "core": 63,
+    "prefill": 1789,
+    "reasoning": 3171,
+    "segment": 198,
+    "synthesis": 759,
+    "playback": 9
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1419.8,
+   "uncached_tokens": 1019,
+   "preflight_wait_ms": 32
+  },
+  {
+   "run": "P1a",
+   "session": "S4-sustained-alternation",
+   "label": "ordinary",
+   "total": 5378,
+   "pieces": {
+    "endpoint": 451,
+    "confirmation": 244,
+    "core": 70,
+    "prefill": 2327,
+    "reasoning": 1269,
+    "segment": 192,
+    "synthesis": 784,
+    "playback": 40
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1907.2,
+   "uncached_tokens": 1373,
+   "preflight_wait_ms": 33
+  },
+  {
+   "run": "P1a",
+   "session": "S4-sustained-alternation",
+   "label": "follow-up, quick",
+   "total": 8618,
+   "pieces": {
+    "endpoint": 503,
+    "confirmation": 261,
+    "core": 58,
+    "prefill": 2514,
+    "reasoning": 4432,
+    "segment": 128,
+    "synthesis": 669,
+    "playback": 53
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 2084.3,
+   "uncached_tokens": 1476,
+   "preflight_wait_ms": 29
+  },
+  {
+   "run": "P1a",
+   "session": "S4-sustained-alternation",
+   "label": "substantive",
+   "total": 7884,
+   "pieces": {
+    "endpoint": 495,
+    "confirmation": 261,
+    "core": 64,
+    "prefill": 2676,
+    "reasoning": 3380,
+    "segment": 160,
+    "synthesis": 795,
+    "playback": 52
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 2209.1,
+   "uncached_tokens": 1572,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "P1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "total": 4463,
+   "pieces": {
+    "endpoint": 311,
+    "confirmation": 260,
+    "core": 69,
+    "prefill": 1628,
+    "reasoning": 1646,
+    "segment": 12,
+    "synthesis": 497,
+    "playback": 41
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1217.2,
+   "uncached_tokens": 856,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "P1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "total": 9896,
+   "pieces": {
+    "endpoint": 332,
+    "confirmation": 282,
+    "core": 66,
+    "prefill": 1671,
+    "reasoning": 6524,
+    "segment": 250,
+    "synthesis": 765,
+    "playback": 5
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1282.0,
+   "uncached_tokens": 908,
+   "preflight_wait_ms": 28
+  },
+  {
+   "run": "P1b",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "total": 5771,
+   "pieces": {
+    "endpoint": 415,
+    "confirmation": 270,
+    "core": 70,
+    "prefill": 2093,
+    "reasoning": 1904,
+    "segment": 243,
+    "synthesis": 755,
+    "playback": 22
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1675.8,
+   "uncached_tokens": 1216,
+   "preflight_wait_ms": 29
+  },
+  {
+   "run": "P1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "conversational",
+   "total": 5081,
+   "pieces": {
+    "endpoint": 316,
+    "confirmation": 259,
+    "core": 61,
+    "prefill": 1605,
+    "reasoning": 1827,
+    "segment": 210,
+    "synthesis": 753,
+    "playback": 51
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1211.0,
+   "uncached_tokens": 856,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "P1b",
+   "label": "continuation after a pause",
+   "missing": "timeline or speech end"
+  },
+  {
+   "run": "P1b",
+   "session": "S2-pauses-and-corrections",
+   "label": "hesitation",
+   "total": 5224,
+   "pieces": {
+    "endpoint": 347,
+    "confirmation": 237,
+    "core": 66,
+    "prefill": 2432,
+    "reasoning": 1042,
+    "segment": 279,
+    "synthesis": 766,
+    "playback": 56
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 2083.6,
+   "uncached_tokens": 1462,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "P1b",
+   "label": "correction after a pause",
+   "missing": "timeline or speech end"
+  },
+  {
+   "run": "P1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "ordinary",
+   "total": 9555,
+   "pieces": {
+    "endpoint": 306,
+    "confirmation": 257,
+    "core": 51,
+    "prefill": 1593,
+    "reasoning": 6253,
+    "segment": 213,
+    "synthesis": 770,
+    "playback": 111
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1170.4,
+   "uncached_tokens": 832,
+   "preflight_wait_ms": 21
+  },
+  {
+   "run": "P1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "follow-up, quick",
+   "total": 8741,
+   "pieces": {
+    "endpoint": 353,
+    "confirmation": 262,
+    "core": 60,
+    "prefill": 1729,
+    "reasoning": 5309,
+    "segment": 184,
+    "synthesis": 759,
+    "playback": 85
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1294.0,
+   "uncached_tokens": 929,
+   "preflight_wait_ms": 24
+  },
+  {
+   "run": "P1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "factual, into maintenance",
+   "total": 6108,
+   "pieces": {
+    "endpoint": 306,
+    "confirmation": 241,
+    "core": 58,
+    "prefill": 1870,
+    "reasoning": 2546,
+    "segment": 272,
+    "synthesis": 757,
+    "playback": 58
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1437.0,
+   "uncached_tokens": 1033,
+   "preflight_wait_ms": 23
+  },
+  {
+   "run": "P1b",
+   "session": "S3-collisions-and-replacement",
+   "label": "explicit replacement",
+   "total": 9062,
+   "pieces": {
+    "endpoint": 296,
+    "confirmation": 341,
+    "core": 64,
+    "prefill": 1905,
+    "reasoning": 5594,
+    "segment": 258,
+    "synthesis": 534,
+    "playback": 71
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1531.4,
+   "uncached_tokens": 1124,
+   "preflight_wait_ms": 19
+  },
+  {
+   "run": "P1b",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 3343,
+   "pieces": {
+    "endpoint": 311,
+    "confirmation": 262,
+    "core": 60,
+    "prefill": 1591,
+    "reasoning": 626,
+    "segment": 15,
+    "synthesis": 467,
+    "playback": 12
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1200.9,
+   "uncached_tokens": 856,
+   "preflight_wait_ms": 27
+  },
+  {
+   "run": "P1b",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 4669,
+   "pieces": {
+    "endpoint": 324,
+    "confirmation": 240,
+    "core": 60,
+    "prefill": 1691,
+    "reasoning": 1385,
+    "segment": 182,
+    "synthesis": 759,
+    "playback": 29
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1261.0,
+   "uncached_tokens": 898,
+   "preflight_wait_ms": 27
+  },
+  {
+   "run": "P1b",
+   "session": "S4-sustained-alternation",
+   "label": "conversational",
+   "total": 10139,
+   "pieces": {
+    "endpoint": 317,
+    "confirmation": 262,
+    "core": 61,
+    "prefill": 1856,
+    "reasoning": 6686,
+    "segment": 198,
+    "synthesis": 755,
+    "playback": 4
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1426.0,
+   "uncached_tokens": 1015,
+   "preflight_wait_ms": 27
+  },
+  {
+   "run": "P1b",
+   "session": "S4-sustained-alternation",
+   "label": "ordinary",
+   "total": 7074,
+   "pieces": {
+    "endpoint": 328,
+    "confirmation": 240,
+    "core": 57,
+    "prefill": 2237,
+    "reasoning": 3227,
+    "segment": 181,
+    "synthesis": 751,
+    "playback": 54
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1805.7,
+   "uncached_tokens": 1309,
+   "preflight_wait_ms": 24
+  },
+  {
+   "run": "P1b",
+   "session": "S4-sustained-alternation",
+   "label": "follow-up, quick",
+   "total": 8457,
+   "pieces": {
+    "endpoint": 343,
+    "confirmation": 248,
+    "core": 68,
+    "prefill": 2327,
+    "reasoning": 4472,
+    "segment": 197,
+    "synthesis": 756,
+    "playback": 46
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1911.1,
+   "uncached_tokens": 1407,
+   "preflight_wait_ms": 35
+  },
+  {
+   "run": "P1b",
+   "session": "S4-sustained-alternation",
+   "label": "substantive",
+   "total": 6064,
+   "pieces": {
+    "endpoint": 316,
+    "confirmation": 282,
+    "core": 70,
+    "prefill": 2745,
+    "reasoning": 1597,
+    "segment": 198,
+    "synthesis": 780,
+    "playback": 76
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 2354.2,
+   "uncached_tokens": 1697,
+   "preflight_wait_ms": 33
+  }
+ ]
+}

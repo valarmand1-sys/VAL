@@ -37,9 +37,8 @@ import time
 #: 1 (27 September): renewal on a hit. 2 (28 September): the divergence checkpoint.
 #: 2.1: a renewed exact-hit key is queued as a copy (the engine's live token list was
 #: aliased; `hook_regression.py`). 2.2: with divergence off, the same store and memory
-#: figures are logged and nothing else is done, so conditions can be compared. 2.3: with
-#: divergence on, the stored prefixes of a reused entry are renewed with it, shortest last.
-VERSION = "2.3"
+#: figures are logged and nothing else is done, so conditions can be compared.
+VERSION = "2.2"
 ALLOWLIST = os.path.expanduser("~/.lmstudio/val-cache-renewal.json")
 LOG = os.path.expanduser("~/.lmstudio/val-cache-renewal.log")
 TARGET = "mlx_engine.model_kit.model_kit"
@@ -222,29 +221,8 @@ def _install_on(history: object) -> None:
                 # the next eviction would walk tokens the trie never held (KeyError inside
                 # `insert_cache`, the request lost). Found 28 September 2026 on repeated
                 # identical Tier-1 requests; `hook_regression.py` reproduces it.
-                history._lru.push(model, list(key), entry.cache_type)
+                history._lru.push(model, key, entry.cache_type)
                 counts["renewed"] += 1
-                if _divergence_on():
-                    # v2.3: every stored prefix of the entry used is in use by this request
-                    # too. With divergence checkpoints a turn is served from a longer
-                    # entry, so the persona checkpoint beneath it was never renewed and
-                    # aged out of the ten (integrated run C1, 28 September: three extra
-                    # cold primes per run, three turns waiting 4.5 to 4.8 s behind them).
-                    # Renewed longest first, so the shortest — the static prefix — is the
-                    # most recently used. Capacity and eviction rules are unchanged.
-                    prefixes = []
-                    node = history._trie._trie.get(model, {})
-                    for index, token in enumerate(key[:-1]):
-                        node = node.get(token)
-                        if node is None:
-                            break
-                        if "__value__" in node:
-                            prefixes.append((index + 1, node["__value__"].cache_type))
-                    for length, cache_type in reversed(prefixes):
-                        prefix = list(key[:length])
-                        history._lru.remove(model, prefix)
-                        history._lru.push(model, prefix, cache_type)
-                        counts["renewed"] += 1
         except Exception as error:
             _log(f"renewal skipped: {type(error).__name__}: {error}")
         return cache, rest
