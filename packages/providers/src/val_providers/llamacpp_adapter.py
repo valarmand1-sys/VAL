@@ -50,11 +50,14 @@ from val_domain.gateway import (
 from val_domain.provider import (
     ContextFeasibility,
     ContextInspectionUnavailableError,
+    PrefixPrimePlan,
     ProviderEvent,
     TextDelta,
 )
+from val_domain.timings import mark
 from val_providers.base import ProviderResult, normalize
 from val_providers.llamacpp_inspector import LOOPBACK_HOSTS, LlamaCppContextInspector, is_loopback
+from val_providers.llamacpp_runtime import LlamaCppRuntime
 from val_providers.lmstudio_adapter import _chat_turns, _extra, _plain, _reasoning_present
 
 _LOGGER = logging.getLogger("val.providers.llamacpp")
@@ -136,6 +139,56 @@ class LlamaCppAdapter:
         #: means measurement is unavailable and the gateway fails closed.
         self._inspector = inspector
         self._runtime: dict[str, object] | None = None
+        #: Owner order, 29 September 2026: the supervisor that starts the server for a
+        #: declared model, so Voice needs no terminal.
+        self._supervisor = LlamaCppRuntime(self._base_url, key)
+
+    # --- the runtime, brought up without a terminal ------------------------------------
+
+    def ensure_runtime_ready(self, config: ModelConfig) -> Mapping[str, object]:
+        """Declaring `LocalRuntimeAdapter`: serve this configuration now, or say why not."""
+        return self._supervisor.ensure_ready(config)
+
+    def release_runtime(self) -> Mapping[str, object]:
+        """End the server this process started (Voice ended): its memory is given back."""
+        return self._supervisor.release()
+
+    def plan_prefix_prime(
+        self,
+        config: ModelConfig,
+        system: str,
+        *,
+        boundary: str = "user_header",
+        shares_with: str | None = None,
+    ) -> PrefixPrimePlan:
+        """Declaring `PrefixPrimingAdapter`.
+
+        This runtime reuses the longest prefix a request shares with what its slot last
+        processed (measured 29 September 2026: all 5,048 persona tokens reused on every
+        request). No checkpoint has to be placed, so the prime is the system prompt and
+        the shortest user message, and the boundary is the system block's own length.
+        """
+        del boundary, shares_with
+        if self._inspector is None:
+            return PrefixPrimePlan(refused="no runtime inspector is available")
+        try:
+            body = wire_body(config, (Message(role="user", content="ok"),), system, 1)
+            measured = self._inspector.measure(config.model_identifier, body)
+        except ContextInspectionUnavailableError as unavailable:
+            return PrefixPrimePlan(refused=str(unavailable))
+        tokens = measured.prompt_tokens
+        build = str(
+            (self._runtime or {}).get("build")
+            or self.runtime_facts(config.model_identifier).get("build")
+            or ""
+        )
+        return PrefixPrimePlan(
+            filler="ok",
+            boundary_tokens=max(tokens - 8, 0),
+            prime_tokens=tokens,
+            boundary_sha256="",
+            engine=f"llama.cpp {build}".strip(),
+        )
 
     # --- exact context measurement ---------------------------------------------------
 
@@ -226,15 +279,17 @@ class LlamaCppAdapter:
         cache_ttl: CacheTtl | None = None,
         cancelled: Callable[[], bool] | None = None,
     ) -> Iterator[ProviderEvent]:
-        # `cancelled` (Milestone B §8) is accepted for the contract and not acted on here:
-        # owner precedence is built for the spoken route, which is local. Stated rather
-        # than silently ignored.
-        del cancelled
-
         """The same body, answered as content deltas then the final result.
 
-        Reasoning deltas are never yielded; their presence is recorded.
+        Reasoning deltas are never yielded; their presence is recorded. `cancelled`
+        (owner order, 29 September 2026: this provider now carries a spoken route) is
+        checked before dispatch and on every chunk; a superseded call closes its stream
+        and ends as `SUPERSEDED`.
         """
+        superseded = GatewayError(
+            GatewayErrorKind.SUPERSEDED,
+            "the call was superseded by a newer confirmed owner turn; its stream was closed",
+        )
         kwargs, extra = self._request(config, messages, system, max_output_tokens, output_schema)
         del cache_ttl
         text_parts: list[str] = []
@@ -244,11 +299,22 @@ class LlamaCppAdapter:
         usage: object | None = None
         reported_model: str | None = None
         extras: dict[str, object] = {}
+        if cancelled is not None and cancelled():
+            raise GatewayError(
+                GatewayErrorKind.SUPERSEDED,
+                "the call was superseded by a newer confirmed owner turn before it was "
+                "dispatched; no request was sent",
+            )
         try:
+            mark("provider_dispatch")
             chunks = self._client.chat.completions.create(
                 stream=True, stream_options={"include_usage": True}, **kwargs, extra_body=extra
             )
             for chunk in chunks:
+                mark("provider_chunk")
+                if cancelled is not None and cancelled():
+                    chunks.close()
+                    raise superseded
                 model = getattr(chunk, "model", None)
                 if isinstance(model, str) and model:
                     reported_model = model
@@ -262,6 +328,7 @@ class LlamaCppAdapter:
                             reasoning_present = True
                         piece = getattr(delta, "content", None)
                         if piece:
+                            mark("provider_visible_text")
                             text_parts.append(piece)
                             yield TextDelta(piece)
                         refused = getattr(delta, "refusal", None)

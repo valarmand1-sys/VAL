@@ -480,6 +480,11 @@ class Gateway:
         #: reference and its provenance, loaded once at startup.
         self.voice = voice
         self._adapters = adapters
+        #: Owner order, 29 September 2026 (a different conversational model for Voice):
+        #: the configuration spoken turns are pinned to, or None. Set only by the
+        #: composition root under the `VAL_VOICE_MODEL` switch; typed and complex work
+        #: is routed as always.
+        self.voice_configuration: ModelConfig | None = None
         self._record = recorder
         self._ledger = ledger
         self._cache_ttl = cache_ttl
@@ -526,6 +531,13 @@ class Gateway:
 
     def _spoken_turn_route(self, task_type: TaskType = TaskType.CONVERSATION) -> ModelConfig | None:
         """The route a spoken turn will try first, chosen the way that turn chooses it."""
+        pinned = self.voice_configuration
+        if (
+            pinned is not None
+            and task_type is TaskType.CONVERSATION
+            and pinned.provider in self._adapters
+        ):
+            return pinned
         order = attempt_order(
             active(),
             Classification.PROTECTED,
@@ -710,11 +722,25 @@ class Gateway:
 
     def release_voice(self) -> Mapping[str, object]:
         """Give back what Voice held: the resident speech worker, if one is running."""
+        cognition: object = None
+        pinned = self.voice_configuration
+        if pinned is not None and pinned.provider in self._adapters:
+            # The Voice model's own server is held only while Voice is on: ending it
+            # gives its memory back to typed work and everything else on this Mac.
+            release_runtime = getattr(self._adapters[pinned.provider], "release_runtime", None)
+            if callable(release_runtime):
+                cognition = release_runtime()
         release = getattr(self.speech, "release", None)
         if not callable(release):
-            return {"released": False, "reason": "this speech provider holds nothing"}
+            return {
+                "released": False,
+                "reason": "this speech provider holds nothing",
+                "voice_cognition": cognition,
+            }
         result = release()
-        return dict(result) if isinstance(result, Mapping) else {"released": True}
+        released = dict(result) if isinstance(result, Mapping) else {"released": True}
+        released["voice_cognition"] = cognition
+        return released
 
     def warm_cognition(self) -> Mapping[str, object]:
         """Bring the ordinary conversation route's local runtime up, early.

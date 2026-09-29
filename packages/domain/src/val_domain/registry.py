@@ -1002,6 +1002,60 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 29),
     ),
     ModelConfig(
+        id=UUID("c0a1f6d2-3b7e-4c59-9a14-7e2d5b8f0a36"),
+        slug="gemma-4-26b-a4b-q4km-llamacpp-voice",
+        # Owner order, 29 September 2026 ("a different conversational model for Voice"):
+        # the Voice candidate. `google/gemma-4-26B-A4B-it` (Apache-2.0; 25.2 B
+        # parameters, 3.8 B active, a mixture of experts) as
+        # `lmstudio-community/gemma-4-26B-A4B-it-GGUF` at Hugging Face revision
+        # f6e6747823b2912661935db7e0009287c4838073, file
+        # `gemma-4-26B-A4B-it-Q4_K_M.gguf` (16.8 GB, sha256 e19514d9…dfc4), served text-only
+        # by the official llama.cpp server on the loopback interface, which
+        # `val_providers.llamacpp_runtime` starts for this identifier.
+        #
+        # **Registered NOT_ADMITTED, with no capability profile**, so nothing in
+        # production routing can select it. `VAL_VOICE_MODEL` in `val_gateway.startup`
+        # makes it the pinned route of spoken turns in its own process only; typed and
+        # complex work stays on GPT-OSS. Admitting it is his ruling, made by editing
+        # this entry. Its screening record: `2026-09-29-voice-model/VOICE_MODEL.md`.
+        provider="llamacpp",
+        model_identifier="gemma-4-26b-a4b-it",
+        display_name=(
+            "Gemma 4 26B-A4B (Q4_K_M GGUF, llama.cpp, thinking off — Voice candidate, "
+            "NOT_ADMITTED; HF f6e67478)"
+        ),
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # Thinking is declared off and transmitted on every call; the rendered prompt
+        # was verified to open and close the thought channel empty.
+        thinking_enabled=False,
+        # The publisher's documented sampling, transmitted on every call.
+        temperature=1.0,
+        top_p=0.95,
+        top_k=64,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        known_weaknesses=(
+            "screened for spoken conversation only (29 September 2026); not qualified for "
+            "typed, complex or consequential work",
+            "asserts that it changed no settings, which it cannot verify — shared with "
+            "GPT-OSS, 29 September 2026",
+        ),
+        activated_on=date(2026, 9, 29),
+        rates_verified_on=date(2026, 9, 29),
+    ),
+    ModelConfig(
         id=UUID("3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"),
         slug="gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
         # OWNER ADMISSION RULING, Lord Armand, 21 September 2026: the production

@@ -524,6 +524,10 @@ def send(
     # directly, because a brand-new conversation did not exist to be looked up
     # until this turn created it.
     decision = decide_egress(engine, opened.conversation.id, live=live_voice)
+    # Owner order, 29 September 2026: a turn belongs to Voice when it was spoken, or typed
+    # into a conversation whose Voice session is open. Such a turn may be pinned to the
+    # Voice model (`Gateway.voice_configuration`); every other turn is routed as always.
+    voice_turn = spoken or (live_voice is not None and live_voice.active_in(opened.conversation.id))
     if spoken and not decision.local_only:
         decision = sealed(LocalOnlyReason.VOICE_SESSION_ACTIVE)
     # §18's local-only policy decision, as a diagnostic boundary. Inert unless a
@@ -576,6 +580,7 @@ def send(
             light=_light_tier(engine, opened, content, fast_route),
             prepared=prepared,
             cancelled=cancelled,
+            voice=voice_turn,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -628,6 +633,7 @@ def send(
             candidate=candidate,
             visual=visual,
             egress=decision,
+            voice=voice_turn,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -696,6 +702,7 @@ def send(
             on_delta,
             on_stage,
             candidate=candidate,
+            voice=voice_turn,
         )
         if isinstance(outcome, UnansweredTurn):
             return outcome
@@ -1343,8 +1350,14 @@ def _ordinary(
     light: int | None = None,
     prepared: PreparedAnswer | None = None,
     cancelled: Callable[[], bool] | None = None,
+    voice: bool = False,
 ) -> Turn | TruncatedTurn | UnansweredTurn:
     """The WP-0.7 turn, from an already-opened state.
+
+    `voice` (29 September 2026) says this turn belongs to Voice. When the gateway holds a
+    Voice configuration, such a turn is asked of it; if that route cannot answer **before
+    any word has been delivered**, the same turn is asked of the Partner route, once,
+    and the fallback is on record.
 
     `light` (26 September 2026) names the light tier this turn qualified for, or
     `None`. A light turn is asked of the light route; if that route cannot answer
@@ -1463,6 +1476,10 @@ def _ordinary(
                         if visual.configuration is None
                         else None
                     )
+                    pinned_voice = getattr(gateway, "voice_configuration", None)
+                    if voice and pinned_voice is not None and visual.configuration is None:
+                        low = pinned_voice
+                        _LOGGER.info("voice model: this turn is asked of %s", pinned_voice.slug)
                     try:
                         response = gateway.converse(
                             messages,
@@ -1491,7 +1508,9 @@ def _ordinary(
                         # The LOW call failed before any word reached him: the same turn
                         # is asked of MEDIUM, once, and the fallback is on record.
                         _LOGGER.warning(
-                            "ordinary effort: fallback to medium (%s: %s)",
+                            "pinned route %s could not answer: fallback to the Partner route "
+                            "(%s: %s)",
+                            low.slug,
                             failure.kind.value,
                             failure,
                         )

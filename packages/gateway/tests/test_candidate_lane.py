@@ -241,6 +241,7 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
     # it carries a target only because the candidate lane needs one to open: it
     # admits nothing, serves nothing, and is unreachable from routing.
     assert sorted(entry.slug for entry in with_targets) == [
+        "gemma-4-26b-a4b-q4km-llamacpp-voice",
         "gemma-4-31b-q6k-llamacpp",
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
         "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
@@ -250,6 +251,7 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
     ]
     # ...and on 29 September 2026 (owner order) for Qwen3-30B-A3B-Instruct-2507, the
     # isolated Partner candidate without a hidden-reasoning phase.
+    # ...and the same day for the Voice candidate, Gemma 4 26B-A4B on llama.cpp.
     assert all(entry.admission is Admission.NOT_ADMITTED for entry in with_targets)
     assert all(entry.capability_profiles == frozenset() for entry in with_targets)
 

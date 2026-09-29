@@ -72,4 +72,21 @@ def test_the_gemma_candidate_declares_thinking_on_preserve_off_and_the_official_
     assert config.context_window_tokens == 32_768
     assert config.admission.value == "not_admitted" and config.capability_profiles == frozenset()
     assert config.fallback_slug is None
-    assert [c.slug for c in REGISTRY if c.provider == "llamacpp"] == [config.slug]
+    # Pin moved 29 September 2026 (owner order, a different conversational model for
+    # Voice): a second entry on this provider, the Voice candidate.
+    assert sorted(c.slug for c in REGISTRY if c.provider == "llamacpp") == [
+        "gemma-4-26b-a4b-q4km-llamacpp-voice",
+        config.slug,
+    ]
+
+
+def test_the_voice_candidate_declares_thinking_off_and_the_official_sampling() -> None:
+    config = by_slug("gemma-4-26b-a4b-q4km-llamacpp-voice")
+    assert config is not None and config.provider == "llamacpp"
+    assert config.model_identifier == "gemma-4-26b-a4b-it"
+    assert config.thinking_enabled is False, "declared off, and transmitted"
+    assert (config.temperature, config.top_p, config.top_k) == (1.0, 0.95, 64)
+    assert config.reasoning_effort.value == "not_applicable"
+    assert config.context_window_tokens == 32_768
+    assert config.admission.value == "not_admitted" and config.capability_profiles == frozenset()
+    assert config.fallback_slug is None

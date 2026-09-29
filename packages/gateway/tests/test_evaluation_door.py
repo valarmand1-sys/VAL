@@ -62,6 +62,10 @@ CANDIDATES = (
     # 29 September 2026 (owner order, isolated qualification): Qwen3-30B-A3B-Instruct-2507,
     # NOT_ADMITTED, no profile, promoted only in-process by the experiment switch.
     "qwen3-30b-a3b-instruct-2507-mlx-lmstudio",
+    # 29 September 2026 (owner order, a different conversational model for Voice):
+    # Gemma 4 26B-A4B on llama.cpp, NOT_ADMITTED, no profile, pinned for spoken turns
+    # only in-process by the Voice model switch.
+    "gemma-4-26b-a4b-q4km-llamacpp-voice",
 )
 
 

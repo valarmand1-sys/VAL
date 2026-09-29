@@ -54,6 +54,9 @@ PARTNER_CANDIDATES: set[str] = {
     # a Partner candidate without a hidden-reasoning phase, evaluation only, target
     # PARTNER, no profile.
     "qwen3-30b-a3b-instruct-2507-mlx-lmstudio",
+    # 29 September 2026 (owner order, a different conversational model for Voice):
+    # Gemma 4 26B-A4B on the llama.cpp provider, evaluation only, target PARTNER, no profile.
+    "gemma-4-26b-a4b-q4km-llamacpp-voice",
 }
 
 
@@ -81,6 +84,8 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
             "qwen3-4b-instruct-2507-mlx-lmstudio-light": date(2026, 9, 26),
             # 29 September 2026: the Partner candidate without hidden reasoning.
             "qwen3-30b-a3b-instruct-2507-mlx-lmstudio": date(2026, 9, 29),
+            # 29 September 2026: the Voice candidate.
+            "gemma-4-26b-a4b-q4km-llamacpp-voice": date(2026, 9, 29),
         }
         is_local = config.provider in ("lmstudio", "llamacpp")
         expected = local_dates[config.slug] if is_local else date(2026, 9, 10)

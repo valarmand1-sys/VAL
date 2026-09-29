@@ -494,6 +494,45 @@ def enable_light_candidate(route: str = "qwen") -> ModelConfig:
     return promoted
 
 
+# Owner order, 29 September 2026: a different conversational model for Voice. Unset in
+# production. Set, spoken turns are pinned to the named candidate in this process only;
+# typed and complex work stays on the Partner route.
+VOICE_MODEL_SETTING = "VAL_VOICE_MODEL"
+VOICE_MODELS = {"gemma-4-26b-a4b": "gemma-4-26b-a4b-q4km-llamacpp-voice"}
+
+
+def configured_voice_model() -> tuple[str | None, str | None]:
+    raw = os.environ.get(VOICE_MODEL_SETTING, "").strip().lower()
+    if raw == "":
+        return None, None
+    if raw not in VOICE_MODELS:
+        return raw, f"{VOICE_MODEL_SETTING}: must be one of {sorted(VOICE_MODELS)}, not {raw!r}"
+    return raw, None
+
+
+def enable_voice_model(key: str) -> ModelConfig:
+    """Make the candidate pinnable for spoken turns, in this process only.
+
+    The entry is copied as PROVISIONALLY_ADMITTED with the `partner` profile and marked
+    pin-only, so routing, cost ranking and typed turns never select it: only a call that
+    names it reaches it. Nothing on disk changes.
+    """
+    slug = VOICE_MODELS[key]
+    entry = by_slug(slug)
+    if entry is None:
+        raise StartupRefusedError([f"{VOICE_MODEL_SETTING}: no registry entry {slug}"])
+    promoted = entry.model_copy(
+        update={
+            "admission": Admission.PROVISIONALLY_ADMITTED,
+            "capability_profiles": frozenset({CapabilityProfile.PARTNER}),
+            "qualification_targets": frozenset(),
+        }
+    )
+    registry.REGISTRY = tuple(promoted if c.slug == slug else c for c in registry.REGISTRY)
+    registry.PIN_ONLY.add(slug)
+    return promoted
+
+
 def start(engine: Engine, today: datetime | None = None) -> Startup:
     """Build the gateway, or refuse to start and say why.
 
@@ -604,6 +643,18 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             candidate.model_identifier,
             PARTNER_SLUG,
         )
+    voice_key, voice_problem = configured_voice_model()
+    if voice_problem is not None:
+        raise StartupRefusedError([voice_problem])
+    voice_model = enable_voice_model(voice_key) if voice_key is not None else None
+    if voice_model is not None:
+        _LOGGER.warning(
+            "CANDIDATE Voice model for this process: spoken turns are pinned to %s (%s); typed "
+            "and complex work stays on the Partner route. Not an admission; the registry on "
+            "disk is unchanged.",
+            voice_model.slug,
+            voice_model.model_identifier,
+        )
     violations, warnings = check_startup(moment.date())
 
     # Owner rulings, 22 September 2026: perception and speech routes are not
@@ -613,7 +664,7 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     adapters, problems = build_adapters(
         {
             config.provider
-            for config in active()
+            for config in (*active(), *((voice_model,) if voice_model is not None else ()))
             if not any(
                 satisfies_profile(config, profile)
                 for profile in (CapabilityProfile.PERCEPTION, CapabilityProfile.SPEECH)
@@ -846,6 +897,7 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             f"candidate switches: speculation={'light' if speculation else 'off'}, "
             f"adaptive grace={'on' if adaptive_grace else 'off'} (this process only)."
         )
+    gateway.voice_configuration = voice_model
     return Startup(
         gateway=gateway,
         warnings=warnings,
