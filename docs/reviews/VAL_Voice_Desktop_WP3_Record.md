@@ -1850,3 +1850,49 @@ of the effort experiment in `2026-09-28-checkpoint/EFFORT_EXPERIMENT.md` §18.
   - It conflicts with "a spoken conversation never leaves this Mac" unless Val moves
     wholly onto it.
 - **Not claimed:** that Voice is solved. Neither option is expected to reach ~1 s.
+
+## 41. Handoff — Qwen3-30B-A3B-Instruct-2507, isolated qualification (owner order of 29 September 2026)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged and pinned; no physical
+test requested.** Record: `qualification/runs/2026-09-29-qwen3-30b/QWEN_QUALIFICATION.md`
+(registered in `68d871b` before any quality call). The reasoning-budget experiment is
+closed, with its hook removed (`2026-09-29-reasoning-budget/BUDGET_EXPERIMENT.md` §6).
+
+- **Artifact:** `mlx-community/Qwen3-30B-A3B-Instruct-2507-4bit` @ `e9675aa3…`, every
+  file matched to its digests.
+  - Served through the model definition `val-experiment/qwen3-30b-a3b-instruct-2507-exp`,
+    with the publisher's sampling.
+  - Registry entry NOT_ADMITTED; `VAL_EXPERIMENT_COGNITION` promotes it in-process only.
+- **Verified before qualification:**
+  - The effective sampling of both models was observed at the engine by a read-only
+    observer.
+  - Its first install failed silently under the engine's Python 3.11 after the
+    formatter unparenthesised an `except`. It is now guarded by a 3.11-grammar test
+    over every hook.
+  - Persona whole in one system block; exact preflight parity; natural stops; streaming;
+    the persona prime; stock-cache reuse to the point of divergence.
+- **Memory:** both cognition models resident, idle, drove swap to 8.4 GB before speech
+  was loaded. Conditions ran one model at a time. A deployment would have needed a
+  cognition switch at Voice On (about 13–16 s).
+- **Screening** (12 cases, 2 samples, every answer read):
+  - **Speed:** first speech-safe text 1.08 s against 5.91 s (paired −4.53 s).
+  - **Quality:** **two confirmed critical regressions**:
+    - an invented contract review with a quoted clause (C6);
+    - a claimed book and access contrary to Core's `capability_state` (C5).
+  - Plus a persona failure (C10 s2).
+  - Shared failures are recorded as failures (C3 in all four answers).
+  - **Stopped by the registered rule;** no Stage 2 or desktop run; no prompt tuning.
+- **Cause:** quality, not latency, memory or integration.
+- **Recommendation:** finish Voice on GPT-OSS MEDIUM. The needed rulings are the measured
+  latency stack:
+  - cache renewal in production;
+  - the envelope-in-developer-block construction;
+  - owner precedence;
+  - Tier-1 LOW for courtesy turns;
+  - the adaptive endpoint;
+  - then the physical acceptance test.
+  - Measured 27 September: ordinary 9.57 → 6.64 s median (worst 19.84 → 12.21 s);
+    social 7.29 → 4.77 s.
+  - Ordinary onset stays about 6–7 s. No purchase is claimed to reach the target.
+- **State:** the Qwen weights, definition and registry entry are kept pending his ruling;
+  the observer is removed; the cache allowlist is restored; instances are unloaded.

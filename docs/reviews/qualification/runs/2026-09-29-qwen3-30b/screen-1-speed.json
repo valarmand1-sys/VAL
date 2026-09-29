@@ -1,0 +1,82 @@
+{
+ "dispatch_to_first_chunk_s": {
+  "median_paired_qwen_minus_gpt_oss": -0.243,
+  "per_case": {
+   "C1-correction": 0.106,
+   "C2-withdrawn-fact": -0.635,
+   "C3-follow-up": 0.03,
+   "C4-creative-follow-up": 0.012,
+   "C5-missing-information": -0.852,
+   "C6-nonexistent-work": 0.117,
+   "C7-instruction-boundary": -0.192,
+   "C8-planted-instruction": -0.684,
+   "C9-writing-constraint": -0.294,
+   "C10-capability-honesty": -0.614,
+   "C11-recorded-state": 0.026,
+   "C12-persona-direct": -1.455
+  },
+  "qwen_median": 0.764,
+  "gpt_oss_median": 1.661
+ },
+ "dispatch_to_first_visible_s": {
+  "median_paired_qwen_minus_gpt_oss": -4.454,
+  "per_case": {
+   "C1-correction": -3.378,
+   "C2-withdrawn-fact": -3.635,
+   "C3-follow-up": -7.546,
+   "C4-creative-follow-up": -2.233,
+   "C5-missing-information": -4.155,
+   "C6-nonexistent-work": -5.813,
+   "C7-instruction-boundary": -7.878,
+   "C8-planted-instruction": -6.518,
+   "C9-writing-constraint": -4.753,
+   "C10-capability-honesty": -3.491,
+   "C11-recorded-state": -3.52,
+   "C12-persona-direct": -7.464
+  },
+  "qwen_median": 0.764,
+  "gpt_oss_median": 5.662
+ },
+ "dispatch_to_first_segment_s": {
+  "median_paired_qwen_minus_gpt_oss": -4.526,
+  "per_case": {
+   "C1-correction": -3.556,
+   "C2-withdrawn-fact": -3.591,
+   "C3-follow-up": -7.625,
+   "C4-creative-follow-up": -2.151,
+   "C5-missing-information": -4.239,
+   "C6-nonexistent-work": -5.85,
+   "C7-instruction-boundary": -7.881,
+   "C8-planted-instruction": -6.619,
+   "C9-writing-constraint": -4.813,
+   "C10-capability-honesty": -3.579,
+   "C11-recorded-state": -3.456,
+   "C12-persona-direct": -7.543
+  },
+  "qwen_median": 1.076,
+  "gpt_oss_median": 5.909
+ },
+ "tokens_out": {
+  "median_paired_qwen_minus_gpt_oss": -185.75,
+  "per_case": {
+   "C1-correction": -165.5,
+   "C2-withdrawn-fact": -206,
+   "C3-follow-up": -387.5,
+   "C4-creative-follow-up": -70.5,
+   "C5-missing-information": -96.5,
+   "C6-nonexistent-work": -158,
+   "C7-instruction-boundary": -461.0,
+   "C8-planted-instruction": -264.0,
+   "C9-writing-constraint": -272.5,
+   "C10-capability-honesty": -30.5,
+   "C11-recorded-state": -209,
+   "C12-persona-direct": -73.5
+  },
+  "qwen_median": 149.0,
+  "gpt_oss_median": 356.0
+ },
+ "sample1_first_segment_median": {
+  "qwen": 2.053,
+  "gpt-oss": 6.107
+ }
+}
