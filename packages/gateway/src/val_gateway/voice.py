@@ -125,6 +125,19 @@ SUPERSEDED_WORKER_DEADLINE_SECONDS = 1.0
 #: the reason) rather than accumulate threads and connections without bound.
 MAX_ABANDONED_WORKERS = 3
 
+#: Abandoned workers still alive, **across the whole service** (28 September 2026). A
+#: session's own count reset when Voice was switched off and on again, while the
+#: abandoned threads (daemon threads) outlived it; counted here, they are bounded for
+#: the process, and removed only when each thread actually ends.
+_ABANDONED_LOCK = threading.Lock()
+_ABANDONED_ALIVE: set[int] = set()
+
+
+def abandoned_workers_alive() -> int:
+    """How many abandoned voice workers are still running in this process."""
+    with _ABANDONED_LOCK:
+        return len(_ABANDONED_ALIVE)
+
 
 def _uncollected(delivery: object) -> bool:
     """Whether the desktop has audio of this answer still to collect.
@@ -839,6 +852,15 @@ class VoiceSession:
 
     def start(self) -> None:
         """Bring the recognizer up. Nothing is heard until this succeeds."""
+        alive = abandoned_workers_alive()
+        if alive > MAX_ABANDONED_WORKERS:
+            # Reopening Voice must not reset the bound on workers that never ended.
+            detail = (
+                f"{alive} superseded voice workers from earlier sessions have not ended; Voice "
+                "will not start until they do (restarting the service ends them)"
+            )
+            self._fail(detail)
+            raise VoiceUnavailableError(detail)
         try:
             self._recognizer.start()
         except VoiceUnavailableError as failure:
@@ -1580,6 +1602,8 @@ class VoiceSession:
                 if now - pending.superseded_at < SUPERSEDED_WORKER_DEADLINE_SECONDS:
                     continue
                 pending.abandoned = True
+                with _ABANDONED_LOCK:
+                    _ABANDONED_ALIVE.add(id(pending))
                 overdue.append(pending)
             if not overdue:
                 return
@@ -1593,7 +1617,7 @@ class VoiceSession:
                 if pending.resumed_with and not pending.join_claimed:
                     pending.join_claimed = True
                     joins.append(pending)
-            alive = sum(1 for pending in self._superseded_workers.values() if pending.abandoned)
+            alive = abandoned_workers_alive()
         for pending in overdue:
             delivery = pending.delivery
             interrupt = getattr(delivery, "interrupt", None)
@@ -2089,6 +2113,9 @@ class VoiceSession:
         self._log_timeline(pending, live)
         with self._lock:
             self._superseded_workers.pop(id(pending), None)
+        if pending.abandoned:
+            with _ABANDONED_LOCK:
+                _ABANDONED_ALIVE.discard(id(pending))
         if pending.abandoned:
             return
         if self._claim_join(pending):

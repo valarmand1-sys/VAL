@@ -35,7 +35,7 @@ in C1a and R1, listed separately.
 
 | class | cases | what it was |
 |---|---|---|
-| hand-off defect (the application; now repaired, §2) | 10: P1a S3 t5, P1a S5 t7, P1b S3 t5, P1b S5 t7, C2b S3 t5, C2b S5 t7, C2c S3 t5, C2c S5 t7; C1a S3 t5; R1 S5 t4 | Each followed a replacement or combined answer that **was produced on time, played in full and returned the page to idle within 7–21 s**. The playback worklet never reported the last segment `completed`, because its empty closing piece was never collected, and the driver waits for that report. Not a long answer; she was not speaking. |
+| hand-off defect (the application; now repaired, §2) | 10: P1a S3 t5, P1a S5 t7, P1b S3 t5, P1b S5 t7, C2b S3 t5, C2b S5 t7, C2c S3 t5, C2c S5 t7; C1a S3 t5; R1 S5 t4 | Each followed a replacement or combined answer that **was produced on time, played in full and returned the page to idle within 7–21 s**. The playback worklet never reported the last segment `completed`, because the segment's closing marker was never collected, and the driver waits for that report. Not a long answer; she was not speaking. What was missing is below the table. |
 | runaway speech (a real incomplete answer) + the same defect | 1: C2c S5 t4 | Segment 2 hit the speech-length bound (184 characters, 40.8 s of audio); only 2 of 9 segments were spoken. Its failure stop never reached the desktop, for the same hand-off reason. |
 | the known C1a stall | 1: C1a S5 t1 | §3. |
 
@@ -46,8 +46,27 @@ in C1a and R1, listed separately.
   ended, and `spoken_over_her_audio` flags that were false in fact. They stay in the
   record as written; the corrected explanation is here and in
   `CHECKPOINT_EXPERIMENT.md` §9.
-- **Missing evidence:** outside C2c, streamed piece durations are not recorded, so
-  audio lengths there are estimates.
+- **What "the final piece" was.** The sink ends every segment with a **zero-length
+  closing marker** (`DesktopSink.end_segment`: no audio, duration 0, `last=True`), and the
+  player reports a segment `completed` only on it. Where the records allow a check, only
+  that marker was lost:
+  - **C2c** (the store was preserved): a streamed piece is exactly 12 codec tokens, 0.96 s.
+    Each segment's synthesized duration (`speech_generations`) gives its piece count;
+    comparing that with the pieces the desktop received gives the result below.
+
+    | answer | final segment | audio pieces the desktop received | missing |
+    |---|---|---|---|
+    | S3 t5 | 2.80 s = 3 pieces | all 3 | the marker (piece 3) |
+    | S5 t7 | 2.96 s = 4 pieces | all 4 | the marker (piece 4) |
+
+    **In both, all of her audio was delivered and heard; the missing item was a
+    completion marker, not audible content.**
+  - **P1a, P1b, C2b, C1a, R1:** their stores were rebuilt, so this **cannot be
+    determined**. The mechanism clears the hand-off 20–80 ms after synthesis finishes,
+    and the last audio piece and the marker are offered milliseconds apart, so a lost
+    final audio piece is possible there and is not excluded.
+  - **Consequence either way:** the player never recorded the segment finishing, so
+    "interrupted – voice mode ended" was written minutes after her audio had ended.
 
 ## 2. The hand-off defect — cause established, repaired
 
@@ -61,6 +80,17 @@ had finished. **Repair:** `_record` moves only its own delivery.
 - Test: `test_a_superseded_worker_ending_late_never_takes_the_newer_turns_delivery`
   (fails with the check removed).
 - Real desktop: 0 driver timeouts in L2 and L3 (§5).
+
+**The abandoned-worker limit was per Voice session, not per service — a defect,
+repaired.** The count lived on the `VoiceSession` instance, and the API creates a new
+instance each time Voice is switched on (`app.py:1101`). An abandoned worker is a daemon
+thread that outlives its session, so switching Voice off and on again reset the count
+while earlier stuck workers stayed alive: repeated reopening could accumulate them without
+bound. The count is now **process-wide** (`abandoned_workers_alive()`), each worker is
+removed only when its thread actually ends, and **Voice refuses to start** while the
+service is over the limit, with the reason. Restarting the service ends the threads.
+Test: `test_reopening_voice_does_not_reset_the_bound_on_workers_that_never_ended` (fails
+with the start guard removed).
 
 **A second hand-off defect, found through the desktop in this pass (L2) and repaired:**
 an answer that had finished but not been heard, **kept** by his continuation to play
@@ -93,19 +123,22 @@ answer, and Voice off releases it.
   exact preflight behind a busy runtime — and it **dispatched a request 2.7 s after being
   superseded**.
 
-**Not the cause:**
+**What was tested, and what it does and does not exclude:**
 
-- **The adapter:** 30 of 30 forced races across the prefill's end ended in 1–48 ms
-  (`supersede_race.py`).
-- **The session lock:** later utterances were handled normally.
-- **An httpcore lock inversion:** no nested lock acquisition on that path.
+- **The adapter layer is not excluded.** 30 of 30 forced cancellation races across the
+  prefill's end ended in 1–48 ms (`supersede_race.py`), so the problem did not reproduce
+  there under those conditions. That does not rule out a rarer interleaving at that layer.
+- **The session lock is excluded:** later utterances were handled normally.
+- **No nested lock acquisition in httpcore on that path** (read from the code). A lock
+  inversion there is therefore unlikely, but that is not a demonstration.
 
 **Not established:** where the thread was. The gateway logs its superseded record only
 after two store writes (the call record, then the ledger settlement). A block there, a
 row or advisory-lock wait with no lock timeout, fits every trace, but no stack exists to
 show it.
 
-**Containment (repair of the blocking, not of the unknown cause):**
+**Status: contained; root cause unresolved.** Containment repairs the blocking, not the
+unknown cause:
 
 - **A finite recovery deadline.** A superseded worker still alive
   `SUPERSEDED_WORKER_DEADLINE_SECONDS = 1.0` s after its supersession is **abandoned**.
@@ -121,8 +154,9 @@ show it.
     said is lost.
 - **The next occurrence names its cause.** The worker's stack and any store sessions
   waiting on a lock or idle in a transaction are captured once, in the log.
-- **No silent accumulation.** Abandoned workers are counted; above
-  `MAX_ABANDONED_WORKERS = 3` alive, Voice ends with the reason.
+- **No silent accumulation.** Abandoned workers are counted across the whole service;
+  above `MAX_ABANDONED_WORKERS = 3` alive, Voice ends with the reason and will not start
+  again until they end (§2).
 - **Stale work is refused at every action**, so a late return has no authority:
   - Core refuses to persist his message for a turn already superseded;
   - the answer's append is refused **under the conversation lock** once superseded, so
@@ -137,7 +171,10 @@ show it.
   and dispatch marks measure that wait.
 
 **Measured recovery** (fault injection; `test_superseded_worker.py`, the old worker held
-deaf to cancellation):
+deaf to cancellation). **This is how long the session takes to stop waiting and get his
+words going again after a stalled worker, measured with a test adapter that answers at
+once. It is not an answer onset:** a real joined turn then takes an ordinary turn's
+processing on top (§5a).
 
 | case | recovery at the 1.0 s deadline |
 |---|---|
@@ -246,7 +283,7 @@ shared a file name), so its summary duplicates; the values above count it once.
 
 ## 6. Identities; local and CI
 
-- **Code:** `af136fe` on branch `latency-2026-09-28`. Earlier this pass: `2de953a` (the
+- **Code:** `af136fe` on branch `latency-2026-09-28`. Earlier in this repair, `2de953a` (the
   lifecycle repair) and `7c7c2d5` (the checkpoint records).
 - **Engine hook:** v2.3, sha256 `3773168dd12f62281e2eedfe7c29d198350c95d8274e2abf91f30356fe76cfae`,
   experiment instance only.
@@ -283,24 +320,36 @@ only lever of size on the 3 s; MEDIUM stays until you say otherwise) and convers
 priming (excluded in this pass). With neither, an ordinary reply will still begin about
 5.5–6 s after he stops, even with (1) and (2).
 
-## 8. The isolation walkthrough — state
+## 8. Production isolation — complete (28 September 2026, 20:34)
 
-The steps, each his to run and verify before the next:
+Performed by him, one step at a time, each verified before the next:
 
-1. **Preserve the launch file for rollback:** a byte-identical copy into a private
-   folder outside `~/Library/LaunchAgents`. **Given; awaiting his confirmation.**
-2. **Repoint** `ProgramArguments.3` and `WorkingDirectory` to the release directory (no
-   effect on the running process).
-3. **Reload** the job at a moment when no Voice session is open (about 10 s).
-4. **Optionally, repoint the two backup jobs.**
+1. **Backup:** the launch file was copied to `~/val-launch-backup/`, byte-identical, private
+   (`drwx------`, `-rw-------`). It preserves the previous launch: `uv run --directory
+   /Users/josepharmand/Projects/val val-api`.
+2. **Repoint:** my Step 2 command was faulty. `plutil -replace ProgramArguments.3`
+   **inserted** rather than replaced, leaving six arguments. That was caught before any
+   reload and corrected (Step 2b) by setting the whole five-entry array. Verified: only
+   `ProgramArguments` and `WorkingDirectory` differ from the backup; the environment is
+   identical.
+3. **Reload:** `bootout` and `bootstrap`; health `running`.
 
-After step 3 I verify:
+Verified afterwards:
 
-- the running process's command, working directory and revision (`13b3cb8`);
-- `/health`;
-- the live store's migration (`0031_prefix_prime`);
-- that the launch file names the release directory, not the development checkout.
+| check | result |
+|---|---|
+| launch target | launchd runs `uv run --directory /Users/josepharmand/Projects/val-releases/13b3cb8 val-api` (pid 90532) |
+| service process | pid 90534, the release's own interpreter |
+| working directory | the release directory |
+| code loaded | `val_api`, `val_gateway`, `val_domain` all import from the release; 28 files open under it, none under `~/Projects/val` |
+| revision | `13b3cb8638714f42e3509f06ba4e8e3b485c5300`, clean |
+| live migration | `0031_prefix_prime`, unchanged |
+| desktop | the installed `13b3cb8` build (`21b8e948…`), a matched pair again |
+| restarts | a crash restart or login reads the same launch file, so it loads the pinned release |
 
-**Blocker until then:** a routine restart still loads master from
-`~/Projects/val`. No Voice session was open or restarted in this pass, and no credential
-was read into any output.
+- **Tested versus admitted:** `13b3cb8` is the revision that was production before the
+  reboot, not the candidate; master's unswitched repairs are no longer running.
+- **Step 4 (backup jobs) deferred by his decision.** Their scripts are identical in both
+  revisions and neither job uses the API or Val's packages. Condition: repoint them
+  before anyone pulls, merges or edits `infrastructure/backup/` in `~/Projects/val`.
+- **The faulty command in the 27 September procedure** is corrected there.

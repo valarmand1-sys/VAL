@@ -296,3 +296,35 @@ def test_an_append_refused_under_the_lock_writes_nothing(store: Engine) -> None:
             refuse_if=lambda: True,
         )
     assert rows(store, "select count(*) from messages where role = 'val'")[0][0] == 0
+
+
+def test_reopening_voice_does_not_reset_the_bound_on_workers_that_never_ended(
+    store: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The limit is the service's: a new session counts the old sessions' stuck workers."""
+    monkeypatch.setattr(voice, "SUPERSEDED_WORKER_DEADLINE_SECONDS", 0.2)
+    monkeypatch.setattr(voice, "MAX_ABANDONED_WORKERS", 0)
+    adapter = HeldFirstAdapter([ok("The invitation, my lord."), ok("Both in hand, my lord.")])
+    first, clock, _ = _session(store, adapter, resume_batches())
+    _resume(first, clock)
+    for _ in range(50):
+        first.advance()
+        if first.state is VoiceSessionState.ERROR:
+            break
+        time.sleep(0.02)
+    assert voice.abandoned_workers_alive() == 1
+    first.close()  # Voice off: the stuck worker is still alive
+    again, _, _ = _session(store, adapter, resume_batches())
+    with pytest.raises(voice.VoiceUnavailableError):
+        again.start()
+    assert "have not ended" in (again.error or "")
+    adapter.hold.set()  # the old worker finally ends
+    _wait_for_workers(first)
+    for _ in range(100):
+        if voice.abandoned_workers_alive() == 0:
+            break
+        time.sleep(0.02)
+    assert voice.abandoned_workers_alive() == 0
+    third, _, _ = _session(store, adapter, resume_batches())
+    third.start()  # the bound is clear again
+    third.close()

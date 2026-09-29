@@ -32,6 +32,19 @@ plutil -replace ProgramArguments.3 -string /Users/josepharmand/Projects/val-rele
 plutil -replace WorkingDirectory -string /Users/josepharmand/Projects/val-releases/13b3cb8 ~/Library/LaunchAgents/house.armand.val.api.plist
 ```
 
+**Corrected 28 September 2026 — the first command above is faulty; do not use it.** On
+this Mac `plutil -replace` with an array index **inserts** the new value and shifts the old
+one along, leaving six arguments (`… --directory <release> /Users/josepharmand/Projects/val
+val-api`), with which the service would not start. It was caught before any reload. The
+command used, and verified, sets the whole array:
+
+```
+plutil -replace ProgramArguments -json '["/Users/josepharmand/.local/bin/uv","run","--directory","/Users/josepharmand/Projects/val-releases/13b3cb8","val-api"]' ~/Library/LaunchAgents/house.armand.val.api.plist
+```
+
+Isolation was completed that way on 28 September at 20:34
+(`2026-09-28-checkpoint/LIFECYCLE_REPAIR.md` §8).
+
 Stated reason: **"[Production Deploy]"**, from the session's automatic permission
 classifier. That is a policy decision of the automatic review about who performs a
 production change, not a technical restriction and not a missing authorisation of his
@@ -80,7 +93,9 @@ prints it.
    `launchctl print gui/$(id -u)/house.armand.val.api | grep -A6 arguments` names the
    release directory; `lsof -a -d cwd -p $(pgrep -f 'val-releases/13b3cb8/.venv/bin/val-api')`
    → the release directory.
-4. *The backup jobs* (optional; same pattern, between 20:00 runs and away from :15):
+4. *The backup jobs* (optional; **deferred by his decision of 28 September**, on the condition
+   that they are repointed before anyone pulls, merges or edits `infrastructure/backup/` in the
+   main checkout; use the whole-array form above, adjusted to each job's own arguments):
    `ProgramArguments.4`, `WorkingDirectory` and, for `house.armand.val.backup` only,
    `EnvironmentVariables.PYTHONPATH` → the release directory (plus `/infrastructure/backup`
    for the last), then `bootout`/`bootstrap` each.
