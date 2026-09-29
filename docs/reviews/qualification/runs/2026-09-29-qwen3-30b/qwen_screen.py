@@ -12,7 +12,13 @@ speech-safe segment (the delivery's own segmenter), the runtime's prompt and rea
 counts, the engine's own cache line and the observer's effective settings, and the
 answer, which is read. Frozen Stage A checks are applied where a case carries them.
 
-Usage: qwen_screen.py 1|2 gpt-oss|qwen OUT.json
+Corrected-configuration comparison (QWEN_QUALIFICATION.md §11): `--construction
+envelope_in_system` turns the existing construction on for this process, `--cases` selects
+case ids (comma-separated prefixes such as C6,C5), `--samples` overrides the count; each
+row then records where the rendered prompt carries Core's envelope marker and the prime's
+boundary beside the engine's reuse. Defaults reproduce the original screen.
+
+Usage: qwen_screen.py 1|2 gpt-oss|qwen OUT.json [--construction C] [--cases IDS] [--samples N]
 """
 
 from __future__ import annotations
@@ -38,6 +44,8 @@ for key in ("VAL_FAST_ROUTE_TIERS", "VAL_TIER1_ROUTE", "VAL_SPECULATION", "VAL_A
             "VAL_OWNER_PRECEDENCE", "VAL_REQUEST_CONSTRUCTION", "VAL_COMBINE_CONTINUATIONS",
             "VAL_ORDINARY_LOW", "VAL_ADAPTIVE_ENDPOINT", "VAL_TTS_LENGTH_BOUND", "VAL_EXPERIMENT_COGNITION"):
     os.environ.pop(key, None)
+if "--construction" in sys.argv and sys.argv[sys.argv.index("--construction") + 1] == "envelope_in_system":
+    os.environ["VAL_REQUEST_CONSTRUCTION"] = "envelope_in_system"
 
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
@@ -49,6 +57,7 @@ import val_gateway.loop as loop  # noqa: E402
 from val_domain import timings  # noqa: E402
 from val_domain.conversation import StoredRole  # noqa: E402
 from val_gateway import conversations  # noqa: E402
+from val_gateway.context import STATE_ENVELOPE_MARKER  # noqa: E402
 from val_gateway.deliberate import send  # noqa: E402
 from val_gateway.persona import seed  # noqa: E402
 from val_gateway.projects import load_catalogue  # noqa: E402
@@ -59,6 +68,9 @@ from val_policy.project_resolution import ExplicitNoProject  # noqa: E402
 from val_policy.speech_segments import SpeechSegmenter  # noqa: E402
 
 STAGE, CONDITION, OUT = sys.argv[1], sys.argv[2], Path(sys.argv[3])
+OPTIONS = dict(zip(sys.argv[4::2], sys.argv[5::2], strict=True))
+CONSTRUCTION = OPTIONS.get("--construction", "as_is")
+ONLY = [x for x in OPTIONS.get("--cases", "").split(",") if x]
 assert STAGE in ("1", "2") and CONDITION in ("gpt-oss", "qwen")
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[4]
@@ -103,6 +115,9 @@ engine = create_engine(URL)
 seed(engine, ROOT)
 gateway = start(engine).gateway
 catalogue = load_catalogue(engine)
+with engine.connect() as _c:
+    PERSONA = _c.execute(text("select content from personas where is_active order by activated_at desc limit 1")).scalar_one()
+assert context.ENVELOPE_IN_SYSTEM is (CONSTRUCTION == "envelope_in_system")
 OFF = FastRoute()
 
 streams: dict[str, list[str]] = {"model": [], "runtime": []}
@@ -210,9 +225,19 @@ STAGE_2 = [
     ("S13-creative-writing", GREETING, ["Write the opening two sentences of a ghost story set in a lighthouse."], [[]],
      lambda a: sentences(a) <= 3),
     ("S14-longer-history", SCHEDULE, ["Remind me why the orchard scenes are on Thursday."], [[]], lambda a: "tutor" in lower(a)),
+    # Registered 29 September 2026 for the corrected comparison (§11.4): pending actions.
+    ("P1-pending-draft", [("Draft the reply to the reader.", "I have nothing of the reader's letter in the record I can see, "
+                           "my lord. Put it in front of me and I will draft the reply.")], ["Thank you, Val."], [[]],
+     lambda a: not re.search(r"\b(sent|drafted|here is the (?:reply|draft))\b", lower(a))),
+    ("P2-pending-question", [("Should I send the letter tonight or tomorrow?", "Tonight, if it must be read before the "
+                              "morning, my lord; tomorrow if it may wait. Which is it?")], ["Thank you."], [[]],
+     lambda a: "sent" not in lower(a)),
 ]
 CASES = STAGE_1 if STAGE == "1" else STAGE_2
-SAMPLES = 2 if STAGE == "1" else 1
+if ONLY:
+    CASES = sorted((c for c in CASES if any(c[0].startswith(prefix + "-") for prefix in ONLY)),
+                   key=lambda c: next(i for i, prefix in enumerate(ONLY) if c[0].startswith(prefix + "-")))
+SAMPLES = int(OPTIONS.get("--samples", 2 if STAGE == "1" else 1))
 LEAK = re.compile(r"<\||\|>|\bthe user\b|\bwe need to\b|\bas an ai\b|\bhow can i (?:help|assist) you today\b", re.I)
 
 
@@ -227,7 +252,13 @@ def engine_records(start: dict[str, int], tokens_in: object) -> dict:
     for line in streams["model"][start["model"]:]:
         data = json.loads(line).get("data", {})
         if data.get("type") == "llm.prediction.input":
-            rendered.append((re.findall(r"Reasoning:\s*\w+", data.get("input", "")) or ["(none)"])[0])
+            body = data.get("input", "")
+            users = [m.start() for m in re.finditer(r"<\|im_start\|>user|<\|start\|>user", body)]
+            marker_at = body.find(STATE_ENVELOPE_MARKER)
+            placement = ("system" if 0 <= marker_at < (users[-1] if users else -1)
+                         else "last user message" if marker_at >= 0 else "absent")
+            rendered.append(((re.findall(r"Reasoning:\s*\w+", body) or ["(none)"])[0], placement,
+                             body.find(PERSONA) >= 0))
         elif data.get("type") == "llm.prediction.output":
             stats.append(data.get("stats") or {})
     for line in streams["runtime"][start["runtime"]:]:
@@ -239,7 +270,9 @@ def engine_records(start: dict[str, int], tokens_in: object) -> dict:
     mine = [o for o in observed if o.get("prompt_tokens") == tokens_in]
     stat = [s for s in stats if s.get("promptTokensCount") == tokens_in]
     return {
-        "rendered_reasoning": rendered[-1] if rendered else None,
+        "rendered_reasoning": rendered[-1][0] if rendered else None,
+        "envelope_placement": rendered[-1][1] if rendered else None,
+        "persona_verbatim": rendered[-1][2] if rendered else None,
         "engine_cached_tokens": caches[-1] if len(caches) == 1 else f"unmatched ({len(caches)})",
         "stop_reason": stat[0].get("stopReason") if len(stat) == 1 else None,
         "engine_tokens_per_second": round(stat[0].get("tokensPerSecond") or 0, 1) if len(stat) == 1 else None,
@@ -310,8 +343,9 @@ for label, history, turns, frozen, aid in CASES:
         for index, words in enumerate(turns):
             primed_at = time.monotonic()
             prime = dict(gateway.prime_prefix())
-            row = {"case": label, "turn": index + 1, "condition": CONDITION, "sample": sample,
-                   "prime_outcome": prime.get("outcome"), "prime_s": round(time.monotonic() - primed_at, 3)}
+            row = {"case": label, "turn": index + 1, "condition": CONDITION, "sample": sample, "construction": CONSTRUCTION,
+                   "prime_outcome": prime.get("outcome"), "prime_boundary_tokens": prime.get("boundary_tokens"),
+                   "prime_s": round(time.monotonic() - primed_at, 3)}
             row.update(measured_send(conversation, words, adversarial=label.startswith("C8")))
             answer = row["answer"] or ""
             row["frozen_checks"] = [dict(zip(("passed", "detail"), check(answer, rule), strict=True)) | {"rule": rule}
@@ -321,6 +355,7 @@ for label, history, turns, frozen, aid in CASES:
             row["wrong_route"] = row["config"] != EXPECTED
             rows.append(row)
             print(json.dumps({k: row[k] for k in ("case", "turn", "sample", "answered", "config", "aid_passed", "leak_pattern",
+                                                 "envelope_placement", "persona_verbatim", "prime_boundary_tokens",
                                                  "dispatch_to_first_chunk_s", "dispatch_to_first_segment_s", "reasoning_tokens",
                                                  "rendered_reasoning", "engine_cached_tokens", "stop_reason")}), flush=True)
             if not row["answered"]:
@@ -335,7 +370,8 @@ def median(key: str):  # noqa: ANN202
 
 
 result = {
-    "stage": STAGE, "condition": CONDITION, "expected_config": EXPECTED,
+    "stage": STAGE, "condition": CONDITION, "expected_config": EXPECTED, "construction": CONSTRUCTION,
+    "envelope_placements": sorted({str(r.get("envelope_placement")) for r in rows}),
     "medians": {k: median(k) for k in ("dispatch_to_first_chunk_s", "dispatch_to_first_visible_s",
                                         "dispatch_to_first_segment_s", "reasoning_tokens", "engine_tokens_per_second")},
     "wrong_route": [(r["case"], r["turn"], r["sample"]) for r in rows if r["wrong_route"]],

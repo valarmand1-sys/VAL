@@ -25,7 +25,12 @@ Checked, each from the runtime's own records rather than the request we sent:
    (which should reuse the persona prefix only).
 7. **Effective sampling**: the read-only observer's line for each call.
 
-Local, $0. Usage: qwen_verify.py OUT.json
+Corrected-configuration comparison (QWEN_QUALIFICATION.md §11.2): the optional second
+argument selects the construction (`as_is`, the default, or `envelope_in_system`), and the
+third the model (`qwen`, the default, or `gpt-oss` on `val-exp-hub`). The placement checks
+then read the envelope marker's position in the rendered prompt for either chat format.
+
+Local, $0. Usage: qwen_verify.py OUT.json [as_is|envelope_in_system] [qwen|gpt-oss]
 """
 
 from __future__ import annotations
@@ -51,7 +56,13 @@ for key in ("VAL_FAST_ROUTE_TIERS", "VAL_TIER1_ROUTE", "VAL_SPECULATION", "VAL_A
             "VAL_OWNER_PRECEDENCE", "VAL_REQUEST_CONSTRUCTION", "VAL_COMBINE_CONTINUATIONS",
             "VAL_ORDINARY_LOW", "VAL_ADAPTIVE_ENDPOINT", "VAL_TTS_LENGTH_BOUND"):
     os.environ.pop(key, None)
-os.environ["VAL_EXPERIMENT_COGNITION"] = "qwen3-30b-a3b"
+CONSTRUCTION = sys.argv[2] if len(sys.argv) > 2 else "as_is"
+MODEL = sys.argv[3] if len(sys.argv) > 3 else "qwen"
+assert CONSTRUCTION in ("as_is", "envelope_in_system") and MODEL in ("qwen", "gpt-oss")
+if CONSTRUCTION == "envelope_in_system":
+    os.environ["VAL_REQUEST_CONSTRUCTION"] = "envelope_in_system"
+if MODEL == "qwen":
+    os.environ["VAL_EXPERIMENT_COGNITION"] = "qwen3-30b-a3b"
 
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
@@ -61,6 +72,7 @@ import val_domain.registry as registry  # noqa: E402
 from val_domain import timings  # noqa: E402
 from val_domain.conversation import StoredRole  # noqa: E402
 from val_gateway import conversations  # noqa: E402
+from val_gateway.context import STATE_ENVELOPE_MARKER  # noqa: E402
 from val_gateway.deliberate import send  # noqa: E402
 from val_gateway.persona import seed  # noqa: E402
 from val_gateway.projects import load_catalogue  # noqa: E402
@@ -92,6 +104,10 @@ def fresh_store() -> None:
     command.upgrade(config, "head")
 
 
+registry.REGISTRY = tuple(
+    c.model_copy(update={"model_identifier": "val-exp-hub"}) if c.model_identifier == "openai/gpt-oss-20b" else c
+    for c in registry.REGISTRY
+)
 fresh_store()
 engine = create_engine(URL)
 seed(engine, ROOT)
@@ -170,6 +186,9 @@ def turn(label: str, conversation: object, words: str) -> dict:
     runtime = since(start_mark)
     rendered = runtime["inputs"][-1] if runtime["inputs"] else ""
     blocks = outline(rendered)
+    users = [m.start() for m in re.finditer(r"<\|im_start\|>user|<\|start\|>user", rendered)]
+    last_user = users[-1] if users else -1
+    marker_at = rendered.find(STATE_ENVELOPE_MARKER)
     config = registry.by_id(call[2]) if call else None
     return {
         "step": label, "answered": answered,
@@ -181,6 +200,9 @@ def turn(label: str, conversation: object, words: str) -> dict:
         "rendered_outline": blocks,
         "system_blocks": sum(1 for b in blocks if b["role"] == "system"),
         "persona_whole_in_system": rendered.startswith(f"<|im_start|>system\n{persona}<|im_end|>\n"),
+        "persona_verbatim_before_first_user": 0 <= rendered.find(persona) < (users[0] if users else -1),
+        "envelope_marker_before_last_user": 0 <= marker_at < last_user,
+        "envelope_marker_in_last_user": marker_at > last_user >= 0,
         "thinking_markup": "<think>" in rendered,
         "runtime_prompt_tokens": [o.get("promptTokensCount") for o in runtime["outputs"]],
         "stop_reason": [o.get("stopReason") for o in runtime["outputs"]],
@@ -205,7 +227,7 @@ other = conversation([("Good evening, Val.", "Good evening, my lord.")], "verify
 steps.append(turn("a turn in another conversation (B)", other, "What do you think of the second act?"))
 for proc in procs:
     proc.terminate()
-result = {"instance": "qwen3-30b-a3b-instruct-2507", "persona_sha256": hashlib.sha256(persona.encode()).hexdigest(),
+result = {"construction": CONSTRUCTION, "model": MODEL, "instance": "qwen3-30b-a3b-instruct-2507" if MODEL == "qwen" else "val-exp-hub", "persona_sha256": hashlib.sha256(persona.encode()).hexdigest(),
           "steps": steps}
 OUT.write_text(json.dumps(result, indent=1, ensure_ascii=False, default=str) + "\n")
 for s in steps:
