@@ -176,8 +176,13 @@ def test_the_local_entries_are_distinct_evaluation_only_entries() -> None:
         # 4-bit MLX, evaluation only — NOT_ADMITTED with no profile in the registry,
         # promoted to the light profile in-process by a candidate switch and never here.
         "qwen3-4b-instruct-2507-mlx-lmstudio-light",
+        # Pin moved 29 September 2026 (owner order, isolated qualification of
+        # Qwen3-30B-A3B-Instruct-2507): a Partner candidate with no hidden-reasoning
+        # phase, evaluation only — NOT_ADMITTED with no profile, promoted in-process
+        # by the experiment switch and never here.
+        "qwen3-30b-a3b-instruct-2507-mlx-lmstudio",
     }
-    assert len({c.id for c in candidates}) == 5
+    assert len({c.id for c in candidates}) == 6
     assert all(c.admission is Admission.NOT_ADMITTED for c in candidates)
     assert all(not c.capability_profiles for c in candidates)
 

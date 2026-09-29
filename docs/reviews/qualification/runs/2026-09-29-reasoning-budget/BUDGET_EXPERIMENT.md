@@ -498,3 +498,12 @@ Sources:
 - [AppleInsider, M5 Max vs M4 Max Mac Studio (26 August 2026)](https://appleinsider.com/articles/26/08/26/m5-max-mac-studio-vs-m4-max-mac-studio-faster-more-expensive)
 - [MacRumors Mac Studio roundup](https://www.macrumors.com/roundup/mac-studio/)
 - [oMLX benchmark, gpt-oss-20b on M3 Ultra](https://omlx.ai/benchmarks/04bmavgz)
+
+## 6. Closed (owner order of 29 September 2026, "Close the reasoning-budget experiment")
+
+**Closed.** The cap is not tuned further and its cache interaction is not repaired.
+
+- The generation hook is disabled and removed. `install.py status` reports
+  `installed: []` with the engine matching its pin, and the control file has
+  `enabled: false`.
+- The evidence, source and tests stay in the repository.

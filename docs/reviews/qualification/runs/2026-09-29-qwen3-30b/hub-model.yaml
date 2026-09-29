@@ -1,0 +1,37 @@
+model: val-experiment/qwen3-30b-a3b-instruct-2507-exp
+base:
+  - key: mlx-community/qwen3-30b-a3b-instruct-2507-4bit
+    sources: []
+metadataOverrides:
+  domain: llm
+  architectures:
+    - qwen3_moe
+  compatibilityTypes:
+    - safetensors
+  paramsStrings:
+    - 30B
+  minMemoryUsageBytes: 18000000000
+  contextLengths:
+    - 262144
+  vision: false
+  reasoning: false
+  trainedForToolUse: true
+config:
+  operation:
+    fields:
+      - key: llm.prediction.temperature
+        value: 0.7
+      - key: llm.prediction.topKSampling
+        value: 20
+      - key: llm.prediction.topPSampling
+        value:
+          checked: true
+          value: 0.8
+      - key: llm.prediction.minPSampling
+        value:
+          checked: false
+          value: 0
+      - key: llm.prediction.repeatPenalty
+        value:
+          checked: false
+          value: 1

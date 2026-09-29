@@ -946,6 +946,62 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 26),
     ),
     ModelConfig(
+        id=UUID("610b91e5-0de0-4087-ba65-86f4de274c0c"),
+        slug="qwen3-30b-a3b-instruct-2507-mlx-lmstudio",
+        # Owner order, 29 September 2026 ("determine whether Qwen3-30B-A3B-Instruct-2507
+        # can deliver substantially faster ordinary Voice conversation"): an isolated
+        # Partner candidate with no separate hidden-reasoning phase.
+        # `Qwen/Qwen3-30B-A3B-Instruct-2507` (Apache-2.0; 30.5 B parameters, 3.3 B
+        # active; non-thinking only) as `mlx-community/Qwen3-30B-A3B-Instruct-2507-4bit`
+        # at Hugging Face revision e9675aa3ca5f900ccef55267914466d55ab325fa: 4-bit,
+        # group 64, the 48 expert-router layers at 8-bit, 17.2 GB, chat template
+        # sha256 40c21f34…b541. Served by LM Studio's mlx-llm engine on the loopback
+        # interface through the model definition
+        # `val-experiment/qwen3-30b-a3b-instruct-2507-exp`, which carries the
+        # publisher's documented sampling (temperature 0.7, top-p 0.8, top-k 20,
+        # min-p 0, no repeat penalty); the instance identifier below is what the exact
+        # preflight and the adapter address.
+        #
+        # **Registered NOT_ADMITTED, with no capability profile**, so nothing in
+        # production routing can select it. The experiment switch
+        # (`VAL_EXPERIMENT_COGNITION` in `val_gateway.startup`) promotes it in its own
+        # process only. Admitting it is his ruling, made by editing this entry.
+        provider="lmstudio",
+        model_identifier="qwen3-30b-a3b-instruct-2507",
+        display_name=(
+            "Qwen3 30B A3B Instruct 2507 (4-bit MLX, LM Studio — Partner candidate, "
+            "NOT_ADMITTED; HF e9675aa3)"
+        ),
+        # The context the experiment loads and the exact preflight is measured against;
+        # the runtime's loaded context governs at call time.
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        # The 2507 Instruct variant does not think: there is no effort to transmit.
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # The publisher's documented temperature, transmitted on every call. Top-p,
+        # top-k and min-p cannot be carried by this adapter's request (ruling of
+        # 18 September 2026) and are set by the model definition instead; the
+        # effective values are observed at the engine, not assumed.
+        temperature=0.7,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        known_weaknesses=(
+            "unqualified for any Partner work: under isolated qualification from 29 September 2026",
+        ),
+        activated_on=date(2026, 9, 29),
+        rates_verified_on=date(2026, 9, 29),
+    ),
+    ModelConfig(
         id=UUID("3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"),
         slug="gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
         # OWNER ADMISSION RULING, Lord Armand, 21 September 2026: the production

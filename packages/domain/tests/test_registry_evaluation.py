@@ -50,6 +50,10 @@ PARTNER_CANDIDATES: set[str] = {
     # qualification target because the light profile is not a Partner target; a
     # candidate build promotes it in-process, and the registry never does.
     "qwen3-4b-instruct-2507-mlx-lmstudio-light",
+    # 29 September 2026 (owner order, isolated qualification): Qwen3-30B-A3B-Instruct-2507,
+    # a Partner candidate without a hidden-reasoning phase, evaluation only, target
+    # PARTNER, no profile.
+    "qwen3-30b-a3b-instruct-2507-mlx-lmstudio",
 }
 
 
@@ -75,6 +79,8 @@ def test_evaluation_entries_are_registered_and_excluded_from_the_serving_registr
             "gpt-oss-20b-mxfp4-mlx-lmstudio-low": date(2026, 9, 23),
             # 26 September 2026: the fast light-conversation candidate.
             "qwen3-4b-instruct-2507-mlx-lmstudio-light": date(2026, 9, 26),
+            # 29 September 2026: the Partner candidate without hidden reasoning.
+            "qwen3-30b-a3b-instruct-2507-mlx-lmstudio": date(2026, 9, 29),
         }
         is_local = config.provider in ("lmstudio", "llamacpp")
         expected = local_dates[config.slug] if is_local else date(2026, 9, 10)

@@ -1,0 +1,16 @@
+{
+  "type": "model",
+  "owner": "val-experiment",
+  "name": "qwen3-30b-a3b-instruct-2507-exp",
+  "dependencies": [
+    {
+      "type": "model",
+      "purpose": "baseModel",
+      "modelKeys": [
+        "mlx-community/qwen3-30b-a3b-instruct-2507-4bit"
+      ],
+      "sources": []
+    }
+  ],
+  "revision": 1
+}

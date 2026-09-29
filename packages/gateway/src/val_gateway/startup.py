@@ -418,6 +418,56 @@ def enable_ordinary_low() -> ModelConfig:
     return copy
 
 
+# Owner order, 29 September 2026: isolated qualification of a Partner candidate without a
+# hidden-reasoning phase. Unset in production; set, it moves the Partner profile from the
+# admitted GPT-OSS entry to the candidate in this process only.
+EXPERIMENT_COGNITION_SETTING = "VAL_EXPERIMENT_COGNITION"
+EXPERIMENT_COGNITION = {"qwen3-30b-a3b": "qwen3-30b-a3b-instruct-2507-mlx-lmstudio"}
+PARTNER_SLUG = "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+
+
+def configured_experiment_cognition() -> tuple[str | None, str | None]:
+    raw = os.environ.get(EXPERIMENT_COGNITION_SETTING, "").strip().lower()
+    if raw == "":
+        return None, None
+    if raw not in EXPERIMENT_COGNITION:
+        return raw, (
+            f"{EXPERIMENT_COGNITION_SETTING}: must be one of {sorted(EXPERIMENT_COGNITION)}, "
+            f"not {raw!r}"
+        )
+    return raw, None
+
+
+def enable_experiment_cognition(key: str) -> ModelConfig:
+    """Make the candidate the Partner route, in this process only.
+
+    The candidate is copied as PROVISIONALLY_ADMITTED with the `partner` profile, and the
+    admitted GPT-OSS entry loses that profile, so Core's ordinary routing reaches the
+    candidate and nothing else. Nothing on disk changes; a restart without the setting is
+    the registry as written.
+    """
+    slug = EXPERIMENT_COGNITION[key]
+    entry = by_slug(slug)
+    partner = by_slug(PARTNER_SLUG)
+    if entry is None or partner is None:
+        raise StartupRefusedError(
+            [f"{EXPERIMENT_COGNITION_SETTING}: no registry entry {slug} or {PARTNER_SLUG}"]
+        )
+    promoted = entry.model_copy(
+        update={
+            "admission": Admission.PROVISIONALLY_ADMITTED,
+            "capability_profiles": frozenset({CapabilityProfile.PARTNER}),
+            "qualification_targets": frozenset(),
+        }
+    )
+    demoted = partner.model_copy(
+        update={"capability_profiles": partner.capability_profiles - {CapabilityProfile.PARTNER}}
+    )
+    replacements = {slug: promoted, PARTNER_SLUG: demoted}
+    registry.REGISTRY = tuple(replacements.get(c.slug, c) for c in registry.REGISTRY)
+    return promoted
+
+
 def enable_light_candidate(route: str = "qwen") -> ModelConfig:
     """Promote one configuration to the `light` profile, in this process only.
 
@@ -541,6 +591,18 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             "val_policy.ordinary_effort). Not an admission; the registry on disk is unchanged.",
             low.slug,
             low.reasoning_effort.value,
+        )
+    cognition, cognition_problem = configured_experiment_cognition()
+    if cognition_problem is not None:
+        raise StartupRefusedError([cognition_problem])
+    if cognition is not None:
+        candidate = enable_experiment_cognition(cognition)
+        _LOGGER.warning(
+            "CANDIDATE cognition for this process: %s (%s) carries the partner profile and "
+            "%s does not. Not an admission; the registry on disk is unchanged.",
+            candidate.slug,
+            candidate.model_identifier,
+            PARTNER_SLUG,
         )
     violations, warnings = check_startup(moment.date())
 

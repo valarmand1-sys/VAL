@@ -245,8 +245,11 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
         "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
         "mistral-small-3-2-24b-8bit-mlx-lmstudio",
+        "qwen3-30b-a3b-instruct-2507-mlx-lmstudio",
         "qwen3-8-27b-mlx-6bit-lmstudio",
     ]
+    # ...and on 29 September 2026 (owner order) for Qwen3-30B-A3B-Instruct-2507, the
+    # isolated Partner candidate without a hidden-reasoning phase.
     assert all(entry.admission is Admission.NOT_ADMITTED for entry in with_targets)
     assert all(entry.capability_profiles == frozenset() for entry in with_targets)
 
