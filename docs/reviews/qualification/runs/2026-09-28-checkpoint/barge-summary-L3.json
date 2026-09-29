@@ -1,0 +1,234 @@
+{
+ "turns": [
+  {
+   "session": "L-lifecycle",
+   "label": "speaking over her audio",
+   "delay_reports_ms": 0,
+   "all_offered_before_speech_ms": 1605,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 320,
+   "speech_start_to_worklet_stopped_ms": 320,
+   "stop_reason": "the owner began speaking while her answer was still playing",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  },
+  {
+   "session": "L-lifecycle",
+   "label": "speaking over her audio",
+   "delay_reports_ms": 0,
+   "all_offered_before_speech_ms": 1595,
+   "still_playing_when_spoken": true,
+   "speech_start_to_stop_poll_ms": 324,
+   "speech_start_to_worklet_stopped_ms": 324,
+   "stop_reason": "the owner began speaking while her answer was still playing",
+   "late_pieces_of_stopped_answer": 0,
+   "her_audio_again_within_2s": 0
+  }
+ ],
+ "records": [
+  {
+   "message_id": "01a0ea80-78f0-7ea4-aa1c-d25ec6edd485",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 1,
+     "segments_total": null,
+     "characters": 92,
+     "reason": null,
+     "at": "2026-09-28T19:11:23.252473-05:00"
+    },
+    {
+     "state": "completed",
+     "segments_delivered": 8,
+     "segments_total": 8,
+     "characters": 910,
+     "reason": null,
+     "at": "2026-09-28T19:11:38.318783-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 4,
+     "segments_total": 8,
+     "characters": 430,
+     "reason": "the owner began speaking while her answer was still playing; segment 4 was cut off while playing; segments 5, 6, 7, 8 never played",
+     "at": "2026-09-28T19:11:40.280187-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T19:11:20.360533-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_completed",
+     "at": "2026-09-28T19:11:25.469191-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_started",
+     "at": "2026-09-28T19:11:25.474858-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_completed",
+     "at": "2026-09-28T19:11:32.997429-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_started",
+     "at": "2026-09-28T19:11:32.997503-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_started",
+     "at": "2026-09-28T19:11:39.470538-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_completed",
+     "at": "2026-09-28T19:11:39.470638-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T19:11:40.282237-05:00"
+    }
+   ]
+  },
+  {
+   "message_id": "01a0ea83-7798-7892-8668-1c833f5c90ec",
+   "deliveries": [
+    {
+     "state": "not_started",
+     "segments_delivered": 0,
+     "segments_total": null,
+     "characters": 0,
+     "reason": null,
+     "at": "2026-09-28T19:14:39.519306-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 0,
+     "segments_total": 2,
+     "characters": 0,
+     "reason": "superseded by the owner's next confirmed turn",
+     "at": "2026-09-28T19:14:39.923887-05:00"
+    }
+   ],
+   "desktop_reports": []
+  },
+  {
+   "message_id": "01a0ea84-1d03-7683-a9af-b13b0b64ccb3",
+   "deliveries": [
+    {
+     "state": "not_started",
+     "segments_delivered": 0,
+     "segments_total": null,
+     "characters": 0,
+     "reason": null,
+     "at": "2026-09-28T19:15:21.862379-05:00"
+    },
+    {
+     "state": "started",
+     "segments_delivered": 1,
+     "segments_total": 1,
+     "characters": 16,
+     "reason": null,
+     "at": "2026-09-28T19:15:22.410030-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 1,
+     "segments_total": 1,
+     "characters": 16,
+     "reason": "superseded by the owner's next confirmed turn",
+     "at": "2026-09-28T19:15:22.724085-05:00"
+    }
+   ],
+   "desktop_reports": []
+  },
+  {
+   "message_id": "01a0ea84-963a-798d-be89-41fd383426df",
+   "deliveries": [
+    {
+     "state": "started",
+     "segments_delivered": 2,
+     "segments_total": null,
+     "characters": 172,
+     "reason": null,
+     "at": "2026-09-28T19:15:52.895482-05:00"
+    },
+    {
+     "state": "completed",
+     "segments_delivered": 9,
+     "segments_total": 9,
+     "characters": 1132,
+     "reason": null,
+     "at": "2026-09-28T19:16:10.654279-05:00"
+    },
+    {
+     "state": "interrupted",
+     "segments_delivered": 5,
+     "segments_total": 9,
+     "characters": 556,
+     "reason": "the owner began speaking while her answer was still playing; segment 5 was cut off while playing; segments 6, 7, 8, 9 never played",
+     "at": "2026-09-28T19:16:12.611235-05:00"
+    }
+   ],
+   "desktop_reports": [
+    {
+     "segment": 1,
+     "state": "playback_started",
+     "at": "2026-09-28T19:15:48.857771-05:00"
+    },
+    {
+     "segment": 1,
+     "state": "playback_completed",
+     "at": "2026-09-28T19:15:51.890069-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_started",
+     "at": "2026-09-28T19:15:51.890447-05:00"
+    },
+    {
+     "segment": 2,
+     "state": "playback_completed",
+     "at": "2026-09-28T19:15:58.292117-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_started",
+     "at": "2026-09-28T19:15:58.292187-05:00"
+    },
+    {
+     "segment": 3,
+     "state": "playback_completed",
+     "at": "2026-09-28T19:16:04.207629-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_started",
+     "at": "2026-09-28T19:16:04.207873-05:00"
+    },
+    {
+     "segment": 4,
+     "state": "playback_completed",
+     "at": "2026-09-28T19:16:12.445566-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_started",
+     "at": "2026-09-28T19:16:12.453457-05:00"
+    },
+    {
+     "segment": 5,
+     "state": "playback_interrupted",
+     "at": "2026-09-28T19:16:12.614262-05:00"
+    }
+   ]
+  }
+ ]
+}

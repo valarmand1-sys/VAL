@@ -1641,3 +1641,50 @@ then two rulings of his: a conversation-level prime after each answer (≈ −0.
 conversation content in an idle prime) and reasoning effort for ordinary turns (the only
 lever on the 3 s). **Open problems reviewed:** OP-1 — combined continuations keep both
 messages canonical and write no revision; nothing else names this work.
+
+
+## 36. Handoff — the interrupted-turn lifecycle repair (owner order of 28 September 2026, "…one focused repair pass")
+
+**WP3 remains PARTIAL. Nothing deployed; no physical test requested.** Record:
+`qualification/runs/2026-09-28-checkpoint/LIFECYCLE_REPAIR.md` (evidence index §123).
+Code `af136fe` on branch `latency-2026-09-28` (not merged); hook v2.3 unchanged.
+
+**Production isolation:** compatibility with the live store (`0031`), the configuration
+and the installed desktop (`13b3cb8` build) verified. The owner's walkthrough has begun;
+step 1 is awaiting his confirmation. **Not in force.**
+
+**The ten driver waits over 240 s were not long answers.** Eight of the nine counted,
+plus C1a S3 and R1 S5, followed a replacement or combined answer whose hand-off a late
+superseded worker had taken (`_record` moved another turn's delivery); the ninth (C2c
+S5) followed a runaway segment whose stop never reached the player for the same reason.
+Cause established; **repaired**.
+
+**A second hand-off defect, found through the desktop in L2 and repaired:** a finished,
+unheard answer kept by his continuation was dropped when the next turn began; it is now
+carried and played before the new answer.
+
+**The C1a stall: contained, cause not established.**
+
+- **Containment:** a 1.0 s recovery deadline, after which the session joins his words
+  itself.
+- **Stale work refused at every action:** no persisting, no answer after the lock, no
+  dispatch, no playback, no join.
+- **Accounting:** abandoned workers counted, with fail-closed at three.
+- **Evidence for next time:** the stack and lock waits are captured at abandonment.
+- **Recovery 1.20–1.24 s** in fault injection; each guard's test fails without it.
+- **Exposure:** not reachable in the running master (switches unset) or the release
+  (`13b3cb8` has no supersession).
+
+**Through the real desktop (L3):** 20 turns, 0 timeouts; the kept answer heard;
+barge-in 320 and 324 ms. L1 was invalidated by my own tests sharing its database
+(recorded); L2's first pass was lost to a file-name collision (recorded, fixed).
+
+**Latency, precise:** the cache saving stands and is not a conversational-speed solution;
+the reasoning difference between layouts is not established (proposed experiment,
+$0); the ~2.2 s audio-release floor overlaps processing and never bound an ordinary turn.
+**Next:** the reasoning-under-layout experiment, then a shorter first voice piece (within
+authority); effort and priming remain his rulings.
+
+**Open problems reviewed:** OP-1 — combined continuations and the abandoned-worker join
+keep his messages canonical; a recorded fragment is withdrawn by the existing append-only
+retraction, never revised.
