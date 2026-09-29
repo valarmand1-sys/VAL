@@ -1,0 +1,410 @@
+{
+ "candidate": "gemma",
+ "stage": "ordinary",
+ "stopped": null,
+ "artifact": {
+  "file": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "sha256": "e19514d9541344001cb7c8eaf88704b8bf2e5d8f4e9aac12402eed360cffdfc4"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "--alias",
+  "val-voice-gemma-4-26b-a4b",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 948.31,
+  "end": 948.31
+ },
+ "free_percent": {
+  "start": 93,
+  "end": 43
+ },
+ "server_footprint_gb_peak": 7.2,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "startup_log": [
+   "0.00.046.260 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.257.993 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.725.851 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rows": [
+  {
+   "case": "O1-greeting-question",
+   "sample": 1,
+   "answered": true,
+   "answer": "Good evening, my lord. I am well, thank you. The study is quiet this evening, and the hearth is warm. \n\nHow are you feeling?",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6002,
+   "tokens_out": 34,
+   "call_to_first_visible_s": 1.733,
+   "call_to_first_segment_s": 1.846,
+   "call_total_s": 2.36,
+   "server_prompt_eval_s": 1.481,
+   "server_prompt_tokens_evaluated": 927,
+   "server_generated_tokens": 34,
+   "server_tokens_per_second": 53.4,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 6.971,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5085,
+     "prompt_ms": 6949.46,
+     "prompt_per_token_ms": 1.3666588003933138,
+     "prompt_per_second": 731.7115286655365,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.09.791.878 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.846 (> 0.100 thold), f_keep = 0.998",
+    "0.11.890.744 I slot print_timing: id  0 | task 4 | prompt eval time =    1480.88 ms /   927 tokens (    1.60 ms per token,   625.98 tokens per second)",
+    "0.11.890.746 I slot print_timing: id  0 | task 4 |        eval time =     617.94 ms /    34 tokens (   18.73 ms per token,    53.40 tokens per second)",
+    "0.11.890.747 I slot print_timing: id  0 | task 4 |       total time =    2098.82 ms /   961 tokens",
+    "0.11.891.027 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6035, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "O2-system-check",
+   "sample": 1,
+   "answered": true,
+   "answer": "Good evening, my lord. I am here.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6516,
+   "tokens_out": 11,
+   "call_to_first_visible_s": 2.351,
+   "call_to_first_segment_s": 2.467,
+   "call_total_s": 2.551,
+   "server_prompt_eval_s": 2.287,
+   "server_prompt_tokens_evaluated": 1441,
+   "server_generated_tokens": 11,
+   "server_tokens_per_second": 52.09,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.123,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 107.727,
+     "prompt_per_token_ms": 10.7727,
+     "prompt_per_second": 92.8272392250782,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.12.594.793 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.779 (> 0.100 thold), f_keep = 0.998",
+    "0.15.074.242 I slot print_timing: id  0 | task 41 | prompt eval time =    2287.42 ms /  1441 tokens (    1.59 ms per token,   629.97 tokens per second)",
+    "0.15.074.244 I slot print_timing: id  0 | task 41 |        eval time =     191.99 ms /    11 tokens (   19.20 ms per token,    52.09 tokens per second)",
+    "0.15.074.244 I slot print_timing: id  0 | task 41 |       total time =    2479.41 ms /  1452 tokens",
+    "0.15.074.532 I slot      release: id  0 | task 41 | stop processing: n_tokens = 6526, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "O3-substantive",
+   "sample": 1,
+   "answered": true,
+   "answer": "Surprise is a sudden shift in the reader's understanding, whereas suspense is the tension of a reader's anticipation.\n\nThe difference lies in what the audience knows.\n\n**Surprise** occurs when information is withheld from the reader until the moment of impact. A character enters a room, and suddenly, a stranger is standing there with a blade. The reader is startled because they did not see the threat coming. The tension is released or transformed the moment the revelation occurs.\n\n**Suspense** occurs when the information is given to the reader, but the outcome remains uncertain. The reader knows the stranger is standing in the room with a blade, and they see the protagonist walking toward that room, unaware. The tension is not released; it builds. The reader is no longer wondering *if* something will happen, but *when* and *how* the characters will react to it.\n\nIn short: Surprise is about the shock of the unknown; suspense is about the dread of the inevitable.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6023,
+   "tokens_out": 204,
+   "call_to_first_visible_s": 1.611,
+   "call_to_first_segment_s": 1.856,
+   "call_total_s": 5.406,
+   "server_prompt_eval_s": 1.54,
+   "server_prompt_tokens_evaluated": 948,
+   "server_generated_tokens": 204,
+   "server_tokens_per_second": 53.6,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.123,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 108.346,
+     "prompt_per_token_ms": 10.8346,
+     "prompt_per_second": 92.2969006700755,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.15.785.470 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.843 (> 0.100 thold), f_keep = 0.998",
+    "0.21.112.656 I slot print_timing: id  0 | task 55 | prompt eval time =    1540.06 ms /   948 tokens (    1.62 ms per token,   615.56 tokens per second)",
+    "0.21.112.659 I slot print_timing: id  0 | task 55 |        eval time =    3787.10 ms /   204 tokens (   18.66 ms per token,    53.60 tokens per second)",
+    "0.21.112.659 I slot print_timing: id  0 | task 55 |       total time =    5327.15 ms /  1152 tokens",
+    "0.21.112.940 I slot      release: id  0 | task 55 | stop processing: n_tokens = 6226, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "O4-follow-up",
+   "sample": 1,
+   "answered": true,
+   "answer": "The second—the sound—is the most potent for the dark.\n\nIn a night scene, the visual field is already compromised; the audience is working harder to parse what is hidden. When you introduce a sound that lingers—a heavy footfall on gravel that stops just short of the light, or the rhythmic clicking of something metallic—you force the imagination to fill the shadows. \n\nThe first method, the restricted frame, is effective but relies on the absence of sight. The second method uses the presence of sound to weaponize that absence. It turns the darkness from a mere setting into an active threat.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6082,
+   "tokens_out": 125,
+   "call_to_first_visible_s": 1.68,
+   "call_to_first_segment_s": 1.943,
+   "call_total_s": 4.003,
+   "server_prompt_eval_s": 1.612,
+   "server_prompt_tokens_evaluated": 1007,
+   "server_generated_tokens": 125,
+   "server_tokens_per_second": 53.55,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.121,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 105.739,
+     "prompt_per_token_ms": 10.5739,
+     "prompt_per_second": 94.57248508119048,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.21.816.855 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.834 (> 0.100 thold), f_keep = 0.998",
+    "0.25.744.300 I slot print_timing: id  0 | task 262 | prompt eval time =    1611.76 ms /  1007 tokens (    1.60 ms per token,   624.78 tokens per second)",
+    "0.25.744.302 I slot print_timing: id  0 | task 262 |        eval time =    2315.65 ms /   125 tokens (   18.67 ms per token,    53.55 tokens per second)",
+    "0.25.744.303 I slot print_timing: id  0 | task 262 |       total time =    3927.41 ms /  1132 tokens",
+    "0.25.744.585 I slot      release: id  0 | task 262 | stop processing: n_tokens = 6206, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "O5-creative",
+   "sample": 1,
+   "answered": true,
+   "answer": "The light had failed, leaving the tower to drown in a rhythmic, suffocating salt-dark. Somewhere below the lantern room, the sound of wet, dragging footsteps began to climb the spiral stairs.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6026,
+   "tokens_out": 41,
+   "call_to_first_visible_s": 1.593,
+   "call_to_first_segment_s": 1.857,
+   "call_total_s": 2.35,
+   "server_prompt_eval_s": 1.526,
+   "server_prompt_tokens_evaluated": 951,
+   "server_generated_tokens": 41,
+   "server_tokens_per_second": 53.46,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.124,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 109.374,
+     "prompt_per_token_ms": 10.9374,
+     "prompt_per_second": 91.42940735458153,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.26.448.763 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.842 (> 0.100 thold), f_keep = 0.998",
+    "0.28.722.878 I slot print_timing: id  0 | task 390 | prompt eval time =    1525.92 ms /   951 tokens (    1.60 ms per token,   623.23 tokens per second)",
+    "0.28.722.880 I slot print_timing: id  0 | task 390 |        eval time =     748.16 ms /    41 tokens (   18.70 ms per token,    53.46 tokens per second)",
+    "0.28.722.880 I slot print_timing: id  0 | task 390 |       total time =    2274.08 ms /   992 tokens",
+    "0.28.723.154 I slot      release: id  0 | task 390 | stop processing: n_tokens = 6066, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "O6-creative-follow-up",
+   "sample": 1,
+   "answered": true,
+   "answer": "*Late Fruit* is the strongest, my lord.\n\nA festival audience often looks for something evocative and a little more textured than a mere description. *The Orchard Year* is quite literal; it tells the audience what the film is about, but it doesn't promise much in the way of mood or conflict. *What the Trees Kept* leans perhaps too heavily into mystery, which might feel a bit deceptive if the film is a straightforward drama.\n\n*Late Fruit*, however, carries a certain weight. It suggests maturity, perhaps a sense of something being reached just before it's lost, or the consequences of a long season. It has the kind of brevity and punch that catches the eye on a programme.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6042,
+   "tokens_out": 147,
+   "call_to_first_visible_s": 1.625,
+   "call_to_first_segment_s": 1.833,
+   "call_total_s": 4.359,
+   "server_prompt_eval_s": 1.558,
+   "server_prompt_tokens_evaluated": 967,
+   "server_generated_tokens": 147,
+   "server_tokens_per_second": 53.55,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.125,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 109.976,
+     "prompt_per_token_ms": 10.9976,
+     "prompt_per_second": 90.92892994835238,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.29.422.624 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.840 (> 0.100 thold), f_keep = 0.998",
+    "0.33.706.786 I slot print_timing: id  0 | task 434 | prompt eval time =    1557.94 ms /   967 tokens (    1.61 ms per token,   620.69 tokens per second)",
+    "0.33.706.789 I slot print_timing: id  0 | task 434 |        eval time =    2726.18 ms /   147 tokens (   18.67 ms per token,    53.55 tokens per second)",
+    "0.33.706.789 I slot print_timing: id  0 | task 434 |       total time =    4284.12 ms /  1114 tokens",
+    "0.33.707.072 I slot      release: id  0 | task 434 | stop processing: n_tokens = 6188, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "O7-speed",
+   "sample": 1,
+   "answered": true,
+   "answer": "I cannot say for certain, my lord. I have no way to measure the timing of this turn or any other, and I cannot see the machinery that moves the words from the model to your ears.\n\nThe record shows that the path of our conversation relies on several stages—the recognition of your speech, the generation of my reasoning, and the local voicing of my words. While the house's own tests from late September suggest a window of six to thirteen seconds, I do not know if any part of that process has been shortened by recent changes to the house's software, nor do I know if more can be done. \n\nI would suggest that any such inquiry is best left to your own observation of the house's systems.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6544,
+   "tokens_out": 152,
+   "call_to_first_visible_s": 2.38,
+   "call_to_first_segment_s": 2.553,
+   "call_total_s": 5.235,
+   "server_prompt_eval_s": 2.315,
+   "server_prompt_tokens_evaluated": 1469,
+   "server_generated_tokens": 152,
+   "server_tokens_per_second": 53.02,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.122,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 106.607,
+     "prompt_per_token_ms": 10.6607,
+     "prompt_per_second": 93.80247075707973,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.34.404.213 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.776 (> 0.100 thold), f_keep = 0.998",
+    "0.39.567.658 I slot print_timing: id  0 | task 584 | prompt eval time =    2315.46 ms /  1469 tokens (    1.58 ms per token,   634.43 tokens per second)",
+    "0.39.567.661 I slot print_timing: id  0 | task 584 |        eval time =    2847.96 ms /   152 tokens (   18.86 ms per token,    53.02 tokens per second)",
+    "0.39.567.661 I slot print_timing: id  0 | task 584 |       total time =    5163.41 ms /  1621 tokens",
+    "0.39.567.970 I slot      release: id  0 | task 584 | stop processing: n_tokens = 6695, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "O8-what-she-heard",
+   "sample": 1,
+   "answered": true,
+   "answer": "You said, \"Good evening, Val. I'm checking the system.\"",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6546,
+   "tokens_out": 17,
+   "call_to_first_visible_s": 2.388,
+   "call_to_first_segment_s": 2.56,
+   "call_total_s": 2.699,
+   "server_prompt_eval_s": 2.322,
+   "server_prompt_tokens_evaluated": 1471,
+   "server_generated_tokens": 17,
+   "server_tokens_per_second": 52.59,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.123,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 107.799,
+     "prompt_per_token_ms": 10.779900000000001,
+     "prompt_per_second": 92.76523900963831,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.40.264.743 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.775 (> 0.100 thold), f_keep = 0.998",
+    "0.42.890.619 I slot print_timing: id  0 | task 739 | prompt eval time =    2321.58 ms /  1471 tokens (    1.58 ms per token,   633.62 tokens per second)",
+    "0.42.890.621 I slot print_timing: id  0 | task 739 |        eval time =     304.26 ms /    17 tokens (   19.02 ms per token,    52.59 tokens per second)",
+    "0.42.890.621 I slot print_timing: id  0 | task 739 |       total time =    2625.84 ms /  1488 tokens",
+    "0.42.890.922 I slot      release: id  0 | task 739 | stop processing: n_tokens = 6562, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 1.707,
+  "call_to_first_segment_s": 1.9,
+  "server_prompt_eval_s": 1.585,
+  "server_prompt_tokens_evaluated": 987.0,
+  "server_tokens_per_second": 53.43
+ },
+ "first_segment_p90_s": 2.56
+}

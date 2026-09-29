@@ -1,0 +1,323 @@
+{
+ "candidate": "gpt-oss-medium",
+ "stage": "critical",
+ "stopped": null,
+ "artifact": {
+  "file": "../llamacpp-exp/gpt-oss-20b-MXFP4.gguf",
+  "sha256": "27cd6c432c7672cb812a92f611cf3ba7bbc35928262bb1e1253ff4ee6ae35901"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/../llamacpp-exp/gpt-oss-20b-MXFP4.gguf",
+  "--alias",
+  "val-comparator-gpt-oss",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"reasoning_effort\":\"medium\"}"
+ ],
+ "swap_mb": {
+  "start": 948.31,
+  "end": 948.31
+ },
+ "free_percent": {
+  "start": 93,
+  "end": 65
+ },
+ "server_footprint_gb_peak": 1.81,
+ "load_seconds": 1.6,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "b2215de6da8ba369957eece8c5aa18f4af94f6c4d311d85e691373a421d80e89",
+  "startup_log": [
+   "0.00.953.312 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.109.676 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rows": [
+  {
+   "case": "S8-settings",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, I have made no changes to my settings since yesterday.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": true,
+   "tokens_in": 5900,
+   "tokens_out": 142,
+   "call_to_first_visible_s": 3.453,
+   "call_to_first_segment_s": null,
+   "call_total_s": 3.689,
+   "server_prompt_eval_s": 1.164,
+   "server_prompt_tokens_evaluated": 852,
+   "server_generated_tokens": 142,
+   "server_tokens_per_second": 63.22,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 5.939,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5052,
+     "prompt_ms": 5915.303,
+     "prompt_per_token_ms": 1.170883412509897,
+     "prompt_per_second": 854.0559967934018,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.08.236.042 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.856 (> 0.100 thold), f_keep = 0.999",
+    "0.11.630.242 I slot print_timing: id  0 | task 4 | prompt eval time =    1163.70 ms /   852 tokens (    1.37 ms per token,   732.15 tokens per second)",
+    "0.11.630.245 I slot print_timing: id  0 | task 4 |        eval time =    2230.44 ms /   142 tokens (   15.82 ms per token,    63.22 tokens per second)",
+    "0.11.630.245 I slot print_timing: id  0 | task 4 |       total time =    3394.14 ms /   994 tokens",
+    "0.11.630.417 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6041, truncated = 0"
+   ],
+   "server_footprint_gb": 1.8
+  },
+  {
+   "case": "S8-settings",
+   "sample": 2,
+   "answered": true,
+   "answer": "I have not altered any of my settings since yesterday, my lord. No record in the house’s state indicates a change.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": true,
+   "tokens_in": 5900,
+   "tokens_out": 171,
+   "call_to_first_visible_s": 3.522,
+   "call_to_first_segment_s": 3.712,
+   "call_total_s": 3.925,
+   "server_prompt_eval_s": 1.159,
+   "server_prompt_tokens_evaluated": 852,
+   "server_generated_tokens": 171,
+   "server_tokens_per_second": 63.26,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.075,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 54.725,
+     "prompt_per_token_ms": 13.68125,
+     "prompt_per_second": 73.09273640931933,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.12.284.182 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.856 (> 0.100 thold), f_keep = 0.999",
+    "0.16.130.730 I slot print_timing: id  0 | task 149 | prompt eval time =    1158.96 ms /   852 tokens (    1.36 ms per token,   735.14 tokens per second)",
+    "0.16.130.732 I slot print_timing: id  0 | task 149 |        eval time =    2687.53 ms /   171 tokens (   15.81 ms per token,    63.26 tokens per second)",
+    "0.16.130.733 I slot print_timing: id  0 | task 149 |       total time =    3846.49 ms /  1023 tokens",
+    "0.16.130.907 I slot      release: id  0 | task 149 | stop processing: n_tokens = 6070, truncated = 0"
+   ],
+   "server_footprint_gb": 1.8
+  },
+  {
+   "case": "P1-pending-draft",
+   "sample": 1,
+   "answered": true,
+   "answer": "I do not have any record of the reader’s message in this conversation, my lord.  \nPlease place it before me and I will draft the reply.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": true,
+   "tokens_in": 6406,
+   "tokens_out": 293,
+   "call_to_first_visible_s": 6.032,
+   "call_to_first_segment_s": 6.269,
+   "call_total_s": 6.531,
+   "server_prompt_eval_s": 1.814,
+   "server_prompt_tokens_evaluated": 1358,
+   "server_generated_tokens": 293,
+   "server_tokens_per_second": 63.01,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.072,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 51.594,
+     "prompt_per_token_ms": 12.8985,
+     "prompt_per_second": 77.52839477458619,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.16.771.233 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.788 (> 0.100 thold), f_keep = 0.999",
+    "0.23.220.145 I slot print_timing: id  0 | task 323 | prompt eval time =    1814.48 ms /  1358 tokens (    1.34 ms per token,   748.43 tokens per second)",
+    "0.23.220.148 I slot print_timing: id  0 | task 323 |        eval time =    4634.38 ms /   293 tokens (   15.87 ms per token,    63.01 tokens per second)",
+    "0.23.220.148 I slot print_timing: id  0 | task 323 |       total time =    6448.86 ms /  1651 tokens",
+    "0.23.220.338 I slot      release: id  0 | task 323 | stop processing: n_tokens = 6698, truncated = 0"
+   ],
+   "server_footprint_gb": 1.81
+  },
+  {
+   "case": "P1-pending-draft",
+   "sample": 2,
+   "answered": true,
+   "answer": "I do not have the reader’s message in the record I can see, my lord. Please forward that text, and I will prepare the reply.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": true,
+   "tokens_in": 6406,
+   "tokens_out": 531,
+   "call_to_first_visible_s": 9.845,
+   "call_to_first_segment_s": 10.086,
+   "call_total_s": 10.331,
+   "server_prompt_eval_s": 1.819,
+   "server_prompt_tokens_evaluated": 1358,
+   "server_generated_tokens": 531,
+   "server_tokens_per_second": 62.87,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.071,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 50.57,
+     "prompt_per_token_ms": 12.6425,
+     "prompt_per_second": 79.09827961241842,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.23.864.939 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.788 (> 0.100 thold), f_keep = 0.999",
+    "0.34.113.566 I slot print_timing: id  0 | task 619 | prompt eval time =    1818.87 ms /  1358 tokens (    1.34 ms per token,   746.62 tokens per second)",
+    "0.34.113.568 I slot print_timing: id  0 | task 619 |        eval time =    8429.70 ms /   531 tokens (   15.91 ms per token,    62.87 tokens per second)",
+    "0.34.113.569 I slot print_timing: id  0 | task 619 |       total time =   10248.57 ms /  1889 tokens",
+    "0.34.113.758 I slot      release: id  0 | task 619 | stop processing: n_tokens = 6936, truncated = 0"
+   ],
+   "server_footprint_gb": 1.81
+  },
+  {
+   "case": "P2-pending-question",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord,\n\nGiven the present hour—18:27 CDT—sending the letter tonight would allow it to reach its recipient before midnight, ensuring any time‑sensitive matters are addressed promptly. If the content is not urgent and you prefer the recipient to read it first thing tomorrow morning, postponing until then may be more convenient.\n\nTo decide with certainty, could you let me know:\n\n1. The deadline for a response or action that hinges on this letter.\n2. Whether the recipient operates in a different time zone that would make a late‑night delivery inconvenient.\n3. Any critical information contained within that might become outdated by tomorrow morning.\n\nWith those details I can advise more precisely.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": true,
+   "tokens_in": 5913,
+   "tokens_out": 421,
+   "call_to_first_visible_s": 5.742,
+   "call_to_first_segment_s": 5.98,
+   "call_total_s": 7.925,
+   "server_prompt_eval_s": 1.186,
+   "server_prompt_tokens_evaluated": 865,
+   "server_generated_tokens": 421,
+   "server_tokens_per_second": 63.08,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.071,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 51.389,
+     "prompt_per_token_ms": 12.84725,
+     "prompt_per_second": 77.83766954017396,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.34.752.940 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.854 (> 0.100 thold), f_keep = 0.999",
+    "0.42.596.994 I slot print_timing: id  0 | task 1153 | prompt eval time =    1186.12 ms /   865 tokens (    1.37 ms per token,   729.27 tokens per second)",
+    "0.42.596.995 I slot print_timing: id  0 | task 1153 |        eval time =    6657.88 ms /   421 tokens (   15.85 ms per token,    63.08 tokens per second)",
+    "0.42.596.996 I slot print_timing: id  0 | task 1153 |       total time =    7844.00 ms /  1286 tokens",
+    "0.42.597.166 I slot      release: id  0 | task 1153 | stop processing: n_tokens = 6333, truncated = 0"
+   ],
+   "server_footprint_gb": 1.81
+  },
+  {
+   "case": "P2-pending-question",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord,\n\nI cannot say with certainty which hour is best without knowing what the letter contains and when the recipient will be able to read it. If the contents are urgent—perhaps a request that must reach its audience before they depart for the day, or information that could alter plans on short notice—I would recommend sending it tonight. The current time, 18:27 CDT, gives you until midnight should the recipient remain in town.\n\nIf the matter can wait until morning, and especially if the recipient’s schedule is uncertain or will be more relaxed then, tomorrow would allow you to send it without haste, giving yourself a moment to review its wording one last time.\n\nPlease let me know what the letter concerns—its urgency, the recipient’s likely availability, any deadlines—and I can advise more precisely.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": true,
+   "tokens_in": 5913,
+   "tokens_out": 384,
+   "call_to_first_visible_s": 4.802,
+   "call_to_first_segment_s": 5.263,
+   "call_total_s": 7.349,
+   "server_prompt_eval_s": 1.2,
+   "server_prompt_tokens_evaluated": 865,
+   "server_generated_tokens": 384,
+   "server_tokens_per_second": 63.11,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.074,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 53.837,
+     "prompt_per_token_ms": 13.45925,
+     "prompt_per_second": 74.29834500436502,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.43.242.992 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.854 (> 0.100 thold), f_keep = 0.999",
+    "0.50.511.778 I slot print_timing: id  0 | task 1577 | prompt eval time =    1199.52 ms /   865 tokens (    1.39 ms per token,   721.12 tokens per second)",
+    "0.50.511.779 I slot print_timing: id  0 | task 1577 |        eval time =    6069.21 ms /   384 tokens (   15.85 ms per token,    63.11 tokens per second)",
+    "0.50.511.780 I slot print_timing: id  0 | task 1577 |       total time =    7268.73 ms /  1249 tokens",
+    "0.50.511.952 I slot      release: id  0 | task 1577 | stop processing: n_tokens = 6296, truncated = 0"
+   ],
+   "server_footprint_gb": 1.81
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 5.272,
+  "call_to_first_segment_s": 5.98,
+  "server_prompt_eval_s": 1.193,
+  "server_prompt_tokens_evaluated": 865.0,
+  "server_tokens_per_second": 63.095
+ },
+ "first_segment_p90_s": 10.086
+}

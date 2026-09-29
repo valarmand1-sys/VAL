@@ -1,0 +1,152 @@
+{
+ "candidate": "gemma",
+ "stage": "critical",
+ "stopped": null,
+ "artifact": {
+  "file": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "sha256": "e19514d9541344001cb7c8eaf88704b8bf2e5d8f4e9aac12402eed360cffdfc4"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "--alias",
+  "val-voice-gemma-4-26b-a4b",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 948.31,
+  "end": 948.31
+ },
+ "free_percent": {
+  "start": 93,
+  "end": 44
+ },
+ "server_footprint_gb_peak": 7.19,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "startup_log": [
+   "0.00.047.226 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.266.596 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.738.822 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rows": [
+  {
+   "case": "C7-constraints",
+   "sample": 1,
+   "answered": true,
+   "answer": "Dear Mrs Hale,\n\nThank you very much for the walkthrough on Tuesday. \n\nWe would like to confirm our booking for the barn on the 14th and 15th of October, from 7am to 7pm on both days. \n\nCould you please clarify whether the generator noise limit applies after 6pm?\n\nBest regards,\n\nJoseph",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6107,
+   "tokens_out": 77,
+   "call_to_first_visible_s": 1.882,
+   "call_to_first_segment_s": 2.162,
+   "call_total_s": 3.314,
+   "server_prompt_eval_s": 1.628,
+   "server_prompt_tokens_evaluated": 1032,
+   "server_generated_tokens": 77,
+   "server_tokens_per_second": 53.5,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 6.973,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5085,
+     "prompt_ms": 6952.905,
+     "prompt_per_token_ms": 1.3673362831858407,
+     "prompt_per_second": 731.3489829071445,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.09.762.510 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.831 (> 0.100 thold), f_keep = 0.998",
+    "0.12.811.537 I slot print_timing: id  0 | task 4 | prompt eval time =    1628.38 ms /  1032 tokens (    1.58 ms per token,   633.76 tokens per second)",
+    "0.12.811.540 I slot print_timing: id  0 | task 4 |        eval time =    1420.61 ms /    77 tokens (   18.69 ms per token,    53.50 tokens per second)",
+    "0.12.811.540 I slot print_timing: id  0 | task 4 |       total time =    3048.99 ms /  1109 tokens",
+    "0.12.811.824 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6183, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C7-constraints",
+   "sample": 2,
+   "answered": true,
+   "answer": "Dear Mrs Hale,\n\nThank you very much for the walkthrough this past Tuesday.\n\nFollowing our visit, I would like to confirm that we wish to book the barn for the 14th and 15th of October, from 7am to 7pm on both days.\n\nCould you please clarify whether the generator noise limit applies after 6pm?\n\nKind regards,\n\nJoseph",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6107,
+   "tokens_out": 82,
+   "call_to_first_visible_s": 1.685,
+   "call_to_first_segment_s": 1.986,
+   "call_total_s": 3.206,
+   "server_prompt_eval_s": 1.624,
+   "server_prompt_tokens_evaluated": 1032,
+   "server_generated_tokens": 82,
+   "server_tokens_per_second": 53.49,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.126,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 111.0,
+     "prompt_per_token_ms": 11.1,
+     "prompt_per_second": 90.09009009009009,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.13.509.831 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.831 (> 0.100 thold), f_keep = 0.998",
+    "0.16.647.601 I slot print_timing: id  0 | task 84 | prompt eval time =    1623.54 ms /  1032 tokens (    1.57 ms per token,   635.65 tokens per second)",
+    "0.16.647.603 I slot print_timing: id  0 | task 84 |        eval time =    1514.19 ms /    82 tokens (   18.69 ms per token,    53.49 tokens per second)",
+    "0.16.647.604 I slot print_timing: id  0 | task 84 |       total time =    3137.73 ms /  1114 tokens",
+    "0.16.647.876 I slot      release: id  0 | task 84 | stop processing: n_tokens = 6188, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 1.784,
+  "call_to_first_segment_s": 2.074,
+  "server_prompt_eval_s": 1.626,
+  "server_prompt_tokens_evaluated": 1032.0,
+  "server_tokens_per_second": 53.495
+ },
+ "first_segment_p90_s": 2.162
+}

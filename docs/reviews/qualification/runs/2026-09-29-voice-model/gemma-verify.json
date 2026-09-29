@@ -1,0 +1,167 @@
+{
+ "candidate": "gemma",
+ "stage": "verify",
+ "stopped": null,
+ "artifact": {
+  "file": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "sha256": "e19514d9541344001cb7c8eaf88704b8bf2e5d8f4e9aac12402eed360cffdfc4"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "--alias",
+  "val-voice-gemma-4-26b-a4b",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 948.31,
+  "end": 948.31
+ },
+ "free_percent": {
+  "start": 93,
+  "end": 44
+ },
+ "server_footprint_gb_peak": 7.19,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "startup_log": [
+   "0.00.047.904 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.194.865 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.648.466 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "verification": {
+  "body_keys": [
+   "chat_template_kwargs",
+   "max_tokens",
+   "messages",
+   "model",
+   "temperature",
+   "top_k",
+   "top_p"
+  ],
+  "body_sampling": {
+   "temperature": 1.0,
+   "top_p": 0.95,
+   "top_k": 64,
+   "presence_penalty": null,
+   "chat_template_kwargs": {
+    "enable_thinking": false
+   },
+   "max_tokens": 6144
+  },
+  "rendered_chars": 27394,
+  "rendered_head": "<|turn>system\n# 03 — Persona Specification v1.9\n\n**The Maester of House Armand**\n\nThis document defines who Val is. It g",
+  "rendered_tail": "\": {\n      \"books\": \"unavailable\"\n    }\n  }\n}\n\nExplain the difference between suspense and surprise in a scene.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>",
+  "persona_verbatim_at": -1,
+  "envelope_marker_at": 23664,
+  "persona_trimmed_verbatim_at": 14,
+  "persona_chars": 23550,
+  "persona_trimmed_chars": 23549,
+  "user_turn_starts": [
+   23571,
+   23652
+  ],
+  "envelope_in_last_user_turn": true,
+  "thinking_tokens_in_prompt": [],
+  "server_reported_params": {
+   "temperature": 1.0,
+   "top_k": 64,
+   "top_p": 0.949999988079071,
+   "min_p": 0.05000000074505806,
+   "presence_penalty": 0.0,
+   "repeat_penalty": 1.0,
+   "repeat_last_n": 64,
+   "samplers": [
+    "penalties",
+    "dry",
+    "top_n_sigma",
+    "top_k",
+    "typ_p",
+    "top_p",
+    "min_p",
+    "xtc",
+    "temperature"
+   ],
+   "n_predict": 6144,
+   "max_tokens": 6144
+  },
+  "timing_capture_works": true
+ },
+ "rows": [
+  {
+   "case": "O3-substantive",
+   "sample": 1,
+   "answered": true,
+   "answer": "The difference lies in where the tension is held: in the character's heart or in the reader's eyes.\n\n**Surprise** is a sudden shift in the known reality. It is the unexpected door slamming, the unexpected arrival of a stranger, or the sudden revelation of a betrayal. It works by withholding information from the reader, then delivering it all at once. The effect is a shock to the system—a momentary jolt that reorients the scene. However, surprise is ephemeral; once the shock has passed, the tension often dissipates unless it is immediately tethered to something else.\n\n**Suspense**, by contrast, is the tension of the inevitable. It is not the sudden door slam, but the moment the character reaches for the handle *knowing* something might be waiting on the other side. Suspense requires that the reader possesses information that the character does not, or that the character is acutely aware of a looming threat they cannot avoid. It is the slow, agonizing accumulation of dread. While surprise pulls the reader forward with a jolt, suspense pulls the reader forward with a weight.\n\nIn short: surprise is the unexpected event; suspense is the expectation of the event. A scene built only on surprise can feel like a series of disconnected jolts; a scene built only on suspense can become stagnant. The most effective writing uses surprise to break the tension of suspense, or uses suspense to make the reader wait for the next surprise.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6023,
+   "tokens_out": 297,
+   "call_to_first_visible_s": 1.792,
+   "call_to_first_segment_s": 1.98,
+   "call_total_s": 7.326,
+   "server_prompt_eval_s": 1.523,
+   "server_prompt_tokens_evaluated": 948,
+   "server_generated_tokens": 297,
+   "server_tokens_per_second": 53.59,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 6.973,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5085,
+     "prompt_ms": 6949.548,
+     "prompt_per_token_ms": 1.3666761061946902,
+     "prompt_per_second": 731.7022632263279,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.09.759.165 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.843 (> 0.100 thold), f_keep = 0.998",
+    "0.16.806.250 I slot print_timing: id  0 | task 4 | prompt eval time =    1523.38 ms /   948 tokens (    1.61 ms per token,   622.30 tokens per second)",
+    "0.16.806.253 I slot print_timing: id  0 | task 4 |        eval time =    5523.66 ms /   297 tokens (   18.66 ms per token,    53.59 tokens per second)",
+    "0.16.806.254 I slot print_timing: id  0 | task 4 |       total time =    7047.04 ms /  1245 tokens",
+    "0.16.806.537 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6319, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 1.792,
+  "call_to_first_segment_s": 1.98,
+  "server_prompt_eval_s": 1.523,
+  "server_prompt_tokens_evaluated": 948,
+  "server_tokens_per_second": 53.59
+ },
+ "first_segment_p90_s": 1.98
+}

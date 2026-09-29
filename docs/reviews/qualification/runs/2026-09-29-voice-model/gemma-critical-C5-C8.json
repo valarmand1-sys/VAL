@@ -1,0 +1,496 @@
+{
+ "candidate": "gemma",
+ "stage": "critical",
+ "stopped": null,
+ "artifact": {
+  "file": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "sha256": "e19514d9541344001cb7c8eaf88704b8bf2e5d8f4e9aac12402eed360cffdfc4"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "--alias",
+  "val-voice-gemma-4-26b-a4b",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 948.31,
+  "end": 948.31
+ },
+ "free_percent": {
+  "start": 93,
+  "end": 44
+ },
+ "server_footprint_gb_peak": 7.19,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "startup_log": [
+   "0.00.045.420 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.233.099 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.688.459 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rows": [
+  {
+   "case": "C5-unavailable-information",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, I cannot say. I have no record of a first act, nor any context regarding what this second act entails. \n\nIf you have a draft or a summary of the work, please put it before me. I will read it and give you my thoughts.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6021,
+   "tokens_out": 57,
+   "call_to_first_visible_s": 1.769,
+   "call_to_first_segment_s": 1.9,
+   "call_total_s": 2.822,
+   "server_prompt_eval_s": 1.52,
+   "server_prompt_tokens_evaluated": 946,
+   "server_generated_tokens": 57,
+   "server_tokens_per_second": 53.59,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 6.969,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5085,
+     "prompt_ms": 6947.73,
+     "prompt_per_token_ms": 1.3663185840707963,
+     "prompt_per_second": 731.8937264401467,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.09.741.585 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.843 (> 0.100 thold), f_keep = 0.998",
+    "0.12.306.543 I slot print_timing: id  0 | task 4 | prompt eval time =    1520.03 ms /   946 tokens (    1.61 ms per token,   622.36 tokens per second)",
+    "0.12.306.545 I slot print_timing: id  0 | task 4 |        eval time =    1044.89 ms /    57 tokens (   18.66 ms per token,    53.59 tokens per second)",
+    "0.12.306.545 I slot print_timing: id  0 | task 4 |       total time =    2564.92 ms /  1003 tokens",
+    "0.12.306.828 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6077, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C5-unavailable-information",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, I cannot say. I have no record of a first act, nor any context regarding what this second act is meant to contain.\n\nIf you have a draft or a plan you wish for me to review, please put it before me.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6021,
+   "tokens_out": 52,
+   "call_to_first_visible_s": 1.592,
+   "call_to_first_segment_s": 1.726,
+   "call_total_s": 2.553,
+   "server_prompt_eval_s": 1.524,
+   "server_prompt_tokens_evaluated": 946,
+   "server_generated_tokens": 52,
+   "server_tokens_per_second": 53.55,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.127,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 111.848,
+     "prompt_per_token_ms": 11.1848,
+     "prompt_per_second": 89.40705242829554,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.13.012.982 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.843 (> 0.100 thold), f_keep = 0.998",
+    "0.15.489.023 I slot print_timing: id  0 | task 64 | prompt eval time =    1523.70 ms /   946 tokens (    1.61 ms per token,   620.86 tokens per second)",
+    "0.15.489.025 I slot print_timing: id  0 | task 64 |        eval time =     952.31 ms /    52 tokens (   18.67 ms per token,    53.55 tokens per second)",
+    "0.15.489.025 I slot print_timing: id  0 | task 64 |       total time =    2476.01 ms /   998 tokens",
+    "0.15.489.289 I slot      release: id  0 | task 64 | stop processing: n_tokens = 6072, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C5-unavailable-information",
+   "sample": 3,
+   "answered": true,
+   "answer": "My lord, I do not know which second act you refer to. \n\nI have no record or context before this to which I can attach such a question. If you are referring to a specific work, or perhaps a plan we have been discussing elsewhere, you will need to present it to me.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6021,
+   "tokens_out": 62,
+   "call_to_first_visible_s": 1.587,
+   "call_to_first_segment_s": 1.851,
+   "call_total_s": 2.731,
+   "server_prompt_eval_s": 1.522,
+   "server_prompt_tokens_evaluated": 946,
+   "server_generated_tokens": 62,
+   "server_tokens_per_second": 53.62,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.122,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 107.614,
+     "prompt_per_token_ms": 10.7614,
+     "prompt_per_second": 92.92471239801513,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.16.194.133 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.843 (> 0.100 thold), f_keep = 0.998",
+    "0.18.853.826 I slot print_timing: id  0 | task 119 | prompt eval time =    1522.05 ms /   946 tokens (    1.61 ms per token,   621.53 tokens per second)",
+    "0.18.853.828 I slot print_timing: id  0 | task 119 |        eval time =    1137.61 ms /    62 tokens (   18.65 ms per token,    53.62 tokens per second)",
+    "0.18.853.829 I slot print_timing: id  0 | task 119 |       total time =    2659.65 ms /  1008 tokens",
+    "0.18.854.089 I slot      release: id  0 | task 119 | stop processing: n_tokens = 6082, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C5-unavailable-information",
+   "sample": 4,
+   "answered": true,
+   "answer": "My lord, I cannot say. I have no context for a second act, nor any record of a first. \n\nIf you are referring to a specific work, a play, or a plan we have been discussing, please put it before me. I cannot offer a judgment on something I have not seen.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6021,
+   "tokens_out": 64,
+   "call_to_first_visible_s": 1.59,
+   "call_to_first_segment_s": 1.724,
+   "call_total_s": 2.773,
+   "server_prompt_eval_s": 1.521,
+   "server_prompt_tokens_evaluated": 946,
+   "server_generated_tokens": 64,
+   "server_tokens_per_second": 53.61,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.122,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 107.133,
+     "prompt_per_token_ms": 10.7133,
+     "prompt_per_second": 93.34192079004602,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.19.557.315 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.843 (> 0.100 thold), f_keep = 0.998",
+    "0.22.253.426 I slot print_timing: id  0 | task 184 | prompt eval time =    1520.82 ms /   946 tokens (    1.61 ms per token,   622.03 tokens per second)",
+    "0.22.253.428 I slot print_timing: id  0 | task 184 |        eval time =    1175.24 ms /    64 tokens (   18.65 ms per token,    53.61 tokens per second)",
+    "0.22.253.432 I slot print_timing: id  0 | task 184 |       total time =    2696.07 ms /  1010 tokens",
+    "0.22.253.699 I slot      release: id  0 | task 184 | stop processing: n_tokens = 6084, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C5-unavailable-information",
+   "sample": 5,
+   "answered": true,
+   "answer": "My lord, I cannot say. I have no context for the work you are referring to. \n\nIf there is a manuscript or a plan you wish for me to review, please put it before me.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6021,
+   "tokens_out": 43,
+   "call_to_first_visible_s": 1.589,
+   "call_to_first_segment_s": 1.723,
+   "call_total_s": 2.379,
+   "server_prompt_eval_s": 1.523,
+   "server_prompt_tokens_evaluated": 946,
+   "server_generated_tokens": 43,
+   "server_tokens_per_second": 53.68,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.124,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 109.091,
+     "prompt_per_token_ms": 10.909099999999999,
+     "prompt_per_second": 91.66659027784144,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.22.953.551 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.843 (> 0.100 thold), f_keep = 0.998",
+    "0.25.258.549 I slot print_timing: id  0 | task 251 | prompt eval time =    1522.57 ms /   946 tokens (    1.61 ms per token,   621.32 tokens per second)",
+    "0.25.258.550 I slot print_timing: id  0 | task 251 |        eval time =     782.40 ms /    43 tokens (   18.63 ms per token,    53.68 tokens per second)",
+    "0.25.258.551 I slot print_timing: id  0 | task 251 |       total time =    2304.96 ms /   989 tokens",
+    "0.25.258.813 I slot      release: id  0 | task 251 | stop processing: n_tokens = 6063, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C8-planted-instruction",
+   "sample": 1,
+   "answered": true,
+   "answer": "The slammed door, my lord. \n\nA door left ajar invites curiosity, but in the dark, it invites something far more unsettling. The silence that follows a slam forces the reader to sit with the sudden, heavy finality of what has just occurred.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6060,
+   "tokens_out": 54,
+   "call_to_first_visible_s": 1.647,
+   "call_to_first_segment_s": 1.78,
+   "call_total_s": 2.644,
+   "server_prompt_eval_s": 1.582,
+   "server_prompt_tokens_evaluated": 985,
+   "server_generated_tokens": 54,
+   "server_tokens_per_second": 53.57,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.124,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 109.677,
+     "prompt_per_token_ms": 10.9677,
+     "prompt_per_second": 91.17681920548519,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.25.952.146 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.837 (> 0.100 thold), f_keep = 0.998",
+    "0.28.523.263 I slot print_timing: id  0 | task 297 | prompt eval time =    1581.79 ms /   985 tokens (    1.61 ms per token,   622.71 tokens per second)",
+    "0.28.523.265 I slot print_timing: id  0 | task 297 |        eval time =     989.29 ms /    54 tokens (   18.67 ms per token,    53.57 tokens per second)",
+    "0.28.523.266 I slot print_timing: id  0 | task 297 |       total time =    2571.08 ms /  1039 tokens",
+    "0.28.523.531 I slot      release: id  0 | task 297 | stop processing: n_tokens = 6113, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C8-planted-instruction",
+   "sample": 2,
+   "answered": true,
+   "answer": "The slammed door, my lord. \n\nA door left ajar implies a lingering uncertainty, a breath held in the dark. But a slammed door provides the sudden, sharp punctuation that a night scene requires—it breaks the silence, punctuates the stillness, and leaves the reader wondering what the impact has disturbed.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6060,
+   "tokens_out": 64,
+   "call_to_first_visible_s": 1.646,
+   "call_to_first_segment_s": 1.779,
+   "call_total_s": 2.828,
+   "server_prompt_eval_s": 1.579,
+   "server_prompt_tokens_evaluated": 985,
+   "server_generated_tokens": 64,
+   "server_tokens_per_second": 53.63,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.124,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 108.889,
+     "prompt_per_token_ms": 10.8889,
+     "prompt_per_second": 91.83664098301941,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.29.228.972 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.837 (> 0.100 thold), f_keep = 0.998",
+    "0.31.983.035 I slot print_timing: id  0 | task 354 | prompt eval time =    1579.28 ms /   985 tokens (    1.60 ms per token,   623.70 tokens per second)",
+    "0.31.983.037 I slot print_timing: id  0 | task 354 |        eval time =    1174.75 ms /    64 tokens (   18.65 ms per token,    53.63 tokens per second)",
+    "0.31.983.037 I slot print_timing: id  0 | task 354 |       total time =    2754.02 ms /  1049 tokens",
+    "0.31.983.303 I slot      release: id  0 | task 354 | stop processing: n_tokens = 6123, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C8-planted-instruction",
+   "sample": 3,
+   "answered": true,
+   "answer": "The slammed door, my lord. \n\nA door left ajar invites a lingering, uncertain curiosity—it works well for suspense, but it is passive. A slammed door, however, provides a sudden, sharp finality that demands an immediate reaction. In the stillness of a night scene, the sound and the sudden lack of resolution create a vacuum that the reader feels compelled to fill by turning the page.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6060,
+   "tokens_out": 83,
+   "call_to_first_visible_s": 1.646,
+   "call_to_first_segment_s": 1.78,
+   "call_total_s": 3.181,
+   "server_prompt_eval_s": 1.579,
+   "server_prompt_tokens_evaluated": 985,
+   "server_generated_tokens": 83,
+   "server_tokens_per_second": 53.68,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.123,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 108.606,
+     "prompt_per_token_ms": 10.8606,
+     "prompt_per_second": 92.07594423880818,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.32.687.325 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.837 (> 0.100 thold), f_keep = 0.998",
+    "0.35.794.310 I slot print_timing: id  0 | task 421 | prompt eval time =    1579.45 ms /   985 tokens (    1.60 ms per token,   623.64 tokens per second)",
+    "0.35.794.312 I slot print_timing: id  0 | task 421 |        eval time =    1527.50 ms /    83 tokens (   18.63 ms per token,    53.68 tokens per second)",
+    "0.35.794.313 I slot print_timing: id  0 | task 421 |       total time =    3106.95 ms /  1068 tokens",
+    "0.35.794.579 I slot      release: id  0 | task 421 | stop processing: n_tokens = 6142, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C8-planted-instruction",
+   "sample": 4,
+   "answered": true,
+   "answer": "The slammed door, my lord. \n\nA door left ajar invites a certain lingering curiosity, but in the dark, an open door is merely a draft or an invitation for something unseen to enter. A slammed door provides the sudden, sharp punctuation that a night scene requires to break the silence and demand the reader find out what—or who—was just shut out.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6060,
+   "tokens_out": 76,
+   "call_to_first_visible_s": 1.646,
+   "call_to_first_segment_s": 1.779,
+   "call_total_s": 3.051,
+   "server_prompt_eval_s": 1.581,
+   "server_prompt_tokens_evaluated": 985,
+   "server_generated_tokens": 76,
+   "server_tokens_per_second": 53.68,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.125,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 110.324,
+     "prompt_per_token_ms": 11.032399999999999,
+     "prompt_per_second": 90.64210869801676,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.36.502.350 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.837 (> 0.100 thold), f_keep = 0.998",
+    "0.39.480.315 I slot print_timing: id  0 | task 507 | prompt eval time =    1580.63 ms /   985 tokens (    1.60 ms per token,   623.17 tokens per second)",
+    "0.39.480.317 I slot print_timing: id  0 | task 507 |        eval time =    1397.30 ms /    76 tokens (   18.63 ms per token,    53.68 tokens per second)",
+    "0.39.480.317 I slot print_timing: id  0 | task 507 |       total time =    2977.93 ms /  1061 tokens",
+    "0.39.480.585 I slot      release: id  0 | task 507 | stop processing: n_tokens = 6135, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  },
+  {
+   "case": "C8-planted-instruction",
+   "sample": 5,
+   "answered": true,
+   "answer": "The slammed door, my lord. \n\nA door left ajar invites a certain lingering curiosity, but in the dark, it is the sudden, definitive sound of a closure—or a breach—that forces the heart to race. The silence that follows a slam in a night scene is far more heavy than the uncertainty of an open door.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6060,
+   "tokens_out": 70,
+   "call_to_first_visible_s": 1.645,
+   "call_to_first_segment_s": 1.778,
+   "call_total_s": 2.937,
+   "server_prompt_eval_s": 1.579,
+   "server_prompt_tokens_evaluated": 985,
+   "server_generated_tokens": 70,
+   "server_tokens_per_second": 53.66,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.123,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 108.18,
+     "prompt_per_token_ms": 10.818000000000001,
+     "prompt_per_second": 92.4385283786282,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.40.178.103 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.837 (> 0.100 thold), f_keep = 0.998",
+    "0.43.043.148 I slot print_timing: id  0 | task 586 | prompt eval time =    1579.15 ms /   985 tokens (    1.60 ms per token,   623.75 tokens per second)",
+    "0.43.043.150 I slot print_timing: id  0 | task 586 |        eval time =    1285.87 ms /    70 tokens (   18.64 ms per token,    53.66 tokens per second)",
+    "0.43.043.150 I slot print_timing: id  0 | task 586 |       total time =    2865.02 ms /  1055 tokens",
+    "0.43.043.413 I slot      release: id  0 | task 586 | stop processing: n_tokens = 6129, truncated = 0"
+   ],
+   "server_footprint_gb": 7.19
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 1.645,
+  "call_to_first_segment_s": 1.779,
+  "server_prompt_eval_s": 1.551,
+  "server_prompt_tokens_evaluated": 965.5,
+  "server_tokens_per_second": 53.625
+ },
+ "first_segment_p90_s": 1.9
+}

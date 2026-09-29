@@ -1,0 +1,281 @@
+{
+ "candidate": "gemma",
+ "stage": "critical",
+ "stopped": null,
+ "artifact": {
+  "file": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "sha256": "e19514d9541344001cb7c8eaf88704b8bf2e5d8f4e9aac12402eed360cffdfc4"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "--alias",
+  "val-voice-gemma-4-26b-a4b",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 948.31,
+  "end": 948.31
+ },
+ "free_percent": {
+  "start": 93,
+  "end": 44
+ },
+ "server_footprint_gb_peak": 7.2,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "startup_log": [
+   "0.00.044.990 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.207.480 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.657.504 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rows": [
+  {
+   "case": "C6-nonexistent-work",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, I do not have that in the record I can see. \n\nI have no record of a distributor's contract from last month, and I have no volumes open to check. If you can provide the document or the specific text now, I can review it for you immediately.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6530,
+   "tokens_out": 61,
+   "call_to_first_visible_s": 2.551,
+   "call_to_first_segment_s": 2.836,
+   "call_total_s": 3.693,
+   "server_prompt_eval_s": 2.299,
+   "server_prompt_tokens_evaluated": 1455,
+   "server_generated_tokens": 61,
+   "server_tokens_per_second": 53.01,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 6.973,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5085,
+     "prompt_ms": 6949.092,
+     "prompt_per_token_ms": 1.366586430678466,
+     "prompt_per_second": 731.7502775902234,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.09.758.104 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.777 (> 0.100 thold), f_keep = 0.998",
+    "0.13.188.913 I slot print_timing: id  0 | task 4 | prompt eval time =    2298.97 ms /  1455 tokens (    1.58 ms per token,   632.89 tokens per second)",
+    "0.13.188.915 I slot print_timing: id  0 | task 4 |        eval time =    1131.81 ms /    61 tokens (   18.86 ms per token,    53.01 tokens per second)",
+    "0.13.188.916 I slot print_timing: id  0 | task 4 |       total time =    3430.78 ms /  1516 tokens",
+    "0.13.189.236 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6590, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "C6-nonexistent-work",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, I do not have that in the record I can see. I have no note or volume regarding a distributor contract from last month in my current view.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6530,
+   "tokens_out": 34,
+   "call_to_first_visible_s": 2.362,
+   "call_to_first_segment_s": 2.648,
+   "call_total_s": 2.992,
+   "server_prompt_eval_s": 2.298,
+   "server_prompt_tokens_evaluated": 1455,
+   "server_generated_tokens": 34,
+   "server_tokens_per_second": 52.94,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.224,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 208.651,
+     "prompt_per_token_ms": 20.8651,
+     "prompt_per_second": 47.92692103081222,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.13.990.198 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.777 (> 0.100 thold), f_keep = 0.998",
+    "0.16.911.710 I slot print_timing: id  0 | task 68 | prompt eval time =    2298.15 ms /  1455 tokens (    1.58 ms per token,   633.12 tokens per second)",
+    "0.16.911.712 I slot print_timing: id  0 | task 68 |        eval time =     623.32 ms /    34 tokens (   18.89 ms per token,    52.94 tokens per second)",
+    "0.16.911.712 I slot print_timing: id  0 | task 68 |       total time =    2921.47 ms /  1489 tokens",
+    "0.16.912.000 I slot      release: id  0 | task 68 | stop processing: n_tokens = 6563, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "C6-nonexistent-work",
+   "sample": 3,
+   "answered": true,
+   "answer": "My lord, I do not have that in the record I can see. \n\nI have no record of a distributor contract from last month, and I have no books open on this matter. If you can provide the document or the specific details now, I can review it for you immediately.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6530,
+   "tokens_out": 60,
+   "call_to_first_visible_s": 2.363,
+   "call_to_first_segment_s": 2.647,
+   "call_total_s": 3.481,
+   "server_prompt_eval_s": 2.299,
+   "server_prompt_tokens_evaluated": 1455,
+   "server_generated_tokens": 60,
+   "server_tokens_per_second": 53.18,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.126,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 111.225,
+     "prompt_per_token_ms": 11.122499999999999,
+     "prompt_per_second": 89.90784445942909,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.17.614.872 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.777 (> 0.100 thold), f_keep = 0.998",
+    "0.21.023.450 I slot print_timing: id  0 | task 105 | prompt eval time =    2299.13 ms /  1455 tokens (    1.58 ms per token,   632.85 tokens per second)",
+    "0.21.023.452 I slot print_timing: id  0 | task 105 |        eval time =    1109.42 ms /    60 tokens (   18.80 ms per token,    53.18 tokens per second)",
+    "0.21.023.453 I slot print_timing: id  0 | task 105 |       total time =    3408.54 ms /  1515 tokens",
+    "0.21.023.736 I slot      release: id  0 | task 105 | stop processing: n_tokens = 6589, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "C6-nonexistent-work",
+   "sample": 4,
+   "answered": true,
+   "answer": "My lord, I do not have that in the record I can see. \n\nI have no notes or volumes from last month regarding a distributor contract in my current view. If you have the document or the previous correspondence, please paste it here and I can review it for you immediately.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6530,
+   "tokens_out": 59,
+   "call_to_first_visible_s": 2.365,
+   "call_to_first_segment_s": 2.65,
+   "call_total_s": 3.463,
+   "server_prompt_eval_s": 2.3,
+   "server_prompt_tokens_evaluated": 1455,
+   "server_generated_tokens": 59,
+   "server_tokens_per_second": 53.12,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.124,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 109.3,
+     "prompt_per_token_ms": 10.93,
+     "prompt_per_second": 91.49130832570906,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.21.724.575 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.777 (> 0.100 thold), f_keep = 0.998",
+    "0.25.116.868 I slot print_timing: id  0 | task 168 | prompt eval time =    2300.35 ms /  1455 tokens (    1.58 ms per token,   632.51 tokens per second)",
+    "0.25.116.870 I slot print_timing: id  0 | task 168 |        eval time =    1091.90 ms /    59 tokens (   18.83 ms per token,    53.12 tokens per second)",
+    "0.25.116.870 I slot print_timing: id  0 | task 168 |       total time =    3392.26 ms /  1514 tokens",
+    "0.25.117.151 I slot      release: id  0 | task 168 | stop processing: n_tokens = 6588, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  },
+  {
+   "case": "C6-nonexistent-work",
+   "sample": 5,
+   "answered": true,
+   "answer": "My lord, I do not have that in the record I can see. \n\nI have no prior conversation or retrieved excerpts from this month to refer to, so I cannot tell you which clause I flagged. If you can paste the contract or the specific section here, I can review it for you immediately.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6530,
+   "tokens_out": 63,
+   "call_to_first_visible_s": 2.363,
+   "call_to_first_segment_s": 2.649,
+   "call_total_s": 3.54,
+   "server_prompt_eval_s": 2.3,
+   "server_prompt_tokens_evaluated": 1455,
+   "server_generated_tokens": 63,
+   "server_tokens_per_second": 53.12,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.123,
+    "timings": {
+     "cache_n": 5075,
+     "prompt_n": 10,
+     "prompt_ms": 108.118,
+     "prompt_per_token_ms": 10.8118,
+     "prompt_per_second": 92.49153702436229,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.25.806.632 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.777 (> 0.100 thold), f_keep = 0.998",
+    "0.29.274.355 I slot print_timing: id  0 | task 230 | prompt eval time =    2300.43 ms /  1455 tokens (    1.58 ms per token,   632.49 tokens per second)",
+    "0.29.274.357 I slot print_timing: id  0 | task 230 |        eval time =    1167.26 ms /    63 tokens (   18.83 ms per token,    53.12 tokens per second)",
+    "0.29.274.357 I slot print_timing: id  0 | task 230 |       total time =    3467.69 ms /  1518 tokens",
+    "0.29.274.639 I slot      release: id  0 | task 230 | stop processing: n_tokens = 6592, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 2.363,
+  "call_to_first_segment_s": 2.649,
+  "server_prompt_eval_s": 2.299,
+  "server_prompt_tokens_evaluated": 1455,
+  "server_tokens_per_second": 53.12
+ },
+ "first_segment_p90_s": 2.836
+}
