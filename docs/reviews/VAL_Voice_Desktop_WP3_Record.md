@@ -1809,3 +1809,44 @@ qualified against the frozen checks before any desktop comparison.
 - **Not claimed:** that LOW broadly fails, or that Voice is solved.
 - **Instance:** unloaded after the run. The hub definition, hook and allowlist are kept,
   pending his ruling.
+
+## 40. Handoff — Class C closed; the reasoning-budget experiment; the next direction (owner order of 29 September 2026)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged and pinned; no physical
+test requested.** Record: `qualification/runs/2026-09-29-reasoning-budget/BUDGET_EXPERIMENT.md`
+(feasibility and registration committed in `0a49d99` before any quality call); closure
+of the effort experiment in `2026-09-28-checkpoint/EFFORT_EXPERIMENT.md` §18.
+
+- **Class C closed.**
+  - It matched none of the 27 inspected spoken turns (24–26 September).
+  - The 6 ms miss of its threshold is not evidence of a meaningful difference.
+  - The verification probe's attribution was by token count alone; this is corrected
+    from the existing records.
+- **Feasibility:**
+  - No supported reasoning budget exists on the MLX path. LM Studio's
+    `reasoning.budgetTokens` belongs to its llama.cpp engine.
+  - A separate, pinned, allowlisted engine hook (`infrastructure/lmstudio/reasoning_budget/`,
+    7 tests) makes the model's own six-token transition from reasoning to answer the
+    only continuation after the budget.
+  - Probe: reasoning 1,048 → 154 tokens; first answer text 15.5 s → 2.8 s; no reasoning
+    in the answer; cancellation intact.
+- **Screening** (budget 128, transition by 160; 12 cases × 2 × 2; every answer read):
+  - **Speed:** registered median −1.13 s against ≤ −1.5 s. **It fails, and the approach
+    stops.**
+  - **Quality:** no new disqualifying failure. Two shared failures (O4, R1), and one
+    uncapped-only failure (O4 s2).
+  - **Cache:** an unexplained interaction with the prompt-cache store cost capped calls
+    about 0.5 s. The reasoning saving alone was about 1.5–1.7 s.
+  - **State:** the hook is removed from the engine; its source and evidence are kept.
+- **Next direction (desk research, his authorization):** qualify
+  `Qwen3-30B-A3B-Instruct-2507` (MLX 4-bit, no hidden-reasoning phase) as the cognition
+  for spoken conversation, against the full Partner bar.
+  - **Estimate:** 2.9–3.9 s against 6.30 s measured.
+  - **Quality risk:** high. Prior non-reasoning local candidates failed.
+  - **Memory:** it must replace GPT-OSS while Voice is on.
+- **Fallback:** a dedicated Mac Studio M5 Max, a proposed option.
+  - $2,499; about 3.6–4.8 s, a theoretical scenario.
+  - Same model, same quality.
+  - It conflicts with "a spoken conversation never leaves this Mac" unless Val moves
+    wholly onto it.
+- **Not claimed:** that Voice is solved. Neither option is expected to reach ~1 s.
