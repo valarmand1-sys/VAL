@@ -498,6 +498,7 @@ def enable_light_candidate(route: str = "qwen") -> ModelConfig:
 # production. Set, spoken turns are pinned to the named candidate in this process only;
 # typed and complex work stays on the Partner route.
 VOICE_TURN_PREFILL_SETTING = "VAL_VOICE_TURN_PREFILL"
+VOICE_EARLY_AUDIO_SETTING = "VAL_VOICE_EARLY_AUDIO"
 VOICE_MODEL_SETTING = "VAL_VOICE_MODEL"
 VOICE_MODELS = {"gemma-4-26b-a4b": "gemma-4-26b-a4b-q4km-llamacpp-voice"}
 
@@ -902,6 +903,14 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     gateway.voice_turn_prefill = voice_model is not None and os.environ.get(
         VOICE_TURN_PREFILL_SETTING, ""
     ).strip().lower() in {"1", "on", "true", "yes"}
+    gateway.voice_early_audio = voice_model is not None and os.environ.get(
+        VOICE_EARLY_AUDIO_SETTING, ""
+    ).strip().lower() in {"1", "on", "true", "yes"}
+    if gateway.voice_early_audio:
+        _LOGGER.warning(
+            "CANDIDATE early audio for this process: an utterance judged complete releases "
+            "its answer's audio as soon as it is ready; every other utterance keeps the hold."
+        )
     if gateway.voice_turn_prefill:
         _LOGGER.warning(
             "CANDIDATE Voice turn prefill for this process: a spoken turn's request, without "

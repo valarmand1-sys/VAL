@@ -1,0 +1,13 @@
+=== V-prefill-smoke (voice_prefill) 18:46:48 commit e1b9aa8 dirty=0 hook=3773168dd12f
+resident before the run: LM Studio [] llama-server [0]
+driver session 0 exit 0
+store preserved: store-V-prefill-smoke.dump
+greeting                               2973 ident conversation                 cache=uncertain heard='Good evening.'
+factual                                2935 ident conversation                 cache=uncertain heard='What is the capital of Portugal?'
+thanks after an answer                 2988 ident conversation                 cache=uncertain heard='Thank you.'
+substantive                            3396 ident conversation                 cache=uncertain heard='Explain the difference between suspense '
+follow-up                              3899 ident conversation                 cache=uncertain heard='Which of those works better in a short s'
+farewell after an answer               3986 ident conversation                 cache=uncertain heard='Good night.'
+prime calls: [('26b-a4b-it', 'uncertain'), ('26b-a4b-it', 'uncertain'), ('26b-a4b-it', 'uncertain'), ('26b-a4b-it', 'uncertain'), ('26b-a4b-it', 'uncertain'), ('26b-a4b-it', 'uncertain'), ('26b-a4b-it
+models called: ['gemma-4-26b-a4b-it']
+DONE V-prefill-smoke 18:50:34

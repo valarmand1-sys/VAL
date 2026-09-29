@@ -653,7 +653,15 @@ class VoiceSession:
         adaptive_endpoint: bool = False,
         combine_continuations: bool = False,
         prefill: Callable[[UUID | None], object] | None = None,
+        early_audio_when_complete: bool = False,
     ) -> None:
+        #: Owner order, 29 September 2026 (Voice model candidate; off in production). Under
+        #: the adaptive endpoint an answer's audio is held until its turn's merge window
+        #: closes, about 2.2 s after he stops. With this set, an utterance Core judges
+        #: `complete` releases its answer's audio as soon as it is ready; every other
+        #: utterance keeps the hold. The cost: if he resumes after a complete-sounding
+        #: sentence, he hears her begin and stop, and his further words are a new turn.
+        self._early_audio_when_complete = early_audio_when_complete
         #: Owner order, 29 September 2026 (Voice model candidate; off in production): the
         #: turn's request, without his words, prepared in the local runtime when he
         #: begins to speak. One at a time; never while a turn of his is in flight.
@@ -2071,6 +2079,12 @@ class VoiceSession:
                 pending.merge_window_until = (
                     pending.settled_at + self._resume_window + MERGE_HOLD_MARGIN_SECONDS
                 )
+                if self._early_audio_when_complete and pending.grace_reason == "complete":
+                    pending.merge_window_until = None
+                    _LOGGER.info(
+                        "voice hold: not applied, the utterance is complete (utterance %s)",
+                        pending.utterance.utterance,
+                    )
             if pending.evidence is not None:
                 pending.evidence["submitted_mono"] = time.monotonic()
             # A plain thread starts with an empty context, so a diagnostic recorder
@@ -2502,6 +2516,15 @@ class VoiceSession:
             # it, so MEDIUM's next first token went from ~1.7 s to ~8 s — faster
             # greetings bought with slower substantive replies. `used` stays on the
             # record for the measurement.
+            if self._prefill is not None:
+                # The Voice model's runtime keeps one slot and reuses what that slot last
+                # processed, so a persona refresh would discard the conversation it
+                # holds. The next turn's request, without his words, is prepared instead.
+                _LOGGER.info("voice prefill: after a %s turn", used or "unrecorded")
+                with self._lock:
+                    self._refresh_owed = False
+                self._prefill_turn()
+                return
             _LOGGER.info("voice prime: refresh after a %s turn", used or "unrecorded")
             self._maintain("refresh", routes=("light", "partner"))
 

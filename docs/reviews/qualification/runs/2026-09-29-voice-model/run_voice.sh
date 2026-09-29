@@ -14,7 +14,8 @@
 # Usage: run_voice.sh voice|voice_prefill RUN_LABEL "SESSION INDEXES"
 #   voice:          production's switches unset, the Voice model pinned for spoken turns;
 #   voice_adaptive: the same, with the existing adaptive endpoint (VAL_ADAPTIVE_ENDPOINT);
-#   voice_prefill:  voice_adaptive, with the turn's request prepared during his speech.
+#   voice_prefill:  voice_adaptive, with the turn's request prepared ahead of his words;
+#   voice_early:    voice_prefill, with audio released early for complete utterances.
 set -u
 CONDITION=$1; LABEL=$2; SESSIONS=${3:-"0 1 2 3 4"}
 ROOT=/Users/josepharmand/Projects/val-dev
@@ -32,7 +33,7 @@ cd $ROOT
 [[ $(grep -c "POST /voice/sessions HTTP" /opt/homebrew/var/log/val/api.log) == $PRODUCTION_VOICE_SESSIONS ]] || { echo "production Voice has been used: not starting"; exit 3; }
 [[ $(git diff master -- apps/desktop | wc -l | tr -d ' ') == 0 ]] || { echo "apps/desktop differs from master: not starting"; exit 2; }
 case $CONDITION in
-  voice|voice_adaptive|voice_prefill) ;;
+  voice|voice_adaptive|voice_prefill|voice_early) ;;
   *) echo "unknown condition $CONDITION"; exit 2 ;;
 esac
 unset VAL_SPECULATION VAL_ADAPTIVE_GRACE VAL_EXPERIMENT_ENVELOPE_IN_SYSTEM VAL_COMBINE_CONTINUATIONS
@@ -42,7 +43,9 @@ unset VAL_FAST_ROUTE_TIERS VAL_TIER1_ROUTE VAL_ADAPTIVE_ENDPOINT VAL_REQUEST_CON
 export VAL_VOICE_MODEL=gemma-4-26b-a4b
 export VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1
 export VAL_LLAMACPP_API_KEY=$(python3 -c "import secrets; print(secrets.token_hex(24))")
-[[ $CONDITION == voice_prefill ]] && export VAL_VOICE_TURN_PREFILL=on || unset VAL_VOICE_TURN_PREFILL
+unset VAL_VOICE_TURN_PREFILL VAL_VOICE_EARLY_AUDIO
+[[ $CONDITION == voice_prefill || $CONDITION == voice_early ]] && export VAL_VOICE_TURN_PREFILL=on
+[[ $CONDITION == voice_early ]] && export VAL_VOICE_EARLY_AUDIO=on
 [[ $CONDITION != voice ]] && export VAL_ADAPTIVE_ENDPOINT=on
 echo "=== $LABEL ($CONDITION) $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps infrastructure | wc -l | tr -d ' ') hook=$(shasum -a 256 $HOME/.lmstudio/extensions/backends/vendor/_amphibian/app-mlx-generate-mac14-arm64@34/lib/python3.11/site-packages/val_cache_renewal.py | cut -c1-12)"
 $LMS unload $EXP > /dev/null 2>&1

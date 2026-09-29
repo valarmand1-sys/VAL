@@ -1146,6 +1146,7 @@ def create_app(
                 if getattr(gateway, "voice_turn_prefill", False)
                 else None
             ),
+            early_audio_when_complete=getattr(gateway, "voice_early_audio", False),
             adaptive_grace=adaptive_grace,
             owner_precedence=owner_precedence,
             adaptive_endpoint=adaptive_endpoint,

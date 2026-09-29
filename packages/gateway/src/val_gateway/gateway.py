@@ -488,6 +488,9 @@ class Gateway:
         #: Whether a Voice turn's request is prepared while he is still speaking
         #: (`VAL_VOICE_TURN_PREFILL`, candidate; off in production).
         self.voice_turn_prefill = False
+        #: Whether a complete utterance releases its answer's audio without the merge
+        #: hold (`VAL_VOICE_EARLY_AUDIO`, candidate; off in production).
+        self.voice_early_audio = False
         self._record = recorder
         self._ledger = ledger
         self._cache_ttl = cache_ttl
