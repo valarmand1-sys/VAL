@@ -548,3 +548,49 @@ hidden-reasoning budget at MEDIUM, on the same model, for every ordinary turn.**
   Both are local, at $0.
 - **Not recommended instead:** another non-reasoning local model. Qwen3-4B, Mistral Small
   3.2 and Gemma 4 each failed Partner quality here.
+
+## 18. Closure (owner order of 29 September 2026, "Close the Class C effort experiment")
+
+**Closed, without further tuning or qualification.**
+
+- **What it showed:** prepared LOW cut hidden reasoning (0.29 s against 2.2 s median on
+  class C). The frozen class C route matched none of the inspected spoken turns, so it
+  does not reach enough of his conversation to justify more work.
+- **The registered onset result stands as recorded:** it did not meet the threshold.
+  - The 6 ms by which the median missed −1.5 s is not evidence of a meaningful
+    performance difference in either direction. Three cases, and a residual cache
+    asymmetry about 75 times larger (§15), put it well inside the measurement's
+    uncertainty.
+  - It is recorded only as "did not meet the registered threshold".
+
+**Corrections to §12–§17, from the existing records (no rerun):**
+
+- **Coverage (§16) is a historical sample, not a property of every conversation.**
+  - The 27 spoken turns are every spoken turn in the production store: 24 September
+    2026, 18:17 to 26 September 2026, 01:00 (CDT), in 16 Voice sessions.
+  - Most were system testing: greetings, "can you hear me", questions about speed.
+  - The 110 user messages span 18 August – 26 September 2026 and include typed
+    conversation.
+  - The class check applied his words alone, before the context rules, so it is an
+    upper bound on coverage in that sample. It says nothing about conversations not yet
+    held.
+- **"≈4.3 s at the median and ≈7 s at the 90th percentile" (§16) are estimates** of
+  reasoning-generation duration: token counts divided by a rate measured on the bench
+  (~62 tokens/s). They are not measured response-onset timings.
+  - The measured figure for those turns is dispatch → first visible text (production,
+    the same 27 turns): a median of 10.7 s, which includes prefill.
+- **Attribution in the verification probe (§12) was by prompt-token count alone.**
+  - `effort_verify.py` → `effort-verify.json` matches each step's `tokens_in` to the
+    hook's `total` and to the rendered prompt's token count, with no sequence window.
+  - The two MEDIUM steps had the same count (5,943), so the file records both of them
+    as "unmatched (2)" for the engine line and for the rendered effort.
+  - §12's "reused 5,089" for both MEDIUM steps was read from the hook log in order:
+    22:39:54 and 22:40:02, both `reused: 5089`, the second also writing the 5,394
+    divergence checkpoint. It holds whichever line is which.
+  - The probe does **not** establish that those two steps rendered "Reasoning: medium".
+    §12's wording "matched by exact prompt-token count and sequence" was wrong for the
+    probe.
+  - The corrected batch (`effort_screen.py`, `effort-screen-corrected.json`) is what
+    establishes MEDIUM rendering on `val-exp-hub`. It matched each call within its own
+    window of log lines (after that call's primes, until after its answer) by exact
+    prompt-token count, and so establishes all six MEDIUM and six LOW renderings.
