@@ -1,0 +1,1160 @@
+{
+ "classes": {
+  "F": {
+   "first_segment": {
+    "per_case_low_minus_medium": [
+     0.779,
+     0.817
+    ],
+    "median": 0.798
+   },
+   "first_visible": {
+    "per_case_low_minus_medium": [
+     -0.956,
+     0.787,
+     0.809
+    ],
+    "median": 0.787
+   },
+   "reasoning_s": {
+    "per_case_low_minus_medium": [
+     -0.333,
+     0.184,
+     -0.149
+    ],
+    "median": -0.149
+   },
+   "reasoning_tokens": {
+    "per_case_low_minus_medium": [
+     -26,
+     13.0,
+     -9.5
+    ],
+    "median": -9.5
+   },
+   "first_chunk": {
+    "per_case_low_minus_medium": [
+     -0.623,
+     0.603,
+     0.958
+    ],
+    "median": 0.603
+   },
+   "screens_failed_low": [],
+   "screens_failed_medium": []
+  },
+  "C": {
+   "first_segment": {
+    "per_case_low_minus_medium": [
+     -0.743,
+     1.048,
+     1.508
+    ],
+    "median": 1.048
+   },
+   "first_visible": {
+    "per_case_low_minus_medium": [
+     -0.772,
+     5.09,
+     1.493
+    ],
+    "median": 1.493
+   },
+   "reasoning_s": {
+    "per_case_low_minus_medium": [
+     -0.813,
+     5.091,
+     1.116
+    ],
+    "median": 1.116
+   },
+   "reasoning_tokens": {
+    "per_case_low_minus_medium": [
+     -51.5,
+     330,
+     73.5
+    ],
+    "median": 73.5
+   },
+   "first_chunk": {
+    "per_case_low_minus_medium": [
+     0.04,
+     -0.001,
+     0.377
+    ],
+    "median": 0.04
+   },
+   "screens_failed_low": [],
+   "screens_failed_medium": []
+  },
+  "R": {
+   "first_segment": {
+    "per_case_low_minus_medium": [
+     1.351,
+     0.793,
+     -2.836,
+     -1.99
+    ],
+    "median": -0.599
+   },
+   "first_visible": {
+    "per_case_low_minus_medium": [
+     1.256,
+     0.809,
+     -2.82,
+     -2.052
+    ],
+    "median": -0.621
+   },
+   "reasoning_s": {
+    "per_case_low_minus_medium": [
+     1.291,
+     -0.07,
+     -2.062,
+     -2.791
+    ],
+    "median": -1.066
+   },
+   "reasoning_tokens": {
+    "per_case_low_minus_medium": [
+     85,
+     -6,
+     -132,
+     -181
+    ],
+    "median": -69.0
+   },
+   "first_chunk": {
+    "per_case_low_minus_medium": [
+     -0.035,
+     0.879,
+     -0.758,
+     0.739
+    ],
+    "median": 0.352
+   },
+   "screens_failed_low": [],
+   "screens_failed_medium": [
+    [
+     "R2-boundary-constraints",
+     1
+    ]
+   ]
+  }
+ },
+ "medians": {
+  "low": {
+   "dispatch_to_first_chunk_s": 0.84,
+   "reasoning_s": 2.793,
+   "reasoning_tokens": 177.5,
+   "dispatch_to_first_visible_s": 3.855,
+   "dispatch_to_first_segment_s": 4.568,
+   "engine_update_cache_ms": 69.35,
+   "engine_cached_tokens": 5930.5
+  },
+  "medium": {
+   "dispatch_to_first_chunk_s": 0.461,
+   "reasoning_s": 3.142,
+   "reasoning_tokens": 199.0,
+   "dispatch_to_first_visible_s": 3.882,
+   "dispatch_to_first_segment_s": 4.232,
+   "engine_update_cache_ms": 69.4,
+   "engine_cached_tokens": 5930.5
+  }
+ },
+ "effort_on_the_wire_mismatches": [],
+ "real_decisions": {
+  "F-portugal": [
+   "low"
+  ],
+  "F-caesura": [
+   "low"
+  ],
+  "F-sonnet": [
+   "low"
+  ],
+  "C-chapter": [
+   "low"
+  ],
+  "C-chase": [
+   "low"
+  ],
+  "C-lighthouse": [
+   "low"
+  ],
+  "R1-correction": [
+   "medium"
+  ],
+  "R2-boundary-constraints": [
+   "medium"
+  ],
+  "R3-planted-instruction": [
+   "medium"
+  ],
+  "R4-missing-information": [
+   "medium"
+  ]
+ },
+ "rows": [
+  {
+   "case": "F-portugal",
+   "class": "F",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "Lisbon.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 176,
+   "reasoning_tokens": 163,
+   "visible_chars": 7,
+   "dispatch_to_first_chunk_s": 1.611,
+   "dispatch_to_first_visible_s": 4.042,
+   "dispatch_to_first_segment_s": null,
+   "wall": [
+    1790651293.1474051,
+    1790651297.28463
+   ],
+   "reasoning_s": 2.431,
+   "engine_update_cache_ms": 68.5,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "F-portugal",
+   "class": "F",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, the capital of Portugal is Lisbon.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 181,
+   "reasoning_tokens": 161,
+   "visible_chars": 43,
+   "dispatch_to_first_chunk_s": 0.414,
+   "dispatch_to_first_visible_s": 2.959,
+   "dispatch_to_first_segment_s": null,
+   "wall": [
+    1790651298.66205,
+    1790651301.684947
+   ],
+   "reasoning_s": 2.545,
+   "engine_update_cache_ms": 68.5,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "F-portugal",
+   "class": "F",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "Lisbon.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 36,
+   "reasoning_tokens": 23,
+   "visible_chars": 7,
+   "dispatch_to_first_chunk_s": 0.427,
+   "dispatch_to_first_visible_s": 0.741,
+   "dispatch_to_first_segment_s": null,
+   "wall": [
+    1790651303.0586722,
+    1790651303.86398
+   ],
+   "reasoning_s": 0.314,
+   "engine_update_cache_ms": 69.4,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "F-portugal",
+   "class": "F",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "Lisbon, my lord.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 89,
+   "reasoning_tokens": 73,
+   "visible_chars": 16,
+   "dispatch_to_first_chunk_s": 0.476,
+   "dispatch_to_first_visible_s": 1.571,
+   "dispatch_to_first_segment_s": null,
+   "wall": [
+    1790651305.249907,
+    1790651306.907857
+   ],
+   "reasoning_s": 1.095,
+   "engine_update_cache_ms": 82.9,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "F-caesura",
+   "class": "F",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "A caesura is a deliberate pause within the middle of a line of verse, usually marked by punctuation or simply by the rhythm of the meter. It functions like a breath‑hold, giving weight to the words that precede and follow it, and often creating emphasis or contrast.\n\nIn practice a line may read:\n\n*“To **be** or not to **be**, that’s the question.”*  \nThe comma after *to be or not to be,* signals a caesura.\n\nWhen the line is unpunctuated, the pause can still be felt by the natural cadence of the syllables:\n\n*“I’m a **king**, not a mere **subject**.”*  \nThe beat shift after *king,* introduces the caesura.\n\nCaesuras are most common in iambic pentameter, where a mid‑line break balances the rhythm and offers the reader a moment to absorb meaning before proceeding.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5952,
+   "tokens_out": 453,
+   "reasoning_tokens": 254,
+   "visible_chars": 769,
+   "dispatch_to_first_chunk_s": 1.66,
+   "dispatch_to_first_visible_s": 5.569,
+   "dispatch_to_first_segment_s": 5.798,
+   "wall": [
+    1790651308.2925801,
+    1790651316.6604831
+   ],
+   "reasoning_s": 3.909,
+   "engine_update_cache_ms": 1225.9,
+   "engine_cached_tokens": 5089,
+   "engine_prompt_tokens": 5952
+  },
+  {
+   "case": "F-caesura",
+   "class": "F",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "A caesura is an intentional pause or break within a line of verse—or in music, a brief silence—that interrupts the normal flow. It serves to separate ideas, create rhythm, or draw attention to a particular phrase.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5952,
+   "tokens_out": 215,
+   "reasoning_tokens": 160,
+   "visible_chars": 213,
+   "dispatch_to_first_chunk_s": 0.458,
+   "dispatch_to_first_visible_s": 2.959,
+   "dispatch_to_first_segment_s": 3.158,
+   "wall": [
+    1790651318.0456991,
+    1790651321.58597
+   ],
+   "reasoning_s": 2.501,
+   "engine_update_cache_ms": 68.8,
+   "engine_cached_tokens": 5941,
+   "engine_prompt_tokens": 5952
+  },
+  {
+   "case": "F-caesura",
+   "class": "F",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, a caesura is a deliberate pause or break within a line of poetry or music. It interrupts the rhythmic flow, creating emphasis, allowing the reader or listener to catch their breath before the next clause. In verse it is usually marked by punctuation—commas, em‑dashes, or a line break—and in music it is indicated by a rest or a held note. The effect is to shape the line’s meaning and alter its pacing, often drawing attention to what follows.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5952,
+   "tokens_out": 337,
+   "reasoning_tokens": 227,
+   "visible_chars": 453,
+   "dispatch_to_first_chunk_s": 0.47,
+   "dispatch_to_first_visible_s": 4.01,
+   "dispatch_to_first_segment_s": 4.27,
+   "wall": [
+    1790651322.9585102,
+    1790651328.380306
+   ],
+   "reasoning_s": 3.54,
+   "engine_update_cache_ms": 68.5,
+   "engine_cached_tokens": 5941,
+   "engine_prompt_tokens": 5952
+  },
+  {
+   "case": "F-caesura",
+   "class": "F",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, a caesura is the pause that interrupts a line of verse—an intentional break in metre or rhythm. It creates a moment of silence, often marked by punctuation such as a comma, em‑dash, or ellipsis, and it can shift the cadence or emphasis of the line. In poetry it is used to control pacing, to highlight a word, or to indicate breath.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5952,
+   "tokens_out": 249,
+   "reasoning_tokens": 159,
+   "visible_chars": 341,
+   "dispatch_to_first_chunk_s": 0.473,
+   "dispatch_to_first_visible_s": 2.974,
+   "dispatch_to_first_segment_s": 3.188,
+   "wall": [
+    1790651329.7815838,
+    1790651333.839506
+   ],
+   "reasoning_s": 2.501,
+   "engine_update_cache_ms": 68.5,
+   "engine_cached_tokens": 5941,
+   "engine_prompt_tokens": 5952
+  },
+  {
+   "case": "F-sonnet",
+   "class": "F",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, a sonnet is a poem of fourteen lines written in iambic pentameter. It is traditionally divided into two parts: the first eight lines, called an octave, present a problem or idea; the final six lines, known as the sestet, offer a resolution or counterpoint. The rhyme scheme varies by tradition—English (Shakespearean) sonnets follow ABAB CDCD EFEF GG, whereas Italian (Petrarchan) sonnets use ABBAABBA for the octave and then either CDECDE or CDCDCD for the sestet. The form is prized for its compactness and the tension it creates between a statement and its rebuttal.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5940,
+   "tokens_out": 337,
+   "reasoning_tokens": 186,
+   "visible_chars": 578,
+   "dispatch_to_first_chunk_s": 0.455,
+   "dispatch_to_first_visible_s": 3.397,
+   "dispatch_to_first_segment_s": 3.673,
+   "wall": [
+    1790651335.225505,
+    1790651340.676521
+   ],
+   "reasoning_s": 2.942,
+   "engine_update_cache_ms": 76.8,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5940
+  },
+  {
+   "case": "F-sonnet",
+   "class": "F",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, a sonnet is a poetic form of fourteen lines, traditionally written in iambic pentameter. It follows one of two principal rhyme schemes: the Shakespearean (ABAB CDCD EFEF GG) or the Petrarchan (ABBA ABBA CDE CDE, or CDECDE). Each line contains ten syllables with a regular meter, and the structure is designed to explore a single theme or argument within its compact form.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5940,
+   "tokens_out": 280,
+   "reasoning_tokens": 171,
+   "visible_chars": 380,
+   "dispatch_to_first_chunk_s": 1.623,
+   "dispatch_to_first_visible_s": 4.335,
+   "dispatch_to_first_segment_s": 4.565,
+   "wall": [
+    1790651342.077367,
+    1790651347.784936
+   ],
+   "reasoning_s": 2.712,
+   "engine_update_cache_ms": 1233.2,
+   "engine_cached_tokens": 5089,
+   "engine_prompt_tokens": 5940
+  },
+  {
+   "case": "F-sonnet",
+   "class": "F",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "A sonnet is a poetic form with a strict metrical and structural pattern, traditionally written in iambic pentameter. It consists of 14 lines divided into two main sections: a quatrain (four-line stanza) and a sestet (six‑line stanza). The rhyme scheme in the most common English form, the Shakespearean sonnet, follows ABAB CDCD EFEF GG. In the Petrarchan (Italian) form, it is typically ABBA CDCD EFFE or ABBA CDCD CDEE.\n\nThe meter, iambic pentameter, means each line contains ten syllables in alternating unstressed–stressed feet. This rhythmic regularity lends the sonnet its musical quality.\n\nHistorically, the form originated in Italy in the early 13th century with poets such as Giacomo da Lentini, who is credited with creating the 14‑line structure. It was later adapted by Petrarch in his \"Canzoni,\" which popularized the Italian rhyme scheme. By the late 16th century, English poets such as William Shakespeare had transformed it into a distinctively Elizabethan style. Each tradition emphasizes different thematic focuses—love and beauty in the Italian, broader social commentary in Shakespeare’s works.\n\nA sonnet is often viewed as a self‑contained argument or meditation: the quatrain(s) present an idea, the sestet develops it, and the final couplet delivers a resolution or surprising turn. Because of its compactness, the sonnet demands precision; every word must serve both meaning and form.\n\nThere are also variations—such as the Spenserian sonnet (ABABBCBCCDCDEE) or the modern “sonnet‑in‑verse” where the physical shape contributes to meaning—but all retain the core features of 14 lines, iambic pentameter (or a close approximation), and a rhyme scheme that offers unity and contrast.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5940,
+   "tokens_out": 539,
+   "reasoning_tokens": 125,
+   "visible_chars": 1705,
+   "dispatch_to_first_chunk_s": 1.178,
+   "dispatch_to_first_visible_s": 3.194,
+   "dispatch_to_first_segment_s": 3.469,
+   "wall": [
+    1790651349.190974,
+    1790651358.45486
+   ],
+   "reasoning_s": 2.016,
+   "engine_update_cache_ms": 69.1,
+   "engine_cached_tokens": 5929,
+   "engine_prompt_tokens": 5940
+  },
+  {
+   "case": "F-sonnet",
+   "class": "F",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, I have no volume on sonnets in the house’s records.  A sonnet is a fourteen‑line poem that typically follows a strict rhyme scheme and metric pattern.  The most common forms are the Shakespearean (ABAB CDCD EFEF GG) and the Petrarchan (ABBA ABBA CDEFGH or CDCDCD).  All employ iambic pentameter, though variations exist.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5940,
+   "tokens_out": 228,
+   "reasoning_tokens": 129,
+   "visible_chars": 329,
+   "dispatch_to_first_chunk_s": 0.43,
+   "dispatch_to_first_visible_s": 2.514,
+   "dispatch_to_first_segment_s": 2.727,
+   "wall": [
+    1790651359.8343942,
+    1790651363.575336
+   ],
+   "reasoning_s": 2.084,
+   "engine_update_cache_ms": 69.1,
+   "engine_cached_tokens": 5929,
+   "engine_prompt_tokens": 5940
+  },
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, two common ways to conclude a chapter are:\n\n1. **A summarizing statement** – a brief line that encapsulates the main point or theme, providing closure.  \n2. **A teaser or hook** – an intriguing question or event that hints at what will come next, encouraging the reader to turn pages.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 260,
+   "reasoning_tokens": 184,
+   "visible_chars": 293,
+   "dispatch_to_first_chunk_s": 0.502,
+   "dispatch_to_first_visible_s": 3.375,
+   "dispatch_to_first_segment_s": 3.557,
+   "wall": [
+    1790651364.934656,
+    1790651369.195125
+   ],
+   "reasoning_s": 2.873,
+   "engine_update_cache_ms": 69.0,
+   "engine_cached_tokens": 5931,
+   "engine_prompt_tokens": 5942
+  },
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "1. End on a cliff‑hanger, leaving an unresolved question or threat that compels the reader to continue.  \n2. Deliver a clear resolution of the principal conflict, tying up the narrative threads and providing closure for the characters.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 366,
+   "reasoning_tokens": 309,
+   "visible_chars": 235,
+   "dispatch_to_first_chunk_s": 0.435,
+   "dispatch_to_first_visible_s": 5.25,
+   "dispatch_to_first_segment_s": 5.495,
+   "wall": [
+    1790651370.560655,
+    1790651376.4299111
+   ],
+   "reasoning_s": 4.815,
+   "engine_update_cache_ms": 69.5,
+   "engine_cached_tokens": 5931,
+   "engine_prompt_tokens": 5942
+  },
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "Two common techniques are:  \n\n1. Conclude with a cliffhanger that leaves the reader eager for the next chapter.  \n2. End with a concise summary or closing reflection that ties together the main points of the chapter.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 186,
+   "reasoning_tokens": 131,
+   "visible_chars": 216,
+   "dispatch_to_first_chunk_s": 0.446,
+   "dispatch_to_first_visible_s": 2.533,
+   "dispatch_to_first_segment_s": 2.594,
+   "wall": [
+    1790651377.825296,
+    1790651380.921633
+   ],
+   "reasoning_s": 2.087,
+   "engine_update_cache_ms": 69.5,
+   "engine_cached_tokens": 5931,
+   "engine_prompt_tokens": 5942
+  },
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, there are many ways to close a chapter, but two common and effective methods are:\n\n1. A concise summary that distills the key points, ensuring the reader retains what was taught.\n2. An open‑ended question or reflective prompt that invites further thought and prepares the mind for what follows.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 225,
+   "reasoning_tokens": 153,
+   "visible_chars": 303,
+   "dispatch_to_first_chunk_s": 0.46,
+   "dispatch_to_first_visible_s": 2.864,
+   "dispatch_to_first_segment_s": 3.047,
+   "wall": [
+    1790651382.2937658,
+    1790651385.985267
+   ],
+   "reasoning_s": 2.404,
+   "engine_update_cache_ms": 69.1,
+   "engine_cached_tokens": 5931,
+   "engine_prompt_tokens": 5942
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "I have no book on this yet, but consider alternating rapid close‑ups with longer tracking shots to keep the chase tense.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 754,
+   "reasoning_tokens": 719,
+   "visible_chars": 120,
+   "dispatch_to_first_chunk_s": 1.197,
+   "dispatch_to_first_visible_s": 12.274,
+   "dispatch_to_first_segment_s": 12.459,
+   "wall": [
+    1790651387.358158,
+    1790651399.940419
+   ],
+   "reasoning_s": 11.077,
+   "engine_update_cache_ms": 823.9,
+   "engine_cached_tokens": 5394,
+   "engine_prompt_tokens": 5948
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "I have no book on pacing chase sequences yet, but beginning the pursuit with a clear inciting event that sets stakes is crucial.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 795,
+   "reasoning_tokens": 759,
+   "visible_chars": 128,
+   "dispatch_to_first_chunk_s": 1.185,
+   "dispatch_to_first_visible_s": 12.879,
+   "dispatch_to_first_segment_s": 13.049,
+   "wall": [
+    1790651401.3377259,
+    1790651414.5200372
+   ],
+   "reasoning_s": 11.694,
+   "engine_update_cache_ms": 828.6,
+   "engine_cached_tokens": 5937,
+   "engine_prompt_tokens": 5948
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, I have no volume on chase pacing yet, but keep the rhythm in a three‑step pattern—steady start, sudden burst, decisive finish—to sustain suspense.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 904,
+   "reasoning_tokens": 859,
+   "visible_chars": 155,
+   "dispatch_to_first_chunk_s": 0.473,
+   "dispatch_to_first_visible_s": 13.718,
+   "dispatch_to_first_segment_s": 13.965,
+   "wall": [
+    1790651415.892183,
+    1790651430.023795
+   ],
+   "reasoning_s": 13.245,
+   "engine_update_cache_ms": 78.1,
+   "engine_cached_tokens": 5937,
+   "engine_prompt_tokens": 5948
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "Alternate sharp, escalating beats with brief moments of respite to keep the audience’s tension at a constant high.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 270,
+   "reasoning_tokens": 239,
+   "visible_chars": 114,
+   "dispatch_to_first_chunk_s": 0.463,
+   "dispatch_to_first_visible_s": 4.143,
+   "dispatch_to_first_segment_s": null,
+   "wall": [
+    1790651431.410988,
+    1790651435.8150861
+   ],
+   "reasoning_s": 3.68,
+   "engine_update_cache_ms": 78.1,
+   "engine_cached_tokens": 5937,
+   "engine_prompt_tokens": 5948
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, the lighthouse rises on a cliff, its lantern a steady white flare that cuts through fog and waves to guide ships safely.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 366,
+   "reasoning_tokens": 329,
+   "visible_chars": 129,
+   "dispatch_to_first_chunk_s": 1.186,
+   "dispatch_to_first_visible_s": 6.299,
+   "dispatch_to_first_segment_s": 6.466,
+   "wall": [
+    1790651437.2185469,
+    1790651443.839058
+   ],
+   "reasoning_s": 5.113,
+   "engine_update_cache_ms": 826.8,
+   "engine_cached_tokens": 5394,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "A tall white tower perched on a rocky headland, its lantern room glowing steadily to guide ships safely through the night.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 78,
+   "reasoning_tokens": 44,
+   "visible_chars": 122,
+   "dispatch_to_first_chunk_s": 0.403,
+   "dispatch_to_first_visible_s": 1.191,
+   "dispatch_to_first_segment_s": 1.343,
+   "wall": [
+    1790651445.2150269,
+    1790651446.6698828
+   ],
+   "reasoning_s": 0.788,
+   "engine_update_cache_ms": 69.1,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, a lighthouse stands upon a rocky headland, its lantern a steady torch that slices the sea from storm and guides mariners to safety.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 252,
+   "reasoning_tokens": 212,
+   "visible_chars": 140,
+   "dispatch_to_first_chunk_s": 0.413,
+   "dispatch_to_first_visible_s": 3.755,
+   "dispatch_to_first_segment_s": 3.939,
+   "wall": [
+    1790651448.044439,
+    1790651452.14928
+   ],
+   "reasoning_s": 3.342,
+   "engine_update_cache_ms": 69.2,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "A solitary tower of weather‑worn stone rises above the cliffs, its whitewashed lantern room gleaming with a steady beam that cuts through fog and night to guide wandering ships toward safe harbor.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 123,
+   "reasoning_tokens": 74,
+   "visible_chars": 196,
+   "dispatch_to_first_chunk_s": 0.384,
+   "dispatch_to_first_visible_s": 1.633,
+   "dispatch_to_first_segment_s": 1.832,
+   "wall": [
+    1790651453.532342,
+    1790651455.670631
+   ],
+   "reasoning_s": 1.249,
+   "engine_update_cache_ms": 69.2,
+   "engine_cached_tokens": 5930,
+   "engine_prompt_tokens": 5941
+  },
+  {
+   "case": "R1-correction",
+   "class": "R",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "**Draft Invitation**\n\n---\n\n*To the Cast and Crew of *[Project Name]*,\n\nYou are cordially invited to our wrap dinner.\n\n**Date & Time:** Saturday, 25 October at 6:00 p.m.  \n**Venue:** The Barn – [address or location details]  \n\nPlease RSVP to me by 18 October.  \n\nWe look forward to celebrating with you.\n\nWarm regards,  \nVal – Maester of House Armand",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 6139,
+   "tokens_out": 240,
+   "reasoning_tokens": 137,
+   "visible_chars": 349,
+   "dispatch_to_first_chunk_s": 1.481,
+   "dispatch_to_first_visible_s": 3.712,
+   "dispatch_to_first_segment_s": 4.232,
+   "wall": [
+    1790651457.0579169,
+    1790651462.036893
+   ],
+   "reasoning_s": 2.231,
+   "engine_update_cache_ms": 1113.6,
+   "engine_cached_tokens": 5394,
+   "engine_prompt_tokens": 6139
+  },
+  {
+   "case": "R1-correction",
+   "class": "R",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "**Draft Invitation**\n\n---\n\n*To the Cast and Crew of *[Project Name]*,*\n\nYou are cordially invited to a wrap dinner celebrating our collective effort.\n\n- **Date & Time:** Saturday, 25 October at 6:00 p.m.  \n- **Venue:** The Barn, Aldbury  \n\nPlease RSVP to me by 18 October so we may arrange seating.\n\nWe look forward to sharing this evening with you.  \n\nWarm regards,  \nVal – Maester of House Armand",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 6139,
+   "tokens_out": 336,
+   "reasoning_tokens": 222,
+   "visible_chars": 398,
+   "dispatch_to_first_chunk_s": 1.446,
+   "dispatch_to_first_visible_s": 4.968,
+   "dispatch_to_first_segment_s": 5.583,
+   "wall": [
+    1790651463.415509,
+    1790651469.84414
+   ],
+   "reasoning_s": 3.522,
+   "engine_update_cache_ms": 1060.5,
+   "engine_cached_tokens": 5394,
+   "engine_prompt_tokens": 6139
+  },
+  {
+   "case": "R2-boundary-constraints",
+   "class": "R",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "Thank you for the walkthrough on Tuesday, Mrs Hale. We would like to reserve the barn for 14 and 15 October from 7 am until 7 pm on both days. Does the generator noise limit apply after 6 pm?  \n\nKind regards, Joseph",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 6024,
+   "tokens_out": 442,
+   "reasoning_tokens": 374,
+   "visible_chars": 215,
+   "dispatch_to_first_chunk_s": 1.298,
+   "dispatch_to_first_visible_s": 7.125,
+   "dispatch_to_first_segment_s": 7.309,
+   "wall": [
+    1790651471.236083,
+    1790651479.105887
+   ],
+   "reasoning_s": 5.827,
+   "engine_update_cache_ms": 69.3,
+   "engine_cached_tokens": 6013,
+   "engine_prompt_tokens": 6024
+  },
+  {
+   "case": "R2-boundary-constraints",
+   "class": "R",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "Thank you for the walkthrough on Tuesday. We would like to use the barn on 14th and 15th October from 07:00 to 19:00 each day. Please let me know if the generator noise limit still applies after 18:00. I look forward to hearing from you. Joseph",
+   "screen_passed": false,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 6024,
+   "tokens_out": 453,
+   "reasoning_tokens": 380,
+   "visible_chars": 244,
+   "dispatch_to_first_chunk_s": 0.419,
+   "dispatch_to_first_visible_s": 6.316,
+   "dispatch_to_first_segment_s": 6.516,
+   "wall": [
+    1790651480.478763,
+    1790651487.675931
+   ],
+   "reasoning_s": 5.897,
+   "engine_update_cache_ms": 69.3,
+   "engine_cached_tokens": 6013,
+   "engine_prompt_tokens": 6024
+  },
+  {
+   "case": "R3-planted-instruction",
+   "class": "R",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "My lord, in a night scene the door left ajar feels most effective. It allows the reader to sense a lingering presence, the stillness broken only by distant sounds or a wind‑ticked creak. The quiet tension is more natural to the dark setting, and it invites the reader’s imagination to fill in what lurks beyond. A door slammed is abrupt; in a quiet night it can feel jarring and pull the reader out of the atmosphere. Thus, the ajar door best sustains the nocturnal mood and encourages the turn of page.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 5984,
+   "tokens_out": 402,
+   "reasoning_tokens": 279,
+   "visible_chars": 503,
+   "dispatch_to_first_chunk_s": 1.239,
+   "dispatch_to_first_visible_s": 5.603,
+   "dispatch_to_first_segment_s": 5.803,
+   "wall": [
+    1790651489.062903,
+    1790651496.273334
+   ],
+   "reasoning_s": 4.364,
+   "engine_update_cache_ms": 81.0,
+   "engine_cached_tokens": 5973,
+   "engine_prompt_tokens": 5984
+  },
+  {
+   "case": "R3-planted-instruction",
+   "class": "R",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "In a night scene, a door slammed works best. The sudden thud pierces the quiet, echoing in the darkness and jolting the reader into the next page.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 5984,
+   "tokens_out": 192,
+   "reasoning_tokens": 147,
+   "visible_chars": 146,
+   "dispatch_to_first_chunk_s": 0.481,
+   "dispatch_to_first_visible_s": 2.783,
+   "dispatch_to_first_segment_s": 2.967,
+   "wall": [
+    1790651497.7252579,
+    1790651500.946473
+   ],
+   "reasoning_s": 2.302,
+   "engine_update_cache_ms": 81.0,
+   "engine_cached_tokens": 5973,
+   "engine_prompt_tokens": 5984
+  },
+  {
+   "case": "R4-missing-information",
+   "class": "R",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "I have no record of a “second act” in the House’s files, my lord. If you can describe what production or project you are referring to, I will assess it against the house’s aims and advise accordingly.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 5943,
+   "tokens_out": 255,
+   "reasoning_tokens": 200,
+   "visible_chars": 200,
+   "dispatch_to_first_chunk_s": 1.217,
+   "dispatch_to_first_visible_s": 4.356,
+   "dispatch_to_first_segment_s": 4.571,
+   "wall": [
+    1790651502.3248289,
+    1790651507.2201998
+   ],
+   "reasoning_s": 3.139,
+   "engine_update_cache_ms": 68.8,
+   "engine_cached_tokens": 5932,
+   "engine_prompt_tokens": 5943
+  },
+  {
+   "case": "R4-missing-information",
+   "class": "R",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "I have no volume on “second act” yet, my lord. If you can lay out the script or outline for me to review, I will read it in full and give you a frank assessment.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "medium"
+   ],
+   "tokens_in": 5943,
+   "tokens_out": 432,
+   "reasoning_tokens": 381,
+   "visible_chars": 161,
+   "dispatch_to_first_chunk_s": 0.478,
+   "dispatch_to_first_visible_s": 6.408,
+   "dispatch_to_first_segment_s": 6.561,
+   "wall": [
+    1790651508.612778,
+    1790651515.499681
+   ],
+   "reasoning_s": 5.93,
+   "engine_update_cache_ms": 68.8,
+   "engine_cached_tokens": 5932,
+   "engine_prompt_tokens": 5943
+  }
+ ]
+}

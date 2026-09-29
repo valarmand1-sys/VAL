@@ -64,7 +64,11 @@ from val_policy.speech_segments import SpeechSegmenter  # noqa: E402
 
 OUT = Path(sys.argv[1])
 ROOT = Path(__file__).resolve().parents[5]
-EXPERIMENT = "val-exp-gpt-oss-20b"
+# The instance must be loaded from the real model key (`openai/gpt-oss-20b`), whose LM Studio
+# hub definition maps `reasoning_effort` into the template. The renewal clone
+# (`val-exp-gpt-oss-20b`) has no hub definition: it renders "Reasoning: medium" whatever
+# is requested (probe, 28 September 22:13), which invalidated the first batch.
+EXPERIMENT = os.environ.get("VAL_EFFORT_INSTANCE", "val-exp-effort")
 registry.REGISTRY = tuple(
     config.model_copy(update={"model_identifier": EXPERIMENT})
     if config.model_identifier == "openai/gpt-oss-20b" else config

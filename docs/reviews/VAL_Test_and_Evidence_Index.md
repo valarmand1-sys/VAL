@@ -1551,3 +1551,7 @@ Speech end → playback 18,036 ms (desktop): his message 5,579 ms; ~3.5 s queue;
 ## 124. Production isolation completed; the lifecycle questions closed; the layout comparison — 28 September 2026
 
 **WP3 remains PARTIAL; nothing experimental deployed.** Record: `LIFECYCLE_REPAIR.md` §0, §8–§10; handoff WP3 Record §37. Code `a92bdbf` (branch `latency-2026-09-28`). Evidence: `layout-compare-batch1.json` / `.out` (`layout_compare.py`, decision rule in its docstring); `voice-bench-E1*.json`, `wait-decomposition-E1.json`, `bench-summary-E1-alone.json`, `bench-summary-split.json`, `store-E1.dump` (local only); isolation verification in the record §8 (launch file backup at `~/val-launch-backup/`, not in the repository). Tests: `test_superseded_worker.py` (+1, the service-wide bound). Local gate green; CI not run (branch).
+
+## 125. The bounded LOW-effort experiment — 28 September 2026
+
+**WP3 remains PARTIAL; nothing deployed.** Record: `qualification/runs/2026-09-28-checkpoint/EFFORT_EXPERIMENT.md` (pre-registration §1–§6 at `602aaea`; results §7–§11); handoff WP3 Record §38. Code `330d55f`. Evidence: `effort-screen.json` / `.out` (`effort_screen.py`, instance `val-exp-effort` = `openai/gpt-oss-20b`), the invalid first batch `effort-screen-INVALID-clone-ignores-effort.*`, the rendered-effort probe results in §8. Tests: `packages/policy/tests/test_ordinary_effort.py` (45), `packages/gateway/tests/test_ordinary_effort_pin.py` (4). Local gate green; CI not run (branch).

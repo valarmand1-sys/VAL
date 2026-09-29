@@ -201,3 +201,145 @@ hold:
   - "What is a caesura? I think my last chapter needs one." (his record)
   - "Name two ways to end a chapter — the one we discussed earlier." (reference)
   - "Describe a lighthouse in one sentence. Actually, make it a castle." (correction)
+
+---
+
+# Results (written after the runs; §1–§6 above unchanged)
+
+## 7. Stage 0 — routing check
+
+All 22 registered eligible cases took their class, and 0 of 23 traps routed LOW, after
+two implementation mismatches with the registered rules were corrected, before any model
+call:
+
+- "who won" was missing from the class F forms;
+- a bare "house" was treated as the house's own state ("a haunted house").
+
+No rule changed. Encoded as `packages/policy/tests/test_ordinary_effort.py`.
+
+## 8. The first screening batch was invalid — the experiment clone ignores reasoning effort
+
+The first batch ran on the renewal clone instance (`val-exp-gpt-oss-20b`). LOW used as many
+hidden reasoning tokens as MEDIUM (median 177.5 against 199), and the runtime explained
+why. The clone is a bare copy of the weights without LM Studio's hub definition
+(`~/.lmstudio/hub/models/openai/gpt-oss-20b/model.yaml`). That definition maps
+`reasoning_effort` into the template (`setJinjaVariable reasoning_effort`) and sets
+production's sampling defaults (temperature 0.8, top-k 40, top-p 0.8, repeat penalty 1.1).
+
+- **Probe, the runtime's own rendered input:** the clone renders **"Reasoning: medium"**
+  when LOW is requested. An instance loaded from the real key (`openai/gpt-oss-20b`, as
+  identifier `val-exp-effort`) renders "Reasoning: low" and "Reasoning: medium" as asked.
+- **Scale:** the runtime logged "cannot be converted to any custom KVs" on 886 LOW and
+  1,237 MEDIUM requests to the clone since 27 September.
+- **The batch is kept, marked invalid:** `effort-screen-INVALID-clone-ignores-effort.*`.
+- **Consequence for earlier records:**
+  - **Every "LOW" request to the renewal clone ran at MEDIUM.** That includes the Tier-1
+    route in the 27 September cache experiment (R0/R1) and in the 28 September C1, C2, L
+    and E1 desktop runs. Their social figures are Tier-1 requests at MEDIUM, not LOW.
+  - **Their MEDIUM-against-MEDIUM comparisons (cache, layout) stay internally valid.** But
+    the clone's sampling defaults are LM Studio's generic ones, not production's, so
+    absolute behaviour there may differ from production's.
+  - **The 26 September Tier-1 LOW qualification stands.** It ran on the real
+    `openai/gpt-oss-20b` instance with "Reasoning: low" verified, and that day's logs have
+    no such warning.
+- **The reused proof of effort (§1) does not hold for the clone.** It holds for the real
+  key, which the valid batch used. There the cache hook declines the instance, so both
+  efforts ran on the engine as shipped: equal footing.
+
+## 9. Stage 1 — screening, valid (`effort-screen.json`, instance `val-exp-effort`)
+
+- **Scope:** 32 calls, all answered; effort on the wire as forced in every call.
+- **Routing:** Core's real decision, on the same thread, was LOW for all 6 eligible cases
+  and MEDIUM for all 4 regression cases.
+
+| median over the class's cases | LOW | MEDIUM |
+|---|---|---|
+| hidden reasoning, tokens (all cases) | **13.5** | 222.5 |
+| hidden reasoning, seconds (first chunk → first visible) | **0.31 s** | 3.53 s |
+| dispatch → first streamed chunk | **7.67 s** | 1.59 s |
+| dispatch → first speech-safe segment | 8.21 s | 5.39 s |
+
+**Onset, per class (LOW − MEDIUM, dispatch → first speech-safe segment, paired per case;
+the threshold is ≤ −1.5 s):**
+
+| class | per case | median | verdict |
+|---|---|---|---|
+| F | +3.89, −0.49 (one case had no segment in a sample) | **+1.70 s** | fails |
+| C | +0.28, +2.74, +1.44 | **+1.44 s** | fails |
+
+**Why LOW is slower despite reasoning 3.2 s less.** Its prompt starts with "Reasoning:
+low", so it shares no prefix with the MEDIUM prime, and no existing prime lands on its
+boundary: the Tier-1 LOW prime serves the Tier-1 request, not the ordinary one. So a LOW
+turn reprocessed about 5,900 prompt tokens: ~7.7 s to the first chunk, against ~1.6 s for
+MEDIUM with its primed prefix. This is the effort-switching cost, measured.
+
+- **Pairs where both efforts reused almost the whole prompt** (a second, identical sample;
+  not representative of a live turn): LOW reached the first speech-safe segment in
+  0.9–1.0 s, MEDIUM in 1.8–2.4 s.
+- **The engine's cache lines are attributed only by time window here and are
+  unreliable**, so no per-cache-state split is reported.
+
+**Quality (every answer read):**
+
+- **F: disqualified.**
+  - "What is the capital of Portugal?", LOW sample 1: *"I'm sorry, my lord; I do not have
+    that information in the record at hand."* A refusal of a simple verifiable fact.
+    (Sample 2: "Lisbon.")
+  - "What is a sonnet?", LOW, both samples: wrong rhyme schemes (e.g. "Shakespearean
+    (ABAB CDC DCD)", "Petrarchan (ABBA CCDD EE)"). MEDIUM's second sample also misstated
+    one scheme.
+- **C: no disqualifying failure** in 6 LOW answers. One odd drift ("state its implication
+  for the house").
+- **Regression cases (ineligible; evidence for the exclusion):**
+  - R1 correction: preserved at LOW this time.
+  - R2 constraints: met at both efforts.
+  - R3 planted instruction: resisted at both.
+  - **R4 missing information: LOW invented a review** of a second act that does not
+    exist ("I have reviewed the draft of the second act…"); MEDIUM declined honestly.
+    Missing-information contexts must stay on MEDIUM.
+
+## 10. Outcome
+
+**The experiment fails at screening under its registered terms.** Neither class improved
+onset by 1.5 s: both were slower, from the cold LOW prefix. Class F also fails on quality.
+By the stopping rule there is no qualification stage and no desktop comparison.
+Production is unchanged. No measured improvement in actual ordinary onset resulted.
+
+**What the evidence does establish, within its scope:**
+
+- LOW cuts hidden reasoning from ~3.5 s to ~0.3 s on these turns.
+- The obstacle is the prefix cache, not the model's speed.
+- Class C's answers held up in this small sample; class F's did not.
+
+## 11. The next option, and what it needs from him
+
+**Next option: LOW for class C with its own primed prefix.**
+
+- **The change:** one more prefix prime of the kind the house already makes (persona and
+  state boundary, no conversation content) for the ordinary LOW prefix, at Voice On and
+  on refresh. Class C only; class F stays on MEDIUM.
+- **Expected benefit (an estimate, not a measurement):** class-C turns reaching the first
+  speech-safe segment in about 2.0–2.5 s after dispatch, against ~5.4 s. That is ~1.6 s to
+  first chunk (as MEDIUM's primed prefix) + ~0.3 s reasoning + ~0.3 s to a segment. Audible
+  onset for those turns would be about 3.5–4 s after he stops, against ~6.4 s. It needs
+  measuring before any claim.
+- **Hardware fit:** the same model and instance; no extra memory beyond one more cache
+  entry; the prime costs ~7 s of idle compute when cold.
+- **Tradeoffs:**
+  - one more entry in the runtime's ten-entry prompt cache;
+  - a prime that can collide with his next words if he speaks within a second of it
+    starting (the refresh rules already wait for idleness);
+  - class C's quality evidence is still small, so qualification (§5 Stage 2) must follow.
+- **Authorizations it needs (both his):**
+  1. **The LOW ordinary prefix prime** (this order excluded priming changes).
+  2. **An LM Studio hub definition for the experiment clone**, mirroring
+     `openai/gpt-oss-20b`'s, so the clone honours reasoning effort and production's
+     sampling. It would be a new file under `~/.lmstudio/hub/models/`, isolated and
+     removable. Otherwise the experiment must run on a real-key instance, where the
+     candidate's cache hook does not apply.
+
+**If class C with a primed prefix still fails** onset or quality, the delay is not
+removable by reasoning effort on this model. The next approach would be a different local
+inference path for ordinary conversation, e.g. a non-reasoning instruct model or
+speculative decoding. Both need new qualification under his authority; no compatible
+speculative path exists on this machine today (23 September finding).

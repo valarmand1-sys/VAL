@@ -409,3 +409,5 @@ before it.
 With both, ordinary replies would still begin about 4.5–5 s after he stops speaking; a
 reply in about one second is not reachable while the answer is reasoned out after his
 words end.
+
+**Correction, 28 September 2026 (night; `2026-09-28-checkpoint/EFFORT_EXPERIMENT.md` §8).** The renewal clone (`val-exp-gpt-oss-20b`) has no LM Studio hub definition, so it ignored `reasoning_effort` and rendered "Reasoning: medium" for every request, and used LM Studio's generic sampling defaults rather than production's. **The Tier-1 route's "LOW" requests in these runs ran at MEDIUM**, so the social figures here are Tier-1 requests at MEDIUM effort. The MEDIUM-against-MEDIUM comparisons (renewal, divergence, layout) stay internally valid. The 26 September Tier-1 LOW qualification, on the real `openai/gpt-oss-20b` instance, is unaffected.

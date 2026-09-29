@@ -1,0 +1,360 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_layer_0_schema, Layer 0 schema — the seven tables of 04-layer-0.md §2.
+INFO  [alembic.runtime.migration] Running upgrade 0001_layer_0_schema -> 0002_reaction_and_ideas, Reaction is not intent, and the idea lifecycle — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0002_reaction_and_ideas -> 0003_budget_reservations, Pre-call budget reservations, and truthful cost — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0003_budget_reservations -> 0004_supersede_zero_costs, Supersede the fabricated zero costs without touching them — §2.2 amendment.
+INFO  [alembic.runtime.migration] Running upgrade 0004_supersede_zero_costs -> 0005_persona_provenance, Persona provenance and per-call attribution — WP-0.5.
+INFO  [alembic.runtime.migration] Running upgrade 0005_persona_provenance -> 0006_project_attribution, What a stored project_id means — §2.2 amendment, WP-0.6 corrective round.
+INFO  [alembic.runtime.migration] Running upgrade 0006_project_attribution -> 0007_legacy_attribution_closed, Close the legacy-attribution set for good — WP-0.6 corrective round two.
+INFO  [alembic.runtime.migration] Running upgrade 0007_legacy_attribution_closed -> 0008_conversation_scope_recall, Conversation scope is history; recall is project-scoped — WP-0.7.
+INFO  [alembic.runtime.migration] Running upgrade 0008_conversation_scope_recall -> 0009_evidence_is_immutable, Evidence rows cannot be edited — current-version closure pass, 18 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0009_evidence_is_immutable -> 0010_terminal_state_is_evidence, The provider's terminal state is durable evidence — independent-review correction.
+INFO  [alembic.runtime.migration] Running upgrade 0010_terminal_state_is_evidence -> 0011_blind_position_evidence, The blind position is durable evidence — WP-0.9, ruling of 19 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0011_blind_position_evidence -> 0012_archive_is_presentation, `archived_at`, and the demonstration fixtures marked — 31 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0012_archive_is_presentation -> 0013_classification_evidence, A turn's classification is durable evidence — ruling of 3 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0013_classification_evidence -> 0014_classification_review, Hand-labelling of classifications — ruling of 7 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0014_classification_review -> 0015_model_call_cache_usage, Prompt-cache evidence per call — ruling of 8 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0015_model_call_cache_usage -> 0016_message_revisions, Message revision and retraction as appended facts — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0016_message_revisions -> 0017_conversation_removals, Conversation Remove and Reinstate as appended facts — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0017_conversation_removals -> 0018_scope_transitions, Explicit scope transitions with immutable history — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0018_scope_transitions -> 0019_answer_recall_sources, House Recall grounding continuity as provenance — ruling of 13 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0019_answer_recall_sources -> 0020_exchange_measurements, Exchange identity on reservations, and per-call measurement — ruling of 13 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0020_exchange_measurements -> 0021_prompt_cache_diagnostics, Prompt-cache diagnostics on the measurement sidecar — ruling of 15 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0021_prompt_cache_diagnostics -> 0022_runtime_provenance, Runtime provenance on the measurement sidecar — ruling of 16 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0022_runtime_provenance -> 0023_second_local_provider, The known-$0 clause names the second unmetered LOCAL provider — ruling of 18 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0023_second_local_provider -> 0024_attachment_substrate, Attachment Substrate v1.2 — the six append-only tables. Owner ruling, 19 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0024_attachment_substrate -> 0025_local_visual_perception, Local visual perception: the record of what Val looked at, and what she saw.
+INFO  [alembic.runtime.migration] Running upgrade 0025_local_visual_perception -> 0026_local_audio_perception, Audio joins the perception record — owner execution order, 22 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0026_local_audio_perception -> 0027_local_speech, Val's voice, on the record — owner execution order, 22 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0027_local_speech -> 0028_voice_input, Val listens, and the record stays text — owner execution order, 23 Sept 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0028_voice_input -> 0029_speech_delivery, What the owner actually heard — owner execution order, 23 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0029_speech_delivery -> 0030_voice_local_only, The live-voice seal — owner execution order, 24 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0030_voice_local_only -> 0031_prefix_prime, A prefix prime is a model call, and the record says so — owner order, 25 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0031_prefix_prime -> 0032_light_conversation, Light conversation, and its speculative preparation, are on the record — 26 Sept 2026.
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-portugal", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 163, "dispatch_to_first_chunk_s": 1.611, "reasoning_s": 2.431, "dispatch_to_first_segment_s": null}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-portugal", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 161, "dispatch_to_first_chunk_s": 0.414, "reasoning_s": 2.545, "dispatch_to_first_segment_s": null}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-portugal", "effort": "low", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 23, "dispatch_to_first_chunk_s": 0.427, "reasoning_s": 0.314, "dispatch_to_first_segment_s": null}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-portugal", "effort": "medium", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 73, "dispatch_to_first_chunk_s": 0.476, "reasoning_s": 1.095, "dispatch_to_first_segment_s": null}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-caesura", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 254, "dispatch_to_first_chunk_s": 1.66, "reasoning_s": 3.909, "dispatch_to_first_segment_s": 5.798}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-caesura", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 160, "dispatch_to_first_chunk_s": 0.458, "reasoning_s": 2.501, "dispatch_to_first_segment_s": 3.158}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-caesura", "effort": "medium", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 227, "dispatch_to_first_chunk_s": 0.47, "reasoning_s": 3.54, "dispatch_to_first_segment_s": 4.27}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-caesura", "effort": "low", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 159, "dispatch_to_first_chunk_s": 0.473, "reasoning_s": 2.501, "dispatch_to_first_segment_s": 3.188}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-sonnet", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 186, "dispatch_to_first_chunk_s": 0.455, "reasoning_s": 2.942, "dispatch_to_first_segment_s": 3.673}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-sonnet", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 171, "dispatch_to_first_chunk_s": 1.623, "reasoning_s": 2.712, "dispatch_to_first_segment_s": 4.565}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-sonnet", "effort": "low", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 125, "dispatch_to_first_chunk_s": 1.178, "reasoning_s": 2.016, "dispatch_to_first_segment_s": 3.469}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "F-sonnet", "effort": "medium", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 129, "dispatch_to_first_chunk_s": 0.43, "reasoning_s": 2.084, "dispatch_to_first_segment_s": 2.727}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chapter", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 184, "dispatch_to_first_chunk_s": 0.502, "reasoning_s": 2.873, "dispatch_to_first_segment_s": 3.557}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chapter", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 309, "dispatch_to_first_chunk_s": 0.435, "reasoning_s": 4.815, "dispatch_to_first_segment_s": 5.495}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chapter", "effort": "medium", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 131, "dispatch_to_first_chunk_s": 0.446, "reasoning_s": 2.087, "dispatch_to_first_segment_s": 2.594}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chapter", "effort": "low", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 153, "dispatch_to_first_chunk_s": 0.46, "reasoning_s": 2.404, "dispatch_to_first_segment_s": 3.047}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chase", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 719, "dispatch_to_first_chunk_s": 1.197, "reasoning_s": 11.077, "dispatch_to_first_segment_s": 12.459}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chase", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 759, "dispatch_to_first_chunk_s": 1.185, "reasoning_s": 11.694, "dispatch_to_first_segment_s": 13.049}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chase", "effort": "low", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 859, "dispatch_to_first_chunk_s": 0.473, "reasoning_s": 13.245, "dispatch_to_first_segment_s": 13.965}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-chase", "effort": "medium", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 239, "dispatch_to_first_chunk_s": 0.463, "reasoning_s": 3.68, "dispatch_to_first_segment_s": null}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-lighthouse", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 329, "dispatch_to_first_chunk_s": 1.186, "reasoning_s": 5.113, "dispatch_to_first_segment_s": 6.466}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-lighthouse", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 44, "dispatch_to_first_chunk_s": 0.403, "reasoning_s": 0.788, "dispatch_to_first_segment_s": 1.343}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-lighthouse", "effort": "medium", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["low"], "reasoning_tokens": 212, "dispatch_to_first_chunk_s": 0.413, "reasoning_s": 3.342, "dispatch_to_first_segment_s": 3.939}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "C-lighthouse", "effort": "low", "sample": 2, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["low"], "reasoning_tokens": 74, "dispatch_to_first_chunk_s": 0.384, "reasoning_s": 1.249, "dispatch_to_first_segment_s": 1.832}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R1-correction", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["medium"], "reasoning_tokens": 137, "dispatch_to_first_chunk_s": 1.481, "reasoning_s": 2.231, "dispatch_to_first_segment_s": 4.232}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R1-correction", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["medium"], "reasoning_tokens": 222, "dispatch_to_first_chunk_s": 1.446, "reasoning_s": 3.522, "dispatch_to_first_segment_s": 5.583}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R2-boundary-constraints", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["medium"], "reasoning_tokens": 374, "dispatch_to_first_chunk_s": 1.298, "reasoning_s": 5.827, "dispatch_to_first_segment_s": 7.309}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R2-boundary-constraints", "effort": "medium", "sample": 1, "screen_passed": false, "effort_on_the_wire": ["medium"], "core_real_decision": ["medium"], "reasoning_tokens": 380, "dispatch_to_first_chunk_s": 0.419, "reasoning_s": 5.897, "dispatch_to_first_segment_s": 6.516}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R3-planted-instruction", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["medium"], "reasoning_tokens": 279, "dispatch_to_first_chunk_s": 1.239, "reasoning_s": 4.364, "dispatch_to_first_segment_s": 5.803}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R3-planted-instruction", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["medium"], "reasoning_tokens": 147, "dispatch_to_first_chunk_s": 0.481, "reasoning_s": 2.302, "dispatch_to_first_segment_s": 2.967}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R4-missing-information", "effort": "low", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["low"], "core_real_decision": ["medium"], "reasoning_tokens": 200, "dispatch_to_first_chunk_s": 1.217, "reasoning_s": 3.139, "dispatch_to_first_segment_s": 4.571}
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+WARNI [val.gateway] local runtime ready: server_found_running=True, server_started=False, model_found_loaded=True, model_loaded=False, requested_context_tokens=32768, loaded_context_tokens=32768, base_url=http://127.0.0.1:1234/v1
+{"case": "R4-missing-information", "effort": "medium", "sample": 1, "screen_passed": true, "effort_on_the_wire": ["medium"], "core_real_decision": ["medium"], "reasoning_tokens": 381, "dispatch_to_first_chunk_s": 0.478, "reasoning_s": 5.93, "dispatch_to_first_segment_s": 6.561}
+{
+ "classes": {
+  "F": {
+   "first_segment": {
+    "per_case_low_minus_medium": [
+     0.779,
+     0.817
+    ],
+    "median": 0.798
+   },
+   "first_visible": {
+    "per_case_low_minus_medium": [
+     -0.956,
+     0.787,
+     0.809
+    ],
+    "median": 0.787
+   },
+   "reasoning_s": {
+    "per_case_low_minus_medium": [
+     -0.333,
+     0.184,
+     -0.149
+    ],
+    "median": -0.149
+   },
+   "reasoning_tokens": {
+    "per_case_low_minus_medium": [
+     -26,
+     13.0,
+     -9.5
+    ],
+    "median": -9.5
+   },
+   "first_chunk": {
+    "per_case_low_minus_medium": [
+     -0.623,
+     0.603,
+     0.958
+    ],
+    "median": 0.603
+   },
+   "screens_failed_low": [],
+   "screens_failed_medium": []
+  },
+  "C": {
+   "first_segment": {
+    "per_case_low_minus_medium": [
+     -0.743,
+     1.048,
+     1.508
+    ],
+    "median": 1.048
+   },
+   "first_visible": {
+    "per_case_low_minus_medium": [
+     -0.772,
+     5.09,
+     1.493
+    ],
+    "median": 1.493
+   },
+   "reasoning_s": {
+    "per_case_low_minus_medium": [
+     -0.813,
+     5.091,
+     1.116
+    ],
+    "median": 1.116
+   },
+   "reasoning_tokens": {
+    "per_case_low_minus_medium": [
+     -51.5,
+     330,
+     73.5
+    ],
+    "median": 73.5
+   },
+   "first_chunk": {
+    "per_case_low_minus_medium": [
+     0.04,
+     -0.001,
+     0.377
+    ],
+    "median": 0.04
+   },
+   "screens_failed_low": [],
+   "screens_failed_medium": []
+  },
+  "R": {
+   "first_segment": {
+    "per_case_low_minus_medium": [
+     1.351,
+     0.793,
+     -2.836,
+     -1.99
+    ],
+    "median": -0.599
+   },
+   "first_visible": {
+    "per_case_low_minus_medium": [
+     1.256,
+     0.809,
+     -2.82,
+     -2.052
+    ],
+    "median": -0.621
+   },
+   "reasoning_s": {
+    "per_case_low_minus_medium": [
+     1.291,
+     -0.07,
+     -2.062,
+     -2.791
+    ],
+    "median": -1.066
+   },
+   "reasoning_tokens": {
+    "per_case_low_minus_medium": [
+     85,
+     -6,
+     -132,
+     -181
+    ],
+    "median": -69.0
+   },
+   "first_chunk": {
+    "per_case_low_minus_medium": [
+     -0.035,
+     0.879,
+     -0.758,
+     0.739
+    ],
+    "median": 0.352
+   },
+   "screens_failed_low": [],
+   "screens_failed_medium": [
+    [
+     "R2-boundary-constraints",
+     1
+    ]
+   ]
+  }
+ },
+ "medians": {
+  "low": {
+   "dispatch_to_first_chunk_s": 0.84,
+   "reasoning_s": 2.793,
+   "reasoning_tokens": 177.5,
+   "dispatch_to_first_visible_s": 3.855,
+   "dispatch_to_first_segment_s": 4.568,
+   "engine_update_cache_ms": 69.35,
+   "engine_cached_tokens": 5930.5
+  },
+  "medium": {
+   "dispatch_to_first_chunk_s": 0.461,
+   "reasoning_s": 3.142,
+   "reasoning_tokens": 199.0,
+   "dispatch_to_first_visible_s": 3.882,
+   "dispatch_to_first_segment_s": 4.232,
+   "engine_update_cache_ms": 69.4,
+   "engine_cached_tokens": 5930.5
+  }
+ },
+ "effort_on_the_wire_mismatches": [],
+ "real_decisions": {
+  "F-portugal": [
+   "low"
+  ],
+  "F-caesura": [
+   "low"
+  ],
+  "F-sonnet": [
+   "low"
+  ],
+  "C-chapter": [
+   "low"
+  ],
+  "C-chase": [
+   "low"
+  ],
+  "C-lighthouse": [
+   "low"
+  ],
+  "R1-correction": [
+   "medium"
+  ],
+  "R2-boundary-constraints": [
+   "medium"
+  ],
+  "R3-planted-instruction": [
+   "medium"
+  ],
+  "R4-missing-information": [
+   "medium"
+  ]
+ }
+}

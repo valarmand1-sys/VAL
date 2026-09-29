@@ -1725,3 +1725,35 @@ stopped.
 
 **Next:** Option A (what MEDIUM deliberates about; within authority, $0) or Option B
 (LOW for a defined class; his ruling, bounded proposal in the record).
+
+## 38. Handoff — the bounded LOW-effort experiment (owner order of 28 September 2026, "Authorize a bounded reasoning-effort experiment")
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged; no physical test
+requested.** Record: `qualification/runs/2026-09-28-checkpoint/EFFORT_EXPERIMENT.md`,
+pre-registered in `602aaea` before any code or call (evidence index §125). Machinery
+`330d55f`: `val_policy.ordinary_effort`, `registry.PIN_ONLY`, `VAL_ORDINARY_LOW` (unset in
+production), Core's per-turn pin with a counted fallback, 49 tests.
+
+**Outcome: failed at screening under its registered terms.**
+
+- **Reasoning:** LOW cut hidden reasoning from ~3.5 s to ~0.3 s (13.5 against 222.5
+  tokens, median).
+- **Onset:** with only the existing primes, LOW's prompt prefix (it begins "Reasoning:
+  low") was cold every time: ~7.7 s to the first chunk against MEDIUM's ~1.6 s. Onset was
+  slower by +1.70 s (F) and +1.44 s (C), against the required −1.5 s.
+- **Quality:** class F also failed. LOW refused "What is the capital of Portugal?" once,
+  and misstated sonnet rhyme schemes. Class C held up in 6 answers.
+- **Regression:** LOW invented a review of a nonexistent second act, confirming the
+  exclusion of missing-information contexts.
+- **Routing:** 0 of 23 traps routed LOW.
+
+**Found on the way, affecting earlier records:** the renewal clone has no LM Studio hub
+definition, so it ignored `reasoning_effort` (rendering "Reasoning: medium") and used
+generic sampling. The Tier-1 "LOW" route on the clone (27–28 September runs) actually ran
+at MEDIUM. Corrections are appended to the cache, checkpoint and lifecycle records. The
+26 September Tier-1 LOW qualification (real instance) stands.
+
+**Next option (his authorization):** LOW for class C with its own primed prefix. Estimated,
+not measured: class-C audible onset ~3.5–4 s against ~6.4 s. It needs a LOW ordinary prefix
+prime, plus a hub definition for the clone or a real-key instance. If that fails, the next
+step is a different local inference path, which needs new qualification.
