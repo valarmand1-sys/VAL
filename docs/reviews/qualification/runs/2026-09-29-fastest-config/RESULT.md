@@ -133,3 +133,38 @@ configuration, not a new qualification.
   - failures, missing audio, underruns and runaway segments from the player's records;
   - memory and swap growth, with recognition and synthesis resident.
 - **Not changed:** no acknowledgement is spoken, and the voice and pace are unchanged.
+
+## 5. The measurement was stopped by his order — INCOMPLETE, not a balanced comparison
+
+**Stopped at 14:49 on 29 September 2026** by the owner's order: the independent
+configuration leaves ordinary conversation on GPT-OSS MEDIUM, whose hidden reasoning
+remains the main delay.
+
+| run | condition | state |
+|---|---|---|
+| F-B1 | baseline | complete, 13:32–13:56; sessions 0–4 |
+| F-I1 | independent | complete, 13:57–14:17; sessions 0–4 |
+| F-I2 | independent | complete, 14:17–14:38; sessions 0–4 |
+| F-B2 | baseline | **stopped during session 1 of 5.** Session 0 complete (`voice-bench-F-B2-session-0.json`); session 1's driver was killed |
+
+**Preserved:**
+
+- every completed run's driver logs, service logs, session files, extracted
+  `voice-bench-<run>.json`, hook log, memory samples and store dump (`*.dump`, local
+  only);
+- for F-B2, its service log, memory samples, session 0, `hook-F-B2-partial.log` and
+  `store-F-B2-partial.dump`.
+
+**After the stop,** the instance was unloaded and the cache-renewal allowlist restored.
+The balanced order (B, I, I, B) was not completed, so **no comparison is drawn.**
+
+**Raw figures, unbalanced, for the record only** (`incomplete-raw-figures.json`; speech end
+→ first real playback, identity-attributed, excluding turns spoken over her audio):
+
+- **Tier-1 LOW courtesy turns** in the two independent runs: median **2.97 s**, p90 3.65 s
+  (16 turns). These are the first desktop figures for real LOW on the Tier-1 route: the
+  instance honoured effort.
+- **MEDIUM "ordinary"-class turns:**
+  - independent runs: median 7.26 s, p90 11.02 s (48 turns);
+  - the one complete baseline: median 9.85 s, p90 14.95 s (24 turns).
+- No underruns in any completed run.

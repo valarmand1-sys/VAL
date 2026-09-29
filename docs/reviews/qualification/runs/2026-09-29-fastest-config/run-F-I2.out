@@ -1,0 +1,52 @@
+=== F-I2 (independent) 14:17:56 commit d9919b7 dirty=0 hook=3773168dd12f
+2026-09-29T14:18:03 pid=36641 v2.3 renewal on hit and divergence checkpoint installed for /Users/josepharmand/.lmstudio/models/val-experiment/gpt-oss-20b-MXFP4-
+driver session 0 exit 0
+driver session 1 exit 0
+driver session 2 exit 0
+driver session 3 exit 0
+driver session 4 exit 0
+store preserved: store-F-I2.dump
+greeting                               2926 ident light_conversation           cache=5048 heard='Good evening.'
+factual                                5254 ident conversation                 cache=5048 heard='What is the capital of Portugal?'
+thanks after an answer                 2763 ident light_conversation           cache=5048 heard='Thank you.'
+substantive                            6221 ident conversation                 cache=5048 heard='Explain the difference between suspense '
+follow-up                              7601 ident conversation                 cache=5048 heard='Which of those works better in a short s'
+farewell after an answer               5926 ident conversation                 cache=5048 heard='Good night.'
+greeting                               3037 ident light_conversation           cache=5048 heard='Hello.'
+conversational                        11645 ident conversation                 cache=5048 heard='How long should a first chapter be?'
+continuation after a pause             6863 ident conversation                 cache=5048 heard='Tell me about a good opening line. and w'
+hesitation                             9782 ident conversation                 cache=5048 heard='I was wondering. Um. Weather prologues a'
+correction after a pause               6401 ident conversation                 cache=5407 heard='Name a famous mystery novel. No, a famou'
+thanks after an answer                 4546 ident conversation                 cache=5407 heard='Thanks.'
+ordinary                               8208 ident conversation                 cache=5048 heard='Name two ways to end a chapter.'
+follow-up, quick                       7284 ident conversation                 cache=5048 heard='Which of those is better at night?'
+factual, into maintenance              7719 ident conversation                 cache=5048 heard='What is a caesura?'
+to be replaced                         None no so conversation                 cache=None heard='Describe a haunted house in one sentence'
+explicit replacement                   6816 ident conversation                 cache=5259 heard='Actually, never mind. Describe a lightho'
+thanks after an answer, into mainten   5075 ident conversation                 cache=5259 heard='Thank you.'
+greeting                               2849 ident light_conversation           cache=5048 heard='Good evening.'
+factual                                4135 ident conversation                 cache=5048 heard='What is the capital of Portugal?'
+thanks after an answer                 2677 ident light_conversation           cache=5048 heard='Thank you.'
+factual                                5389 ident conversation                 cache=5048 heard='What is a caesura?'
+thanks after an answer                 3126 ident light_conversation           cache=5048 heard='Thanks.'
+conversational                         5984 ident conversation                 cache=5048 heard='How long should a first chapter be?'
+thanks after an answer                 3882 ident light_conversation           cache=5048 heard='Thank you.'
+ordinary                               7629 ident conversation                 cache=5048 heard='Name two ways to end a chapter.'
+thanks after an answer                 2893 ident light_conversation           cache=5048 heard='Thanks.'
+follow-up, quick                       8300 ident conversation                 cache=5197 heard='Which of those is better at night?'
+thanks after an answer, into mainten   7797 ident conversation                 cache=5456 heard='Thank you.'
+substantive                            6627 ident conversation                 cache=5456 heard='Explain the difference between suspense '
+thanks after an answer                 5288 ident conversation                 cache=5657 heard='Thanks.'
+farewell after an answer              11303 ident conversation                 cache=5456 heard='Good night.'
+continuation, pause 0.8 s              8004 ident conversation                 cache=5048 heard='Tell me about a good opening line. and w'
+correction, pause 1.2 s               11018 ident conversation                 cache=5048 heard='Name a famous mystery novel. No, a famou'
+greeting then request, pause 1.2 s     7008 ident conversation                 cache=5238 heard='Good evening. What is a sonnet?'
+continuation, pause 1.6 s (window en   9710 ident conversation                 cache=5238 heard='and why it works.'
+correction, pause 1.6 s (window end)   6684 ident conversation                 cache=5406 heard='Name a famous ghost story. No, a famous '
+greeting then request, pause 1.6 s (  11376 ident conversation                 cache=5582 heard='What is a haiku?'
+correction, pause 2.3 s (past the wi  10027 ident conversation                 cache=5406 heard='No, a famous play.'
+thanks after an answer                 5139 ident conversation                 cache=5642 heard='Thank you.'
+prime calls: [('al-exp-hub', 'uncertain'), ('al-exp-hub', 0), ('al-exp-hub', 5048), ('al-exp-hub', 5048), ('al-exp-hub', 5048), ('al-exp-hub', 5048), ('al-exp-hub', 5048), ('al-exp-hub', 'uncertain'),
+models called: ['val-exp-hub']
+DONE F-I2 14:38:36
+exit 0

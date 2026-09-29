@@ -1934,3 +1934,67 @@ requested.** Record: `qualification/runs/2026-09-29-qwen3-30b/QWEN_QUALIFICATION
   GPT-OSS latency stack remains a separate decision, and the 27 September figures are
   not a qualification of today's configuration (the clone ignored effort and used
   generic sampling).
+
+## 43. Handoff — speculative decoding closed; the desktop measurement stopped; the fast-path proposal (owner orders of 29 September 2026)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged; no physical test
+requested.** Records: `qualification/runs/2026-09-29-fastest-config/RESULT.md` and
+`FAST_PATH_PROPOSAL.md`.
+
+- **Standing rulings recorded:**
+  - Qwen is removed from consideration for production Voice; both screens are preserved.
+  - `envelope_in_system` is excluded from any proposed release until its authority
+    boundary is repaired and qualified.
+  - Six to seven seconds does not complete Voice.
+- **Speculative decoding: closed** on the installed engine's own code, with nothing
+  downloaded and the engine unchanged.
+  - GPT-OSS's 128-token rotating cache (12 of 24 layers) cannot be trimmed at Val's prompt
+    lengths, and mlx_lm's speculative path refuses such a cache.
+  - A draft model resets the cache history and disables prefix checkpoints.
+  - No draft shares GPT-OSS's 201,088-token vocabulary.
+- **Components independent of `envelope_in_system`:** cache renewal and divergence, Tier-1
+  LOW, owner precedence, adaptive endpoint, speech bound, combined continuations.
+- **The desktop measurement of them, stopped at 14:49 by his order: INCOMPLETE.**
+  - F-B1, F-I1 and F-I2 complete. F-B2 stopped in session 1 of 5.
+  - Everything is preserved; no comparison is drawn.
+  - Raw, unbalanced: real Tier-1 LOW courtesy turns 2.97 s median (p90 3.65 s);
+    MEDIUM turns 7.26 s in the independent runs.
+- **Continuation point: `FAST_PATH_PROPOSAL.md`, awaiting his decision.**
+  - **The design:** ordinary spoken turns on the resident GPT-OSS at LOW effort under
+    three Core-owned layers:
+    - a deterministic pre-route to MEDIUM on correction, pending action, consequential
+      subject, attachments or recall, multiple constraints, or a reference to a record
+      Core cannot find;
+    - a Core-owned answer contract, with the persona alone as system;
+    - a pre-speech grounding guard that withholds any segment claiming unrecorded work,
+      documents, volumes or capabilities, and escalates to MEDIUM.
+  - **Estimate:** about 3.2–4.5 s on fast-path turns (blended about 3.5–4.5 s), against
+    6.3–7.3 s measured. About one second is impossible under the current turn boundary:
+    fixed costs are about 1.6 s.
+  - **His tradeoff:** LOW's lower general-knowledge accuracy (sonnet 2/2 wrong; one
+    refused fact), or MEDIUM on every turn.
+  - **The early gate:** about 70 local calls, about 15 minutes, $0. It rejects if any
+    fabrication, false capability, lost correction or boundary violation reaches speech,
+    if more than 30% of ordinary-shaped cases escalate, or if the first segment's median
+    exceeds 1.5 s.
+- **Runtime:** instances unloaded; cache allowlist restored; observer removed. The Qwen
+  weights, definition and entry are kept pending his ruling on removal.
+
+**Avatar correction (owner, 29 September 2026), for every later reader.**
+
+- **Val's avatar is not prerecorded video loops with lip-sync.** He rejected that
+  approach.
+- **The existing videos and stills are references** for her appearance, room, clothing,
+  behaviour, movement and transitions, not the runtime animation.
+- **The intended avatar** is a continuously responsive, locally rendered photorealistic
+  character in a coherent room. A real-time 3D prototype is the direction to evaluate,
+  with fidelity and performance not established.
+- **Withdrawn:** the proposal's first draft listed the avatar as loops under 1 GB. That
+  figure is removed from every capacity statement, and its GPU and memory demand are
+  **unknown**.
+- **Capacity going forward:** any cognition model or hardware choice must leave headroom
+  that the avatar prototype's concurrent measurement establishes (`FAST_PATH_PROPOSAL.md`
+  §3).
+- **A baseline conflict for his amendment:** `docs/baselines/01-architecture.md` §8.2 still
+  specifies looping clips and lip-sync on a still. That is the rejected approach and the
+  source of the error. The baseline was not edited here; it is his to amend.
