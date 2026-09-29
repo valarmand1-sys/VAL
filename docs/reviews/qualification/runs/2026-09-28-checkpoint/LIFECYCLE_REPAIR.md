@@ -404,10 +404,11 @@ unused.
 - Ordinary median **7.91 s** (17 turns), against 6.38 s for the split candidate (C2b/C2c,
   34 turns) and 6.19 s for the prior candidate (P1a/P1b, envelope without divergence,
   34 turns). Social median 4.53 s (4.45, 4.77).
-- It is not a slower configuration. Reasoning tokens per MEDIUM call were the same as
-  the split runs': mean 224, median 187 (C2c 211 / 204); mean call time 7.1 s (C2c
-  7.4 s). E1's 15 decomposed turns caught more of MEDIUM's long reasoning tail: reasoning
-  4.55 s mean, against a per-turn spread of 1–13 s today.
+- **Why it measured slower is unresolved, and so is whether it repeats** (corrected at the owner's
+  instruction; an earlier draft said it was not a slower configuration, which one run cannot
+  establish). What is known: reasoning tokens per MEDIUM call were similar to the split runs'
+  (mean 224, median 187; C2c 211 / 204) and mean call time similar (7.1 s against 7.4 s); E1's 15
+  decomposed turns had 4.55 s mean reasoning, against a per-turn spread of 1–13 s today.
 - One run cannot resolve this. Per the order, the desktop comparison is reported
   inconclusive and stopped. The revert rests on the controlled comparison, where the
   content was fixed and the result included quality.
