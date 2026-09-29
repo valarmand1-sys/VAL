@@ -126,7 +126,11 @@ from val_gateway.conversations import (
     ScopeTransitionRefusedError,
     TitleRefusedError,
 )
-from val_gateway.deliberate import DeliberatedOutcome, prepare_light_answer
+from val_gateway.deliberate import (
+    DeliberatedOutcome,
+    prefill_voice_turn,
+    prepare_light_answer,
+)
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.deliberation import (
     IncoherentDeliberationError,
@@ -1126,6 +1130,22 @@ def create_app(
             # production: a light answer prepared during the resume window, and a
             # resume window sized from the transcript's own cues.
             prepare=prepare if speculation else None,
+            # Voice model candidate (29 September 2026), off in production: the coming
+            # turn's request, without his words, prepared when he begins to speak.
+            prefill=(
+                (
+                    lambda conversation_id: prefill_voice_turn(
+                        engine,
+                        gateway,
+                        catalogue=load_catalogue(engine),
+                        signals=None if conversation_id is not None else signals,
+                        conversation_id=conversation_id,
+                        live_voice=sessions.live_conversations(),
+                    )
+                )
+                if getattr(gateway, "voice_turn_prefill", False)
+                else None
+            ),
             adaptive_grace=adaptive_grace,
             owner_precedence=owner_precedence,
             adaptive_endpoint=adaptive_endpoint,

@@ -497,6 +497,7 @@ def enable_light_candidate(route: str = "qwen") -> ModelConfig:
 # Owner order, 29 September 2026: a different conversational model for Voice. Unset in
 # production. Set, spoken turns are pinned to the named candidate in this process only;
 # typed and complex work stays on the Partner route.
+VOICE_TURN_PREFILL_SETTING = "VAL_VOICE_TURN_PREFILL"
 VOICE_MODEL_SETTING = "VAL_VOICE_MODEL"
 VOICE_MODELS = {"gemma-4-26b-a4b": "gemma-4-26b-a4b-q4km-llamacpp-voice"}
 
@@ -898,6 +899,14 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             f"adaptive grace={'on' if adaptive_grace else 'off'} (this process only)."
         )
     gateway.voice_configuration = voice_model
+    gateway.voice_turn_prefill = voice_model is not None and os.environ.get(
+        VOICE_TURN_PREFILL_SETTING, ""
+    ).strip().lower() in {"1", "on", "true", "yes"}
+    if gateway.voice_turn_prefill:
+        _LOGGER.warning(
+            "CANDIDATE Voice turn prefill for this process: a spoken turn's request, without "
+            "his words, is prepared in the local Voice runtime when he begins to speak."
+        )
     return Startup(
         gateway=gateway,
         warnings=warnings,

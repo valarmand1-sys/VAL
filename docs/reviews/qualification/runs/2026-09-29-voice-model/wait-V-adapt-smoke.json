@@ -1,0 +1,159 @@
+{
+ "summary": {
+  "runs": [
+   "V-adapt-smoke"
+  ],
+  "turns": 3,
+  "missing": [],
+  "total_ms": {
+   "n": 3,
+   "median": 3477,
+   "p90": 3901,
+   "max": 3901
+  },
+  "pieces_ms": {
+   "endpoint": {
+    "n": 3,
+    "median": 489,
+    "p90": 522,
+    "max": 522
+   },
+   "confirmation": {
+    "n": 3,
+    "median": 280,
+    "p90": 301,
+    "max": 301
+   },
+   "core": {
+    "n": 3,
+    "median": 71,
+    "p90": 71,
+    "max": 71
+   },
+   "prefill": {
+    "n": 3,
+    "median": 1605,
+    "p90": 2019,
+    "max": 2019
+   },
+   "reasoning": {
+    "n": 3,
+    "median": 0,
+    "p90": 0,
+    "max": 0
+   },
+   "segment": {
+    "n": 3,
+    "median": 242,
+    "p90": 295,
+    "max": 295
+   },
+   "synthesis": {
+    "n": 3,
+    "median": 694,
+    "p90": 696,
+    "max": 696
+   },
+   "playback": {
+    "n": 3,
+    "median": 34,
+    "p90": 74,
+    "max": 74
+   }
+  },
+  "mean_ms": {
+   "endpoint": 496,
+   "confirmation": 280,
+   "core": 69,
+   "prefill": 1723,
+   "reasoning": 0,
+   "segment": 227,
+   "synthesis": 620,
+   "playback": 45
+  },
+  "engine_update_cache_ms": {
+   "n": 0
+  },
+  "uncached_tokens": {
+   "n": 0
+  },
+  "sum_check_ms": {
+   "n": 3,
+   "median": 0,
+   "p90": 0,
+   "max": 0
+  },
+  "share_of_mean": {
+   "endpoint": 0.143,
+   "confirmation": 0.081,
+   "core": 0.02,
+   "prefill": 0.498,
+   "reasoning": 0.0,
+   "segment": 0.066,
+   "synthesis": 0.179,
+   "playback": 0.013
+  }
+ },
+ "turns": [
+  {
+   "run": "V-adapt-smoke",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "total": 2998,
+   "pieces": {
+    "endpoint": 476,
+    "confirmation": 260,
+    "core": 71,
+    "prefill": 1544,
+    "reasoning": 0,
+    "segment": 144,
+    "synthesis": 469,
+    "playback": 34
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 33
+  },
+  {
+   "run": "V-adapt-smoke",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "total": 3477,
+   "pieces": {
+    "endpoint": 489,
+    "confirmation": 301,
+    "core": 65,
+    "prefill": 1605,
+    "reasoning": 0,
+    "segment": 295,
+    "synthesis": 696,
+    "playback": 26
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 35
+  },
+  {
+   "run": "V-adapt-smoke",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "total": 3901,
+   "pieces": {
+    "endpoint": 522,
+    "confirmation": 280,
+    "core": 71,
+    "prefill": 2019,
+    "reasoning": 0,
+    "segment": 242,
+    "synthesis": 694,
+    "playback": 74
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 37
+  }
+ ]
+}

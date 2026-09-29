@@ -79,7 +79,7 @@ import hashlib
 import json
 import logging
 import time
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -1203,6 +1203,86 @@ def prepare_light_answer(
         response.slug,
     )
     return prepared
+
+
+#: Stands in his words' place while the rest of a Voice turn's request is assembled
+#: ahead of them. A character no transcript contains.
+_WORDS_TO_COME = "\u241f"
+
+
+def prefill_voice_turn(
+    engine: Engine,
+    gateway: Gateway,
+    *,
+    catalogue: ProjectCatalogue,
+    signals: ProjectSignals | None = None,
+    conversation_id: UUID | None = None,
+    live_voice: LiveVoiceConversations | None = None,
+    recall_limit: int = DEFAULT_LIMIT,
+) -> Mapping[str, object]:
+    """Prepare a Voice turn's request while he is still speaking (29 September 2026).
+
+    Nothing is persisted and nothing is answered. The conversation is assembled exactly
+    as the turn will assemble it, with a placeholder where his words will stand; the
+    request is cut at the placeholder, and what precedes it is handed to
+    `Gateway.prefill_turn`. The seal is predicted as speculative preparation predicts
+    it. If anything the turn later assembles differs (a fact that depends on his words,
+    a minute that has turned), the runtime reuses the request only as far as the two
+    agree, and the turn is otherwise unaffected.
+    """
+    try:
+        if conversation_id is not None:
+            conversation, scope = conversations.resume(engine, conversation_id)
+            head = conversations.working(engine, conversation_id).live_records()
+            sequence = (head[-1].sequence + 1) if head else 1
+        else:
+            resolution = resolve_scope(signals or ProjectSignals(), catalogue, None)
+            if isinstance(resolution, AmbiguousProject):
+                return {"prefilled": False, "reason": "the project scope is ambiguous"}
+            scope = resolution
+            now = datetime.now(UTC)
+            conversation = ConversationRecord(
+                id=uuid4(),
+                project_id=attribution_of(scope),
+                title="",
+                started_at=now,
+                last_message_at=now,
+            )
+            sequence = 1
+        ephemeral = MessageRecord(
+            id=uuid4(),
+            conversation_id=conversation.id,
+            role=StoredRole.USER,
+            content=_WORDS_TO_COME,
+            sequence=sequence,
+            created_at=datetime.now(UTC),
+        )
+        thread = (
+            conversations.working_with(engine, conversation.id, ephemeral)
+            if conversation_id is not None
+            else conversations.prospective_thread(ephemeral)
+        )
+        reasons: list[LocalOnlyReason] = []
+        if live_voice is not None and live_voice.active_in(conversation.id):
+            reasons.append(LocalOnlyReason.VOICE_SESSION_ACTIVE)
+        reasons.append(LocalOnlyReason.CONVERSATION_SEALED)
+        messages, _recalled, _egress = assemble_turn(
+            engine,
+            OpenedTurn(conversation=conversation, scope=scope, user_message=ephemeral),
+            recall_limit=recall_limit,
+            egress=sealed(*reasons),
+            thread=thread,
+        )
+    except (ConversationNotFoundError, GatewayError) as failure:
+        return {"prefilled": False, "reason": f"{type(failure).__name__}: {failure}"}
+    last = messages[-1]
+    content = last.content if isinstance(last.content, str) else ""
+    if last.role != "user" or _WORDS_TO_COME not in content:
+        return {"prefilled": False, "reason": "the request does not end with his words"}
+    known = content.rpartition(_WORDS_TO_COME)[0]
+    if not known.strip():
+        return {"prefilled": False, "reason": "nothing precedes his words in the last message"}
+    return gateway.prefill_turn((*messages[:-1], Message(role="user", content=known)))
 
 
 def _light_tier(

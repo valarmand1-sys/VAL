@@ -45,7 +45,7 @@ import sys
 import threading
 import time
 import traceback
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol
@@ -652,7 +652,14 @@ class VoiceSession:
         owner_precedence: bool = False,
         adaptive_endpoint: bool = False,
         combine_continuations: bool = False,
+        prefill: Callable[[UUID | None], object] | None = None,
     ) -> None:
+        #: Owner order, 29 September 2026 (Voice model candidate; off in production): the
+        #: turn's request, without his words, prepared in the local runtime when he
+        #: begins to speak. One at a time; never while a turn of his is in flight.
+        self._prefill = prefill
+        self._prefilling: threading.Thread | None = None
+        self.prefills: list[dict[str, object]] = []
         self._engine = engine
         self._recognizer = recognizer
         self._submit = submit
@@ -1305,7 +1312,33 @@ class VoiceSession:
         elif event.kind == "error":
             self._fail(event.detail or "the recognizer reported a failure")
 
+    def _prefill_turn(self) -> None:
+        """Prepare the coming turn's request while he speaks; optional, off his path."""
+        prefill = self._prefill
+        with self._lock:
+            busy = self._prefilling is not None and self._prefilling.is_alive()
+            if prefill is None or busy or self._inflight is not None or self._pending is not None:
+                return
+            conversation = self.conversation_id
+            started = self._now()
+
+            def run() -> None:
+                try:
+                    result = prefill(conversation)
+                except Exception as failure:  # optional work: the turn is unaffected
+                    _LOGGER.warning("voice prefill: raised %s", failure)
+                    result = {"prefilled": False, "reason": str(failure)}
+                outcome = dict(result) if isinstance(result, Mapping) else {"prefilled": False}
+                outcome["wall_seconds"] = round(self._now() - started, 3)
+                _LOGGER.info("voice prefill: %s", json.dumps(outcome, default=str))
+                with self._lock:
+                    self.prefills.append(outcome)
+
+            self._prefilling = threading.Thread(target=run, name="voice-prefill", daemon=True)
+            self._prefilling.start()
+
     def _began(self, event: RecognizerEvent) -> None:
+        self._prefill_turn()
         with self._lock:
             self._utterances = max(self._utterances + 1, event.session)
             self._current = _Utterance(index=self._utterances, speech_start_at=event.at)

@@ -1,0 +1,159 @@
+{
+ "summary": {
+  "runs": [
+   "V-smoke"
+  ],
+  "turns": 3,
+  "missing": [],
+  "total_ms": {
+   "n": 3,
+   "median": 4461,
+   "p90": 4879,
+   "max": 4879
+  },
+  "pieces_ms": {
+   "endpoint": {
+    "n": 3,
+    "median": 570,
+    "p90": 581,
+    "max": 581
+   },
+   "confirmation": {
+    "n": 3,
+    "median": 1237,
+    "p90": 1241,
+    "max": 1241
+   },
+   "core": {
+    "n": 3,
+    "median": 75,
+    "p90": 78,
+    "max": 78
+   },
+   "prefill": {
+    "n": 3,
+    "median": 1602,
+    "p90": 2010,
+    "max": 2010
+   },
+   "reasoning": {
+    "n": 3,
+    "median": 0,
+    "p90": 0,
+    "max": 0
+   },
+   "segment": {
+    "n": 3,
+    "median": 225,
+    "p90": 280,
+    "max": 280
+   },
+   "synthesis": {
+    "n": 3,
+    "median": 690,
+    "p90": 697,
+    "max": 697
+   },
+   "playback": {
+    "n": 3,
+    "median": 53,
+    "p90": 60,
+    "max": 60
+   }
+  },
+  "mean_ms": {
+   "endpoint": 573,
+   "confirmation": 1234,
+   "core": 74,
+   "prefill": 1719,
+   "reasoning": 0,
+   "segment": 217,
+   "synthesis": 618,
+   "playback": 47
+  },
+  "engine_update_cache_ms": {
+   "n": 0
+  },
+  "uncached_tokens": {
+   "n": 0
+  },
+  "sum_check_ms": {
+   "n": 3,
+   "median": 0,
+   "p90": 0,
+   "max": 0
+  },
+  "share_of_mean": {
+   "endpoint": 0.128,
+   "confirmation": 0.275,
+   "core": 0.017,
+   "prefill": 0.384,
+   "reasoning": 0.0,
+   "segment": 0.048,
+   "synthesis": 0.138,
+   "playback": 0.01
+  }
+ },
+ "turns": [
+  {
+   "run": "V-smoke",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "total": 4107,
+   "pieces": {
+    "endpoint": 581,
+    "confirmation": 1237,
+    "core": 78,
+    "prefill": 1544,
+    "reasoning": 0,
+    "segment": 147,
+    "synthesis": 467,
+    "playback": 53
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 31
+  },
+  {
+   "run": "V-smoke",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "total": 4461,
+   "pieces": {
+    "endpoint": 569,
+    "confirmation": 1223,
+    "core": 68,
+    "prefill": 1602,
+    "reasoning": 0,
+    "segment": 280,
+    "synthesis": 690,
+    "playback": 29
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 34
+  },
+  {
+   "run": "V-smoke",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "total": 4879,
+   "pieces": {
+    "endpoint": 570,
+    "confirmation": 1241,
+    "core": 75,
+    "prefill": 2010,
+    "reasoning": 0,
+    "segment": 225,
+    "synthesis": 697,
+    "playback": 60
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 39
+  }
+ ]
+}

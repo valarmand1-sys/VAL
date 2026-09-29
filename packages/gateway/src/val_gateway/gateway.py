@@ -485,6 +485,9 @@ class Gateway:
         #: composition root under the `VAL_VOICE_MODEL` switch; typed and complex work
         #: is routed as always.
         self.voice_configuration: ModelConfig | None = None
+        #: Whether a Voice turn's request is prepared while he is still speaking
+        #: (`VAL_VOICE_TURN_PREFILL`, candidate; off in production).
+        self.voice_turn_prefill = False
         self._record = recorder
         self._ledger = ledger
         self._cache_ttl = cache_ttl
@@ -716,6 +719,52 @@ class Gateway:
             "boundary_tokens": plan.boundary_tokens,
             "boundary_sha256": plan.boundary_sha256,
             "prime_tokens": plan.prime_tokens,
+            "model_call_id": str(response.model_call_id),
+            "seconds": round(time.monotonic() - started, 3),
+        }
+
+    def prefill_turn(self, messages: tuple[Message, ...]) -> Mapping[str, object]:
+        """Leave the computation of a Voice turn's known content in the local runtime.
+
+        Owner order, 29 September 2026 (Voice model candidate; off in production). While
+        he is still speaking, everything the turn's request will carry except his words
+        is already known: the persona, the conversation so far, and Core's record state.
+        This sends exactly that, generates one token and discards it, so the request
+        that follows his words finds that work done and processes only his words.
+
+        **A local infrastructure call, governed like the persona prime**: through
+        `_attempt`, so budgeted, preflighted, attributed to the persona revision and
+        recorded as `prefix_prime`, attached to no conversation or message. It is sent
+        only to the pinned Voice configuration, which is local. Nothing it produces
+        reaches a message, recall or memory. It changes nothing about the turn: Core
+        still assembles the turn whole, and the runtime reuses only an exact prefix.
+        """
+        config = self.voice_configuration
+        if config is None or config.provider not in self._adapters:
+            return {"prefilled": False, "reason": "no Voice configuration is pinned"}
+        if self._persona_loader is None:
+            return {"prefilled": False, "reason": "no persona loader"}
+        adapter = self._adapters[config.provider]
+        try:
+            if supports_local_runtime(adapter):
+                cast(LocalRuntimeAdapter, adapter).ensure_runtime_ready(config)
+            persona = self._persona_loader.active()
+            request = assemble(
+                persona,
+                messages,
+                task_type=TaskType.PREFIX_PRIME,
+                scope=ExplicitNoProject(),
+                max_output_tokens=1,
+                egress=Egress.LOCAL_ONLY,
+            ).model_copy(update={"persona": PersonaAttribution(persona_id=persona.id)})
+            started = time.monotonic()
+            response = self._attempt(request, config, content_parts(request))
+        except (GatewayError, LocalRuntimeUnavailableError, PersonaUnavailableError) as failure:
+            return {"prefilled": False, "reason": f"{type(failure).__name__}: {failure}"}
+        return {
+            "prefilled": True,
+            "slug": config.slug,
+            "prompt_tokens": response.tokens_in,
             "model_call_id": str(response.model_call_id),
             "seconds": round(time.monotonic() - started, 3),
         }
