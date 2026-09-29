@@ -643,6 +643,18 @@ class Gateway:
             plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(
                 config, primed_system, boundary="developer_end"
             )
+        elif (
+            _context.SHARED_LOW_PRIME
+            and _context.ENVELOPE_IN_SYSTEM
+            and task_type is TaskType.LIGHT_CONVERSATION
+        ):
+            # The bounded LOW-effort experiment (28 September 2026): the LOW prime lands on
+            # the prefix the Tier-1 and ordinary LOW requests share, so it serves both.
+            plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(
+                config,
+                primed_system,
+                shares_with=persona.content + _context.envelope_system_separator(),
+            )
         else:
             plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(config, primed_system)
         if plan.refused is not None:

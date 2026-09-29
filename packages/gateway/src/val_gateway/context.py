@@ -238,6 +238,9 @@ ENVELOPE_SYSTEM_SEPARATOR = (
 #: consecutive requests share the persona, the steady state and the whole history, and a
 #: checkpoint where they diverge can be reused. Off in production.
 SPLIT_STATE = False
+#: The bounded LOW-effort experiment (28 September 2026): one LOW prime serves both the
+#: Tier-1 request and the ordinary LOW request, its checkpoint on their common prefix.
+SHARED_LOW_PRIME = False
 #: The fields that change with the turn (inventoried from the rendered requests of the
 #: live cache experiment): the clock, the history counts and revision notes, what
 #: retrieval and House recall found, what he heard of earlier answers, the spoken-path

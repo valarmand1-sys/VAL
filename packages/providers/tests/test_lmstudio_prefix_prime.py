@@ -123,3 +123,23 @@ def test_the_plan_is_remembered_rather_than_recalibrated() -> None:
     # A different persona is a different boundary, and is planned afresh.
     subject.plan_prefix_prime(CONFIG, PERSONA + " Changed.")
     assert inspector.rendered > rendered
+
+
+class SharingInspector(Inspector):
+    """The second system renders the same opening for its first 95 tokens, then differs."""
+
+    def opening_tokens(self, model_identifier: str, system: str) -> list[int]:
+        if system == PERSONA:
+            return list(OPENING)
+        return [*OPENING[:95], 555, 556, 557, 558, 559, 7001, 7002, 7003, 7004]
+
+
+def test_a_shared_prime_lands_on_the_prefix_two_routes_share() -> None:
+    """The LOW-effort experiment (28 September 2026): one prime serving the Tier-1 and the
+    ordinary LOW request, its checkpoint on their longest common prefix."""
+    plan = adapter(inspector=SharingInspector()).plan_prefix_prime(
+        CONFIG, PERSONA, shares_with=PERSONA + " and the record-state separator"
+    )
+    assert plan.refused is None
+    assert plan.boundary_tokens == 95
+    assert plan.prime_tokens - PRIME_CHECKPOINT_TAIL_TOKENS == 95

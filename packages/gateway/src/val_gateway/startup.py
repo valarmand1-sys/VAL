@@ -532,6 +532,9 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
 
         low = enable_ordinary_low()
         core.ORDINARY_LOW = low
+        import val_gateway.context as request_context
+
+        request_context.SHARED_LOW_PRIME = True
         _LOGGER.warning(
             "CANDIDATE LOW effort for defined ordinary classes, this process only: %s (effort %s) "
             "is pin-only and Core pins it for an eligible turn (classes F and C, "

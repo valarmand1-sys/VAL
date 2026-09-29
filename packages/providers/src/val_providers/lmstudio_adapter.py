@@ -282,7 +282,9 @@ class LMStudioAdapter:
         self._runtime = runtime or LMStudioRuntime(self._base_url, token)
         #: Prefix-prime plans, by instance, persona digest and engine: the filler that
         #: lands the checkpoint on the boundary does not change while those do not.
-        self._prime_plans: dict[tuple[str, str, str, ReasoningEffort, str], PrefixPrimePlan] = {}
+        self._prime_plans: dict[
+            tuple[str, str, str, ReasoningEffort, str, str | None], PrefixPrimePlan
+        ] = {}
 
     # --- bringing the runtime up (owner ruling, 21 September 2026) ------------
 
@@ -299,7 +301,12 @@ class LMStudioAdapter:
     # --- prefix priming (owner order, 25 September 2026) ----------------------
 
     def plan_prefix_prime(
-        self, config: ModelConfig, system: str, *, boundary: str = "user_header"
+        self,
+        config: ModelConfig,
+        system: str,
+        *,
+        boundary: str = "user_header",
+        shares_with: str | None = None,
     ) -> PrefixPrimePlan:
         """How to place the runtime's checkpoint on the persona boundary — or why not.
 
@@ -323,6 +330,12 @@ class LMStudioAdapter:
 
         Correctness never depends on these checks: the engine reuses only an exact
         token prefix, so a misplaced checkpoint can cost speed and never meaning.
+
+        `shares_with` (the bounded LOW-effort experiment, 28 September 2026): a second
+        system whose requests should reuse the same checkpoint. The target is then the
+        longest common token prefix of this system's boundary and that system's
+        developer-end boundary, so one prime serves both routes: at LOW, the Tier-1
+        request and the ordinary request share the first 5,043 tokens.
         """
         engine = self._runtime.engine_identity()
         label = "" if engine is None else f"{engine['name']}@{engine['version']}"
@@ -366,6 +379,7 @@ class LMStudioAdapter:
             label,
             config.reasoning_effort,
             boundary,
+            None if shares_with is None else hashlib.sha256(shares_with.encode()).hexdigest(),
         )
         remembered = self._prime_plans.get(key)
         if remembered is not None:
@@ -381,6 +395,13 @@ class LMStudioAdapter:
                 # Those four tokens are dropped from the target; the filler is then
                 # sized so the checkpoint lands there.
                 opening = opening[:-4]
+            if shares_with is not None:
+                other = self._inspector.opening_tokens(config.model_identifier, shares_with)[:-4]
+                common = next(
+                    (i for i, (a, b) in enumerate(zip(opening, other, strict=False)) if a != b),
+                    min(len(opening), len(other)),
+                )
+                opening = opening[:common]
             for words in range(1, 64):
                 filler = " ".join(["ok"] * words)
                 prime = self._inspector.tokens(

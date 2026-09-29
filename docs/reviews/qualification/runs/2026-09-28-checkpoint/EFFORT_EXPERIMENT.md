@@ -343,3 +343,65 @@ removable by reasoning effort on this model. The next approach would be a differ
 inference path for ordinary conversation, e.g. a non-reasoning instruct model or
 speculative decoding. Both need new qualification under his authority; no compatible
 speculative path exists on this machine today (23 September finding).
+
+---
+
+# Corrected configuration experiment (owner order of 28 September 2026, late night)
+
+**Registered here before any call of the corrected batch. The original result above
+stands as recorded:** the tested configuration failed on onset, including its unmatched
+LOW prefix preparation, a cost of that configuration and not of LOW itself. Class F
+stays rejected on quality and is not retested. Class C stays unqualified.
+
+## 12. The corrections, and what was verified before any batch
+
+- **An instance that honours effort and production's sampling:** a separate LM Studio
+  model definition, `~/.lmstudio/hub/models/val-experiment/gpt-oss-20b-renewal-exp/`.
+  - It uses LM Studio's supported `model.yaml` mechanism, with the base set to the
+    renewal clone. Its `customFields`, metadata and sampling `config` sections are
+    byte-identical to production's definition, which is unchanged (sha256
+    `08a949f9…` model.yaml, `2e6b4d2b…` manifest.json).
+  - It loads as `val-exp-hub`: context 32,768, parallel 1, the clone's weights.
+  - The cache hook applies to it (the clone's path is on the allowlist) and still
+    declines production's model path. Removing the folder reverses the change.
+  - **Probe of the rendered input:** "Reasoning: low" and "Reasoning: medium" as
+    requested.
+  - **Sampling:** the partner entry declares none and the adapter sends none, so
+    sampling comes from the definition, identical to production's. It is not observable
+    in the runtime's logs, and both efforts run on the one instance.
+- **One shared LOW prime, not a separate ordinary-LOW prime.** In the runtime's own
+  rendering, the Tier-1 LOW request and the ordinary LOW request share their first 5,043
+  tokens (Tier-1's boundary is 5,048, the ordinary developer content ends at 5,089). The
+  planner now lands the LOW prime's checkpoint on that common prefix (`shares_with`,
+  isolated behind the experiment's switch). Static prefixes held: **two**, LOW at 5,043
+  and MEDIUM at 5,089.
+- **Verified with request-attributed evidence** (`effort-verify.json`; hook lines matched
+  by exact prompt-token count and sequence on the sequential instance):
+  - the LOW prime (5,054 tokens) and the MEDIUM prime (5,100) were each cold (≈6.2 s);
+  - an ordinary LOW turn reused **5,043**, rendered "Reasoning: low", 2.43 s end to end;
+  - an ordinary MEDIUM turn reused **5,089**;
+  - a Tier-1 LOW turn reused **5,043**;
+  - a MEDIUM turn after the LOW turns still reused **5,089**, so switching left MEDIUM's
+    prefix intact.
+
+## 13. Registration of the corrected batch (terms fixed now)
+
+- **Scope:** class C only. Class F and every disallowed context stay on MEDIUM.
+  Eligibility rules unchanged.
+- **Cases:** the same three class C cases and fixed histories as §6. Both primes
+  re-established before every call (both efforts now have a matching prefix). Order
+  A B B A; 2 samples per case per effort; 12 calls.
+- **Thresholds (unchanged from §4):**
+  - onset: median paired LOW − MEDIUM in dispatch → first speech-safe segment ≤ −1.5 s;
+  - the same disqualifying quality failures; every answer read.
+- **Also recorded:**
+  - each prime's time and outcome before every call (maintenance cost), and the store's
+    entries and bytes;
+  - the rendered effort per call, by sequence.
+- **Stopping rule:** fail on onset or on any disqualifying failure, then stop and return
+  the next architectural option. If it passes, go directly to Stage 2 and Stage 3.
+  - **Stage 2:** the 8 fresh class C cases of §6 at both efforts, plus the four mixed
+    and trap cases through Core's real routing, which must stay on MEDIUM.
+  - **Stage 3:** a short real-desktop comparison with switch on and off, measuring speech
+    end → first audible answer, slower turns, failures and fallbacks, the next MEDIUM
+    turn's onset, and whether a request queued behind maintenance.

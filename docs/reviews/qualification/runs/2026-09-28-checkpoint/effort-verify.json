@@ -1,0 +1,116 @@
+{
+ "instance": "val-exp-hub",
+ "steps": [
+  {
+   "step": "primes",
+   "result": {
+    "primed": true,
+    "outcome": "established",
+    "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+    "boundary_tokens": 5089,
+    "boundary_sha256": "b46d6e5375d77218f9fdac0ce703648994737a32ff06dc807bc7a73db45405d6",
+    "prime_tokens": 5100,
+    "model_call_id": "01a0eb3f-51f9-7c96-aca3-74c8dc883bf4",
+    "seconds": 6.348,
+    "light": {
+     "primed": true,
+     "outcome": "established",
+     "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+     "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+     "boundary_tokens": 5043,
+     "boundary_sha256": "828d36e078315edc351cad11972a3591b1e87b46e52be6243f631a0d52e5e162",
+     "prime_tokens": 5054,
+     "model_call_id": "01a0eb3f-3819-7aeb-8851-8302462cd215",
+     "seconds": 6.562
+    }
+   },
+   "seconds": 13.609
+  },
+  {
+   "step": "ordinary LOW (class C)",
+   "tokens_in": 5941,
+   "task": "conversation",
+   "config": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner-low-experiment",
+   "answered": true,
+   "seconds": 2.434,
+   "engine": {
+    "active_memory": 13002991790,
+    "boundary": null,
+    "entries": 8,
+    "reused": 5043,
+    "store_bytes": 768909312,
+    "total": 5941,
+    "update_cache_ms": 1253.7,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: low"
+  },
+  {
+   "step": "ordinary MEDIUM",
+   "tokens_in": 5943,
+   "task": "conversation",
+   "config": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+   "answered": true,
+   "seconds": 5.123,
+   "engine": "unmatched (2 candidates)",
+   "rendered_reasoning": "unmatched (2)"
+  },
+  {
+   "step": "Tier-1 LOW",
+   "tokens_in": 5777,
+   "task": "light_conversation",
+   "config": "gpt-oss-20b-mxfp4-mlx-lmstudio-low",
+   "answered": true,
+   "seconds": 1.784,
+   "engine": {
+    "active_memory": 13629909166,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5043,
+    "store_bytes": 1399726080,
+    "total": 5777,
+    "update_cache_ms": 1060.5,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: low"
+  },
+  {
+   "step": "ordinary MEDIUM after LOW",
+   "tokens_in": 5943,
+   "task": "conversation",
+   "config": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+   "answered": true,
+   "seconds": 8.709,
+   "engine": "unmatched (2 candidates)",
+   "rendered_reasoning": "unmatched (2)"
+  }
+ ],
+ "prime_hook_lines": [
+  {
+   "active_memory": 12391016622,
+   "boundary": null,
+   "entries": 4,
+   "reused": 0,
+   "store_bytes": 180535296,
+   "total": 5054,
+   "update_cache_ms": 6147.3,
+   "why": "no gain"
+  },
+  {
+   "active_memory": 12675573934,
+   "boundary": null,
+   "entries": 6,
+   "reused": 0,
+   "store_bytes": 464388096,
+   "total": 5100,
+   "update_cache_ms": 6187.6,
+   "why": "no gain"
+  }
+ ],
+ "store_after": {
+  "entries": 10,
+  "store_bytes": 1389428736,
+  "active_memory": 13641705646
+ }
+}
