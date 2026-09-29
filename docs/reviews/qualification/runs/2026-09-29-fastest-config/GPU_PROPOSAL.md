@@ -3,6 +3,18 @@
 Owner order of 29 September 2026 ("Prepare one concrete, priced feasibility proposal for
 the dedicated-GPU option").
 
+> **Corrected 29 September 2026 (owner order, later the same day), without new
+> benchmarks.** Four corrections, marked where they apply:
+>
+> - warm-prefix reuse is a mandatory pass condition, and the no-reuse outcome is defined
+>   separately (§3.4, §4.1);
+> - published empty-context rates are kept apart from the onset estimate (§2.1, §4);
+> - the fallback policy and its memory cost are stated (§2.3);
+> - prices are provisional (§6).
+>
+> This proposal is preserved as an alternative. No purchase, rental, seal amendment or
+> deployment is authorised.
+
 **A proposal. Nothing is authorised by it and nothing was done for it** beyond reading
 published material and the house's own records:
 
@@ -64,6 +76,9 @@ leaves nothing for anything else.
 | prompt processing, 8,192 tokens | 8,834 tokens/s | about 650–750 tokens/s |
 | prompt processing, 32,768 tokens | 6,290 tokens/s | not measured |
 
+- **These are empty-context rates. They do not establish MEDIUM answer onset at Val's
+  occupied context,** and no estimate below is derived from them. The estimates use the
+  gate's own thresholds.
 - **What those figures do not show:**
   - `tg128` generates from an empty context. The rate with about 6,000 tokens occupied is
     not published.
@@ -107,8 +122,16 @@ leaves nothing for anything else.
 - **Answer authority:** the stream returns to Core's sink, as now. Core settles, records
   and delivers it. Hidden reasoning is discarded at the adapter, as now.
 - **Action authority:** the machine has no tools and no route to anything but this Mac.
-- **Failure:** if the machine is unreachable, Core falls back to GPT-OSS MEDIUM on this
-  Mac. That is the same model at today's speed, and the fallback is recorded.
+- **Failure and fallback — a choice, not a free benefit.** The two cannot both be had:
+
+| fallback policy | memory on this Mac | what a failure costs |
+|---|---|---|
+| keep GPT-OSS loaded here | its about 12 GB stays occupied: **no memory is freed** for the avatar or anything else | the next turn is answered at today's speed |
+| unload it here | about 12 GB freed | the first fallback turn waits for a cold load and a cold prime: about 9 s + about 7 s (**measured** here), then today's speed |
+| no local fallback | about 12 GB freed | Voice stops honestly and degrades to text until the machine returns |
+
+  - Which policy is right depends on the avatar's measured demand, which is unknown.
+  - Every fallback is recorded.
 
 **Transport:** one wired link, encrypted, accepting this Mac's address only. The machine
 has no internet route in operation.
@@ -185,8 +208,14 @@ About 40 requests. Under one hour of GPU time, plus the 12 GB download.
 
 - **Reported, not a pass condition:** time to the first answer segment, as a distribution.
   The test's questions are not his conversation, so the *rate* is what transfers.
-- **If warm reuse fails but cold prefill passes,** that is reported as a pass with a named
-  cost: every turn would pay about 0.7 s of prefill.
+- **Warm-prefix reuse is mandatory.** If it fails, **the gate has not passed**, whatever
+  the other measures show.
+- **A separately defined outcome, "no reuse",** fixed now so it cannot be fitted afterwards:
+  - **It applies when** warm reuse fails and every other threshold is met.
+  - **Its own condition:** cold prefill of the whole prompt in ≤ 1.0 s on every measured
+    turn.
+  - **It is not a pass.** It is reported as a different configuration with a slower
+    estimate (§4.1), and whether to continue on it is his decision.
 - **Stopping rule:**
   - stop at the first of $5 spent, 3 hours elapsed, or the 40 requests complete;
   - stop at once if the runtime cannot load the file or honour MEDIUM;
@@ -195,9 +224,13 @@ About 40 requests. Under one hour of GPU time, plus the 12 GB download.
 
 ## 4. What passing would imply for speech end → first audio
 
-**Estimate.** The Mac-side parts are **measured** medians (28 September, through the real
-desktop). The cognition parts apply the gate's thresholds to his real turns' reasoning
-(**measured**, production: median 269 tokens, 90th percentile 440).
+**Estimate, at the gate's thresholds.**
+
+- The Mac-side parts are **measured** medians (28 September, through the real desktop).
+- The cognition parts apply the gate's pass thresholds to his real turns' reasoning
+  (**measured**, production: median 269 tokens, 90th percentile 440). They do not use the
+  published empty-context rates.
+- A faster result would need measured rates above the thresholds. None is assumed.
 
 | part | where | today, measured median | if the gate passes, estimate |
 |---|---|---|---|
@@ -205,19 +238,27 @@ desktop). The cognition parts apply the gate's thresholds to his real turns' rea
 | recognition's final decode and the confirmation window | Mac | 0.26 s | 0.26 s |
 | Core: assembly, preflight, dispatch | Mac | 0.06 s | 0.06 s |
 | transport, wired | link | none | about 0.01 s |
-| prefill | cognition | 1.49 s | about 0.1–0.3 s warm (about 0.7 s if reuse fails) |
-| hidden reasoning, 269 tokens | cognition | 3.04 s | about 1.0–1.35 s |
+| prefill, warm | cognition | 1.49 s | ≤ 0.3 s |
+| hidden reasoning, 269 tokens at ≥ 200 tokens/s | cognition | 3.04 s | ≤ 1.35 s |
 | first answer segment | cognition | 0.21 s | about 0.1 s |
 | speech synthesis to first audio | Mac | 0.78 s | 0.78 s |
 | playback start | Mac | 0.05 s | 0.05 s |
-| **speech end → first audio** | | **6.3 s** | **about 2.8–3.4 s** |
+| **speech end → first audio** | | **6.3 s** | **about 3.4 s at the thresholds** |
 
-- **Slower turns** (reasoning at his 90th percentile, 440 tokens): about 3.5–4.3 s.
+- **Slower turns** (reasoning at his 90th percentile, 440 tokens, ≤ 2.2 s): about 4.2 s.
 - **Not included, because unmeasured:** whether synthesis on this Mac speeds up once
   cognition no longer shares its GPU.
-- **This is about three seconds. It is not his approximately one-second goal.**
+- **This is more than three seconds. It is not his approximately one-second goal.**
 
-### 4.1 What would still be needed to approach one second
+### 4.1 The "no reuse" outcome, recalculated
+
+If warm reuse fails and the separately defined outcome of §3.4 holds, every turn pays a
+cold prefill of ≤ 1.0 s in place of ≤ 0.3 s:
+
+- **speech end → first audio: about 4.1 s** at the thresholds;
+- slower turns about 4.9 s.
+
+### 4.2 What would still be needed to approach one second
 
 These are kept out of the estimate above. Each is a separate decision.
 
@@ -227,7 +268,8 @@ These are kept out of the estimate above. Each is a separate decision.
 | a shorter turn boundary: no confirmation window, an earlier endpoint | about 0.3–0.5 s | **unproven on his speech.** She would sometimes start answering while he is still mid-thought, then stop |
 | less hidden reasoning | up to about 1 s | **closed or unproven.** LOW and the cap are closed. The model's repository also holds a speculative-decoding companion (`eagle3-gpt-oss-20b`); whether llama.cpp uses it for this model, and what it gains, is unverified |
 
-- **Even if the first two both worked,** the estimate is about 1.8–2.6 s.
+- **Even if the first two both worked,** the estimate is about 2.4–2.6 s at the gate's
+  thresholds.
 - MEDIUM's reasoning alone is about 1 s at the published rate. **Approximately one second
   is not reachable by any change identified here while MEDIUM's reasoning is kept.**
 
@@ -241,9 +283,13 @@ These are kept out of the estimate above. Each is a separate decision.
 
 ## 6. Cost
 
+**Every hardware price here is provisional.** No purchasable configuration and complete
+price, with tax, delivery and return terms, has been verified. That verification comes
+before any purchase decision.
+
 | item | cost | basis |
 |---|---|---|
-| **complete machine:** ZOTAC MEK desktop (RTX 5090 32 GB, Ryzen 7 9800X3D, 32 GB DDR5, 2 TB NVMe, 1,200 W, Windows 11 Pro), Amazon listing B0H867K574 | **$4,499.99** before tax | **published**, as reported in search results on 29 September 2026. I could not load the live listing: **to be confirmed before any purchase** |
+| **complete machine (provisional):** ZOTAC MEK desktop (RTX 5090 32 GB, Ryzen 7 9800X3D, 32 GB DDR5, 2 TB NVMe, 1,200 W, Windows 11 Pro), Amazon listing B0H867K574 | **$4,499.99** before tax | **published**, as reported in search results on 29 September 2026. I could not load the live listing: **to be confirmed before any purchase** |
 | comparable complete RTX 5090 desktops | about $4,400–4,700; vendor-configured systems $8,500–9,200 (Corsair, listed) | published |
 | the graphics card alone | about $4,400–4,830 street | published, 23 August 2026 |
 | Ethernet cable or adapter; optional battery backup | about $30; about $200 | estimate |
@@ -285,7 +331,8 @@ These are kept out of the estimate above. Each is a separate decision.
 
 **Only if it passes, and each separately:**
 
-2. **The purchase:** $4,499.99 before tax, the listing confirmed first.
+2. **The purchase:** provisionally $4,499.99 before tax; a purchasable configuration and
+   its complete price verified first.
 3. **The seal amendment:** whether a Voice conversation's text may cross an encrypted cable
    to a second machine in the house. Without it the machine cannot serve Voice.
 4. **The provider ruling:** the llama.cpp provider is loopback-only and candidate-only
@@ -293,7 +340,7 @@ These are kept out of the estimate above. Each is a separate decision.
 5. **Requalification of MEDIUM on the new runtime,** before any spoken use.
 
 **Not decided by any of these:** that about three seconds completes Voice. The changes of
-§4.1 remain separate, and his one-second goal remains unmet by anything measured.
+§4.2 remain separate, and his one-second goal remains unmet by anything measured.
 
 ## 8. Sources
 
