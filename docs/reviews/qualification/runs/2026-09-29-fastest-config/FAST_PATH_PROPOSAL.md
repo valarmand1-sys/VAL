@@ -1,5 +1,15 @@
 # Proposal: a Core-governed fast path for ordinary spoken turns
 
+> **NOT APPROVED — closed by the owner's order of 29 September 2026.** See `DECISION.md`.
+>
+> - He did not authorise the accuracy reduction this proposal trades for speed.
+> - "Three layers make it safe" is withdrawn: the layers were never built or tested, and
+>   the pre-speech check is pattern matching (`DECISION.md` §1).
+> - The coverage estimate of 70–85% in §4 was wrong. The supported figure is 9 of 27
+>   recorded spoken turns (`DECISION.md` §2).
+> - No implementation and no gate follows. The text below is kept as the record of what
+>   was proposed.
+
 Owner order of 29 September 2026: pivot to a different architecture for ordinary
 conversation. This is a bounded desk assessment from evidence already collected.
 

@@ -1998,3 +1998,52 @@ requested.** Records: `qualification/runs/2026-09-29-fastest-config/RESULT.md` a
 - **A baseline conflict for his amendment:** `docs/baselines/01-architecture.md` §8.2 still
   specifies looping clips and lip-sync on a still. That is the rejected approach and the
   source of the error. The baseline was not edited here; it is his to amend.
+
+## 44. Handoff — the fast path closed; the avatar baseline amended; the unresolved decision (owner order of 29 September 2026)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged; no model call, download or
+benchmark in this step.** Record: `qualification/runs/2026-09-29-fastest-config/DECISION.md`.
+
+- **The ordinary-LOW fast path (§43) was not approved and is closed.**
+  - He did not authorise trading general-knowledge accuracy for speed.
+  - "Three layers make it safe" is withdrawn:
+    - the pre-route's key rule does not exist;
+    - the contract is an instruction;
+    - the pre-speech check is pattern matching. It would miss a falsehood stated plainly,
+      and it cannot check general facts.
+  - A failure after earlier sentences have played means duplicate or contradictory speech
+    and a 6–7 s gap. Holding all audio erases the gain.
+- **Coverage, from the 27 recorded spoken turns (24–26 September), each classified with
+  only its prior context:**
+  - 7 are courtesy turns the Tier-1 route already carries;
+  - 11 are excluded;
+  - **9 would have taken the fast path**: 3 test statements, 5 questions about her own
+    state, 1 creative request.
+  - Of 6 turns read as ordinary use, it would have carried 2.
+  - My earlier 70–85% estimate was wrong.
+- **No supported configuration on this Mac meets both his response-time goal and his
+  quality requirements.** None has been demonstrated.
+- **Descriptive observations from the stopped, unbalanced comparison** (speech end → first
+  audio, median):
+  - production configuration 9.85 s;
+  - independent latency components 7.26 s;
+  - Tier-1 LOW courtesy turns 2.97 s.
+- **THE UNRESOLVED DECISION (his):** whether Val's cognition may run on a dedicated local
+  machine in the house with a discrete GPU, this Mac keeping microphone, desktop,
+  recognition, voice and avatar.
+  - **Estimate:** about 2.8–3.4 s, not one second.
+  - **It requires:**
+    - amending the seal from "this Mac" to the house's own machines on the local network;
+    - a second machine to keep;
+    - requalifying MEDIUM on a different runtime.
+  - **The proposed early gate:** a single-stream rate measurement with a public-text prompt
+    of Val's prompt length, before any purchase. No price is quoted; none was sourced.
+  - **If he declines,** one of three gives way: MEDIUM's quality, the latency goal, or
+    cognition on this Mac alone.
+- **Avatar baseline amended** on his authorisation: `docs/baselines/01-architecture.md` §8.2
+  now specifies the locally rendered, continuously responsive avatar.
+  - The existing videos and stills are references.
+  - Implementation, fidelity, memory, GPU use and concurrent performance require prototype
+    qualification.
+  - The former loop design is preserved there as superseded history.
+  - §2.1 carries a note on the 31 August wording.

@@ -168,3 +168,8 @@ The balanced order (B, I, I, B) was not completed, so **no comparison is drawn.*
   - independent runs: median 7.26 s, p90 11.02 s (48 turns);
   - the one complete baseline: median 9.85 s, p90 14.95 s (24 turns).
 - No underruns in any completed run.
+
+## 6. Continuation
+
+`FAST_PATH_PROPOSAL.md` was not approved. `DECISION.md` closes it and holds the unresolved
+decision: whether Val's cognition may run on a dedicated local machine in the house.

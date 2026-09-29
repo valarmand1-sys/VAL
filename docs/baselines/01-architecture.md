@@ -81,6 +81,8 @@ The reason for standing it up this early is that the cost gradient (§5.3) is fi
 > *12 September 2026, Lord Armand:* conversation management — rename, archive, append-only message revision and retraction, conversation Remove/reinstate, and explicit scope transition — is authorised before the gate, narrowly; recorded in `04-layer-0.md` (§2.1 and §5 amendments of that date). Nothing else here moves.
 >
 > **Requirement, same date: invariant 29 applies to avatar state.** Every frame the avatar shows is a claim about what Val is doing. An idle or thinking loop displayed while something has actually failed is the same defect as an error banner asserting a cause it has not established — a confident assertion the system has not made true. Presence degrades honestly, and **the avatar must not depict a state the system cannot confirm**: a state loop is driven by confirmed backend state, never by optimism, and where the system cannot confirm what is happening, the avatar shows that — not a guess. This extends invariant 28 (animation is presentation only, §8) from "never implies success" to "never depicts the unestablished."
+>
+> **Amended — 29 September 2026, Lord Armand.** "Avatar state loops, lip-sync" and "state loop" above are the 31 August wording. The avatar is no longer a set of prerecorded loops (§8.2, amendment of 29 September 2026): it is a locally rendered, continuously responsive character. The requirement itself is unchanged and applies to whatever the renderer shows.
 
 Failure behavior: §8.3.
 
@@ -568,29 +570,72 @@ Speech-to-text runs locally. Push-to-talk first; wake word only after the loop i
 
 ### 8.2 Avatar
 
-Video and speech are fully decoupled. The loops carry her body; the voice is generated fresh for whatever she needs to say.
+> **Amendment — 29 September 2026, decided by Lord Armand. The avatar is a locally rendered, continuously responsive character; the prerecorded-loop design is withdrawn.**
+>
+> - **He rejected the design this section formerly specified**: looping clips for idle and working states, with speech settling onto a paired still and lip-sync at fixed coordinates.
+> - That text is preserved below as history and is no longer the specification.
+> - Nothing may silently substitute prerecorded loops for the avatar described here.
 
-**Idle and working states are looping clips** — working at the table, at the window, at the fire, crossing the room, rising for a book.
+**What the avatar is.** A continuously responsive character, rendered locally, in a coherent room. She:
 
-**Speech settles onto the paired source still.** Every existing clip was generated from a static image, and that still shares pose, lighting, and framing with its loop, so the transition between them is seamless. Lip-sync operates on the mouth region of the still at **fixed coordinates** — no per-frame face tracking, therefore no drift, and cheap enough to run live indefinitely.
+- moves naturally;
+- changes activities;
+- reacts when he speaks;
+- returns to the conversation;
+- synchronizes her speech.
 
-> **Superseded.** `VAL_Architecture_v2_Proposal.md` §Layer 1 specified viseme lip-sync over a *speaking loop*. That was written before it was established that the clips were themselves generated from stills. Once that was known, settling onto the paired still became the better approach: it is seamless by construction, needs no face tracking, and costs nothing per utterance. v2 is superseded on this point only.
+She does this without replaying a small library of clips. The design must preserve the photorealistic identity shown in his reference images.
 
-**Procedural micro-motion is required** on the speaking still — blink every few seconds, slight breathing scale, small head drift. Without it a talking still reads as uncanny, and no amount of lip-sync quality compensates.
+**What the existing videos and stills are.** References for her exact appearance, room, clothing, behavior, movement and transitions. They are not the runtime animation system.
 
-**Distance conveys register.** Close framing for speech, medium for working alongside, full-length for ambient presence.
+**Speech is generated, never replayed.** That is unchanged from §8.1. The avatar synchronizes to the voice generated for what she needs to say.
 
-Full-length framing is not used for speech. This is a practical rule, not an absolute: the real constraint is that the mouth region needs enough pixels to read. Where a wider framing still yields a legible mouth region, it is usable; where it does not, it is not.
+**Direction to evaluate, not yet established.** A real-time 3D prototype. Each of these **requires prototype qualification** and is unknown until measured:
 
-**Books signal working state.** A volume in her hands or open before her means she is working. Away from them she is at rest, listening, or thinking. This is legible at a glance and removes the need for an interface element to convey her state. State definitions: `03-persona.md` §6.
+- **Implementation:** the real-time 3D approach itself.
+- **Fidelity:** whether it preserves the photorealistic identity of the references.
+- **Memory and GPU use:** no figure exists. No capacity calculation may assume one. An earlier planning note's "under 1 GB" came from the withdrawn loop design and is withdrawn with it.
+- **Concurrent performance:** the renderer shares this machine's GPU and unified memory with cognition, speech recognition and speech synthesis. The prototype is qualified by measuring, during real Voice turns:
+  - the renderer's frame time, dropped frames and GPU memory;
+  - Voice's generation and prefill rates, time to first audio, and speech end → first audio, with and without the renderer running;
+  - free memory and swap growth over a sustained session.
 
-**Val curates her own visual library.** She works from existing loops, identifies states she lacks, and proposes generating them. Lord Armand approves them into the library, including the generation cost. New footage is generated from the same source stills so she remains visually consistent.
+**Consequence for other decisions.** Any choice of cognition model or hardware is assessed with headroom for this avatar. Where the evidence cannot establish that headroom, the assessment says so.
 
-**Format.**
+**What continues to bind.** The avatar never depicts a state the system cannot confirm (§2.1, invariant 29). Animation is presentation only (invariant 28). Avatar failure degrades to text (invariant 27, §8.3).
 
-- Existing footage is **1248×1664 at 24fps** — tall portrait. *Verified from the video files.*
-- A full-height column in the interface is **recommended**, not required. *Recommendation, not a measured constraint.*
-- Existing stills are **not** a single aspect ratio; they range from roughly 2:3 to 4:5. **Open action item:** standardize future stills on one ratio. Until that is settled, the interface must tolerate variable source ratios without cropping her out of frame.
+**Not re-ruled by this amendment.** The former text's presentation guidance is kept in the history below. It is neither carried forward nor rejected here, and awaits his ruling with the prototype:
+
+- distance conveying register;
+- books signalling working state;
+- Val curating her visual library;
+- the footage format notes.
+
+> **Superseded — history, preserved. The specification of this section from 15 August to 29 September 2026:**
+>
+> Video and speech are fully decoupled. The loops carry her body; the voice is generated fresh for whatever she needs to say.
+>
+> **Idle and working states are looping clips** — working at the table, at the window, at the fire, crossing the room, rising for a book.
+>
+> **Speech settles onto the paired source still.** Every existing clip was generated from a static image, and that still shares pose, lighting, and framing with its loop, so the transition between them is seamless. Lip-sync operates on the mouth region of the still at **fixed coordinates** — no per-frame face tracking, therefore no drift, and cheap enough to run live indefinitely.
+>
+> > **Superseded.** `VAL_Architecture_v2_Proposal.md` §Layer 1 specified viseme lip-sync over a *speaking loop*. That was written before it was established that the clips were themselves generated from stills. Once that was known, settling onto the paired still became the better approach: it is seamless by construction, needs no face tracking, and costs nothing per utterance. v2 is superseded on this point only.
+>
+> **Procedural micro-motion is required** on the speaking still — blink every few seconds, slight breathing scale, small head drift. Without it a talking still reads as uncanny, and no amount of lip-sync quality compensates.
+>
+> **Distance conveys register.** Close framing for speech, medium for working alongside, full-length for ambient presence.
+>
+> Full-length framing is not used for speech. This is a practical rule, not an absolute: the real constraint is that the mouth region needs enough pixels to read. Where a wider framing still yields a legible mouth region, it is usable; where it does not, it is not.
+>
+> **Books signal working state.** A volume in her hands or open before her means she is working. Away from them she is at rest, listening, or thinking. This is legible at a glance and removes the need for an interface element to convey her state. State definitions: `03-persona.md` §6.
+>
+> **Val curates her own visual library.** She works from existing loops, identifies states she lacks, and proposes generating them. Lord Armand approves them into the library, including the generation cost. New footage is generated from the same source stills so she remains visually consistent.
+>
+> **Format.**
+>
+> - Existing footage is **1248×1664 at 24fps** — tall portrait. *Verified from the video files.*
+> - A full-height column in the interface is **recommended**, not required. *Recommendation, not a measured constraint.*
+> - Existing stills are **not** a single aspect ratio; they range from roughly 2:3 to 4:5. **Open action item:** standardize future stills on one ratio. Until that is settled, the interface must tolerate variable source ratios without cropping her out of frame.
 
 ### 8.3 Failure
 
