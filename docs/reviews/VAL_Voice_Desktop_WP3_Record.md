@@ -2099,3 +2099,39 @@ unchanged.** Record: `qualification/runs/2026-09-29-fastest-config/GPU_PROPOSAL.
   - `envelope_in_system` is not approved;
   - avatar headroom on this Mac is unverified until the prototype is measured
     concurrently.
+
+## 46. Handoff — EAGLE3 on llama.cpp tried and closed; the GPU proposal corrected (owner order of 29 September 2026, evening)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged; no purchase or rental.**
+Records: `qualification/runs/2026-09-29-eagle3/EAGLE3_PROOF.md` (registered at `4867d83`
+before any measured request); `2026-09-29-fastest-config/GPU_PROPOSAL.md` (corrected at
+`c99e799`).
+
+- **Scope:** the earlier speculative-decoding closure is of the installed MLX engine only.
+- **EAGLE3, the documented llama.cpp pairing:** it loads and runs on this Mac through Metal
+  and is closed on performance.
+  - **Tested:** official llama.cpp 0.4.1 (build 10964, `b29c606e2`); target
+    `gpt-oss-20b-MXFP4.gguf` and draft `eagle3-gpt-oss-20b-BF16.gguf` from
+    `ggml-org/gpt-oss-20b-GGUF` @ `ef9b12f2…`; MEDIUM; through Val Core in production's
+    construction.
+  - **Measured, 8 requests:** generation 60 tokens/s with the draft off and 20–23 with it
+    on. Draft acceptance 9–15%. First speech-safe segment 16.5 s median with the draft
+    on.
+  - Prefix reuse worked (5,048 tokens reused per request). Streams intact. No swap growth.
+  - **llama.cpp without the draft matches MLX's rates,** so changing runtime on this Mac
+    gains nothing.
+  - **Not established:** onset with the draft off (a harness defect, counted against the
+    sixteen); per-request sampling as executed; cancellation.
+- **The GPU proposal is preserved as the alternative, corrected:**
+  - warm-prefix reuse is mandatory;
+  - a separately defined "no reuse" outcome, estimated at about 4.1 s;
+  - estimates at the gate's thresholds (about 3.4 s), apart from published empty-context
+    rates;
+  - the fallback's memory cost stated;
+  - prices provisional.
+- **The remaining ordinary delay is unchanged:** measured 28 September, 6.3 s median speech
+  end → first audio. Its parts: endpoint 0.47, confirmation 0.26, Core 0.06, prefill 1.49,
+  reasoning 3.04, segment 0.21, synthesis 0.78, playback 0.05.
+- **Continuation point, his decision:** whether to run the GPU pre-purchase measurement
+  (borrowed machine, or a rental capped at $5; public or synthetic material only). Nothing
+  else is pending.

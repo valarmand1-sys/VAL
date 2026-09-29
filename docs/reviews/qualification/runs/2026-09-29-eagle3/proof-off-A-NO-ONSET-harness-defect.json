@@ -1,0 +1,279 @@
+{
+ "condition": "off",
+ "block": "A",
+ "load_seconds": 1.5,
+ "server": {
+  "binary": "/opt/homebrew/bin/llama-server",
+  "flags": [
+   "/opt/homebrew/bin/llama-server",
+   "-m",
+   "/Users/josepharmand/.val-models/llamacpp-exp/gpt-oss-20b-MXFP4.gguf",
+   "--alias",
+   "val-exp-gpt-oss-llamacpp",
+   "--ctx-size",
+   "32768",
+   "--parallel",
+   "1",
+   "--jinja",
+   "-ngl",
+   "999",
+   "--host",
+   "127.0.0.1",
+   "--port",
+   "8099",
+   "--api-key-file",
+   "--swa-full",
+   "-b",
+   "2048",
+   "-ub",
+   "2048",
+   "--no-webui",
+   "--chat-template-kwargs",
+   "{\"reasoning_effort\":\"medium\"}"
+  ],
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "b2215de6da8ba369957eece8c5aa18f4af94f6c4d311d85e691373a421d80e89",
+  "default_generation_settings": {
+   "temperature": 0.800000011920929,
+   "top_k": 40,
+   "top_p": 0.949999988079071,
+   "min_p": 0.05000000074505806,
+   "repeat_last_n": 64,
+   "repeat_penalty": 1.0,
+   "samplers": [
+    "penalties",
+    "dry",
+    "top_n_sigma",
+    "top_k",
+    "typ_p",
+    "top_p",
+    "min_p",
+    "xtc",
+    "temperature"
+   ]
+  },
+  "startup_log": [
+   "0.00.927.412 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.205.890 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "artifacts": {
+  "gpt-oss-20b-MXFP4.gguf": {
+   "size": 12109566624,
+   "sha256": "27cd6c432c7672cb812a92f611cf3ba7bbc35928262bb1e1253ff4ee6ae35901"
+  }
+ },
+ "envelope_marker": "VAL-STATE-V1",
+ "medians": {
+  "dispatch_to_first_chunk_s": null,
+  "reasoning_s": null,
+  "reasoning_tokens": null,
+  "dispatch_to_first_visible_s": null,
+  "dispatch_to_first_segment_s": null
+ },
+ "server_footprint_gb_peak": 1.8,
+ "swap_mb": {
+  "start": 1100.31,
+  "end": 1100.31
+ },
+ "cancellation": null,
+ "rows": [
+  {
+   "case": "O1-substantive",
+   "condition": "off",
+   "block": "A",
+   "answered": true,
+   "answer": "My lord,\n\nSuspense and surprise are distinct narrative devices, though they often work together.\n\n**Suspense** relies on a slow build of uncertainty or danger. It stretches the audience’s attention over time, keeping them in a state of anxious expectation about what might happen next. The key is that the outcome is not yet known, so each moment heightens anticipation and tension.\n\n**Surprise**, by contrast, is an abrupt shift—an event or revelation that defies the audience’s expectations in a single moment. It delivers a sudden twist that changes the perceived direction of the story without having prepared the audience for it through prior buildup.\n\nIn practice, suspense might keep the audience wondering whether a locked door will open, while surprise would be the instant when the door swings open and an unexpected figure steps out. Suspense sustains tension; surprise jolts the narrative, often providing the payoff that resolves or complicates that tension.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "tokens_in": 5899,
+   "tokens_out": 373,
+   "reasoning_tokens": null,
+   "reasoning_present": true,
+   "dispatch_to_first_chunk_s": null,
+   "dispatch_to_first_visible_s": null,
+   "dispatch_to_first_segment_s": null,
+   "stream_matches_answer": true,
+   "reasoning_in_answer": false,
+   "prime": {
+    "seconds": 6.453,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5052,
+     "prompt_ms": 6427.002,
+     "prompt_per_token_ms": 1.2721698337292162,
+     "prompt_per_second": 786.0585697654986,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    },
+    "usage": {
+     "completion_tokens": 1,
+     "prompt_tokens": 5052,
+     "total_tokens": 5053,
+     "prompt_tokens_details": {
+      "cached_tokens": 0
+     }
+    }
+   },
+   "server_lines": [
+    "0.08.955.736 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.856 (> 0.100 thold), f_keep = 0.999",
+    "0.16.395.461 I slot print_timing: id  0 | task 4 | prompt eval time =    1224.08 ms /   851 tokens (    1.44 ms per token,   695.21 tokens per second)",
+    "0.16.395.463 I slot print_timing: id  0 | task 4 |        eval time =    6215.56 ms /   373 tokens (   16.71 ms per token,    59.85 tokens per second)",
+    "0.16.395.463 I slot print_timing: id  0 | task 4 |       total time =    7439.64 ms /  1224 tokens",
+    "0.16.395.692 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6271, truncated = 0"
+   ],
+   "server_footprint_gb": 1.79,
+   "reasoning_s": null
+  },
+  {
+   "case": "O2-follow-up",
+   "condition": "off",
+   "block": "A",
+   "answered": true,
+   "answer": "My lord, with the information at hand—no book on cinematic techniques to consult—I shall draw upon common practice instead.\n\n**The sound‑continuation method is most effective for a night scene.**  \nAt dusk or in darkness the visual field is already limited; what the audience hears becomes far more salient. When an ambient sound (wind, distant traffic, a heartbeat) lingers beyond the moment it should logically cease, the viewer senses that something unseen has lingered or changed. The tension arises not from what they see but from what they cannot reconcile with their own auditory expectations.\n\nThe wide‑shot withholding technique relies on visual surprise: keeping an unknown element out of frame until just before it appears. In daylight this works because viewers can quickly orient themselves and then feel the jolt when something enters. At night, however, the absence of light already creates a sense of uncertainty; adding another “unknown” element risks simply making the scene indistinct rather than tense.\n\nThe face‑focus method—holding on an individual who has made a decision before others notice—also functions at any time of day, but it demands that the character’s expression be unmistakable despite low light. Achieving that clarity is more technically demanding and may dilute the immediate shock that a lingering sound can deliver in a dark environment.\n\nHence, for a night setting, letting a sound continue past its expected endpoint provides the most reliable psychological lever: it exploits the heightened auditory perception of an audience enveloped in darkness, making them feel unsettled without needing any dialogue or special equipment.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "tokens_in": 5958,
+   "tokens_out": 508,
+   "reasoning_tokens": null,
+   "reasoning_present": true,
+   "dispatch_to_first_chunk_s": null,
+   "dispatch_to_first_visible_s": null,
+   "dispatch_to_first_segment_s": null,
+   "stream_matches_answer": true,
+   "reasoning_in_answer": false,
+   "prime": {
+    "seconds": 0.136,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 114.381,
+     "prompt_per_token_ms": 28.59525,
+     "prompt_per_second": 34.97084305959906,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    },
+    "usage": {
+     "completion_tokens": 1,
+     "prompt_tokens": 5052,
+     "total_tokens": 5053,
+     "prompt_tokens_details": {
+      "cached_tokens": 5048
+     }
+    }
+   },
+   "server_lines": [
+    "0.17.201.410 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.847 (> 0.100 thold), f_keep = 0.999",
+    "0.26.938.099 I slot print_timing: id  0 | task 380 | prompt eval time =    1302.34 ms /   910 tokens (    1.43 ms per token,   698.74 tokens per second)",
+    "0.26.938.102 I slot print_timing: id  0 | task 380 |        eval time =    8434.30 ms /   508 tokens (   16.64 ms per token,    60.11 tokens per second)",
+    "0.26.938.103 I slot print_timing: id  0 | task 380 |       total time =    9736.64 ms /  1418 tokens",
+    "0.26.938.275 I slot      release: id  0 | task 380 | stop processing: n_tokens = 6465, truncated = 0"
+   ],
+   "server_footprint_gb": 1.79,
+   "reasoning_s": null
+  },
+  {
+   "case": "C6-nonexistent-work",
+   "condition": "off",
+   "block": "A",
+   "answered": true,
+   "answer": "My lord,\n\nI do not have a record of reviewing that distributor contract in this session. The house’s archives do not contain an entry for the clause you refer to, nor does any volume on contractual matters exist within our current library. If you can locate the document or point me to the book where it is stored, I will consult it immediately and extract the relevant provision for your call.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "tokens_in": 6382,
+   "tokens_out": 361,
+   "reasoning_tokens": null,
+   "reasoning_present": true,
+   "dispatch_to_first_chunk_s": null,
+   "dispatch_to_first_visible_s": null,
+   "dispatch_to_first_segment_s": null,
+   "stream_matches_answer": true,
+   "reasoning_in_answer": false,
+   "prime": {
+    "seconds": 0.088,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 65.545,
+     "prompt_per_token_ms": 16.38625,
+     "prompt_per_second": 61.02677549774964,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    },
+    "usage": {
+     "completion_tokens": 1,
+     "prompt_tokens": 5052,
+     "total_tokens": 5053,
+     "prompt_tokens_details": {
+      "cached_tokens": 5048
+     }
+    }
+   },
+   "server_lines": [
+    "0.27.686.374 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.791 (> 0.100 thold), f_keep = 0.999",
+    "0.35.574.191 I slot print_timing: id  0 | task 891 | prompt eval time =    1881.80 ms /  1334 tokens (    1.41 ms per token,   708.90 tokens per second)",
+    "0.35.574.193 I slot print_timing: id  0 | task 891 |        eval time =    6005.95 ms /   361 tokens (   16.68 ms per token,    59.94 tokens per second)",
+    "0.35.574.194 I slot print_timing: id  0 | task 891 |       total time =    7887.75 ms /  1695 tokens",
+    "0.35.574.379 I slot      release: id  0 | task 891 | stop processing: n_tokens = 6742, truncated = 0"
+   ],
+   "server_footprint_gb": 1.8,
+   "reasoning_s": null
+  },
+  {
+   "case": "C1-correction",
+   "condition": "off",
+   "block": "A",
+   "answered": true,
+   "answer": "**Draft Invitation**\n\n---\n\n*To the cast and crew of [Project Name],*\n\nYou are cordially invited to a wrap dinner in celebration of our collective effort.\n\n- **Date & Time:** Saturday, 25 October at **6:00 p.m.**  \n- **Venue:** The Barn (address)  \n- **Guests:** None – this is for cast and crew only  \n\nPlease RSVP to me by **18 October** so we may finalize arrangements.\n\nWe look forward to sharing this evening with you.\n\nWarm regards,  \nVal — Maester of House Armand",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "tokens_in": 6093,
+   "tokens_out": 308,
+   "reasoning_tokens": null,
+   "reasoning_present": true,
+   "dispatch_to_first_chunk_s": null,
+   "dispatch_to_first_visible_s": null,
+   "dispatch_to_first_segment_s": null,
+   "stream_matches_answer": true,
+   "reasoning_in_answer": false,
+   "prime": {
+    "seconds": 0.089,
+    "timings": {
+     "cache_n": 5048,
+     "prompt_n": 4,
+     "prompt_ms": 67.58,
+     "prompt_per_token_ms": 16.895,
+     "prompt_per_second": 59.18910920390648,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    },
+    "usage": {
+     "completion_tokens": 1,
+     "prompt_tokens": 5052,
+     "total_tokens": 5053,
+     "prompt_tokens_details": {
+      "cached_tokens": 5048
+     }
+    }
+   },
+   "server_lines": [
+    "0.36.328.571 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.828 (> 0.100 thold), f_keep = 0.999",
+    "0.42.923.503 I slot print_timing: id  0 | task 1255 | prompt eval time =    1488.15 ms /  1045 tokens (    1.42 ms per token,   702.21 tokens per second)",
+    "0.42.923.505 I slot print_timing: id  0 | task 1255 |        eval time =    5106.73 ms /   308 tokens (   16.63 ms per token,    60.12 tokens per second)",
+    "0.42.923.505 I slot print_timing: id  0 | task 1255 |       total time =    6594.88 ms /  1353 tokens",
+    "0.42.923.699 I slot      release: id  0 | task 1255 | stop processing: n_tokens = 6400, truncated = 0"
+   ],
+   "server_footprint_gb": 1.8,
+   "reasoning_s": null
+  }
+ ]
+}

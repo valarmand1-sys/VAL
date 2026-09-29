@@ -278,6 +278,7 @@ for label, history, words in CASES:
     primed = prime()
     log_from = len(log_lines(0))
     deltas: list[tuple[float, str]] = []
+    called_at = time.monotonic()
     with timings.recording() as recorder:
         got = send(engine, gateway, words, catalogue=catalogue, conversation_id=conversation, spoken=True,
                    seal_route=SealRoute.UTTERANCE_FINALIZED, fast_route=OFF_ROUTE,
@@ -322,6 +323,27 @@ for label, history, words in CASES:
     }
     fc, fv = row["dispatch_to_first_chunk_s"], row["dispatch_to_first_visible_s"]
     row["reasoning_s"] = None if fc is None or fv is None else round(fv - fc, 3)
+    # The llama.cpp adapter emits no timing marks (found on the first block, 29 September):
+    # onset is timed from the moment Core is called, the same in both conditions, and the
+    # server's own timing line gives the prefill.
+    visible = [at for at, piece in deltas if piece.strip()]
+    row["call_to_first_visible_s"] = round(visible[0] - called_at, 3) if visible else None
+    segmenter2, row["call_to_first_segment_s"] = SpeechSegmenter(), None
+    for at, piece in deltas:
+        if segmenter2.feed(piece):
+            row["call_to_first_segment_s"] = round(at - called_at, 3)
+            break
+    found = [re.search(r"prompt eval time =\s*([\d.]+) ms /\s*(\d+) tokens", line) for line in row["server_lines"]]
+    found = [f for f in found if f]
+    row["server_prompt_eval_s"] = round(float(found[-1].group(1)) / 1000, 3) if found else None
+    row["server_prompt_tokens_evaluated"] = int(found[-1].group(2)) if found else None
+    rate = [re.search(r" eval time =\s*([\d.]+) ms /\s*(\d+) tokens .*?([\d.]+) tokens per second", line)
+            for line in row["server_lines"] if "prompt eval" not in line]
+    rate = [f for f in rate if f]
+    row["server_generated_tokens"] = int(rate[-1].group(2)) if rate else None
+    row["server_tokens_per_second"] = float(rate[-1].group(3)) if rate else None
+    if row["call_to_first_visible_s"] is not None and row["server_prompt_eval_s"] is not None:
+        row["reasoning_s_approx"] = round(row["call_to_first_visible_s"] - row["server_prompt_eval_s"], 3)
     ROWS.append(row)
     print(json.dumps({k: v for k, v in row.items() if k not in ("answer", "server_lines", "prime")}), flush=True)
     print("   prime:", json.dumps(primed)[:300], flush=True)
@@ -354,8 +376,9 @@ result = {
     "envelope_marker": STATE_ENVELOPE_MARKER,
     "medians": {k: (round(statistics.median([r[k] for r in ROWS if r.get(k) is not None]), 3)
                     if any(r.get(k) is not None for r in ROWS) else None)
-                for k in ("dispatch_to_first_chunk_s", "reasoning_s", "reasoning_tokens",
-                          "dispatch_to_first_visible_s", "dispatch_to_first_segment_s")},
+                for k in ("call_to_first_visible_s", "call_to_first_segment_s", "server_prompt_eval_s",
+                          "server_prompt_tokens_evaluated", "reasoning_s_approx", "server_tokens_per_second",
+                          "server_generated_tokens")},
     "server_footprint_gb_peak": max((r["server_footprint_gb"] or 0) for r in ROWS) if ROWS else None,
     "swap_mb": {"start": swap_start, "end": swap_mb()},
     "cancellation": cancellation,

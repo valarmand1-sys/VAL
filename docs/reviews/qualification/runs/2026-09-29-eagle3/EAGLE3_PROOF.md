@@ -125,3 +125,85 @@ s on first samples. Any lost cache benefit is counted.
 
 **If it fails or the gain is insufficient,** the path is closed at once. No other draft, no
 other settings.
+
+## 4. Result (16:42–16:45, 8 measured requests; `proof-off-A-NO-ONSET-harness-defect.json`, `proof-on-A.json`)
+
+**The documented pairing loads and runs on this Mac through Metal, and it is about three
+times slower than the same target without the draft. The path is closed.**
+
+### 4.1 Conduct
+
+- **Blocks run:** "off A" and "on A", four cases each. Blocks B were not run, by the
+  registered stopping rule.
+- **A harness defect, counted:** the house's llama.cpp adapter emits no timing marks, so
+  the first block recorded no onset times. Its four requests count against the sixteen.
+  The harness then timed onset from the moment Core is called. The comparison below
+  rests on the server's own timing lines, which both blocks have.
+- **Both blocks:**
+  - every request answered through Val Core and routed to the experiment configuration;
+  - every streamed answer identical to the settled answer;
+  - no reasoning or channel markup in any answer;
+  - swap unchanged (1,100 MB before and after);
+  - nothing of production's was unloaded or touched.
+- **Build as reported by the server:** `b10964-b29c606e2`, window 32,768.
+- **Artifacts:** target sha256 `27cd6c43…5901`, draft sha256 `b82e890a…65aa`.
+
+### 4.2 The server's own figures, case by case
+
+| case | prefill (tokens evaluated) off / on | generation rate off / on | draft acceptance (accepted of drafted) | generation time off / on |
+|---|---|---|---|---|
+| O1 substantive | 1.22 s / 1.63 s (851) | 59.9 / 21.6 tokens/s | 10.9% (100 of 915) | 6.2 s / 18.8 s |
+| O2 follow-up | 1.30 s / 1.33 s (910) | 60.1 / 22.6 | 13.4% (95 of 711) | 8.4 s / 14.7 s |
+| C6 nonexistent work | 1.88 s / 1.93 s (1,334) | 59.9 / 20.5 | 9.3% (85 of 918) | 6.0 s / 19.1 s |
+| C1 correction | 1.49 s / 1.52 s (1,045) | 60.1 / 23.4 | 14.7% (148 of 1,005) | 5.1 s / 20.6 s |
+
+- **With the draft on,** Core call → first visible answer text: 7.0, 12.4, 19.6 and 18.7 s.
+  First speech-safe segment: 7.5, 13.5, 20.1 and 19.6 s (median 16.5 s).
+- **Why it loses:**
+  - about nine in ten drafted tokens are rejected (mean accepted run 1.3–1.4 tokens);
+  - each round still pays the draft and a multi-token verification on a
+    mixture-of-experts target;
+  - generation falls from 60 to about 22 tokens per second.
+- **Prefix reuse works on this runtime,** in both conditions: with `--swa-full`, the 5,048
+  tokens of the prepared persona prefix were reused on every request, and only the new
+  851–1,334 tokens were evaluated.
+- **Memory:** server footprint 8.8 GB reported with the draft on (the mapped weights are
+  not all counted by that figure). No swap growth.
+
+### 4.3 What was not established
+
+- **Onset without the draft on llama.cpp** was not timed (the harness defect).
+  Reconstructed from the server's figures, it is prefill plus reasoning at 60 tokens per
+  second, the same rates MLX gives.
+- **Effective per-request sampling** was not verified from the server. Only its defaults
+  were read (top-p 0.95, repeat penalty 1.0, look-back 64). The harness sent Val's values
+  in each request.
+- **Cancellation** was not tested: it belonged to blocks B.
+- **Answer quality:** one sample per case qualifies nothing. For the record, both
+  conditions declined the nonexistent contract review and kept the correction. The
+  draft-on invitation added the unsupported "Aldbury".
+
+## 5. Against the existing Mac evidence
+
+| configuration on this Mac, GPT-OSS MEDIUM | generation | prefill | first speech-safe text |
+|---|---|---|---|
+| MLX in LM Studio (production's runtime), measured 28–29 September | 62–65 tokens/s | about 650–750 tokens/s | 5.9 s median (screen); 3.3–4.5 s on shorter-reasoning cases |
+| llama.cpp Metal, draft off | 60 tokens/s | about 700 tokens/s | not timed; the same rates |
+| llama.cpp Metal, EAGLE3 on | 20–23 tokens/s | about 700 tokens/s | 16.5 s median |
+
+- **llama.cpp on this Mac is no faster than MLX** for this model.
+- **EAGLE3 makes it far slower.** No cache benefit was lost. The loss is entirely in
+  generation.
+
+## 6. Closure
+
+**Closed on performance, by the registered rule.** No other draft file, draft setting or
+runtime is tried.
+
+- The closure is of **this pairing on this Mac through Metal at Val's settings**. It says
+  nothing about EAGLE3 on other hardware.
+- **Kept pending his ruling on removal:** the two downloaded files (13.8 GB,
+  `~/.val-models/llamacpp-exp/`).
+- **Unchanged:** no package code; production, its model definition and LM Studio's state.
+- The server's logs held scratch-fixture prompts only and stay in the session's scratch
+  directory.

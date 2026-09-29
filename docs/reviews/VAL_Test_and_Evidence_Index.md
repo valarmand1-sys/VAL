@@ -1582,3 +1582,7 @@ Speech end → playback 18,036 ms (desktop): his message 5,579 ms; ~3.5 s queue;
 ## 132. The dedicated-GPU feasibility proposal — 29 September 2026
 
 **WP3 remains PARTIAL; nothing deployed, bought, rented or run.** Record: `qualification/runs/2026-09-29-fastest-config/GPU_PROPOSAL.md` (configuration, the pre-purchase measurement with its thresholds, cost ceiling and stopping rule, the timing implication, cost, the decisions needed); handoff WP3 Record §45. Desk research only: published figures and prices with their sources and limits; artifact metadata read from the repository's public listing, nothing downloaded. Local checks only; CI not run (branch).
+
+## 133. EAGLE3 on llama.cpp, the small proof — 29 September 2026
+
+**WP3 remains PARTIAL; nothing deployed.** Record: `qualification/runs/2026-09-29-eagle3/EAGLE3_PROOF.md` (feasibility §2, registration §3 at `4867d83`, result §4–§6); handoff WP3 Record §46. Evidence: `proof-off-A-NO-ONSET-harness-defect.json` (the first block; server figures valid, onset not recorded), `proof-on-A.json`; harness `eagle3_proof.py`; pins `~/.val-models/llamacpp-exp/pins.json` (outside the repository). Runtime: Homebrew llama.cpp 0.4.1 build 10964; no package code changed. GPU proposal corrections: `2026-09-29-fastest-config/GPU_PROPOSAL.md` at `c99e799`. Local checks only; CI not run (branch).
