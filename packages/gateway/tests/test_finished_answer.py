@@ -253,12 +253,17 @@ def test_a_finished_unheard_answer_plays_after_a_continuation(store: Engine) -> 
     session.feed(MARKER)
     clock["now"] += 5.0
     _answered(store, 1, session, clock)
+    deliveries[0].sink.waiting = 3  # as DesktopSink reports it: three offers uncollected
     session.feed(MARKER)
     assert session.speech_hold
     session.feed(MARKER)
     clock["now"] += 5.0
     _answered(store, 2, session, clock)
     assert deliveries[0].cuts == [], "a continuation keeps the finished answer"
+    # 28 September 2026 (L2): kept, then dropped unheard when the next turn began.
+    assert session.speech_handover is deliveries[0], "the kept answer is offered first"
+    deliveries[0].sink.waiting = 0  # the desktop has collected it
+    assert session.speech_handover is deliveries[1], "then the new answer follows"
     session.close()
 
 

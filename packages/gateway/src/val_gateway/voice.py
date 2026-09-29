@@ -126,6 +126,17 @@ SUPERSEDED_WORKER_DEADLINE_SECONDS = 1.0
 MAX_ABANDONED_WORKERS = 3
 
 
+def _uncollected(delivery: object) -> bool:
+    """Whether the desktop has audio of this answer still to collect.
+
+    `DesktopSink.waiting` is the count of offers not yet collected (a property); a sink
+    without it (a direct sink, a test's) has nothing waiting for a desktop.
+    """
+    waiting = getattr(getattr(delivery, "sink", None), "waiting", 0)
+    count = waiting() if callable(waiting) else waiting
+    return isinstance(count, int) and count > 0
+
+
 def _ended_short(delivery: object) -> bool:
     """Whether this delivery already ended interrupted or failed."""
     state = getattr(delivery, "state", None)
@@ -753,6 +764,9 @@ class VoiceSession:
         #: Answers stopped after their hand-off, by message, awaiting the desktop's report
         #: of what it cut (§5).
         self._stopped_answers: dict[str, object] = {}
+        #: An earlier answer kept to play after his words, whose audio the desktop has not
+        #: yet collected: offered before the current turn's (28 September 2026).
+        self._carried: object | None = None
         #: Superseded turns whose workers have not yet ended, by id (28 September 2026).
         self._superseded_workers: dict[int, _Pending] = {}
         self._maintaining = threading.Lock()
@@ -923,8 +937,11 @@ class VoiceSession:
             # desktop never collected is discarded rather than left waiting for a
             # session that has ended (§5, §11).
             recent, self._recent = self._recent, None
-        if recent is not None:
-            sink = getattr(recent, "sink", None)
+            carried, self._carried = self._carried, None
+        for held in (recent, carried):
+            if held is None:
+                continue
+            sink = getattr(held, "sink", None)
             stop = getattr(sink, "stop", None)
             if callable(stop):
                 stop("the voice session ended")
@@ -1193,6 +1210,11 @@ class VoiceSession:
         otherwise her last few words are synthesised and silently dropped.
         """
         with self._lock:
+            carried = self._carried
+            if carried is not None:
+                if _uncollected(carried) and not _ended_short(carried):
+                    return carried  # type: ignore[return-value]
+                self._carried = None
             return self._delivery if self._delivery is not None else self._recent
 
     @property
@@ -2126,7 +2148,14 @@ class VoiceSession:
                 else None
             )
             # The previous turn's hand-off ends when this one begins: one delivery
-            # is collectable at a time, and an older one is released here.
+            # is collectable at a time, and an older one is released here — unless it
+            # still has audio he has not been given and did not end short: an answer
+            # kept to play after his words (28 September 2026: "Azure." was kept, then
+            # dropped here unheard the moment his continuation began). It is carried,
+            # offered first, and the new answer follows it.
+            recent = self._recent
+            if recent is not None and _uncollected(recent) and not _ended_short(recent):
+                self._carried = recent
             self._recent = None
         prepared = self._prepared_for(pending)
         # The optional arguments travel only when they exist, so a submit that knows

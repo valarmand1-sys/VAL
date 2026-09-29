@@ -75,16 +75,19 @@ for i in $(seq 1 60); do curl -fsS http://127.0.0.1:5173/ >/dev/null 2>&1 && bre
 BRAVEPID=$!
 sleep 2
 OUTS=()
+PASS=0
 for i in ${=SESSIONS}; do
   # The driver's own output is kept per session (28 September: C2a's S5 driver exited
-  # without writing its file, and the reason was lost to the runner's tail).
-  node $D/voice_bench.mjs 9555 $D/voice-bench-plan.json $i $S/session-$i.json > $D/driver-$LABEL-session-$i.log 2>&1
-  echo "driver session $i exit $?"
-  if [[ -f $S/session-$i.json ]]; then
-    cp $S/session-$i.json $D/voice-bench-$LABEL-session-$i.json
-    OUTS+=($D/voice-bench-$LABEL-session-$i.json)
+  # without writing its file, and the reason was lost to the runner's tail). A session
+  # run more than once keeps every pass (L2's first pass was overwritten by its second).
+  PASS=$((PASS + 1)); N=$i; [[ $(echo ${=SESSIONS} | tr ' ' '\n' | grep -cx $i) -gt 1 ]] && N=$i-p$PASS
+  node $D/voice_bench.mjs 9555 $D/voice-bench-plan.json $i $S/session-$N.json > $D/driver-$LABEL-session-$N.log 2>&1
+  echo "driver session $N exit $?"
+  if [[ -f $S/session-$N.json ]]; then
+    cp $S/session-$N.json $D/voice-bench-$LABEL-session-$N.json
+    OUTS+=($D/voice-bench-$LABEL-session-$N.json)
   else
-    echo "session $i: the driver wrote no file (see driver-$LABEL-session-$i.log); extracted without it"
+    echo "session $N: the driver wrote no file (see driver-$LABEL-session-$N.log); extracted without it"
   fi
 done
 kill $BRAVEPID 2>/dev/null

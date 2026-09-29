@@ -299,7 +299,7 @@ warmed sessions 3.8–7.7 s (prior) and 3.8–7.6 s (candidate).
 the speech-length bound as a named failure ("segment 2 began and did not complete");
 two superseded deliveries in the candidate (the replacements, correct); no counted turn
 without a played answer; driver waits over 240 s: 4 (prior), 5 (candidate) — the "spoken
-over her audio" turns after long answers, excluded from latency. Missing: C2a (above);
+over her audio" turns, excluded from latency. *Corrected 28 September (evening, `LIFECYCLE_REPAIR.md` §2): they did not follow long answers and she was not speaking. Eight of the nine followed a replacement or combined answer whose hand-off a late superseded worker had taken away, so its closing piece never reached the player; the ninth (C2c S5) followed a runaway segment whose failure stop never reached the player for the same reason. A defect, now repaired.* Missing: C2a (above);
 four joined pause turns have no endpoint-anchored timeline, so §10b omits them.
 
 **Barge-in after synthesis** (§6): 323–425 ms from his words to the worklet's `stopped`,
