@@ -32,7 +32,7 @@ cd $ROOT
 [[ $(grep -c "POST /voice/sessions HTTP" /opt/homebrew/var/log/val/api.log) == $PRODUCTION_VOICE_SESSIONS ]] || { echo "production Voice has been used: not starting"; exit 3; }
 [[ $(git diff master -- apps/desktop | wc -l | tr -d ' ') == 0 ]] || { echo "apps/desktop differs from master: not starting"; exit 2; }
 case $CONDITION in
-  candidate) RENEW=true; DIVERGE=true ;;
+  candidate|split_candidate) RENEW=true; DIVERGE=true ;;
   prior) RENEW=true; DIVERGE=false ;;
   baseline) RENEW=false; DIVERGE=false ;;
   *) echo "unknown condition $CONDITION"; exit 2 ;;
@@ -41,7 +41,14 @@ printf '{\n  "model_paths": ["%s"],\n  "renewal": %s,\n  "divergence_checkpoint"
 unset VAL_SPECULATION VAL_ADAPTIVE_GRACE VAL_EXPERIMENT_ENVELOPE_IN_SYSTEM VAL_COMBINE_CONTINUATIONS
 export VAL_EXPERIMENT_MODEL_IDENTIFIER=$EXP
 case $CONDITION in
+  # 28 September (late): the split record-state layout is rejected on the controlled
+  # comparison (layout-compare-batch1.json: +1.9 s to first visible text, and an
+  # instruction-boundary and an honesty failure); the candidate is envelope_in_system with
+  # the divergence checkpoint. `split_candidate` keeps the earlier configuration.
   candidate) export VAL_FAST_ROUTE_TIERS=1 VAL_TIER1_ROUTE=low VAL_ADAPTIVE_ENDPOINT=on \
+      VAL_REQUEST_CONSTRUCTION=envelope_in_system VAL_OWNER_PRECEDENCE=on VAL_TTS_LENGTH_BOUND=on \
+      VAL_COMBINE_CONTINUATIONS=on ;;
+  split_candidate) export VAL_FAST_ROUTE_TIERS=1 VAL_TIER1_ROUTE=low VAL_ADAPTIVE_ENDPOINT=on \
       VAL_REQUEST_CONSTRUCTION=split_state VAL_OWNER_PRECEDENCE=on VAL_TTS_LENGTH_BOUND=on \
       VAL_COMBINE_CONTINUATIONS=on ;;
   prior) export VAL_FAST_ROUTE_TIERS=1 VAL_TIER1_ROUTE=low VAL_ADAPTIVE_ENDPOINT=on \
