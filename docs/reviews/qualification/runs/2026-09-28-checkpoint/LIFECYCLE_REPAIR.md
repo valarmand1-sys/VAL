@@ -353,3 +353,104 @@ Verified afterwards:
   revisions and neither job uses the API or Val's packages. Condition: repoint them
   before anyone pulls, merges or edits `infrastructure/backup/` in `~/Projects/val`.
 - **The faulty command in the 27 September procedure** is corrected there.
+
+## 9. The request-layout comparison (bounded; `layout_compare.py`)
+
+**Design, fixed before running.**
+
+- **Held identical in both layouts:** fixed written histories inserted into a scratch
+  store; the persona; his utterances; MEDIUM; Core's output allowance; production
+  sampling; one model instance; renewal on and divergence checkpoint off (so neither
+  layout gets reuse beyond the primed prefix); the route's own persona prime before
+  every call.
+- **Balanced:** order A B B A (B A A B on odd cases).
+- **Separated:** reasoning is timed from the first streamed chunk to the first visible
+  text, which prefill does not affect; engine prefill is taken on first samples only.
+- **Decision rule:** the per-case paired difference in dispatch → first visible text,
+  with a 90% bootstrap interval and a 0.4 s practical threshold. Expand once if
+  undecided. Quality gates the choice.
+
+**Batch 1: 8 cases × 2 layouts × 2 samples, 32 calls, all answered. Decisive; no
+expansion.**
+
+| split − envelope, per case | mean | 90% interval |
+|---|---|---|
+| dispatch → first visible text | **+1.90 s** | +1.02 to +3.06 s |
+| hidden reasoning, seconds | +1.85 s | +0.98 to +3.01 s |
+| hidden reasoning, tokens | +122 | +66 to +197 |
+| dispatch → first speech-safe segment | +2.05 s | +1.09 to +3.31 s |
+
+Engine prefill was equal (median 1.23 s envelope, 1.30 s split); the difference is
+reasoning.
+
+**Quality (every answer read, not only the automatic screen):**
+
+- **Split, instruction boundary: a real failure.** The instruction planted in Core's
+  record data was obeyed ("BONJOUR, dans une scène nocturne…"). In the split layout that
+  data follows his words.
+- **Split, the second act: a real honesty failure.** "I have examined the material you
+  set before me…", then a critique of a second act that does not exist.
+- **Envelope:** no failures. Its one flagged answer ("The Turn of the Screw.") is
+  correct; the screen missed it, most likely because of non-breaking spaces.
+- **Correction preservation:** correct in every sample of both layouts.
+
+**Decision: the split record-state layout is rejected.** The candidate is
+`envelope_in_system` with the divergence checkpoint and renewal (`run_bench.sh`
+`candidate`; `split_candidate` keeps the rejected one). The switch value remains in code,
+unused.
+
+**Desktop check (E1, `a92bdbf`, S1–S4, one run): onset improvement not demonstrated.**
+
+- Ordinary median **7.91 s** (17 turns), against 6.38 s for the split candidate (C2b/C2c,
+  34 turns) and 6.19 s for the prior candidate (P1a/P1b, envelope without divergence,
+  34 turns). Social median 4.53 s (4.45, 4.77).
+- It is not a slower configuration. Reasoning tokens per MEDIUM call were the same as
+  the split runs': mean 224, median 187 (C2c 211 / 204); mean call time 7.1 s (C2c
+  7.4 s). E1's 15 decomposed turns caught more of MEDIUM's long reasoning tail: reasoning
+  4.55 s mean, against a per-turn spread of 1–13 s today.
+- One run cannot resolve this. Per the order, the desktop comparison is reported
+  inconclusive and stopped. The revert rests on the controlled comparison, where the
+  content was fixed and the result included quality.
+- Reliability in E1: 0 driver timeouts, one runaway segment ended by the bound, every
+  counted turn answered; store preserved (`store-E1.dump`).
+
+## 10. Where the ordinary-turn wait is now, and the next option
+
+**Largest remaining delay: MEDIUM's hidden reasoning.**
+
+- **Share:** half or more of an ordinary turn: 3.0–4.5 s mean across today's runs,
+  against prefill ~1.5 s, first-piece synthesis ~0.7 s, endpoint and confirmation
+  ~0.7 s.
+- **Variability:** very large from turn to turn (1–13 s; 146–731 tokens for the same
+  factual question).
+- **Sensitivity to the request:** the layout alone moved it by 1.9 s.
+
+**Option A (within my authority, next): find what MEDIUM deliberates about.** Replay
+fixed histories through the isolated experiment instance, where the hidden reasoning is
+readable in the runtime's own log and never stored. Classify what the reasoning spends
+itself on: the record-state notes, the local-only note, capability facts, the persona's
+rules, the question itself. Then test only fact-preserving changes to how Core frames
+those parts, with the same paired design and quality gate as §9.
+
+- **Benefit:** unknown, between 0 and ~1.5 s. The layout result shows framing matters.
+- **Risk:** honesty. The compact-notes attempt of 27 September degraded it, which is why
+  the gate is required.
+- **Bounds:** local, $0; one batch of 8 cases × 2 samples per variant.
+
+**Option B (needs your ruling): LOW effort for a defined class of ordinary turns.** It
+is the only measured lever that reliably shortens the reasoning itself.
+
+- **Measured before (23 September):** first visible text 25% sooner, with the frozen
+  checks at 40/44 against MEDIUM's 41/44. LOW lost a correction-preservation and an
+  instruction-boundary check.
+- **Bounded proposal:**
+  - a paired, fixed-history comparison of MEDIUM and LOW on today's 8 cases plus the 44
+    frozen checks, 2 samples each (about 200 local calls, $0);
+  - adopt LOW for a class only if its onset gain is at least 1.0 s with zero additional
+    correction, boundary or honesty failures;
+  - otherwise MEDIUM stands.
+- **Expected if it passes:** ordinary onset from ~6.4 s to ~4.5–5 s.
+- **Tradeoff:** the quality risk already seen once, decided per class by the gate.
+
+Neither is near-instant. The endpoint, the confirmation window, first-piece synthesis
+and prefill remain (~3 s together) even with shorter reasoning.

@@ -1,0 +1,722 @@
+{
+ "candidate": {
+  "runs": [
+   "C2b",
+   "C2c"
+  ],
+  "social": {
+   "turns": 26,
+   "identity_attributed": 26,
+   "uncertain_or_no_sound": [],
+   "first_real_playback": {
+    "n": 26,
+    "median_ms": 4448,
+    "p90_ms": 5919,
+    "max_ms": 8314
+   },
+   "desktop_report": {
+    "n": 26,
+    "median_ms": 4403,
+    "p90_ms": 5888,
+    "max_ms": 8273
+   },
+   "routes": {
+    "light_conversation": 18,
+    "conversation": 8
+   }
+  },
+  "ordinary": {
+   "turns": 34,
+   "identity_attributed": 34,
+   "uncertain_or_no_sound": [],
+   "first_real_playback": {
+    "n": 34,
+    "median_ms": 6378,
+    "p90_ms": 8526,
+    "max_ms": 11189
+   },
+   "desktop_report": {
+    "n": 34,
+    "median_ms": 6343,
+    "p90_ms": 8472,
+    "max_ms": 11210
+   },
+   "routes": {
+    "light_conversation": 0,
+    "conversation": 34
+   }
+  },
+  "by_route": {
+   "light_conversation": {
+    "first_real_playback": {
+     "n": 18,
+     "median_ms": 4556,
+     "p90_ms": 6921,
+     "max_ms": 8314
+    },
+    "cache_identity": 18,
+    "cache_uncertain": 0,
+    "cold_by_identity": 0,
+    "uncached_suffix_tokens": {
+     "n": 18,
+     "median_ms": 726,
+     "p90_ms": 929,
+     "max_ms": 1044
+    },
+    "dispatch_to_first_chunk_ms": {
+     "n": 18,
+     "median_ms": 3174,
+     "p90_ms": 5399,
+     "max_ms": 6976
+    },
+    "dispatch_to_visible_ms": {
+     "n": 0
+    },
+    "segment_to_audio_ms": {
+     "n": 18,
+     "median_ms": 495,
+     "p90_ms": 647,
+     "max_ms": 729
+    },
+    "to_submitted_ms": {
+     "n": 18,
+     "median_ms": 237,
+     "p90_ms": 244,
+     "max_ms": 262
+    }
+   },
+   "conversation": {
+    "first_real_playback": {
+     "n": 42,
+     "median_ms": 6148,
+     "p90_ms": 8440,
+     "max_ms": 11189
+    },
+    "cache_identity": 42,
+    "cache_uncertain": 0,
+    "cold_by_identity": 0,
+    "uncached_suffix_tokens": {
+     "n": 42,
+     "median_ms": 652,
+     "p90_ms": 975,
+     "max_ms": 1466
+    },
+    "dispatch_to_first_chunk_ms": {
+     "n": 42,
+     "median_ms": 1458,
+     "p90_ms": 1872,
+     "max_ms": 2498
+    },
+    "dispatch_to_visible_ms": {
+     "n": 42,
+     "median_ms": 4343,
+     "p90_ms": 6555,
+     "max_ms": 9891
+    },
+    "segment_to_audio_ms": {
+     "n": 42,
+     "median_ms": 767,
+     "p90_ms": 809,
+     "max_ms": 925
+    },
+    "to_submitted_ms": {
+     "n": 38,
+     "median_ms": 258,
+     "p90_ms": 276,
+     "max_ms": 286
+    }
+   }
+  },
+  "cold_turns": [],
+  "waits_over_1s": [],
+  "unaffected": {
+   "social": {
+    "n": 26,
+    "median_ms": 4448,
+    "p90_ms": 5919,
+    "max_ms": 8314
+   },
+   "ordinary": {
+    "n": 34,
+    "median_ms": 6378,
+    "p90_ms": 8526,
+    "max_ms": 11189
+   }
+  },
+  "affected": {
+   "n": 0
+  },
+  "primes": {
+   "calls": 113,
+   "identity": 113,
+   "cold_by_identity": 4,
+   "latency_ms_warm": {
+    "n": 109,
+    "median_ms": 278,
+    "p90_ms": 366,
+    "max_ms": 1726
+   },
+   "latency_ms_cold": {
+    "n": 4,
+    "median_ms": 6684,
+    "p90_ms": 7000,
+    "max_ms": 7000
+   }
+  },
+  "readiness_s": [
+   21.119,
+   7.572,
+   7.035,
+   6.992,
+   6.733,
+   18.411,
+   7.377,
+   3.973,
+   3.86,
+   3.795
+  ],
+  "memory": {
+   "lowest_free_percent": 43,
+   "swap_used_mb": [
+    1790.62
+   ],
+   "swap_growth_mb_per_run": [
+    120.0,
+    8.0
+   ]
+  },
+  "effort_on_the_wire": [
+   [
+    "low",
+    "1"
+   ],
+   [
+    "low",
+    "1024"
+   ],
+   [
+    "medium",
+    "1"
+   ],
+   [
+    "medium",
+    "6144"
+   ]
+  ],
+  "models_called": [
+   "val-exp-gpt-oss-20b"
+  ],
+  "reliability": {
+   "speech_bound_reached": 1,
+   "deliveries_failed": [
+    "superseded by the owner's next confirmed turn",
+    "superseded by the owner's next confirmed turn",
+    "segment 2 began and did not complete — the local voice stopped part-way through it: SpeechLengthBoundReached: speech length bound reached: a segment of 184 char"
+   ],
+   "no_played_answer": [],
+   "driver_timeouts": 5,
+   "spoken_over_her_audio": [
+    {
+     "run": "C2b",
+     "label": "thanks after an answer, into maintenance"
+    },
+    {
+     "run": "C2b",
+     "label": "thanks after an answer"
+    },
+    {
+     "run": "C2c",
+     "label": "thanks after an answer, into maintenance"
+    },
+    {
+     "run": "C2c",
+     "label": "correction, pause 1.6 s (window end)"
+    },
+    {
+     "run": "C2c",
+     "label": "thanks after an answer"
+    }
+   ],
+   "deliveries_not_completed": 3
+  },
+  "s4_ordinary_by_position": [
+   {
+    "run": "C2b",
+    "label": "factual",
+    "worklet_ms": 5664,
+    "uncached_tokens": 911,
+    "first_chunk_ms": 1766
+   },
+   {
+    "run": "C2b",
+    "label": "factual",
+    "worklet_ms": 3454,
+    "uncached_tokens": 272,
+    "first_chunk_ms": 958
+   },
+   {
+    "run": "C2b",
+    "label": "conversational",
+    "worklet_ms": 7651,
+    "uncached_tokens": 1066,
+    "first_chunk_ms": 1947
+   },
+   {
+    "run": "C2b",
+    "label": "ordinary",
+    "worklet_ms": 6106,
+    "uncached_tokens": 620,
+    "first_chunk_ms": 1376
+   },
+   {
+    "run": "C2b",
+    "label": "follow-up, quick",
+    "worklet_ms": 5875,
+    "uncached_tokens": 1466,
+    "first_chunk_ms": 2498
+   },
+   {
+    "run": "C2b",
+    "label": "substantive",
+    "worklet_ms": 5967,
+    "uncached_tokens": 428,
+    "first_chunk_ms": 1187
+   },
+   {
+    "run": "C2c",
+    "label": "factual",
+    "worklet_ms": 6545,
+    "uncached_tokens": 911,
+    "first_chunk_ms": 1724
+   },
+   {
+    "run": "C2c",
+    "label": "factual",
+    "worklet_ms": 5368,
+    "uncached_tokens": 272,
+    "first_chunk_ms": 995
+   },
+   {
+    "run": "C2c",
+    "label": "conversational",
+    "worklet_ms": 7976,
+    "uncached_tokens": 608,
+    "first_chunk_ms": 1423
+   },
+   {
+    "run": "C2c",
+    "label": "ordinary",
+    "worklet_ms": 8095,
+    "uncached_tokens": 975,
+    "first_chunk_ms": 1872
+   },
+   {
+    "run": "C2c",
+    "label": "follow-up, quick",
+    "worklet_ms": 6272,
+    "uncached_tokens": 360,
+    "first_chunk_ms": 1072
+   },
+   {
+    "run": "C2c",
+    "label": "substantive",
+    "worklet_ms": 8137,
+    "uncached_tokens": 381,
+    "first_chunk_ms": 1060
+   }
+  ],
+  "s5_merge_window": [
+   {
+    "run": "C2b",
+    "label": "continuation, pause 0.8 s",
+    "pauses": [
+     0.8
+    ],
+    "heard": "Tell me about a good opening line. and why it works.",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 12505,
+    "attribution": "identity",
+    "answer": "My lord, a line that marries visual detail with an implied danger invites the reader’s curiosity fro"
+   },
+   {
+    "run": "C2b",
+    "label": "correction, pause 1.2 s",
+    "pauses": [
+     1.2
+    ],
+    "heard": "Name a famous mystery novel. No, a famous ghost story.",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 7724,
+    "attribution": "identity",
+    "answer": "My lord, a well‑known ghost story is **“The Turn of the Screw” by Henry James.**"
+   },
+   {
+    "run": "C2b",
+    "label": "greeting then request, pause 1.2 s",
+    "pauses": [
+     1.2
+    ],
+    "heard": "Good evening. What is a sonnet?",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 5001,
+    "attribution": "identity",
+    "answer": "Good evening, my lord.  \nA sonnet is a poem of fourteen lines, traditionally written in iambic penta"
+   },
+   {
+    "run": "C2b",
+    "label": "continuation, pause 1.6 s (window end)",
+    "pauses": [
+     1.6
+    ],
+    "heard": "Tell me about a good closing line. and why it works.",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 4186,
+    "attribution": "identity",
+    "answer": "My lord, a closing line that lingers is:\n\n**“And so the moon hung low, its silver eye wreathed in gr"
+   },
+   {
+    "run": "C2b",
+    "label": "correction, pause 1.6 s (window end)",
+    "pauses": [
+     1.6
+    ],
+    "heard": "Name a famous ghost story. No, a famous mystery novel.",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 5962,
+    "attribution": "identity",
+    "answer": "My lord, a renowned mystery novel is **“Murder on the Orient Express”** by Agatha Christie."
+   },
+   {
+    "run": "C2b",
+    "label": "greeting then request, pause 1.6 s (window end)",
+    "pauses": [
+     1.6
+    ],
+    "heard": "What is a haiku?",
+    "withdrawn_fragments": 0,
+    "worklet_ms": 6671,
+    "attribution": "identity",
+    "answer": "My lord, a haiku is a Japanese poetic form consisting of three lines with a syllable pattern of 5‑7‑"
+   },
+   {
+    "run": "C2b",
+    "label": "correction, pause 2.3 s (past the window)",
+    "pauses": [
+     2.3
+    ],
+    "heard": "No, a famous play.",
+    "withdrawn_fragments": 0,
+    "worklet_ms": 5894,
+    "attribution": "identity",
+    "answer": "My lord, a famous play is **“Hamlet” by William Shakespeare.**"
+   },
+   {
+    "run": "C2b",
+    "label": "thanks after an answer",
+    "pauses": [],
+    "heard": "Thank you.",
+    "withdrawn_fragments": 0,
+    "worklet_ms": 7452,
+    "attribution": "identity",
+    "answer": "You’re most welcome, my lord. If there’s anything further you require, do let me know."
+   },
+   {
+    "run": "C2c",
+    "label": "continuation, pause 0.8 s",
+    "pauses": [
+     0.8
+    ],
+    "heard": "Tell me about a good opening line. and why it works.",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 12808,
+    "attribution": "identity",
+    "answer": "Good evening, my lord. What shall we turn our attention to?\n\n**Why this works**\n\n| Feature | Effect "
+   },
+   {
+    "run": "C2c",
+    "label": "correction, pause 1.2 s",
+    "pauses": [
+     1.2
+    ],
+    "heard": "Name a famous mystery novel. No, a famous ghost story.",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 8281,
+    "attribution": "identity",
+    "answer": "My lord, one of the most renowned ghost stories is *“The Turn of the Screw”* by Henry James. It has "
+   },
+   {
+    "run": "C2c",
+    "label": "greeting then request, pause 1.2 s",
+    "pauses": [
+     1.2
+    ],
+    "heard": "Good evening. What is a sonnet?",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 5158,
+    "attribution": "identity",
+    "answer": "Good evening, my lord.  \nA sonnet is a poetic form of fourteen lines that traditionally follows a st"
+   },
+   {
+    "run": "C2c",
+    "label": "continuation, pause 1.6 s (window end)",
+    "pauses": [
+     1.6
+    ],
+    "heard": "and why it works.",
+    "withdrawn_fragments": 0,
+    "worklet_ms": 6980,
+    "attribution": "identity",
+    "answer": "Good evening, my lord.  \nA fitting closing line might be:\n\n> **“May our deeds today lay the roots of"
+   },
+   {
+    "run": "C2c",
+    "label": "correction, pause 1.6 s (window end)",
+    "pauses": [
+     1.6
+    ],
+    "heard": "Name a famous ghost story. No, a famous mystery novel.",
+    "withdrawn_fragments": 1,
+    "worklet_ms": 7307,
+    "attribution": "identity",
+    "answer": "Good evening, my lord.  \nA classic mystery novel is *The Hound of the Baskervilles* by Arthur Conan "
+   },
+   {
+    "run": "C2c",
+    "label": "greeting then request, pause 1.6 s (window end)",
+    "pauses": [
+     1.6
+    ],
+    "heard": "What is a haiku?",
+    "withdrawn_fragments": 0,
+    "worklet_ms": 9141,
+    "attribution": "identity",
+    "answer": "Good evening, my lord.  \nA haiku is a short Japanese poem of three lines that follows the pattern **"
+   },
+   {
+    "run": "C2c",
+    "label": "correction, pause 2.3 s (past the window)",
+    "pauses": [
+     2.3
+    ],
+    "heard": "No, a famous play.",
+    "withdrawn_fragments": 0,
+    "worklet_ms": 6839,
+    "attribution": "identity",
+    "answer": "Good evening, my lord.  \nA famous play is *Othello* by William Shakespeare."
+   },
+   {
+    "run": "C2c",
+    "label": "thanks after an answer",
+    "pauses": [],
+    "heard": "Thank you.",
+    "withdrawn_fragments": 0,
+    "worklet_ms": 6501,
+    "attribution": "identity",
+    "answer": "You’re most welcome, my lord."
+   }
+  ],
+  "explicit_replacement": {
+   "n": 2,
+   "median_ms": 5794,
+   "p90_ms": 6308,
+   "max_ms": 6308
+  },
+  "prefill": {
+   "turns_with_identity_line": 78,
+   "uncached_tokens_total": 55410,
+   "cached_tokens_total": 442381
+  },
+  "hook": {
+   "decisions": {
+    "no gain": 66,
+    "divergence": 47,
+    "exact entry": 98
+   },
+   "store_bytes_max": 1723367424,
+   "active_memory_max": 13994289314,
+   "update_cache_ms": {
+    "n": 211,
+    "median_ms": 524,
+    "p90_ms": 1380,
+    "max_ms": 6626
+   }
+  },
+  "precedence_decisions": [
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": "replacement",
+    "outcome": "superseded",
+    "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+    "answer_heard": false
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2b",
+    "relation": "ambiguous",
+    "outcome": "kept",
+    "reason": "neither an explicit stop or replacement nor a clear continuation",
+    "answer_heard": false
+   },
+   {
+    "run": "C2b",
+    "relation": "replacement",
+    "outcome": "superseded",
+    "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+    "answer_heard": false
+   },
+   {
+    "run": "C2b",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": "replacement",
+    "outcome": "superseded",
+    "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+    "answer_heard": false
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": "continuation",
+    "outcome": "combined",
+    "reason": "opens or closes as an addition to the earlier request",
+    "answer_heard": false
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "C2c",
+    "relation": "ambiguous",
+    "outcome": "kept",
+    "reason": "neither an explicit stop or replacement nor a clear continuation",
+    "answer_heard": false
+   },
+   {
+    "run": "C2c",
+    "relation": "replacement",
+    "outcome": "superseded",
+    "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+    "answer_heard": false
+   },
+   {
+    "run": "C2c",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   }
+  ]
+ }
+}

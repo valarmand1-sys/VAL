@@ -1688,3 +1688,40 @@ authority); effort and priming remain his rulings.
 **Open problems reviewed:** OP-1 — combined continuations and the abandoned-worker join
 keep his messages canonical; a recorded fragment is withdrawn by the existing append-only
 retraction, never revised.
+
+## 37. Handoff — production isolation completed; the lifecycle questions closed; the layout question settled (owner order of 28 September 2026, "Continue with production isolation and one bounded request-layout comparison")
+
+**WP3 remains PARTIAL. Nothing experimental deployed; no physical test requested.**
+Record: `LIFECYCLE_REPAIR.md` §0, §8–§10 (evidence index §124). Code `a92bdbf` on branch
+`latency-2026-09-28` (lifecycle code `f882653`); hook v2.3 unchanged.
+
+**Production isolation: complete (20:34).**
+
+- **Performed by him, verified step by step:** backup, repoint, reload.
+- **Running now:** launchd runs `13b3cb8` from `~/Projects/val-releases/13b3cb8`; code,
+  working directory and open files are all in the release; live store `0031`; desktop
+  `13b3cb8`, matched. A restart loads the release.
+- **Corrected:** my Step 2 command, and the 27 September procedure's, inserted rather
+  than replaced (caught before reload).
+- **Backup jobs deferred** on the stated condition.
+
+**Lifecycle questions:**
+
+- **The "final piece" was the zero-length completion marker**, with every audio piece
+  delivered in the two checkable C2c answers; elsewhere it cannot be determined.
+- **The stall** is contained, with its root cause unresolved; the adapter layer is not
+  excluded.
+- **The abandoned-worker limit was per session:** a defect, repaired (service-wide, and
+  Voice refuses to start while over it; test).
+- **Fault-injection recovery is kept apart from answer onset.**
+
+**Layout:** split record state rejected on a controlled, paired comparison (+1.9 s to
+first text; an instruction-boundary and an honesty failure); the candidate is
+`envelope_in_system` + divergence. The desktop run (E1) did **not** demonstrate faster
+onset (7.91 s median, one run; reasoning tokens equal to the split runs'): inconclusive,
+stopped.
+
+**No measured improvement in actual ordinary onset this pass.**
+
+**Next:** Option A (what MEDIUM deliberates about; within authority, $0) or Option B
+(LOW for a defined class; his ruling, bounded proposal in the record).

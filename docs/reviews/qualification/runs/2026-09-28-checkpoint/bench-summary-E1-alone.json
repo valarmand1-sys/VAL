@@ -1,0 +1,315 @@
+{
+ "candidate": {
+  "runs": [
+   "E1"
+  ],
+  "social": {
+   "turns": 14,
+   "identity_attributed": 14,
+   "uncertain_or_no_sound": [],
+   "first_real_playback": {
+    "n": 14,
+    "median_ms": 4534,
+    "p90_ms": 5455,
+    "max_ms": 5605
+   },
+   "desktop_report": {
+    "n": 14,
+    "median_ms": 4492,
+    "p90_ms": 5423,
+    "max_ms": 5585
+   },
+   "routes": {
+    "light_conversation": 7,
+    "conversation": 7
+   }
+  },
+  "ordinary": {
+   "turns": 17,
+   "identity_attributed": 17,
+   "uncertain_or_no_sound": [],
+   "first_real_playback": {
+    "n": 17,
+    "median_ms": 7906,
+    "p90_ms": 10323,
+    "max_ms": 12529
+   },
+   "desktop_report": {
+    "n": 17,
+    "median_ms": 7861,
+    "p90_ms": 10288,
+    "max_ms": 12496
+   },
+   "routes": {
+    "light_conversation": 0,
+    "conversation": 17
+   }
+  },
+  "by_route": {
+   "light_conversation": {
+    "first_real_playback": {
+     "n": 7,
+     "median_ms": 4476,
+     "p90_ms": 4973,
+     "max_ms": 5455
+    },
+    "cache_identity": 7,
+    "cache_uncertain": 0,
+    "cold_by_identity": 0,
+    "uncached_suffix_tokens": {
+     "n": 7,
+     "median_ms": 728,
+     "p90_ms": 789,
+     "max_ms": 826
+    },
+    "dispatch_to_first_chunk_ms": {
+     "n": 7,
+     "median_ms": 3084,
+     "p90_ms": 3628,
+     "max_ms": 4043
+    },
+    "dispatch_to_visible_ms": {
+     "n": 0
+    },
+    "segment_to_audio_ms": {
+     "n": 7,
+     "median_ms": 478,
+     "p90_ms": 505,
+     "max_ms": 577
+    },
+    "to_submitted_ms": {
+     "n": 7,
+     "median_ms": 260,
+     "p90_ms": 260,
+     "max_ms": 261
+    }
+   },
+   "conversation": {
+    "first_real_playback": {
+     "n": 24,
+     "median_ms": 6592,
+     "p90_ms": 10323,
+     "max_ms": 12529
+    },
+    "cache_identity": 24,
+    "cache_uncertain": 0,
+    "cold_by_identity": 0,
+    "uncached_suffix_tokens": {
+     "n": 24,
+     "median_ms": 1026,
+     "p90_ms": 1404,
+     "max_ms": 1591
+    },
+    "dispatch_to_first_chunk_ms": {
+     "n": 24,
+     "median_ms": 1850,
+     "p90_ms": 2299,
+     "max_ms": 2576
+    },
+    "dispatch_to_visible_ms": {
+     "n": 24,
+     "median_ms": 4960,
+     "p90_ms": 8488,
+     "max_ms": 10696
+    },
+    "segment_to_audio_ms": {
+     "n": 24,
+     "median_ms": 756,
+     "p90_ms": 764,
+     "max_ms": 776
+    },
+    "to_submitted_ms": {
+     "n": 22,
+     "median_ms": 259,
+     "p90_ms": 278,
+     "max_ms": 285
+    }
+   }
+  },
+  "cold_turns": [],
+  "waits_over_1s": [],
+  "unaffected": {
+   "social": {
+    "n": 14,
+    "median_ms": 4534,
+    "p90_ms": 5455,
+    "max_ms": 5605
+   },
+   "ordinary": {
+    "n": 17,
+    "median_ms": 7906,
+    "p90_ms": 10323,
+    "max_ms": 12529
+   }
+  },
+  "affected": {
+   "n": 0
+  },
+  "primes": {
+   "calls": 44,
+   "identity": 44,
+   "cold_by_identity": 2,
+   "latency_ms_warm": {
+    "n": 42,
+    "median_ms": 260,
+    "p90_ms": 284,
+    "max_ms": 1185
+   },
+   "latency_ms_cold": {
+    "n": 2,
+    "median_ms": 6499,
+    "p90_ms": 6597,
+    "max_ms": 6597
+   }
+  },
+  "readiness_s": [
+   18.509,
+   5.717,
+   3.693,
+   3.484
+  ],
+  "memory": {
+   "lowest_free_percent": 46,
+   "swap_used_mb": [
+    914.12
+   ],
+   "swap_growth_mb_per_run": [
+    0.0
+   ]
+  },
+  "effort_on_the_wire": [
+   [
+    "low",
+    "1"
+   ],
+   [
+    "low",
+    "1024"
+   ],
+   [
+    "medium",
+    "1"
+   ],
+   [
+    "medium",
+    "6144"
+   ]
+  ],
+  "models_called": [
+   "val-exp-gpt-oss-20b"
+  ],
+  "reliability": {
+   "speech_bound_reached": 1,
+   "deliveries_failed": [
+    "segment 2 began and did not complete — the local voice stopped part-way through it: SpeechLengthBoundReached: speech length bound reached: a segment of 231 char",
+    "superseded by the owner's next confirmed turn"
+   ],
+   "no_played_answer": [],
+   "driver_timeouts": 0,
+   "spoken_over_her_audio": [],
+   "deliveries_not_completed": 2
+  },
+  "s4_ordinary_by_position": [
+   {
+    "run": "E1",
+    "label": "factual",
+    "worklet_ms": 5184,
+    "uncached_tokens": 551,
+    "first_chunk_ms": 1241
+   },
+   {
+    "run": "E1",
+    "label": "factual",
+    "worklet_ms": 10323,
+    "uncached_tokens": 597,
+    "first_chunk_ms": 1374
+   },
+   {
+    "run": "E1",
+    "label": "conversational",
+    "worklet_ms": 11493,
+    "uncached_tokens": 744,
+    "first_chunk_ms": 1503
+   },
+   {
+    "run": "E1",
+    "label": "ordinary",
+    "worklet_ms": 6659,
+    "uncached_tokens": 980,
+    "first_chunk_ms": 1774
+   },
+   {
+    "run": "E1",
+    "label": "follow-up, quick",
+    "worklet_ms": 8260,
+    "uncached_tokens": 1087,
+    "first_chunk_ms": 1926
+   },
+   {
+    "run": "E1",
+    "label": "substantive",
+    "worklet_ms": 6040,
+    "uncached_tokens": 1212,
+    "first_chunk_ms": 2108
+   }
+  ],
+  "s5_merge_window": [],
+  "explicit_replacement": {
+   "n": 1,
+   "median_ms": 7906,
+   "p90_ms": 7906,
+   "max_ms": 7906
+  },
+  "prefill": {
+   "turns_with_identity_line": 31,
+   "uncached_tokens_total": 29131,
+   "cached_tokens_total": 163877
+  },
+  "hook": {
+   "decisions": {
+    "no gain": 36,
+    "at the tail": 1,
+    "exact entry": 38,
+    "divergence": 3
+   },
+   "store_bytes_max": 1692598272,
+   "active_memory_max": 13907388578,
+   "update_cache_ms": {
+    "n": 78,
+    "median_ms": 134,
+    "p90_ms": 1787,
+    "max_ms": 6276
+   }
+  },
+  "precedence_decisions": [
+   {
+    "run": "E1",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "E1",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   },
+   {
+    "run": "E1",
+    "relation": "replacement",
+    "outcome": "superseded",
+    "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+    "answer_heard": false
+   },
+   {
+    "run": "E1",
+    "relation": null,
+    "outcome": null,
+    "reason": null,
+    "answer_heard": null
+   }
+  ]
+ }
+}

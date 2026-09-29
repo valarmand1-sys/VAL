@@ -1,0 +1,426 @@
+{
+ "summary": {
+  "runs": [
+   "E1"
+  ],
+  "turns": 15,
+  "missing": [
+   {
+    "run": "E1",
+    "label": "continuation after a pause",
+    "missing": "timeline or speech end"
+   },
+   {
+    "run": "E1",
+    "label": "correction after a pause",
+    "missing": "timeline or speech end"
+   }
+  ],
+  "total_ms": {
+   "n": 15,
+   "median": 7906,
+   "p90": 11493,
+   "max": 12529
+  },
+  "pieces_ms": {
+   "endpoint": {
+    "n": 15,
+    "median": 460,
+    "p90": 517,
+    "max": 527
+   },
+   "confirmation": {
+    "n": 15,
+    "median": 261,
+    "p90": 279,
+    "max": 285
+   },
+   "core": {
+    "n": 15,
+    "median": 77,
+    "p90": 87,
+    "max": 88
+   },
+   "prefill": {
+    "n": 15,
+    "median": 1618,
+    "p90": 2108,
+    "max": 2282
+   },
+   "reasoning": {
+    "n": 15,
+    "median": 4293,
+    "p90": 7992,
+    "max": 9418
+   },
+   "segment": {
+    "n": 15,
+    "median": 214,
+    "p90": 292,
+    "max": 369
+   },
+   "synthesis": {
+    "n": 15,
+    "median": 762,
+    "p90": 765,
+    "max": 776
+   },
+   "playback": {
+    "n": 15,
+    "median": 43,
+    "p90": 90,
+    "max": 118
+   }
+  },
+  "mean_ms": {
+   "endpoint": 464,
+   "confirmation": 261,
+   "core": 75,
+   "prefill": 1663,
+   "reasoning": 4546,
+   "segment": 213,
+   "synthesis": 707,
+   "playback": 44
+  },
+  "engine_update_cache_ms": {
+   "n": 15,
+   "median": 1236,
+   "p90": 1686,
+   "max": 1854
+  },
+  "uncached_tokens": {
+   "n": 15,
+   "median": 856,
+   "p90": 1212,
+   "max": 1336
+  },
+  "sum_check_ms": {
+   "n": 15,
+   "median": 0,
+   "p90": 0,
+   "max": 0
+  },
+  "share_of_mean": {
+   "endpoint": 0.058,
+   "confirmation": 0.033,
+   "core": 0.009,
+   "prefill": 0.209,
+   "reasoning": 0.57,
+   "segment": 0.027,
+   "synthesis": 0.089,
+   "playback": 0.006
+  }
+ },
+ "turns": [
+  {
+   "run": "E1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "total": 6149,
+   "pieces": {
+    "endpoint": 397,
+    "confirmation": 244,
+    "core": 87,
+    "prefill": 1618,
+    "reasoning": 3276,
+    "segment": 23,
+    "synthesis": 477,
+    "playback": 29
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1235.7,
+   "uncached_tokens": 856,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "E1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "total": 6526,
+   "pieces": {
+    "endpoint": 409,
+    "confirmation": 285,
+    "core": 75,
+    "prefill": 1685,
+    "reasoning": 2992,
+    "segment": 199,
+    "synthesis": 763,
+    "playback": 118
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1317.5,
+   "uncached_tokens": 906,
+   "preflight_wait_ms": 29
+  },
+  {
+   "run": "E1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "total": 7029,
+   "pieces": {
+    "endpoint": 517,
+    "confirmation": 262,
+    "core": 88,
+    "prefill": 2282,
+    "reasoning": 2809,
+    "segment": 246,
+    "synthesis": 765,
+    "playback": 61
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1854.5,
+   "uncached_tokens": 1336,
+   "preflight_wait_ms": 38
+  },
+  {
+   "run": "E1",
+   "session": "S2-pauses-and-corrections",
+   "label": "conversational",
+   "total": 12529,
+   "pieces": {
+    "endpoint": 447,
+    "confirmation": 259,
+    "core": 80,
+    "prefill": 1277,
+    "reasoning": 9418,
+    "segment": 277,
+    "synthesis": 760,
+    "playback": 11
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 837.0,
+   "uncached_tokens": 551,
+   "preflight_wait_ms": 34
+  },
+  {
+   "run": "E1",
+   "label": "continuation after a pause",
+   "missing": "timeline or speech end"
+  },
+  {
+   "run": "E1",
+   "session": "S2-pauses-and-corrections",
+   "label": "hesitation",
+   "total": 9552,
+   "pieces": {
+    "endpoint": 449,
+    "confirmation": 258,
+    "core": 82,
+    "prefill": 1960,
+    "reasoning": 5734,
+    "segment": 292,
+    "synthesis": 755,
+    "playback": 23
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1533.7,
+   "uncached_tokens": 1092,
+   "preflight_wait_ms": 35
+  },
+  {
+   "run": "E1",
+   "label": "correction after a pause",
+   "missing": "timeline or speech end"
+  },
+  {
+   "run": "E1",
+   "session": "S3-collisions-and-replacement",
+   "label": "ordinary",
+   "total": 8168,
+   "pieces": {
+    "endpoint": 478,
+    "confirmation": 260,
+    "core": 80,
+    "prefill": 1207,
+    "reasoning": 5167,
+    "segment": 170,
+    "synthesis": 776,
+    "playback": 31
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 813.4,
+   "uncached_tokens": 527,
+   "preflight_wait_ms": 32
+  },
+  {
+   "run": "E1",
+   "session": "S3-collisions-and-replacement",
+   "label": "follow-up, quick",
+   "total": 5758,
+   "pieces": {
+    "endpoint": 527,
+    "confirmation": 270,
+    "core": 80,
+    "prefill": 1378,
+    "reasoning": 2492,
+    "segment": 198,
+    "synthesis": 756,
+    "playback": 57
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 947.0,
+   "uncached_tokens": 627,
+   "preflight_wait_ms": 34
+  },
+  {
+   "run": "E1",
+   "session": "S3-collisions-and-replacement",
+   "label": "factual, into maintenance",
+   "total": 8024,
+   "pieces": {
+    "endpoint": 456,
+    "confirmation": 261,
+    "core": 76,
+    "prefill": 1536,
+    "reasoning": 4632,
+    "segment": 291,
+    "synthesis": 763,
+    "playback": 9
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1098.8,
+   "uncached_tokens": 752,
+   "preflight_wait_ms": 31
+  },
+  {
+   "run": "E1",
+   "session": "S3-collisions-and-replacement",
+   "label": "explicit replacement",
+   "total": 7906,
+   "pieces": {
+    "endpoint": 460,
+    "confirmation": 279,
+    "core": 60,
+    "prefill": 2073,
+    "reasoning": 4293,
+    "segment": 213,
+    "synthesis": 516,
+    "playback": 11
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1666.2,
+   "uncached_tokens": 1073,
+   "preflight_wait_ms": 35
+  },
+  {
+   "run": "E1",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 5184,
+   "pieces": {
+    "endpoint": 478,
+    "confirmation": 278,
+    "core": 79,
+    "prefill": 1241,
+    "reasoning": 2580,
+    "segment": 10,
+    "synthesis": 472,
+    "playback": 47
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 843.1,
+   "uncached_tokens": 551,
+   "preflight_wait_ms": 34
+  },
+  {
+   "run": "E1",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 10323,
+   "pieces": {
+    "endpoint": 450,
+    "confirmation": 244,
+    "core": 62,
+    "prefill": 1374,
+    "reasoning": 7113,
+    "segment": 274,
+    "synthesis": 763,
+    "playback": 43
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 909.3,
+   "uncached_tokens": 597,
+   "preflight_wait_ms": 27
+  },
+  {
+   "run": "E1",
+   "session": "S4-sustained-alternation",
+   "label": "conversational",
+   "total": 11493,
+   "pieces": {
+    "endpoint": 482,
+    "confirmation": 261,
+    "core": 77,
+    "prefill": 1503,
+    "reasoning": 7992,
+    "segment": 369,
+    "synthesis": 763,
+    "playback": 48
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1079.2,
+   "uncached_tokens": 744,
+   "preflight_wait_ms": 36
+  },
+  {
+   "run": "E1",
+   "session": "S4-sustained-alternation",
+   "label": "ordinary",
+   "total": 6659,
+   "pieces": {
+    "endpoint": 414,
+    "confirmation": 238,
+    "core": 69,
+    "prefill": 1774,
+    "reasoning": 3254,
+    "segment": 139,
+    "synthesis": 764,
+    "playback": 8
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1380.7,
+   "uncached_tokens": 980,
+   "preflight_wait_ms": 28
+  },
+  {
+   "run": "E1",
+   "session": "S4-sustained-alternation",
+   "label": "follow-up, quick",
+   "total": 8260,
+   "pieces": {
+    "endpoint": 512,
+    "confirmation": 261,
+    "core": 68,
+    "prefill": 1926,
+    "reasoning": 4384,
+    "segment": 277,
+    "synthesis": 756,
+    "playback": 77
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1516.6,
+   "uncached_tokens": 1087,
+   "preflight_wait_ms": 33
+  },
+  {
+   "run": "E1",
+   "session": "S4-sustained-alternation",
+   "label": "substantive",
+   "total": 6040,
+   "pieces": {
+    "endpoint": 486,
+    "confirmation": 261,
+    "core": 66,
+    "prefill": 2108,
+    "reasoning": 2054,
+    "segment": 214,
+    "synthesis": 762,
+    "playback": 90
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": 1685.5,
+   "uncached_tokens": 1212,
+   "preflight_wait_ms": 34
+  }
+ ]
+}
