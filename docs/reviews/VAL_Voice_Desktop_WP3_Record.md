@@ -2047,3 +2047,55 @@ benchmark in this step.** Record: `qualification/runs/2026-09-29-fastest-config/
     qualification.
   - The former loop design is preserved there as superseded history.
   - §2.1 carries a note on the 31 August wording.
+
+## 45. Handoff — the dedicated-GPU feasibility proposal (owner order of 29 September 2026, later)
+
+**WP3 remains PARTIAL. Nothing deployed, bought, rented, downloaded or run; production
+unchanged.** Record: `qualification/runs/2026-09-29-fastest-config/GPU_PROPOSAL.md`.
+
+- **His position:** the ordinary-LOW proposal stays closed, with its coverage findings and
+  the limits of its checks preserved (`DECISION.md`).
+  - The dedicated local GPU option is worth evaluating.
+  - **Not authorised:** a purchase, a paid rental, deployment, or any amendment letting a
+    private Voice conversation leave this Mac.
+  - About three seconds is not accepted as completion; his goal is approximately one
+    second.
+- **Recommended configuration:**
+  - RTX 5090 (32 GB) in a complete prebuilt desktop, Ubuntu 24.04;
+  - llama.cpp `llama-server`, one pinned CUDA build;
+  - `ggml-org/gpt-oss-20b-GGUF` file `gpt-oss-20b-MXFP4.gguf` (12.11 GB, revision
+    `ef9b12f2…`), window 32,768, one slot;
+  - MEDIUM through the chat template, and production's sampling sent per request, both
+    verified as executed.
+  - Cognition alone would move. Core, the store, recognition, the voice, the desktop and
+    the avatar stay on this Mac. The machine stores nothing and has no tools.
+- **Published, same runtime and file** (llama.cpp maintainers): 282.5 tokens/s generation
+  and 8,834 tokens/s prompt processing at 8k, against 62–65 and about 650–750 measured
+  here.
+  - **Unknown:** the rate at about 6,000 tokens occupied, warm-prefix reuse in
+    `llama-server` for this model, and time to a first answer sentence at MEDIUM.
+- **The pre-purchase measurement:** public or synthetic material only, about 40 requests.
+  - It measures cold prefill and warm reuse separately, the reasoning rate at natural
+    reasoning lengths, time to the first answer segment, and memory with the occupied
+    context stated.
+  - Fixed thresholds.
+  - $0 on a borrowed machine, or a rental with a **$5 ceiling** and a stopping rule.
+- **Estimate if it passes:** about 2.8–3.4 s speech end → first audio (slower turns about
+  3.5–4.3 s), with the Mac-side endpoint, recognition, synthesis and playback at their
+  measured values.
+  - The further changes toward one second (faster first audio, a shorter turn boundary,
+    less reasoning) are separate, unproven, and not in that estimate.
+  - Approximately one second is not reachable by any identified change while MEDIUM's
+    reasoning is kept.
+- **Cost:** $4,499.99 before tax for the complete machine (listing to be confirmed); about
+  5–7 days of integration; an always-on second machine to maintain.
+- **Decisions awaiting him:**
+  1. **Now:** whether and how to run the measurement.
+  2. **Only if it passes, each separately:** the purchase; the seal amendment; the
+     llama.cpp provider ruling; requalification of MEDIUM on the new runtime.
+- **Limits preserved:**
+  - no tested configuration on this Mac has demonstrated both requirements, which is not
+    proof that every local architecture must fail;
+  - `envelope_in_system` is not approved;
+  - avatar headroom on this Mac is unverified until the prototype is measured
+    concurrently.

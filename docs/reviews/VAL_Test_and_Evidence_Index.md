@@ -1578,3 +1578,7 @@ Speech end → playback 18,036 ms (desktop): his message 5,579 ms; ~3.5 s queue;
 ## 131. The fast path closed; the avatar baseline amended — 29 September 2026
 
 **WP3 remains PARTIAL; nothing deployed; no model call in this step.** Record: `qualification/runs/2026-09-29-fastest-config/DECISION.md` (what the proposed checks can enforce; coverage of the 27 recorded spoken turns, counts only; the feasibility decision; the one unresolved decision); `FAST_PATH_PROPOSAL.md` marked not approved; handoff WP3 Record §44. Baseline: `docs/baselines/01-architecture.md` §8.2 amended (29 September 2026), former text preserved as superseded history; §2.1 note. Coverage was computed read-only from the production store with the existing `val_policy` functions; no text of his is recorded. Local checks only; CI not run (branch).
+
+## 132. The dedicated-GPU feasibility proposal — 29 September 2026
+
+**WP3 remains PARTIAL; nothing deployed, bought, rented or run.** Record: `qualification/runs/2026-09-29-fastest-config/GPU_PROPOSAL.md` (configuration, the pre-purchase measurement with its thresholds, cost ceiling and stopping rule, the timing implication, cost, the decisions needed); handoff WP3 Record §45. Desk research only: published figures and prices with their sources and limits; artifact metadata read from the repository's public listing, nothing downloaded. Local checks only; CI not run (branch).

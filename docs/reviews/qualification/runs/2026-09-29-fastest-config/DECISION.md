@@ -307,3 +307,9 @@ decision becomes which of the three gives way. I do not recommend giving way on 
 - [llama.cpp gpt-oss guide, discussion #15396](https://github.com/ggml-org/llama.cpp/discussions/15396)
 - [Qwen3-TTS technical report (arXiv 2601.15621)](https://arxiv.org/pdf/2601.15621)
 - [faster-qwen3-tts](https://github.com/andimarafioti/faster-qwen3-tts/blob/main/BLOG.md)
+
+## 7. Continuation (owner order of 29 September 2026, later)
+
+He agreed the dedicated local GPU option is worth evaluating and authorised nothing else:
+no purchase, paid rental, deployment or seal amendment. The priced feasibility proposal
+is `GPU_PROPOSAL.md`. §5.4 above quoted no price; that proposal does.
