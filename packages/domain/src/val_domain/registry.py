@@ -1511,6 +1511,12 @@ def declared_chain_violations(configs: tuple[ModelConfig, ...]) -> list[str]:
     return problems
 
 
+#: Configurations reachable **only** through a caller's explicit pin, never through
+#: routing or cost ranking (28 September 2026, the bounded LOW-effort experiment). Empty
+#: unless an isolated experiment's switch registers an entry for its own process.
+PIN_ONLY: set[str] = set()
+
+
 def active() -> tuple[ModelConfig, ...]:
     """Configurations available for routing.
 
@@ -1518,12 +1524,14 @@ def active() -> tuple[ModelConfig, ...]:
     a candidate under evaluation is present in the registry so that history
     resolves and the evaluation door can reach it, and it takes no part in
     routing, cost ranking, liveness, or the startup checks that describe the
-    serving registry (ruling, 10 September 2026).
+    serving registry (ruling, 10 September 2026). Nor pin-only (`PIN_ONLY`).
     """
     return tuple(
         config
         for config in REGISTRY
-        if not config.retired and config.admission is not Admission.NOT_ADMITTED
+        if not config.retired
+        and config.admission is not Admission.NOT_ADMITTED
+        and config.slug not in PIN_ONLY
     )
 
 

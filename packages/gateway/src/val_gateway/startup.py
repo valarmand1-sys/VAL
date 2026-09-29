@@ -20,6 +20,7 @@ the way that is hardest to notice.
 
 import logging
 import os
+import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -28,7 +29,7 @@ from sqlalchemy import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 import val_domain.registry as registry
-from val_domain.gateway import Admission, CacheTtl, CapabilityProfile, ModelConfig
+from val_domain.gateway import Admission, CacheTtl, CapabilityProfile, ModelConfig, ReasoningEffort
 from val_domain.perception import PerceptionProvider
 from val_domain.registry import active, by_slug
 from val_domain.speech import SpeechUnavailableError, VoiceConditioning
@@ -381,6 +382,42 @@ def configured_tier1_route() -> tuple[str, str | None]:
     return raw, None
 
 
+#: The bounded LOW-effort experiment (owner order of 28 September 2026, pre-registered in
+#: `2026-09-28-checkpoint/EFFORT_EXPERIMENT.md`). Set to `on` only in the isolated
+#: candidate: the admitted MEDIUM partner entry is copied, for this process only, with
+#: `reasoning_effort` LOW and nothing else changed, under its own id and slug, and the
+#: copy is **pin-only**: routing never selects it; Core pins it for an eligible turn.
+ORDINARY_LOW_SETTING = "VAL_ORDINARY_LOW"
+ORDINARY_LOW_SOURCE_SLUG = "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+ORDINARY_LOW_SLUG = "gpt-oss-20b-mxfp4-mlx-lmstudio-partner-low-experiment"
+
+
+def configured_ordinary_low() -> bool:
+    return os.environ.get(ORDINARY_LOW_SETTING, "").strip().lower() in {"1", "on", "true", "yes"}
+
+
+def enable_ordinary_low() -> ModelConfig:
+    """Register the pin-only LOW copy of the partner entry, in this process only."""
+    source = by_slug(ORDINARY_LOW_SOURCE_SLUG)
+    if source is None:
+        raise StartupRefusedError(
+            [f"{ORDINARY_LOW_SETTING}: no registry entry {ORDINARY_LOW_SOURCE_SLUG}"]
+        )
+    existing = by_slug(ORDINARY_LOW_SLUG)
+    if existing is not None:
+        return existing
+    copy = source.model_copy(
+        update={
+            "id": uuid.uuid5(source.id, "ordinary-low-experiment-2026-09-28"),
+            "slug": ORDINARY_LOW_SLUG,
+            "reasoning_effort": ReasoningEffort.LOW,
+        }
+    )
+    registry.REGISTRY = (*registry.REGISTRY, copy)
+    registry.PIN_ONLY.add(ORDINARY_LOW_SLUG)
+    return copy
+
+
 def enable_light_candidate(route: str = "qwen") -> ModelConfig:
     """Promote one configuration to the `light` profile, in this process only.
 
@@ -489,6 +526,18 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             promoted.slug,
             promoted.model_identifier,
             promoted.reasoning_effort.value,
+        )
+    if configured_ordinary_low():
+        import val_gateway.deliberate as core
+
+        low = enable_ordinary_low()
+        core.ORDINARY_LOW = low
+        _LOGGER.warning(
+            "CANDIDATE LOW effort for defined ordinary classes, this process only: %s (effort %s) "
+            "is pin-only and Core pins it for an eligible turn (classes F and C, "
+            "val_policy.ordinary_effort). Not an admission; the registry on disk is unchanged.",
+            low.slug,
+            low.reasoning_effort.value,
         )
     violations, warnings = check_startup(moment.date())
 

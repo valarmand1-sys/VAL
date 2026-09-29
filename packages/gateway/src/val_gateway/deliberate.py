@@ -130,6 +130,7 @@ from val_domain.timings import mark
 from val_gateway import conversations
 from val_gateway.attachments import CandidateAttachment
 from val_gateway.candidate import CandidateGateway
+from val_gateway.context import MEMORY_ENVELOPE_MARKER
 from val_gateway.conversations import ConversationNotFoundError
 from val_gateway.deliberation import (
     record_blind_position,
@@ -186,9 +187,16 @@ from val_policy.deliberation import (
 )
 from val_policy.egress import LiveVoiceConversations, decide_egress
 from val_policy.light_conversation import ConversationState, FastRoute, RouteDecision
+from val_policy.ordinary_effort import decide_effort
 from val_policy.project_resolution import ProjectCatalogue, ProjectSignals
 
 _LOGGER = logging.getLogger("val.deliberation")
+
+#: The bounded LOW-effort experiment (owner order of 28 September 2026; pre-registered in
+#: `2026-09-28-checkpoint/EFFORT_EXPERIMENT.md`). The pin-only LOW copy of the partner
+#: entry when the isolated candidate's switch is on; None — always, in production —
+#: otherwise. Core alone decides, per turn, whether an ordinary turn is pinned to it.
+ORDINARY_LOW: ModelConfig | None = None
 
 #: Told `(conversation_id, message_id)` once the owner's message is committed.
 PersistedSink = Callable[[UUID, UUID], None]
@@ -1260,6 +1268,66 @@ def tier1_eligibility(
     )
 
 
+def _ordinary_effort(
+    engine: Engine, opened: OpenedTurn, messages: tuple[Message, ...], visual: VisualTurn
+) -> ModelConfig | None:
+    """The LOW pin for this ordinary turn, or None (MEDIUM) — decided once, logged once.
+
+    Eligibility against the authoritative state (EFFORT_EXPERIMENT.md §3): his words
+    (`val_policy.ordinary_effort`), the settled-context reading the light route uses
+    (`pending_matter` over the working thread as of this message), a corrected or
+    withdrawn previous message or a revised current one, and whether the request carries
+    bound images or recalled records. Anything missing or uncertain stays on MEDIUM.
+    """
+    if ORDINARY_LOW is None:
+        return None
+    sequence = opened.user_message.sequence
+    thread = conversations.working(engine, opened.conversation.id, as_of_sequence=sequence)
+    live = [m for m in thread.live() if m.record.role in (StoredRole.USER, StoredRole.VAL)]
+    earlier = [m for m in live if m.record.sequence < sequence]
+    previous = next(
+        (m.record.content for m in reversed(earlier) if m.record.role is StoredRole.VAL), None
+    )
+    last_user = next((m for m in reversed(earlier) if m.record.role is StoredRole.USER), None)
+    exchanges: list[tuple[str, str | None]] = []
+    for m in earlier:
+        if m.record.role is StoredRole.USER:
+            exchanges.append((m.record.content, None))
+        elif exchanges and exchanges[-1][1] is None:
+            exchanges[-1] = (exchanges[-1][0], m.record.content)
+    state = ConversationState(
+        previous_answer=previous,
+        prior_turns=sum(1 for m in earlier if m.record.role is StoredRole.USER),
+        previous_owner_message=None if last_user is None else last_user.record.content,
+        earlier_exchanges=tuple(exchanges[:-1]),
+    )
+    correction_sensitive = (
+        last_user is not None and last_user.state is not MessageState.CURRENT
+    ) or any(m.record.sequence == sequence and m.state is not MessageState.CURRENT for m in live)
+    untrusted = bool(visual.images) or any(
+        MEMORY_ENVELOPE_MARKER in (m.content if isinstance(m.content, str) else str(m.content))
+        for m in messages
+    )
+    decision = decide_effort(
+        opened.user_message.content,
+        state,
+        untrusted_content=untrusted,
+        correction_sensitive=correction_sensitive,
+    )
+    _LOGGER.info(
+        "ordinary effort: %s",
+        json.dumps(
+            {
+                "effort": "low" if decision.klass else "medium",
+                "class": decision.klass,
+                "reason": decision.reason,
+                "message_id": str(opened.user_message.id),
+            }
+        ),
+    )
+    return ORDINARY_LOW if decision.klass else None
+
+
 def _ordinary(
     engine: Engine,
     gateway: Gateway,
@@ -1390,25 +1458,54 @@ def _ordinary(
                         )
                     sink(response.text)
                 else:
-                    response = gateway.converse(
-                        messages,
-                        scope=opened.scope,
-                        classification=classification,
-                        turn=turn,
-                        max_output_tokens=max_output_tokens,
-                        on_delta=on_delta,
-                        # The seal, as decided for this turn and escalated for
-                        # whatever recall brought in. A local-only request routes
-                        # locally, and the gateway refuses it to any route that
-                        # runs off this machine.
-                        egress=egress.egress,
-                        # Pinned to the route this turn's images were derived for;
-                        # None on a text turn, where routing proceeds as always.
-                        configuration=visual.configuration,
-                        # Milestone B §8: Core may supersede this answer for a newer
-                        # confirmed turn while none of it has been heard.
-                        cancelled=cancelled,
+                    low = (
+                        _ordinary_effort(engine, opened, messages, visual)
+                        if visual.configuration is None
+                        else None
                     )
+                    try:
+                        response = gateway.converse(
+                            messages,
+                            scope=opened.scope,
+                            classification=classification,
+                            turn=turn,
+                            max_output_tokens=max_output_tokens,
+                            on_delta=sink if low is not None else on_delta,
+                            # The seal, as decided for this turn and escalated for
+                            # whatever recall brought in. A local-only request routes
+                            # locally, and the gateway refuses it to any route that
+                            # runs off this machine.
+                            egress=egress.egress,
+                            # Pinned to the route this turn's images were derived for;
+                            # None on a text turn, where routing proceeds as always —
+                            # or, in the isolated LOW experiment, to the pin-only LOW
+                            # copy for an eligible turn.
+                            configuration=low if low is not None else visual.configuration,
+                            # Milestone B §8: Core may supersede this answer for a newer
+                            # confirmed turn while none of it has been heard.
+                            cancelled=cancelled,
+                        )
+                    except GatewayError as failure:
+                        if low is None or delivered or failure.kind is GatewayErrorKind.SUPERSEDED:
+                            raise
+                        # The LOW call failed before any word reached him: the same turn
+                        # is asked of MEDIUM, once, and the fallback is on record.
+                        _LOGGER.warning(
+                            "ordinary effort: fallback to medium (%s: %s)",
+                            failure.kind.value,
+                            failure,
+                        )
+                        response = gateway.converse(
+                            messages,
+                            scope=opened.scope,
+                            classification=classification,
+                            turn=turn,
+                            max_output_tokens=max_output_tokens,
+                            on_delta=on_delta,
+                            egress=egress.egress,
+                            configuration=visual.configuration,
+                            cancelled=cancelled,
+                        )
             except GatewayError as failure:
                 if task_type is not TaskType.LIGHT_CONVERSATION or delivered:
                     raise
