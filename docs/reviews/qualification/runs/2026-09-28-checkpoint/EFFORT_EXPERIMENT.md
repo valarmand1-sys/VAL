@@ -405,3 +405,146 @@ stays rejected on quality and is not retested. Class C stays unqualified.
   - **Stage 3:** a short real-desktop comparison with switch on and off, measuring speech
     end → first audible answer, slower turns, failures and fallbacks, the next MEDIUM
     turn's onset, and whether a request queued behind maintenance.
+
+## 14. The corrected batch (`effort-screen-corrected.json`, instance `val-exp-hub`)
+
+- **Configuration:** as §12, at `ab66807`, with hook v2.3 (`3773168d…`) and the divergence
+  checkpoint on. 12 calls, all answered, local, $0.
+- **Attribution:** every call's engine line and rendered prompt were matched by sequence
+  and exact prompt-token count. 0 unattributed, 0 rendered-effort mismatches: every call
+  rendered "Reasoning: low" or "Reasoning: medium" as forced. Core's real decision was
+  LOW on every eligible case's thread.
+- **Maintenance, before every call:** both primes re-established.
+  - Both static prefixes were still held as exact entries every time (`why: exact entry`,
+    about 100 ms of cache update each).
+  - Wall time for both primes together: about 0.9 s (1.45 s the first time).
+  - Cold, each prime costs about 6.2 s (§12).
+  - The store stayed at its 10-entry cap, up to 1.53 GB, with active memory about 13.8 GB.
+  - **Static prefixes held: two.** Neither was evicted in this batch. That is 12 calls,
+    each followed by a re-prime that renews both entries, not sustained mixed
+    conversation. Stage 3, where that would be measured, was not reached.
+
+| median, per effort | LOW | MEDIUM |
+|---|---|---|
+| hidden reasoning, tokens | **14** | 136.5 |
+| hidden reasoning, seconds | **0.29 s** | 2.20 s |
+| dispatch → first streamed chunk | 1.36 s | 1.17 s |
+| dispatch → first speech-safe segment | **1.82 s** | 3.26 s |
+
+**Onset, the registered statistic** (the median of the paired per-case differences,
+LOW − MEDIUM, dispatch → first speech-safe segment; threshold ≤ −1.5 s):
+
+| case | per case | 
+|---|---|
+| "Name two ways to end a chapter." | −1.494 s |
+| "Give me one line of advice on pacing a chase sequence." | −6.423 s (MEDIUM reasoned 697 tokens in one sample: 12.3 s) |
+| "Describe a lighthouse in one sentence." | −0.719 s |
+| **median** | **−1.494 s — fails the threshold by 6 ms** |
+
+**Quality (every answer read): no disqualifying failure in the six LOW answers.**
+
+- All LOW answers are in persona and answer the request.
+- One LOW answer ("two ways to end a chapter", sample 2) runs to about 90 words: long for
+  speech, but not a registered failure.
+- On MEDIUM, one answer opened "I have no book on this yet, my lord;", an unprompted
+  capability remark. One said a lighthouse "flashes red and green". Neither is a LOW
+  failure.
+
+## 15. Outcome, and a residual mismatch found after the batch
+
+**Under its registered terms, the corrected batch fails on onset, by 6 ms.** Quality
+passes. By the stopping rule there is no Stage 2 and no Stage 3. The threshold is not
+changed and the result is not declared a pass.
+
+**A residual preparation mismatch favoured MEDIUM**, and it was introduced by the
+verification probe (§12), not by the configuration under test:
+
+- The probe's last MEDIUM step (22:40:02) made the hook write a *divergence* checkpoint
+  at 5,394 tokens on MEDIUM's prefix.
+- Its LOW counterpart was learned only during the batch, at 22:44:21, by the fifth LOW
+  call. From then on LOW reused 5,394 too.
+- Until then, three LOW calls reused only the static 5,043. That meant about 0.45 s more
+  prefill each (1.25–1.30 s of cache update, against 0.81–0.82 s at 5,394).
+- This is visible in the first-chunk medians above.
+- **Estimate, not a result:** without it, the registered median would have been about
+  −1.7 s.
+- The divergence checkpoint is part of the authorised cache improvements. It is learned
+  from traffic, not a static prime, so in sustained use both efforts acquire it, as the
+  batch itself shows.
+- **No rerun was made.** A rerun on a freshly loaded instance would settle the 6 ms, but
+  it is not recommended, because of §16.
+
+**Other limits:**
+
+- 3 cases; the statistic is a median of three.
+- Second samples repeat an identical request, and in two cases they reused almost the
+  whole prompt at both efforts. That is not representative of a live turn.
+- Switching cost and queueing behind maintenance on the live path were not measured,
+  because the harness primes synchronously before each call.
+
+## 16. The actual benefit: coverage of his spoken use
+
+Read-only, from the production store (`voice_message_provenance` joined to
+`messages_current`, 18 August – 26 September 2026), with his words run through
+`request_class`. That applies his words alone, before any context rule, so it is an
+upper bound.
+
+- **Spoken turns:** 27. **Class C: 0.**
+  - 9: more than one request or sentence.
+  - 8: not one of the defined classes.
+  - 5: about Val, the house or his own matters.
+  - 3: a reference to earlier content.
+  - 2: an instruction constraint.
+- **All user messages, typed and spoken:** 110. Class C 0, class F 5 (all typed; F is
+  rejected on quality).
+
+**So even a qualified class C would change none of the turns he has actually spoken.**
+The class was defined from bench phrases, and his real speech is multi-sentence,
+contextual and about the house. Widening eligibility to reach it would reach exactly
+the contexts where LOW failed on 23 September and on 28 September (§9): correction
+preservation, and invention where information is missing.
+
+**Where his wait actually is.** In production, on his 27 spoken turns, MEDIUM's hidden
+reasoning is:
+
+- median **269** tokens, p75 349, p90 440, maximum 583;
+- over all 34 measured conversation calls: median 277, p90 516, maximum 2,521.
+
+At the decode rate measured here (about 62 tokens/s at MEDIUM), that is about 4.3 s at
+the median and about 7 s at the 90th percentile before her first visible word. The bench
+phrases above drew half as much. The variation is large even for one request: 97 to
+697 tokens on one one-line craft request.
+
+## 17. Conclusion and the next local inference approach
+
+**Reasoning-effort routing by request class is stopped.**
+
+- It did not fail because LOW is slow. With a matched prefix, LOW reached the first
+  speech-safe segment in a median 1.8 s after dispatch, against 3.3 s.
+- It stopped because the one class that is safe at LOW does not occur in his speech.
+- The registered screen also narrowly failed.
+- No claim is made that LOW broadly fails, or that Voice is solved.
+
+**Next concrete approach (a recommendation; feasibility not yet verified): a bounded
+hidden-reasoning budget at MEDIUM, on the same model, for every ordinary turn.**
+
+- **The mechanism:** the existing engine hook (isolated to the experiment clone by its
+  allowlist) ends the analysis channel after N reasoning tokens, and the model then
+  writes its final answer.
+- **What it targets:** the component that dominates his real turns and varies most (the
+  p90 of about 7 s). It applies to all ordinary turns, not a class.
+- **Cost:** no new model, no new memory, no priming change.
+- **Risks:**
+  - quality on hard turns, where reasoning matters most;
+  - a cap that cuts reasoning short could reintroduce the correction and
+    missing-information failures seen at LOW.
+  - It must therefore be qualified against the frozen checks (MEDIUM 41/44) and his
+    real-turn phrases before any desktop comparison. N is chosen before measurement
+    (for example, at his p75 of about 350 tokens).
+- **Needs his authorisation:**
+  1. extending the isolated hook to steer generation, not only the cache;
+  2. the qualification run.
+
+  Both are local, at $0.
+- **Not recommended instead:** another non-reasoning local model. Qwen3-4B, Mistral Small
+  3.2 and Gemma 4 each failed Partner quality here.

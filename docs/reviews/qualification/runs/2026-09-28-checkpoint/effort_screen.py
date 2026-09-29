@@ -16,7 +16,12 @@ reasoning (first chunk → first visible text; seconds and tokens), dispatch →
 text, dispatch → first speech-safe segment (the delivery's own segmenter over the
 timestamped text), and the answer, read. Local, $0.
 
-Usage: effort_screen.py OUT.json
+Usage: effort_screen.py OUT.json [CLASSES]   (CLASSES e.g. "C"; default all)
+
+Corrected batch (§12, §13): `VAL_EFFORT_INSTANCE=val-exp-hub`, the shared LOW prime
+(`context.SHARED_LOW_PRIME`), class C only; each call's engine line and rendered effort
+attributed by sequence and exact prompt-token count, never by time window; each call's
+prime time and outcome recorded.
 """
 
 from __future__ import annotations
@@ -63,6 +68,7 @@ from val_policy.project_resolution import ExplicitNoProject  # noqa: E402
 from val_policy.speech_segments import SpeechSegmenter  # noqa: E402
 
 OUT = Path(sys.argv[1])
+ONLY = set(sys.argv[2]) if len(sys.argv) > 2 else None
 ROOT = Path(__file__).resolve().parents[5]
 # The instance must be loaded from the real model key (`openai/gpt-oss-20b`), whose LM Studio
 # hub definition maps `reasoning_effort` into the template. The renewal clone
@@ -101,6 +107,7 @@ engine = create_engine(URL)
 seed(engine, ROOT)
 context.ENVELOPE_IN_SYSTEM = True  # the candidate's construction
 context.SPLIT_STATE = False
+context.SHARED_LOW_PRIME = True  # one LOW prime on the prefix Tier-1 and ordinary LOW share
 enable_light_candidate("low")  # the candidate primes the Tier-1 LOW prefix too
 LOW = enable_ordinary_low()
 core.ORDINARY_LOW = LOW
@@ -120,6 +127,41 @@ def forced(engine_, opened, messages, visual):  # noqa: ANN001, ANN202
 
 
 core._ordinary_effort = forced  # type: ignore[assignment]
+
+import subprocess  # noqa: E402
+import threading  # noqa: E402
+
+STREAM = subprocess.Popen([str(Path.home() / ".lmstudio/bin/lms"), "log", "stream", "--source", "model", "--json"],
+                          stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+EVENTS: list[str] = []
+threading.Thread(target=lambda: [EVENTS.append(line) for line in STREAM.stdout], daemon=True).start()
+time.sleep(1.5)
+
+
+def hook_count() -> int:
+    return len(HOOK_LOG.read_text(errors="replace").splitlines())
+
+
+def attributed(tokens_in: object, hook_from: int, events_from: int) -> tuple[dict | str, str | None]:
+    """The engine line and rendered effort of this call: by sequence and exact token count."""
+    lines = HOOK_LOG.read_text(errors="replace").splitlines()[hook_from:]
+    hooks = [json.loads(line.split(" request ", 1)[1]) for line in lines if " request {" in line]
+    matched = [h for h in hooks if h.get("total") == tokens_in]
+    rendered, pending = [], None
+    for line in EVENTS[events_from:]:
+        try:
+            data = json.loads(line).get("data", {})
+        except ValueError:
+            continue
+        if data.get("type") == "llm.prediction.input":
+            pending = (re.findall(r"Reasoning:\s*\w+", data.get("input", "")) or [None])[0]
+        elif data.get("type") == "llm.prediction.output" and pending is not None:
+            if (data.get("stats") or {}).get("promptTokensCount") == tokens_in:
+                rendered.append(pending)
+            pending = None
+    engine_line = matched[0] if len(matched) == 1 else f"unmatched ({len(matched)})"
+    return engine_line, rendered[0] if len(rendered) == 1 else f"unmatched ({len(rendered)})"
+
 
 BODIES: list[dict] = []
 _request = lmstudio.LMStudioAdapter._request
@@ -221,7 +263,10 @@ def run(case: tuple, effort: str, sample: int) -> dict:
     if adversarial:
         loop.record_state_block = adversarial_block  # type: ignore[assignment]
     conversation = prepare(f"{label} [{effort} s{sample}]", history)
-    gateway.prime_prefix()  # both existing primes: the Tier-1 LOW prefix, then the MEDIUM partner prefix
+    primed_at = time.monotonic()
+    prime = dict(gateway.prime_prefix())  # the shared LOW prime, then the MEDIUM prime
+    prime_seconds = round(time.monotonic() - primed_at, 3)
+    hook_from, events_from = hook_count(), len(EVENTS)
     deltas: list[tuple[float, str]] = []
     bodies_before, real_before = len(BODIES), len(REAL)
     began = time.time()
@@ -269,10 +314,18 @@ def run(case: tuple, effort: str, sample: int) -> dict:
     }
     fc, fv = row["dispatch_to_first_chunk_s"], row["dispatch_to_first_visible_s"]
     row["reasoning_s"] = None if fc is None or fv is None else round(fv - fc, 3)
+    time.sleep(1.0)
+    engine_line, reasoning_line = attributed(call[0], hook_from, events_from)
+    row["engine_line"] = engine_line
+    row["rendered_reasoning"] = reasoning_line
+    row["prime_seconds"] = prime_seconds
+    row["prime_outcomes"] = {"medium": prime.get("outcome"), "low": dict(prime.get("light") or {}).get("outcome")}
     return row
 
 
 rows: list[dict] = []
+if ONLY is not None:
+    CASES = [case for case in CASES if case[1] in ONLY]
 for index, case in enumerate(CASES):
     order = ("medium", "low") if index % 2 == 0 else ("low", "medium")
     samples = 1 if case[1] == "R" else 2
@@ -286,14 +339,13 @@ for index, case in enumerate(CASES):
                                              "reasoning_s", "dispatch_to_first_segment_s")}), flush=True)
         time.sleep(0.5)
 time.sleep(2.0)
-for row in rows:
-    caches, hooks = engine_lines(*row["wall"])
-    measured = [h for h in hooks if h.get("total", 0) > 5200 and "update_cache_ms" in h]
-    cache = [c for c in caches if c["total"] > 5200]
-    if measured:
-        row["engine_update_cache_ms"] = measured[-1].get("update_cache_ms")
-    if cache:
-        row["engine_cached_tokens"], row["engine_prompt_tokens"] = cache[-1]["cached"], cache[-1]["total"]
+STREAM.terminate()
+for row in rows:  # request-attributed only: the engine line matched by sequence and exact token count
+    line = row["engine_line"]
+    if isinstance(line, dict):
+        row["engine_update_cache_ms"] = line.get("update_cache_ms")
+        row["engine_cached_tokens"] = line.get("reused")
+        row["store_entries"], row["store_bytes"] = line.get("entries"), line.get("store_bytes")
 
 
 def per_class(klass: str, key: str) -> dict:
@@ -325,7 +377,16 @@ result = {
             "screens_failed_low": [(r["case"], r["sample"]) for r in rows if r["class"] == k and r["effort"] == "low" and not r["screen_passed"]],
             "screens_failed_medium": [(r["case"], r["sample"]) for r in rows if r["class"] == k and r["effort"] == "medium" and not r["screen_passed"]],
         }
-        for k in ("F", "C", "R")
+        for k in sorted({r["class"] for r in rows})
+    },
+    "rendered_mismatches": [(r["case"], r["effort"], r["sample"], r["rendered_reasoning"]) for r in rows
+                            if r["rendered_reasoning"] != f"Reasoning: {r['effort']}"],
+    "unattributed": [(r["case"], r["effort"], r["sample"]) for r in rows if not isinstance(r["engine_line"], dict)],
+    "maintenance": {
+        "prime_seconds": [r["prime_seconds"] for r in rows],
+        "prime_outcomes": [r["prime_outcomes"] for r in rows],
+        "store_entries": [r.get("store_entries") for r in rows],
+        "store_bytes_max": max((r.get("store_bytes") or 0) for r in rows),
     },
     "medians": {e: {k: med(e, k) for k in ("dispatch_to_first_chunk_s", "reasoning_s", "reasoning_tokens",
                                             "dispatch_to_first_visible_s", "dispatch_to_first_segment_s",

@@ -5,7 +5,8 @@ Owner order of 28 September 2026 (night), pre-registered in
 this module existed. Isolated experiment only: nothing here is admitted, and production
 never reaches it (the switch that uses it is unset there).
 
-Two classes, both drawn from his spoken use:
+Two classes, defined from the bench phrases (EFFORT_EXPERIMENT.md §16 later found
+neither class C in any of his 27 recorded spoken turns):
 
 - **F** — a self-contained factual question (a definition, a general-knowledge fact, a
   named work) whose answer depends on nothing in this conversation, the house or Val;

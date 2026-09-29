@@ -1757,3 +1757,55 @@ at MEDIUM. Corrections are appended to the cache, checkpoint and lifecycle recor
 not measured: class-C audible onset ~3.5–4 s against ~6.4 s. It needs a LOW ordinary prefix
 prime, plus a hub definition for the clone or a real-key instance. If that fails, the next
 step is a different local inference path, which needs new qualification.
+## 39. Handoff — the corrected LOW configuration experiment (owner order of 28 September 2026, late night, "Resolve those directly before concluding that LOW cannot improve onset")
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged and pinned; no physical
+test requested.** Record: `qualification/runs/2026-09-28-checkpoint/EFFORT_EXPERIMENT.md`
+§12–§17 (registered in `ab66807` before the batch). The original screening result (§7–§11)
+stands as recorded: a failure of the tested configuration, including its unmatched LOW
+prefix. Class F stays rejected and was not retested.
+
+**The corrections, verified before any batch with request-attributed evidence:**
+
+- **A hub definition for the clone.** It uses LM Studio's `model.yaml` mechanism, is
+  isolated and removable, and leaves production's definition unchanged. The clone now
+  honours LOW and MEDIUM and production's sampling.
+- **One shared LOW prime**, persona and fixed framing only, on the 5,043-token prefix the
+  Tier-1 and ordinary LOW requests share. It serves both routes, so no separate prime
+  was needed.
+- **Two static prefixes are held** in the 10-entry cache. Switching efforts left MEDIUM's
+  reuse intact.
+
+**The corrected class C batch** (12 calls, $0, every call attributed, every effort
+rendered as requested):
+
+| median | prepared LOW | prepared MEDIUM |
+|---|---|---|
+| dispatch → first speech-safe segment | 1.8 s | 3.3 s |
+| hidden reasoning | 0.29 s | 2.2 s |
+
+- **Quality:** no LOW quality failure.
+- **Registered statistic:** −1.494 s against ≤ −1.5 s. **It fails by 6 ms, recorded as a
+  fail.**
+- **A residual mismatch favoured MEDIUM:** a divergence checkpoint left by the
+  verification probe, worth about 0.45 s on three LOW calls. It is named, not corrected
+  after the fact, and was not rerun.
+- **Maintenance:** each prime is ≈6.2 s cold and ≈0.45 s warm. Neither static prefix was
+  evicted in the batch. Sustained-conversation eviction and queueing behind maintenance
+  were not measured: Stage 3 was not reached.
+
+**Coverage, from the production store (read-only):** class C matches **0 of his 27
+spoken turns** and 0 of 110 user messages. Even qualified, it would have changed none of
+his recorded spoken turns. **The approach is stopped.**
+
+**Where the wait is:** production MEDIUM reasons a median of 269 hidden tokens on his
+spoken turns (p90 440): ≈4.3 s at the median and ≈7 s at the 90th percentile before her
+first visible word.
+
+**Next local inference approach (his authorization, feasibility unverified):** a bounded
+hidden-reasoning budget at MEDIUM on the same model, through the isolated engine hook,
+qualified against the frozen checks before any desktop comparison.
+
+- **Not claimed:** that LOW broadly fails, or that Voice is solved.
+- **Instance:** unloaded after the run. The hub definition, hook and allowlist are kept,
+  pending his ruling.

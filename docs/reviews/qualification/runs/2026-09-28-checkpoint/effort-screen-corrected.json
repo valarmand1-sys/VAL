@@ -1,0 +1,729 @@
+{
+ "classes": {
+  "C": {
+   "first_segment": {
+    "per_case_low_minus_medium": [
+     -1.494,
+     -6.423,
+     -0.719
+    ],
+    "median": -1.494
+   },
+   "first_visible": {
+    "per_case_low_minus_medium": [
+     -1.525,
+     -6.5,
+     -0.719
+    ],
+    "median": -1.525
+   },
+   "reasoning_s": {
+    "per_case_low_minus_medium": [
+     -1.743,
+     -6.964,
+     -0.684
+    ],
+    "median": -1.743
+   },
+   "reasoning_tokens": {
+    "per_case_low_minus_medium": [
+     -114.0,
+     -444.5,
+     -45
+    ],
+    "median": -114.0
+   },
+   "first_chunk": {
+    "per_case_low_minus_medium": [
+     0.218,
+     0.464,
+     -0.034
+    ],
+    "median": 0.218
+   },
+   "screens_failed_low": [],
+   "screens_failed_medium": []
+  }
+ },
+ "rendered_mismatches": [],
+ "unattributed": [],
+ "maintenance": {
+  "prime_seconds": [
+   1.446,
+   0.895,
+   0.895,
+   0.919,
+   0.903,
+   0.902,
+   0.905,
+   0.913,
+   0.907,
+   0.907,
+   0.903,
+   0.895
+  ],
+  "prime_outcomes": [
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   },
+   {
+    "medium": "established",
+    "low": "established"
+   }
+  ],
+  "store_entries": [
+   10,
+   10,
+   10,
+   10,
+   10,
+   10,
+   10,
+   10,
+   10,
+   10,
+   10,
+   10
+  ],
+  "store_bytes_max": 1532928000
+ },
+ "medians": {
+  "low": {
+   "dispatch_to_first_chunk_s": 1.361,
+   "reasoning_s": 0.287,
+   "reasoning_tokens": 14.0,
+   "dispatch_to_first_visible_s": 1.617,
+   "dispatch_to_first_segment_s": 1.818,
+   "engine_update_cache_ms": 1032.1,
+   "engine_cached_tokens": 5218.5
+  },
+  "medium": {
+   "dispatch_to_first_chunk_s": 1.168,
+   "reasoning_s": 2.204,
+   "reasoning_tokens": 136.5,
+   "dispatch_to_first_visible_s": 3.036,
+   "dispatch_to_first_segment_s": 3.26,
+   "engine_update_cache_ms": 818.7,
+   "engine_cached_tokens": 5394.0
+  }
+ },
+ "effort_on_the_wire_mismatches": [],
+ "real_decisions": {
+  "C-chapter": [
+   "low"
+  ],
+  "C-chase": [
+   "low"
+  ],
+  "C-lighthouse": [
+   "low"
+  ]
+ },
+ "rows": [
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "1. **Summarising closure** – a concise recap of the chapter’s key events, tying up loose threads and reinforcing the main theme.  \n2. **Cliffhanger or inciting incident** – a sharp, unresolved moment that propels the reader toward the next chapter.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 243,
+   "reasoning_tokens": 176,
+   "visible_chars": 248,
+   "dispatch_to_first_chunk_s": 1.199,
+   "dispatch_to_first_visible_s": 4.027,
+   "dispatch_to_first_segment_s": 4.197,
+   "wall": [
+    1790653410.259976,
+    1790653415.048364
+   ],
+   "reasoning_s": 2.828,
+   "engine_line": {
+    "active_memory": 13751806126,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5394,
+    "store_bytes": 1512800256,
+    "total": 5942,
+    "update_cache_ms": 819.3,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: medium",
+   "prime_seconds": 1.446,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 819.3,
+   "engine_cached_tokens": 5394,
+   "store_entries": 10,
+   "store_bytes": 1512800256
+  },
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "1. Conclude with a **summative reflection** that ties the chapter’s themes together and signals closure.  \n2. End with a **foreshadowing hook**—a subtle hint or question that leads naturally into the next chapter.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 83,
+   "reasoning_tokens": 24,
+   "visible_chars": 213,
+   "dispatch_to_first_chunk_s": 1.658,
+   "dispatch_to_first_visible_s": 2.162,
+   "dispatch_to_first_segment_s": 2.564,
+   "wall": [
+    1790653417.482095,
+    1790653420.276592
+   ],
+   "reasoning_s": 0.504,
+   "engine_line": {
+    "active_memory": 13760850094,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5043,
+    "store_bytes": 1524350976,
+    "total": 5942,
+    "update_cache_ms": 1300.0,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: low",
+   "prime_seconds": 0.895,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 1300.0,
+   "engine_cached_tokens": 5043,
+   "store_entries": 10,
+   "store_bytes": 1524350976
+  },
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "Two common ways to conclude a chapter are:\n\n1. **A clear resolution or revelation** – the narrative reaches a point where the main conflict introduced in that chapter is settled, or an important truth is uncovered, giving readers a satisfying sense of closure before moving on.\n\n2. **A cliffhanger or unresolved tension** – the chapter ends with a question, threat, or sudden change that leaves readers eager to continue. This technique preserves intrigue and encourages the next chapter to pick up where the suspense began.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 131,
+   "reasoning_tokens": 21,
+   "visible_chars": 524,
+   "dispatch_to_first_chunk_s": 0.443,
+   "dispatch_to_first_visible_s": 0.861,
+   "dispatch_to_first_segment_s": 0.97,
+   "wall": [
+    1790653422.698862,
+    1790653424.987711
+   ],
+   "reasoning_s": 0.418,
+   "engine_line": {
+    "active_memory": 13767141550,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5931,
+    "store_bytes": 1530642432,
+    "total": 5942,
+    "update_cache_ms": 68.1,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: low",
+   "prime_seconds": 0.895,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 68.1,
+   "engine_cached_tokens": 5931,
+   "store_entries": 10,
+   "store_bytes": 1530642432
+  },
+  {
+   "case": "C-chapter",
+   "class": "C",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "1. **Cliffhanger** – leave a pivotal question or looming threat unresolved, compelling the reader to turn the next page.  \n2. **Resolution** – tie up loose ends, reinforce the central theme, and provide a satisfying sense of closure.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5942,
+   "tokens_out": 158,
+   "reasoning_tokens": 97,
+   "visible_chars": 233,
+   "dispatch_to_first_chunk_s": 0.465,
+   "dispatch_to_first_visible_s": 2.045,
+   "dispatch_to_first_segment_s": 2.324,
+   "wall": [
+    1790653427.4401228,
+    1790653430.155644
+   ],
+   "reasoning_s": 1.58,
+   "engine_line": {
+    "active_memory": 13767403694,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5931,
+    "store_bytes": 1528307712,
+    "total": 5942,
+    "update_cache_ms": 68.4,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: medium",
+   "prime_seconds": 0.919,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 68.4,
+   "engine_cached_tokens": 5931,
+   "store_entries": 10,
+   "store_bytes": 1528307712
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "Hold the chase at a rhythm that mirrors the pursuer’s breath—fast enough to press tension, slow enough to let the hero’s reactions anchor the pace.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 54,
+   "reasoning_tokens": 12,
+   "visible_chars": 147,
+   "dispatch_to_first_chunk_s": 1.626,
+   "dispatch_to_first_visible_s": 1.905,
+   "dispatch_to_first_segment_s": 2.106,
+   "wall": [
+    1790653432.589716,
+    1790653434.877795
+   ],
+   "reasoning_s": 0.279,
+   "engine_line": {
+    "active_memory": 13758752942,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5043,
+    "store_bytes": 1522163712,
+    "total": 5948,
+    "update_cache_ms": 1253.2,
+    "why": "at the tail"
+   },
+   "rendered_reasoning": "Reasoning: low",
+   "prime_seconds": 0.903,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 1253.2,
+   "engine_cached_tokens": 5043,
+   "store_entries": 10,
+   "store_bytes": 1522163712
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "Vary the rhythm—speed up as danger escalates, then pause to allow breath before a critical turn.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 252,
+   "reasoning_tokens": 220,
+   "visible_chars": 96,
+   "dispatch_to_first_chunk_s": 1.182,
+   "dispatch_to_first_visible_s": 4.703,
+   "dispatch_to_first_segment_s": 4.855,
+   "wall": [
+    1790653437.3025322,
+    1790653442.2246542
+   ],
+   "reasoning_s": 3.521,
+   "engine_line": {
+    "active_memory": 13761112238,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5394,
+    "store_bytes": 1522311168,
+    "total": 5948,
+    "update_cache_ms": 824.0,
+    "why": "at the tail"
+   },
+   "rendered_reasoning": "Reasoning: medium",
+   "prime_seconds": 0.902,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 824.0,
+   "engine_cached_tokens": 5394,
+   "store_entries": 10,
+   "store_bytes": 1522311168
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "I have no book on this yet, my lord; keep the pacing brisk by cutting to action and then a brief pause that reveals the pursuer’s intent.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 739,
+   "reasoning_tokens": 697,
+   "visible_chars": 137,
+   "dispatch_to_first_chunk_s": 1.215,
+   "dispatch_to_first_visible_s": 12.196,
+   "dispatch_to_first_segment_s": 12.323,
+   "wall": [
+    1790653444.658839,
+    1790653457.2143822
+   ],
+   "reasoning_s": 10.981,
+   "engine_line": {
+    "active_memory": 13757180078,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5394,
+    "store_bytes": 1518354432,
+    "total": 5948,
+    "update_cache_ms": 822.5,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: medium",
+   "prime_seconds": 0.905,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 822.5,
+   "engine_cached_tokens": 5394,
+   "store_entries": 10,
+   "store_bytes": 1518354432
+  },
+  {
+   "case": "C-chase",
+   "class": "C",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "My lord, pace the chase by letting urgency rise in short bursts—briefly heightening speed, then momentarily pausing to let the pursuer’s effort strain before thrusting forward again.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5948,
+   "tokens_out": 65,
+   "reasoning_tokens": 16,
+   "visible_chars": 182,
+   "dispatch_to_first_chunk_s": 1.699,
+   "dispatch_to_first_visible_s": 1.994,
+   "dispatch_to_first_segment_s": 2.227,
+   "wall": [
+    1790653459.6486862,
+    1790653462.15567
+   ],
+   "reasoning_s": 0.295,
+   "engine_line": {
+    "active_memory": 13769762990,
+    "boundary": 5394,
+    "entries": 10,
+    "reused": 5043,
+    "store_bytes": 1517592576,
+    "total": 5948,
+    "update_cache_ms": 1288.9,
+    "why": "divergence"
+   },
+   "rendered_reasoning": "Reasoning: low",
+   "prime_seconds": 0.913,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 1288.9,
+   "engine_cached_tokens": 5043,
+   "store_entries": 10,
+   "store_bytes": 1517592576
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "medium",
+   "sample": 1,
+   "answered": true,
+   "answer": "A lighthouse stands upon the cliff’s edge, its lantern room a beacon of steadfast light that cuts through fog and storm to guide wandering ships toward safe harbor.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 77,
+   "reasoning_tokens": 36,
+   "visible_chars": 164,
+   "dispatch_to_first_chunk_s": 1.154,
+   "dispatch_to_first_visible_s": 1.807,
+   "dispatch_to_first_segment_s": 1.994,
+   "wall": [
+    1790653464.589958,
+    1790653466.804863
+   ],
+   "reasoning_s": 0.653,
+   "engine_line": {
+    "active_memory": 13758490798,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5394,
+    "store_bytes": 1519755264,
+    "total": 5941,
+    "update_cache_ms": 818.1,
+    "why": "at the tail"
+   },
+   "rendered_reasoning": "Reasoning: medium",
+   "prime_seconds": 0.907,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 818.1,
+   "engine_cached_tokens": 5394,
+   "store_entries": 10,
+   "store_bytes": 1519755264
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "low",
+   "sample": 1,
+   "answered": true,
+   "answer": "A lighthouse stands as a solitary stone tower rising above the coast, its lantern room casting a steady beam that slices through fog and night to guide mariners safely to shore.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 51,
+   "reasoning_tokens": 7,
+   "visible_chars": 177,
+   "dispatch_to_first_chunk_s": 1.097,
+   "dispatch_to_first_visible_s": 1.329,
+   "dispatch_to_first_segment_s": 1.531,
+   "wall": [
+    1790653469.240184,
+    1790653471.0329869
+   ],
+   "reasoning_s": 0.232,
+   "engine_line": {
+    "active_memory": 13771860142,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5394,
+    "store_bytes": 1532928000,
+    "total": 5941,
+    "update_cache_ms": 811.0,
+    "why": "at the tail"
+   },
+   "rendered_reasoning": "Reasoning: low",
+   "prime_seconds": 0.907,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 811.0,
+   "engine_cached_tokens": 5394,
+   "store_entries": 10,
+   "store_bytes": 1532928000
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "low",
+   "sample": 2,
+   "answered": true,
+   "answer": "A lighthouse stands as a solitary stone tower, its lantern room flashing a steady beam that cuts the night’s darkness and warns ships of perilous reefs.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "low"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 49,
+   "reasoning_tokens": 9,
+   "visible_chars": 152,
+   "dispatch_to_first_chunk_s": 0.39,
+   "dispatch_to_first_visible_s": 0.639,
+   "dispatch_to_first_segment_s": 0.81,
+   "wall": [
+    1790653473.4662452,
+    1790653474.492519
+   ],
+   "reasoning_s": 0.249,
+   "engine_line": {
+    "active_memory": 13752985774,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5930,
+    "store_bytes": 1514053632,
+    "total": 5941,
+    "update_cache_ms": 69.0,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: low",
+   "prime_seconds": 0.903,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 69.0,
+   "engine_cached_tokens": 5930,
+   "store_entries": 10,
+   "store_bytes": 1514053632
+  },
+  {
+   "case": "C-lighthouse",
+   "class": "C",
+   "effort": "medium",
+   "sample": 2,
+   "answered": true,
+   "answer": "A lighthouse rises from the cliff’s edge, its white tower capped with a lantern that flashes red and green to guide ships.",
+   "screen_passed": true,
+   "effort_on_the_wire": [
+    "medium"
+   ],
+   "core_real_decision": [
+    "low"
+   ],
+   "tokens_in": 5941,
+   "tokens_out": 105,
+   "reasoning_tokens": 70,
+   "visible_chars": 122,
+   "dispatch_to_first_chunk_s": 0.402,
+   "dispatch_to_first_visible_s": 1.598,
+   "dispatch_to_first_segment_s": 1.785,
+   "wall": [
+    1790653476.915373,
+    1790653478.80719
+   ],
+   "reasoning_s": 1.196,
+   "engine_line": {
+    "active_memory": 13753247918,
+    "boundary": null,
+    "entries": 10,
+    "reused": 5930,
+    "store_bytes": 1514053632,
+    "total": 5941,
+    "update_cache_ms": 69.2,
+    "why": "no gain"
+   },
+   "rendered_reasoning": "Reasoning: medium",
+   "prime_seconds": 0.895,
+   "prime_outcomes": {
+    "medium": "established",
+    "low": "established"
+   },
+   "engine_update_cache_ms": 69.2,
+   "engine_cached_tokens": 5930,
+   "store_entries": 10,
+   "store_bytes": 1514053632
+  }
+ ]
+}
