@@ -1280,9 +1280,14 @@ def prefill_voice_turn(
     if last.role != "user" or _WORDS_TO_COME not in content:
         return {"prefilled": False, "reason": "the request does not end with his words"}
     known = content.rpartition(_WORDS_TO_COME)[0]
-    if not known.strip():
-        return {"prefilled": False, "reason": "nothing precedes his words in the last message"}
-    return gateway.prefill_turn((*messages[:-1], Message(role="user", content=known)))
+    if known.strip():
+        return gateway.prefill_turn((*messages[:-1], Message(role="user", content=known)))
+    # Core assembles the record state and his words as two messages of his role, which
+    # the local wire joins (ruling, 17 September 2026). Everything before his words is
+    # then the request without its last message.
+    if len(messages) < 2 or messages[-2].role != "user":
+        return {"prefilled": False, "reason": "nothing precedes his words in his last message"}
+    return gateway.prefill_turn(messages[:-1])
 
 
 def _light_tier(
