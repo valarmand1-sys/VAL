@@ -1226,8 +1226,8 @@ export function ResponseProgress(props: { session: VoiceSessionView }): React.JS
   if (cognition === "loading" || cognition === "released" || cognition === "restoring") {
     lines.push(
       cognition === "loading"
-        ? "Switching models — Val's voice model is loading. Your words are heard and will be answered."
-        : "Switching models — Val's voice model is being restored after a fallback. Your words are heard and will be answered when it is back.",
+        ? "Warming up — Val's voice model is loading. Your words are heard and will be answered when it is ready."
+        : "Restoring Val's voice model after a fallback — your words are heard and will be answered when it is back.",
     );
   } else if (readiness !== null && !readiness.ready && stage === null) {
     const failed = Object.entries(readiness)

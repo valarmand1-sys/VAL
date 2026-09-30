@@ -813,6 +813,8 @@ class Gateway:
             # The Voice model's own server is held only while Voice is on: ending it
             # gives its memory back to typed work and everything else on this Mac.
             cognition = self._release_local(pinned)
+            # No Voice, no claim about its model: `released` is reserved for the fallback.
+            self.voice_model_state = "absent"
         release = getattr(self.speech, "release", None)
         if not callable(release):
             return {
@@ -1054,6 +1056,10 @@ class Gateway:
         if self.voice_releases_partner and chosen is self.voice_configuration:
             with self._residency_lock:
                 self._voice_holds_memory = True
+            # Voice On: the model is on its way in. Said as loading from this moment, so the
+            # desktop never reads Ready — or "restored after a fallback" — while it loads.
+            if self.voice_model_state != "resident":
+                self.voice_model_state = "loading"
                 # What is resident now is learned from the runtime, not assumed: the
                 # Partner model may or may not be loaded when Voice is turned on.
                 partner = self._typed_turn_route()

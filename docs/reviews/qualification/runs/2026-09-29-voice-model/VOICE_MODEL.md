@@ -522,6 +522,15 @@ on the branch.**
 
 **The steps, in order, each his:**
 
+0. **A verified backup of the live database, before anything else** (owner order,
+   30 September 2026). In Terminal:
+   `/opt/homebrew/bin/pgbackrest --config=/opt/homebrew/etc/pgbackrest/pgbackrest.conf --stanza=val --archive-timeout=600 backup --type=full`
+   (the longer archive wait because of §10.11.2)
+   then `… --stanza=val info` must list the new full backup with today's timestamp. Then
+   verify it the way the house verifies every restore: restore that set to a scratch
+   instance and run `uv run --directory ~/Projects/val-releases/<r5> python infrastructure/backup/verify_restore.py --source postgresql://…live… --restored postgresql://…scratch…`
+   — exit 0 is the verification (row counts, foreign keys, capture-table continuity,
+   per-table digests, the Alembic revision). **Do not run the migration until this exits 0.**
 1. **The migration** (the live store is at `0031`; this release needs `0032` and no other):
    `uv run --directory ~/Projects/val-releases/9db6e61 alembic -x deploy=live upgrade 0032_light_conversation`
 2. **The server key**, generated locally and entered by the owner-only tool so it never
@@ -832,6 +841,87 @@ passes.** The policy that ships is the serialized one; the overlap is excluded.
 **Recorded limit:** the desktop's Ready is the session's state, not the model's; during a
 return the session reads Ready while the Voice model loads, and a spoken turn then waits
 for it. The wait is recorded in the transition lines and the turn's own timeline.
+
+## 10.10 Voice has priority — the interaction policy that replaces serialized displacement (owner order, 30 September 2026, 15:0x–)
+
+**Ruling recorded:** r4's 45.8-second spoken delay and its "Ready" while the model was
+loading prevent approval. The resource repair stands; the interaction policy is corrected.
+
+### 10.10.1 The policy, truthfully
+
+| situation | what happens | what he sees |
+|---|---|---|
+| **Voice On** with GPT-OSS resident | GPT-OSS is released — after any call using it has settled, never under it — then the Voice model loads and the prefixes prime | "Warming up…" until every component is ready; **Ready only then** (§11: 12–22 s) |
+| **a typed message while Voice is on** (any conversation) | **refused before anything is written or sent**: HTTP 409, `voice_active`, with the reason; the gateway refuses the same at its one door for any other entrance (`VOICE_HAS_PRIORITY`). The Voice model is not touched, nothing is routed to it, nothing is queued, nothing is marked answered | the composer's placeholder says typed messages wait while Voice is on; on a send, the notice says so and **the words and attachments stay in the composer as a draft** — to send when Voice is off, or to clear (the cancellation) |
+| **a typed request already answering when Voice is turned on** | finishes first; Voice On waits for it (§10.8's in-flight guard) | Voice shows warming, not Ready, until its model and prefixes are ready |
+| **a genuine Voice-model failure** (a Voice call fails before any word) | the existing fallback, under an explicit licence (`Gateway.fallback_from_voice`): the Voice model is released, GPT-OSS loads and answers once, then the Voice model is restored and primed off the request path. Routine typed work can never enter this path | readiness reads **"Switching models — Val's voice model is being restored after a fallback"**, never Ready, until it is back; speech captured meanwhile is kept and answered when it is; the turn's timeline records the delay |
+| **Voice ending** | the Voice model released; GPT-OSS loaded again off the request path | typed work proceeds; the draft can be sent |
+
+Dual residency cannot be recreated by routine work: the only path that displaces the Voice
+model is the fallback licence, and preparation (prime, prefill, warm-up, return) still goes
+through the transition door, which now refuses rather than displaces for everything but that
+licence. The protections of §10.8 — no release under a request in use, a loading model counted
+resident — are kept.
+
+**Kept as an explicit choice for his review:** the hold applies to *every* typed message while
+Voice is on, including one typed into the Voice conversation itself (r1–r4 routed that to the
+Voice model silently; the order forbids silent routing to Gemma). Reversible in one line if he
+wants typed turns in the Voice conversation answered by the Voice model.
+
+### 10.10.2 Code and tests
+
+- `GatewayErrorKind.VOICE_HAS_PRIORITY`; `Gateway._transition_to` refuses unless
+  `fallback_from_voice` is in force (a context variable, set only by Core's fallback);
+  `Gateway.voice_model_state` (`absent` / `loading` / `resident` / `released` / `restoring`)
+  set where a load or release actually ran; `VoiceSession._readiness_now` lays it over the
+  session's readiness; `VoiceSessions.open_count`; the API's `_voice_has_priority` on
+  `/turns` and `/turns/stream`; the desktop's `typedWorkWaitsForVoice`, the draft kept with
+  its attachments on a refused send, the placeholder, and the "Switching models" lines.
+- Tests: `test_voice_model.py` (16) — a typed call during Voice is refused with nothing
+  loaded, released or sent, and proceeds after Voice ends; during a genuine fallback a
+  prefill waits and the state reads released/restoring, never resident, and the model
+  returns; Voice On waits for a typed call in flight. `test_voice_priority.py` (2) — 409
+  with `voice_active` on both routes, nothing written, nothing sent; the same request
+  answered once after the session closes; without the switch nothing is held. Desktop:
+  `api.test.ts` (+2). Cancellation is the composer's own clear (nothing was ever sent);
+  duplicate prevention is structural — a refused request writes no row, and one re-send
+  writes one message (asserted).
+
+### 10.10.3 The focused sequence (`V-priority-1`, `typed_during_voice_v2.sh`)
+
+*(filled from the run below)*
+
+## 10.11 Two confirmations he asked for (30 September)
+
+### 10.11.1 The lifecycle repairs are in the release
+
+The adaptive endpoint is on, so the 28 September lifecycle repairs (`LIFECYCLE_REPAIR.md`)
+must ship with it. All four are on the branch — commits `2de953a`, `e5a7d83`, `f882653`, all
+ancestors of every release tag since `9db6e61` — and in the code:
+
+| repair | where |
+|---|---|
+| the superseded-worker recovery deadline | `voice.py`: `SUPERSEDED_WORKER_DEADLINE_SECONDS = 1.0`; a worker alive past it is abandoned and his words go ahead |
+| the refusal of stale work | `conversations.py` (the answer's append refused under the conversation lock once superseded), Core's refusal to persist a superseded turn, the LM Studio adapter sending nothing for a call superseded before dispatch (`test_lmstudio_supersession.py`) |
+| the hand-off carry-forward | `voice.py`: the session joins his resumed words itself — a recorded fragment withdrawn append-only and the complete wording submitted as one turn; a fragment never recorded leads the joined turn (`test_a_worker_held_before_his_fragment_was_recorded_loses_none_of_his_words`) |
+| the service-wide abandoned-worker limit | `voice.py`: `MAX_ABANDONED_WORKERS = 3`, counted across the process (`abandoned_workers_alive`), Voice ending with the reason above it and not reopening while they live (`test_reopening_voice_does_not_reset_the_bound_on_workers_that_never_ended`) |
+
+Six tests in `test_superseded_worker.py` cover them; all pass in the release gate. None is
+missing.
+
+### 10.11.2 The live database's backups — a finding
+
+- The scheduled nightly backup **failed on 29 September at 20:00 CDT**: pgBackRest error
+  082, "WAL segment … was not archived before the 60000ms timeout". The newest backup of the
+  live store is the incremental of **28 September 20:00 CDT** (`20260927-200007F_20260928-200010I`).
+- WAL archiving itself is **working but slow**: `pgbackrest check` timed out at 60 s this
+  afternoon, and PostgreSQL's archiver shows the same segment archived 15 s after the
+  timeout (`pg_stat_archiver`: last archived 15:14:27 today, last failure 26 September).
+  The upload to the repository is taking longer than the configured 60 s wait.
+- **Consequence for installation:** the pre-migration full backup (§9 step 0) must be taken
+  with a longer archive wait — `--archive-timeout=600` — and verified before the migration
+  runs. Whether the slowness is the network, the repository or this Mac's load during the
+  evening's runs is not established here and is reported to him, not guessed.
 
 ## 11. The release recommendation — r4, for his approval
 
