@@ -499,6 +499,9 @@ def enable_light_candidate(route: str = "qwen") -> ModelConfig:
 # typed and complex work stays on the Partner route.
 VOICE_TURN_PREFILL_SETTING = "VAL_VOICE_TURN_PREFILL"
 VOICE_EARLY_AUDIO_SETTING = "VAL_VOICE_EARLY_AUDIO"
+#: Candidate (29 September 2026, VOICE_MODEL.md §10): Voice On unloads the Partner model
+#: while the Voice model is resident, and Voice ending brings it back.
+VOICE_RELEASES_PARTNER_SETTING = "VAL_VOICE_RELEASES_PARTNER"
 VOICE_MODEL_SETTING = "VAL_VOICE_MODEL"
 VOICE_MODELS = {"gemma-4-26b-a4b": "gemma-4-26b-a4b-q4km-llamacpp-voice"}
 
@@ -915,6 +918,14 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         _LOGGER.warning(
             "CANDIDATE Voice turn prefill for this process: a spoken turn's request, without "
             "his words, is prepared in the local Voice runtime when he begins to speak."
+        )
+    gateway.voice_releases_partner = voice_model is not None and os.environ.get(
+        VOICE_RELEASES_PARTNER_SETTING, ""
+    ).strip().lower() in {"1", "on", "true", "yes"}
+    if gateway.voice_releases_partner:
+        _LOGGER.warning(
+            "CANDIDATE Voice releases the Partner model for this process: Voice On unloads it "
+            "while the Voice model is resident; Voice ending loads it again."
         )
     return Startup(
         gateway=gateway,

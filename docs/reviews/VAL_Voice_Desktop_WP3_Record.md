@@ -2174,3 +2174,29 @@ test made — one is required.** Record: `qualification/runs/2026-09-29-voice-mo
   adaptive endpoint; the ahead-of-words preparation (conversation content primed
   locally, the open ruling of 25 September); the memory threshold's reading; the release
   (47 commits, migration `0032`, the desktop build); then the listening check.
+
+## 48. Handoff — the challenger comparison and the release checks (owner order of 29 September 2026, evening)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged.** Records:
+`qualification/runs/2026-09-29-voice-model/CHALLENGER.md`, `VOICE_MODEL.md` §10.
+
+- **Challenger review (9 of the 45 minutes):** one candidate has a stated, concrete
+  advantage — Qwen3.6-35B-A3B non-thinking, a third-party hallucination rate of 50.5%
+  against Gemma's 86.4% (abstention, bearing on the fabrication requirements); no
+  candidate can improve onset (the model is ~0.4 s of 2.3 s) and it is 3.6 GB larger.
+  Conditions for beating Gemma are registered (CHALLENGER.md §1.4), the ten
+  fabrication-pressure cases are written and unseen by either model (`voice_screen.py
+  pressure`). **Blocked before download: 16 GB free against a 20.4 GB file.** Freeing space
+  (the removed Qwen3-30B weights, 17 GB) or another volume is his; deletion was refused
+  to me. **Recommendation as it stands: retain Gemma.**
+- **Resident-together check FAILED its threshold:** GPT-OSS loaded beside the Voice model,
+  swap 3.0 → 14.5 GB in fifteen minutes, one 0% free sample; onset and answers unaffected.
+  The staged release does not unload GPT-OSS at Voice On. **Repair behind
+  `VAL_VOICE_RELEASES_PARTNER`** (unset): Voice On unloads the Partner model, Voice ending
+  loads it back. Measured: swap flat, free 39% median, latencies unchanged, no fallback.
+  The return path could not be demonstrated in the harness (instance identifier vs model
+  key) nor on production's key (refused as a shared-resource change) — `lifecycle_proof.py`
+  is prepared for him. Recommendation: ship it set.
+- **Underrun:** single event at an interruption boundary; none in 66 further turns.
+  **Lifecycle** session clean twice. **CI green** on `release/voice-model-2026-09-29` at
+  `9db6e61`; the residency repair needs a re-tag (desktop unchanged).

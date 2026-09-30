@@ -32,6 +32,7 @@ from collections.abc import AsyncIterator, Callable, Mapping
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from threading import Thread
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -232,11 +233,23 @@ def create_app(
     happens there, before this function is reachable, so a running service is
     one that was allowed to start (`04-layer-0.md` WP-0.4).
     """
+
     #: The live voice sessions this process is listening with. In-process because
     #: a live session *is* process state — it holds a subprocess and volatile
     #: audio buffers — and could not be resumed from a store if it tried.
     # When the last Voice session ends, the resident speech worker is stopped with it.
-    sessions = VoiceSessions(on_empty=gateway.release_voice)
+    def voice_ended() -> Mapping[str, object]:
+        """The last Voice session ended: release what Voice held, then — when Voice On
+        released the Partner model (candidate, 29 September 2026) — bring it back off
+        the request path, so typed work does not pay its load."""
+        released = gateway.release_voice()
+        if getattr(gateway, "voice_releases_partner", False):
+            Thread(
+                target=gateway.rewarm_partner_after_voice, name="rewarm-partner", daemon=True
+            ).start()
+        return released
+
+    sessions = VoiceSessions(on_empty=voice_ended)
     #: Segments handed to a desktop before her answer was written, per session: there
     #: was no message to record the hand-off against yet. Written, with the time it
     #: happened, once the delivery names its answer (targeted voice latency order).

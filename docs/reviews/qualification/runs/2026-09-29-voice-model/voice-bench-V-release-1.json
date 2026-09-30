@@ -1,0 +1,3291 @@
+{
+ "condition": "voice_release",
+ "run": "V-release-1",
+ "turns": [
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "greeting",
+   "class": "social",
+   "said": "Good evening.",
+   "heard": "Good evening.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f012-c1a2-70ea-804a-2cf8ea9dd816",
+   "answer": "Good evening, my lord. What shall we turn our attention to?",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2314,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2269.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f012-bf0c-7c2c-815b-28197baf6eab",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 274.1,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 141,
+    "dispatch_to_visible_ms": 141,
+    "visible_to_segment_ms": 114,
+    "segment_to_audio_ms": 558,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "class": "ordinary",
+   "said": "What is the capital of Portugal?",
+   "heard": "What is the capital of Portugal?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f012-e1fd-79b2-9c8a-d0ca05af1ebe",
+   "answer": "The capital of Portugal is Lisbon.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2377,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2304.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f012-e08c-74dd-aa62-869360a15f79",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 259.6,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 164,
+    "dispatch_to_visible_ms": 164,
+    "visible_to_segment_ms": 149,
+    "segment_to_audio_ms": 479,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f012-fbd6-7625-9388-936c67fec671",
+   "answer": "You are most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2502,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2503.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f012-fa7a-7c77-9ea9-defb7b92aefe",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 539.4,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 134,
+    "dispatch_to_visible_ms": 134,
+    "visible_to_segment_ms": 166,
+    "segment_to_audio_ms": 468,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "class": "ordinary",
+   "said": "Explain the difference between suspense and surprise in a scene.",
+   "heard": "Explain the difference between suspense and surprise in a scene.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f013-3917-7720-9d09-bcdcb70e78e5",
+   "answer": "The difference lies in the distribution of information between the character and the audience.\n\n**Surprise** is a sudden shift in the known reality. It occurs when an event happens that the audience d",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2356,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2299.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f013-1cb2-7f1e-8da4-f2b4c513301e",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 300.8,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 196,
+    "dispatch_to_visible_ms": 196,
+    "visible_to_segment_ms": 275,
+    "segment_to_audio_ms": 693,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "class": "ordinary",
+   "said": "Which of those works better in a short story?",
+   "heard": "Which of those works better in a short story?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f014-4a5a-7530-9a32-b4fe7a7567d2",
+   "answer": "Neither is inherently \"better,\" as they serve different narrative purposes. The choice depends entirely on what you want the reader to feel in that specific moment of your story.\n\nIf you want to chang",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2399,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2264.0,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f014-3913-7e69-8962-f287016b38af",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 259.3,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 193,
+    "dispatch_to_visible_ms": 193,
+    "visible_to_segment_ms": 247,
+    "segment_to_audio_ms": 687,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "farewell after an answer",
+   "class": "social",
+   "said": "Good night.",
+   "heard": "Good night.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f014-ebff-715e-a8f8-8dd9350eefe1",
+   "answer": "Good night, my lord. Sleep well.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2550,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2509.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f014-e915-7f68-9490-49623c9e95c1",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 521.8,
+    "preflight_wait_ms": 38,
+    "dispatch_to_first_chunk_ms": 373,
+    "dispatch_to_visible_ms": 373,
+    "visible_to_segment_ms": 118,
+    "segment_to_audio_ms": 490,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "greeting",
+   "class": "social",
+   "said": "Good evening.",
+   "heard": "Good evening.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f015-4bbb-7945-8f12-e585186c5c7b",
+   "answer": "Good evening, my lord. What shall we turn our attention to?",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2519,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2475.0,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f015-45da-77cf-b1d0-2a65d03d153c",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.9,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 1012,
+    "dispatch_to_visible_ms": 1012,
+    "visible_to_segment_ms": 112,
+    "segment_to_audio_ms": 565,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "class": "ordinary",
+   "said": "What is the capital of Portugal?",
+   "heard": "What is the capital of Portugal?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f015-6b62-7d2e-a365-c0b53ac10457",
+   "answer": "The capital of Portugal is Lisbon.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2377,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2248.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f015-69f1-7c5f-a2ac-92daae70e646",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 250.1,
+    "preflight_wait_ms": 38,
+    "dispatch_to_first_chunk_ms": 168,
+    "dispatch_to_visible_ms": 169,
+    "visible_to_segment_ms": 141,
+    "segment_to_audio_ms": 470,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f015-872b-76c7-9f4e-b612ff66f348",
+   "answer": "You are very welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2603,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2570.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f015-85ad-7c75-9132-a1d7a9364fe9",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 540.1,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 168,
+    "dispatch_to_visible_ms": 168,
+    "visible_to_segment_ms": 161,
+    "segment_to_audio_ms": 462,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "class": "ordinary",
+   "said": "What is a caesura?",
+   "heard": "What is a caesura?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f015-a5b7-7138-8f2f-357a08bc2fb4",
+   "answer": "A caesura is a break or pause within a line of verse. It is not necessarily a silence, but a structural gap—often marked by punctuation or a natural shift in rhythm—that divides the line into distinct",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2406,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2341.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f015-9e47-7664-9edd-c70d80b1e558",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 383.3,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 150,
+    "dispatch_to_visible_ms": 150,
+    "visible_to_segment_ms": 263,
+    "segment_to_audio_ms": 703,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f015-f835-7bdf-936d-6cb8d64769c3",
+   "answer": "You are most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2479,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2428.0,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f015-f602-7ca2-961f-eb231c5a6545",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 441.1,
+    "preflight_wait_ms": 36,
+    "dispatch_to_first_chunk_ms": 343,
+    "dispatch_to_visible_ms": 343,
+    "visible_to_segment_ms": 167,
+    "segment_to_audio_ms": 465,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "conversational",
+   "class": "ordinary",
+   "said": "How long should a first chapter be?",
+   "heard": "How long should a first chapter be?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f016-32a2-79ac-8215-703c18df61a7",
+   "answer": "There is no single rule for length, as it depends entirely on the genre and the pace you wish to set. However, there are certain principles you can follow to ensure the chapter serves the house's stor",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2292,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2265.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f016-1210-78e2-95cd-ea63581b04df",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 261.9,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 177,
+    "dispatch_to_visible_ms": 177,
+    "visible_to_segment_ms": 226,
+    "segment_to_audio_ms": 696,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f017-4081-7a44-a9fd-971fd2c3b16a",
+   "answer": "You are very welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2578,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2544.0,
+   "completion": {
+    "utterance": 7,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f017-3d84-7a3e-a562-0361397eaf0f",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 562.7,
+    "preflight_wait_ms": 36,
+    "dispatch_to_first_chunk_ms": 545,
+    "dispatch_to_visible_ms": 545,
+    "visible_to_segment_ms": 170,
+    "segment_to_audio_ms": 463,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "ordinary",
+   "class": "ordinary",
+   "said": "Name two ways to end a chapter.",
+   "heard": "Name two ways to end a chapter.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f017-64d0-7a54-a164-3faf62cc1156",
+   "answer": "Two effective ways to end a chapter are:\n\n*   **The Cliffhanger:** You introduce a sudden, unresolved conflict or a significant new threat that forces the reader to continue immediately to see how the",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2347,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2306.0,
+   "completion": {
+    "utterance": 8,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f017-5917-7338-a91b-98b22ee97d86",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.9,
+    "preflight_wait_ms": 39,
+    "dispatch_to_first_chunk_ms": 178,
+    "dispatch_to_visible_ms": 178,
+    "visible_to_segment_ms": 170,
+    "segment_to_audio_ms": 693,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f017-de38-7ada-9133-a34c988773c7",
+   "answer": "You are most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2555,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2509.0,
+   "completion": {
+    "utterance": 9,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f017-dc1c-7832-bf33-dc038dc854f1",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 481.4,
+    "preflight_wait_ms": 38,
+    "dispatch_to_first_chunk_ms": 327,
+    "dispatch_to_visible_ms": 327,
+    "visible_to_segment_ms": 162,
+    "segment_to_audio_ms": 459,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "follow-up, quick",
+   "class": "ordinary",
+   "said": "Which of those is better at night?",
+   "heard": "Which of those is better at night?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f018-073b-719d-8c1c-2f81fee34476",
+   "answer": "If you are referring to the two ways to end a chapter we were just discussing—the Cliffhanger and the Resolution of a Micro-Arc—the **Cliffhanger** is often more effective at night.\n\nThere is a partic",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2344,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2283.0,
+   "completion": {
+    "utterance": 10,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f017-f64b-790b-9cb3-9199a065a371",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 241.8,
+    "preflight_wait_ms": 39,
+    "dispatch_to_first_chunk_ms": 180,
+    "dispatch_to_visible_ms": 180,
+    "visible_to_segment_ms": 316,
+    "segment_to_audio_ms": 701,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer, into maintenance",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f018-99fe-7478-9edb-2bc4963a0715",
+   "answer": "You are very welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2260,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2242.0,
+   "completion": {
+    "utterance": 11,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f018-988c-7261-aa1f-e6a64f13deb0",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 220.2,
+    "preflight_wait_ms": 39,
+    "dispatch_to_first_chunk_ms": 156,
+    "dispatch_to_visible_ms": 156,
+    "visible_to_segment_ms": 160,
+    "segment_to_audio_ms": 458,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "substantive",
+   "class": "ordinary",
+   "said": "Explain the difference between suspense and surprise in a scene.",
+   "heard": "Explain the difference between suspense and surprise in a scene.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f018-d530-7c46-9781-9fd48a753129",
+   "answer": "The difference between suspense and surprise lies in the distribution of information between the character and the reader.\n\n**Surprise** is a sudden shift in the established reality of a scene. It occ",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2292,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2295.0,
+   "completion": {
+    "utterance": 12,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f018-bbda-78ee-9e99-c81e72d56deb",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 261.1,
+    "preflight_wait_ms": 42,
+    "dispatch_to_first_chunk_ms": 209,
+    "dispatch_to_visible_ms": 209,
+    "visible_to_segment_ms": 355,
+    "segment_to_audio_ms": 692,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thanks.",
+   "heard": "Thanks.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f019-d1e7-76b8-a0dd-4f3678802482",
+   "answer": "You are most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2541,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2503.0,
+   "completion": {
+    "utterance": 13,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f019-ceb5-7e8e-bf3a-1228851c2631",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 521.9,
+    "preflight_wait_ms": 45,
+    "dispatch_to_first_chunk_ms": 598,
+    "dispatch_to_visible_ms": 598,
+    "visible_to_segment_ms": 162,
+    "segment_to_audio_ms": 459,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "S4-sustained-alternation",
+   "label": "farewell after an answer",
+   "class": "social",
+   "said": "Good night.",
+   "heard": "Good night.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f019-e92f-7d1e-93eb-fe1d28c33176",
+   "answer": "Good night, my lord. Sleep well.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2652,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2595.0,
+   "completion": {
+    "utterance": 14,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f019-e6ed-7c44-99eb-00ed519e49c7",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 563.1,
+    "preflight_wait_ms": 45,
+    "dispatch_to_first_chunk_ms": 210,
+    "dispatch_to_visible_ms": 210,
+    "visible_to_segment_ms": 114,
+    "segment_to_audio_ms": 489,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "resumed speech, pause 0.8 s",
+   "class": "ordinary",
+   "said": "Tell me about a good opening line. And why it works.",
+   "heard": "Tell me about a good opening line. and why it works.",
+   "withdrawn_fragments": 1,
+   "answer_message_id": "01a0f01a-81af-7e68-9e6c-0ea6bc5613d9",
+   "answer": "A good opening line is not a hook designed to trap a reader; it is a threshold. It works when it establishes a fundamental tension that the rest of the work is then obligated to resolve.\n\nThere are th",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4618,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4588.0,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [
+    0.8
+   ],
+   "message_id": "01a0f01a-4f4b-76fb-8e66-63daa927648c",
+   "stages": {
+    "anchor": "turn_start",
+    "to_submitted_ms": null,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 1236,
+    "dispatch_to_visible_ms": 1236,
+    "visible_to_segment_ms": 363,
+    "segment_to_audio_ms": 2088,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "to be replaced",
+   "class": "ordinary",
+   "said": "Describe a haunted house in one sentence.",
+   "heard": "Describe a haunted house in one sentence.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01c-51b9-7983-b76f-56d6ad3afec1",
+   "answer": "The house does not merely contain ghosts; it is a hungry architecture that breathes through the floorboards and waits for the warmth of a new inhabitant to settle into its hollow ribs.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2328,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2263.0,
+   "completion": {
+    "utterance": 3,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01c-4cec-7dc3-9179-e7d071f428f5",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 301.4,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 171,
+    "dispatch_to_visible_ms": 171,
+    "visible_to_segment_ms": 150,
+    "segment_to_audio_ms": 692,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "explicit replacement",
+   "class": "ordinary",
+   "said": "Actually, never mind. Describe a lighthouse instead.",
+   "heard": "Actually, never mind. Describe a lighthouse instead.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01c-7040-76ec-96a7-e36d0bc41ea4",
+   "answer": "A lighthouse is a solitary sentinel of light, standing defiant against the crushing weight of the dark and the salt-heavy breath of the sea, marking the boundary between the safety of the known world ",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 3831,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3778.0,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01c-6305-711e-9f5b-817389cd3c9f",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 275.1,
+    "preflight_wait_ms": 33,
+    "dispatch_to_first_chunk_ms": 2107,
+    "dispatch_to_visible_ms": 2107,
+    "visible_to_segment_ms": 198,
+    "segment_to_audio_ms": 699,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "request",
+   "class": "ordinary",
+   "said": "Name a famous ghost story.",
+   "heard": "Name a famous ghost story.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01c-ac7e-79bf-913f-0ccb201cd615",
+   "answer": "*The Turn of the Screw* by Henry James.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5030,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 5,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01c-aac4-7343-a5df-516ef477a33e",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 484.5,
+    "preflight_wait_ms": 35,
+    "dispatch_to_first_chunk_ms": 166,
+    "dispatch_to_visible_ms": 166,
+    "visible_to_segment_ms": 223,
+    "segment_to_audio_ms": 469,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "continuation while being made",
+   "class": "ordinary",
+   "said": "And who wrote it?",
+   "heard": "And who wrote it?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01c-bcff-76c6-bbfe-11c244305a12",
+   "answer": "Henry James.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4717,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4605.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01c-b46d-786f-840d-5370b151ac1e",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 260.6,
+    "preflight_wait_ms": 36,
+    "dispatch_to_first_chunk_ms": 2063,
+    "dispatch_to_visible_ms": 2063,
+    "visible_to_segment_ms": 76,
+    "segment_to_audio_ms": 434,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "short request",
+   "class": "ordinary",
+   "said": "Name a colour.",
+   "heard": "Name a color.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01c-d84c-7e29-a2eb-a47b3631383b",
+   "answer": "Azure.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 3098,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3060.0,
+   "completion": {
+    "utterance": 7,
+    "state": "uncertain",
+    "grace_seconds": 1.37,
+    "reason": "a terminal mark on too few words to judge"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01c-d742-75b3-a02c-9cf21653136e",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 1874.2,
+    "preflight_wait_ms": 40,
+    "dispatch_to_first_chunk_ms": 156,
+    "dispatch_to_visible_ms": 156,
+    "visible_to_segment_ms": 49,
+    "segment_to_audio_ms": 422,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "continuation as it finishes",
+   "class": "ordinary",
+   "said": "And also name a fruit, if you would, please, my friend.",
+   "heard": "And also name a fruit, if you would, please, my friend.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01c-efda-7d8d-a9d9-6c7151abc6f2",
+   "answer": "Pomegranate.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2367,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2316.0,
+   "completion": {
+    "utterance": 8,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": true,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01c-ecaf-7b67-bb08-7accc71fa128",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 284.5,
+    "preflight_wait_ms": 39,
+    "dispatch_to_first_chunk_ms": 683,
+    "dispatch_to_visible_ms": 683,
+    "visible_to_segment_ms": 74,
+    "segment_to_audio_ms": 471,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "long answer",
+   "class": "ordinary",
+   "said": "Tell me a story about a lighthouse keeper, in eight sentences.",
+   "heard": "Tell me a story about a lighthouse keeper in eight sentences.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01d-2271-7720-9475-d2167199523f",
+   "answer": "Elias lived in the rhythmic pulse of the light, a man carved from salt and solitude. Every evening, he climbed the winding stone stairs to feed the great lantern, ensuring the beam cut through the enc",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2337,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2301.0,
+   "completion": {
+    "utterance": 9,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01d-0d2e-729b-8b5b-2015af0b289d",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 278.8,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 212,
+    "dispatch_to_visible_ms": 212,
+    "visible_to_segment_ms": 245,
+    "segment_to_audio_ms": 694,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "speaking over her audio",
+   "class": "ordinary",
+   "said": "Stop there.",
+   "heard": "Stop there.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01d-77c9-7d18-b2b2-e059a57c6075",
+   "answer": "I have noted the state of the record, my lord. I see we are working within a local-only session, and that no external searches or specialized volumes are available to me at this moment. \n\nHow may I be",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4100,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 4038.0,
+   "completion": {
+    "utterance": 10,
+    "state": "uncertain",
+    "grace_seconds": 1.37,
+    "reason": "a terminal mark on too few words to judge"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": true,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01d-6f13-7ba7-9024-085ab0ac15b8",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 1880.5,
+    "preflight_wait_ms": 42,
+    "dispatch_to_first_chunk_ms": 717,
+    "dispatch_to_visible_ms": 717,
+    "visible_to_segment_ms": 229,
+    "segment_to_audio_ms": 694,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "V-release-1",
+   "session": "L-lifecycle",
+   "label": "thanks after an answer",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f01d-c425-72f4-bbb8-6683c2517fab",
+   "answer": "The record is clear, my lord. It is quite late, and I see that we are working in a sealed session, with no external tools or specialized volumes to consult. \n\nI have also noted that several of my earl",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2990,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2944.0,
+   "completion": {
+    "utterance": 11,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f01d-b4e9-7ee1-9323-1f95623c4e97",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 499.0,
+    "preflight_wait_ms": 44,
+    "dispatch_to_first_chunk_ms": 1062,
+    "dispatch_to_visible_ms": 1062,
+    "visible_to_segment_ms": 153,
+    "segment_to_audio_ms": 692,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  }
+ ],
+ "readiness": [
+  {
+   "session": "S1-greeting-factual-substantive",
+   "voice_on_to_ready_displayed_s": 19.726
+  },
+  {
+   "session": "S4-sustained-alternation",
+   "voice_on_to_ready_displayed_s": 12.418
+  },
+  {
+   "session": "L-lifecycle",
+   "voice_on_to_ready_displayed_s": 12.515
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 7.219,
+   "partner": "established",
+   "light": null
+  },
+  {
+   "kind": "initial",
+   "seconds": 7.044,
+   "partner": "established",
+   "light": null
+  },
+  {
+   "kind": "initial",
+   "seconds": 7.016,
+   "partner": "established",
+   "light": null
+  }
+ ],
+ "prime_calls": [
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 5085,
+   "latency_ms": 7134,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 5990,
+   "latency_ms": 1479,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6026,
+   "latency_ms": 1673,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6050,
+   "latency_ms": 1701,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6071,
+   "latency_ms": 1690,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6359,
+   "latency_ms": 2130,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6539,
+   "latency_ms": 1937,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6561,
+   "latency_ms": 1572,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 5085,
+   "latency_ms": 6952,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 5990,
+   "latency_ms": 1476,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6026,
+   "latency_ms": 1644,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6050,
+   "latency_ms": 1700,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6071,
+   "latency_ms": 1664,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6153,
+   "latency_ms": 1790,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6175,
+   "latency_ms": 1703,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6496,
+   "latency_ms": 2168,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6517,
+   "latency_ms": 1731,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6635,
+   "latency_ms": 1874,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6655,
+   "latency_ms": 1756,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6828,
+   "latency_ms": 1891,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6849,
+   "latency_ms": 1728,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7103,
+   "latency_ms": 2122,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7123,
+   "latency_ms": 1755,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7145,
+   "latency_ms": 1596,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 5085,
+   "latency_ms": 6947,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 5990,
+   "latency_ms": 1477,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6605,
+   "latency_ms": 2608,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6893,
+   "latency_ms": 2356,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6940,
+   "latency_ms": 2217,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6956,
+   "latency_ms": 2234,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7056,
+   "latency_ms": 2367,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7274,
+   "latency_ms": 2640,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7435,
+   "latency_ms": 2581,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7548,
+   "latency_ms": 2505,
+   "attribution": "uncertain",
+   "candidates": 0
+  }
+ ],
+ "engine_lines_in_run": 0,
+ "request_bodies": [],
+ "call_models": [
+  "gemma-4-26b-a4b-it"
+ ],
+ "timelines": [
+  {
+   "utterance": 1,
+   "message_id": "01a0f012-bf0c-7c2c-815b-28197baf6eab",
+   "endpoint": 0.0,
+   "transcript_final_received": 116.8,
+   "transcript_final_processed": 135.2,
+   "owner_turn_submitted": 274.1,
+   "turn_start": 276.6,
+   "scope_resolved": 276.6,
+   "conversation_created": 282.3,
+   "message_append_start": 282.3,
+   "message_persisted": 293.8,
+   "owner_message_committed": 293.8,
+   "egress_decided": 295.6,
+   "assembly_start": 300.2,
+   "record_state_assembled": 306.8,
+   "assembly_end": 307.0,
+   "runtime_ready_start": 316.9,
+   "runtime_ready_end": 320.4,
+   "exact_preflight_start": 320.5,
+   "exact_preflight_end": 355.2,
+   "provider_dispatch": 358.4,
+   "provider_chunk": 499.8,
+   "provider_visible_text": 499.8,
+   "speech_first_visible_text": 499.9,
+   "speech_segment_queued": 614.2,
+   "tts_synthesize_start": 614.3,
+   "audio_at_sink": 1172.1,
+   "tts_synthesize_return": 1319.8
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0f012-e08c-74dd-aa62-869360a15f79",
+   "endpoint": 0.0,
+   "transcript_final_received": 128.9,
+   "transcript_final_processed": 137.2,
+   "owner_turn_submitted": 259.6,
+   "turn_start": 260.9,
+   "message_append_start": 262.2,
+   "message_persisted": 270.4,
+   "owner_message_committed": 270.4,
+   "egress_decided": 271.2,
+   "assembly_start": 273.4,
+   "record_state_assembled": 283.1,
+   "assembly_end": 283.3,
+   "runtime_ready_start": 291.9,
+   "runtime_ready_end": 293.6,
+   "exact_preflight_start": 293.6,
+   "exact_preflight_end": 326.2,
+   "provider_dispatch": 328.7,
+   "provider_chunk": 492.3,
+   "provider_visible_text": 492.4,
+   "speech_first_visible_text": 492.5,
+   "speech_segment_queued": 641.4,
+   "tts_synthesize_start": 641.5,
+   "audio_at_sink": 1120.3,
+   "tts_synthesize_return": 1524.2
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0f012-fa7a-7c77-9ea9-defb7b92aefe",
+   "endpoint": 0.0,
+   "transcript_final_received": 392.8,
+   "transcript_final_processed": 400.5,
+   "owner_turn_submitted": 539.4,
+   "turn_start": 540.4,
+   "message_append_start": 541.1,
+   "message_persisted": 543.9,
+   "owner_message_committed": 543.9,
+   "egress_decided": 544.5,
+   "assembly_start": 546.3,
+   "record_state_assembled": 553.2,
+   "assembly_end": 553.3,
+   "runtime_ready_start": 561.1,
+   "runtime_ready_end": 563.2,
+   "exact_preflight_start": 563.4,
+   "exact_preflight_end": 596.4,
+   "provider_dispatch": 599.4,
+   "provider_chunk": 733.4,
+   "provider_visible_text": 733.5,
+   "speech_first_visible_text": 733.5,
+   "speech_segment_queued": 899.0,
+   "tts_synthesize_start": 899.2,
+   "audio_at_sink": 1366.7,
+   "tts_synthesize_return": 1625.8
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0f013-1cb2-7f1e-8da4-f2b4c513301e",
+   "endpoint": 0.0,
+   "transcript_final_received": 145.8,
+   "transcript_final_processed": 161.4,
+   "owner_turn_submitted": 300.8,
+   "turn_start": 301.8,
+   "message_append_start": 303.1,
+   "message_persisted": 305.6,
+   "owner_message_committed": 305.6,
+   "egress_decided": 306.2,
+   "assembly_start": 308.4,
+   "record_state_assembled": 317.7,
+   "assembly_end": 317.8,
+   "runtime_ready_start": 325.1,
+   "runtime_ready_end": 327.2,
+   "exact_preflight_start": 327.3,
+   "exact_preflight_end": 360.2,
+   "provider_dispatch": 362.6,
+   "provider_chunk": 559.1,
+   "provider_visible_text": 559.1,
+   "speech_first_visible_text": 559.1,
+   "speech_segment_queued": 834.4,
+   "tts_synthesize_start": 834.5,
+   "audio_at_sink": 1527.3,
+   "tts_synthesize_return": 3759.3
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0f014-3913-7e69-8962-f287016b38af",
+   "endpoint": 0.0,
+   "transcript_final_received": 128.0,
+   "transcript_final_processed": 137.6,
+   "owner_turn_submitted": 259.3,
+   "turn_start": 260.9,
+   "message_append_start": 261.8,
+   "message_persisted": 264.5,
+   "owner_message_committed": 264.5,
+   "egress_decided": 266.2,
+   "assembly_start": 267.8,
+   "record_state_assembled": 274.1,
+   "assembly_end": 274.2,
+   "runtime_ready_start": 281.6,
+   "runtime_ready_end": 283.4,
+   "exact_preflight_start": 283.5,
+   "exact_preflight_end": 318.1,
+   "provider_dispatch": 320.2,
+   "provider_chunk": 513.3,
+   "provider_visible_text": 513.4,
+   "speech_first_visible_text": 513.5,
+   "speech_segment_queued": 760.4,
+   "tts_synthesize_start": 760.6,
+   "audio_at_sink": 1447.5,
+   "tts_synthesize_return": 3225.3
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0f014-e915-7f68-9490-49623c9e95c1",
+   "endpoint": 0.0,
+   "transcript_final_received": 392.7,
+   "transcript_final_processed": 400.1,
+   "owner_turn_submitted": 521.8,
+   "turn_start": 522.6,
+   "message_append_start": 524.1,
+   "message_persisted": 526.5,
+   "owner_message_committed": 526.5,
+   "egress_decided": 527.6,
+   "assembly_start": 530.2,
+   "record_state_assembled": 539.2,
+   "assembly_end": 539.6,
+   "runtime_ready_start": 546.4,
+   "runtime_ready_end": 548.2,
+   "exact_preflight_start": 548.3,
+   "exact_preflight_end": 586.7,
+   "provider_dispatch": 588.4,
+   "provider_chunk": 961.0,
+   "provider_visible_text": 961.2,
+   "speech_first_visible_text": 961.2,
+   "speech_segment_queued": 1078.9,
+   "tts_synthesize_start": 1079.1,
+   "audio_at_sink": 1569.0,
+   "tts_synthesize_return": 1851.1
+  },
+  {
+   "utterance": 1,
+   "message_id": "01a0f015-45da-77cf-b1d0-2a65d03d153c",
+   "endpoint": 0.0,
+   "transcript_final_received": 118.6,
+   "transcript_final_processed": 122.3,
+   "owner_turn_submitted": 260.9,
+   "turn_start": 262.9,
+   "scope_resolved": 262.9,
+   "conversation_created": 265.6,
+   "message_append_start": 265.6,
+   "message_persisted": 270.0,
+   "owner_message_committed": 270.0,
+   "egress_decided": 272.2,
+   "assembly_start": 274.6,
+   "record_state_assembled": 279.4,
+   "assembly_end": 279.6,
+   "runtime_ready_start": 288.7,
+   "runtime_ready_end": 290.8,
+   "exact_preflight_start": 290.8,
+   "exact_preflight_end": 322.8,
+   "provider_dispatch": 325.7,
+   "provider_chunk": 1337.3,
+   "provider_visible_text": 1337.4,
+   "speech_first_visible_text": 1337.4,
+   "speech_segment_queued": 1449.7,
+   "tts_synthesize_start": 1449.8,
+   "audio_at_sink": 2014.5,
+   "tts_synthesize_return": 2230.2
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0f015-69f1-7c5f-a2ac-92daae70e646",
+   "endpoint": 0.0,
+   "transcript_final_received": 116.2,
+   "transcript_final_processed": 128.3,
+   "owner_turn_submitted": 250.1,
+   "turn_start": 251.4,
+   "message_append_start": 252.6,
+   "message_persisted": 255.7,
+   "owner_message_committed": 255.7,
+   "egress_decided": 256.5,
+   "assembly_start": 258.5,
+   "record_state_assembled": 267.3,
+   "assembly_end": 267.4,
+   "runtime_ready_start": 275.5,
+   "runtime_ready_end": 277.5,
+   "exact_preflight_start": 277.6,
+   "exact_preflight_end": 316.1,
+   "provider_dispatch": 319.2,
+   "provider_chunk": 487.7,
+   "provider_visible_text": 487.8,
+   "speech_first_visible_text": 487.8,
+   "speech_segment_queued": 628.7,
+   "tts_synthesize_start": 628.8,
+   "audio_at_sink": 1098.2,
+   "tts_synthesize_return": 1634.6
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0f015-85ad-7c75-9132-a1d7a9364fe9",
+   "endpoint": 0.0,
+   "transcript_final_received": 385.1,
+   "transcript_final_processed": 400.4,
+   "owner_turn_submitted": 540.1,
+   "turn_start": 541.2,
+   "message_append_start": 542.3,
+   "message_persisted": 545.1,
+   "owner_message_committed": 545.1,
+   "egress_decided": 545.8,
+   "assembly_start": 547.7,
+   "record_state_assembled": 554.2,
+   "assembly_end": 554.4,
+   "runtime_ready_start": 562.6,
+   "runtime_ready_end": 564.9,
+   "exact_preflight_start": 564.9,
+   "exact_preflight_end": 598.9,
+   "provider_dispatch": 600.7,
+   "provider_chunk": 769.1,
+   "provider_visible_text": 769.2,
+   "speech_first_visible_text": 769.2,
+   "speech_segment_queued": 930.6,
+   "tts_synthesize_start": 930.7,
+   "audio_at_sink": 1392.6,
+   "tts_synthesize_return": 1629.0
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0f015-9e47-7664-9edd-c70d80b1e558",
+   "endpoint": 0.0,
+   "transcript_final_received": 239.9,
+   "transcript_final_processed": 244.8,
+   "owner_turn_submitted": 383.3,
+   "turn_start": 384.3,
+   "message_append_start": 385.2,
+   "message_persisted": 390.6,
+   "owner_message_committed": 390.6,
+   "egress_decided": 391.4,
+   "assembly_start": 392.8,
+   "record_state_assembled": 398.9,
+   "assembly_end": 399.0,
+   "runtime_ready_start": 406.2,
+   "runtime_ready_end": 407.6,
+   "exact_preflight_start": 407.7,
+   "exact_preflight_end": 440.3,
+   "provider_dispatch": 442.1,
+   "provider_chunk": 591.7,
+   "provider_visible_text": 591.8,
+   "speech_first_visible_text": 591.8,
+   "speech_segment_queued": 854.7,
+   "tts_synthesize_start": 854.8,
+   "audio_at_sink": 1557.9,
+   "tts_synthesize_return": 2602.7
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0f015-f602-7ca2-961f-eb231c5a6545",
+   "endpoint": 0.0,
+   "transcript_final_received": 305.1,
+   "transcript_final_processed": 319.3,
+   "owner_turn_submitted": 441.1,
+   "turn_start": 442.1,
+   "message_append_start": 443.2,
+   "message_persisted": 445.8,
+   "owner_message_committed": 445.8,
+   "egress_decided": 446.5,
+   "assembly_start": 448.6,
+   "record_state_assembled": 455.3,
+   "assembly_end": 455.4,
+   "runtime_ready_start": 462.5,
+   "runtime_ready_end": 464.4,
+   "exact_preflight_start": 464.6,
+   "exact_preflight_end": 500.8,
+   "provider_dispatch": 503.3,
+   "provider_chunk": 846.5,
+   "provider_visible_text": 846.7,
+   "speech_first_visible_text": 846.7,
+   "speech_segment_queued": 1013.9,
+   "tts_synthesize_start": 1014.0,
+   "audio_at_sink": 1478.5,
+   "tts_synthesize_return": 1761.5
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0f016-1210-78e2-95cd-ea63581b04df",
+   "endpoint": 0.0,
+   "transcript_final_received": 131.3,
+   "transcript_final_processed": 138.6,
+   "owner_turn_submitted": 261.9,
+   "turn_start": 262.7,
+   "message_append_start": 263.6,
+   "message_persisted": 266.0,
+   "owner_message_committed": 266.0,
+   "egress_decided": 266.7,
+   "assembly_start": 268.3,
+   "record_state_assembled": 275.0,
+   "assembly_end": 275.1,
+   "runtime_ready_start": 282.2,
+   "runtime_ready_end": 284.2,
+   "exact_preflight_start": 284.2,
+   "exact_preflight_end": 318.7,
+   "provider_dispatch": 320.9,
+   "provider_chunk": 498.0,
+   "provider_visible_text": 498.1,
+   "speech_first_visible_text": 498.1,
+   "speech_segment_queued": 724.0,
+   "tts_synthesize_start": 724.1,
+   "audio_at_sink": 1420.1,
+   "tts_synthesize_return": 1913.7
+  },
+  {
+   "utterance": 7,
+   "message_id": "01a0f017-3d84-7a3e-a562-0361397eaf0f",
+   "endpoint": 0.0,
+   "transcript_final_received": 436.8,
+   "transcript_final_processed": 441.2,
+   "owner_turn_submitted": 562.7,
+   "turn_start": 563.8,
+   "message_append_start": 564.6,
+   "message_persisted": 567.2,
+   "owner_message_committed": 567.2,
+   "egress_decided": 567.9,
+   "assembly_start": 569.5,
+   "record_state_assembled": 575.3,
+   "assembly_end": 575.3,
+   "runtime_ready_start": 582.0,
+   "runtime_ready_end": 583.4,
+   "exact_preflight_start": 583.5,
+   "exact_preflight_end": 619.3,
+   "provider_dispatch": 622.0,
+   "provider_chunk": 1166.9,
+   "provider_visible_text": 1167.1,
+   "speech_first_visible_text": 1167.1,
+   "speech_segment_queued": 1336.6,
+   "tts_synthesize_start": 1336.7,
+   "audio_at_sink": 1799.2,
+   "tts_synthesize_return": 2103.8
+  },
+  {
+   "utterance": 8,
+   "message_id": "01a0f017-5917-7338-a91b-98b22ee97d86",
+   "endpoint": 0.0,
+   "transcript_final_received": 127.2,
+   "transcript_final_processed": 139.1,
+   "owner_turn_submitted": 260.9,
+   "turn_start": 261.8,
+   "message_append_start": 262.8,
+   "message_persisted": 265.5,
+   "owner_message_committed": 265.5,
+   "egress_decided": 266.1,
+   "assembly_start": 268.1,
+   "record_state_assembled": 275.2,
+   "assembly_end": 275.3,
+   "runtime_ready_start": 283.1,
+   "runtime_ready_end": 285.4,
+   "exact_preflight_start": 285.4,
+   "exact_preflight_end": 324.8,
+   "provider_dispatch": 327.1,
+   "provider_chunk": 505.2,
+   "provider_visible_text": 505.3,
+   "speech_first_visible_text": 505.3,
+   "speech_segment_queued": 675.4,
+   "tts_synthesize_start": 675.5,
+   "audio_at_sink": 1368.4,
+   "tts_synthesize_return": 2398.2
+  },
+  {
+   "utterance": 9,
+   "message_id": "01a0f017-dc1c-7832-bf33-dc038dc854f1",
+   "endpoint": 0.0,
+   "transcript_final_received": 348.7,
+   "transcript_final_processed": 359.6,
+   "owner_turn_submitted": 481.4,
+   "turn_start": 482.3,
+   "message_append_start": 483.2,
+   "message_persisted": 485.3,
+   "owner_message_committed": 485.3,
+   "egress_decided": 485.9,
+   "assembly_start": 487.3,
+   "record_state_assembled": 492.5,
+   "assembly_end": 492.6,
+   "runtime_ready_start": 498.2,
+   "runtime_ready_end": 500.0,
+   "exact_preflight_start": 500.1,
+   "exact_preflight_end": 537.7,
+   "provider_dispatch": 540.5,
+   "provider_chunk": 867.5,
+   "provider_visible_text": 867.6,
+   "speech_first_visible_text": 867.6,
+   "speech_segment_queued": 1030.1,
+   "tts_synthesize_start": 1030.2,
+   "audio_at_sink": 1489.3,
+   "tts_synthesize_return": 1822.7
+  },
+  {
+   "utterance": 10,
+   "message_id": "01a0f017-f64b-790b-9cb3-9199a065a371",
+   "endpoint": 0.0,
+   "transcript_final_received": 113.5,
+   "transcript_final_processed": 115.7,
+   "owner_turn_submitted": 241.8,
+   "turn_start": 242.6,
+   "message_append_start": 243.5,
+   "message_persisted": 245.7,
+   "owner_message_committed": 245.7,
+   "egress_decided": 246.2,
+   "assembly_start": 247.7,
+   "record_state_assembled": 254.5,
+   "assembly_end": 254.5,
+   "runtime_ready_start": 260.5,
+   "runtime_ready_end": 262.1,
+   "exact_preflight_start": 262.2,
+   "exact_preflight_end": 301.2,
+   "provider_dispatch": 303.4,
+   "provider_chunk": 483.8,
+   "provider_visible_text": 483.8,
+   "speech_first_visible_text": 483.8,
+   "speech_segment_queued": 800.3,
+   "tts_synthesize_start": 800.5,
+   "audio_at_sink": 1501.4,
+   "tts_synthesize_return": 2806.5
+  },
+  {
+   "utterance": 11,
+   "message_id": "01a0f018-988c-7261-aa1f-e6a64f13deb0",
+   "endpoint": 0.0,
+   "transcript_final_received": 95.9,
+   "transcript_final_processed": 98.5,
+   "owner_turn_submitted": 220.2,
+   "turn_start": 221.2,
+   "message_append_start": 222.0,
+   "message_persisted": 224.2,
+   "owner_message_committed": 224.2,
+   "egress_decided": 224.7,
+   "assembly_start": 226.7,
+   "record_state_assembled": 233.5,
+   "assembly_end": 233.6,
+   "runtime_ready_start": 239.2,
+   "runtime_ready_end": 240.6,
+   "exact_preflight_start": 240.6,
+   "exact_preflight_end": 279.6,
+   "provider_dispatch": 282.0,
+   "provider_chunk": 437.6,
+   "provider_visible_text": 437.6,
+   "speech_first_visible_text": 437.6,
+   "speech_segment_queued": 597.7,
+   "tts_synthesize_start": 597.8,
+   "audio_at_sink": 1055.4,
+   "tts_synthesize_return": 1411.9
+  },
+  {
+   "utterance": 12,
+   "message_id": "01a0f018-bbda-78ee-9e99-c81e72d56deb",
+   "endpoint": 0.0,
+   "transcript_final_received": 127.2,
+   "transcript_final_processed": 138.9,
+   "owner_turn_submitted": 261.1,
+   "turn_start": 261.8,
+   "message_append_start": 262.7,
+   "message_persisted": 265.2,
+   "owner_message_committed": 265.2,
+   "egress_decided": 265.7,
+   "assembly_start": 267.7,
+   "record_state_assembled": 274.4,
+   "assembly_end": 274.4,
+   "runtime_ready_start": 279.6,
+   "runtime_ready_end": 280.7,
+   "exact_preflight_start": 280.8,
+   "exact_preflight_end": 322.7,
+   "provider_dispatch": 324.5,
+   "provider_chunk": 533.8,
+   "provider_visible_text": 533.9,
+   "speech_first_visible_text": 533.9,
+   "speech_segment_queued": 888.8,
+   "tts_synthesize_start": 888.9,
+   "audio_at_sink": 1580.7,
+   "tts_synthesize_return": 4269.8
+  },
+  {
+   "utterance": 13,
+   "message_id": "01a0f019-ceb5-7e8e-bf3a-1228851c2631",
+   "endpoint": 0.0,
+   "transcript_final_received": 379.0,
+   "transcript_final_processed": 382.5,
+   "owner_turn_submitted": 521.9,
+   "turn_start": 523.0,
+   "message_append_start": 524.1,
+   "message_persisted": 526.2,
+   "owner_message_committed": 526.2,
+   "egress_decided": 526.8,
+   "assembly_start": 528.2,
+   "record_state_assembled": 534.5,
+   "assembly_end": 534.6,
+   "runtime_ready_start": 540.0,
+   "runtime_ready_end": 541.7,
+   "exact_preflight_start": 541.8,
+   "exact_preflight_end": 586.4,
+   "provider_dispatch": 588.6,
+   "provider_chunk": 1186.5,
+   "provider_visible_text": 1186.6,
+   "speech_first_visible_text": 1186.6,
+   "speech_segment_queued": 1348.5,
+   "tts_synthesize_start": 1348.7,
+   "audio_at_sink": 1807.6,
+   "tts_synthesize_return": 2090.2
+  },
+  {
+   "utterance": 14,
+   "message_id": "01a0f019-e6ed-7c44-99eb-00ed519e49c7",
+   "endpoint": 0.0,
+   "transcript_final_received": 424.6,
+   "transcript_final_processed": 440.8,
+   "owner_turn_submitted": 563.1,
+   "turn_start": 564.1,
+   "message_append_start": 565.1,
+   "message_persisted": 567.0,
+   "owner_message_committed": 567.0,
+   "egress_decided": 567.4,
+   "assembly_start": 569.1,
+   "record_state_assembled": 574.2,
+   "assembly_end": 574.2,
+   "runtime_ready_start": 579.5,
+   "runtime_ready_end": 581.2,
+   "exact_preflight_start": 581.3,
+   "exact_preflight_end": 626.5,
+   "provider_dispatch": 628.4,
+   "provider_chunk": 838.4,
+   "provider_visible_text": 838.5,
+   "speech_first_visible_text": 838.5,
+   "speech_segment_queued": 953.0,
+   "tts_synthesize_start": 953.1,
+   "audio_at_sink": 1442.0,
+   "tts_synthesize_return": 1614.0
+  },
+  {
+   "utterance": 1,
+   "message_id": "01a0f01a-4709-7ad0-90f2-9914e2049954",
+   "endpoint": 0.0,
+   "transcript_final_received": 135.0,
+   "transcript_final_processed": 138.9,
+   "owner_turn_submitted": 279.5,
+   "turn_start": 282.9,
+   "scope_resolved": 283.0,
+   "conversation_created": 284.8,
+   "message_append_start": 284.8,
+   "message_persisted": 291.1,
+   "owner_message_committed": 291.1,
+   "egress_decided": 291.8,
+   "assembly_start": 294.7,
+   "record_state_assembled": 300.0,
+   "assembly_end": 300.1,
+   "runtime_ready_start": 308.0,
+   "runtime_ready_end": 309.9,
+   "exact_preflight_start": 310.0,
+   "exact_preflight_end": 341.3,
+   "provider_dispatch": 344.3,
+   "provider_chunk": 515.3,
+   "provider_visible_text": 515.4,
+   "speech_first_visible_text": 515.4,
+   "speech_segment_queued": 628.9,
+   "tts_synthesize_start": 629.0,
+   "audio_at_sink": 1471.7,
+   "tts_synthesize_return": 1900.1,
+   "superseded_decided": 2240.7,
+   "superseded_stream_closed": 2256.4,
+   "superseded_call_ended": 2267.3
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0f01a-4f4b-76fb-8e66-63daa927648c",
+   "turn_start": 0.9,
+   "message_append_start": 2.0,
+   "message_persisted": 4.9,
+   "owner_message_committed": 4.9,
+   "egress_decided": 5.5,
+   "assembly_start": 6.8,
+   "record_state_assembled": 9.4,
+   "assembly_end": 9.5,
+   "runtime_ready_start": 13.8,
+   "runtime_ready_end": 15.0,
+   "exact_preflight_start": 15.1,
+   "exact_preflight_end": 47.9,
+   "provider_dispatch": 49.4,
+   "provider_chunk": 1285.0,
+   "provider_visible_text": 1285.1,
+   "speech_first_visible_text": 1285.1,
+   "speech_segment_queued": 1648.0,
+   "tts_synthesize_start": 1648.1,
+   "audio_at_sink": 3736.2,
+   "tts_synthesize_return": 5116.3
+  },
+  {
+   "utterance": 3,
+   "message_id": "01a0f01c-4cec-7dc3-9179-e7d071f428f5",
+   "endpoint": 0.0,
+   "transcript_final_received": 139.5,
+   "transcript_final_processed": 161.7,
+   "owner_turn_submitted": 301.4,
+   "turn_start": 303.2,
+   "message_append_start": 304.4,
+   "message_persisted": 308.8,
+   "owner_message_committed": 308.8,
+   "egress_decided": 309.6,
+   "assembly_start": 311.5,
+   "record_state_assembled": 320.0,
+   "assembly_end": 320.1,
+   "runtime_ready_start": 331.1,
+   "runtime_ready_end": 333.8,
+   "exact_preflight_start": 334.1,
+   "exact_preflight_end": 369.2,
+   "provider_dispatch": 371.7,
+   "provider_chunk": 542.2,
+   "provider_visible_text": 542.3,
+   "speech_first_visible_text": 542.3,
+   "speech_segment_queued": 692.5,
+   "tts_synthesize_start": 692.6,
+   "audio_at_sink": 1384.8
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0f01c-6305-711e-9f5b-817389cd3c9f",
+   "endpoint": 0.0,
+   "transcript_final_received": 142.7,
+   "transcript_final_processed": 153.4,
+   "owner_turn_submitted": 275.1,
+   "turn_start": 275.9,
+   "message_append_start": 277.0,
+   "message_persisted": 280.0,
+   "owner_message_committed": 280.0,
+   "egress_decided": 280.6,
+   "assembly_start": 282.2,
+   "record_state_assembled": 289.5,
+   "assembly_end": 289.6,
+   "runtime_ready_start": 296.2,
+   "runtime_ready_end": 298.1,
+   "exact_preflight_start": 298.1,
+   "exact_preflight_end": 330.8,
+   "provider_dispatch": 333.8,
+   "provider_chunk": 2441.0,
+   "provider_visible_text": 2441.2,
+   "speech_first_visible_text": 2441.2,
+   "speech_segment_queued": 2639.5,
+   "tts_synthesize_start": 2639.6,
+   "audio_at_sink": 3338.2,
+   "tts_synthesize_return": 4023.2
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0f01c-aac4-7343-a5df-516ef477a33e",
+   "endpoint": 0.0,
+   "transcript_final_received": 335.5,
+   "transcript_final_processed": 342.6,
+   "owner_turn_submitted": 484.5,
+   "turn_start": 487.1,
+   "message_append_start": 488.4,
+   "message_persisted": 492.3,
+   "owner_message_committed": 492.3,
+   "egress_decided": 493.4,
+   "assembly_start": 495.8,
+   "record_state_assembled": 501.9,
+   "assembly_end": 502.0,
+   "runtime_ready_start": 509.1,
+   "runtime_ready_end": 510.8,
+   "exact_preflight_start": 510.8,
+   "exact_preflight_end": 545.9,
+   "provider_dispatch": 549.0,
+   "provider_chunk": 714.7,
+   "provider_visible_text": 714.8,
+   "speech_first_visible_text": 714.9,
+   "speech_segment_queued": 938.2,
+   "tts_synthesize_start": 938.3,
+   "audio_at_sink": 1407.5,
+   "tts_synthesize_return": 1831.7
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0f01c-b46d-786f-840d-5370b151ac1e",
+   "endpoint": 0.0,
+   "transcript_final_received": 107.1,
+   "transcript_final_processed": 121.7,
+   "owner_turn_submitted": 260.6,
+   "turn_start": 261.6,
+   "message_append_start": 262.8,
+   "message_persisted": 266.4,
+   "owner_message_committed": 266.4,
+   "egress_decided": 267.3,
+   "assembly_start": 268.9,
+   "record_state_assembled": 275.5,
+   "assembly_end": 275.7,
+   "runtime_ready_start": 283.5,
+   "runtime_ready_end": 285.7,
+   "exact_preflight_start": 285.8,
+   "exact_preflight_end": 322.1,
+   "provider_dispatch": 324.0,
+   "provider_chunk": 2387.1,
+   "provider_visible_text": 2387.3,
+   "speech_first_visible_text": 2387.3,
+   "speech_segment_queued": 2463.8,
+   "tts_synthesize_start": 2464.1,
+   "audio_at_sink": 2897.6,
+   "tts_synthesize_return": 2903.4
+  },
+  {
+   "utterance": 7,
+   "message_id": "01a0f01c-d742-75b3-a02c-9cf21653136e",
+   "endpoint": 0.0,
+   "transcript_final_received": 480.5,
+   "transcript_final_processed": 498.6,
+   "owner_turn_submitted": 1874.2,
+   "turn_start": 1875.4,
+   "message_append_start": 1876.5,
+   "message_persisted": 1879.6,
+   "owner_message_committed": 1879.7,
+   "egress_decided": 1880.5,
+   "assembly_start": 1883.1,
+   "record_state_assembled": 1891.3,
+   "assembly_end": 1891.5,
+   "runtime_ready_start": 1900.6,
+   "runtime_ready_end": 1902.6,
+   "exact_preflight_start": 1902.7,
+   "exact_preflight_end": 1942.2,
+   "provider_dispatch": 1944.9,
+   "provider_chunk": 2100.4,
+   "provider_visible_text": 2100.4,
+   "speech_first_visible_text": 2100.4,
+   "speech_segment_queued": 2149.5,
+   "tts_synthesize_start": 2149.6,
+   "audio_at_sink": 2571.5,
+   "tts_synthesize_return": 2576.8
+  },
+  {
+   "utterance": 8,
+   "message_id": "01a0f01c-ecaf-7b67-bb08-7accc71fa128",
+   "endpoint": 0.0,
+   "transcript_final_received": 148.9,
+   "transcript_final_processed": 162.3,
+   "owner_turn_submitted": 284.5,
+   "turn_start": 285.6,
+   "message_append_start": 286.6,
+   "message_persisted": 289.9,
+   "owner_message_committed": 289.9,
+   "egress_decided": 290.5,
+   "assembly_start": 292.5,
+   "record_state_assembled": 299.0,
+   "assembly_end": 299.1,
+   "runtime_ready_start": 305.4,
+   "runtime_ready_end": 306.9,
+   "exact_preflight_start": 306.9,
+   "exact_preflight_end": 345.7,
+   "provider_dispatch": 347.6,
+   "provider_chunk": 1031.0,
+   "provider_visible_text": 1031.1,
+   "speech_first_visible_text": 1031.1,
+   "speech_segment_queued": 1104.7,
+   "tts_synthesize_start": 1104.9,
+   "audio_at_sink": 1576.0,
+   "tts_synthesize_return": 1678.0
+  },
+  {
+   "utterance": 9,
+   "message_id": "01a0f01d-0d2e-729b-8b5b-2015af0b289d",
+   "endpoint": 0.0,
+   "transcript_final_received": 140.4,
+   "transcript_final_processed": 156.5,
+   "owner_turn_submitted": 278.8,
+   "turn_start": 279.8,
+   "message_append_start": 280.7,
+   "message_persisted": 283.7,
+   "owner_message_committed": 283.7,
+   "egress_decided": 284.3,
+   "assembly_start": 285.7,
+   "record_state_assembled": 292.4,
+   "assembly_end": 292.5,
+   "runtime_ready_start": 297.2,
+   "runtime_ready_end": 298.4,
+   "exact_preflight_start": 298.5,
+   "exact_preflight_end": 332.1,
+   "provider_dispatch": 334.4,
+   "provider_chunk": 546.4,
+   "provider_visible_text": 546.5,
+   "speech_first_visible_text": 546.5,
+   "speech_segment_queued": 791.4,
+   "tts_synthesize_start": 791.5,
+   "audio_at_sink": 1485.7,
+   "tts_synthesize_return": 2684.6
+  },
+  {
+   "utterance": 10,
+   "message_id": "01a0f01d-6f13-7ba7-9024-085ab0ac15b8",
+   "endpoint": 0.0,
+   "transcript_final_received": 495.6,
+   "transcript_final_processed": 498.6,
+   "owner_turn_submitted": 1880.5,
+   "turn_start": 1881.5,
+   "message_append_start": 1883.2,
+   "message_persisted": 1886.7,
+   "owner_message_committed": 1886.7,
+   "egress_decided": 1887.3,
+   "assembly_start": 1889.0,
+   "record_state_assembled": 1896.4,
+   "assembly_end": 1896.5,
+   "runtime_ready_start": 1903.6,
+   "runtime_ready_end": 1905.5,
+   "exact_preflight_start": 1905.6,
+   "exact_preflight_end": 1947.2,
+   "provider_dispatch": 1949.7,
+   "provider_chunk": 2666.9,
+   "provider_visible_text": 2667.0,
+   "speech_first_visible_text": 2667.0,
+   "speech_segment_queued": 2896.1,
+   "tts_synthesize_start": 2896.4,
+   "audio_at_sink": 3590.5,
+   "tts_synthesize_return": 4334.2
+  },
+  {
+   "utterance": 11,
+   "message_id": "01a0f01d-b4e9-7ee1-9323-1f95623c4e97",
+   "endpoint": 0.0,
+   "transcript_final_received": 366.4,
+   "transcript_final_processed": 376.8,
+   "owner_turn_submitted": 499.0,
+   "turn_start": 500.0,
+   "message_append_start": 500.9,
+   "message_persisted": 503.4,
+   "owner_message_committed": 503.4,
+   "egress_decided": 504.0,
+   "assembly_start": 506.0,
+   "record_state_assembled": 513.0,
+   "assembly_end": 513.1,
+   "runtime_ready_start": 519.8,
+   "runtime_ready_end": 521.1,
+   "exact_preflight_start": 521.2,
+   "exact_preflight_end": 565.2,
+   "provider_dispatch": 567.2,
+   "provider_chunk": 1629.4,
+   "provider_visible_text": 1629.4,
+   "speech_first_visible_text": 1629.5,
+   "speech_segment_queued": 1782.6,
+   "tts_synthesize_start": 1782.7,
+   "audio_at_sink": 2474.7,
+   "tts_synthesize_return": 2884.3
+  }
+ ],
+ "resumptions": [
+  {
+   "early_utterance": 1,
+   "resumed_by": 2,
+   "pause_s": 0.614,
+   "decided_mono": 112802.327774666
+  }
+ ],
+ "precedence": [
+  {
+   "released_utterance": 1,
+   "superseded_call_ended_mono": 112802.354380791
+  }
+ ],
+ "fast_route": [],
+ "deliveries_not_completed": [
+  [
+   "01a0f01c-51b9-7983-b76f-56d6ad3afec1",
+   "interrupted",
+   "the owner began speaking"
+  ],
+  [
+   "01a0f01c-d84c-7e29-a2eb-a47b3631383b",
+   "interrupted",
+   "the owner began speaking while her answer was still playing; segment 1 was cut off while playing"
+  ],
+  [
+   "01a0f01d-2271-7720-9475-d2167199523f",
+   "interrupted",
+   "the owner began speaking while her answer was still playing; segment 4 was cut off while playing; segments 5, 6, 7, 8, 9 never played"
+  ]
+ ],
+ "speech_bound_reached": [],
+ "memory": [
+  {
+   "at": 1790734128.0,
+   "free_percent": 93,
+   "swap_used_mb": 3021.06
+  },
+  {
+   "at": 1790734133.0,
+   "free_percent": 92,
+   "swap_used_mb": 3021.06
+  },
+  {
+   "at": 1790734138.0,
+   "free_percent": 91,
+   "swap_used_mb": 3021.06
+  },
+  {
+   "at": 1790734143.0,
+   "free_percent": 42,
+   "swap_used_mb": 3021.06
+  },
+  {
+   "at": 1790734148.0,
+   "free_percent": 38,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734154.0,
+   "free_percent": 38,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734159.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734164.0,
+   "free_percent": 32,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734169.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734175.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734180.0,
+   "free_percent": 32,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734185.0,
+   "free_percent": 27,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734190.0,
+   "free_percent": 27,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734196.0,
+   "free_percent": 32,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734201.0,
+   "free_percent": 29,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734206.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734211.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734217.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734222.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734227.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734232.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734238.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734243.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734248.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734253.0,
+   "free_percent": 27,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734259.0,
+   "free_percent": 33,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734264.0,
+   "free_percent": 29,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734269.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734274.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734280.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734285.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734290.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734295.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734301.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734306.0,
+   "free_percent": 90,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734311.0,
+   "free_percent": 18,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734316.0,
+   "free_percent": 38,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734322.0,
+   "free_percent": 37,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734327.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734332.0,
+   "free_percent": 34,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734337.0,
+   "free_percent": 38,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734343.0,
+   "free_percent": 38,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734348.0,
+   "free_percent": 33,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734353.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734358.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734364.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734369.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734374.0,
+   "free_percent": 31,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734379.0,
+   "free_percent": 32,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734385.0,
+   "free_percent": 32,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734390.0,
+   "free_percent": 29,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734395.0,
+   "free_percent": 33,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734400.0,
+   "free_percent": 34,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734406.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734411.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734416.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734421.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734426.0,
+   "free_percent": 38,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734432.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734437.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734442.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734447.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734453.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734458.0,
+   "free_percent": 26,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734463.0,
+   "free_percent": 27,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734468.0,
+   "free_percent": 34,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734474.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734479.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734484.0,
+   "free_percent": 40,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734489.0,
+   "free_percent": 39,
+   "swap_used_mb": 3013.06
+  },
+  {
+   "at": 1790734495.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734500.0,
+   "free_percent": 31,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734505.0,
+   "free_percent": 30,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734510.0,
+   "free_percent": 33,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734516.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734521.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734526.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734531.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734537.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734542.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734547.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734552.0,
+   "free_percent": 27,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734558.0,
+   "free_percent": 32,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734563.0,
+   "free_percent": 30,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734568.0,
+   "free_percent": 27,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734573.0,
+   "free_percent": 34,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734579.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734584.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734589.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734594.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734599.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734605.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734610.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734615.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734620.0,
+   "free_percent": 34,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734626.0,
+   "free_percent": 27,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734631.0,
+   "free_percent": 41,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734636.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734641.0,
+   "free_percent": 38,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734647.0,
+   "free_percent": 37,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734652.0,
+   "free_percent": 28,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734657.0,
+   "free_percent": 29,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734662.0,
+   "free_percent": 26,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734668.0,
+   "free_percent": 26,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734673.0,
+   "free_percent": 32,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734678.0,
+   "free_percent": 29,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734683.0,
+   "free_percent": 32,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734689.0,
+   "free_percent": 32,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734694.0,
+   "free_percent": 29,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734699.0,
+   "free_percent": 38,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734704.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734710.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734715.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734720.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734725.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734731.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734736.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734741.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734746.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734752.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734757.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734762.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734767.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734773.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734778.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734783.0,
+   "free_percent": 31,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734788.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734794.0,
+   "free_percent": 35,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734799.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734804.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734809.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734814.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734820.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734825.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734830.0,
+   "free_percent": 39,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734835.0,
+   "free_percent": 33,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734841.0,
+   "free_percent": 33,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734846.0,
+   "free_percent": 33,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734851.0,
+   "free_percent": 35,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734856.0,
+   "free_percent": 37,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734862.0,
+   "free_percent": 31,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734867.0,
+   "free_percent": 40,
+   "swap_used_mb": 3005.06
+  },
+  {
+   "at": 1790734872.0,
+   "free_percent": 40,
+   "swap_used_mb": 2973.06
+  },
+  {
+   "at": 1790734877.0,
+   "free_percent": 29,
+   "swap_used_mb": 2973.06
+  },
+  {
+   "at": 1790734883.0,
+   "free_percent": 34,
+   "swap_used_mb": 2973.06
+  },
+  {
+   "at": 1790734888.0,
+   "free_percent": 40,
+   "swap_used_mb": 2973.06
+  },
+  {
+   "at": 1790734893.0,
+   "free_percent": 40,
+   "swap_used_mb": 2973.06
+  },
+  {
+   "at": 1790734898.0,
+   "free_percent": 40,
+   "swap_used_mb": 2973.06
+  },
+  {
+   "at": 1790734904.0,
+   "free_percent": 41,
+   "swap_used_mb": 2973.06
+  }
+ ]
+}

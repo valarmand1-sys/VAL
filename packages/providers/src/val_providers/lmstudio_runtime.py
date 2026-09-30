@@ -289,6 +289,29 @@ class LMStudioRuntime:
                 f"context: {output or 'no output'}"
             )
 
+    def release(self, model_identifier: str) -> Mapping[str, object]:
+        """Unload this model if it is loaded, giving its memory back; one bounded attempt.
+
+        Voice model candidate, 29 September 2026 (VOICE_MODEL.md §10): with the Voice
+        model resident beside the Partner model, this Mac swapped 11.5 GB in fifteen
+        minutes. Under the same per-model lock as loading, so a turn arriving during the
+        release waits and then observes honestly. A model that is not loaded is left
+        alone and reported so; the next call on its route loads it again as ever.
+        """
+        with self._models_lock:
+            lock = self._per_model.setdefault(model_identifier, threading.Lock())
+        with lock:
+            if not self.serving() or self._instance(model_identifier) is None:
+                return {"released": False, "model": model_identifier, "reason": "not loaded"}
+            code, output = self._runner.run(
+                [str(self._lms), "unload", model_identifier], timeout=60.0
+            )
+            if code != 0:
+                raise LocalRuntimeUnavailableError(
+                    f"{model_identifier} could not be unloaded: {output or 'no output'}"
+                )
+            return {"released": True, "model": model_identifier}
+
     # --- the one entry point ------------------------------------------------------
 
     def ensure_ready(self, config: ModelConfig) -> Mapping[str, object]:

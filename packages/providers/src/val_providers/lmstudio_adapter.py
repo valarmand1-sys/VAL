@@ -298,6 +298,10 @@ class LMStudioAdapter:
         """
         return self._runtime.ensure_ready(config)
 
+    def release_model(self, config: ModelConfig) -> Mapping[str, object]:
+        """Unload this configuration's model, if loaded (Voice model candidate, §10)."""
+        return self._runtime.release(config.model_identifier)
+
     # --- prefix priming (owner order, 25 September 2026) ----------------------
 
     def plan_prefix_prime(

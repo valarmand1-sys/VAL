@@ -491,7 +491,12 @@ for her beginning before he has finished.
 ## 9. The prepared, reversible installation (not applied; his approval and his hands)
 
 **The release:** tag `voice-model-release-2026-09-29` = commit `9db6e61` on branch
-`latency-2026-09-28`. Pushed; not merged to master.
+`latency-2026-09-28`. Pushed; not merged to master. **Superseded the same evening by
+`voice-model-release-2026-09-29-r2`** (§10.5), which adds the residency repair and nothing
+else to the service; the desktop is byte-identical between the two, so the staged bundle
+stands. Where this section says `9db6e61`, read the r2 commit for the r2 release; the
+steps are otherwise unchanged, with one more setting in step 3:
+`VAL_VOICE_RELEASES_PARTNER` = `on` (recommended; §10.2).
 
 **Prepared on this Mac, installing nothing:**
 
@@ -547,3 +552,108 @@ on the branch.**
 **Rollback:** the plist back to its backup (directory `13b3cb8`, the five settings
 removed), kickstart, the previous desktop bundle back into `/Applications`. The migration
 is additive and stays; the model file and key may stay or go.
+
+## 10. The focused release checks (29 September, 20:46–) — resources, underrun, lifecycle, release
+
+Run while the challenger comparison (`CHALLENGER.md`) waited on disk space.
+
+### 10.1 Resources with GPT-OSS resident beside the Voice model: FAILED its threshold
+
+§7.5 recorded that the two cognition models resident together had not been measured. In
+production they would be: GPT-OSS is loaded at service start with a one-hour idle TTL,
+and **nothing in the staged release unloads it when Voice is turned on**. §8.1's "one
+cognition model at a time" described the measurements, not the code.
+
+`run_voice_resident.sh voice_prefill V-resident-1 "0 3 5 9"` — identical to the hold-kept
+run except that GPT-OSS (`val-exp-hub`, 32,768 tokens, `--parallel 1`) was loaded before
+the run and kept resident. Recognition and synthesis active. Commit `7f2ce04`.
+
+| | GPT-OSS unloaded (`V-hold-1`, §7.3) | **GPT-OSS resident (`V-resident-1`)** |
+|---|---|---|
+| swap at start → highest | 3.08 → 3.62 GB (+0.54) | **2.96 → 14.52 GB (+11.56)**, rising in steps at each Voice On |
+| free memory, median / lowest sample | 38% / 16% | 30% / **0%** (one sample, at the Voice model's load) |
+| samples below 20% | 1 of 316 | 6 of 174 |
+| S1 median / S4 median | 2.38 / 2.45 s | 2.46 / 2.47 s |
+| fallbacks / no audio / underruns | 0 / 0 / 1 | 0 / 0 / 0 |
+| Voice On → ready, first / later | 19.4 / 13.1–13.7 s | **31.5** / 14.0–15.1 s |
+
+- **The registered threshold "swap growth > 2 GB" was crossed by a factor of five.** Onset
+  and answers were unaffected in these 35 turns (the model's working set stayed in memory;
+  what was paged out was everything else), and every one of the five deliveries not
+  completed was an intended barge-in. The failure is the pressure, not the turns.
+- **Consequence for the staged release:** as staged, a Voice session opened within an
+  hour of typed work would run in this state. That is not acceptable, and I do not present
+  it as such.
+
+### 10.2 The repair, behind a switch, unset: Voice On releases the Partner model
+
+`VAL_VOICE_RELEASES_PARTNER=on` (candidate; off unless set; a no-op when no Voice model
+is pinned):
+
+- **Voice On**, before the Voice model is warmed: the route a typed turn would take is
+  unloaded from its local runtime if it is loaded (`lms unload`, under the same per-model
+  lock as loading). Failure is reported, never raised — Voice goes on with both resident,
+  as before.
+- **Voice ending** (the last session closed): the Partner model is loaded again, off the
+  request path, so typed work afterwards does not pay its load.
+- **A fallback during Voice** loads GPT-OSS on demand (9 s, §7.5) beside the Voice model
+  — the resident-together state for the rest of that session, accepted as the cost of a
+  rare failure.
+- **What it changes for him:** a typed turn sent *during* Voice takes GPT-OSS's load
+  (9 s) once — today it would find GPT-OSS resident. Nothing else about typed work moves.
+- Tests: `test_voice_model.py` (+3: unset keeps residency; set releases before the load
+  and brings it back; nothing pinned releases nothing).
+
+Measured: §10.3.
+
+### 10.3 Measured with the switch set (`V-release-1`, sessions 0, 3 and the lifecycle session)
+
+GPT-OSS loaded before the run, as in §10.1; `VAL_VOICE_RELEASES_PARTNER=on`.
+
+| | resident (§10.1) | **released at Voice On** | unloaded beforehand (§7.3) |
+|---|---|---|---|
+| swap at start → highest | 2.96 → 14.52 GB | **3.02 → 3.02 GB (−0.05)** | 3.08 → 3.62 GB |
+| free memory, median / lowest sample | 30% / 0% | **39% / 18%** | 38% / 16% |
+| samples below 20% | 6 of 174 | 1 of 148 | 1 of 316 |
+| S1 / S4 medians | 2.46 / 2.47 s | 2.39 / 2.44 s | 2.38 / 2.45 s |
+| lifecycle session (L) median / p90 | 3.62 / 5.04 s | 3.46 / 4.72 s | — |
+| fallbacks / no audio / underruns | 0 / 0 / 0 | 0 / 0 / 0 | 0 / 0 / 1 |
+| Voice On → ready, first / later | 31.5 / 14–15 s | **19.7 / 12.4–12.5 s** | 19.4 / 13.1–13.7 s |
+
+- The first Voice On found GPT-OSS loaded and released it (`released: true`, then the Voice
+  model loaded in 8.4 s); the later sessions found it absent (`released: false, "not
+  loaded"`) — because **the return after Voice failed in the harness**: the experiment
+  serves GPT-OSS as an *instance* `val-exp-hub` over the model key `gpt-oss-20b-renewal`,
+  and `lms load val-exp-hub` is "Model not found". Production's route names
+  `openai/gpt-oss-20b`, which is both key and instance identifier, so the same call
+  production makes at every start (proven 21 September) is the return. **Not demonstrated
+  here**: a direct proof on production's key (`lifecycle_proof.py`, load → release →
+  release again → load, each timed) was refused by the automatic review as modifying a
+  shared resource — it would load and unload the model in production's LM Studio server —
+  and is left for him to run, or to accept on the strength of the two calls it composes.
+- The unload itself is proven on a loaded instance; the memory result is the whole point,
+  and it holds: the run looks like §7.3 in every resource figure.
+
+### 10.4 Underrun and lifecycle
+
+- **The one underrun** (§7.3) was on S5's "correction, pause 2.3 s (past the window)" turn
+  — her first answer cut off by his correction, the second beginning — one event, one
+  worklet. **66 further turns across the two runs above, including the lifecycle
+  session's replacements and the barge-in session, produced none.** Not reproduced; not
+  explained beyond its position at an interruption boundary; recorded as a single event.
+- **Lifecycle** (session L, twice): resumed speech joined; a request replaced by "Actually,
+  never mind…" answered as the replacement; continuation while an answer was being made
+  and as it finished, both handled; every delivery not completed was an intended
+  interruption. Voice On → ready 12.4–15.1 s after the first session of a process; the
+  first pays the model's load (19.7–31.5 s, the higher figure with GPT-OSS resident).
+
+### 10.5 Release
+
+- **CI is green** on `release/voice-model-2026-09-29` at the tagged commit `9db6e61`
+  (run 36657030128). The branch was pushed for that purpose; CI does not run on the
+  working branch.
+- **The staged tag does not carry §10.2.** If he takes the residency repair, the release
+  is re-tagged at the commit that carries it (below), the release tree rebuilt from it,
+  and the desktop bundle stays: `apps/desktop` is unchanged between the two.
+- **Recommendation:** ship the switch **set**. Without it the staged configuration swaps
+  eleven gigabytes whenever Voice follows typed work within the hour.

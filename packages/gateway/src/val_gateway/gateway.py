@@ -491,6 +491,11 @@ class Gateway:
         #: Whether a complete utterance releases its answer's audio without the merge
         #: hold (`VAL_VOICE_EARLY_AUDIO`, candidate; off in production).
         self.voice_early_audio = False
+        #: Whether Voice On gives the Partner model's memory back while the Voice model
+        #: is resident (`VAL_VOICE_RELEASES_PARTNER`, candidate; off in production).
+        #: Measured 29 September 2026 (VOICE_MODEL.md §10): both resident, swap grew
+        #: 11.5 GB in fifteen minutes; one at a time, 0.5 GB.
+        self.voice_releases_partner = False
         self._record = recorder
         self._ledger = ledger
         self._cache_ttl = cache_ttl
@@ -794,6 +799,60 @@ class Gateway:
         released["voice_cognition"] = cognition
         return released
 
+    def _typed_turn_route(self) -> ModelConfig | None:
+        """The route a typed conversational turn takes: the pin ignored, the order as ever."""
+        order = attempt_order(
+            active(),
+            Classification.PROTECTED,
+            is_ready=lambda config: config.provider in self._adapters,
+            is_affordable=lambda config: True,
+            resolve_fallback=fallback_for,
+            profile=required_profile(TaskType.CONVERSATION),
+            cost_bound=lambda config: maximum_cost(config, (), CONVERSATION_MAX_OUTPUT_TOKENS),
+            egress=Egress.LOCAL_ONLY,
+        )
+        return order[0] if order else None
+
+    def _release_partner_for_voice(self, voice: ModelConfig) -> Mapping[str, object]:
+        """Give the Partner model's memory back for the Voice model (candidate, §10).
+
+        The Partner model is the route a typed turn would take. It is unloaded only when it
+        is a different model on a local runtime that can unload it; the next typed turn,
+        or a fallback during Voice, loads it again on its own path (9 s, measured
+        21 September 2026). A failure here is reported, never raised: Voice goes on with
+        both resident, as it would without this step.
+        """
+        partner = self._typed_turn_route()
+        if partner is None or partner.slug == voice.slug:
+            return {"released": False, "reason": "no distinct Partner route"}
+        adapter = self._adapters.get(partner.provider)
+        release = getattr(adapter, "release_model", None)
+        if not callable(release):
+            return {
+                "released": False,
+                "slug": partner.slug,
+                "reason": "its runtime holds nothing to release",
+            }
+        try:
+            return {"slug": partner.slug, **dict(release(partner))}
+        except LocalRuntimeUnavailableError as failure:
+            self._observe_block(f"releasing {partner.slug} for Voice did not succeed: {failure}")
+            return {"released": False, "slug": partner.slug, "reason": str(failure)}
+
+    def rewarm_partner_after_voice(self) -> Mapping[str, object]:
+        """After Voice ends, bring the Partner model back so typed work does not pay its load."""
+        partner = self._typed_turn_route()
+        if partner is None or not supports_local_runtime(self._adapters[partner.provider]):
+            return {"warmed": False, "reason": "no local Partner route"}
+        try:
+            readiness = cast(
+                LocalRuntimeAdapter, self._adapters[partner.provider]
+            ).ensure_runtime_ready(partner)
+        except LocalRuntimeUnavailableError as failure:
+            self._observe_block(f"re-warming {partner.slug} after Voice did not succeed: {failure}")
+            return {"warmed": False, "slug": partner.slug, "reason": str(failure)}
+        return {"warmed": True, "slug": partner.slug, **dict(readiness)}
+
     def warm_cognition(self) -> Mapping[str, object]:
         """Bring the ordinary conversation route's local runtime up, early.
 
@@ -827,6 +886,9 @@ class Gateway:
         chosen = self._spoken_turn_route()
         if chosen is None:
             return {"warmed": False, "reason": "no admitted partner route is configured"}
+        released: Mapping[str, object] | None = None
+        if self.voice_releases_partner and chosen is self.voice_configuration:
+            released = self._release_partner_for_voice(chosen)
         if not supports_local_runtime(self._adapters[chosen.provider]):
             return {
                 "warmed": False,
@@ -847,6 +909,8 @@ class Gateway:
             )
             return {"warmed": False, "slug": chosen.slug, "reason": str(failure)}
         result: dict[str, object] = {"warmed": True, "slug": chosen.slug, **dict(readiness)}
+        if released is not None:
+            result["partner_released"] = released
         # The light route's runtime too, when one is admitted (26 September 2026): its
         # model is small, and a first greeting should not pay its load.
         light = self._spoken_turn_route(TaskType.LIGHT_CONVERSATION)

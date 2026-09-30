@@ -154,3 +154,62 @@ def test_with_nothing_pinned_a_spoken_turn_takes_the_partner_route(store: Engine
     gateway = gateway_with(store, adapter, None)
     say(store, gateway, "Good evening, Val.", a_conversation(store), spoken=True)
     assert slugs(store) == [PARTNER_SLUG]
+
+
+class Residency(ScriptedAdapter):
+    """A local runtime that records loads and releases by model identifier (§10)."""
+
+    def __init__(self) -> None:
+        super().__init__([])
+        self.events: list[tuple[str, str]] = []
+
+    def ensure_runtime_ready(self, config: ModelConfig) -> dict[str, object]:
+        self.events.append(("load", config.model_identifier))
+        return {"model_loaded": True}
+
+    def release_model(self, config: ModelConfig) -> dict[str, object]:
+        self.events.append(("release", config.model_identifier))
+        return {"released": True, "model": config.model_identifier}
+
+
+def test_unset_voice_on_keeps_the_partner_model_resident(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    adapter = Residency()
+    gateway = gateway_with(store, adapter, voice_model)
+    warmed = gateway.warm_cognition()
+    assert warmed["warmed"] is True and "partner_released" not in warmed
+    assert adapter.events == [("load", voice_model.model_identifier)]
+
+
+def test_set_voice_on_releases_the_partner_model_and_voice_off_brings_it_back(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    adapter = Residency()
+    gateway = gateway_with(store, adapter, voice_model)
+    gateway.voice_releases_partner = True
+    partner = registry.by_slug(PARTNER_SLUG)
+    assert partner is not None
+    warmed = gateway.warm_cognition()
+    assert warmed["partner_released"] == {  # type: ignore[index]
+        "slug": PARTNER_SLUG,
+        "released": True,
+        "model": partner.model_identifier,
+    }
+    # The release comes first, so the Voice model loads into the memory it gave back.
+    assert adapter.events == [
+        ("release", partner.model_identifier),
+        ("load", voice_model.model_identifier),
+    ]
+    back = gateway.rewarm_partner_after_voice()
+    assert back["warmed"] is True and back["slug"] == PARTNER_SLUG
+    assert adapter.events[-1] == ("load", partner.model_identifier)
+
+
+def test_with_nothing_pinned_the_switch_releases_nothing(store: Engine) -> None:
+    adapter = Residency()
+    gateway = gateway_with(store, adapter, None)
+    gateway.voice_releases_partner = True
+    warmed = gateway.warm_cognition()
+    assert "partner_released" not in warmed
+    assert all(kind == "load" for kind, _ in adapter.events)
