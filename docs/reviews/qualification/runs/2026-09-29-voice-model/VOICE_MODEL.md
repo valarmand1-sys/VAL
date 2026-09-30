@@ -278,3 +278,212 @@ mechanical false positive recorded for every model.
 - **Prefill is the bottleneck.** It is addressed in §7.
 - Recognition and synthesis were not resident in this screen. They are in the desktop
   measurement.
+
+## 7. Working Voice — integration and measured result (29 September, 18:35–19:56)
+
+### 7.1 What was built (isolated; every switch unset in production)
+
+| switch | what it does | new or existing |
+|---|---|---|
+| `VAL_VOICE_MODEL=gemma-4-26b-a4b` | spoken turns, and typed turns while a Voice session is open, are pinned to the Voice model. Typed and complex work stays on GPT-OSS. A Voice call that fails before any word is delivered is answered by GPT-OSS once | new |
+| `VAL_ADAPTIVE_ENDPOINT=on` | the recognizer endpoints after 400 ms and the confirmation window is sized from his words | existing (27 September) |
+| `VAL_VOICE_TURN_PREFILL=on` | the coming turn's request, without his words, is prepared in the Voice model's runtime at Voice On, after each answer, and when he begins to speak | new |
+| `VAL_VOICE_EARLY_AUDIO=on` | an utterance judged complete releases its answer's audio without the merge hold | new; **not recommended** (§7.4) |
+
+**Also built:**
+
+- **A supervisor** (`val_providers.llamacpp_runtime`) starts the llama.cpp server for the
+  declared model and ends it when Voice ends.
+  - The model file is checked against its pinned SHA-256.
+  - The executable and flags are constants; nothing from a model or a request reaches
+    them.
+- **The llama.cpp adapter** now records the timing marks, honours supersession, and plans
+  a persona prime.
+- **The registry entry** `gemma-4-26b-a4b-q4km-llamacpp-voice` is NOT_ADMITTED and is
+  pin-only when the switch is set.
+
+**Unchanged:**
+
+- the persona, and production's request construction (`envelope_in_system` is not used);
+- the seal;
+- his voice and its pace;
+- owner-text display, text and audio coordination, barge-in;
+- no canned reply and no filler.
+
+**Tests:** `test_voice_model.py` (6), `test_thinking_declaration.py` (+1), and the moved
+registry pins.
+
+### 7.2 How the wait was reduced, stage by stage (one session each; speech end → first audio)
+
+| configuration | range | what limited it |
+|---|---|---|
+| GPT-OSS MEDIUM, production configuration (28–29 September, descriptive) | 6.9–14 s | hidden reasoning |
+| the Voice model, production's endpoint | 4.0–5.0 s | the 1.24 s confirmation window and a 1.6 s prefill |
+| + the adaptive endpoint | 3.0–3.9 s | the prefill of Core's record state |
+| + the turn prepared ahead of his words | 2.3–3.0 s | **the audio-release hold**: nothing may play until about 2.2 s after he stops |
+| + early audio for complete utterances | 1.7–2.5 s | speech synthesis |
+
+### 7.3 The two full measurements
+
+Through the real desktop frontend and player, five sessions, 40 turns each.
+
+- Recognition and speech synthesis were active.
+- The Voice model was resident and **GPT-OSS was unloaded**.
+- Commit `bc9d37c`.
+- Files: `voice-bench-V-hold-1.json`, `voice-bench-V-early-1.json`, `desktop-summary.json`.
+
+| speech end → first audible answer | **hold kept** (`voice_prefill`) | early audio (`voice_early`) |
+|---|---|---|
+| simple exchanges (15 turns): median / p90 / slowest | **2.56 / 2.64 / 2.95 s** | 2.08 / 2.55 / 2.57 s |
+| ordinary questions and follow-ups, sessions 1–4: median / p90 / slowest | **2.33 / 4.18 / 8.03 s** (18 turns) | 1.98 / 2.26 / 3.23 s (17 turns) |
+| all counted turns: median / p90 / slowest | **2.53 / 4.18 / 8.03 s** | 2.04 / 3.73 / 45.7 s |
+| turns with a pause inside the utterance (session 5) | 2.6–5.4 s; every continuation merged into one turn | 2.6–4.3 s, **and one continuation answered after 45.7 s** |
+| first turn of each session | 2.27–3.65 s | 1.65–2.88 s |
+| Voice On → ready | 19.4 s first, then 13.1–13.7 s | 18.7 s first, then 12.4–13.7 s |
+| fallbacks to GPT-OSS | 0 | 0 |
+| turns with no audio | 0 | 0 |
+| turns with a player underrun | 1 (one event, on a four-word answer) | 0 |
+| deliveries interrupted by his speech | 0 | 1 |
+| runaway speech segments | 0 | 0 |
+
+**Stages on ordinary turns, median** (the pieces are consecutive and sum to the whole):
+
+| stage | hold kept | early audio |
+|---|---|---|
+| endpoint | 0.46 s | 0.46 s |
+| confirmation | 0.26 s | 0.26 s |
+| Core | 0.06 s | 0.06 s |
+| prefill | 0.17 s | 0.17 s |
+| first speech-safe sentence | 0.22 s | 0.24 s |
+| speech synthesis to first audio | 0.71 s | 0.72 s |
+| playback, including the hold | 0.39 s (p90 0.79 s) | 0.06 s |
+
+- **Message visible → first audible answer** is the same figure less the endpoint and
+  confirmation: about 1.6 s with the hold kept, and about 1.3 s with early audio.
+- **The turn prepared ahead:** 44 preparations, all succeeded, median 1.9 s each, off his
+  path. An utterance shorter than the preparation waits for it.
+- **Quality:** all 80 answers read; no absolute failure. Facts right (Lisbon, caesura,
+  sonnet, haiku); corrections kept.
+
+### 7.4 The audio-release hold is now the limiting stage, and removing it has a measured cost
+
+- **With the hold,** an answer ready sooner waits until the merge window closes, so
+  speech resuming inside the window is always joined to the same turn. In session 5,
+  every continuation and correction was joined, and answered in 2.6–5.4 s.
+- **Without it,** 49 of 51 utterances were judged complete and released early. The median
+  fell by about 0.4 s.
+  - **The cost:** a continuation spoken 1.6 s after a complete-sounding sentence was not
+    joined. Her first answer had begun, his further words became a separate turn, and
+    that turn was answered 45.7 s later, after her first answer finished playing.
+  - That is the existing policy for a continuation of a heard answer. GPT-OSS waited
+    56.2 s on the same case.
+- **Recommendation: keep the hold.** About 0.4 s is not worth a broken utterance. Early
+  audio stays behind its switch, off.
+
+### 7.5 Simultaneous operation and resources
+
+**Resident during every measurement:**
+
+- the Voice model's server (7.2–7.4 GB reported footprint, plus mapped weights; the file is
+  16.8 GB);
+- the resident speech worker (Qwen3-TTS);
+- the recognizer (Whisper);
+- the scratch service, the desktop in a headless browser, and this Mac's usual
+  applications.
+- LM Studio held nothing.
+
+| | hold kept | early audio |
+|---|---|---|
+| free memory, median | 38% | 38% |
+| free memory, lowest sample | 16% | 9% |
+| samples below 20% | 1 of 316 | 2 of 297 |
+| swap during the run | 3.08 → 3.62 GB at most (+0.54 GB) | 3.45 → 3.60 GB at most (+0.15 GB) |
+
+- **The registered threshold "free memory below 20%" was crossed by single samples at the
+  moment the model loads.**
+  - I registered it without saying whether it meant the lowest sample or the sustained
+    level. I have not redefined it.
+  - Read strictly, it was crossed. Read as sustained pressure, it was not: the sustained
+    level is about 38%, and swap growth is inside its 2 GB threshold.
+  - **His ruling is needed on which reading applies.**
+- **Swap over the evening:** it rose from 0.95 GB before the first load to about 3.5 GB
+  across all runs, mostly at the first load.
+- **Switching costs:**
+  - the Voice model loads at Voice On (12–19 s to ready, including the persona
+    preparation and the speech worker) and is released when Voice ends;
+  - a fallback to GPT-OSS would load it on demand (9 s, measured 29 September). None
+    occurred.
+  - **GPT-OSS and the Voice model resident together was not measured** with this model.
+    With the 17 GB Qwen model it produced 8.4 GB of swap.
+- **Avatar:** no renderer exists to measure against.
+  - With Voice running, about 38% of memory (about 18 GB) reads as free at the median.
+  - The GPU is busy during each turn's generation and synthesis.
+  - **No avatar compatibility is claimed.** The concurrent measurement its prototype needs
+    is unchanged (`01-architecture.md` §8.2).
+
+### 7.6 Against the goal
+
+- **Achieved, recommended configuration (hold kept):** 2.33 s median on ordinary turns and
+  2.56 s on simple exchanges, against 6.9–14 s for GPT-OSS in production's
+  configuration.
+- **His target is about one second. This does not meet it.**
+- **What remains, measured:**
+
+| stage | median | what changing it would mean |
+|---|---|---|
+| speech synthesis to first audio | 0.71 s | a smaller first audio piece, or a faster speech path. It changes what he hears and needs his ear. Not changed here |
+| endpoint and confirmation | 0.72 s together | a shorter silence rule. She would more often begin before he has finished |
+| the audio-release hold | 0.39 s | removing it costs joined utterances (§7.4) |
+| Core, prefill, first sentence | 0.45 s together | little left to take |
+
+## 8. For his approval
+
+### 8.1 The proposed configuration
+
+- **Spoken conversation:** the Voice model (Gemma 4 26B-A4B, thinking off, the pinned file
+  and build), through Val Core. Switches: `VAL_VOICE_MODEL=gemma-4-26b-a4b`,
+  `VAL_ADAPTIVE_ENDPOINT=on`, `VAL_VOICE_TURN_PREFILL=on`.
+- **Typed, complex and consequential work:** GPT-OSS MEDIUM, unchanged.
+- **Residency:** one cognition model at a time. The Voice model is held while Voice is on
+  and released when it ends.
+
+### 8.2 The difference between spoken and typed behaviour
+
+- A spoken answer comes from a different model.
+  - It was screened on 32 critical samples and 88 ordinary and desktop answers.
+  - It is not qualified for typed, complex or consequential work, and the registry entry
+    says so.
+- Its answers are shorter and plainer than GPT-OSS's.
+- It has no hidden reasoning phase.
+
+### 8.3 The decisions that are his
+
+1. **Admission of the Voice model for spoken turns,** and of the llama.cpp provider beyond
+   its candidate-only ruling of 18 September.
+2. **The adaptive endpoint** (27 September's candidate; part of the measured result).
+3. **The turn prepared ahead of his words.** It processes conversation content in the
+   local runtime before his turn is confirmed.
+   - Local only; recorded as a prefix prime; attached to no message.
+   - The priming ruling of 25 September excluded conversation content, and left this as
+     the open decision.
+4. **The memory threshold's reading** (§7.5).
+5. **The release it rides on.** The candidate is branch `latency-2026-09-28`.
+   - 47 commits beyond production's `13b3cb8`. They include the lifecycle repairs of
+     28 September and the latency switches, all off unless set.
+   - One additive migration (`0032`).
+   - A desktop build from the branch.
+   - §9 has the prepared, reversible installation.
+
+### 8.4 The listening check still required
+
+Player records cannot establish how it sounds. **One check in the room,** with the macOS
+microphone and speakers:
+
+- a greeting;
+- an ordinary question and a follow-up;
+- a correction spoken after a pause;
+- an interruption while she speaks;
+- a sentence continued after a one-second pause.
+
+He listens for clicks or gaps at the start of her answers, for a cut-off first word, and
+for her beginning before he has finished.

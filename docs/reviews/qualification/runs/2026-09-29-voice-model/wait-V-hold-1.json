@@ -1,0 +1,430 @@
+{
+ "summary": {
+  "runs": [
+   "V-hold-1"
+  ],
+  "turns": 16,
+  "missing": [
+   {
+    "run": "V-hold-1",
+    "label": "continuation after a pause",
+    "missing": "timeline or speech end"
+   }
+  ],
+  "total_ms": {
+   "n": 16,
+   "median": 2316,
+   "p90": 2499,
+   "max": 4180
+  },
+  "pieces_ms": {
+   "endpoint": {
+    "n": 16,
+    "median": 458,
+    "p90": 565,
+    "max": 580
+   },
+   "confirmation": {
+    "n": 16,
+    "median": 261,
+    "p90": 284,
+    "max": 499
+   },
+   "core": {
+    "n": 16,
+    "median": 62,
+    "p90": 64,
+    "max": 72
+   },
+   "prefill": {
+    "n": 16,
+    "median": 169,
+    "p90": 210,
+    "max": 1637
+   },
+   "reasoning": {
+    "n": 16,
+    "median": 0,
+    "p90": 0,
+    "max": 0
+   },
+   "segment": {
+    "n": 16,
+    "median": 222,
+    "p90": 385,
+    "max": 414
+   },
+   "synthesis": {
+    "n": 16,
+    "median": 714,
+    "p90": 732,
+    "max": 800
+   },
+   "playback": {
+    "n": 16,
+    "median": 390,
+    "p90": 788,
+    "max": 870
+   }
+  },
+  "mean_ms": {
+   "endpoint": 473,
+   "confirmation": 276,
+   "core": 60,
+   "prefill": 265,
+   "reasoning": 0,
+   "segment": 248,
+   "synthesis": 689,
+   "playback": 436
+  },
+  "engine_update_cache_ms": {
+   "n": 0
+  },
+  "uncached_tokens": {
+   "n": 0
+  },
+  "sum_check_ms": {
+   "n": 16,
+   "median": 0,
+   "p90": 0,
+   "max": 0
+  },
+  "share_of_mean": {
+   "endpoint": 0.193,
+   "confirmation": 0.113,
+   "core": 0.025,
+   "prefill": 0.108,
+   "reasoning": 0.0,
+   "segment": 0.101,
+   "synthesis": 0.282,
+   "playback": 0.178
+  }
+ },
+ "turns": [
+  {
+   "run": "V-hold-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "factual",
+   "total": 2460,
+   "pieces": {
+    "endpoint": 580,
+    "confirmation": 251,
+    "core": 60,
+    "prefill": 154,
+    "reasoning": 0,
+    "segment": 152,
+    "synthesis": 475,
+    "playback": 788
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 31
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "substantive",
+   "total": 2289,
+   "pieces": {
+    "endpoint": 461,
+    "confirmation": 261,
+    "core": 64,
+    "prefill": 186,
+    "reasoning": 0,
+    "segment": 211,
+    "synthesis": 700,
+    "playback": 406
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 35
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S1-greeting-factual-substantive",
+   "label": "follow-up",
+   "total": 2299,
+   "pieces": {
+    "endpoint": 449,
+    "confirmation": 284,
+    "core": 72,
+    "prefill": 183,
+    "reasoning": 0,
+    "segment": 177,
+    "synthesis": 714,
+    "playback": 420
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 38
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S2-pauses-and-corrections",
+   "label": "conversational",
+   "total": 2288,
+   "pieces": {
+    "endpoint": 483,
+    "confirmation": 243,
+    "core": 58,
+    "prefill": 165,
+    "reasoning": 0,
+    "segment": 253,
+    "synthesis": 732,
+    "playback": 354
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 33
+  },
+  {
+   "run": "V-hold-1",
+   "label": "continuation after a pause",
+   "missing": "timeline or speech end"
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S2-pauses-and-corrections",
+   "label": "hesitation",
+   "total": 2269,
+   "pieces": {
+    "endpoint": 442,
+    "confirmation": 260,
+    "core": 61,
+    "prefill": 199,
+    "reasoning": 0,
+    "segment": 197,
+    "synthesis": 709,
+    "playback": 400
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 34
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S2-pauses-and-corrections",
+   "label": "correction after a pause",
+   "total": 2281,
+   "pieces": {
+    "endpoint": 471,
+    "confirmation": 261,
+    "core": 63,
+    "prefill": 210,
+    "reasoning": 0,
+    "segment": 215,
+    "synthesis": 720,
+    "playback": 341
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 36
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S3-collisions-and-replacement",
+   "label": "ordinary",
+   "total": 2337,
+   "pieces": {
+    "endpoint": 480,
+    "confirmation": 261,
+    "core": 63,
+    "prefill": 164,
+    "reasoning": 0,
+    "segment": 414,
+    "synthesis": 800,
+    "playback": 155
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 31
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S3-collisions-and-replacement",
+   "label": "follow-up, quick",
+   "total": 2276,
+   "pieces": {
+    "endpoint": 455,
+    "confirmation": 260,
+    "core": 54,
+    "prefill": 161,
+    "reasoning": 0,
+    "segment": 229,
+    "synthesis": 697,
+    "playback": 418
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 29
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S3-collisions-and-replacement",
+   "label": "factual, into maintenance",
+   "total": 2335,
+   "pieces": {
+    "endpoint": 450,
+    "confirmation": 284,
+    "core": 64,
+    "prefill": 153,
+    "reasoning": 0,
+    "segment": 385,
+    "synthesis": 713,
+    "playback": 286
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 35
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S3-collisions-and-replacement",
+   "label": "explicit replacement",
+   "total": 4180,
+   "pieces": {
+    "endpoint": 443,
+    "confirmation": 278,
+    "core": 62,
+    "prefill": 1637,
+    "reasoning": 0,
+    "segment": 174,
+    "synthesis": 716,
+    "playback": 870
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 36
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 2394,
+   "pieces": {
+    "endpoint": 565,
+    "confirmation": 233,
+    "core": 51,
+    "prefill": 158,
+    "reasoning": 0,
+    "segment": 149,
+    "synthesis": 479,
+    "playback": 760
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 28
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S4-sustained-alternation",
+   "label": "factual",
+   "total": 2499,
+   "pieces": {
+    "endpoint": 452,
+    "confirmation": 499,
+    "core": 62,
+    "prefill": 152,
+    "reasoning": 0,
+    "segment": 284,
+    "synthesis": 714,
+    "playback": 335
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 34
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S4-sustained-alternation",
+   "label": "conversational",
+   "total": 2288,
+   "pieces": {
+    "endpoint": 455,
+    "confirmation": 243,
+    "core": 49,
+    "prefill": 166,
+    "reasoning": 0,
+    "segment": 285,
+    "synthesis": 708,
+    "playback": 381
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 30
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S4-sustained-alternation",
+   "label": "ordinary",
+   "total": 2267,
+   "pieces": {
+    "endpoint": 416,
+    "confirmation": 284,
+    "core": 64,
+    "prefill": 172,
+    "reasoning": 0,
+    "segment": 174,
+    "synthesis": 715,
+    "playback": 442
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 39
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S4-sustained-alternation",
+   "label": "follow-up, quick",
+   "total": 2332,
+   "pieces": {
+    "endpoint": 463,
+    "confirmation": 261,
+    "core": 60,
+    "prefill": 175,
+    "reasoning": 0,
+    "segment": 302,
+    "synthesis": 710,
+    "playback": 360
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 38
+  },
+  {
+   "run": "V-hold-1",
+   "session": "S4-sustained-alternation",
+   "label": "substantive",
+   "total": 2367,
+   "pieces": {
+    "endpoint": 498,
+    "confirmation": 261,
+    "core": 61,
+    "prefill": 202,
+    "reasoning": 0,
+    "segment": 366,
+    "synthesis": 720,
+    "playback": 259
+   },
+   "sum_check": 0,
+   "engine_update_cache_ms": null,
+   "uncached_tokens": null,
+   "preflight_wait_ms": 41
+  }
+ ]
+}

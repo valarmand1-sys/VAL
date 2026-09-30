@@ -1,0 +1,178 @@
+{
+ "V-early-1": {
+  "turns": 40,
+  "counted": 39,
+  "simple": {
+   "n": 15,
+   "median": 2076,
+   "p90": 2546,
+   "max": 2574
+  },
+  "ordinary_S1_S4": {
+   "n": 17,
+   "median": 1978,
+   "p90": 2256,
+   "max": 3225
+  },
+  "all": {
+   "n": 39,
+   "median": 2044,
+   "p90": 3733,
+   "max": 45700
+  },
+  "S5_pause_turns": [
+   2574,
+   2883,
+   3402,
+   3708,
+   3733,
+   3779,
+   4341,
+   45700
+  ],
+  "first_turns": [
+   1729,
+   1659,
+   1978,
+   1652,
+   2883
+  ],
+  "stages_median_ms": {
+   "endpoint": 457,
+   "confirmation": 262,
+   "core": 63,
+   "prefill": 173,
+   "reasoning": 0,
+   "segment": 243,
+   "synthesis": 715,
+   "playback": 59
+  },
+  "stages_p90_ms": {
+   "endpoint": 542,
+   "confirmation": 316,
+   "core": 74,
+   "prefill": 210,
+   "reasoning": 0,
+   "segment": 329,
+   "synthesis": 727,
+   "playback": 75
+  },
+  "decomposed_turns": 15,
+  "underrun_turns": 0,
+  "no_audio": [],
+  "deliveries_not_completed": [
+   [
+    "01a0efa8-27b9-7446-9cfb-f6095da30e16",
+    "interrupted",
+    "the owner began speaking"
+   ]
+  ],
+  "speech_bound_reached": [],
+  "voice_on_to_ready_s": [
+   18.724,
+   12.828,
+   12.398,
+   13.667,
+   13.669
+  ],
+  "free_percent": {
+   "min": 9,
+   "median": 38,
+   "below_20": 2,
+   "samples": 297
+  },
+  "swap_mb": {
+   "start": 3453.5,
+   "max": 3602.0,
+   "end": 3081.94
+  },
+  "models": [
+   "gemma-4-26b-a4b-it"
+  ]
+ },
+ "V-hold-1": {
+  "turns": 40,
+  "counted": 40,
+  "simple": {
+   "n": 15,
+   "median": 2557,
+   "p90": 2643,
+   "max": 2950
+  },
+  "ordinary_S1_S4": {
+   "n": 18,
+   "median": 2333.5,
+   "p90": 4180,
+   "max": 8029
+  },
+  "all": {
+   "n": 40,
+   "median": 2528.5,
+   "p90": 4180,
+   "max": 8029
+  },
+  "S5_pause_turns": [
+   2590,
+   3390,
+   3654,
+   3768,
+   3868,
+   3938,
+   4694,
+   5395
+  ],
+  "first_turns": [
+   2298,
+   2277,
+   2337,
+   2271,
+   3654
+  ],
+  "stages_median_ms": {
+   "endpoint": 458,
+   "confirmation": 261,
+   "core": 62,
+   "prefill": 169,
+   "reasoning": 0,
+   "segment": 222,
+   "synthesis": 714,
+   "playback": 390
+  },
+  "stages_p90_ms": {
+   "endpoint": 565,
+   "confirmation": 284,
+   "core": 64,
+   "prefill": 210,
+   "reasoning": 0,
+   "segment": 385,
+   "synthesis": 732,
+   "playback": 788
+  },
+  "decomposed_turns": 16,
+  "underrun_turns": 1,
+  "no_audio": [],
+  "deliveries_not_completed": [],
+  "speech_bound_reached": [],
+  "voice_on_to_ready_s": [
+   19.447,
+   13.652,
+   13.647,
+   13.385,
+   13.127
+  ],
+  "free_percent": {
+   "min": 16,
+   "median": 38.0,
+   "below_20": 1,
+   "samples": 316
+  },
+  "swap_mb": {
+   "start": 3081.94,
+   "max": 3624.5,
+   "end": 3431.12
+  },
+  "models": [
+   "gemma-4-26b-a4b-it"
+  ]
+ }
+}
