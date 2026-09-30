@@ -721,3 +721,12 @@ configuration failed and is excluded; the repair and its guard are measured.
 Not changed by any of this: the persona, Core's authority over the request, local-only
 processing (the Voice model is a loopback server this Mac starts), the voice, pace,
 segmenter, interruption handling and the merge hold.
+
+### 11.1 The r3 commit
+
+`voice-model-release-2026-09-29-r3` = **`df64e83`**. CI on `release/voice-model-2026-09-29`
+at that commit: **success** (run 36667731785). Release tree `~/Projects/val-releases/df64e83`,
+environment synced, imports verified; `apps/desktop` byte-identical to `9db6e61`. The
+service is the only thing that moved between r2 and r3 (§10.6 and its test); every
+measurement in §7 and §10 was taken on code whose Voice path is unchanged since, apart
+from the release step at Voice On and the after-call release, both measured in §10.3.

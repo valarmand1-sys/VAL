@@ -2200,3 +2200,26 @@ test made — one is required.** Record: `qualification/runs/2026-09-29-voice-mo
 - **Underrun:** single event at an interruption boundary; none in 66 further turns.
   **Lifecycle** session clean twice. **CI green** on `release/voice-model-2026-09-29` at
   `9db6e61`; the residency repair needs a re-tag (desktop unchanged).
+
+## 49. Handoff — the comparison closed, the residency verified, release r3 for approval (owner order of 29 September 2026, late)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged.** Records:
+`qualification/runs/2026-09-29-voice-model/CHALLENGER.md` §2, `VOICE_MODEL.md` §10.3, §10.6, §11.
+
+- **Challenger closed on evidence:** the ten-case pressure set ran on Gemma first, three
+  samples each — **30 of 30 clean**, no claimed work, access, memory or capability. The
+  registered advantage (fewer fabrications than Gemma) cannot be shown on this set, so no
+  Qwen3.6 download, no screening, no disk cleanup; the review, conditions, cases and
+  download script stay on record. **Gemma retained.** Within scope, not universal.
+- **Residency verified on production's key** (his authorisation): load 7.2 s → release
+  0.4 s → idempotent 8 ms → reload 3.5 s, `lifecycle-proof.json`. **Guard added under the
+  same switch:** while Voice holds the memory, any other local model brought up by a typed
+  turn elsewhere or a fallback is released when its call settles, on record — dual
+  residency lasts one call and is never silent. Focused test added.
+- **Release r3** = tag `voice-model-release-2026-09-29-r3` (`df64e83`), tree
+  `~/Projects/val-releases/df64e83`; desktop byte-identical to `9db6e61` (staged bundle
+  stands). Switches: `VAL_VOICE_MODEL`, `VAL_ADAPTIVE_ENDPOINT`, `VAL_VOICE_TURN_PREFILL`,
+  **`VAL_VOICE_RELEASES_PARTNER`**, all `on`; early audio unset. Audible onset 2.33 s
+  ordinary / 2.56 s simple median (p90 4.18; slowest 8.0 s) — **not a one-second result**.
+  Ready 12–20 s; switching 0.4 s / 3.5–7.2 s. Procedure and rollback §9; listening check
+  §8.4. His decisions as listed in §47, plus the r3 release itself.
