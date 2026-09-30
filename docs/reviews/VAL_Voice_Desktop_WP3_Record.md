@@ -2223,3 +2223,29 @@ test made — one is required.** Record: `qualification/runs/2026-09-29-voice-mo
   ordinary / 2.56 s simple median (p90 4.18; slowest 8.0 s) — **not a one-second result**.
   Ready 12–20 s; switching 0.4 s / 3.5–7.2 s. Procedure and rollback §9; listening check
   §8.4. His decisions as listed in §47, plus the r3 release itself.
+
+## 50. Handoff — the residency contradiction resolved; release r4 for approval (owner order of 30 September 2026, early)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged.** Record: `VOICE_MODEL.md`
+§10.7–§10.9, §11.
+
+- **The contradiction:** r3 said "one cognition model at a time" while loading GPT-OSS beside
+  the Voice model for a typed turn or fallback and unloading it afterwards. Measured
+  (`V-typed-1-overlap`): swap +4.2 GB, free 6%, the typed answer 44.7 s under contention,
+  spoken turns doubled — **the bounded overlap failed** its criteria and is stopped.
+- **Replaced by serialized model use** (`VAL_VOICE_RELEASES_PARTNER`): one local cognition
+  model at a time while Voice is on; every transition recorded; a release never lands on a
+  model in use; a model still loading counts as resident; every readiness path (call, prime,
+  prefill, warm, return) goes through the transition. Two live defects found and fixed on the
+  way (a prefill reloading the Voice model beside GPT-OSS; a loading model invisible to a
+  transition). Measured (`V-serial-3`): **0 samples with both resident, swap flat**; typed
+  turn during Voice ~18 s; a colliding spoken turn ~45 s once, then ordinary 2.3–2.8 s.
+- **The slower replies explained from the records:** the 8.03 s turn is the scripted
+  collision (her audio ready at 1.4 s, withheld while he spoke his replacement); the p90 and
+  the other turns above 3.5 s are cold prefills after a paused utterance was joined by
+  revision (9 of 11), a replacement, or a preparation not yet finished. No avoidable defect;
+  nothing tuned.
+- **Release r4** = `voice-model-release-2026-09-30-r4` (`91b6eab`), tree
+  `~/Projects/val-releases/91b6eab`; desktop byte-identical to `9db6e61`; local gate green
+  (1036 / 113 / 282 / 409 / 971); CI on the release branch in `VOICE_MODEL.md` §11.1.
+  Six settings (four switches on, base URL, key). No known blocker.
