@@ -51,6 +51,35 @@ registry.REGISTRY = tuple(
 )
 assert not any(c.model_identifier == PRODUCTION_IDENTIFIER for c in registry.REGISTRY)
 
+# 30 September 2026 (VOICE_MODEL.md §10.8): production's route names `openai/gpt-oss-20b`,
+# which is both the model key and the instance identifier, so the supervisor's
+# `lms load <identifier>` reloads it. The experiment addresses an *instance* named
+# `val-exp-hub` over the model key `gpt-oss-20b-renewal`, which `lms load val-exp-hub`
+# cannot find. With `VAL_EXPERIMENT_MODEL_KEY` set, the supervisor loads that key under
+# the experiment identifier — the same command the run script uses — so a reload during
+# the run behaves as production's would. Harness only; the production supervisor is untouched.
+EXPERIMENT_KEY = os.environ.get("VAL_EXPERIMENT_MODEL_KEY")
+if EXPERIMENT_KEY:
+    import val_providers.lmstudio_runtime as _runtime
+
+    _original_load = _runtime.LMStudioRuntime._load  # noqa: SLF001
+
+    def _load_experiment(self, model_identifier, context_tokens):  # noqa: ANN001, ANN201
+        if model_identifier != EXPERIMENT:
+            return _original_load(self, model_identifier, context_tokens)
+        code, output = self._runner.run(  # noqa: SLF001
+            [str(self._lms), "load", EXPERIMENT_KEY, "--identifier", EXPERIMENT,  # noqa: SLF001
+             "--context-length", str(context_tokens), "--ttl", str(_runtime.IDLE_TTL_SECONDS),
+             "--parallel", str(_runtime.SERVING_PARALLEL), "--yes"],
+            timeout=_runtime.LOAD_TIMEOUT_SECONDS,
+        )
+        if code != 0:
+            raise _runtime.LocalRuntimeUnavailableError(
+                f"{EXPERIMENT} ({EXPERIMENT_KEY}) could not be loaded: {output or 'no output'}"
+            )
+
+    _runtime.LMStudioRuntime._load = _load_experiment  # type: ignore[method-assign]  # noqa: SLF001
+
 
 def fresh_store() -> None:
     engine = create_engine(URL)

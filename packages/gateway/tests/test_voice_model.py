@@ -10,6 +10,8 @@ delivered is answered by the Partner route once.
 
 from __future__ import annotations
 
+import threading
+import time
 from collections.abc import Iterator
 
 import pytest
@@ -19,7 +21,18 @@ from test_deliberation_machinery import ScriptedAdapter, clean_personas, ok, sto
 from test_voice_input import a_conversation
 
 import val_domain.registry as registry
-from val_domain.gateway import Admission, GatewayError, GatewayErrorKind, ModelConfig
+from val_domain.conversation import StoredRole
+from val_domain.gateway import (
+    Admission,
+    Egress,
+    GatewayError,
+    GatewayErrorKind,
+    Message,
+    ModelConfig,
+    TurnReference,
+)
+from val_domain.project import ResolutionSource, ResolvedProject
+from val_gateway import conversations
 from val_gateway.deliberate import send
 from val_gateway.gateway import Gateway
 from val_gateway.persistence import record_call
@@ -157,53 +170,82 @@ def test_with_nothing_pinned_a_spoken_turn_takes_the_partner_route(store: Engine
 
 
 class Residency(ScriptedAdapter):
-    """A local runtime that records loads and releases by model identifier (§10)."""
+    """A local runtime that records loads and releases by model identifier (§10.8).
+
+    `loaded` mirrors what it has been told, so the gateway learns residency from it the
+    way it learns it from LM Studio or the llama.cpp server.
+    """
 
     def __init__(self) -> None:
         super().__init__([])
         self.events: list[tuple[str, str]] = []
+        self.loaded: set[str] = set()
 
     def ensure_runtime_ready(self, config: ModelConfig) -> dict[str, object]:
         self.events.append(("load", config.model_identifier))
+        self.loaded.add(config.model_identifier)
         return {"model_loaded": True}
 
     def release_model(self, config: ModelConfig) -> dict[str, object]:
         self.events.append(("release", config.model_identifier))
+        self.loaded.discard(config.model_identifier)
         return {"released": True, "model": config.model_identifier}
+
+    def model_loaded(self, config: ModelConfig) -> bool:
+        return config.model_identifier in self.loaded
+
+    def kinds(self) -> list[str]:
+        return [f"{kind}:{model.split('/')[-1][:8]}" for kind, model in self.events]
+
+
+def _partner() -> ModelConfig:
+    partner = registry.by_slug(PARTNER_SLUG)
+    assert partner is not None
+    return partner
 
 
 def test_unset_voice_on_keeps_the_partner_model_resident(
     store: Engine, voice_model: ModelConfig
 ) -> None:
     adapter = Residency()
+    adapter.loaded.add(_partner().model_identifier)
     gateway = gateway_with(store, adapter, voice_model)
     warmed = gateway.warm_cognition()
-    assert warmed["warmed"] is True and "partner_released" not in warmed
+    assert warmed["warmed"] is True and "transitions" not in warmed
     assert adapter.events == [("load", voice_model.model_identifier)]
+    assert _partner().model_identifier in adapter.loaded, "both resident, as today"
 
 
 def test_set_voice_on_releases_the_partner_model_and_voice_off_brings_it_back(
     store: Engine, voice_model: ModelConfig
 ) -> None:
     adapter = Residency()
+    adapter.loaded.add(_partner().model_identifier)
     gateway = gateway_with(store, adapter, voice_model)
     gateway.voice_releases_partner = True
-    partner = registry.by_slug(PARTNER_SLUG)
-    assert partner is not None
     warmed = gateway.warm_cognition()
-    assert warmed["partner_released"] == {  # type: ignore[index]
-        "slug": PARTNER_SLUG,
-        "released": True,
-        "model": partner.model_identifier,
-    }
+    (transition,) = warmed["transitions"]  # type: ignore[index]
+    assert transition["released"] == PARTNER_SLUG and transition["for"] == voice_model.slug
     # The release comes first, so the Voice model loads into the memory it gave back.
     assert adapter.events == [
-        ("release", partner.model_identifier),
+        ("release", _partner().model_identifier),
         ("load", voice_model.model_identifier),
     ]
+    assert adapter.loaded == {voice_model.model_identifier}, "one model resident"
     back = gateway.rewarm_partner_after_voice()
     assert back["warmed"] is True and back["slug"] == PARTNER_SLUG
-    assert adapter.events[-1] == ("load", partner.model_identifier)
+    assert adapter.events[-1] == ("load", _partner().model_identifier)
+
+
+def test_voice_on_with_nothing_loaded_releases_nothing(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    adapter = Residency()  # the Partner model idled out of memory earlier
+    gateway = gateway_with(store, adapter, voice_model)
+    gateway.voice_releases_partner = True
+    warmed = gateway.warm_cognition()
+    assert warmed["transitions"] == []  # type: ignore[index]
+    assert adapter.events == [("load", voice_model.model_identifier)]
 
 
 def test_with_nothing_pinned_the_switch_releases_nothing(store: Engine) -> None:
@@ -211,22 +253,48 @@ def test_with_nothing_pinned_the_switch_releases_nothing(store: Engine) -> None:
     gateway = gateway_with(store, adapter, None)
     gateway.voice_releases_partner = True
     warmed = gateway.warm_cognition()
-    assert "partner_released" not in warmed
+    assert "transitions" not in warmed
     assert all(kind == "load" for kind, _ in adapter.events)
 
 
-def test_a_typed_turn_elsewhere_during_voice_releases_the_partner_model_again(
+def _holding_gateway(store: Engine, adapter: Residency, voice_model: ModelConfig) -> Gateway:
+    gateway = gateway_with(store, adapter, voice_model)
+    gateway.voice_releases_partner = True
+    gateway.warm_cognition()  # Voice On: the Partner model released, the memory held
+    return gateway
+
+
+def _typed_call(store: Engine, gateway: Gateway, words: str) -> object:
+    """A typed conversational call at the gateway seam, as another request thread makes it."""
+    (alpha,) = load_catalogue(store).matching("project-alpha")
+    scope = ResolvedProject(project=alpha, via=ResolutionSource.EXPLICIT_SELECTION)
+    conversation = conversations.create(store, scope=scope, title="Typed").id
+    message = conversations.append(store, conversation, role=StoredRole.USER, content=words)
+    return gateway.converse(
+        (Message(role="user", content=words),),
+        scope=scope,
+        turn=TurnReference(conversation_id=conversation, message_id=message.id),
+        egress=Egress.LOCAL_ONLY,
+    )
+
+
+def _wait_for(predicate, seconds: float = 10.0) -> bool:  # noqa: ANN001
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.02)
+    return predicate()
+
+
+def test_a_typed_turn_elsewhere_during_voice_replaces_the_voice_model_and_it_returns(
     store: Engine, voice_model: ModelConfig
 ) -> None:
-    """§10.6: the two models are resident only for the length of that call, on record."""
-
+    """§10.8: serialized model use. The Voice model is released before the Partner model is
+    loaded; after the typed call settles the Voice model is brought back, off the path."""
     adapter = Residency()
-    adapter.script = [
-        ok("Good evening, my lord."),
-        ok("Good evening."),
-        ok("Lisbon, my lord."),
-        ok("Madrid, my lord."),
-    ]
+    adapter.loaded.add(_partner().model_identifier)
+    adapter.script = [ok("Lisbon, my lord.")]
     notes: list[str] = []
     gateway = Gateway(
         adapters={"lmstudio": adapter, "llamacpp": adapter},
@@ -238,24 +306,92 @@ def test_a_typed_turn_elsewhere_during_voice_releases_the_partner_model_again(
     )
     gateway.voice_configuration = voice_model
     gateway.voice_releases_partner = True
-    partner = registry.by_slug(PARTNER_SLUG)
-    assert partner is not None
-    gateway.warm_cognition()  # Voice On: the Partner model released, the Voice model loaded
-    say(store, gateway, "Good evening, Val.", a_conversation(store), spoken=True)
-    # Typed, in a different conversation, while Voice is on. (That conversation was
-    # spoken in earlier, so it is sealed and the fixture needs no cloud classifier; a
-    # typed turn outside Voice takes the Partner route either way.)
-    other = a_conversation(store)
-    say(store, gateway, "Good evening.", other, spoken=True)
-    say(store, gateway, "What is the capital of Portugal?", other, spoken=False)
-    assert slugs(store)[-1] == PARTNER_SLUG
-    assert adapter.events[-2:] == [
-        ("load", partner.model_identifier),
-        ("release", partner.model_identifier),
-    ], "loaded for the typed turn, released when it settled"
-    assert any("both are resident for this call" in note for note in notes)
-    assert any("released after the call" in note for note in notes)
-    # Voice ending clears the hold: a later typed turn keeps the Partner model resident.
+    gateway.warm_cognition()
+    del adapter.events[:]
+    _typed_call(store, gateway, "What is the capital of Portugal?")
+    assert adapter.events[:2] == [
+        ("release", voice_model.model_identifier),
+        ("load", _partner().model_identifier),
+    ], "the Voice model released first, then the Partner model loaded — never both"
+    assert any("model transition" in note for note in notes)
+    # The return runs on its own thread once the call has settled.
+    assert _wait_for(lambda: ("load", voice_model.model_identifier) in adapter.events[2:])
+    assert adapter.events[2:4] == [
+        ("release", _partner().model_identifier),
+        ("load", voice_model.model_identifier),
+    ], "the Partner model released, then the Voice model back"
+    assert adapter.loaded == {voice_model.model_identifier}
+    # Voice ending clears the hold: afterwards a typed turn keeps the Partner model resident.
     gateway.release_voice()
-    say(store, gateway, "And of Spain?", other, spoken=False)
-    assert adapter.events[-1] == ("load", partner.model_identifier)
+    adapter.script = [ok("Madrid, my lord.")]
+    del adapter.events[:]
+    _typed_call(store, gateway, "And of Spain?")
+    assert adapter.events == [("load", _partner().model_identifier)]
+
+
+class Blocking(Residency):
+    """Answers only once `go` is set, and records each completed call."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.go = threading.Event()
+        self.started = threading.Semaphore(0)
+
+    def complete(self, *args, **kwargs) -> object:  # noqa: ANN002, ANN003
+        self.started.release()
+        assert self.go.wait(10), "the test never let the call proceed"
+        result = super().complete(*args, **kwargs)
+        self.events.append(("complete", "-"))
+        return result
+
+
+def test_a_release_never_lands_on_a_model_another_request_is_using(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    """§10.8: a transition waits for the calls using the model it must release."""
+    adapter = Blocking()
+    adapter.script = [ok("Lisbon, my lord.")]
+    gateway = gateway_with(store, adapter, voice_model)
+    gateway.voice_releases_partner = True
+    typed = threading.Thread(target=_typed_call, args=(store, gateway, "Capital of Portugal?"))
+    typed.start()
+    assert adapter.started.acquire(timeout=10)  # the Partner model is answering now
+    on = threading.Thread(target=gateway.warm_cognition)  # Voice On arrives meanwhile
+    on.start()
+    time.sleep(0.3)
+    assert ("release", _partner().model_identifier) not in adapter.events, "not while in use"
+    assert on.is_alive(), "Voice On waits for the call to settle"
+    adapter.go.set()
+    typed.join(10)
+    on.join(10)
+    assert adapter.events[-3:] == [
+        ("complete", "-"),
+        ("release", _partner().model_identifier),
+        ("load", voice_model.model_identifier),
+    ], "released after the call settled, then the Voice model loaded"
+
+
+def test_the_fallback_during_voice_replaces_the_voice_model_and_it_returns(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    class VoiceFails(Residency):
+        def complete(self, *args, **kwargs) -> object:  # noqa: ANN002, ANN003
+            if not any(kind == "complete" for kind, _ in self.events):
+                self.events.append(("complete", "voice-failed"))
+                raise GatewayError(GatewayErrorKind.PROVIDER_ERROR, "scripted Voice model failure")
+            self.events.append(("complete", "-"))
+            return super().complete(*args, **kwargs)
+
+    adapter = VoiceFails()
+    adapter.script = [ok("Good evening, my lord.")]
+    gateway = _holding_gateway(store, adapter, voice_model)
+    got = say(store, gateway, "Good evening, Val.", a_conversation(store), spoken=True)
+    assert got.turn.val_message.content == "Good evening, my lord."  # type: ignore[attr-defined]
+    fallback = adapter.events.index(("complete", "voice-failed"))
+    assert adapter.events[fallback + 1 : fallback + 4] == [
+        ("release", voice_model.model_identifier),
+        ("load", _partner().model_identifier),
+        ("complete", "-"),
+    ], "the fallback released the Voice model, loaded the Partner model, answered"
+    assert _wait_for(lambda: adapter.events[-1] == ("load", voice_model.model_identifier))
+    assert adapter.loaded == {voice_model.model_identifier}, "and the Voice model is back"

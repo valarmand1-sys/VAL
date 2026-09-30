@@ -289,6 +289,12 @@ class LMStudioRuntime:
                 f"context: {output or 'no output'}"
             )
 
+    def loaded_instance(self, model_identifier: str) -> Mapping[str, object] | None:
+        """The loaded instance answering to this identifier, or None (read only)."""
+        if not self.serving():
+            return None
+        return self._instance(model_identifier)
+
     def release(self, model_identifier: str) -> Mapping[str, object]:
         """Unload this model if it is loaded, giving its memory back; one bounded attempt.
 

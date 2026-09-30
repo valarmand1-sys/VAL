@@ -697,11 +697,108 @@ GPT-OSS loaded before the run, as in §10.1; `VAL_VOICE_RELEASES_PARTNER=on`.
   ends the next typed turn keeps it resident. With the switch unset none of this runs
   and today's behaviour is unchanged.
 
+## 10.7 The slower replies, read from the records (owner order, 29 September, late)
+
+From `voice-bench-V-hold-1.json` (the recommended configuration), every turn's stage marks
+and the session drivers' own clocks. Nothing re-run.
+
+**The 8.03 s turn** is S3's "to be replaced" turn — the scripted collision, not a slow reply.
+
+| moment (from his speech end) | what happened |
+|---|---|
+| +0.26 s | his message submitted (endpoint + confirmation) |
+| +0.47 s | the model's first chunk (prefill reused: 177 ms) |
+| +0.73 s | first speech-safe sentence |
+| +1.41 s | **first audio ready** — synthesis done; the hold keeps it until ~+2.2 s |
+| +2.09 s | **he begins his replacement** ("Actually, never mind. Describe a lighthouse instead") — 0.1 s before the hold would have released her audio |
+| +2.1 → +5.7 s | she does not speak while he speaks (the interruption policy); his replacement is heard |
+| +8.03 s | first audio on the worklet — by then the replacement's own answer, its hold included |
+
+Readiness, model work and cache were all fast; the whole excess is turn handling by design:
+her audio is never played over his voice. Whether a replacement he starts before hearing
+her should discard her unheard answer outright is **owner precedence** — built, off, and
+his open ruling (Milestone B) — not a defect of this release.
+
+**The p90 (4.18 s)** is the replacement turn itself, and the other turns above 3.5 s are of
+one kind. **Model prefill was cold on 11 of 40 turns** (first chunk 0.8–1.9 s instead of
+~0.18 s) and 9 of the 11 are utterances with a pause inside them:
+
+| cold prefill on | why the prepared request no longer matched |
+|---|---|
+| utterances with a pause inside (9) | the adaptive endpoint submits the first half as a turn when its sentence closes; the second half arrives inside the window and is **joined by revising that message** (the existing append-only machinery). The request prepared when he began speaking has no such message and no revision, so the joined turn prefills the record state cold (~950 tokens, ~1.5 s). The join itself is correct and every one of them was answered as one turn |
+| the explicit replacement (1) | the replaced turn's answer changed the record state after the preparation |
+| a farewell 1.0 s after her answer (1) | the refresh preparation (median 1.9 s) had not finished; the turn waited for it (the §7.3 note) |
+
+The remainder of those turns is synthesis (0.5–0.7 s) and the hold, as on every turn.
+
+**Repair?** None made. The cold prefill after a join is the price of submitting the first
+half early, which the adaptive endpoint does on purpose so a complete sentence is answered
+without waiting; preparing again after that submission would be a second preparation per
+paused utterance and a tuning cycle the order excludes. Nothing in these records is an
+avoidable defect: no readiness wait, no playback stall, no cache eviction, no runtime fault.
+
+## 10.8 The bounded overlap, measured: FAILED — replaced by serialized model use (30 September, 00:12–00:22 and after)
+
+**Correction first.** §10.6 and the first r3 wording said "one cognition model at a time"
+while describing a policy that loaded GPT-OSS beside the Voice model for a typed turn or a
+fallback and unloaded it afterwards. Those are different policies: post-call unloading
+*bounds* an overlap; it does not exclude one. His order asked for the truthful one and a
+measurement of it.
+
+### The overlap measured (`V-typed-1`, `typed_during_voice.sh`)
+
+Gemma, recognition and synthesis active; the plan's S1 then S4; during S4, after its second
+answer, one ordinary question typed into S1's sealed, no longer live conversation — the
+Partner route — then Voice turns continuing. Commit `e29e978` plus the in-flight guard.
+
+| | |
+|---|---|
+| typed request → its answer | **44.7 s** ("Lisbon is the capital of Portugal."): 9.2 s GPT-OSS load beside Gemma, then ~35 s for a cold persona prefill and MEDIUM reasoning **under GPU contention** with the Voice turns and synthesis |
+| swap, before → during the overlap | 2.70 → **6.92 GB (+4.2 GB)**; 4.5–5.4 GB after the release |
+| free memory during the overlap | **6% lowest, 19% median** (38% before, 42% after) |
+| the three Voice turns spoken during the overlap | onset **4.48, 3.56, 5.99 s** (2.3 s before and after); one player underrun |
+| the Voice turn after the release | 2.60 s — recovered |
+| release when the typed call settled | recorded, 0.4 s; the in-flight guard held |
+
+Against the registered operational criteria — swap growth > 2 GB, free memory < 20% —
+**the bounded overlap fails.** Per the order it is stopped, not tuned: no further
+measurement of that policy.
+
+### The policy that replaces it: serialized model use with explicit transitions
+
+Under `VAL_VOICE_RELEASES_PARTNER`, while Voice is on, **local cognition models are used
+one at a time**, and every transition is recorded:
+
+| moment | what happens | what he sees |
+|---|---|---|
+| **Voice On** | the Partner model, if loaded, is released — after any call using it has settled, never under it — then the Voice model loads | Ready in 12–20 s as before; a typed turn still answering finishes first |
+| **a typed turn in another conversation during Voice** | the Voice model is released (after its calls settle), the Partner model loads, the typed turn is answered; **then, off the request path, the Partner model is released and the Voice model loaded and primed again** | the typed answer arrives after the Partner model's load and a cold persona prefill; his next spoken turn waits for the return if it arrives before it completes |
+| **the fallback** (a Voice call fails before any word) | the same transition: the Voice model released, the Partner model loaded, the answer given, the return afterwards | one answer, from GPT-OSS |
+| **Voice ending** | the Voice model released; the Partner model loaded again off the request path | typed work afterwards does not pay the load |
+
+Never both resident. The readiness the desktop shows is the session's, not the model's:
+during a return the session reads Ready while the Voice model is loading, and the next
+spoken turn pays what remains of that load — recorded as a limit.
+
+- Code: `Gateway._transition_to` (release the others after their calls settle),
+  `_wait_until_idle`, `_resident_local` (learned from the runtimes'
+  `model_loaded`), `return_to_voice_model` (reload and prime), `_settle_residency` (starts
+  the return when the displacing call settles).
+- Tests (`test_voice_model.py`, 13): Voice On releases first and loads second; nothing
+  loaded → no release; nothing pinned → nothing; a typed turn during Voice replaces the
+  Voice model and it returns; a transition waits for the call using the model; the
+  fallback replaces and returns; Voice ending brings the Partner model back.
+
+**Measured: §10.9.**
+
 ## 11. The release recommendation (r3) — for his approval
 
-**Recommendation: Gemma retained; release r3 with both residency switches set.** The
+**Recommendation: Gemma retained; the release with the residency switch set.** The
 challenger comparison is closed on evidence (`CHALLENGER.md` §2); the simultaneous-residency
-configuration failed and is excluded; the repair and its guard are measured.
+configuration failed and is excluded; the repair, its guard and the bounded overlap are
+measured (§10.3, §10.8). **Correction to the first r3 wording:** "one cognition model at a
+time" overstated the policy — post-call unloading bounds the overlap, it does not exclude
+it. The row below says what ships.
 
 | | |
 |---|---|
@@ -710,7 +807,8 @@ configuration failed and is excluded; the repair and its guard are measured.
 | **model** | Gemma 4 26B-A4B-it, thinking off, `lmstudio-community/gemma-4-26B-A4B-it-GGUF` @ `f6e67478…`, `Q4_K_M` (16.8 GB, SHA-256 pinned in code); official llama.cpp 0.4.1 build 10964, one slot, 32,768 tokens; publisher sampling 1.0 / 0.95 / 64 |
 | **CI** | green on `release/voice-model-2026-09-29` at `9db6e61` (run 36657030128) and `b2696fe` (36660639782); the r3 commit's run is named in §11.1 |
 | **quality evidence** | 32 critical samples, 30 pressure samples, 8 ordinary cases against GPT-OSS, 80 + 66 desktop answers read: **no absolute failure, no material regression**. Within scope; not universal |
-| **resources** | one cognition model at a time, enforced by the switch and its guard: free memory 38–39% median with recognition and synthesis resident, lowest sample 16–18% at the Voice model's load, swap growth ≤ 0.5 GB per run. **Both resident (excluded): swap +11.5 GB.** The "below 20%" reading is still his (§7.5) |
+| **residency policy (truthful)** | **one cognition model resident by default, with a bounded overlap.** Voice On unloads GPT-OSS (deferred, never under a request using it) and Voice ending reloads it. While Voice is on, a typed turn in another conversation or a fallback loads GPT-OSS beside the Voice model, is answered, and GPT-OSS is released once no call is using it — the overlap lasts those calls, is recorded, and is measured in §10.8. **Sustained simultaneous residency is excluded** (§10.1: swap +11.5 GB) |
+| **resources** | with one model resident and recognition and synthesis active: free memory 38–39% median, lowest sample 16–18% at the Voice model's load, swap growth ≤ 0.5 GB per run. The bounded overlap's own figures: §10.8. The "below 20%" reading is still his (§7.5) |
 | **audible response, speech end → first audio** | ordinary **2.33 s** median, p90 4.18; simple exchanges **2.56 s** median; first turn of a session 2.3–3.7 s; a turn with a pause inside it 2.6–5.4 s (every continuation joined); slowest ordinary turn 8.0 s (§7.3). GPT-OSS in production's configuration: 6.9–14 s. **This is not a one-second result**; ~1.6 s of it is endpoint, confirmation, synthesis and the hold |
 | **readiness** | Voice On → Ready 19–20 s the first time in a process, 12.4–13.7 s after |
 | **switching** | Voice On releases GPT-OSS in 0.4 s; Voice ending reloads it in 3.5–7.2 s off the request path; a typed turn elsewhere during Voice, or a fallback, pays 3.5–7.2 s and is released again when it settles |

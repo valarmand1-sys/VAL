@@ -302,6 +302,10 @@ class LMStudioAdapter:
         """Unload this configuration's model, if loaded (Voice model candidate, §10)."""
         return self._runtime.release(config.model_identifier)
 
+    def model_loaded(self, config: ModelConfig) -> bool:
+        """Whether the runtime reports this configuration's model loaded now (§10.8)."""
+        return self._runtime.loaded_instance(config.model_identifier) is not None
+
     # --- prefix priming (owner order, 25 September 2026) ----------------------
 
     def plan_prefix_prime(

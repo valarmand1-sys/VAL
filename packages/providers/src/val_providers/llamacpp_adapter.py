@@ -149,6 +149,10 @@ class LlamaCppAdapter:
         """Declaring `LocalRuntimeAdapter`: serve this configuration now, or say why not."""
         return self._supervisor.ensure_ready(config)
 
+    def model_loaded(self, config: ModelConfig) -> bool:
+        """Whether this adapter's server is serving this configuration now (§10.8)."""
+        return self._supervisor.serving(config) is not None
+
     def release_runtime(self) -> Mapping[str, object]:
         """End the server this process started (Voice ended): its memory is given back."""
         return self._supervisor.release()

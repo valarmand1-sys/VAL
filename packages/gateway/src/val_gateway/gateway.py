@@ -47,6 +47,7 @@ guarantee `04-layer-0.md` §1.1 claims.
 """
 
 import logging
+import threading
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -496,11 +497,19 @@ class Gateway:
         #: Measured 29 September 2026 (VOICE_MODEL.md §10): both resident, swap grew
         #: 11.5 GB in fifteen minutes; one at a time, 0.5 GB.
         self.voice_releases_partner = False
-        #: Whether Voice is on with the Partner model released (set at Voice On under the
-        #: switch, cleared when Voice ends): while it is, a call that loads any other local
-        #: model is followed by its release, so a typed turn in another conversation or a
-        #: fallback cannot leave both models resident (§10.6).
+        #: Whether Voice is on under the switch (set at Voice On, cleared when Voice ends).
+        #: While it is, **local cognition models are used one at a time** (§10.8): before a
+        #: local model is brought up, every other resident local model is released — once
+        #: no call is using it — and the transition is recorded. A typed turn in another
+        #: conversation or a fallback therefore never runs beside the Voice model; it
+        #: replaces it, and the Voice model is brought back afterwards.
         self._voice_holds_memory = False
+        #: Calls in flight on each local configuration; the local configurations this
+        #: gateway has seen resident; the lock over both. A release never lands on a model
+        #: another request is using: it waits for the last call to settle.
+        self._local_inflight: dict[str, int] = {}
+        self._resident_local: dict[str, ModelConfig] = {}
+        self._residency_lock = threading.Lock()
         self._record = recorder
         self._ledger = ledger
         self._cache_ttl = cache_ttl
@@ -785,14 +794,13 @@ class Gateway:
     def release_voice(self) -> Mapping[str, object]:
         """Give back what Voice held: the resident speech worker, if one is running."""
         cognition: object = None
-        self._voice_holds_memory = False
+        with self._residency_lock:
+            self._voice_holds_memory = False
         pinned = self.voice_configuration
         if pinned is not None and pinned.provider in self._adapters:
             # The Voice model's own server is held only while Voice is on: ending it
             # gives its memory back to typed work and everything else on this Mac.
-            release_runtime = getattr(self._adapters[pinned.provider], "release_runtime", None)
-            if callable(release_runtime):
-                cognition = release_runtime()
+            cognition = self._release_local(pinned)
         release = getattr(self.speech, "release", None)
         if not callable(release):
             return {
@@ -819,31 +827,112 @@ class Gateway:
         )
         return order[0] if order else None
 
-    def _release_partner_for_voice(self, voice: ModelConfig) -> Mapping[str, object]:
-        """Give the Partner model's memory back for the Voice model (candidate, §10).
+    def _release_local(self, config: ModelConfig) -> Mapping[str, object] | None:
+        """Unload this local model through whichever release its adapter declares."""
+        adapter = self._adapters.get(config.provider)
+        release_model = getattr(adapter, "release_model", None)
+        release_runtime = getattr(adapter, "release_runtime", None)
+        result: object
+        if callable(release_model):
+            result = release_model(config)
+        elif callable(release_runtime):
+            result = release_runtime()
+        else:
+            return None
+        with self._residency_lock:
+            self._resident_local.pop(config.slug, None)
+        return dict(result) if isinstance(result, Mapping) else {"released": True}
 
-        The Partner model is the route a typed turn would take. It is unloaded only when it
-        is a different model on a local runtime that can unload it; the next typed turn,
-        or a fallback during Voice, loads it again on its own path (9 s, measured
-        21 September 2026). A failure here is reported, never raised: Voice goes on with
-        both resident, as it would without this step.
+    #: How long a transition waits for the calls using the model it must release.
+    TRANSITION_WAIT_SECONDS = 120.0
+
+    def _transition_to(self, config: ModelConfig) -> list[Mapping[str, object]]:
+        """Serialized model use (§10.8): make room for this local model, and say so.
+
+        Under the switch, while Voice is on, every other resident local cognition model is
+        released before this one is brought up — after the calls using it have settled,
+        never under them — and each release is returned and recorded. Outside Voice, or
+        with the switch unset, nothing is released and nothing changes.
         """
-        partner = self._typed_turn_route()
-        if partner is None or partner.slug == voice.slug:
-            return {"released": False, "reason": "no distinct Partner route"}
-        adapter = self._adapters.get(partner.provider)
-        release = getattr(adapter, "release_model", None)
-        if not callable(release):
-            return {
-                "released": False,
-                "slug": partner.slug,
-                "reason": "its runtime holds nothing to release",
+        with self._residency_lock:
+            if not self._voice_holds_memory:
+                return []
+            others = [
+                other
+                for slug, other in self._resident_local.items()
+                if slug != config.slug and other.model_identifier != config.model_identifier
+            ]
+        transitions: list[Mapping[str, object]] = []
+        for other in others:
+            waited = self._wait_until_idle(other)
+            record: dict[str, object] = {
+                "released": other.slug,
+                "for": config.slug,
+                "waited_for_calls_s": round(waited, 3),
             }
+            try:
+                released = self._release_local(other)
+                record["result"] = released if released is not None else "no release declared"
+            except LocalRuntimeUnavailableError as failure:
+                record["result"] = f"did not succeed: {failure}"
+            self._observe_block(f"model transition: {record}")
+            transitions.append(record)
+        return transitions
+
+    def _wait_until_idle(self, config: ModelConfig) -> float:
+        """Wait for the calls using this model to settle; the time spent, in seconds."""
+        started = time.monotonic()
+        while True:
+            with self._residency_lock:
+                busy = self._local_inflight.get(config.slug, 0)
+            if busy == 0 or time.monotonic() - started > self.TRANSITION_WAIT_SECONDS:
+                return time.monotonic() - started
+            time.sleep(0.05)
+
+    def _note_resident_if_loaded(self, config: ModelConfig) -> None:
+        """Record this model as resident when its runtime says it is loaded now."""
+        loaded = getattr(self._adapters.get(config.provider), "model_loaded", None)
+        if callable(loaded):
+            try:
+                if loaded(config):
+                    self._note_resident(config)
+            except LocalRuntimeUnavailableError:
+                return
+
+    def _note_resident(self, config: ModelConfig) -> None:
+        with self._residency_lock:
+            self._resident_local[config.slug] = config
+
+    def return_to_voice_model(self) -> Mapping[str, object]:
+        """After a typed turn or a fallback during Voice replaced the Voice model, bring it
+        back — off the request path — and prime its prefix again, so his next spoken turn
+        does not pay the load and the persona (§10.8)."""
+        voice = self.voice_configuration
+        with self._residency_lock:
+            holding = self._voice_holds_memory
+        if (
+            voice is None
+            or not holding
+            or not supports_local_runtime(self._adapters[voice.provider])
+        ):
+            return {"returned": False, "reason": "Voice is not holding the memory"}
+        transitions = self._transition_to(voice)
         try:
-            return {"slug": partner.slug, **dict(release(partner))}
+            readiness = cast(
+                LocalRuntimeAdapter, self._adapters[voice.provider]
+            ).ensure_runtime_ready(voice)
         except LocalRuntimeUnavailableError as failure:
-            self._observe_block(f"releasing {partner.slug} for Voice did not succeed: {failure}")
-            return {"released": False, "slug": partner.slug, "reason": str(failure)}
+            self._observe_block(f"returning to {voice.slug} did not succeed: {failure}")
+            return {"returned": False, "slug": voice.slug, "reason": str(failure)}
+        self._note_resident(voice)
+        primed = self.prime_prefix(routes=("partner",))
+        return {
+            "returned": True,
+            "slug": voice.slug,
+            "transitions": transitions,
+            **dict(readiness),
+            "primed": primed,
+        }
 
     def rewarm_partner_after_voice(self) -> Mapping[str, object]:
         """After Voice ends, bring the Partner model back so typed work does not pay its load."""
@@ -857,6 +946,7 @@ class Gateway:
         except LocalRuntimeUnavailableError as failure:
             self._observe_block(f"re-warming {partner.slug} after Voice did not succeed: {failure}")
             return {"warmed": False, "slug": partner.slug, "reason": str(failure)}
+        self._note_resident(partner)
         return {"warmed": True, "slug": partner.slug, **dict(readiness)}
 
     def warm_cognition(self) -> Mapping[str, object]:
@@ -892,10 +982,16 @@ class Gateway:
         chosen = self._spoken_turn_route()
         if chosen is None:
             return {"warmed": False, "reason": "no admitted partner route is configured"}
-        released: Mapping[str, object] | None = None
+        transitions: list[Mapping[str, object]] | None = None
         if self.voice_releases_partner and chosen is self.voice_configuration:
-            released = self._release_partner_for_voice(chosen)
-            self._voice_holds_memory = True
+            with self._residency_lock:
+                self._voice_holds_memory = True
+                # What is resident now is learned from the runtime, not assumed: the
+                # Partner model may or may not be loaded when Voice is turned on.
+                partner = self._typed_turn_route()
+            if partner is not None and partner.slug != chosen.slug:
+                self._note_resident_if_loaded(partner)
+            transitions = self._transition_to(chosen)
         if not supports_local_runtime(self._adapters[chosen.provider]):
             return {
                 "warmed": False,
@@ -915,9 +1011,10 @@ class Gateway:
                 "and will fail honestly there if the runtime cannot be had."
             )
             return {"warmed": False, "slug": chosen.slug, "reason": str(failure)}
+        self._note_resident(chosen)
         result: dict[str, object] = {"warmed": True, "slug": chosen.slug, **dict(readiness)}
-        if released is not None:
-            result["partner_released"] = released
+        if transitions is not None:
+            result["transitions"] = transitions
         # The light route's runtime too, when one is admitted (26 September 2026): its
         # model is small, and a first greeting should not pay its load.
         light = self._spoken_turn_route(TaskType.LIGHT_CONVERSATION)
@@ -1426,35 +1523,34 @@ class Gateway:
         # about what is underneath. A runtime that cannot be brought up ends the
         # turn honestly — it is never a reason to try a paid route instead, which
         # is why the failure carries the same kind as the stop above.
-        release_after: Callable[[], object] | None = None
+        counted = False
+        return_after = False
         if supports_local_runtime(adapter):
             local = cast(LocalRuntimeAdapter, adapter)
+            # Counted before the runtime is asked, so a release decided meanwhile waits
+            # for this call rather than landing under it (§10.6).
+            with self._residency_lock:
+                self._local_inflight[config.slug] = self._local_inflight.get(config.slug, 0) + 1
+                counted = True
             try:
+                # §10.8 (30 September 2026): while Voice is on under the switch, local
+                # models are used one at a time. Another local model needed now — a typed
+                # turn in a different conversation, or the fallback — first releases the
+                # Voice model (after its calls settle), on record, and is brought back
+                # afterwards by `return_to_voice_model`. Never resident together.
+                transitions = self._transition_to(config)
                 mark("runtime_ready_start")
                 readiness = local.ensure_runtime_ready(config)
                 mark("runtime_ready_end")
+                self._note_resident(config)
                 self._observe_block(
                     "local runtime ready: "
                     + ", ".join(f"{key}={value}" for key, value in readiness.items())
                 )
-                # §10.6 (29 September 2026): Voice holds this Mac's memory for its own
-                # model. Another local model brought up meanwhile — a typed turn in a
-                # different conversation, or the fallback — is answered and then released
-                # again, so the two are resident only for the length of this call, and the
-                # record says so. Never silent, never sustained.
-                release_model = getattr(adapter, "release_model", None)
-                if (
-                    self._voice_holds_memory
-                    and config is not self.voice_configuration
-                    and callable(release_model)
-                ):
-                    self._observe_block(
-                        f"{config.slug} is loaded while Voice holds the memory for "
-                        f"{getattr(self.voice_configuration, 'slug', '?')}: both are "
-                        "resident for this call, and it is released when the call settles"
-                    )
-                    release_after = lambda: release_model(config)  # noqa: E731
+                if transitions and config is not self.voice_configuration:
+                    return_after = True
             except LocalRuntimeUnavailableError as failure:
+                self._settle_residency(config, counted)
                 raise GatewayError(
                     GatewayErrorKind.LOCAL_PARTNER_UNAVAILABLE,
                     f"the local runtime for {config.slug} could not be made ready, and one "
@@ -1554,11 +1650,22 @@ class Gateway:
                 cancelled=cancelled,
             )
         finally:
-            if release_after is not None and self._voice_holds_memory:
-                try:
-                    self._observe_block(f"released after the call: {release_after()}")
-                except LocalRuntimeUnavailableError as failure:
-                    self._observe_block(f"release after the call did not succeed: {failure}")
+            self._settle_residency(config, counted, return_after)
+
+    def _settle_residency(
+        self, config: ModelConfig, counted: bool, return_after: bool = False
+    ) -> None:
+        """This call is done with its local model. When it displaced the Voice model, the
+        return begins now, off the request path (§10.8)."""
+        if not counted:
+            return
+        with self._residency_lock:
+            self._local_inflight[config.slug] = max(0, self._local_inflight.get(config.slug, 0) - 1)
+            idle = self._local_inflight[config.slug] == 0
+        if return_after and idle:
+            threading.Thread(
+                target=self.return_to_voice_model, name="return-to-voice-model", daemon=True
+            ).start()
 
     def _cache_ttl_for(self, config: ModelConfig, request: GatewayRequest) -> CacheTtl | None:
         """Whether this call asks the provider to cache its stable prefix, and for how long.
