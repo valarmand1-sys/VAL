@@ -791,6 +791,48 @@ spoken turn pays what remains of that load — recorded as a limit.
 
 **Measured: §10.9.**
 
+## 10.9 Serialized model use, measured (`V-serial-3`, 30 September, 00:56–01:06)
+
+Two earlier runs of the new policy found and fixed two live defects before this one:
+`V-serial-1` — the session's prefill at speech start reached the runtime directly and
+brought the Voice model back beside the Partner model (every readiness path now goes
+through the transition); `V-serial-2` — a spoken turn arriving while the Partner model was
+still *loading* saw nothing to release (a model is noted resident before its load, not
+after). Both runs' evidence is kept under their labels; neither is the measurement.
+
+Same check as §10.8: Gemma, recognition and synthesis active; S1 then S4; one question typed
+into S1's sealed conversation during S4; the plan's spoken turns continuing. Commit
+`ab11093`.
+
+| | |
+|---|---|
+| **models resident together** | **0 of 107 samples** (7 in the overlap run) |
+| swap | **3.39 → 3.37 GB, flat** (+4.2 GB in the overlap run) |
+| free memory | 25% lowest, 40% median; 63–88% while only GPT-OSS was loaded |
+| typed request → its answer | **18.3 s**: Voice model released 0.17 s; GPT-OSS loaded 6.9 s; cold persona prefill and MEDIUM reasoning ~11 s, no contention ("The capital of Portugal is Lisbon, my lord.") |
+| the spoken turn that arrived 2.8 s after the typed request | **waited: 45.8 s to first audio** — the typed call to settle (15.9 s), GPT-OSS released (0.4 s), the Voice model reloaded and primed, its own cold prefill, then the ordinary path |
+| the next spoken turn | 2.65 s — recovered at once; the remaining eleven 2.26–2.85 s |
+| S1 / S4 medians | 2.43 / 2.55 s (2.38 / 2.45 in §7.3) |
+| fallbacks / no audio / underruns | 0 / 0 / 0 |
+| Voice On → ready | 21.2 s (first in the process), 20.8 s (Voice On found GPT-OSS resident and released it first) |
+
+**Against the registered operational criteria (swap growth ≤ 2 GB, free memory ≥ 20%):
+passes.** The policy that ships is the serialized one; the overlap is excluded.
+
+**The actual switching delays and what he sees:**
+
+| transition | delay | user-visible |
+|---|---|---|
+| Voice On with GPT-OSS resident | release 0.4 s inside readiness | Ready ~21 s the first time, ~13–20 s after; a typed answer still in flight finishes first |
+| a typed turn in another conversation during Voice | ~7 s load + a cold persona prefill: **~18 s to the typed answer** (against ~5–8 s when GPT-OSS is warm and Voice is off) | the typed answer, late; the Voice session shows Ready while its model is away |
+| a spoken turn that collides with such a typed call | waits for it, then ~20 s of return (reload, prime, cold prefill): **~45 s measured** for that one turn | one long silence, then her answer; the following turns ordinary |
+| the fallback during Voice | the same as a typed turn: ~7 s load, then GPT-OSS's answer, then the return | one GPT-OSS answer; none occurred in 400+ turns |
+| Voice ending | GPT-OSS reloaded off the path, 3.5–7.2 s | typed work afterwards does not pay it |
+
+**Recorded limit:** the desktop's Ready is the session's state, not the model's; during a
+return the session reads Ready while the Voice model loads, and a spoken turn then waits
+for it. The wait is recorded in the transition lines and the turn's own timeline.
+
 ## 11. The release recommendation (r3) — for his approval
 
 **Recommendation: Gemma retained; the release with the residency switch set.** The
