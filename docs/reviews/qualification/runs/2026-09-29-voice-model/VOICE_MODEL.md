@@ -988,3 +988,4 @@ hold; the persona whole; Core's authority over the request; local-only processin
   providers 282, domain 409, policy + infrastructure 971 (+2 expected failures), desktop
   245; lint, format, mypy clean. CI on `release/voice-model-2026-09-29` at `422ee71`: see
   the line appended below when it completes.
+- **CI at `422ee71`: success** (run 36774093275, `release/voice-model-2026-09-29`).
