@@ -2135,3 +2135,42 @@ before any measured request); `2026-09-29-fastest-config/GPU_PROPOSAL.md` (corre
 - **Continuation point, his decision:** whether to run the GPU pre-purchase measurement
   (borrowed machine, or a rental capped at $5; public or synthetic material only). Nothing
   else is pending.
+
+## 47. Handoff — a different conversational model for Voice, measured and staged for his approval (owner order of 29 September 2026, deadline 30 September 17:36 CDT)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged and pinned; no physical
+test made — one is required.** Record: `qualification/runs/2026-09-29-voice-model/VOICE_MODEL.md`.
+
+- **Selection:** Gemma 4 26B-A4B (thinking off; `lmstudio-community/gemma-4-26B-A4B-it-GGUF`
+  @ `f6e67478…`, `Q4_K_M`, 16.8 GB) on the installed official llama.cpp (0.4.1, build
+  10964). Fallback Qwen3.6 35B-A3B, not needed and not downloaded.
+- **Screen (registered first):** 32 critical samples, no absolute failure; 8 ordinary cases,
+  no material regression against GPT-OSS MEDIUM on the same inputs; first speakable text
+  1.90 s median (threshold 2.0 s).
+- **Integration (isolated, off in production):** `VAL_VOICE_MODEL` pins spoken turns to
+  the model through Val Core; typed work stays on GPT-OSS; GPT-OSS answers once if the
+  Voice call fails before any word; a supervisor starts and stops the server;
+  `VAL_VOICE_TURN_PREFILL` prepares the turn's request ahead of his words;
+  `VAL_VOICE_EARLY_AUDIO` (not recommended) releases audio early for complete utterances.
+- **Measured through the real desktop and player** (5 sessions, 40 turns each,
+  recognition and synthesis active, GPT-OSS unloaded):
+  - **hold kept (recommended):** ordinary 2.33 s median / 4.18 p90; simple exchanges 2.56 s
+    median; every continuation joined; no fallback, no missing audio, one player
+    underrun event;
+  - **early audio:** 1.98 s / 2.26 p90; one continuation not joined and answered after
+    45.7 s.
+  - GPT-OSS in production's configuration: 9.85 s median on the same turns (descriptive).
+  - **One second is not met.** What remains: synthesis 0.71 s, endpoint and confirmation
+    0.72 s, the hold 0.39 s.
+- **Resources:** free memory 38% median with everything resident; single samples of 9–16%
+  at model load crossed the registered "below 20%" threshold, whose reading (lowest
+  sample or sustained) is his to settle; swap growth inside its threshold. Avatar
+  compatibility not claimed.
+- **Staged, not installed:** release tag `voice-model-release-2026-09-29` (`9db6e61`),
+  `~/Projects/val-releases/9db6e61` with its environment, and the paired desktop bundle
+  (`955438f0…7686`) outside the launchable locations. The credential tool gained the
+  `llamacpp` target. Procedure and rollback in the record §9.
+- **His decisions:** admission of the model and the provider for spoken turns; the
+  adaptive endpoint; the ahead-of-words preparation (conversation content primed
+  locally, the open ruling of 25 September); the memory threshold's reading; the release
+  (47 commits, migration `0032`, the desktop build); then the listening check.

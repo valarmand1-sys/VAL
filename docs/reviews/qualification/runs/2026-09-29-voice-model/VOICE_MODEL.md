@@ -487,3 +487,63 @@ microphone and speakers:
 
 He listens for clicks or gaps at the start of her answers, for a cut-off first word, and
 for her beginning before he has finished.
+
+## 9. The prepared, reversible installation (not applied; his approval and his hands)
+
+**The release:** tag `voice-model-release-2026-09-29` = commit `9db6e61` on branch
+`latency-2026-09-28`. Pushed; not merged to master.
+
+**Prepared on this Mac, installing nothing:**
+
+- **Service:** `~/Projects/val-releases/9db6e61`, a checkout of that commit with its own
+  environment (`uv sync --frozen`). Production keeps running from
+  `~/Projects/val-releases/13b3cb8`.
+- **Desktop:** built from the same tree (`npm ci`, 243 desktop tests passing,
+  `npm run tauri build`) and staged outside every launchable location as
+  `~/Val previous builds.noindex/Val (release voice-model 2026-09-29 9db6e61, staged, not installed).app`.
+  - Binary digest (SHA-256 of `Contents/MacOS/val_desktop`): `955438f0…7686`.
+  - Bundle identifier `house.armand.val`, version `0.0.0`, as every build.
+  - The installed desktop is still production's (`21b8e948…`), and
+    `check_desktop_deployment.py` reports one installed bundle.
+- **The model file** `~/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf`
+  (16.8 GB), which the service checks against its pin before starting the server.
+- **The runtime** is the official llama.cpp already installed (`/opt/homebrew/bin/llama-server`,
+  0.4.1, build 10964). The service starts and stops it.
+
+**Local gate at `9db6e61`:** lint, formatting and types clean; 1,974 + 17 + 409 + 282 +
+113 tests passing (2 expected failures), run as CI runs them, with the test database; the
+secrets, scope-ruling and boundary checks pass; 243 desktop tests pass. **CI has not run
+on the branch.**
+
+**The steps, in order, each his:**
+
+1. **The migration** (the live store is at `0031`; this release needs `0032` and no other):
+   `uv run --directory ~/Projects/val-releases/9db6e61 alembic -x deploy=live upgrade 0032_light_conversation`
+2. **The server key**, generated locally and entered by the owner-only tool so it never
+   passes through an assistant session: run `python3 -c "import secrets; print(secrets.token_hex(24))"`
+   in his own Terminal to see a fresh token, then
+   `~/.local/bin/uv run --no-project python ~/Projects/val-releases/9db6e61/infrastructure/backup/enter_secret.py llamacpp`
+   and type it in when asked. It is a random local token, not a credential of any
+   service.
+3. **The settings** in `~/Library/LaunchAgents/house.armand.val.api.plist`, alongside the
+   existing ones:
+   - `VAL_VOICE_MODEL` = `gemma-4-26b-a4b`
+   - `VAL_ADAPTIVE_ENDPOINT` = `on`
+   - `VAL_VOICE_TURN_PREFILL` = `on`
+   - `VAL_LLAMACPP_BASE_URL` = `http://127.0.0.1:8099/v1`
+   - `VAL_VOICE_EARLY_AUDIO` **unset** (not recommended, §7.4).
+   - Every other latency switch unset.
+4. **The launch target:** `ProgramArguments` directory `~/Projects/val-releases/13b3cb8` →
+   `~/Projects/val-releases/9db6e61` (the whole array replaced with `-json`, as on
+   28 September; back the plist up first, as then).
+5. **Reload:** `launchctl kickstart -k gui/$(id -u)/house.armand.val.api`; confirm `/health`
+   and the startup lines "CANDIDATE Voice model for this process" and "CANDIDATE Voice
+   turn prefill".
+6. **The desktop:** `ditto` the staged bundle into `/Applications/Val.app`, move the
+   previous bundle to `~/Val previous builds.noindex`, run
+   `infrastructure/ci/check_desktop_deployment.py`.
+7. **The listening check** of §8.4.
+
+**Rollback:** the plist back to its backup (directory `13b3cb8`, the five settings
+removed), kickstart, the previous desktop bundle back into `/Applications`. The migration
+is additive and stays; the model file and key may stay or go.
