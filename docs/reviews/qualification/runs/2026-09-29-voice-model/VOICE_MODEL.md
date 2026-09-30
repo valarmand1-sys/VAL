@@ -652,8 +652,10 @@ GPT-OSS loaded before the run, as in §10.1; `VAL_VOICE_RELEASES_PARTNER=on`.
 - **CI is green** on `release/voice-model-2026-09-29` at the tagged commit `9db6e61`
   (run 36657030128). The branch was pushed for that purpose; CI does not run on the
   working branch.
-- **The staged tag does not carry §10.2.** If he takes the residency repair, the release
-  is re-tagged at the commit that carries it (below), the release tree rebuilt from it,
-  and the desktop bundle stays: `apps/desktop` is unchanged between the two.
+- **The staged tag does not carry §10.2.** The release is re-tagged as
+  `voice-model-release-2026-09-29-r2` = `b2696fe`, with its own tree
+  `~/Projects/val-releases/b2696fe` (environment synced, imports verified); **CI green on
+  it** (run 36660639782). The desktop bundle stays: `apps/desktop` is byte-identical
+  between `9db6e61` and `b2696fe`.
 - **Recommendation:** ship the switch **set**. Without it the staged configuration swaps
   eleven gigabytes whenever Voice follows typed work within the hour.
