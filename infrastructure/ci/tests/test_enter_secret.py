@@ -92,7 +92,14 @@ def test_it_refuses_an_assistant_shell_and_a_missing_terminal(
 
 
 def test_the_targets_write_only_to_the_established_destinations() -> None:
-    assert sorted(enter_secret.TARGETS) == ["anthropic", "backblaze", "lmstudio", "openai"]
+    # 29 September 2026: `llamacpp` joins, for the Voice model candidate's server key.
+    assert sorted(enter_secret.TARGETS) == [
+        "anthropic",
+        "backblaze",
+        "llamacpp",
+        "lmstudio",
+        "openai",
+    ]
     names = {f.env_name for fields in enter_secret.TARGETS.values() for f in fields if f.env_name}
     assert names >= enter_secret.ALSO_IN_DOTENV
     assert "VAL_LMSTUDIO_API_TOKEN" not in enter_secret.ALSO_IN_DOTENV, ".env never held it"

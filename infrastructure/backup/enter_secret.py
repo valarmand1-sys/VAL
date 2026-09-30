@@ -18,6 +18,7 @@ Targets and the only places each one writes:
 - `openai`     — `VAL_OPENAI_API_KEY` in the API launch agent and the repository `.env`
 - `anthropic`  — `VAL_ANTHROPIC_API_KEY` in the same two places
 - `lmstudio`   — `VAL_LMSTUDIO_API_TOKEN` in the API launch agent
+- `llamacpp`   — `VAL_LLAMACPP_API_KEY` in the API launch agent
 
 Stdlib only, like the rest of this directory: it must not depend on the
 project's virtualenv being healthy.
@@ -61,6 +62,9 @@ TARGETS: dict[str, tuple[Field, ...]] = {
     "openai": (Field("OpenAI API key", env_name="VAL_OPENAI_API_KEY"),),
     "anthropic": (Field("Anthropic API key", env_name="VAL_ANTHROPIC_API_KEY"),),
     "lmstudio": (Field("LM Studio API token", env_name="VAL_LMSTUDIO_API_TOKEN"),),
+    # 29 September 2026: the llama.cpp server's own key, for the Voice model candidate. A
+    # locally generated random token; the service hands it to the server it starts.
+    "llamacpp": (Field("llama.cpp server API key", env_name="VAL_LLAMACPP_API_KEY"),),
 }
 
 #: Targets whose variable also lives in the repository `.env`.
