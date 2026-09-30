@@ -2461,6 +2461,10 @@ class VoiceSession:
                     # Only a refresh owed before this prime began is settled by it.
                     if self._use_generation == generation:
                         self._refresh_owed = False
+            if kind == "initial" and self._prefill is not None:
+                # Voice model candidate: the first turn's request, without his words, is
+                # prepared at Voice On, so his first words find it done.
+                self._prefill_turn()
 
         threading.Thread(target=run, name=f"voice-prime-{kind}", daemon=True).start()
 
