@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { api, ApiRefusal, describeFailure, initFor, NoResponseError } from "./api";
+import { api, ApiRefusal, describeFailure, initFor, NoResponseError, typedWorkWaitsForVoice } from "./api";
 
 describe("failures are described by what was observed", () => {
   it("a missing response names both possible causes and asserts neither", () => {
@@ -68,5 +68,17 @@ describe("closing a voice session", () => {
     expect(init?.keepalive).toBe(true);
     expect(init?.body).toBeUndefined();
     expect(init?.headers).toBeUndefined();
+  });
+});
+
+describe("typed work waits while Voice is on (owner order, 30 September 2026)", () => {
+  it("reads the service's 409 with voice_active into the explanation he sees", () => {
+    const refusal = new ApiRefusal(409, { voice_active: true, message: "Voice is on. Draft kept." });
+    expect(typedWorkWaitsForVoice(refusal)).toBe("Voice is on. Draft kept.");
+  });
+  it("is null for every other failure, so those keep their own descriptions", () => {
+    expect(typedWorkWaitsForVoice(new ApiRefusal(409, "some other conflict"))).toBeNull();
+    expect(typedWorkWaitsForVoice(new ApiRefusal(422, { voice_active: true }))).toBeNull();
+    expect(typedWorkWaitsForVoice(new NoResponseError(new TypeError("Load failed")))).toBeNull();
   });
 });

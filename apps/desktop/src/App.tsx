@@ -57,7 +57,15 @@ import {
 } from "./voiceState";
 import type { Inline } from "./markdown";
 import { parseMarkdown } from "./markdown";
-import { api, ApiRefusal, describeFailure, HARD_EXCLUSIONS, NONE_FAILS_INCLUSION_TEST, StreamRefused } from "./api";
+import {
+  api,
+  ApiRefusal,
+  describeFailure,
+  HARD_EXCLUSIONS,
+  NONE_FAILS_INCLUSION_TEST,
+  StreamRefused,
+  typedWorkWaitsForVoice,
+} from "./api";
 import {
   AGREEMENT_WORDS,
   CONCLUSION_WORDS,
@@ -494,8 +502,12 @@ export function App(): React.JSX.Element {
   }, [detail?.conversation.id]);
 
   const send = useCallback(
-    async (content: string, projectOverride?: string, attached: PendingAttachment[] = []) => {
-      if (content.trim() === "" || busy) return;
+    async (
+      content: string,
+      projectOverride?: string,
+      attached: PendingAttachment[] = [],
+    ): Promise<boolean> => {
+      if (content.trim() === "" || busy) return false;
       setBusy(true);
       setNotice(null);
       setClarification(null);
@@ -538,7 +550,7 @@ export function App(): React.JSX.Element {
         if (outcome.kind === "clarification") {
           setClarification(outcome);
           setPendingContent(content);
-          return;
+          return false;
         }
         setComposer("");
         if (outcome.kind === "unanswered") {
@@ -562,8 +574,20 @@ export function App(): React.JSX.Element {
         await openConversation(outcome.conversation.id);
         await refreshConversations(scope);
         await refreshSignals();
+        return true;
       } catch (failure) {
-        setNotice(failure instanceof StreamRefused ? failure.detail : describeFailure(failure));
+        // Owner order, 30 September 2026 §1: while Voice is on, typed work waits. The
+        // service refused before writing or sending anything; his words stay in the
+        // composer as a draft, with the reason, to send when Voice is off or to clear.
+        const waits = typedWorkWaitsForVoice(failure);
+        setNotice(
+          waits !== null
+            ? waits
+            : failure instanceof StreamRefused
+              ? failure.detail
+              : describeFailure(failure),
+        );
+        return false;
       } finally {
         document.removeEventListener("visibilitychange", onVisibility);
         turnClock.current = null;
@@ -750,15 +774,23 @@ export function App(): React.JSX.Element {
           onSubmit={(event) => {
             event.preventDefault();
             const attached = pending;
-            for (const item of attached) URL.revokeObjectURL(item.previewUrl);
-            setPending([]);
-            void send(composer, undefined, attached);
+            void send(composer, undefined, attached).then((settled) => {
+              // Attachments leave the composer only with a send that settled — a refused
+              // send (Voice on, a policy refusal, no response) keeps them with the draft.
+              if (!settled) return;
+              for (const item of attached) URL.revokeObjectURL(item.previewUrl);
+              setPending([]);
+            });
           }}
         >
           <textarea
             value={composer}
             onChange={(event) => setComposer(event.target.value)}
-            placeholder="Say something to Val…"
+            placeholder={
+              voice.session !== "off"
+                ? "Voice is on — typed messages wait until Voice ends; a draft stays here."
+                : "Say something to Val…"
+            }
             rows={3}
           />
           {pending.length > 0 && (
@@ -1186,7 +1218,18 @@ export function ResponseProgress(props: { session: VoiceSessionView }): React.JS
     else if (stage !== null) lines.push("Her earlier answer was set aside for this.");
   }
   const readiness = session.readiness ?? null;
-  if (readiness !== null && !readiness.ready && stage === null) {
+  // Owner order, 30 September 2026 §2: never "Ready" while the Voice model is away. The
+  // service reports the model's own state — loading, released for a fallback, being
+  // restored — and it is said as that, with any speech already captured kept and
+  // answered when the model is back.
+  const cognition = readiness?.cognition ?? null;
+  if (cognition === "loading" || cognition === "released" || cognition === "restoring") {
+    lines.push(
+      cognition === "loading"
+        ? "Switching models — Val's voice model is loading. Your words are heard and will be answered."
+        : "Switching models — Val's voice model is being restored after a fallback. Your words are heard and will be answered when it is back.",
+    );
+  } else if (readiness !== null && !readiness.ready && stage === null) {
     const failed = Object.entries(readiness)
       .filter(([key, value]) => key !== "ready" && key !== "detail" && value === "failed")
       .map(([key]) => key.replace("prefix_", "").replace("_", " "));

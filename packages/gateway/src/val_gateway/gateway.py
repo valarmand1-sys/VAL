@@ -49,7 +49,9 @@ guarantee `04-layer-0.md` §1.1 claims.
 import logging
 import threading
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import date
 from typing import cast
@@ -443,6 +445,11 @@ def content_parts(request: GatewayRequest) -> tuple[str, ...]:
     return parts
 
 
+#: Set only inside `Gateway.fallback_from_voice`: the call under way may displace the
+#: Voice model (owner order, 30 September 2026 §1).
+_DISPLACING_VOICE: ContextVar[bool] = ContextVar("val_displacing_voice", default=False)
+
+
 class Gateway:
     """The one entrance to inference."""
 
@@ -510,6 +517,11 @@ class Gateway:
         self._local_inflight: dict[str, int] = {}
         self._resident_local: dict[str, ModelConfig] = {}
         self._residency_lock = threading.Lock()
+        #: The Voice model's residency as this gateway last saw it, for the session's
+        #: readiness (owner order, 30 September 2026 §2): `absent` (nothing pinned or
+        #: never brought up), `loading`, `resident`, `released`, `restoring`. Never
+        #: "ready" by assumption: it changes only where a load or release actually ran.
+        self.voice_model_state = "absent"
         self._record = recorder
         self._ledger = ledger
         self._cache_ttl = cache_ttl
@@ -827,6 +839,24 @@ class Gateway:
         )
         return order[0] if order else None
 
+    @contextmanager
+    def fallback_from_voice(self) -> Iterator[None]:
+        """The one licence to displace the Voice model while Voice is on (§10.10).
+
+        Core enters this only for the fallback after a Voice call failed before any
+        word reached him: a genuine failure of the Voice model. Routine typed work never
+        enters it and is refused instead (`VOICE_HAS_PRIORITY`).
+        """
+        token = _DISPLACING_VOICE.set(True)
+        try:
+            yield
+        finally:
+            _DISPLACING_VOICE.reset(token)
+
+    def _set_voice_model_state(self, config: ModelConfig, state: str) -> None:
+        if self.voice_configuration is not None and config.slug == self.voice_configuration.slug:
+            self.voice_model_state = state
+
     def _release_local(self, config: ModelConfig) -> Mapping[str, object] | None:
         """Unload this local model through whichever release its adapter declares."""
         adapter = self._adapters.get(config.provider)
@@ -841,6 +871,7 @@ class Gateway:
             return None
         with self._residency_lock:
             self._resident_local.pop(config.slug, None)
+        self._set_voice_model_state(config, "released")
         return dict(result) if isinstance(result, Mapping) else {"released": True}
 
     #: How long a transition waits for the calls using the model it must release.
@@ -862,6 +893,24 @@ class Gateway:
                 for slug, other in self._resident_local.items()
                 if slug != config.slug and other.model_identifier != config.model_identifier
             ]
+        voice = self.voice_configuration
+        if (
+            others
+            and voice is not None
+            and config.slug != voice.slug
+            and not _DISPLACING_VOICE.get()
+        ):
+            # Owner order, 30 September 2026 §1: while Voice is on and its model is
+            # healthy, routine work does not displace it. Refused here, before anything
+            # is loaded, sent or written — the API refuses earlier still, with the
+            # explanation he reads; this is the door that holds when a caller arrives by
+            # another entrance.
+            raise GatewayError(
+                GatewayErrorKind.VOICE_HAS_PRIORITY,
+                f"Voice is on and {voice.slug} holds this Mac's memory: work that needs "
+                f"{config.slug} waits until Voice ends. Nothing was sent and nothing was "
+                "written.",
+            )
         transitions: list[Mapping[str, object]] = []
         for other in others:
             waited = self._wait_until_idle(other)
@@ -901,12 +950,17 @@ class Gateway:
         # own model up beside the one on its way in. The runtimes serialise a release
         # behind a load of the same model, so a release decided now lands after the load.
         self._note_resident(config)
+        if self.voice_model_state != "resident":
+            self._set_voice_model_state(config, "loading")
         try:
-            return adapter.ensure_runtime_ready(config)
+            readiness = adapter.ensure_runtime_ready(config)
         except LocalRuntimeUnavailableError:
             with self._residency_lock:
                 self._resident_local.pop(config.slug, None)
+            self._set_voice_model_state(config, "released")
             raise
+        self._set_voice_model_state(config, "resident")
+        return readiness
 
     def _note_resident_if_loaded(self, config: ModelConfig) -> None:
         """Record this model as resident when its runtime says it is loaded now."""
@@ -935,6 +989,7 @@ class Gateway:
             or not supports_local_runtime(self._adapters[voice.provider])
         ):
             return {"returned": False, "reason": "Voice is not holding the memory"}
+        self.voice_model_state = "restoring"
         transitions = self._transition_to(voice)
         try:
             readiness = self._ready_local(voice)

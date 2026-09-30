@@ -625,9 +625,39 @@ def create_app(
             headers={"Cache-Control": "private, max-age=31536000, immutable"},
         )
 
+    def _voice_has_priority() -> None:
+        """Owner order, 30 September 2026 §1: typed work waits while Voice is on.
+
+        With a Voice model pinned and holding this Mac's memory, a typed request would
+        need the Partner model in its place — a 45-second interruption of the
+        conversation, measured. It is refused **before anything is written or sent**, with
+        the reason he reads; his words stay in the desktop as a draft to send when Voice
+        has ended. Nothing is routed to the Voice model instead, nothing is queued, nothing
+        is marked answered. 409: the request is understood and cannot proceed now.
+        """
+        if (
+            getattr(gateway, "voice_configuration", None) is None
+            or not getattr(gateway, "voice_releases_partner", False)
+            or sessions.open_count() == 0
+        ):
+            return
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "voice_active": True,
+                "message": (
+                    "Voice is on, and Val's voice model holds this Mac's memory. Typed "
+                    "messages wait until Voice ends: nothing was sent and nothing was "
+                    "written. Your words stay here as a draft — send them when Voice is "
+                    "off, or clear them."
+                ),
+            },
+        )
+
     @app.post("/turns")
     def turn(request: TurnRequest) -> TurnResponse:
         """One thing said to Val, through the full WP-0.9 deliberated path."""
+        _voice_has_priority()
         try:
             outcome = deliberated_send(
                 engine,
@@ -723,6 +753,7 @@ def create_app(
         any other failure arrive as events, since the status line has already
         been sent (`val_api.streaming`).
         """
+        _voice_has_priority()  # before the status line: the desktop sees a plain 409
         return StreamingResponse(
             turn_event_stream(
                 engine,
@@ -1160,6 +1191,9 @@ def create_app(
                 else None
             ),
             early_audio_when_complete=getattr(gateway, "voice_early_audio", False),
+            # Owner order, 30 September 2026 §2: the Voice model's residency, read on
+            # every view, so Ready is never shown while the model is away.
+            cognition_state=lambda: str(getattr(gateway, "voice_model_state", "absent")),
             adaptive_grace=adaptive_grace,
             owner_precedence=owner_precedence,
             adaptive_endpoint=adaptive_endpoint,

@@ -22,7 +22,9 @@
 set -u
 CONDITION=$1; LABEL=$2; SESSIONS=${3:-"0 1 2 3 4"}
 ROOT=/Users/josepharmand/Projects/val-dev
-DESKTOP=/Users/josepharmand/Projects/val/apps/desktop
+# 30 September 2026 (§10.10): the desktop under test is this worktree's — it is part of the
+# release now — not master's. The equality check with master is therefore gone.
+DESKTOP=$ROOT/apps/desktop
 D=$ROOT/docs/reviews/qualification/runs/2026-09-28-checkpoint
 O=$ROOT/docs/reviews/qualification/runs/2026-09-29-voice-model
 S=/private/tmp/claude-501/-Users-josepharmand-Projects-val/79432647-754b-41bb-9f41-8bbbfcd9d8e1/scratchpad/bench-$LABEL
@@ -34,7 +36,6 @@ PRODUCTION_VOICE_SESSIONS=16
 mkdir -p $S
 cd $ROOT
 [[ $(grep -c "POST /voice/sessions HTTP" /opt/homebrew/var/log/val/api.log) == $PRODUCTION_VOICE_SESSIONS ]] || { echo "production Voice has been used: not starting"; exit 3; }
-[[ $(git diff master -- apps/desktop | wc -l | tr -d ' ') == 0 ]] || { echo "apps/desktop differs from master: not starting"; exit 2; }
 case $CONDITION in
   voice|voice_adaptive|voice_prefill|voice_early|voice_release) ;;
   *) echo "unknown condition $CONDITION"; exit 2 ;;

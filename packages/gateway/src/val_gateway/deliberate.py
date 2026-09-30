@@ -80,6 +80,7 @@ import json
 import logging
 import time
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -1599,17 +1600,22 @@ def _ordinary(
                             failure.kind.value,
                             failure,
                         )
-                        response = gateway.converse(
-                            messages,
-                            scope=opened.scope,
-                            classification=classification,
-                            turn=turn,
-                            max_output_tokens=max_output_tokens,
-                            on_delta=on_delta,
-                            egress=egress.egress,
-                            configuration=visual.configuration,
-                            cancelled=cancelled,
-                        )
+                        # Owner order, 30 September 2026 §2: a genuine failure of the
+                        # Voice model is the one thing that may displace it while Voice
+                        # is on; the gateway records the transition and restores it after.
+                        licence = getattr(gateway, "fallback_from_voice", None)
+                        with licence() if callable(licence) else nullcontext():
+                            response = gateway.converse(
+                                messages,
+                                scope=opened.scope,
+                                classification=classification,
+                                turn=turn,
+                                max_output_tokens=max_output_tokens,
+                                on_delta=on_delta,
+                                egress=egress.egress,
+                                configuration=visual.configuration,
+                                cancelled=cancelled,
+                            )
             except GatewayError as failure:
                 if task_type is not TaskType.LIGHT_CONVERSATION or delivered:
                     raise

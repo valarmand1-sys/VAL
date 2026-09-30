@@ -505,6 +505,17 @@ export class NoResponseError extends Error {
 // unreachability, only the absence of a response — and an error message that
 // names a cause it has not established is a false claim (Lord Armand,
 // 31 August 2026; invariant 29 applied to error display).
+// Owner order, 30 September 2026 §1: while Voice is on, typed work waits. The service
+// refuses such a send with 409 and `voice_active`, before writing or sending anything;
+// the words stay in the composer as a draft. This reads that refusal, or returns null.
+export function typedWorkWaitsForVoice(failure: unknown): string | null {
+  if (!(failure instanceof ApiRefusal) || failure.status !== 409) return null;
+  const detail = failure.detail;
+  if (typeof detail !== "object" || detail === null || !("voice_active" in detail)) return null;
+  const message = (detail as { message?: unknown }).message;
+  return typeof message === "string" ? message : "Voice is on: typed messages wait until Voice ends.";
+}
+
 export function describeFailure(failure: unknown): string {
   if (failure instanceof NoResponseError) {
     return (

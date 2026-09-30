@@ -654,6 +654,7 @@ class VoiceSession:
         combine_continuations: bool = False,
         prefill: Callable[[UUID | None], object] | None = None,
         early_audio_when_complete: bool = False,
+        cognition_state: Callable[[], str] | None = None,
     ) -> None:
         #: Owner order, 29 September 2026 (Voice model candidate; off in production). Under
         #: the adaptive endpoint an answer's audio is held until its turn's merge window
@@ -662,6 +663,10 @@ class VoiceSession:
         #: utterance keeps the hold. The cost: if he resumes after a complete-sounding
         #: sentence, he hears her begin and stop, and his further words are a new turn.
         self._early_audio_when_complete = early_audio_when_complete
+        #: Owner order, 30 September 2026 §2: the Voice model's residency as the gateway
+        #: last saw it (`resident`, `loading`, `released`, `restoring`, `absent`), read on
+        #: every view so the desktop never shows Ready while the model is away.
+        self._cognition_state = cognition_state
         #: Owner order, 29 September 2026 (Voice model candidate; off in production): the
         #: turn's request, without his words, prepared in the local runtime when he
         #: begins to speak. One at a time; never while a turn of his is in flight.
@@ -2754,7 +2759,7 @@ class VoiceSession:
                 speech_end=self._speech_end,
                 progress=self._progress_locked(),
                 queued=self._pending is not None and self._inflight is not None,
-                readiness=self.readiness,
+                readiness=self._readiness_now(),
                 superseded=self._last_supersession,
             )
 
@@ -2767,7 +2772,7 @@ class VoiceSession:
             # A turn that reached cognition before the runtime and prefixes were ready
             # is waiting on, or running beside, that warming: said as such, not as
             # reasoning (Milestone A §2).
-            return "warming" if not self.readiness.ready else "thinking"
+            return "warming" if not self._readiness_now().ready else "thinking"
         if delivery.audible:
             # With a desktop collecting the audio, "speaking" is the desktop's report that
             # playback began, not audio waiting at the hand-off (release-gaps order §2;
@@ -2784,7 +2789,32 @@ class VoiceSession:
         # spoken turn that reached cognition before readiness displayed as "thinking" the
         # moment its delivery existed, though nothing had been written yet — the warming
         # it was waiting on had not ended. Same rule, whether or not a delivery exists.
-        return "warming" if not self.readiness.ready else "thinking"
+        return "warming" if not self._readiness_now().ready else "thinking"
+
+    def _readiness_now(self) -> VoiceReadiness:
+        """Component readiness with the Voice model's residency laid over it.
+
+        Owner order, 30 September 2026 §2. The session's own readiness records what it
+        established at Voice On; the gateway knows what has happened to the model since —
+        released for a genuine fallback, loading, being restored. Whenever the model is
+        not resident, cognition reads as that state, `ready` is false, and the desktop
+        shows the switch rather than "Ready". `absent` (no Voice model pinned) and
+        `resident` leave the session's own record as it is.
+        """
+        if self._cognition_state is None or self.readiness.cognition == "not_applicable":
+            return self.readiness
+        try:
+            state = self._cognition_state()
+        except Exception:  # a readiness read must never fail the view
+            return self.readiness
+        if state in ("resident", "absent"):
+            return self.readiness
+        detail = {
+            "loading": "Val's voice model is loading.",
+            "released": "Val's voice model was released for a fallback; it is being restored.",
+            "restoring": "Val's voice model is being restored after a fallback.",
+        }.get(state, f"Val's voice model: {state}.")
+        return replace(self.readiness, cognition=state, detail=detail)
 
     def __enter__(self) -> VoiceSession:
         self.start()
@@ -3089,6 +3119,15 @@ class VoiceSessions:
                 for session in self._sessions.values()
                 if session.conversation_id is not None
                 and session.state is not VoiceSessionState.CLOSED
+            )
+
+    def open_count(self) -> int:
+        """How many Voice sessions are open now, attached to a conversation or not."""
+        with self._lock:
+            return sum(
+                1
+                for session in self._sessions.values()
+                if session.state is not VoiceSessionState.CLOSED
             )
 
     def keys(self) -> tuple[UUID, ...]:

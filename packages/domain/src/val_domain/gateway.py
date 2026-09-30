@@ -230,6 +230,10 @@ class GatewayErrorKind(StrEnum):
     #: is superseded and **no new answer is asked for**: the message is his, on the
     #: record, and the turn ends unanswered by his own decision, not by a failure.
     OWNER_STOP = "owner_stop"
+    #: Voice has priority (owner order, 30 September 2026): while Voice is on and its
+    #: model is healthy, a request that would need another local cognition model in
+    #: its place is refused before anything is written or sent. It waits for Voice to end.
+    VOICE_HAS_PRIORITY = "voice_has_priority"
     #: Ruling, 13 September 2026: admitting the next call would take one user
     #: exchange past its configured spending envelope. Not retryable on another
     #: route — a cheaper configuration is never substituted to fit the envelope —

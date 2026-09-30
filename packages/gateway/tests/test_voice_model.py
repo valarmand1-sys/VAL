@@ -232,6 +232,7 @@ def test_set_voice_on_releases_the_partner_model_and_voice_off_brings_it_back(
         ("load", voice_model.model_identifier),
     ]
     assert adapter.loaded == {voice_model.model_identifier}, "one model resident"
+    gateway.release_voice()  # Voice ends: the hold lifts, then the Partner model returns
     back = gateway.rewarm_partner_after_voice()
     assert back["warmed"] is True and back["slug"] == PARTNER_SLUG
     assert adapter.events[-1] == ("load", _partner().model_identifier)
@@ -287,46 +288,29 @@ def _wait_for(predicate, seconds: float = 10.0) -> bool:  # noqa: ANN001
     return predicate()
 
 
-def test_a_typed_turn_elsewhere_during_voice_replaces_the_voice_model_and_it_returns(
+def test_a_typed_call_during_voice_is_refused_and_the_voice_model_is_untouched(
     store: Engine, voice_model: ModelConfig
 ) -> None:
-    """§10.8: serialized model use. The Voice model is released before the Partner model is
-    loaded; after the typed call settles the Voice model is brought back, off the path."""
+    """Owner order, 30 September 2026 §1: Voice has priority. Routine typed work that would
+    need the Partner model is refused before anything is loaded, sent or written."""
     adapter = Residency()
     adapter.loaded.add(_partner().model_identifier)
-    adapter.script = [ok("Lisbon, my lord.")]
-    notes: list[str] = []
-    gateway = Gateway(
-        adapters={"lmstudio": adapter, "llamacpp": adapter},
-        recorder=lambda record: record_call(store, record),
-        ledger=FakeLedger(),
-        observe_block=notes.append,
-        persona_loader=DatabasePersonaLoader(store),
-        verify_provenance=verifier(store),
-    )
-    gateway.voice_configuration = voice_model
-    gateway.voice_releases_partner = True
-    gateway.warm_cognition()
+    adapter.script = [ok("never reached")]
+    gateway = _holding_gateway(store, adapter, voice_model)
+    assert gateway.voice_model_state == "resident"
     del adapter.events[:]
-    _typed_call(store, gateway, "What is the capital of Portugal?")
-    assert adapter.events[:2] == [
-        ("release", voice_model.model_identifier),
-        ("load", _partner().model_identifier),
-    ], "the Voice model released first, then the Partner model loaded — never both"
-    assert any("model transition" in note for note in notes)
-    # The return runs on its own thread once the call has settled.
-    assert _wait_for(lambda: ("load", voice_model.model_identifier) in adapter.events[2:])
-    assert adapter.events[2:4] == [
-        ("release", _partner().model_identifier),
-        ("load", voice_model.model_identifier),
-    ], "the Partner model released, then the Voice model back"
-    assert adapter.loaded == {voice_model.model_identifier}
-    # Voice ending clears the hold: afterwards a typed turn keeps the Partner model resident.
+    with pytest.raises(GatewayError) as refused:
+        _typed_call(store, gateway, "What is the capital of Portugal?")
+    assert refused.value.kind is GatewayErrorKind.VOICE_HAS_PRIORITY
+    assert "waits until Voice ends" in str(refused.value)
+    assert adapter.events == [], "nothing loaded, nothing released, nothing sent"
+    assert adapter.loaded == {voice_model.model_identifier}, "the Voice model untouched"
+    assert gateway.voice_model_state == "resident"
+    assert adapter.sent == []
+    # Voice ending lifts the priority: the same typed call then takes the Partner route.
     gateway.release_voice()
-    adapter.script = [ok("Madrid, my lord.")]
-    del adapter.events[:]
-    _typed_call(store, gateway, "And of Spain?")
-    assert adapter.events == [("load", _partner().model_identifier)]
+    _typed_call(store, gateway, "What is the capital of Portugal?")
+    assert adapter.events[-1] == ("load", _partner().model_identifier)
 
 
 class Blocking(Residency):
@@ -397,19 +381,48 @@ def test_the_fallback_during_voice_replaces_the_voice_model_and_it_returns(
     assert adapter.loaded == {voice_model.model_identifier}, "and the Voice model is back"
 
 
-def test_a_prefill_during_a_typed_call_waits_rather_than_reloading_beside_it(
+class VoiceFailsThenBlocks(Blocking):
+    """The Voice model fails once (the genuine fallback); the Partner model's answer then
+    waits on `go`, so a prefill can arrive while it is being loaded or answering."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.loading = threading.Event()
+        self.finish = threading.Event()
+        self.failed = False
+
+    def ensure_runtime_ready(self, config: ModelConfig) -> dict[str, object]:
+        if config.model_identifier == _partner().model_identifier:
+            self.loading.set()
+            assert self.finish.wait(10), "the test never let the load finish"
+        return super().ensure_runtime_ready(config)
+
+    def complete(self, *args, **kwargs) -> object:  # noqa: ANN002, ANN003
+        if not self.failed:
+            self.failed = True
+            self.events.append(("complete", "voice-failed"))
+            raise GatewayError(GatewayErrorKind.PROVIDER_ERROR, "scripted Voice model failure")
+        return super().complete(*args, **kwargs)
+
+
+def test_during_a_genuine_fallback_a_prefill_waits_and_readiness_says_so(
     store: Engine, voice_model: ModelConfig
 ) -> None:
-    """§10.8 (found live, 00:35): the session's prefill at speech start reached the runtime
-    directly and brought the Voice model back beside the Partner model. Every readiness
-    path now goes through the transition, so the prefill waits for the typed call."""
-    adapter = Blocking()
-    adapter.script = [ok("Lisbon, my lord."), ok(".")]  # the typed answer, the prime's token
+    """§10.8 and the owner order of 30 September §2: the fallback may displace the Voice
+    model; while the Partner model is loading or answering, a prefill waits rather than
+    reloading beside it, the state reads `released`/`restoring`, never `resident`, and
+    the Voice model returns afterwards."""
+    adapter = VoiceFailsThenBlocks()
+    adapter.script = [ok("Good evening, my lord."), ok(".")]
     gateway = _holding_gateway(store, adapter, voice_model)
-    typed = threading.Thread(target=_typed_call, args=(store, gateway, "Capital of Portugal?"))
-    typed.start()
-    assert adapter.started.acquire(timeout=10)  # the Partner model is answering now
-    assert adapter.loaded == {_partner().model_identifier}, "the Voice model was released for it"
+    states: list[str] = []
+    spoken = threading.Thread(
+        target=lambda: say(store, gateway, "Good evening, Val.", a_conversation(store), spoken=True)
+    )
+    spoken.start()
+    assert adapter.loading.wait(10), "the fallback is loading the Partner model"
+    states.append(gateway.voice_model_state)
+    assert adapter.loaded == set(), "the Voice model was released for the fallback"
     results: list[object] = []
     prefill = threading.Thread(
         target=lambda: results.append(
@@ -418,50 +431,14 @@ def test_a_prefill_during_a_typed_call_waits_rather_than_reloading_beside_it(
     )
     prefill.start()
     time.sleep(0.3)
-    assert adapter.loaded == {_partner().model_identifier}, "not reloaded beside it"
-    assert prefill.is_alive(), "the prefill waits for the typed call to settle"
-    adapter.go.set()
-    typed.join(10)
-    prefill.join(10)
-    assert _wait_for(lambda: adapter.loaded == {voice_model.model_identifier})
-    assert ("release", _partner().model_identifier) in adapter.events
-
-
-def test_a_model_still_loading_counts_as_resident_for_a_transition(
-    store: Engine, voice_model: ModelConfig
-) -> None:
-    """§10.8 (found live, 00:48): a spoken turn arriving while the Partner model was still
-    loading saw nothing to release and brought the Voice model up beside it."""
-
-    class SlowLoad(Residency):
-        def __init__(self) -> None:
-            super().__init__()
-            self.loading = threading.Event()
-            self.finish = threading.Event()
-
-        def ensure_runtime_ready(self, config: ModelConfig) -> dict[str, object]:
-            if config.model_identifier == _partner().model_identifier:
-                self.loading.set()
-                assert self.finish.wait(10)
-            return super().ensure_runtime_ready(config)
-
-    adapter = SlowLoad()
-    adapter.script = [ok("Lisbon, my lord."), ok(".")]
-    gateway = _holding_gateway(store, adapter, voice_model)
-    typed = threading.Thread(target=_typed_call, args=(store, gateway, "Capital of Portugal?"))
-    typed.start()
-    assert adapter.loading.wait(10), "the Partner model is loading now"
-    results: list[object] = []
-    prefill = threading.Thread(
-        target=lambda: results.append(
-            gateway.prefill_turn((Message(role="user", content="state block"),))
-        )
-    )
-    prefill.start()
-    time.sleep(0.3)
-    assert ("load", voice_model.model_identifier) not in adapter.events[-1:], "not beside it"
-    assert prefill.is_alive(), "the prefill waits for the loading model's call to settle"
+    assert adapter.loaded == set(), "the prefill did not reload the Voice model beside it"
+    assert prefill.is_alive()
     adapter.finish.set()
-    typed.join(10)
+    assert adapter.started.acquire(timeout=10)  # the Partner model is answering
+    states.append(gateway.voice_model_state)
+    adapter.go.set()
+    spoken.join(10)
     prefill.join(10)
     assert _wait_for(lambda: adapter.loaded == {voice_model.model_identifier})
+    assert _wait_for(lambda: gateway.voice_model_state == "resident")
+    assert set(states) <= {"released", "restoring"}, states
