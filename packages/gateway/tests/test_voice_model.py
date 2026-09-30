@@ -425,3 +425,43 @@ def test_a_prefill_during_a_typed_call_waits_rather_than_reloading_beside_it(
     prefill.join(10)
     assert _wait_for(lambda: adapter.loaded == {voice_model.model_identifier})
     assert ("release", _partner().model_identifier) in adapter.events
+
+
+def test_a_model_still_loading_counts_as_resident_for_a_transition(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    """§10.8 (found live, 00:48): a spoken turn arriving while the Partner model was still
+    loading saw nothing to release and brought the Voice model up beside it."""
+
+    class SlowLoad(Residency):
+        def __init__(self) -> None:
+            super().__init__()
+            self.loading = threading.Event()
+            self.finish = threading.Event()
+
+        def ensure_runtime_ready(self, config: ModelConfig) -> dict[str, object]:
+            if config.model_identifier == _partner().model_identifier:
+                self.loading.set()
+                assert self.finish.wait(10)
+            return super().ensure_runtime_ready(config)
+
+    adapter = SlowLoad()
+    adapter.script = [ok("Lisbon, my lord."), ok(".")]
+    gateway = _holding_gateway(store, adapter, voice_model)
+    typed = threading.Thread(target=_typed_call, args=(store, gateway, "Capital of Portugal?"))
+    typed.start()
+    assert adapter.loading.wait(10), "the Partner model is loading now"
+    results: list[object] = []
+    prefill = threading.Thread(
+        target=lambda: results.append(
+            gateway.prefill_turn((Message(role="user", content="state block"),))
+        )
+    )
+    prefill.start()
+    time.sleep(0.3)
+    assert ("load", voice_model.model_identifier) not in adapter.events[-1:], "not beside it"
+    assert prefill.is_alive(), "the prefill waits for the loading model's call to settle"
+    adapter.finish.set()
+    typed.join(10)
+    prefill.join(10)
+    assert _wait_for(lambda: adapter.loaded == {voice_model.model_identifier})

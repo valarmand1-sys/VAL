@@ -896,9 +896,17 @@ class Gateway:
         pair of resident models behind the others' backs."""
         adapter = cast(LocalRuntimeAdapter, self._adapters[config.provider])
         self._transition_to(config)
-        readiness = adapter.ensure_runtime_ready(config)
+        # Noted **before** the load, not after it (found live, 00:48): a transition that
+        # arrives while this model is still loading must see it and wait, or it brings its
+        # own model up beside the one on its way in. The runtimes serialise a release
+        # behind a load of the same model, so a release decided now lands after the load.
         self._note_resident(config)
-        return readiness
+        try:
+            return adapter.ensure_runtime_ready(config)
+        except LocalRuntimeUnavailableError:
+            with self._residency_lock:
+                self._resident_local.pop(config.slug, None)
+            raise
 
     def _note_resident_if_loaded(self, config: ModelConfig) -> None:
         """Record this model as resident when its runtime says it is loaded now."""
