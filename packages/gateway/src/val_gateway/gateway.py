@@ -496,6 +496,11 @@ class Gateway:
         #: Measured 29 September 2026 (VOICE_MODEL.md §10): both resident, swap grew
         #: 11.5 GB in fifteen minutes; one at a time, 0.5 GB.
         self.voice_releases_partner = False
+        #: Whether Voice is on with the Partner model released (set at Voice On under the
+        #: switch, cleared when Voice ends): while it is, a call that loads any other local
+        #: model is followed by its release, so a typed turn in another conversation or a
+        #: fallback cannot leave both models resident (§10.6).
+        self._voice_holds_memory = False
         self._record = recorder
         self._ledger = ledger
         self._cache_ttl = cache_ttl
@@ -780,6 +785,7 @@ class Gateway:
     def release_voice(self) -> Mapping[str, object]:
         """Give back what Voice held: the resident speech worker, if one is running."""
         cognition: object = None
+        self._voice_holds_memory = False
         pinned = self.voice_configuration
         if pinned is not None and pinned.provider in self._adapters:
             # The Voice model's own server is held only while Voice is on: ending it
@@ -889,6 +895,7 @@ class Gateway:
         released: Mapping[str, object] | None = None
         if self.voice_releases_partner and chosen is self.voice_configuration:
             released = self._release_partner_for_voice(chosen)
+            self._voice_holds_memory = True
         if not supports_local_runtime(self._adapters[chosen.provider]):
             return {
                 "warmed": False,
@@ -1419,6 +1426,7 @@ class Gateway:
         # about what is underneath. A runtime that cannot be brought up ends the
         # turn honestly — it is never a reason to try a paid route instead, which
         # is why the failure carries the same kind as the stop above.
+        release_after: Callable[[], object] | None = None
         if supports_local_runtime(adapter):
             local = cast(LocalRuntimeAdapter, adapter)
             try:
@@ -1429,6 +1437,23 @@ class Gateway:
                     "local runtime ready: "
                     + ", ".join(f"{key}={value}" for key, value in readiness.items())
                 )
+                # §10.6 (29 September 2026): Voice holds this Mac's memory for its own
+                # model. Another local model brought up meanwhile — a typed turn in a
+                # different conversation, or the fallback — is answered and then released
+                # again, so the two are resident only for the length of this call, and the
+                # record says so. Never silent, never sustained.
+                release_model = getattr(adapter, "release_model", None)
+                if (
+                    self._voice_holds_memory
+                    and config is not self.voice_configuration
+                    and callable(release_model)
+                ):
+                    self._observe_block(
+                        f"{config.slug} is loaded while Voice holds the memory for "
+                        f"{getattr(self.voice_configuration, 'slug', '?')}: both are "
+                        "resident for this call, and it is released when the call settles"
+                    )
+                    release_after = lambda: release_model(config)  # noqa: E731
             except LocalRuntimeUnavailableError as failure:
                 raise GatewayError(
                     GatewayErrorKind.LOCAL_PARTNER_UNAVAILABLE,
@@ -1517,16 +1542,23 @@ class Gateway:
                 ),
             )
 
-        return self._call_and_settle(
-            request,
-            config,
-            adapter,
-            claim,
-            cache_ttl,
-            on_delta,
-            feasibility=feasibility,
-            cancelled=cancelled,
-        )
+        try:
+            return self._call_and_settle(
+                request,
+                config,
+                adapter,
+                claim,
+                cache_ttl,
+                on_delta,
+                feasibility=feasibility,
+                cancelled=cancelled,
+            )
+        finally:
+            if release_after is not None and self._voice_holds_memory:
+                try:
+                    self._observe_block(f"released after the call: {release_after()}")
+                except LocalRuntimeUnavailableError as failure:
+                    self._observe_block(f"release after the call did not succeed: {failure}")
 
     def _cache_ttl_for(self, config: ModelConfig, request: GatewayRequest) -> CacheTtl | None:
         """Whether this call asks the provider to cache its stable prefix, and for how long.

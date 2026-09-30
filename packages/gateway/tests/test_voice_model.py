@@ -213,3 +213,49 @@ def test_with_nothing_pinned_the_switch_releases_nothing(store: Engine) -> None:
     warmed = gateway.warm_cognition()
     assert "partner_released" not in warmed
     assert all(kind == "load" for kind, _ in adapter.events)
+
+
+def test_a_typed_turn_elsewhere_during_voice_releases_the_partner_model_again(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    """§10.6: the two models are resident only for the length of that call, on record."""
+
+    adapter = Residency()
+    adapter.script = [
+        ok("Good evening, my lord."),
+        ok("Good evening."),
+        ok("Lisbon, my lord."),
+        ok("Madrid, my lord."),
+    ]
+    notes: list[str] = []
+    gateway = Gateway(
+        adapters={"lmstudio": adapter, "llamacpp": adapter},
+        recorder=lambda record: record_call(store, record),
+        ledger=FakeLedger(),
+        observe_block=notes.append,
+        persona_loader=DatabasePersonaLoader(store),
+        verify_provenance=verifier(store),
+    )
+    gateway.voice_configuration = voice_model
+    gateway.voice_releases_partner = True
+    partner = registry.by_slug(PARTNER_SLUG)
+    assert partner is not None
+    gateway.warm_cognition()  # Voice On: the Partner model released, the Voice model loaded
+    say(store, gateway, "Good evening, Val.", a_conversation(store), spoken=True)
+    # Typed, in a different conversation, while Voice is on. (That conversation was
+    # spoken in earlier, so it is sealed and the fixture needs no cloud classifier; a
+    # typed turn outside Voice takes the Partner route either way.)
+    other = a_conversation(store)
+    say(store, gateway, "Good evening.", other, spoken=True)
+    say(store, gateway, "What is the capital of Portugal?", other, spoken=False)
+    assert slugs(store)[-1] == PARTNER_SLUG
+    assert adapter.events[-2:] == [
+        ("load", partner.model_identifier),
+        ("release", partner.model_identifier),
+    ], "loaded for the typed turn, released when it settled"
+    assert any("both are resident for this call" in note for note in notes)
+    assert any("released after the call" in note for note in notes)
+    # Voice ending clears the hold: a later typed turn keeps the Partner model resident.
+    gateway.release_voice()
+    say(store, gateway, "And of Spain?", other, spoken=False)
+    assert adapter.events[-1] == ("load", partner.model_identifier)

@@ -1,0 +1,65 @@
+{
+ "model_identifier": "openai/gpt-oss-20b",
+ "steps": [
+  {
+   "step": "start",
+   "loaded": [],
+   "swap_mb": 2757.0
+  },
+  {
+   "step": "ensure_ready (as the service does at start or on a turn)",
+   "seconds": 7.18,
+   "result": {
+    "server_found_running": true,
+    "server_started": false,
+    "model_found_loaded": false,
+    "model_loaded": true,
+    "requested_context_tokens": 32768,
+    "loaded_context_tokens": 32768,
+    "base_url": "http://127.0.0.1:1234/v1"
+   },
+   "loaded_after": [
+    "None"
+   ],
+   "swap_mb": 2749.0
+  },
+  {
+   "step": "release (as Voice On would, switch set)",
+   "seconds": 0.437,
+   "result": {
+    "released": true,
+    "model": "openai/gpt-oss-20b"
+   },
+   "loaded_after": [],
+   "swap_mb": 2749.0
+  },
+  {
+   "step": "release again (idempotent: nothing loaded)",
+   "seconds": 0.008,
+   "result": {
+    "released": false,
+    "model": "openai/gpt-oss-20b",
+    "reason": "not loaded"
+   },
+   "loaded_after": [],
+   "swap_mb": 2749.0
+  },
+  {
+   "step": "ensure_ready (as Voice ending would)",
+   "seconds": 3.528,
+   "result": {
+    "server_found_running": true,
+    "server_started": false,
+    "model_found_loaded": false,
+    "model_loaded": true,
+    "requested_context_tokens": 32768,
+    "loaded_context_tokens": 32768,
+    "base_url": "http://127.0.0.1:1234/v1"
+   },
+   "loaded_after": [
+    "None"
+   ],
+   "swap_mb": 2749.0
+  }
+ ]
+}

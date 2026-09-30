@@ -626,11 +626,20 @@ GPT-OSS loaded before the run, as in §10.1; `VAL_VOICE_RELEASES_PARTNER=on`.
   serves GPT-OSS as an *instance* `val-exp-hub` over the model key `gpt-oss-20b-renewal`,
   and `lms load val-exp-hub` is "Model not found". Production's route names
   `openai/gpt-oss-20b`, which is both key and instance identifier, so the same call
-  production makes at every start (proven 21 September) is the return. **Not demonstrated
-  here**: a direct proof on production's key (`lifecycle_proof.py`, load → release →
-  release again → load, each timed) was refused by the automatic review as modifying a
-  shared resource — it would load and unload the model in production's LM Studio server —
-  and is left for him to run, or to accept on the strength of the two calls it composes.
+  production makes at every start (proven 21 September) is the return. **Demonstrated on
+  production's own key, under his authorisation of 29 September (late):**
+  `lifecycle_proof.py` → `lifecycle-proof.json`, run while nothing was loaded and no owner
+  request was active:
+
+  | step | seconds | result |
+  |---|---|---|
+  | `ensure_ready` (cold) | 7.18 | `openai/gpt-oss-20b` loaded at 32,768 tokens |
+  | `release` (as Voice On would) | 0.44 | released; nothing loaded after |
+  | `release` again | 0.008 | `released: false, "not loaded"` — idempotent |
+  | `ensure_ready` (as Voice ending would) | 3.53 | loaded again at 32,768 tokens |
+
+  Swap unchanged across the four steps (2.75 GB). The model was left loaded, as
+  production's own supervisor leaves it; its idle TTL applies as ever.
 - The unload itself is proven on a loaded instance; the memory result is the whole point,
   and it holds: the run looks like §7.3 in every resource figure.
 
@@ -659,3 +668,56 @@ GPT-OSS loaded before the run, as in §10.1; `VAL_VOICE_RELEASES_PARTNER=on`.
   between `9db6e61` and `b2696fe`.
 - **Recommendation:** ship the switch **set**. Without it the staged configuration swaps
   eleven gigabytes whenever Voice follows typed work within the hour.
+
+### 10.6 A typed request or a fallback during Voice cannot silently recreate dual residency
+
+**Read from the implementation, then closed with one focused check.**
+
+- **Where the failed condition could return:** while Voice is on with the Partner model
+  released, (a) a typed turn in a *different* conversation takes the Partner route and
+  `_attempt` brings its runtime up; (b) the fallback after a Voice call that fails before
+  any word does the same. Either loaded GPT-OSS beside the Voice model, and nothing
+  released it until Voice ended — the §10.1 state, silently.
+- **The guard (same switch):** Voice On under the switch marks that Voice holds the memory;
+  Voice ending clears it. While it is held, `_attempt` — the one door every provider call
+  passes through — notices a local model other than the Voice model coming up, records
+  "both are resident for this call, and it is released when the call settles", and
+  releases it once that call has settled (success or failure). The two are resident for
+  the length of one call, on record; a sustained pair cannot occur without a line saying
+  so. A fallback is handled identically.
+- **Switching delay and what he sees:** a typed turn elsewhere during Voice pays the
+  Partner model's load — **7.2 s cold, 3.5 s with the file still in the page cache**
+  (§10.3) — before its first word, and the next such turn pays it again; the Voice
+  session is untouched. Voice On pays the release (0.4 s) inside its readiness; Voice
+  ending reloads GPT-OSS off the request path (3.5–7.2 s) so the next typed turn does
+  not. A fallback during Voice pays the same load, then the release.
+- **Focused check:** `test_voice_model.py::test_a_typed_turn_elsewhere_during_voice_releases_the_partner_model_again`
+  — Voice On releases and loads; a typed turn in a sealed second conversation loads the
+  Partner model and the record shows it released when the call settled; after Voice
+  ends the next typed turn keeps it resident. With the switch unset none of this runs
+  and today's behaviour is unchanged.
+
+## 11. The release recommendation (r3) — for his approval
+
+**Recommendation: Gemma retained; release r3 with both residency switches set.** The
+challenger comparison is closed on evidence (`CHALLENGER.md` §2); the simultaneous-residency
+configuration failed and is excluded; the repair and its guard are measured.
+
+| | |
+|---|---|
+| **revision** | tag `voice-model-release-2026-09-29-r3` (commit named in §11.1; branch `latency-2026-09-28`, pushed). Service code = r2 + the §10.6 guard; **`apps/desktop` byte-identical to `9db6e61`**, so the staged desktop bundle (`955438f0…7686`) is the release's desktop |
+| **active switches** | `VAL_VOICE_MODEL=gemma-4-26b-a4b`, `VAL_ADAPTIVE_ENDPOINT=on`, `VAL_VOICE_TURN_PREFILL=on`, **`VAL_VOICE_RELEASES_PARTNER=on`**, `VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1`, `VAL_LLAMACPP_API_KEY` (entered by the owner-only tool). `VAL_VOICE_EARLY_AUDIO` and every other latency switch **unset** |
+| **model** | Gemma 4 26B-A4B-it, thinking off, `lmstudio-community/gemma-4-26B-A4B-it-GGUF` @ `f6e67478…`, `Q4_K_M` (16.8 GB, SHA-256 pinned in code); official llama.cpp 0.4.1 build 10964, one slot, 32,768 tokens; publisher sampling 1.0 / 0.95 / 64 |
+| **CI** | green on `release/voice-model-2026-09-29` at `9db6e61` (run 36657030128) and `b2696fe` (36660639782); the r3 commit's run is named in §11.1 |
+| **quality evidence** | 32 critical samples, 30 pressure samples, 8 ordinary cases against GPT-OSS, 80 + 66 desktop answers read: **no absolute failure, no material regression**. Within scope; not universal |
+| **resources** | one cognition model at a time, enforced by the switch and its guard: free memory 38–39% median with recognition and synthesis resident, lowest sample 16–18% at the Voice model's load, swap growth ≤ 0.5 GB per run. **Both resident (excluded): swap +11.5 GB.** The "below 20%" reading is still his (§7.5) |
+| **audible response, speech end → first audio** | ordinary **2.33 s** median, p90 4.18; simple exchanges **2.56 s** median; first turn of a session 2.3–3.7 s; a turn with a pause inside it 2.6–5.4 s (every continuation joined); slowest ordinary turn 8.0 s (§7.3). GPT-OSS in production's configuration: 6.9–14 s. **This is not a one-second result**; ~1.6 s of it is endpoint, confirmation, synthesis and the hold |
+| **readiness** | Voice On → Ready 19–20 s the first time in a process, 12.4–13.7 s after |
+| **switching** | Voice On releases GPT-OSS in 0.4 s; Voice ending reloads it in 3.5–7.2 s off the request path; a typed turn elsewhere during Voice, or a fallback, pays 3.5–7.2 s and is released again when it settles |
+| **fallbacks / missing audio** | 0 / 0 in 146 desktop turns |
+| **installation** | §9, with the r3 commit for `9db6e61` and the extra setting; migration `0032`; rollback = plist restored, kickstart, previous desktop bundle back |
+| **listening check** | one, in the room (§8.4): a greeting; an ordinary question and a follow-up; a correction after a pause; an interruption while she speaks; a sentence continued after a one-second pause — listening for a click or gap at her first word, a cut-off first word, and her beginning before he has finished |
+
+Not changed by any of this: the persona, Core's authority over the request, local-only
+processing (the Voice model is a loopback server this Mac starts), the voice, pace,
+segmenter, interruption handling and the merge hold.
