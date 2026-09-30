@@ -646,7 +646,7 @@ class Gateway:
         if self._persona_loader is None:
             return {"primed": False, "outcome": "skipped", "reason": "no persona loader"}
         try:
-            cast(LocalRuntimeAdapter, adapter).ensure_runtime_ready(config)
+            self._ready_local(config)
         except LocalRuntimeUnavailableError as failure:
             return {
                 "primed": False,
@@ -769,7 +769,7 @@ class Gateway:
         adapter = self._adapters[config.provider]
         try:
             if supports_local_runtime(adapter):
-                cast(LocalRuntimeAdapter, adapter).ensure_runtime_ready(config)
+                self._ready_local(config)
             persona = self._persona_loader.active()
             request = assemble(
                 persona,
@@ -889,6 +889,17 @@ class Gateway:
                 return time.monotonic() - started
             time.sleep(0.05)
 
+    def _ready_local(self, config: ModelConfig) -> Mapping[str, object]:
+        """The one door to a local runtime's readiness: transition first, then ready, then
+        noted resident (§10.8). Every path that can bring a local model up — a call, a
+        prime, a prefill, a warm-up, a return — comes through here, so none can recreate a
+        pair of resident models behind the others' backs."""
+        adapter = cast(LocalRuntimeAdapter, self._adapters[config.provider])
+        self._transition_to(config)
+        readiness = adapter.ensure_runtime_ready(config)
+        self._note_resident(config)
+        return readiness
+
     def _note_resident_if_loaded(self, config: ModelConfig) -> None:
         """Record this model as resident when its runtime says it is loaded now."""
         loaded = getattr(self._adapters.get(config.provider), "model_loaded", None)
@@ -918,13 +929,10 @@ class Gateway:
             return {"returned": False, "reason": "Voice is not holding the memory"}
         transitions = self._transition_to(voice)
         try:
-            readiness = cast(
-                LocalRuntimeAdapter, self._adapters[voice.provider]
-            ).ensure_runtime_ready(voice)
+            readiness = self._ready_local(voice)
         except LocalRuntimeUnavailableError as failure:
             self._observe_block(f"returning to {voice.slug} did not succeed: {failure}")
             return {"returned": False, "slug": voice.slug, "reason": str(failure)}
-        self._note_resident(voice)
         primed = self.prime_prefix(routes=("partner",))
         return {
             "returned": True,
@@ -940,13 +948,10 @@ class Gateway:
         if partner is None or not supports_local_runtime(self._adapters[partner.provider]):
             return {"warmed": False, "reason": "no local Partner route"}
         try:
-            readiness = cast(
-                LocalRuntimeAdapter, self._adapters[partner.provider]
-            ).ensure_runtime_ready(partner)
+            readiness = self._ready_local(partner)
         except LocalRuntimeUnavailableError as failure:
             self._observe_block(f"re-warming {partner.slug} after Voice did not succeed: {failure}")
             return {"warmed": False, "slug": partner.slug, "reason": str(failure)}
-        self._note_resident(partner)
         return {"warmed": True, "slug": partner.slug, **dict(readiness)}
 
     def warm_cognition(self) -> Mapping[str, object]:
@@ -1000,9 +1005,8 @@ class Gateway:
                     f"(a spoken turn would try {chosen.slug} first)"
                 ),
             }
-        adapter = self._adapters[chosen.provider]
         try:
-            readiness = cast(LocalRuntimeAdapter, adapter).ensure_runtime_ready(chosen)
+            readiness = self._ready_local(chosen)
         except LocalRuntimeUnavailableError as failure:
             # Not raised: the turn's own readiness call is the one that must fail
             # honestly. Warming early is an optimisation, never a gate.
@@ -1011,7 +1015,6 @@ class Gateway:
                 "and will fail honestly there if the runtime cannot be had."
             )
             return {"warmed": False, "slug": chosen.slug, "reason": str(failure)}
-        self._note_resident(chosen)
         result: dict[str, object] = {"warmed": True, "slug": chosen.slug, **dict(readiness)}
         if transitions is not None:
             result["transitions"] = transitions
@@ -1020,8 +1023,7 @@ class Gateway:
         light = self._spoken_turn_route(TaskType.LIGHT_CONVERSATION)
         if light is not None and supports_local_runtime(self._adapters[light.provider]):
             try:
-                ready = cast(LocalRuntimeAdapter, self._adapters[light.provider])
-                readiness_light = ready.ensure_runtime_ready(light)
+                readiness_light = self._ready_local(light)
                 result["light"] = {"warmed": True, "slug": light.slug, **dict(readiness_light)}
             except LocalRuntimeUnavailableError as failure:
                 result["light"] = {"warmed": False, "slug": light.slug, "reason": str(failure)}
@@ -1526,7 +1528,6 @@ class Gateway:
         counted = False
         return_after = False
         if supports_local_runtime(adapter):
-            local = cast(LocalRuntimeAdapter, adapter)
             # Counted before the runtime is asked, so a release decided meanwhile waits
             # for this call rather than landing under it (§10.6).
             with self._residency_lock:
@@ -1540,9 +1541,8 @@ class Gateway:
                 # afterwards by `return_to_voice_model`. Never resident together.
                 transitions = self._transition_to(config)
                 mark("runtime_ready_start")
-                readiness = local.ensure_runtime_ready(config)
+                readiness = self._ready_local(config)
                 mark("runtime_ready_end")
-                self._note_resident(config)
                 self._observe_block(
                     "local runtime ready: "
                     + ", ".join(f"{key}={value}" for key, value in readiness.items())

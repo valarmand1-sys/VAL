@@ -395,3 +395,33 @@ def test_the_fallback_during_voice_replaces_the_voice_model_and_it_returns(
     ], "the fallback released the Voice model, loaded the Partner model, answered"
     assert _wait_for(lambda: adapter.events[-1] == ("load", voice_model.model_identifier))
     assert adapter.loaded == {voice_model.model_identifier}, "and the Voice model is back"
+
+
+def test_a_prefill_during_a_typed_call_waits_rather_than_reloading_beside_it(
+    store: Engine, voice_model: ModelConfig
+) -> None:
+    """§10.8 (found live, 00:35): the session's prefill at speech start reached the runtime
+    directly and brought the Voice model back beside the Partner model. Every readiness
+    path now goes through the transition, so the prefill waits for the typed call."""
+    adapter = Blocking()
+    adapter.script = [ok("Lisbon, my lord."), ok(".")]  # the typed answer, the prime's token
+    gateway = _holding_gateway(store, adapter, voice_model)
+    typed = threading.Thread(target=_typed_call, args=(store, gateway, "Capital of Portugal?"))
+    typed.start()
+    assert adapter.started.acquire(timeout=10)  # the Partner model is answering now
+    assert adapter.loaded == {_partner().model_identifier}, "the Voice model was released for it"
+    results: list[object] = []
+    prefill = threading.Thread(
+        target=lambda: results.append(
+            gateway.prefill_turn((Message(role="user", content="state block"),))
+        )
+    )
+    prefill.start()
+    time.sleep(0.3)
+    assert adapter.loaded == {_partner().model_identifier}, "not reloaded beside it"
+    assert prefill.is_alive(), "the prefill waits for the typed call to settle"
+    adapter.go.set()
+    typed.join(10)
+    prefill.join(10)
+    assert _wait_for(lambda: adapter.loaded == {voice_model.model_identifier})
+    assert ("release", _partner().model_identifier) in adapter.events
