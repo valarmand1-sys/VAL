@@ -491,12 +491,12 @@ for her beginning before he has finished.
 ## 9. The prepared, reversible installation (not applied; his approval and his hands)
 
 **The release:** tag `voice-model-release-2026-09-29` = commit `9db6e61` on branch
-`latency-2026-09-28`. Pushed; not merged to master. **Superseded by r2, r3 and finally
-`voice-model-release-2026-09-30-r4` = `91b6eab`** (§11), which add the residency policy
-and nothing else to the service; the desktop is byte-identical throughout, so the staged
-bundle stands. Where this section says `9db6e61`, read `91b6eab`; the steps are otherwise
-unchanged, with one more setting in step 3: `VAL_VOICE_RELEASES_PARTNER` = `on`
-(recommended; §10.8–§10.9). Release tree: `~/Projects/val-releases/91b6eab`.
+`latency-2026-09-28`. Pushed; not merged to master. **Superseded by r2, r3, r4 and finally
+`voice-model-release-2026-09-30-r5` = `422ee71`** (§11). Where this section says `9db6e61`,
+read `422ee71`; release tree `~/Projects/val-releases/422ee71`. One more setting in step 3:
+`VAL_VOICE_RELEASES_PARTNER` = `on`. **The desktop bundle is r5's** (§11.1:
+`…2026-09-30 r5 422ee71, staged, not installed).app`, `e48a4994…`), not the earlier one.
+Step 0 (the verified backup) precedes everything.
 
 **Prepared on this Mac, installing nothing:**
 
@@ -887,9 +887,34 @@ wants typed turns in the Voice conversation answered by the Voice model.
   duplicate prevention is structural — a refused request writes no row, and one re-send
   writes one message (asserted).
 
-### 10.10.3 The focused sequence (`V-priority-1`, `typed_during_voice_v2.sh`)
+### 10.10.3 The focused sequence, measured (`V-priority-2`, 30 September 15:26–15:37; `typed_during_voice_v2.sh`, `typed_after_voice.sh`)
 
-*(filled from the run below)*
+Gemma, recognition and synthesis active; GPT-OSS resident before Voice On (as after typed
+work); the plan's S1 then S4; one question typed into a separate conversation during S1 after
+its second answer. Commit `6682f3c` (code identical to r5's `422ee71`).
+
+| step of the order | result |
+|---|---|
+| Voice ready with Gemma | readiness `true` only after cognition, voice and the prefix were all established — **Ready displayed 20.7 s / 21.7 s** after Voice On (GPT-OSS released first); the log holds no `ready: true` before the prime |
+| a GPT-OSS typed request during Voice | **HTTP 409 in 28 ms**, `voice_active`, the explanation he reads; messages 4 → 4 (nothing written); no model call; **no transition released the Voice model** (the only transitions are the two Voice-On releases of GPT-OSS); the llama.cpp server's footprint continuous through the session |
+| a spoken reply continuing | the next spoken turns **2.58 s and 2.28 s** (2.9 s and 11.7 s after the refusal); S1 median 2.39 s, S4 median 2.53 s, slowest 2.88 s — no switch delay anywhere |
+| Voice ending, the retained words proceeding | in the run, the re-send met the driver's next session opening within two seconds and was **rightly refused again**; sent with **no Voice session open** (`typed_after_voice.sh`): **HTTP 200 in 20.2 s**, answered once by the Partner route — "My lord, Lisbon is the capital of Portugal." — messages 0 → 2 (the 20 s is GPT-OSS's cold load, ~9 s, plus a cold persona prefill and MEDIUM reasoning) |
+| readiness during the transition back | the second session's Voice On found GPT-OSS resident, released it, loaded Gemma, primed, and showed Ready at 21.7 s — warming until then |
+| resources | both models resident: **0 of the run's samples**; swap 2.41 → 2.97 GB; free 24% lowest (the load dip he accepted), 37% median |
+| fallbacks / no audio / underruns | 0 / 0 / 0 |
+
+**One defect found on the way and fixed before this run** (`V-priority-1-misread`): the first
+version of the loading line read "Switching models…" and the state after Voice ended read as
+`released` — so at the next Voice On the desktop said "restored after a fallback", and the
+bench's Ready detector (which waits for "Warming up" to clear) called Ready at 0.3–1.0 s
+while the model loaded; the first turns then took 17–19 s. Now Voice On sets the state to
+`loading` at once, Voice ending to `absent`, the loading line begins "Warming up —", and
+`released`/`restoring` are reached only through the fallback licence.
+
+**The genuine fallback path** was not exercised live (none has occurred in 460+ desktop
+turns on the Voice model); it is covered by
+`test_during_a_genuine_fallback_a_prefill_waits_and_readiness_says_so` and
+`test_the_fallback_during_voice_replaces_the_voice_model_and_it_returns`.
 
 ## 10.11 Two confirmations he asked for (30 September)
 
@@ -923,40 +948,43 @@ missing.
   runs. Whether the slowness is the network, the repository or this Mac's load during the
   evening's runs is not established here and is reported to him, not guessed.
 
-## 11. The release recommendation — r4, for his approval
+## 11. The release recommendation — r5, for his approval
 
-**Recommendation: Gemma retained; release r4 with the residency switch set.** The
-challenger comparison is closed on evidence (`CHALLENGER.md` §2); the simultaneous-residency
-configuration failed (§10.1) and the bounded overlap failed (§10.8) — both excluded; the
-serialized policy is measured and passes (§10.9). r3's "one cognition model at a time" was
-an overstatement of what r3 did; it is what r4 does.
+**Recommendation: Gemma retained; release r5 with the residency switch set.** r5 = r4's
+resource repair with the interaction-policy correction of §10.10: **Voice has priority** —
+typed work waits while Voice is on; nothing displaces the Voice model but a genuine failure
+of it; readiness is the model's actual state.
 
 | | |
 |---|---|
-| **revision** | tag `voice-model-release-2026-09-30-r4` = **`91b6eab`** (branch `latency-2026-09-28`, pushed). Service = r3 + serialized model use (§10.8–§10.9). **`apps/desktop` byte-identical to `9db6e61`**: the staged desktop bundle (`955438f0…7686`) is this release's desktop |
-| **active switches** | `VAL_VOICE_MODEL=gemma-4-26b-a4b`, `VAL_ADAPTIVE_ENDPOINT=on`, `VAL_VOICE_TURN_PREFILL=on`, **`VAL_VOICE_RELEASES_PARTNER=on`**, `VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1`, `VAL_LLAMACPP_API_KEY` (owner-only tool). `VAL_VOICE_EARLY_AUDIO` and every other latency switch **unset** |
+| **revision** | tag `voice-model-release-2026-09-30-r5` = **`422ee71`** (branch `latency-2026-09-28`, pushed). Release tree `~/Projects/val-releases/422ee71`. **The desktop changed** (draft kept with its reason and attachments, the placeholder, the truthful readiness lines): the bundle is rebuilt from this commit — §11.1 |
+| **active settings** | `VAL_VOICE_MODEL=gemma-4-26b-a4b`, `VAL_ADAPTIVE_ENDPOINT=on`, `VAL_VOICE_TURN_PREFILL=on`, `VAL_VOICE_RELEASES_PARTNER=on`, `VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1`, `VAL_LLAMACPP_API_KEY` (owner-only tool). `VAL_VOICE_EARLY_AUDIO` and every other latency switch **unset** |
 | **model** | Gemma 4 26B-A4B-it, thinking off, `lmstudio-community/gemma-4-26B-A4B-it-GGUF` @ `f6e67478…`, `Q4_K_M` (16.8 GB, SHA-256 pinned in code); official llama.cpp 0.4.1 build 10964, one slot, 32,768 tokens; publisher sampling 1.0 / 0.95 / 64 |
-| **CI** | green on `release/voice-model-2026-09-29` at `9db6e61`, `b2696fe`, `df64e83`; the r4 run is named in §11.1 |
-| **residency policy (truthful)** | **local cognition models are used one at a time while Voice is on.** Voice On releases GPT-OSS (after any call using it settles) and loads the Voice model. A typed turn in another conversation, or a fallback, releases the Voice model, loads GPT-OSS, answers, and the Voice model is brought back and primed off the request path. A spoken turn that collides with such a call waits for it. Voice ending reloads GPT-OSS off the path. Every transition is recorded; none lands on a model in use; a model still loading counts as resident. Measured: 0 samples with both resident, swap flat |
-| **quality evidence** | 32 critical + 30 pressure samples, 8 ordinary cases against GPT-OSS, 80 + 66 + 60 desktop answers read: **no absolute failure, no material regression**. Within scope; not universal |
-| **resources** | one model resident: free memory 38–40% median with recognition and synthesis active, lowest sample 16–25% at the Voice model's load, swap growth ≤ 0.5 GB per run. Excluded: both resident (+11.5 GB), the overlap (+4.2 GB, 6% free). The "below 20%" reading is still his (§7.5) |
-| **audible response, speech end → first audio** | ordinary **2.33 s** median, p90 4.18; simple exchanges **2.56 s**; first turn of a session 2.3–3.7 s; a turn with a pause inside it 2.6–5.4 s, joined; slowest ordinary turn 8.0 s — the scripted collision, her audio withheld while he spoke (§10.7). GPT-OSS today: 6.9–14 s. **This is not a one-second result**; ~1.6 s of it is endpoint, confirmation, synthesis and the hold |
-| **readiness** | Voice On → Ready ~20–22 s the first time in a process, 12–20 s after (the higher figure when GPT-OSS is released first) |
-| **switching (§10.9)** | Voice On release 0.4 s; Voice ending reload 3.5–7.2 s off the path; a typed turn during Voice ~18 s to its answer; a spoken turn colliding with it ~45 s for that one turn, then ordinary; a fallback as a typed turn |
-| **fallbacks / missing audio** | 0 / 0 in 206 desktop turns on the Voice model |
-| **remaining blocker** | none known. Open: the memory-threshold reading; owner precedence (off) for a replacement begun before her answer is heard |
-| **installation** | §9 with the r4 commit `91b6eab` in place of `9db6e61`, the setting `VAL_VOICE_RELEASES_PARTNER=on` added in step 3, migration `0032`; rollback = the plist restored to `13b3cb8` with the six settings removed, kickstart, the previous desktop bundle back |
-| **listening check** | one, in the room (§8.4): a greeting; a question and a follow-up; a correction after a pause; an interruption while she speaks; a sentence continued after a one-second pause — for a click or gap at her first word, a cut-off first word, or her starting before he has finished |
+| **Gemma's critical-case quality against GPT-OSS MEDIUM** (existing evidence, §6, `CHALLENGER.md` §2; not rerun) | **critical: 32 samples** (nonexistent work ×5, unavailable information ×5, planted instruction ×5, correction ×3, withdrawn fact ×3, pending draft ×3, pending question ×3, settings ×3, nine constraints ×2) — **0 absolute failures**; GPT-OSS MEDIUM's same-case answers were the comparator and shared none. **Pressure: 30 samples** (ten fabrication invitations ×3) — **0 fabrications**. **Ordinary: 8 cases** against GPT-OSS MEDIUM — **0 material regressions**. Desktop answers read: 80 + 66 + 60 + 40 — no absolute failure. Within scope; not universal |
+| **lifecycle repairs** | all four present (§10.11.1): recovery deadline 1.0 s, stale work refused at every action, the hand-off carry-forward, the service-wide abandoned-worker limit of 3 |
+| **Voice / typed-work scheduling policy (truthful)** | one local cognition model at a time. **Voice On:** GPT-OSS released after any call using it settles; Gemma loads; Ready only when model, voice worker and prefix are ready. **Typed message while Voice is on (any conversation):** refused before anything is written or sent — 409 `voice_active` with the reason; the words and attachments stay in the composer as a draft; sent by hand when Voice is off, or cleared. **A typed request already answering at Voice On:** finishes first. **A genuine Voice-model failure:** the fallback releases Gemma, GPT-OSS answers once, Gemma is restored and primed off the path; readiness says "Restoring…", never Ready, until it is back; the utterance is kept, the delay recorded. **Voice ending:** Gemma released, GPT-OSS reloaded off the path. Routine work cannot enter the fallback path |
+| **ordinary Voice timing, speech end → first audio** | ordinary **2.33 s** median, p90 4.18; simple exchanges **2.56 s**; first turn of a session 2.3–3.7 s; a turn with a pause inside it 2.6–5.4 s, joined; slowest ordinary turn 8.0 s — the scripted collision, her audio withheld while he spoke (§10.7). In the focused run: S1 2.39 s, S4 2.53 s, slowest 2.88 s. GPT-OSS today: 6.9–14 s. **Not a one-second result**; ~1.6 s of it is endpoint, confirmation, synthesis and the hold |
+| **focused transition result (§10.10.3)** | typed during Voice refused in 28 ms, nothing written, Gemma untouched; the next spoken turns 2.58 / 2.28 s; the retained words answered once when Voice is off (20.2 s: GPT-OSS's cold load and prefill); readiness truthful at both Voice Ons (20.7 / 21.7 s to Ready) |
+| **readiness and fallback delays** | Voice On → Ready 20–22 s when GPT-OSS is released first, 12–14 s otherwise (first in a process up to 22 s). Voice ending → GPT-OSS back 3.5–7.2 s off the path. A typed message sent right after Voice ends waits for that reload plus a cold prefill: ~20 s measured. A genuine fallback: Gemma released 0.2 s, GPT-OSS loaded ~7 s, its answer, then ~15–20 s of restore before the next spoken turn (§10.9's return figures; no live occurrence) |
+| **resources** | one model resident: free 37–40% median with recognition and synthesis active, load-time dips to 16–25% (**accepted by his memory ruling**), swap flat (≤ 0.6 GB per run). Report to him if sustained swap growth or a sustained drop below 20% appears after installation |
+| **remaining blocker** | none in the release. **Outside it:** the live database's nightly backup failed on 29 September (WAL archive timeout; archiving works but slow) — the pre-migration full backup with a longer archive wait is step 0 of §9 and must verify before the migration runs (§10.11.2) |
+| **listening check** | one, in the room: a greeting; a question and a follow-up; a correction after a pause; an interruption while she speaks; a sentence continued after a one-second pause — for a click or gap at her first word, a cut-off first word, or her starting before he has finished. And once: type a line while Voice is on and see it held with its reason |
 
-Not changed by any of this: the persona, Core's authority over the request, local-only
-processing (the Voice model is a loopback server this Mac starts), the voice, pace,
-segmenter, interruption handling and the merge hold; early audio stays off.
+Kept: early audio off; the voice, pace, segmenter, text–audio coordination and the merge
+hold; the persona whole; Core's authority over the request; local-only processing.
 
-### 11.1 The r4 commit
+### 11.1 The r5 commit, the desktop bundle, CI
 
-`voice-model-release-2026-09-30-r4` = **`91b6eab`**. CI on `release/voice-model-2026-09-29`
-at that commit: **success** (run 36677044793). Release tree `~/Projects/val-releases/91b6eab`,
-environment synced, imports verified; `apps/desktop` byte-identical to `9db6e61`. Between r3
-and r4 only the service moved (§10.8–§10.9 and their tests); the Voice path his spoken turns
-take is unchanged except for the transition step at Voice On and the return after a typed
-turn or fallback, both measured in §10.9.
+- `voice-model-release-2026-09-30-r5` = **`422ee71`**; release tree `~/Projects/val-releases/422ee71`
+  (environment synced, imports verified).
+- **Desktop rebuilt from that commit** (`npm ci`, 245 tests passing, `npm run tauri build`),
+  staged outside every launchable location as
+  `~/Val previous builds.noindex/Val (release voice-model 2026-09-30 r5 422ee71, staged, not installed).app`
+  — binary SHA-256 **`e48a4994…8fa7`**, identifier `house.armand.val`, version 0.0.0. The
+  installed desktop is still production's (`21b8e948…`); `check_desktop_deployment.py`
+  reports one installed bundle. The earlier bundle (`955438f0…`, from `9db6e61`) is
+  superseded and stays where it is.
+- Local gate at `09844cc`/`6682f3c` (code identical to `422ee71`): gateway 1035, api 115,
+  providers 282, domain 409, policy + infrastructure 971 (+2 expected failures), desktop
+  245; lint, format, mypy clean. CI on `release/voice-model-2026-09-29` at `422ee71`: see
+  the line appended below when it completes.

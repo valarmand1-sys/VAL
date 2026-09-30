@@ -2249,3 +2249,29 @@ test made — one is required.** Record: `qualification/runs/2026-09-29-voice-mo
   `~/Projects/val-releases/91b6eab`; desktop byte-identical to `9db6e61`; local gate green
   (1036 / 113 / 282 / 409 / 971); CI on the release branch in `VOICE_MODEL.md` §11.1.
   Six settings (four switches on, base URL, key). No known blocker.
+
+## 51. Handoff — Voice has priority; release r5 for approval (owner order of 30 September 2026, afternoon)
+
+**WP3 remains PARTIAL. Nothing deployed; production unchanged.** Record: `VOICE_MODEL.md`
+§10.10–§10.11, §11.
+
+- **His ruling on r4:** the 45.8 s spoken delay and "Ready" during loading prevent approval.
+  **Correction:** while Voice is on, a typed message (any conversation) is refused before
+  anything is written or sent — 409 `voice_active` with the reason; the desktop keeps the
+  words and attachments as a draft (clearing it is the cancellation); the gateway refuses
+  the same at its one door (`VOICE_HAS_PRIORITY`); only a genuine Voice-model failure may
+  displace the model, under `Gateway.fallback_from_voice`. Readiness lays the gateway's
+  model state (`loading` / `released` / `restoring`) over the session's, so Ready is never
+  shown while the model is away; a fallback reads "Restoring…".
+- **Focused sequence (`V-priority-2`):** Ready at 20.7 / 21.7 s (after the prime); typed
+  during Voice → 409 in 28 ms, nothing written, no transition touched Gemma; next spoken
+  turns 2.58 / 2.28 s, session medians 2.39 / 2.53 s, slowest 2.88 s; the retained words
+  answered once with no Voice session open (20.2 s, GPT-OSS's cold load and prefill); both
+  models resident 0 samples, swap flat, free ≥ 24%. One defect found and fixed on the way
+  (readiness text and the post-Voice state made the bench read Ready at 0.3 s while loading).
+- **Confirmed:** the four lifecycle repairs are in the release (§10.11.1). **Finding:** the
+  nightly backup failed 29 September (WAL archive timeout; archiving slow, not broken) —
+  a verified full backup with `--archive-timeout=600` is step 0 of the installation.
+- **Release r5** = `voice-model-release-2026-09-30-r5` (`422ee71`); tree
+  `~/Projects/val-releases/422ee71`; desktop rebuilt and staged (`e48a4994…`). Tests:
+  `test_voice_model.py` 16, `test_voice_priority.py` 2, desktop +2; full gate green.
