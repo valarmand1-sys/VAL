@@ -1,0 +1,1073 @@
+{
+ "condition": "voice_release",
+ "run": "R-overlap-1",
+ "turns": [
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "long answer A",
+   "class": "ordinary",
+   "said": "Tell me a story about a lighthouse keeper, in eight sentences.",
+   "heard": "Tell me a story about a lighthouse keeper in eight sentences.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cb-7bf1-7ae2-964d-c71a17b7da41",
+   "answer": "The salt spray had long since etched deep lines into Elias's weathered face, much like the grooves in the granite base of the tower. Every evening, he climbed the winding iron stairs with a heavy, pra",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4464,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 1,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cb-6308-72c0-82bc-5131517705b3",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 301.5,
+    "preflight_wait_ms": 34,
+    "dispatch_to_first_chunk_ms": 208,
+    "dispatch_to_visible_ms": 208,
+    "visible_to_segment_ms": 327,
+    "segment_to_audio_ms": 912,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "second request before A is heard",
+   "class": "ordinary",
+   "said": "What is a good name for a sheepdog?",
+   "heard": null,
+   "withdrawn_fragments": 0,
+   "answer_message_id": null,
+   "answer": null,
+   "routes": [],
+   "call_statuses": [],
+   "worklet_ms": 841,
+   "worklet_attribution": "uncertain",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 2,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": null,
+   "stages": {}
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "his own words, over A while B waits",
+   "class": "ordinary",
+   "said": "No, Donald. No, no, no, no, no.",
+   "heard": "What is a good name for a sheepdog?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cb-8fcb-78e6-b8d5-fa4a7186506e",
+   "answer": "Barnaby, my lord — a name that feels sturdy and dependable.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": null,
+   "worklet_attribution": "no sound",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 3,
+    "state": "uncertain",
+    "grace_seconds": 1.37,
+    "reason": "no terminal mark"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": true,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cb-8330-7837-a3d0-273d82eba5ee",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 4916.6,
+    "preflight_wait_ms": 28,
+    "dispatch_to_first_chunk_ms": 2602,
+    "dispatch_to_visible_ms": 2602,
+    "visible_to_segment_ms": 580,
+    "segment_to_audio_ms": 656,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "again",
+   "class": "ordinary",
+   "said": "No.",
+   "heard": "No, Donald no no no no no No.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": null,
+   "answer": null,
+   "routes": [],
+   "call_statuses": [],
+   "worklet_ms": null,
+   "worklet_attribution": "no sound",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 4,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cb-9783-75c8-ad03-3cbc4b35c991",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 240.0,
+    "preflight_wait_ms": null,
+    "dispatch_to_first_chunk_ms": null,
+    "dispatch_to_visible_ms": null,
+    "visible_to_segment_ms": null,
+    "segment_to_audio_ms": null,
+    "engine_cache": null
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "a clear stop",
+   "class": "ordinary",
+   "said": "Stop.",
+   "heard": "stock.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cb-ac4f-73ed-96a1-9a47f1f0caec",
+   "answer": "I understand, my lord. I am here.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 5715,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 5,
+    "state": "uncertain",
+    "grace_seconds": 1.37,
+    "reason": "a terminal mark on too few words to judge"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cb-a9e0-7202-8f9e-3d26c36b0454",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 1686.3,
+    "preflight_wait_ms": 37,
+    "dispatch_to_first_chunk_ms": 160,
+    "dispatch_to_visible_ms": 160,
+    "visible_to_segment_ms": 139,
+    "segment_to_audio_ms": 602,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "ordinary request after the stops",
+   "class": "ordinary",
+   "said": "What is the capital of Australia?",
+   "heard": "What is the capital of Australia?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cb-bfea-78d3-a5be-32a7815fddcb",
+   "answer": "Canberra, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 3882,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3844.0,
+   "completion": {
+    "utterance": 6,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed question"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cb-b6ae-7b1b-ab77-82bcf4a3f560",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 278.7,
+    "preflight_wait_ms": 32,
+    "dispatch_to_first_chunk_ms": 2167,
+    "dispatch_to_visible_ms": 2167,
+    "visible_to_segment_ms": 152,
+    "segment_to_audio_ms": 559,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "long answer C",
+   "class": "ordinary",
+   "said": "Describe a walk through an old library, in eight sentences.",
+   "heard": "Describe a walk through an old library in eight sentences.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cb-f77c-79c6-b23a-7b7f26395822",
+   "answer": "The heavy oak doors groaned on their hinges, yielding to a chamber where the air tasted of vanilla and ancient dust. Towering shelves of dark walnut rose into the shadows, their heights lost in a gloo",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 3521,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3466.0,
+   "completion": {
+    "utterance": 7,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cb-dd60-78ef-840d-ad68723e97ed",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 285.7,
+    "preflight_wait_ms": 38,
+    "dispatch_to_first_chunk_ms": 1584,
+    "dispatch_to_visible_ms": 1585,
+    "visible_to_segment_ms": 272,
+    "segment_to_audio_ms": 790,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "replacement at the playback-start boundary",
+   "class": "ordinary",
+   "said": "Wait. Tell me about the sea instead.",
+   "heard": "Wait, tell me about the sea instead.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cc-102a-738d-9d1c-e830f8ba32ce",
+   "answer": "The sea is a vast and restless thing, my lord—a world of deep currents and sudden, crushing weight. It possesses a strength that can erode the hardest stone, yet it holds a grace that moves with the l",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 6238,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 6196.0,
+   "completion": {
+    "utterance": 8,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": true,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cb-f799-7acd-accd-2abc459fb767",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 1078.5,
+    "preflight_wait_ms": 37,
+    "dispatch_to_first_chunk_ms": 3500,
+    "dispatch_to_visible_ms": 3500,
+    "visible_to_segment_ms": 331,
+    "segment_to_audio_ms": 773,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "request",
+   "class": "ordinary",
+   "said": "Name a famous ghost story.",
+   "heard": "Name a famous ghost story.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cc-78ae-773e-ab65-6fb504524155",
+   "answer": "*The Turn of the Screw*, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": null,
+   "worklet_attribution": "no sound",
+   "worklet_underruns": 0,
+   "desktop_ms": null,
+   "completion": {
+    "utterance": 9,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cc-7373-795f-acb0-b94c3241c222",
+   "stages": {}
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "continuation while being made",
+   "class": "ordinary",
+   "said": "And who wrote it?",
+   "heard": "And who wrote it?",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cc-86ba-7ae6-9dc1-504ac76c54bf",
+   "answer": "Henry James, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 4064,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 3932.0,
+   "completion": {
+    "utterance": 10,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed sentence of four words or more"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cc-7c6b-732f-95ec-9c5ac67c6a98",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 268.8,
+    "preflight_wait_ms": 36,
+    "dispatch_to_first_chunk_ms": 2455,
+    "dispatch_to_visible_ms": 2455,
+    "visible_to_segment_ms": 138,
+    "segment_to_audio_ms": 522,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  },
+  {
+   "condition": "voice_release",
+   "run": "R-overlap-1",
+   "session": "O1-overlapping-answers",
+   "label": "thanks",
+   "class": "social",
+   "said": "Thank you.",
+   "heard": "Thank you.",
+   "withdrawn_fragments": 0,
+   "answer_message_id": "01a0f9cc-9f67-7daa-9184-4ccddcbe0e73",
+   "answer": "You are most welcome, my lord.",
+   "routes": [
+    "conversation"
+   ],
+   "call_statuses": [
+    "ok"
+   ],
+   "worklet_ms": 2828,
+   "worklet_attribution": "identity",
+   "worklet_underruns": 0,
+   "desktop_ms": 2776.0,
+   "completion": {
+    "utterance": 11,
+    "state": "complete",
+    "grace_seconds": 0.12,
+    "reason": "a closed greeting, thanks or farewell"
+   },
+   "spoken_after_driver_timeout": false,
+   "spoken_over_her_audio": false,
+   "internal_pauses_s": [],
+   "message_id": "01a0f9cc-9a92-7976-9d44-dc6749ed719d",
+   "stages": {
+    "anchor": "endpoint",
+    "to_submitted_ms": 589.6,
+    "preflight_wait_ms": 41,
+    "dispatch_to_first_chunk_ms": 1012,
+    "dispatch_to_visible_ms": 1012,
+    "visible_to_segment_ms": 174,
+    "segment_to_audio_ms": 528,
+    "engine_cache": {
+     "attribution": "uncertain",
+     "candidates": 0
+    }
+   }
+  }
+ ],
+ "readiness": [
+  {
+   "session": "O1-overlapping-answers",
+   "voice_on_to_ready_displayed_s": 25.991
+  }
+ ],
+ "primes": [
+  {
+   "kind": "initial",
+   "seconds": 9.095,
+   "partner": "established",
+   "light": null
+  }
+ ],
+ "prime_calls": [
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 5789,
+   "latency_ms": 8982,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 6693,
+   "latency_ms": 1697,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7207,
+   "latency_ms": 2341,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7252,
+   "latency_ms": 2358,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 8130,
+   "latency_ms": 3687,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7732,
+   "latency_ms": 2625,
+   "attribution": "uncertain",
+   "candidates": 0
+  },
+  {
+   "model": "gemma-4-26b-a4b-it",
+   "tokens_in": 7753,
+   "latency_ms": 2464,
+   "attribution": "uncertain",
+   "candidates": 0
+  }
+ ],
+ "engine_lines_in_run": 0,
+ "request_bodies": [],
+ "call_models": [
+  "gemma-4-26b-a4b-it"
+ ],
+ "timelines": [
+  {
+   "utterance": 1,
+   "message_id": "01a0f9cb-6308-72c0-82bc-5131517705b3",
+   "endpoint": 0.0,
+   "transcript_final_received": 159.8,
+   "transcript_final_processed": 161.8,
+   "owner_turn_submitted": 301.5,
+   "turn_start": 302.9,
+   "scope_resolved": 302.9,
+   "conversation_created": 308.6,
+   "message_append_start": 308.6,
+   "message_persisted": 313.9,
+   "owner_message_committed": 313.9,
+   "egress_decided": 314.5,
+   "assembly_start": 316.0,
+   "record_state_assembled": 320.3,
+   "assembly_end": 320.4,
+   "runtime_ready_start": 326.8,
+   "runtime_ready_end": 328.2,
+   "exact_preflight_start": 328.3,
+   "exact_preflight_end": 362.6,
+   "provider_dispatch": 364.3,
+   "provider_chunk": 572.0,
+   "provider_visible_text": 572.1,
+   "speech_first_visible_text": 572.1,
+   "speech_segment_queued": 899.5,
+   "tts_synthesize_start": 899.6,
+   "audio_at_sink": 1811.5,
+   "tts_synthesize_return": 4657.0
+  },
+  {
+   "utterance": 2,
+   "message_id": "01a0f9cb-8330-7837-a3d0-273d82eba5ee",
+   "endpoint": 0.0,
+   "transcript_final_received": 207.6,
+   "transcript_final_processed": 219.7,
+   "owner_turn_submitted": 4916.6,
+   "turn_start": 4917.8,
+   "message_append_start": 4918.6,
+   "message_persisted": 4922.5,
+   "owner_message_committed": 4922.5,
+   "egress_decided": 4923.3,
+   "assembly_start": 4924.9,
+   "record_state_assembled": 4933.8,
+   "assembly_end": 4933.9,
+   "runtime_ready_start": 4938.7,
+   "runtime_ready_end": 4940.5,
+   "exact_preflight_start": 4940.7,
+   "exact_preflight_end": 4969.1,
+   "provider_dispatch": 4970.7,
+   "provider_chunk": 7572.7,
+   "provider_visible_text": 7572.8,
+   "speech_first_visible_text": 7572.8,
+   "speech_segment_queued": 8152.9,
+   "tts_synthesize_start": 8153.0,
+   "audio_at_sink": 8808.9,
+   "tts_synthesize_return": 9869.5
+  },
+  {
+   "utterance": 4,
+   "message_id": "01a0f9cb-9783-75c8-ad03-3cbc4b35c991",
+   "endpoint": 0.0,
+   "transcript_final_received": 102.2,
+   "transcript_final_processed": 115.9,
+   "owner_turn_submitted": 240.0,
+   "turn_start": 241.1,
+   "message_append_start": 241.8,
+   "message_persisted": 243.6,
+   "owner_message_committed": 243.6
+  },
+  {
+   "utterance": 5,
+   "message_id": "01a0f9cb-a9e0-7202-8f9e-3d26c36b0454",
+   "endpoint": 0.0,
+   "transcript_final_received": 300.3,
+   "transcript_final_processed": 304.0,
+   "owner_turn_submitted": 1686.3,
+   "turn_start": 1687.4,
+   "message_append_start": 1688.3,
+   "message_persisted": 1690.9,
+   "owner_message_committed": 1691.0,
+   "egress_decided": 1691.7,
+   "assembly_start": 1693.7,
+   "record_state_assembled": 1702.1,
+   "assembly_end": 1702.3,
+   "runtime_ready_start": 1711.0,
+   "runtime_ready_end": 1712.8,
+   "exact_preflight_start": 1712.9,
+   "exact_preflight_end": 1749.6,
+   "provider_dispatch": 1751.4,
+   "provider_chunk": 1911.3,
+   "provider_visible_text": 1911.4,
+   "speech_first_visible_text": 1911.4,
+   "speech_segment_queued": 2050.5,
+   "tts_synthesize_start": 2050.7,
+   "audio_at_sink": 2652.2,
+   "tts_synthesize_return": 3027.0
+  },
+  {
+   "utterance": 6,
+   "message_id": "01a0f9cb-b6ae-7b1b-ab77-82bcf4a3f560",
+   "endpoint": 0.0,
+   "transcript_final_received": 124.4,
+   "transcript_final_processed": 139.1,
+   "owner_turn_submitted": 278.7,
+   "turn_start": 279.5,
+   "message_append_start": 280.2,
+   "message_persisted": 281.7,
+   "owner_message_committed": 281.7,
+   "egress_decided": 282.0,
+   "assembly_start": 283.2,
+   "record_state_assembled": 288.9,
+   "assembly_end": 289.0,
+   "runtime_ready_start": 294.0,
+   "runtime_ready_end": 295.5,
+   "exact_preflight_start": 295.7,
+   "exact_preflight_end": 327.9,
+   "provider_dispatch": 329.9,
+   "provider_chunk": 2497.0,
+   "provider_visible_text": 2497.2,
+   "speech_first_visible_text": 2497.2,
+   "speech_segment_queued": 2649.6,
+   "tts_synthesize_start": 2649.7,
+   "audio_at_sink": 3208.3,
+   "tts_synthesize_return": 3389.3
+  },
+  {
+   "utterance": 7,
+   "message_id": "01a0f9cb-dd60-78ef-840d-ad68723e97ed",
+   "endpoint": 0.0,
+   "transcript_final_received": 142.6,
+   "transcript_final_processed": 162.9,
+   "owner_turn_submitted": 285.7,
+   "turn_start": 286.5,
+   "message_append_start": 287.4,
+   "message_persisted": 293.3,
+   "owner_message_committed": 293.3,
+   "egress_decided": 293.9,
+   "assembly_start": 295.7,
+   "record_state_assembled": 302.6,
+   "assembly_end": 302.7,
+   "runtime_ready_start": 309.8,
+   "runtime_ready_end": 311.4,
+   "exact_preflight_start": 311.6,
+   "exact_preflight_end": 349.6,
+   "provider_dispatch": 352.5,
+   "provider_chunk": 1937.0,
+   "provider_visible_text": 1937.1,
+   "speech_first_visible_text": 1937.1,
+   "speech_segment_queued": 2209.0,
+   "tts_synthesize_start": 2209.2,
+   "audio_at_sink": 2999.5,
+   "tts_synthesize_return": 4415.3
+  },
+  {
+   "utterance": 8,
+   "message_id": "01a0f9cb-f799-7acd-accd-2abc459fb767",
+   "endpoint": 0.0,
+   "transcript_final_received": 174.8,
+   "transcript_final_processed": 178.9,
+   "owner_turn_submitted": 1078.5,
+   "turn_start": 1079.2,
+   "message_append_start": 1079.7,
+   "message_persisted": 1080.9,
+   "owner_message_committed": 1080.9,
+   "egress_decided": 1081.3,
+   "assembly_start": 1082.7,
+   "record_state_assembled": 1087.5,
+   "assembly_end": 1087.6,
+   "runtime_ready_start": 1093.6,
+   "runtime_ready_end": 1095.2,
+   "exact_preflight_start": 1095.4,
+   "exact_preflight_end": 1132.8,
+   "provider_dispatch": 1134.2,
+   "provider_chunk": 4633.9,
+   "provider_visible_text": 4633.9,
+   "speech_first_visible_text": 4634.0,
+   "speech_segment_queued": 4965.1,
+   "tts_synthesize_start": 4965.2,
+   "audio_at_sink": 5738.0,
+   "tts_synthesize_return": 6704.7
+  },
+  {
+   "utterance": 9,
+   "message_id": "01a0f9cc-7c6b-732f-95ec-9c5ac67c6a98",
+   "endpoint": 0.0,
+   "transcript_final_received": 568.1,
+   "transcript_final_processed": 582.1,
+   "owner_turn_submitted": 706.0,
+   "turn_start": 706.8,
+   "message_append_start": 707.7,
+   "message_persisted": 709.3,
+   "owner_message_committed": 709.3,
+   "egress_decided": 709.9,
+   "assembly_start": 711.5,
+   "record_state_assembled": 717.2,
+   "assembly_end": 717.4,
+   "runtime_ready_start": 724.2,
+   "runtime_ready_end": 725.5,
+   "exact_preflight_start": 725.5,
+   "exact_preflight_end": 764.5,
+   "provider_dispatch": 767.3,
+   "provider_chunk": 1747.8,
+   "provider_visible_text": 1747.9,
+   "speech_first_visible_text": 1747.9,
+   "speech_segment_queued": 2051.8,
+   "tts_synthesize_start": 2051.9,
+   "audio_at_sink": 2573.2,
+   "superseded_decided": 3000.8,
+   "superseded_call_ended": 3070.6
+  },
+  {
+   "utterance": 10,
+   "message_id": "01a0f9cc-7c6b-732f-95ec-9c5ac67c6a98",
+   "endpoint": 0.0,
+   "transcript_final_received": 133.5,
+   "transcript_final_processed": 145.6,
+   "owner_turn_submitted": 268.8,
+   "turn_start": 269.4,
+   "message_append_start": 270.1,
+   "message_persisted": 271.5,
+   "owner_message_committed": 271.5,
+   "egress_decided": 271.8,
+   "assembly_start": 273.0,
+   "record_state_assembled": 278.1,
+   "assembly_end": 278.2,
+   "runtime_ready_start": 282.9,
+   "runtime_ready_end": 284.0,
+   "exact_preflight_start": 284.1,
+   "exact_preflight_end": 320.1,
+   "provider_dispatch": 323.3,
+   "provider_chunk": 2778.5,
+   "provider_visible_text": 2778.6,
+   "speech_first_visible_text": 2778.6,
+   "speech_segment_queued": 2916.6,
+   "tts_synthesize_start": 2916.7,
+   "audio_at_sink": 3438.4,
+   "tts_synthesize_return": 3677.7
+  },
+  {
+   "utterance": 11,
+   "message_id": "01a0f9cc-9a92-7976-9d44-dc6749ed719d",
+   "endpoint": 0.0,
+   "transcript_final_received": 436.1,
+   "transcript_final_processed": 450.1,
+   "owner_turn_submitted": 589.6,
+   "turn_start": 590.3,
+   "message_append_start": 590.8,
+   "message_persisted": 592.4,
+   "owner_message_committed": 592.4,
+   "egress_decided": 592.7,
+   "assembly_start": 593.6,
+   "record_state_assembled": 597.2,
+   "assembly_end": 597.3,
+   "runtime_ready_start": 602.6,
+   "runtime_ready_end": 603.8,
+   "exact_preflight_start": 603.8,
+   "exact_preflight_end": 644.9,
+   "provider_dispatch": 646.2,
+   "provider_chunk": 1658.3,
+   "provider_visible_text": 1658.3,
+   "speech_first_visible_text": 1658.4,
+   "speech_segment_queued": 1832.0,
+   "tts_synthesize_start": 1832.1,
+   "audio_at_sink": 2360.4,
+   "tts_synthesize_return": 2764.6
+  }
+ ],
+ "resumptions": [],
+ "precedence": [
+  {
+   "finished_answers": [],
+   "set_aside": [],
+   "by_utterance": 1,
+   "relation": "ambiguous",
+   "reason": "neither an explicit stop or replacement nor a clear continuation",
+   "answer_heard": false,
+   "stop_only": false,
+   "outcome": "kept",
+   "decided_mono": 199037.481685708
+  },
+  {
+   "superseded_utterance": 1,
+   "by_utterance": 2,
+   "relation": "ambiguous",
+   "reason": "neither an explicit stop or replacement nor a clear continuation",
+   "answer_heard": false,
+   "decided_mono": 199041.161709666,
+   "outcome": "kept"
+  },
+  {
+   "finished_answers": [
+    "01a0f9cb-8fcb-78e6-b8d5-fa4a7186506e"
+   ],
+   "set_aside": [
+    "01a0f9cb-8fcb-78e6-b8d5-fa4a7186506e"
+   ],
+   "by_utterance": 4,
+   "relation": "stop",
+   "reason": "a refusal and nothing else, spoken over her answer",
+   "answer_heard": false,
+   "stop_only": true,
+   "outcome": "superseded",
+   "decided_mono": 199050.922097541
+  },
+  {
+   "finished_answers": [],
+   "set_aside": [],
+   "by_utterance": 5,
+   "relation": "ambiguous",
+   "reason": "neither an explicit stop or replacement nor a clear continuation",
+   "answer_heard": false,
+   "stop_only": false,
+   "outcome": "kept",
+   "decided_mono": 199055.622322291
+  },
+  {
+   "finished_answers": [
+    "01a0f9cb-ac4f-73ed-96a1-9a47f1f0caec"
+   ],
+   "set_aside": [],
+   "by_utterance": 6,
+   "relation": "ambiguous",
+   "reason": "neither an explicit stop or replacement nor a clear continuation",
+   "answer_heard": false,
+   "stop_only": false,
+   "outcome": "kept",
+   "decided_mono": 199058.901988416
+  },
+  {
+   "finished_answers": [],
+   "set_aside": [],
+   "by_utterance": 7,
+   "relation": "ambiguous",
+   "reason": "neither an explicit stop or replacement nor a clear continuation",
+   "answer_heard": false,
+   "stop_only": false,
+   "outcome": "kept",
+   "decided_mono": 199068.806571958
+  },
+  {
+   "superseded_utterance": 7,
+   "by_utterance": 8,
+   "relation": "replacement",
+   "reason": "an explicit correction, withdrawal or redirection of the earlier request",
+   "answer_heard": true,
+   "decided_mono": 199074.761219291,
+   "outcome": "kept: already heard"
+  },
+  {
+   "finished_answers": [],
+   "set_aside": [],
+   "by_utterance": 9,
+   "relation": "ambiguous",
+   "reason": "neither an explicit stop or replacement nor a clear continuation",
+   "answer_heard": false,
+   "stop_only": false,
+   "outcome": "kept",
+   "decided_mono": 199107.226386291
+  },
+  {
+   "superseded_utterance": 9,
+   "by_utterance": 10,
+   "relation": "continuation",
+   "reason": "opens or closes as an addition to the earlier request",
+   "answer_heard": false,
+   "decided_mono": 199109.521317041,
+   "outcome": "combined"
+  },
+  {
+   "released_utterance": 9,
+   "superseded_call_ended_mono": 199109.5911305
+  },
+  {
+   "finished_answers": [],
+   "set_aside": [],
+   "by_utterance": 11,
+   "relation": "ambiguous",
+   "reason": "nothing said, or only discourse markers",
+   "answer_heard": false,
+   "stop_only": false,
+   "outcome": "kept",
+   "decided_mono": 199117.241930333
+  }
+ ],
+ "fast_route": [],
+ "deliveries_not_completed": [
+  [
+   "01a0f9cb-7bf1-7ae2-964d-c71a17b7da41",
+   "interrupted",
+   "the owner began speaking"
+  ],
+  [
+   "01a0f9cb-8fcb-78e6-b8d5-fa4a7186506e",
+   "interrupted",
+   "superseded by the owner's next confirmed turn before any of it was heard; segment 1 never played"
+  ],
+  [
+   "01a0f9cb-f77c-79c6-b23a-7b7f26395822",
+   "interrupted",
+   "the owner began speaking"
+  ],
+  [
+   "01a0f9cc-78ae-773e-ab65-6fb504524155",
+   "interrupted",
+   "superseded by the owner's next confirmed turn"
+  ]
+ ],
+ "speech_bound_reached": [],
+ "memory": [
+  {
+   "at": 1790897214.0,
+   "free_percent": 91,
+   "swap_used_mb": 1072.56
+  },
+  {
+   "at": 1790897219.0,
+   "free_percent": 90,
+   "swap_used_mb": 1072.56
+  },
+  {
+   "at": 1790897224.0,
+   "free_percent": 89,
+   "swap_used_mb": 1072.56
+  },
+  {
+   "at": 1790897230.0,
+   "free_percent": 40,
+   "swap_used_mb": 1072.56
+  },
+  {
+   "at": 1790897235.0,
+   "free_percent": 8,
+   "swap_used_mb": 1475.88
+  },
+  {
+   "at": 1790897240.0,
+   "free_percent": 33,
+   "swap_used_mb": 2038.0
+  },
+  {
+   "at": 1790897246.0,
+   "free_percent": 33,
+   "swap_used_mb": 2038.0
+  },
+  {
+   "at": 1790897251.0,
+   "free_percent": 33,
+   "swap_used_mb": 2038.0
+  },
+  {
+   "at": 1790897256.0,
+   "free_percent": 23,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897261.0,
+   "free_percent": 31,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897267.0,
+   "free_percent": 36,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897272.0,
+   "free_percent": 32,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897277.0,
+   "free_percent": 36,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897283.0,
+   "free_percent": 35,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897288.0,
+   "free_percent": 35,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897293.0,
+   "free_percent": 29,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897298.0,
+   "free_percent": 29,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897304.0,
+   "free_percent": 36,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897309.0,
+   "free_percent": 36,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897314.0,
+   "free_percent": 36,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897319.0,
+   "free_percent": 35,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897325.0,
+   "free_percent": 36,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897330.0,
+   "free_percent": 35,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897335.0,
+   "free_percent": 36,
+   "swap_used_mb": 2030.0
+  },
+  {
+   "at": 1790897340.0,
+   "free_percent": 88,
+   "swap_used_mb": 2030.0
+  }
+ ]
+}

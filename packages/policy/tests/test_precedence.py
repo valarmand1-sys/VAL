@@ -208,3 +208,10 @@ def test_a_bare_refusal_is_a_stop_only_when_spoken_over_her(words: str) -> None:
 )
 def test_a_refusal_with_a_request_is_never_reduced_to_a_stop(words: str) -> None:
     assert follow_up(words, interrupting=True).kind != "stop"
+
+
+def test_a_clipped_stop_the_recognizer_misheard_is_a_stop_only_when_it_interrupts() -> None:
+    """Bench of 1 October 2026: "Stop." came back as "stock." and was answered aloud."""
+    assert follow_up("stock.", interrupting=True).kind == "stop"
+    assert follow_up("stock.").kind == "ambiguous"
+    assert follow_up("Check the stock.", interrupting=True).kind != "stop"

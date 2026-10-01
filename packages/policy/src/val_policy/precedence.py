@@ -164,6 +164,11 @@ def _clauses(text: str) -> list[tuple[str, bool]]:
 _REFUSAL_WORD = re.compile(r"^(?:no|nope|nah)$", re.IGNORECASE)
 
 
+#: What the recognizer has returned for a short, clipped "Stop." (bench of 1 October 2026:
+#: "stock."). One word, and only when it interrupts her — never a general synonym.
+_MISHEARD_STOP = re.compile(r"^(?:stock|stopp|stops|stopped|top)$", re.IGNORECASE)
+
+
 def _refusal_only(lowered: str) -> bool:
     words = re.findall(r"[a-z']+", lowered)
     refusals = sum(1 for word in words if _REFUSAL_WORD.match(word))
@@ -181,6 +186,8 @@ def follow_up(utterance: str, *, interrupting: bool = False) -> FollowUp:
     lowered = _prepare(utterance).lower()
     if interrupting and _refusal_only(lowered):
         return FollowUp("stop", "a refusal and nothing else, spoken over her answer")
+    if interrupting and _MISHEARD_STOP.match(lowered.strip(" .!,")):
+        return FollowUp("stop", "one word the recognizer gives for a clipped 'stop'")
     clauses = _clauses(lowered)
     if not clauses:
         return FollowUp("ambiguous", "nothing said, or only discourse markers")
