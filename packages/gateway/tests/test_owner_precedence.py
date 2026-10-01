@@ -256,7 +256,10 @@ def test_a_clear_replacement_supersedes_the_unheard_answer(store: Engine) -> Non
     assert adapter.released == [True] and adapter.late_yielded == 2
     first = deliveries[0]
     # First the supersession; then the record's own closing of a turn with no answer.
-    assert first.interrupted[0] == "superseded by the owner's next confirmed turn"
+    assert (
+        first.interrupted[0]
+        == "superseded by the owner's next confirmed turn before any of it was heard"
+    )
     assert all("late" not in piece for piece in first.fed), "nothing fed after the interruption"
     view = session.snapshot()
     assert view.superseded == {

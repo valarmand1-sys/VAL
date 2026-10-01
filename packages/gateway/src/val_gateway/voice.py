@@ -2241,7 +2241,18 @@ class VoiceSession:
                         }
                         delivery = self._delivery
                         if delivery is not None:
-                            delivery.interrupt("superseded by the owner's next confirmed turn")
+                            # He has heard none of it (the condition above), so the
+                            # record says none: audio that was made, or even handed
+                            # over, is not audio delivered (1 October 2026, §3).
+                            reason = (
+                                "superseded by the owner's next confirmed turn before any "
+                                "of it was heard"
+                            )
+                            cut = getattr(delivery, "cut_playback", None)
+                            if callable(cut):
+                                cut(reason, set())
+                            else:
+                                delivery.interrupt(reason)
                     else:
                         decision["outcome"] = "kept" if not heard else "kept: already heard"
                     _LOGGER.info("voice precedence: %s", json.dumps(decision))
