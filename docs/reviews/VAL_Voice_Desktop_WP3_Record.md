@@ -2275,3 +2275,22 @@ test made — one is required.** Record: `qualification/runs/2026-09-29-voice-mo
 - **Release r5** = `voice-model-release-2026-09-30-r5` (`422ee71`); tree
   `~/Projects/val-releases/422ee71`; desktop rebuilt and staged (`e48a4994…`). Tests:
   `test_voice_model.py` 16, `test_voice_priority.py` 2, desktop +2; full gate green.
+
+## 52. Handoff — r5 INSTALLED for physical acceptance; ACCEPTANCE STOPPED on a confirmed interruption failure (30 September 2026, 21:13–23:00 CDT)
+
+**WP3 remains PARTIAL.** Record: `VOICE_MODEL.md` §12.
+
+- **Installed state (his hands, step by step; verified read-only):** verified full backup
+  `20260930-211356F` (restored to `~/val-restore-check-20260930`, all 38 tables' content
+  digests identical); live store at `0032_light_conversation`; service `422ee71` with the six
+  approved settings (four switches on, early audio off), re-bootstrapped 22:29:08; desktop
+  `e48a4994…`; rollback kept — `~/val-rollback-20260930/house.armand.val.api.plist.13b3cb8`
+  and the previous desktop bundle (`21b8e948…`) in `~/Val previous builds.noindex/`.
+- **Physical result:** readiness, greeting/question/follow-up and pause/continue/correct
+  passed by his word and the record. **Interruption FAILED:** once a newer answer exists, the
+  answer actually sounding cannot be interrupted; his interjections were each recorded and
+  answered after a 25-second answer played through. One delivery record overstates what he
+  heard. Roman numerals are spoken as letters. Typing during Voice was not reached.
+- **Open:** the interruption defect and delivery-record overstatement; roman numerals; the
+  29 September backup failure; `verify_restore.py` unable to complete on the current schema.
+- **Not claimed:** one-second latency; avatar compatibility.

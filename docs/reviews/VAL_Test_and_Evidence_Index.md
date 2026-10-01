@@ -1606,3 +1606,7 @@ Record: `VOICE_MODEL.md` §10.7–§10.9, §11. Evidence: `voice-bench-V-typed-1
 ## 138. Voice has priority — release r5 — 30 September 2026
 
 Record: `VOICE_MODEL.md` §10.10–§10.11, §11. Evidence: `voice-bench-V-priority-2*`, `typed-priority-V-priority-2*.json`, `typed-after-voice-V-priority-2.json`, `service-V-priority-2.log`, `memory-V-priority-2.tsv` (`typed_during_voice_v2.sh`, `typed_after_voice.sh`); `*V-priority-1-misread*` (the readiness defect run). Code: `GatewayErrorKind.VOICE_HAS_PRIORITY`, `Gateway.fallback_from_voice` / `voice_model_state`, `VoiceSession._readiness_now`, `VoiceSessions.open_count`, the API's `_voice_has_priority`, the desktop's `typedWorkWaitsForVoice` and draft handling. Tests: `test_voice_model.py` (16), `apps/api/tests/test_voice_priority.py` (2), `api.test.ts` (+2). Tag `voice-model-release-2026-09-30-r5` = `422ee71`; desktop `e48a4994…`.
+
+## 139. r5 installation and physical acceptance — 30 September 2026 (night)
+
+Record: `VOICE_MODEL.md` §12. Installed: service `422ee71`, store `0032`, desktop `e48a4994…`, backup `20260930-211356F` verified by restore (38/38 table digests). Physical acceptance: readiness, conversation and pause/continue/correct passed; **interruption FAILED** (live records: `speech_deliveries` / `speech_playbacks` of the session's conversation, 22:44:03–22:44:58; service log) — acceptance stopped. Open issues listed in §12.4.

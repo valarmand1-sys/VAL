@@ -989,3 +989,81 @@ hold; the persona whole; Core's authority over the request; local-only processin
   245; lint, format, mypy clean. CI on `release/voice-model-2026-09-29` at `422ee71`: see
   the line appended below when it completes.
 - **CI at `422ee71`: success** (run 36774093275, `release/voice-model-2026-09-29`).
+
+## 12. Installation and physical acceptance — 30 September 2026, 21:13–23:00 CDT: INSTALLED, ACCEPTANCE STOPPED ON A CONFIRMED INTERRUPTION FAILURE
+
+His approval of r5 for physical acceptance was explicit (Gemma through Val Core, the adaptive
+endpoint and local preparation, Voice priority with typed drafts, serialized residency and
+the documented fallback, the load-time memory dips). Each step was run by him, one at a
+time; every verification below was read-only and mine.
+
+### 12.1 What was installed (the actual state)
+
+| step | result |
+|---|---|
+| fresh full backup | `20260930-211356F`, `--archive-timeout=600`, 21:13:56 → 21:29:50, completed (16 min: 15 databases, 7,300 small files uploaded one by one; it was never blocked — the console showed no file lines at `info` level) |
+| restore to an isolated destination | `~/val-restore-check-20260930`, `--type=immediate`, `--archive-mode=off`; started on port 5434 |
+| verification | row counts, foreign keys (0 dangling) and capture-table continuity by production's `verify_restore.py`; **content digests of all 38 tables identical**, each ordered by its real primary key (my read-only pass, because the house verifier cannot complete — §12.4) |
+| migration | `0031_prefix_prime → 0032_light_conversation` on the live store; messages 212, model calls 225 unchanged |
+| rollback configuration | `~/val-rollback-20260930/house.armand.val.api.plist.13b3cb8` (mode 600, fingerprint `0226de44…` identical to production's at the time) |
+| settings | the six approved entries; the llama.cpp key entered by him through `enter_secret.py llamacpp` (a first entry pasted a stale clipboard value — detected by shape only, never read, and replaced) |
+| service | launchd job re-bootstrapped at 22:29:08 from `~/Projects/val-releases/422ee71`; health running; the log announces exactly the four approved candidate behaviours; no early audio |
+| desktop | `/Applications/Val.app` = `e48a4994…8fa7`; one installed bundle; the previous desktop (`21b8e948…`) preserved in `~/Val previous builds.noindex/` |
+
+### 12.2 The physical check, as far as it went
+
+| part | his result | the record |
+|---|---|---|
+| A — Voice On and readiness | "Warming up lasted 20–30 seconds… then disappeared… everything worked properly" | warm-up 16.8 s, preparation 8.2 s, `ready: true` only after both |
+| B — greeting, question, follow-up | "all worked" | Voice On released the real `openai/gpt-oss-20b` for Gemma (first live occurrence); three exchanges, all delivered to completion; her first text ~0.25 s after each message was submitted; no fallback; memory 36% free |
+| C — pausing, continuing, correcting | "worked well" at first | resumes joined (utterances 3→4, 5→6, 11→12, 13→14); one superseded worker passed its 1.0 s deadline and was abandoned, his words joined without it (the lifecycle repair working) |
+| **interrupting her** | **FAILED: "it had trouble after a few messages not allowing me to interrupt or correct her… she kept going, then responded to each of my attempts to interject"** | confirmed — §12.3 |
+| voice quality | **"She's reading roman numerals as letters and not numbers"** | the text is handed to the voice exactly as written; open, §12.4 |
+| typing during Voice | not reached | — |
+
+**Acceptance was stopped at the interruption failure, as he ordered.**
+
+### 12.3 The interruption failure, from the delivery and playback records
+
+- 22:44:10–22:44:17: a long answer (449 characters, five segments, 25 s of audio) was being
+  prepared; he spoke again during it; that message was committed at 22:44:17.883, the instant
+  her audio began (22:44:17.924).
+- 22:44:17.9 → 22:44:43.0: the long answer played in full. He spoke twice more during it
+  (messages committed 22:44:27.875 and 22:44:33.582). **Neither stopped her**; each became a
+  turn and was answered.
+- 22:44:43 → 22:44:58: the answers to his three interjections played one after another,
+  queued on the desktop behind the long one.
+
+**Cause.** The session holds one answer "in flight" (`_delivery`) and one just finished
+(`_recent`). At the onset of his speech it stops `_delivery` only if he has begun to hear it,
+and looks at `_recent` only when no delivery is in flight. Once a *newer* answer exists — the
+one being prepared for his previous words — the session evaluates that one, finds it unheard
+and rightly leaves it; and when a new turn begins, an older answer whose audio the desktop has
+already collected is released from `_recent` altogether. **The answer actually sounding is
+then unreachable by interruption.** With one answer in play his interruptions did work in
+the same session (answers cut mid-speech at 22:40, 22:42:08, 22:42:36). The bench's barge-in
+sessions exercise only that single-answer case. Gemma's speed makes overlapping answers
+common; with nine-second replies they almost never arose.
+
+**Also found in the same record:** one answer (22:43:11, 532 characters) is recorded as
+delivered `completed 6/6` while the desktop played only its first segment and discarded the
+rest when the next answer's audio arrived — the delivery record overstates what he heard.
+
+**This is a defect of the release, not of his use, and not acceptable merely because the
+software followed its current rules.** Not repaired tonight.
+
+### 12.4 Open operational issues, each separate
+
+1. **The scheduled backup of 29 September failed** (WAL archive timeout; archiving works but
+   slowly). Tonight's scheduled incremental succeeded and the manual full backup succeeded;
+   neither repairs the cause.
+2. **`verify_restore.py` cannot complete on the current schema**: its digest step orders by
+   an `id` column that `blobs` does not have, and its table list is kept by hand (r5's copy
+   expects `0032`'s table on a `0031` store). The scheduled restore check that uses it cannot
+   pass until it is repaired.
+3. **Roman numerals are spoken as letters.** Speech-side; a repair changes the spoken form
+   relative to the written text and needs his decision.
+4. **The interruption defect and the delivery-record overstatement** (§12.3).
+
+**Limits unchanged and restated:** audible onset about 2.3–2.6 s in ordinary turns, 3–5 s
+after a joined pause — not one second; no avatar compatibility is claimed.
