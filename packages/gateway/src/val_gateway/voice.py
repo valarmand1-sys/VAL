@@ -1806,7 +1806,9 @@ class VoiceSession:
         for pending in overdue:
             delivery = pending.delivery
             interrupt = getattr(delivery, "interrupt", None)
-            if callable(interrupt):
+            # An answer already set aside keeps the record it was given then (nothing of
+            # it heard); a second row here would restate what was synthesised as delivered.
+            if callable(interrupt) and getattr(delivery, "stop_requested", None) is None:
                 interrupt("superseded, and its worker did not end within the recovery deadline")
             _LOGGER.warning(
                 "voice lifecycle: %s",

@@ -519,6 +519,11 @@ class SpeechDelivery:
             heard = [segment for segment in ordered if segment.index in started_segments]
             cut = max((segment.index for segment in heard), default=None)
             self._append_cut_locked(reason, heard, ordered, cut=cut)
+            # Set aside for good: no further text is voiced for it (an answer still
+            # being written when it was superseded would otherwise go on being
+            # synthesised for nobody), and a later interrupt writes no second row.
+            self._closed = True
+        self._queue.put(None)
         return elapsed
 
     def _append_cut_locked(
