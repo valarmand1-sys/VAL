@@ -113,7 +113,11 @@ class UnheardDelivery(HeldVoice):
         self.finishing.set()
 
     def interrupt(self, reason: str) -> None:
+        # As the real delivery does (1 October 2026): interrupted is a state, and an
+        # interrupted answer is no longer active. The session's playback slot reads both.
         self.interrupted.append(reason)
+        self.active = False
+        self.state = "interrupted"
 
 
 def rows(store: Engine, query: str, **params: object) -> list[tuple]:

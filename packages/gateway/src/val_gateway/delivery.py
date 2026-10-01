@@ -59,6 +59,7 @@ from val_domain.speech import (
 )
 from val_domain.timings import mark
 from val_domain.voice import VoiceUnavailableError
+from val_gateway.delivery_evidence import player_evidence
 from val_policy.speech_segments import Segment, SpeechSegmenter, SpeechTextRefusedError
 
 #: How long one segment's synthesis may take before delivery is called failed.
@@ -873,6 +874,21 @@ class DeliveryRecord:
     segments_total: int | None
     reason: str | None
     events: int
+    #: The player's account of the same answer (owner order, 1 October 2026): what the
+    #: desktop reported its output device did. `state` above is what delivery recorded
+    #: — audio voiced and handed over; this is whether it was heard. See
+    #: `val_gateway.delivery_evidence`.
+    player: str = "none"
+    segments_handed_over: int = 0
+    segments_started: int = 0
+    segments_completed: int = 0
+    heard_characters: int | None = None
+    shortfall: str | None = None
+
+    @property
+    def completed_as_heard(self) -> bool:
+        """Whether a completed delivery may be claimed as heard to its end."""
+        return self.state is DeliveryState.COMPLETED and self.player in ("none", "confirmed")
 
 
 _NEWEST = text(
@@ -896,6 +912,7 @@ def delivery_for(engine: Engine, message_id: UUID) -> DeliveryRecord | None:
         if row is None:
             return None
         events = connection.execute(_COUNT, {"id": message_id}).scalar_one()
+        evidence = player_evidence(connection, message_id, segments_total=row.segments_total)
     return DeliveryRecord(
         message_id=row.message_id,
         state=DeliveryState(row.state),
@@ -905,6 +922,12 @@ def delivery_for(engine: Engine, message_id: UUID) -> DeliveryRecord | None:
         segments_total=row.segments_total,
         reason=row.reason,
         events=events,
+        player=evidence.player,
+        segments_handed_over=evidence.segments_handed_over,
+        segments_started=evidence.segments_started,
+        segments_completed=evidence.segments_completed,
+        heard_characters=None if evidence.player == "none" else len(evidence.heard_prefix),
+        shortfall=evidence.shortfall,
     )
 
 
@@ -913,7 +936,7 @@ def delivery_for(engine: Engine, message_id: UUID) -> DeliveryRecord | None:
 #: owner actually heard rather than what Core generated.
 _SHORT_DELIVERIES = text(
     "select d.message_id, d.state, d.delivered_prefix, d.delivered_characters, "
-    "       d.segments_delivered, d.segments_total, d.reason, m.content "
+    "       d.segments_delivered, d.segments_total, d.reason, m.content, m.sequence "
     "  from speech_deliveries d "
     "  join messages m on m.id = d.message_id "
     " where m.conversation_id = :conversation "
@@ -939,20 +962,79 @@ class ShortDelivery:
         return self.delivered_characters == 0
 
 
+#: Answers delivery recorded as voiced and handed over whole, where the player's rows
+#: show less: a segment handed to the desktop and never reported started, or fewer
+#: segments handed over than were generated. Candidates only — whether playback is over,
+#: and so whether the shortfall is a fact yet, is decided per answer.
+_PLAYER_SHORT = text(
+    "select d.message_id, d.segments_total, m.content, m.sequence "
+    "  from speech_deliveries d "
+    "  join messages m on m.id = d.message_id "
+    " where m.conversation_id = :conversation "
+    "   and d.event = (select max(x.event) from speech_deliveries x "
+    "                   where x.message_id = d.message_id) "
+    "   and d.state in ('completed', 'started') "
+    "   and exists (select 1 from speech_playbacks p where p.message_id = d.message_id) "
+    "   and ( "
+    "     exists (select 1 from speech_playbacks h "
+    "              where h.message_id = d.message_id and h.state = 'available_to_desktop' "
+    "                and not exists (select 1 from speech_playbacks s "
+    "                                 where s.message_id = h.message_id "
+    "                                   and s.segment_index = h.segment_index "
+    "                                   and s.state = 'playback_started')) "
+    "     or (select count(distinct h.segment_index) from speech_playbacks h "
+    "          where h.message_id = d.message_id and h.state = 'available_to_desktop') "
+    "        < coalesce(d.segments_total, 0) "
+    "   ) "
+    " order by m.sequence desc"
+)
+
+
 def short_deliveries(engine: Engine, conversation_id: UUID) -> tuple[ShortDelivery, ...]:
-    """Answers in this conversation whose speech ended short, newest first."""
+    """Answers in this conversation whose speech ended short, newest first.
+
+    Two sources, and the player's is the stricter (owner order, 1 October 2026): an answer
+    whose delivery ended short by its own record, and an answer recorded as delivered
+    whole that the player's reports show was not played whole. The second is stated only
+    once playback of that answer is known to be over — an answer still playing has
+    segments that have not started *yet*, which is not the same thing.
+    """
     with engine.connect() as connection:
         rows = connection.execute(_SHORT_DELIVERIES, {"conversation": conversation_id}).all()
-    return tuple(
-        ShortDelivery(
-            message_id=row.message_id,
-            state=DeliveryState(row.state),
-            delivered_characters=row.delivered_characters,
-            total_characters=len(row.content or ""),
-            reason=row.reason,
-        )
-        for row in rows
-    )
+        found = {
+            row.message_id: (
+                row.sequence,
+                ShortDelivery(
+                    message_id=row.message_id,
+                    state=DeliveryState(row.state),
+                    delivered_characters=row.delivered_characters,
+                    total_characters=len(row.content or ""),
+                    reason=row.reason,
+                ),
+            )
+            for row in rows
+        }
+        for row in connection.execute(_PLAYER_SHORT, {"conversation": conversation_id}).all():
+            evidence = player_evidence(
+                connection, row.message_id, segments_total=row.segments_total
+            )
+            if not evidence.contradicts_completed:
+                continue
+            found[row.message_id] = (
+                row.sequence,
+                ShortDelivery(
+                    message_id=row.message_id,
+                    state=(
+                        DeliveryState.INTERRUPTED
+                        if evidence.segments_started
+                        else DeliveryState.NOT_STARTED
+                    ),
+                    delivered_characters=len(evidence.heard_prefix),
+                    total_characters=len(row.content or ""),
+                    reason=f"player evidence: {evidence.shortfall}",
+                ),
+            )
+    return tuple(short for _, short in sorted(found.values(), key=lambda item: -item[0]))
 
 
 def _wav_rate(audio: bytes) -> int:

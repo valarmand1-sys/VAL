@@ -49,7 +49,7 @@ __all__ = [
 #: on purpose: this is a hand-off, not a buffer, and a desktop that has stopped
 #: collecting is one whose playback has ended — in which case the audio is stale
 #: and discarding it is correct.
-QUEUE_DEPTH = 64
+QUEUE_DEPTH = 600
 #: Since 26 September 2026 a segment arrives in ~1-second pieces (up to ~10 per
 #: segment); a dropped piece would be a hole in a sentence, so the hand-off holds
 #: several segments' worth. The desktop collects every 80 ms, far faster than pieces

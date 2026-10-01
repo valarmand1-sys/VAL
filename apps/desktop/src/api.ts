@@ -459,6 +459,9 @@ export interface SpeechOfferView {
   segment: SpokenAudioView | null;
   // Her answer this delivery speaks, once written — which answer a state is about.
   message_id?: string | null;
+  // Every segment of that answer has been handed over. The service says so; it is
+  // never inferred from a poll that carried no segment (1 October 2026).
+  all_offered?: boolean;
 }
 
 export interface PlaybackEventView {

@@ -1121,6 +1121,18 @@ class DeliveryView(BaseModel):
     segments_total: int | None
     reason: str | None
     events: int
+    #: The player's account (1 October 2026): `state` is what delivery recorded — audio
+    #: voiced and handed over; these say what the desktop reported its speakers did.
+    #: `none` (not delivered through a desktop), `confirmed`, `end_unconfirmed`,
+    #: `in_progress`, `partial`, `not_reported`.
+    player: str = "none"
+    segments_handed_over: int = 0
+    segments_started: int = 0
+    segments_completed: int = 0
+    heard_characters: int | None = None
+    shortfall: str | None = None
+    #: True only when a completed delivery is supported by the player's evidence.
+    completed_as_heard: bool = False
 
 
 class LiveDeliveryView(BaseModel):
@@ -1197,6 +1209,12 @@ class SpeechOfferView(BaseModel):
     #: the house recorded.
     reason: str | None = None
     segment: SpokenAudioView | None = None
+    #: Every segment of this answer has been handed over (1 October 2026). Said by the
+    #: service, which knows; the desktop used to infer it from a poll that carried no
+    #: segment while the delivery read `completed` — and a poll held for his words reads
+    #: exactly like that, so on 30 September an answer was closed after its first segment
+    #: and its other five were collected and thrown away unplayed.
+    all_offered: bool = False
     #: Her answer this delivery speaks, once written; None before. The delivery's
     #: state is repeated on every poll until the next delivery replaces it, so the
     #: desktop needs to know *which* answer a `completed` or a stop is about — or a

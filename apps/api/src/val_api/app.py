@@ -969,6 +969,13 @@ def create_app(
             segments_total=found.segments_total,
             reason=found.reason,
             events=found.events,
+            player=found.player,
+            segments_handed_over=found.segments_handed_over,
+            segments_started=found.segments_started,
+            segments_completed=found.segments_completed,
+            heard_characters=found.heard_characters,
+            shortfall=found.shortfall,
+            completed_as_heard=found.completed_as_heard,
         )
 
     def render_voice(session: UUID, live: VoiceSession) -> VoiceSessionView:
@@ -1316,14 +1323,13 @@ def create_app(
         # The delivery in flight, or the one that has just finished: the last
         # segment of an answer must stay collectable for a moment after the turn
         # ends, or her final words are synthesised and dropped (§11).
+        # The answer in the playback slot (owner order, 1 October 2026): the oldest
+        # answer not yet finished with the desktop, then the newest. One answer's audio is
+        # at the desktop at a time, so a stop here discards only the answer it names.
         speaking = live.speech_handover
         if speaking is None:
             return SpeechOfferView(delivery_state="none", stop=False)
         state = speaking.state.value
-        if live.speech_hold:
-            # His words are in the air and the answer has not begun to be heard: nothing
-            # is handed over until they are decided (release-gaps order §1 and §2).
-            return SpeechOfferView(delivery_state=state, stop=False, message_id=speaking.message_id)
         speaks = speaking.message_id
         sink = getattr(speaking, "sink", None)
         # Stop when delivery ended other than by completing. `active` is False for a
@@ -1337,22 +1343,40 @@ def create_app(
             or (stopped_because is not None and state != "completed")
             or stop_requested is not None
         )
-        reason = None
         if should_stop:
+            # Told once (1 October 2026). Repeating the stop on every poll stopped the
+            # player again each time — including, once answers could overlap, a player
+            # that had gone on to another answer.
+            handed = getattr(sink, "collected", 0)
+            if live.stop_is_told(speaking) or not (isinstance(handed, int) and handed > 0):
+                live.stop_told(speaking)
+                return SpeechOfferView(delivery_state=state, stop=False, message_id=speaks)
+            live.stop_told(speaking)
             reason = (
                 getattr(speaking, "reason", None)
                 or stop_requested
                 or stopped_because
                 or "delivery ended"
             )
-        if not isinstance(sink, DesktopSink):
             return SpeechOfferView(
-                delivery_state=state, stop=should_stop, reason=reason, message_id=speaks
+                delivery_state=state, stop=True, reason=reason, message_id=speaks
             )
+        if live.speech_hold:
+            # His words are in the air and the answer has not begun to be heard: nothing
+            # is handed over until they are decided (release-gaps order §1 and §2). Said
+            # as `held`, never as the delivery's own state: a held answer that reads
+            # `completed` with no segment is not one whose segments have all been offered.
+            return SpeechOfferView(delivery_state="held", stop=False, message_id=speaks)
+        if not isinstance(sink, DesktopSink):
+            return SpeechOfferView(delivery_state=state, stop=False, message_id=speaks)
         offer = sink.collect()
         if offer is None:
             return SpeechOfferView(
-                delivery_state=state, stop=should_stop, reason=reason, message_id=speaks
+                delivery_state=state,
+                stop=False,
+                message_id=speaks,
+                # Finished, and nothing left to collect: every segment has been offered.
+                all_offered=state == "completed" and sink.waiting == 0,
             )
         # The session counts this piece as being heard for its own duration, so
         # maintenance waits for the speakers and not only for synthesis (§7).
@@ -1360,6 +1384,7 @@ def create_app(
             offer.duration_seconds,
             segment=(speaking.message_id, offer.segment_index) if offer.chunk == 0 else None,
             current=speaking is live.delivery,
+            delivery=speaking,
         )
         message_id = speaking.message_id
         if offer.chunk > 0:
@@ -1383,8 +1408,7 @@ def create_app(
             )
         return SpeechOfferView(
             delivery_state=state,
-            stop=should_stop,
-            reason=reason,
+            stop=False,
             message_id=speaks,
             segment=SpokenAudioView(
                 message_id=message_id if message_id is not None else UUID(int=0),

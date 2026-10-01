@@ -681,7 +681,10 @@ export class VoiceController {
       }
       const offered: SpokenAudioView | null = offer.segment;
       if (offered === null) {
-        if (offer.delivery_state === "completed") this.spoken.allOffered(offer.message_id ?? null);
+        // Only on the service's own word that nothing is left to hand over. A poll held
+        // while he was speaking read `completed` with no segment, and closing the answer
+        // on that threw away the rest of it (30 September 2026).
+        if (offer.all_offered === true) this.spoken.allOffered(offer.message_id ?? null);
         return;
       }
       // A segment from an answer that is no longer the one being spoken is not
