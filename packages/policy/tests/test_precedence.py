@@ -145,3 +145,66 @@ def test_a_leading_and_does_not_override_an_explicit_stop() -> None:
 )
 def test_mixed_clauses_with_an_explicit_marker_supersede(words: str) -> None:
     assert follow_up(words).supersedes, words
+
+
+# --- Owner order, 1 October 2026: the plain ways of telling her to stop ----------------
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "Stop it.",
+        "Stop that.",
+        "Stop talking.",
+        "Val, stop talking.",
+        "Please stop speaking.",
+        "Quiet.",
+        "Be quiet.",
+        "Hush.",
+        "Shh.",
+        "Pause.",
+        "Thank you, that will do.",
+        "That'll do.",
+    ],
+)
+def test_the_plain_ways_of_telling_her_to_stop_are_stops(words: str) -> None:
+    assert follow_up(words).kind == "stop"
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "Stop the recording at noon tomorrow.",
+        "Don't stop.",
+        "Can you stop?",
+        "Pause the film at the second act.",
+        "Quiet scenes work better there.",
+        "Is that a quiet street?",
+    ],
+)
+def test_a_request_that_merely_contains_a_stop_word_is_not_a_stop(words: str) -> None:
+    assert follow_up(words).kind != "stop"
+
+
+@pytest.mark.parametrize(
+    "words",
+    # The first two are his own words in the physical check of 30 September 2026.
+    ["No, Donald. No, no, no, no, no.", "No.", "No, no, no.", "Nope.", "No, Val, no."],
+)
+def test_a_bare_refusal_is_a_stop_only_when_spoken_over_her(words: str) -> None:
+    assert follow_up(words, interrupting=True).kind == "stop"
+    assert follow_up(words).kind == "ambiguous", "after she has finished it is his answer"
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "No, just name a famous play.",
+        "No thank you.",
+        "No, the second one.",
+        "No, I meant the barn.",
+        "No Donald is the first.",
+    ],
+)
+def test_a_refusal_with_a_request_is_never_reduced_to_a_stop(words: str) -> None:
+    assert follow_up(words, interrupting=True).kind != "stop"

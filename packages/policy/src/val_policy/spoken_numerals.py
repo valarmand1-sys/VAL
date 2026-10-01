@@ -197,6 +197,9 @@ REGNAL_NAMES = (
     "Darius",
     "Xerxes",
     "Cyrus",
+    # House Armand (the physical check of 30 September 2026: "Donald II" was read as
+    # letters). The house's own names are added here as he gives them.
+    "Donald",
 )
 
 #: Cues after which a lone letter is ordinarily a *label*, not a number: "Appendix

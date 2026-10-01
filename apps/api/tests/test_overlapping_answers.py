@@ -367,3 +367,48 @@ def test_a_continuation_keeps_the_unheard_answer_and_a_held_poll_closes_nothing(
     assert barn_delivery["completed_as_heard"] is True
     assert _segments_of(offers, orchard) == [], "the newer answer waits for the older to finish"
     assert _segments_of(rest, orchard), "and then it is spoken"
+
+
+def test_his_own_words_from_the_physical_check_stop_her_and_are_not_answered(
+    store: Engine,
+) -> None:
+    """30 September 2026, 22:44: "No, Donald. No, no, no, no, no." and then "No." were
+    each answered aloud ("I will cease at once", "I will be silent"). Spoken over her
+    answer they are stops: she stops, his words are kept, and nothing is said back."""
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [started(1), final("Tell me about the barn.", 1)],
+            [started(2)],
+            [final("No, Donald. No, no, no, no, no.", 2)],
+            [started(3), final("No.", 3)],
+        ]
+    )
+    adapter = ScriptedAdapter([ok(BARN), ok(ORCHARD)])
+    with _client(store, adapter, recognizer) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        _hear(reachable, session)
+        barn = _answer_id(_turns(reachable, session, 1), 0)
+        offers = _collect(reachable, session)
+        first = _segments_of(offers, barn)[0]
+        assert _report(reachable, session, barn, first, "playback_started") == 200
+
+        _hear(reachable, session)  # his voice, over her
+        stop = _offer(reachable, session)
+        assert stop["stop"] is True and stop["message_id"] == barn
+        assert _report(reachable, session, barn, first, "playback_interrupted") == 200
+        _hear(reachable, session)  # "No, Donald. No, no, no, no, no."
+        _turns(reachable, session, 2)
+        assert _collect(reachable, session, seconds=1.0) == [], "nothing is said back"
+        _hear(reachable, session)  # "No."
+        view = _turns(reachable, session, 3)
+        assert _collect(reachable, session, seconds=1.0) == []
+
+    assert adapter.calls == 1, "neither refusal was answered"
+    heard = [turn["text"] for turn in view["turns"]]
+    assert heard[:2] == ["Tell me about the barn.", "No, Donald. No, no, no, no, no."]
+    # Speech resumed inside the grace is joined to what it continues (the resume rule):
+    # every word he said is kept, in order.
+    assert heard[2] in ("No.", "No, Donald. No, no, no, no, no. No.")
+    assert _val_messages(store) == 1

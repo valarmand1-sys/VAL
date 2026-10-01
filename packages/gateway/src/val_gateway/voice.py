@@ -2128,16 +2128,18 @@ class VoiceSession:
                     and getattr(held, "stop_requested", None) is None
                     and not self._heard_locked(held)
                 ]
-                relation = follow_up(pending.utterance.text)
+                recently_cut = (
+                    self._last_cut_at is not None
+                    and time.monotonic() - self._last_cut_at <= STOP_REPEAT_WINDOW_SECONDS
+                )
+                relation = follow_up(
+                    pending.utterance.text, interrupting=pending.cut_audible or recently_cut
+                )
                 set_aside: list[Delivery] = []
                 if relation.kind == "stop":
                     set_aside = waiting
                 elif relation.kind == "replacement" and inflight is None and waiting:
                     set_aside = waiting[-1:]
-                recently_cut = (
-                    self._last_cut_at is not None
-                    and time.monotonic() - self._last_cut_at <= STOP_REPEAT_WINDOW_SECONDS
-                )
                 if relation.kind == "stop" and (set_aside or pending.cut_audible or recently_cut):
                     # His stop stopped something — speech that was sounding, or answers
                     # waiting to be spoken — or repeats a stop he has just made. It asks
@@ -2189,7 +2191,14 @@ class VoiceSession:
                 # always did. An answer he has begun to hear is never cut by this rule;
                 # his speaking over it is barge-in, which stopped the speakers already.
                 if self._owner_precedence and pending.follow_up is None:
-                    relation = follow_up(pending.utterance.text)
+                    relation = follow_up(
+                        pending.utterance.text,
+                        interrupting=pending.cut_audible
+                        or (
+                            self._last_cut_at is not None
+                            and time.monotonic() - self._last_cut_at <= STOP_REPEAT_WINDOW_SECONDS
+                        ),
+                    )
                     pending.follow_up = relation.kind
                     heard = self._heard_locked(self._delivery)
                     decision: dict[str, object] = {

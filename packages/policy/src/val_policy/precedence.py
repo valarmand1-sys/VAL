@@ -72,7 +72,10 @@ _DISCOURSE = re.compile(
 _STOP = re.compile(
     r"^(?:stop|never ?mind|never mind that|forget (?:it|that|about it)|scratch that|"
     r"cancel (?:that|it)|that(?:'s| is) enough|enough|leave it|drop it|belay that|not now|"
-    r"(?:don't|do not) bother|no need|let it go)$",
+    r"(?:don't|do not) bother|no need|let it go|"
+    # 1 October 2026: the plain ways of telling someone to stop speaking.
+    r"(?:please )?stop (?:it|that|talking|speaking|now|please)|(?:please )?(?:be )?quiet|"
+    r"hush|sh+|silence|pause|that(?:'ll| will) do)$",
     re.IGNORECASE,
 )
 #: The weak pauses: a stop only alone, or before an explicit correction.
@@ -156,9 +159,28 @@ def _clauses(text: str) -> list[tuple[str, bool]]:
     return out
 
 
-def follow_up(utterance: str) -> FollowUp:
-    """The relationship of his new words to the request still being answered."""
+#: A refusal and nothing else: "No.", "No, no, no." — with at most one other word among
+#: them (a name). Read as a stop only when it was spoken over her answer.
+_REFUSAL_WORD = re.compile(r"^(?:no|nope|nah)$", re.IGNORECASE)
+
+
+def _refusal_only(lowered: str) -> bool:
+    words = re.findall(r"[a-z']+", lowered)
+    refusals = sum(1 for word in words if _REFUSAL_WORD.match(word))
+    return refusals >= 1 and len(words) - refusals <= 1 and (refusals >= 2 or len(words) == 1)
+
+
+def follow_up(utterance: str, *, interrupting: bool = False) -> FollowUp:
+    """The relationship of his new words to the request still being answered.
+
+    `interrupting` (1 October 2026): his speech cut an answer he was hearing, or follows
+    a stop he has just made. Only then is a bare refusal — "No.", "No, no, no." — read as
+    a stop: said over her, it tells her to stop; said after she has finished, it is an
+    answer to her and stays ambiguous.
+    """
     lowered = _prepare(utterance).lower()
+    if interrupting and _refusal_only(lowered):
+        return FollowUp("stop", "a refusal and nothing else, spoken over her answer")
     clauses = _clauses(lowered)
     if not clauses:
         return FollowUp("ambiguous", "nothing said, or only discourse markers")

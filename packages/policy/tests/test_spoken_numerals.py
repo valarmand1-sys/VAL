@@ -268,3 +268,9 @@ def test_a_lone_i_needs_the_end_of_the_text_or_punctuation() -> None:
     assert spoken_form("Is this Part I?") == "Is this Part One?"
     assert spoken_form("Elizabeth I was") == "Elizabeth I was"
     assert spoken_form("Part I was long") == "Part I was long"
+
+
+def test_the_house_name_from_the_physical_check_is_read_as_regnal() -> None:
+    """30 September 2026: "Donald II" was spoken as letters."""
+    assert spoken_form("Donald II ended the feud.") == "Donald the Second ended the feud."
+    assert spoken_form("Lord Donald III.") == "Lord Donald the Third."
