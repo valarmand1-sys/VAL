@@ -46,6 +46,7 @@ from test_voice_input import (
     started,
 )
 
+import val_gateway.delivery as _delivery_module
 from val_domain.gateway import CapabilityProfile, ModelConfig
 from val_domain.registry import active, by_slug
 from val_domain.speech import (
@@ -891,3 +892,33 @@ def test_a_route_that_cannot_stream_still_speaks_and_says_so_in_the_record(
     assert delivery.first_segment_began_before_the_answer_was_finished is False, (
         "a non-streaming route is read-aloud, and the record says so plainly"
     )
+
+
+# =============================================================================
+# Speech-only numerals (owner authorisation, 1 October 2026). Separable: its own
+# switch (`VAL_SPOKEN_NUMERALS`), its own policy module.
+# =============================================================================
+
+
+def test_the_voice_is_asked_for_the_number_and_the_written_segment_is_untouched(
+    store: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(_delivery_module, "SPOKEN_NUMERALS_ENABLED", True)
+    answer = "We resume at Chapter IV, my lord. I have marked the page."
+    voice = ScriptedVoice()
+    delivery = a_delivery(store, voice)
+    deliver(delivery, answer)
+
+    assert any("Chapter Four" in said for said in voice.spoken)
+    assert not any("Chapter IV" in said for said in voice.spoken)
+    written = "".join(segment.text for segment in delivery.spoken)
+    assert "Chapter IV" in written and "Chapter Four" not in written
+    assert delivery.segmenter.reconstructs()
+
+
+def test_with_the_numeral_switch_off_the_voice_is_handed_the_exact_slice(store: Engine) -> None:
+    assert _delivery_module.SPOKEN_NUMERALS_ENABLED is False
+    voice = ScriptedVoice()
+    delivery = a_delivery(store, voice)
+    deliver(delivery, "We resume at Chapter IV, my lord. I have marked the page.")
+    assert any("Chapter IV" in said for said in voice.spoken)

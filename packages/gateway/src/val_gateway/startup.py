@@ -29,6 +29,8 @@ from sqlalchemy import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
 import val_domain.registry as registry
+import val_gateway.context as _context
+import val_gateway.delivery as _delivery
 from val_domain.gateway import Admission, CacheTtl, CapabilityProfile, ModelConfig, ReasoningEffort
 from val_domain.perception import PerceptionProvider
 from val_domain.registry import active, by_slug
@@ -502,6 +504,12 @@ VOICE_EARLY_AUDIO_SETTING = "VAL_VOICE_EARLY_AUDIO"
 #: Candidate (29 September 2026, VOICE_MODEL.md §10): Voice On unloads the Partner model
 #: while the Voice model is resident, and Voice ending brings it back.
 VOICE_RELEASES_PARTNER_SETTING = "VAL_VOICE_RELEASES_PARTNER"
+#: Candidate (owner order, 1 October 2026): Core's conversational guidance follows the
+#: persona in a conversation's system message (`val_gateway.context`).
+CONVERSATION_GUIDANCE_SETTING = "VAL_CONVERSATION_GUIDANCE"
+#: Candidate (owner authorisation, 1 October 2026): unambiguous Roman numerals are read as
+#: numbers by the voice; the written text is untouched (`val_policy.spoken_numerals`).
+SPOKEN_NUMERALS_SETTING = "VAL_SPOKEN_NUMERALS"
 VOICE_MODEL_SETTING = "VAL_VOICE_MODEL"
 VOICE_MODELS = {"gemma-4-26b-a4b": "gemma-4-26b-a4b-q4km-llamacpp-voice"}
 
@@ -922,6 +930,24 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     gateway.voice_releases_partner = voice_model is not None and os.environ.get(
         VOICE_RELEASES_PARTNER_SETTING, ""
     ).strip().lower() in {"1", "on", "true", "yes"}
+    _context.CONVERSATIONAL_GUIDANCE_ENABLED = os.environ.get(
+        CONVERSATION_GUIDANCE_SETTING, ""
+    ).strip().lower() in {"1", "on", "true", "yes"}
+    if _context.CONVERSATIONAL_GUIDANCE_ENABLED:
+        _LOGGER.warning(
+            "CANDIDATE conversational guidance for this process: Core's guidance on how an "
+            "answer is scoped follows the persona in every conversation's system message "
+            "(%d characters; the persona is unchanged and still whole).",
+            len(_context.CONVERSATIONAL_GUIDANCE),
+        )
+    _delivery.SPOKEN_NUMERALS_ENABLED = os.environ.get(
+        SPOKEN_NUMERALS_SETTING, ""
+    ).strip().lower() in {"1", "on", "true", "yes"}
+    if _delivery.SPOKEN_NUMERALS_ENABLED:
+        _LOGGER.warning(
+            "CANDIDATE spoken numerals for this process: unambiguous Roman numerals are "
+            "voiced as numbers; the written text is unchanged."
+        )
     if gateway.voice_releases_partner:
         _LOGGER.warning(
             "CANDIDATE Voice releases the Partner model for this process: Voice On unloads it "

@@ -1032,6 +1032,111 @@ def record_state_block(state: PriorRecordState) -> Message:
     return Message(role="user", content=f"{STATE_ENVELOPE_MARKER}\n{body}")
 
 
+#: **Core's conversational guidance** — owner order, 1 October 2026.
+#:
+#: In the physical check of 30 September he asked "What is a good opening line for a
+#: film?" and was given a long account of what opening lines accomplish, and no line. The
+#: fixed-context runs of 1 October showed the same shape wherever a request was for a
+#: thing: a preamble ("That depends entirely on…"), a list of principles, several
+#: alternatives in markup, and a closing question — or no answer at all until he supplied
+#: particulars — at 60 to 200 seconds of speech; and three-minute essays for "what makes".
+#:
+#: This is **how an answer is scoped**, not who she is: the persona is unchanged and still
+#: whole, first, and verbatim in the system message. The guidance follows it as a separate,
+#: fixed block — governing text, in the governing position, with no record content in it
+#: (it is not the record-state envelope, which stays where it was and stays labelled as
+#: record state, not instruction). Being fixed, it is part of the prefix every turn shares:
+#: it is processed when the prefix is primed and costs a turn nothing. No model is asked to
+#: classify anything and no answer is rewritten or cut: she composes the answer at the
+#: right scope from the start.
+#:
+#: One rule for typed and spoken work: length follows the request, not the medium. The
+#: last paragraph is about presentation only, and applies when the record state says
+#: Voice is on.
+CONVERSATIONAL_GUIDANCE = "\n".join(
+    (
+        (
+            "How Val scopes an answer (House guidance from Lord Armand; it governs the shape "
+            "of answers and changes nothing about who she is):"
+        ),
+        "",
+        "Give him the thing he asked for, and give it first.",
+        (
+            "- When the natural reading of his words asks for a thing itself — an example, a "
+            "suggestion, a wording, a name, a choice, a fact — the answer is that thing, in "
+            'your first sentence. "What is a good name for the boat?" is answered with a '
+            'name: "Halcyon, my lord — a name for calm water." It is not answered with what a'
+            ' good name should do, with a list of considerations, or with "that depends" and '
+            "a question back to him."
+        ),
+        (
+            "- Do not make him supply particulars before he gets an answer to a simple "
+            "creative or advisory request. Choose a reasonable reading and give one good "
+            "answer of your own; where it would truly differ in another case, add that in a "
+            'clause. "How should I begin the letter?" is answered with a beginning: "I would '
+            "begin with the thanks, my lord — something like 'Before anything else, thank you"
+            " for the summer.' If the news is bad, lead with that instead.\" A question, if "
+            "one is worth asking, comes after the answer and never instead of it. Ask first "
+            "only when what is missing makes a useful or responsible answer impossible: an "
+            "unnamed recipient, a matter or document that is not in the record. Directness is"
+            " never guessing: what the record does not hold, you still say you do not have."
+        ),
+        (
+            "- Explain when he asks why, how, what makes something good, or otherwise asks "
+            "for analysis. When he asks for a thing and its explanation, give both."
+        ),
+        (
+            "- What you compose is yours, and you say so before you give it. A line, a "
+            "toast, a title or a wording of your own begins with a few words of yours that "
+            'mark it as your suggestion, and then the line itself: "What is a good first '
+            'line for the invitation?" is answered "One of my own, my lord: \'Come and see '
+            "what the summer made.'\" Your address to him stays outside the quotation "
+            "marks. Never hand over a bare quotation, and never present your own line as "
+            "one from an existing film, book or person. If you quote a real work, do not "
+            "invent its wording, its source, or its place in that work. Compose a line only "
+            "when he asked for one; an explanation he asked for does not need a specimen."
+        ),
+        "",
+        (
+            "Keep conversational answers short by default: the answer itself, and only the "
+            "context that makes it useful and accurate — often one sentence, or a few. Leave "
+            "out the introduction, the list of principles he did not ask for, repeated "
+            "qualifications, the summary, and the closing question asked out of habit. One "
+            "suggestion is enough unless he asks for several."
+        ),
+        (
+            "When he asks for detail, or the task genuinely requires it, give the developed "
+            "answer in full, with its reasoning, conditions and every part he asked for; do "
+            "not make him ask twice for what he has already asked for. Length follows the "
+            "request, not whether it was spoken or typed."
+        ),
+        "",
+        (
+            "When the record state shows Voice is on, your answer will be spoken aloud, "
+            "however long it is: write it for the ear, in plain sentences and paragraphs, "
+            "with no asterisks, bold, headings, bullets, numbered lists or other markup. Say "
+            '"first" and "then" instead of formatting them.'
+        ),
+    )
+)
+
+#: What separates the persona from Core's guidance in the system message. Fixed text.
+CONVERSATION_SYSTEM_SEPARATOR = "\n\n---\n\n"
+
+#: Whether a conversation's system message carries Core's guidance after the persona
+#: (`VAL_CONVERSATION_GUIDANCE=on`, set by the composition root). Off, the system message
+#: is the persona and nothing else, exactly as before.
+CONVERSATIONAL_GUIDANCE_ENABLED = False
+
+
+def conversation_system(persona_content: str) -> str:
+    """The system message of a conversation: the persona, whole and first — and, when
+    the house has enabled it, Core's conversational guidance after it."""
+    if not CONVERSATIONAL_GUIDANCE_ENABLED:
+        return persona_content
+    return persona_content + CONVERSATION_SYSTEM_SEPARATOR + CONVERSATIONAL_GUIDANCE
+
+
 def assemble(
     persona: ActivePersona,
     messages: tuple[Message, ...],
@@ -1062,7 +1167,7 @@ def assemble(
     """
     # Experiment switch only (release-gaps order §4): off, this returns the persona and
     # the messages exactly as given.
-    system, messages = relocate_envelope(persona.content, messages)
+    system, messages = relocate_envelope(conversation_system(persona.content), messages)
     return GatewayRequest(
         task_type=task_type,
         classification=classification,
@@ -1104,5 +1209,7 @@ def persona_occurrences(request: GatewayRequest, persona: ActivePersona) -> int:
     every message body, so a persona duplicated into the conversation would be
     caught rather than merely being unlikely.
     """
-    found = 1 if request.system == persona.content else 0
+    # The persona is whole, first and verbatim in the system message; Core's fixed
+    # conversational guidance may follow it (1 October 2026) and is not a second persona.
+    found = 1 if request.system in (persona.content, conversation_system(persona.content)) else 0
     return found + sum(1 for message in request.messages if message.content == persona.content)

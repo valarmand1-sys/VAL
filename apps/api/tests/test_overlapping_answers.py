@@ -10,8 +10,6 @@ the speech poll, the playback reports — with the release's three switches on: 
 precedence, the adaptive endpoint and combined continuations.
 """
 
-# ruff: noqa: F811, F401 - fixtures imported by name
-
 from __future__ import annotations
 
 import time
@@ -103,7 +101,9 @@ def _turns(reachable: TestClient, session: str, count: int, seconds: float = 12.
         if len(view["turns"]) >= count:
             return view
         time.sleep(0.05)
-    raise AssertionError(f"{count} turn(s) never settled: {len(_view(reachable, session)['turns'])}")
+    raise AssertionError(
+        f"{count} turn(s) never settled: {len(_view(reachable, session)['turns'])}"
+    )
 
 
 def _offer(reachable: TestClient, session: str) -> dict:
@@ -278,8 +278,7 @@ def test_speech_at_the_playback_start_boundary_stops_her_and_late_reports_restar
         # Late events from the stopped answer.
         assert _report(reachable, session, barn, first["segment_index"], "playback_started") == 200
         assert (
-            _report(reachable, session, barn, first["segment_index"], "playback_interrupted")
-            == 200
+            _report(reachable, session, barn, first["segment_index"], "playback_interrupted") == 200
         )
         late = [_offer(reachable, session) for _ in range(5)]
         assert not any(o["stop"] for o in late), "a late report does not stop her again"

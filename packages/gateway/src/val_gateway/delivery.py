@@ -61,6 +61,7 @@ from val_domain.timings import mark
 from val_domain.voice import VoiceUnavailableError
 from val_gateway.delivery_evidence import player_evidence
 from val_policy.speech_segments import Segment, SpeechSegmenter, SpeechTextRefusedError
+from val_policy.spoken_numerals import spoken_form
 
 #: How long one segment's synthesis may take before delivery is called failed.
 SEGMENT_TIMEOUT_SECONDS = 120.0
@@ -72,6 +73,11 @@ DRAIN_TIMEOUT_SECONDS = 300.0
 #: reaching delivery control to the sink being stopped. **Not** a claim about when
 #: a physical speaker falls silent, which needs the speakers (work package 3).
 CANCELLATION_TARGET_MS = 300.0
+
+
+#: Whether the voice reads unambiguous Roman numerals as numbers (`VAL_SPOKEN_NUMERALS`,
+#: set by the composition root). Speech only: the written text never changes.
+SPOKEN_NUMERALS_ENABLED = False
 
 
 class EphemeralSink:
@@ -602,7 +608,16 @@ class SpeechDelivery:
                 # the answer was finished? — is answered by the record.
                 self.first_tts_start_ms = round((started - self.started_at) * 1000)
             mark("tts_synthesize_start")
-            request = SpeechRequest(text=pending.segment.text, voice=self._voice)
+            # What the voice is asked to say (owner authorisation, 1 October 2026): the
+            # segment's own text, with unambiguous Roman numerals read as numbers when the
+            # house has enabled that. The segment's text — what is shown, recorded and
+            # reported as spoken — is untouched; only the request to the voice differs.
+            request = SpeechRequest(
+                text=spoken_form(pending.segment.text)
+                if SPOKEN_NUMERALS_ENABLED
+                else pending.segment.text,
+                voice=self._voice,
+            )
             streamed = False
             self._pieces = 0
             try:

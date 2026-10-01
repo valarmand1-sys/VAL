@@ -680,7 +680,9 @@ class Gateway:
         # Experiment only (release-gaps order §4): when the envelope follows the persona
         # inside the system message, the prefix every turn shares ends at the separator,
         # not at the persona, so that is the boundary the checkpoint must land on.
-        primed_system = persona.content
+        # The system message a conversation turn carries: the persona and, when enabled,
+        # Core's fixed conversational guidance after it — the prefix every turn shares.
+        primed_system = _context.conversation_system(persona.content)
         # The boundary follows the route's own construction: the ordinary conversation
         # request relocates its envelope under the switch, so its shared prefix ends at
         # the separator inside the developer block; the Tier-1 request does not relocate
@@ -688,7 +690,7 @@ class Gateway:
         # desktop comparison of 27 September paid a 7.9 s cold prefill on the light route
         # when both primes moved).
         if _context.ENVELOPE_IN_SYSTEM and task_type is TaskType.CONVERSATION:
-            primed_system = persona.content + _context.envelope_system_separator()
+            primed_system = primed_system + _context.envelope_system_separator()
             plan = cast(PrefixPrimingAdapter, adapter).plan_prefix_prime(
                 config, primed_system, boundary="developer_end"
             )
