@@ -2343,3 +2343,27 @@ r7 (`39b482c`, tag `voice-repair-release-2026-10-02-r7`, CI green) supersedes r6
 - **Desktop not rebuilt** (source unchanged since r6's build, `6016a613…`).
 - **Acceptance:** none claimed. Next: his approval to install r7, then one physical
   check. Open and separate: the 29 September backup failure; `verify_restore.py`.
+
+## 55. Handoff — modifiers and speech-only formatting; release r8 INSTALLATION-READY, NOT INSTALLED (owner order of 2 October 2026, second)
+
+**WP3 remains PARTIAL. Physical acceptance remains STOPPED.** Record: `VOICE_MODEL.md` §15.
+r8 (`7be9050`, tag `voice-repair-release-2026-10-02-r8`, CI green) supersedes r6 and r7.
+
+- **Installed state, actual and unchanged:** service `422ee71` (r5), desktop `e48a4994…`,
+  store `0032`, Voice off.
+- **Completed in this pass:** a clear modifier ("in two sentences", "but shorter") revises
+  the unheard answer with no conjunction and outside the resume window — joined in order,
+  answered once, the obsolete output suppressed; speech-only Markdown formatting
+  (`VAL_SPOKEN_FORMATTING`, separable) — markers not voiced, every word, number and
+  literal symbol kept, written answer untouched.
+- **Kept from r6/r7:** interruption across overlapping answers, the three-way delivery
+  evidence, the continuation distinction, no "stock" alias, numerals.
+- **Conversational result: NOT fully passed.** Guidance frozen at revision 9. Residues:
+  more variants than asked on a short answer; a closing offer on the detailed answer;
+  Markdown written in a detailed Voice answer (now unspoken, still displayed). Typed
+  evidence is from llama.cpp, not the installed MLX route.
+- **Desktop not rebuilt:** the matching bundle is the staged `6016a613…7367` (folder name
+  says r6).
+- **Next:** his approval; then the one-step-at-a-time installation and the combined
+  physical check with the post-Voice typed question (§15.6). Open and separate: the 29
+  September backup failure; `verify_restore.py`.

@@ -1698,3 +1698,49 @@ pass), the resource measurements, numerals, the backup clarification. This pass 
 the precedence classifier (modifiers), added the speech-only formatting step, and
 nothing on the playback or delivery-record paths; its evidence is the focused tests
 above. No desktop bench was repeated. No migration; no backup or restore requirement.
+
+### 15.6 Release r8, installation-ready — NOT INSTALLED; awaiting his approval
+
+- **Service:** tag `voice-repair-release-2026-10-02-r8` = **`7be9050`**; release tree
+  `~/Projects/val-releases/7be9050` (environment synced, imports verified). r6 and r7 are
+  superseded and are not to be installed.
+- **Desktop:** not rebuilt — `apps/desktop` is identical at `39a7e5d` and `7be9050`. The
+  matching bundle is the one staged as
+  `~/Val previous builds.noindex/Val (release voice-repair 2026-10-01 r6 39a7e5d, staged, not installed).app`,
+  binary SHA-256 `6016a6133f5637fbea0b934494b071baf486f158c5ab90035466a9c407e67367`. Its
+  folder name says r6 because that is when it was built; it is r8's desktop. Installed
+  now: r5's (`e48a4994…`).
+- **Gate at `7be9050`:** packages + infrastructure 3,054 (+2 expected failures), api 125,
+  desktop 245 (unchanged); ruff, format, mypy, boundaries, import contracts, pins,
+  secrets clean. **CI: success** (run 36958017160).
+- **Complete active settings after installation** (eleven; no migration):
+  - unchanged from r5: `VAL_VOICE_MODEL=gemma-4-26b-a4b`, `VAL_ADAPTIVE_ENDPOINT=on`,
+    `VAL_VOICE_TURN_PREFILL=on`, `VAL_VOICE_RELEASES_PARTNER=on`,
+    `VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1`, `VAL_LLAMACPP_API_KEY` (as already
+    entered; not re-entered);
+  - added: `VAL_OWNER_PRECEDENCE=on`, `VAL_COMBINE_CONTINUATIONS=on`,
+    `VAL_CONVERSATION_GUIDANCE=on`, `VAL_SPOKEN_NUMERALS=on`, `VAL_SPOKEN_FORMATTING=on`.
+  - `VAL_VOICE_EARLY_AUDIO` is not set: early audio release stays off.
+  Each added setting can be removed alone to turn that change off.
+- **Installation (his hands, one step at a time, each verified read-only before the
+  next):** (1) quit Val and confirm Voice is off; (2) copy today's plist aside as the r5
+  rollback and fingerprint the copy; (3) point the service path at
+  `~/Projects/val-releases/7be9050` and add the five settings; (4) validate the plist;
+  (5) restart the service and read its health; (6) move the r5 desktop bundle to the
+  previous-builds folder and install the staged bundle, checking its fingerprint and
+  that exactly one bundle is installed; (7) optionally apply the two delivery
+  corrections (§14.1). No database migration; no new backup requirement — nothing in
+  r8 changes the schema, and the only optional write is two appended rows.
+- **Rollback to r5:** quit Val; put the copied plist back; restart the service; restore
+  the r5 desktop bundle (`e48a4994…`). The store needs nothing. Rollback to `13b3cb8`
+  remains as §12.1.
+- **The combined physical check** (Voice on): an overlapping interruption (ask for
+  something long, speak again before she starts, then talk over her); a clear modifier
+  ("…in two sentences" a few seconds after the request, before she speaks) and a
+  replacement ("no, tell me about…"); a typed message during Voice (refused, draft
+  kept); an example request; a substantive explanation; an explicitly detailed request.
+  For each answer: was anything needed left out, and was anything unrequested added —
+  watching for the three known residues (§15.3) and listening for whether formatting is
+  spoken. Then Voice off, and **one ordinary typed adequacy question through the
+  installed route** (§15.4).
+- **Not claimed:** conversational acceptance, physical acceptance, the ~1 s target.
