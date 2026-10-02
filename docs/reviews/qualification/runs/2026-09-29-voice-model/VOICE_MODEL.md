@@ -1562,3 +1562,38 @@ unchanged.
   the backup clarification (§13.7 — the 38-of-38 digest comparison; nothing rerun), the
   resource measurements, the regression cases of §13.4 on revision 8 (the revision-9
   change touches the length paragraph only; the fresh check above is its evidence).
+
+### 14.6 Release r7, staged for his approval — NOT INSTALLED
+
+- Tag `voice-repair-release-2026-10-02-r7` = **`39b482c`**; release tree
+  `~/Projects/val-releases/39b482c` (environment synced, imports verified). r6
+  (`39a7e5d`) is superseded and should not be installed.
+- **Desktop: not rebuilt, because its code did not change** (`git diff 39a7e5d 39b482c --
+  apps/desktop` is empty). The matching bundle is the one built for r6:
+  `~/Val previous builds.noindex/Val (release voice-repair 2026-10-01 r6 39a7e5d, staged, not installed).app`,
+  binary SHA-256 **`6016a613…7367`**. Installed desktop is still r5's (`e48a4994…`).
+- Local gate at the release code: packages + infrastructure 3,006 (+2 expected failures),
+  api 122, desktop 245 (unchanged); ruff, format, mypy, boundaries, import contracts,
+  pins, secrets clean. **CI at `39b482c`: success** (run 36955891020).
+- **No migration.** Settings — r5's six stay exactly as installed
+  (`VAL_VOICE_MODEL=gemma-4-26b-a4b`, `VAL_ADAPTIVE_ENDPOINT=on`,
+  `VAL_VOICE_TURN_PREFILL=on`, `VAL_VOICE_RELEASES_PARTNER=on`,
+  `VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1`, `VAL_LLAMACPP_API_KEY` as already
+  entered), and **four are added**, each independently removable:
+  1. `VAL_OWNER_PRECEDENCE=on` — clear stops and replacements supersede unheard answers;
+  2. `VAL_COMBINE_CONTINUATIONS=on` — words that complete a request are joined to it;
+  3. `VAL_CONVERSATION_GUIDANCE=on` — Core's guidance after the persona, typed and spoken;
+  4. `VAL_SPOKEN_NUMERALS=on` — speech-only numerals (separate; may be left out).
+  `VAL_VOICE_EARLY_AUDIO` stays unset: early audio release is off.
+- **Rollback to r5** (the installed state): the first installation step copies today's
+  plist aside; rollback is that copy put back, the r5 desktop bundle restored, and the
+  service restarted. Removing any of the four settings alone turns that change off
+  without a rollback. The store needs nothing in either direction; if the two delivery
+  corrections are applied they are appended rows and stay. Rollback to `13b3cb8` remains
+  as §12.1.
+- **Recommendation:** install r7 and run one physical check — overlapping interruptions;
+  a continuation ("…and also the orchard") against a replacement ("no, tell me about…");
+  a typed message during Voice; a short question against an explicitly detailed one.
+  Known going in: a long spoken answer may end with an offer of more and may contain bold
+  markup; "Stop." is recognised by its words, so a mishearing is answered rather than
+  swallowed. Acceptance is his; nothing here claims it. ~1 s is not met.

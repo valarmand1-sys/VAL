@@ -2318,3 +2318,28 @@ test made — one is required.** Record: `qualification/runs/2026-09-29-voice-mo
   physical check. ~1 s is not met; no avatar-compatibility claim.
 - **Open, separate:** the 29 September backup failure; `verify_restore.py` unable to
   complete (the 30 September verification itself has no gap — §13.7).
+
+## 54. Handoff — the completion pass; release r7 STAGED, NOT INSTALLED (owner order of 2 October 2026)
+
+**WP3 remains PARTIAL. Physical acceptance remains STOPPED.** Record: `VOICE_MODEL.md` §14.
+r7 (`39b482c`, tag `voice-repair-release-2026-10-02-r7`, CI green) supersedes r6.
+
+- **Installed state, actual and unchanged:** service `422ee71` (r5), desktop `e48a4994…`,
+  store `0032`, Voice off.
+- **Delivery evidence:** completion is claimed only on the player's report of every
+  segment; contradicted only on a reported cut; everything else is unconfirmed, which is
+  never turned into "unheard". A started segment is not heard text. Delivery rows now
+  name their Voice session. Historical proposal reduced to **two** appended rows (not
+  applied); the 30 September `6/6` answer is unconfirmed, not corrected.
+- **Continuation:** decided by his words, the same for a finished or an in-flight
+  answer — a fragment that completes the request is joined and the obsolete answer not
+  played; an added request of its own keeps the earlier answer.
+- **"stock" alias removed.** Explicit stops, replacements and his interrupting "No" kept;
+  corrections beginning with "No" are answered.
+- **Guidance:** revision 9 states adequacy, not brevity; fresh check of seven frozen
+  cases (six spoken on Gemma, one typed on GPT-OSS): five clean; two spoken answers
+  added a closing offer; after one repair the long detailed answer still does, and still
+  uses bold markup with Voice on. No omission in any answer. Left there, as ordered.
+- **Desktop not rebuilt** (source unchanged since r6's build, `6016a613…`).
+- **Acceptance:** none claimed. Next: his approval to install r7, then one physical
+  check. Open and separate: the 29 September backup failure; `verify_restore.py`.
