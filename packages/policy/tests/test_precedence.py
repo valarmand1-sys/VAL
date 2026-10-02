@@ -256,3 +256,51 @@ def test_an_added_request_of_its_own_does_not_complete_the_earlier_one(words: st
     relation = follow_up(words)
     assert relation.kind == "continuation" and relation.completes is False
     assert relation.supersedes is False
+
+
+# --- Owner order, 2 October 2026: clear modifiers of an unheard answer ------------------
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "In two sentences.",
+        "But shorter.",
+        "Shorter.",
+        "For a horror film.",
+        "Without the jokes.",
+        "More formal.",
+        "A bit shorter, please.",
+        "But in plain words.",
+        "Just in one line.",
+        "Val, in two sentences.",
+    ],
+)
+def test_a_clear_modifier_completes_the_request_without_any_conjunction(words: str) -> None:
+    relation = follow_up(words)
+    assert relation.kind == "continuation" and relation.completes is True, relation
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "What is the capital of Australia?",
+        "In two days we leave for Rome.",
+        "For whom?",
+        "Thank you.",
+        "Very good.",
+        "Yes.",
+        "Indeed.",
+        "With you I never know.",
+        "About the barn, is it booked?",
+        "Like I said, the orchard matters more to me than the barn does.",
+        "Name a fruit.",
+        "From now on call him Donald the First.",
+        "From now on call him Donald.",
+        "For now keep the barn.",
+        "In that case tell her Thursday.",
+    ],
+)
+def test_what_is_not_a_bare_modifier_is_not_read_as_one(words: str) -> None:
+    relation = follow_up(words)
+    assert not (relation.kind == "continuation" and relation.completes), relation

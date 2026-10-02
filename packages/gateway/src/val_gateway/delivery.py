@@ -61,6 +61,7 @@ from val_domain.timings import mark
 from val_domain.voice import VoiceUnavailableError
 from val_gateway.delivery_evidence import player_evidence
 from val_policy.speech_segments import Segment, SpeechSegmenter, SpeechTextRefusedError
+from val_policy.spoken_format import spoken_format
 from val_policy.spoken_numerals import spoken_form
 
 #: How long one segment's synthesis may take before delivery is called failed.
@@ -78,6 +79,10 @@ CANCELLATION_TARGET_MS = 300.0
 #: Whether the voice reads unambiguous Roman numerals as numbers (`VAL_SPOKEN_NUMERALS`,
 #: set by the composition root). Speech only: the written text never changes.
 SPOKEN_NUMERALS_ENABLED = False
+
+#: Whether recognised Markdown formatting is left unspoken (`VAL_SPOKEN_FORMATTING`, set
+#: by the composition root). Speech only: the written text never changes.
+SPOKEN_FORMATTING_ENABLED = False
 
 
 class EphemeralSink:
@@ -582,6 +587,30 @@ class SpeechDelivery:
                 )
                 self._worker.start()
 
+    def _spoken_text(self, segment: Segment) -> str:
+        """The text handed to the voice for one segment.
+
+        The segment's exact slice, with two speech-only readings, each behind its own
+        switch and each separable (owner authorisations, 1 and 2 October 2026):
+        recognised Markdown formatting is not spoken (`val_policy.spoken_format`), and
+        unambiguous Roman numerals are read as numbers (`val_policy.spoken_numerals`).
+        No word is removed or reordered; the written answer never changes.
+        """
+        said = segment.text
+        if SPOKEN_FORMATTING_ENABLED:
+            source = self.segmenter.source
+            piece = source[segment.start : segment.end]
+            begins = segment.start + (len(piece) - len(piece.lstrip()))
+            before = source[:begins].rstrip(" \t")
+            formatted = spoken_format(said, at_line_start=not before or before.endswith("\n"))
+            # A segment that was nothing but formatting keeps its text: the voice is
+            # never handed an empty request.
+            if any(character.isalnum() for character in formatted):
+                said = formatted
+        if SPOKEN_NUMERALS_ENABLED:
+            said = spoken_form(said)
+        return said
+
     def _speak(self, recorder: timings.TurnTimings | None = None) -> None:
         """Take segments off the queue, give them to the local voice, deliver them."""
         with timings.recording(recorder) if recorder is not None else nullcontext():
@@ -622,16 +651,9 @@ class SpeechDelivery:
                 # the answer was finished? — is answered by the record.
                 self.first_tts_start_ms = round((started - self.started_at) * 1000)
             mark("tts_synthesize_start")
-            # What the voice is asked to say (owner authorisation, 1 October 2026): the
-            # segment's own text, with unambiguous Roman numerals read as numbers when the
-            # house has enabled that. The segment's text — what is shown, recorded and
-            # reported as spoken — is untouched; only the request to the voice differs.
-            request = SpeechRequest(
-                text=spoken_form(pending.segment.text)
-                if SPOKEN_NUMERALS_ENABLED
-                else pending.segment.text,
-                voice=self._voice,
-            )
+            # What the voice is asked to say: see `_spoken_text`. The segment's own text —
+            # what is shown, recorded and reported as spoken — is untouched.
+            request = SpeechRequest(text=self._spoken_text(pending.segment), voice=self._voice)
             streamed = False
             self._pieces = 0
             try:

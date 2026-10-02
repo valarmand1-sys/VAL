@@ -1134,3 +1134,51 @@ def test_the_envelope_carries_the_bound_only_when_something_is_in_doubt() -> Non
     assert answer["state"] == "unconfirmed"
     assert answer["heard_characters"] == 17
     assert answer["possibly_heard_characters"] == 62
+
+
+# =============================================================================
+# Speech-only formatting (owner authorisation, 2 October 2026). Separable: its own
+# switch (`VAL_SPOKEN_FORMATTING`), its own policy module.
+# =============================================================================
+
+_FORMATTED = (
+    "Three things matter, my lord.\n\n"
+    "**The First Phase: Discovery**\n\n"
+    "You must define the scope before anyone is hired.\n\n"
+    "- access to the site\n"
+    "- power for the *whole* day\n\n"
+    "If you have a location in mind, I can help you draft the checklist."
+)
+
+
+def test_formatting_is_not_voiced_and_every_word_still_is(
+    store: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import re
+
+    monkeypatch.setattr(_delivery_module, "SPOKEN_FORMATTING_ENABLED", True)
+    voice = ScriptedVoice()
+    delivery = a_delivery(store, voice)
+    deliver(delivery, _FORMATTED)
+
+    said = " ".join(voice.spoken)
+    assert "*" not in said and "- access" not in said
+    words = re.compile(r"[A-Za-z']+")
+    assert words.findall(said) == words.findall(_FORMATTED), "no word removed or reordered"
+    assert "The First Phase: Discovery." in said, "a heading keeps its words and gains a pause"
+    assert "I can help you draft the checklist" in said, "content is not formatting"
+    written = "".join(
+        delivery.segmenter.source[s.start : s.end] for s in delivery.segmenter.segments
+    )
+    assert written == _FORMATTED, "the written answer is untouched"
+    assert any("**" in segment.text for segment in delivery.spoken), "and so are its segments"
+
+
+def test_with_the_formatting_switch_off_the_voice_is_handed_the_exact_slice(
+    store: Engine,
+) -> None:
+    assert _delivery_module.SPOKEN_FORMATTING_ENABLED is False
+    voice = ScriptedVoice()
+    delivery = a_delivery(store, voice)
+    deliver(delivery, _FORMATTED)
+    assert [segment.text for segment in delivery.spoken] == voice.spoken

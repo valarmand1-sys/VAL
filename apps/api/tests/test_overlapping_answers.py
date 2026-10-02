@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import time
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
 from test_service import OpenLedger, ScriptedAdapter, ok
@@ -422,6 +423,96 @@ def test_words_that_complete_the_request_do_not_play_the_obsolete_answer_first(
             text("select count(*) from messages where content = 'Tell me about the barn.'")
         ).scalar_one()
     assert kept == 1, "the earlier words stay in the record"
+
+
+#: Longer than the resume window and its looser fallback (twice the grace): what follows
+#: is decided by his words through owner precedence, not by the resume join.
+_PAST_THE_RESUME_WINDOW = 2.6
+
+
+@pytest.mark.parametrize("modifier", ["In two sentences.", "But shorter."])
+def test_a_clear_modifier_outside_the_resume_window_revises_the_unheard_answer(
+    store: Engine, modifier: str
+) -> None:
+    """Owner order, 2 October 2026. No "and", no "also", and well past the resume
+    window: the words still modify the request whose answer he has not heard. The
+    obsolete answer is suppressed, both of his utterances are kept in order, and the
+    revised request is answered once."""
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [started(1), final("Tell me about the barn.", 1)],
+            [started(2)],
+            [final(modifier, 2)],
+        ]
+    )
+    adapter = ScriptedAdapter([ok(BARN), ok(ORCHARD)])
+    with _client(store, adapter, recognizer) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        _hear(reachable, session)
+        barn = _answer_id(_turns(reachable, session, 1), 0)
+        time.sleep(_PAST_THE_RESUME_WINDOW)
+        _hear(reachable, session)  # he speaks before any of it is handed over
+        assert all(_offer(reachable, session)["segment"] is None for _ in range(5))
+        _hear(reachable, session)
+        view = _turns(reachable, session, 2)
+        revised = _answer_id(view, 1)
+        offers = _collect(reachable, session, seconds=6.0)
+        barn_delivery = reachable.get(f"/messages/{barn}/delivery").json()
+
+    assert _segments_of(offers, barn) == [], "the superseded answer is never handed over"
+    assert _segments_of(offers, revised), "the revised request is answered"
+    assert view["turns"][1]["text"] == f"Tell me about the barn. {modifier}", (
+        "his request and its modifier, in order"
+    )
+    assert barn_delivery["state"] == "interrupted" and barn_delivery["segments_delivered"] == 0
+    assert adapter.calls == 2, "answered once: the obsolete answer and the revised one"
+    assert _val_messages(store) == 2
+    with store.connect() as connection:
+        kept = connection.execute(
+            text("select count(*) from messages where content = 'Tell me about the barn.'")
+        ).scalar_one()
+    assert kept == 1, "the original request stays in the record"
+
+
+def test_an_independent_question_outside_the_window_keeps_the_valid_earlier_answer(
+    store: Engine,
+) -> None:
+    """Not a modifier and not a continuation: the earlier answer is still what he asked
+    for, so it plays whole, and the new question is answered after it."""
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [started(1), final("Tell me about the barn.", 1)],
+            [started(2)],
+            [final("What is the capital of Australia?", 2)],
+        ]
+    )
+    adapter = ScriptedAdapter([ok(BARN), ok(ORCHARD)])
+    with _client(store, adapter, recognizer) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        _hear(reachable, session)
+        barn = _answer_id(_turns(reachable, session, 1), 0)
+        time.sleep(_PAST_THE_RESUME_WINDOW)
+        _hear(reachable, session)
+        _hear(reachable, session)
+        view = _turns(reachable, session, 2)
+        second = _answer_id(view, 1)
+        offers = _collect(reachable, session, seconds=6.0)
+        for index in _segments_of(offers, barn):
+            assert _report(reachable, session, barn, index, "playback_started") == 200
+            assert _report(reachable, session, barn, index, "playback_completed") == 200
+        rest = _collect(reachable, session, seconds=6.0)
+
+    assert _segments_of(offers, barn), "the earlier answer is handed over whole"
+    assert _segments_of(offers, second) == [], "the new answer waits behind it"
+    assert _segments_of(rest, second), "and then it is spoken"
+    assert [turn["text"] for turn in view["turns"]] == [
+        "Tell me about the barn.",
+        "What is the capital of Australia?",
+    ]
 
 
 def test_a_correction_beginning_with_no_stops_her_and_is_answered(store: Engine) -> None:

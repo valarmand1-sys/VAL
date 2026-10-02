@@ -510,6 +510,9 @@ CONVERSATION_GUIDANCE_SETTING = "VAL_CONVERSATION_GUIDANCE"
 #: Candidate (owner authorisation, 1 October 2026): unambiguous Roman numerals are read as
 #: numbers by the voice; the written text is untouched (`val_policy.spoken_numerals`).
 SPOKEN_NUMERALS_SETTING = "VAL_SPOKEN_NUMERALS"
+#: Candidate (owner authorisation, 2 October 2026): recognised Markdown formatting is not
+#: spoken; the written text is untouched (`val_policy.spoken_format`).
+SPOKEN_FORMATTING_SETTING = "VAL_SPOKEN_FORMATTING"
 VOICE_MODEL_SETTING = "VAL_VOICE_MODEL"
 VOICE_MODELS = {"gemma-4-26b-a4b": "gemma-4-26b-a4b-q4km-llamacpp-voice"}
 
@@ -943,6 +946,14 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     _delivery.SPOKEN_NUMERALS_ENABLED = os.environ.get(
         SPOKEN_NUMERALS_SETTING, ""
     ).strip().lower() in {"1", "on", "true", "yes"}
+    _delivery.SPOKEN_FORMATTING_ENABLED = os.environ.get(
+        SPOKEN_FORMATTING_SETTING, ""
+    ).strip().lower() in {"1", "on", "true", "yes"}
+    if _delivery.SPOKEN_FORMATTING_ENABLED:
+        _LOGGER.warning(
+            "CANDIDATE spoken formatting for this process: recognised Markdown formatting "
+            "is not voiced; every word is, and the written text is unchanged."
+        )
     if _delivery.SPOKEN_NUMERALS_ENABLED:
         _LOGGER.warning(
             "CANDIDATE spoken numerals for this process: unambiguous Roman numerals are "

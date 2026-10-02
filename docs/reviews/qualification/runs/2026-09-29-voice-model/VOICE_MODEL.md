@@ -1597,3 +1597,104 @@ unchanged.
   Known going in: a long spoken answer may end with an offer of more and may contain bold
   markup; "Stop." is recognised by its words, so a mishearing is answered rather than
   swallowed. Acceptance is his; nothing here claims it. ~1 s is not met.
+
+## 15. Modifiers, speech-only formatting, and the installation-ready release — owner order of 2 October 2026 (second); candidate r8; NOT INSTALLED
+
+Supersedes r7 as the release proposed for installation. §14 stands except its
+continuation limit (§14.2, last sentence), which is closed here, and its description of
+the conversational residue (§14.4), which is corrected in §15.3. The guidance text is
+**frozen at revision 9** (`guidance-revision-9.txt`): no wording was changed in this pass.
+
+### 15.1 A clear modifier of an unheard answer
+
+"In two sentences." and "But shorter." are now read as modifications of the request whose
+answer he has not heard, with no conjunction required and no dependence on the resume
+window. `val_policy.precedence._is_modifier` recognises the shape — an optional lead-in
+("but", "just", "only"…), then a prepositional phrase ("in two sentences", "for a horror
+film", "without the jokes") or a comparative ("shorter", "more formal", "a bit
+shorter, please") — and refuses anything with a subject, a question or an instruction of
+its own ("In two days we leave for Rome.", "For whom?", "From now on call him Donald.",
+"Thank you.", "Very good."). It is the existing classifier, deterministic; no model call
+was added. A modifier is returned as a continuation that **completes** the request, so
+the mechanism of §14.2 applies unchanged: the exchange is withdrawn (kept in the record),
+the superseded unheard output is never handed over, his request and the modifier are
+joined in order, and the revised request is answered once. The session consults it only
+while an answer is unheard; after he has heard her, the same words are an ordinary turn.
+
+Focused regressions (`test_overlapping_answers.py`, now 10 tests, all passing):
+
+- "Tell me about the barn." … 2.6 s later (past the resume window and its fallback) …
+  **"In two sentences."** and **"But shorter."** — the first answer is never handed
+  over, recorded `interrupted 0`; the turn's text is "Tell me about the barn. In two
+  sentences." / "…But shorter."; the original request stays in the record; two model
+  calls, two answers written, one spoken.
+- **An independent question** ("What is the capital of Australia?") in the same position
+  keeps the earlier answer: it plays whole and the new question is answered after it.
+- Held-poll, the 30 September sequence, his own words, the playback-start boundary, the
+  replacement, the added request and the correction beginning with "No": unchanged and
+  passing.
+
+Classifier cases: ten modifiers, fifteen non-modifiers (`test_precedence.py`).
+
+### 15.2 Speech-only formatting — `VAL_SPOKEN_FORMATTING=on`, separable
+
+`val_policy.spoken_format.spoken_format`, applied only to the text handed to the voice
+(`SpeechDelivery._spoken_text`); the segment, the display and every record keep the
+written answer. Its own module and switch; removing the switch removes it. Voice and
+pace untouched.
+
+- **Removed as formatting:** paired emphasis markers (`**bold**`, `__bold__`, `*em*`,
+  `_em_`); heading markers (`## Title`, and a line that is only bold text); list bullets
+  (`-`, `*`, `+`, `•` at a line's start); horizontal rules; quote markers; code ticks
+  (the code inside stays literal).
+- **Kept:** every word, in order — a heading's own words, a closing offer, alternative
+  suggestions are content and are all still spoken. Numbers, including the numbers of a
+  numbered list. Literal symbols: `2 * 3`, `2**3`, `a*b`, `C#`, `#42`, `snake_case`, a
+  footnote's asterisk, a hyphen mid-line.
+- **Pauses:** a heading or list item with no closing punctuation gains a full stop.
+- **Segments:** the voice receives one segment at a time, so a marker pair can be split;
+  a marker left open at a segment's very start or end, or directly outside a quotation
+  mark, is treated as formatting — a single asterisk beside a bare word never is.
+- A segment that is nothing but formatting keeps its text (the voice is never handed an
+  empty request).
+
+Checks: 21 unit tests (emphasis, headings, lists, rules and ticks, nine literal-symbol
+cases, split pairs); two delivery tests (the voice is asked for the unformatted words;
+the written segments are untouched; with the switch off the exact slice is handed over).
+Swept over the 74 recorded answers of this work, segment by segment: **no word changed
+in any; no marker left.** Not verified by ear — that is the physical check.
+
+### 15.3 The conversational result, stated as it is
+
+The adequacy guidance improved the original failure and **has not fully passed**. From
+the fresh check (§14.4), unchanged by this pass:
+
+1. **More suggestions than asked for** — the phone-greeting answer gives three variants
+   where one was requested. This is on a **short** answer; it is not confined to long
+   ones (the earlier report said it was, and was wrong).
+2. **An unsolicited closing offer** — the detailed answer ends with one, after the one
+   repair; the phone answer had one before it.
+3. **Markdown in a detailed Voice answer** — bold headings and bullets. With
+   `VAL_SPOKEN_FORMATTING` on they are no longer *spoken*; the model still writes them,
+   and the displayed text still shows them.
+
+No answer omitted anything its question required. The guidance stays frozen; no further
+wording was tried; no sentence is removed after generation. **Conversational acceptance
+is not complete** and these three are carried into the physical check.
+
+### 15.4 The typed-work evidence, stated as it is
+
+The one typed check (F7) ran GPT-OSS at MEDIUM **through llama.cpp** (the GGUF
+comparator), not the installed MLX route in LM Studio. It shows the shared guidance does
+not harm a typed two-part answer on that build; **it does not establish production typed
+behaviour.** One ordinary typed adequacy check through the installed route is part of
+the post-installation check, after Voice is off. No further comparator batch was run.
+
+### 15.5 Evidence reused, and what this pass could affect
+
+Reused unchanged: delivery accounting (§14.1, including the two-row historical
+proposal), the interruption result (269–349 ms; the barge-in path is untouched by this
+pass), the resource measurements, numerals, the backup clarification. This pass changed
+the precedence classifier (modifiers), added the speech-only formatting step, and
+nothing on the playback or delivery-record paths; its evidence is the focused tests
+above. No desktop bench was repeated. No migration; no backup or restore requirement.

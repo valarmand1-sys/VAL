@@ -188,6 +188,50 @@ _STANDALONE_OPENER = re.compile(
 )
 
 
+#: **A clear modifier of the request just made** (owner order, 2 October 2026): "in two
+#: sentences", "but shorter", "for a horror film", "more formal". It names no subject and
+#: gives no instruction of its own — it only says how, how long, for whom or in what
+#: manner — so it cannot be a new request; said before he has heard the answer, it
+#: changes the request that answer was for. Recognised by its shape, not by a
+#: conjunction: an optional lead-in, then a prepositional phrase or a comparative. The
+#: session consults this only while an answer is unheard; once he has heard her, the
+#: same words are an ordinary turn.
+_MODIFIER_LEAD = r"(?:(?:but|and|only|just|though|except|preferably|ideally|maybe|perhaps)\s+)*"
+_MODIFIER_PHRASE = re.compile(
+    rf"^{_MODIFIER_LEAD}(?:in|for|with|without|about|from|as|like|using|within|under)\s+\S+"
+    r"(?:\s+\S+){0,5}$",
+    re.IGNORECASE,
+)
+_MODIFIER_DEGREE = re.compile(
+    rf"^{_MODIFIER_LEAD}(?:(?:a (?:bit|little|lot)|much|far|even|slightly)\s+)?"
+    r"(?:shorter|longer|briefer|simpler|plainer|clearer|funnier|darker|lighter|warmer|"
+    r"quicker|slower|gentler|firmer|briefly|quickly|simply|plainly|"
+    r"(?:more|less)\s+\w+(?:\s+\w+)?)"
+    r"(?:\s+(?:please|than that|this time))?$",
+    re.IGNORECASE,
+)
+#: Words that give a phrase a subject or a question of its own: with one of these it is
+#: a statement or a request, not a bare modifier ("in two days we leave", "for whom?").
+_OWN_SUBJECT = re.compile(
+    r"\b(?:i|we|you|he|she|they|it|i'm|i'll|i've|we're|we'll|you're|he's|she's|it's|"
+    r"there|who|whom|what|why|how|when|where|which|is|are|was|were|do|does|did|can|could|"
+    r"will|would|should|shall|"
+    # …or an instruction of its own ("from now on call him Donald").
+    r"tell|give|explain|show|read|describe|make|draft|send|find|look|list|name|write|say|"
+    r"check|remind|let|put|take|try|use|add|call|keep|stop|go|start|begin|change|remember)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_modifier(lowered: str) -> bool:
+    if lowered.strip().endswith("?"):
+        return False
+    words = re.sub(r"\s+", " ", _ADDRESS.sub(" ", lowered)).strip(" .,!;:-")
+    if not words or _OWN_SUBJECT.search(words):
+        return False
+    return bool(_MODIFIER_PHRASE.match(words) or _MODIFIER_DEGREE.match(words))
+
+
 def _stands_alone(utterance: str, opening: str) -> bool:
     if utterance.strip().endswith("?"):
         return True
@@ -261,5 +305,9 @@ def follow_up(utterance: str, *, interrupting: bool = False) -> FollowUp:
             )
         return FollowUp(
             "continuation", "a fragment that completes or qualifies the earlier request", True
+        )
+    if _is_modifier(lowered):
+        return FollowUp(
+            "continuation", "a modifier of the earlier request, not a request of its own", True
         )
     return FollowUp("ambiguous", "neither an explicit stop or replacement nor a clear continuation")
