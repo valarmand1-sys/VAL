@@ -1943,3 +1943,24 @@ in the room); typed adequacy through the installed route (not asked); typed late
 (cause established, remedy awaiting his ruling); the composer text of item 12
 (unexplained); the desktop repairs above (built, not installed, not seen by him).
 Conversational acceptance and Voice as a whole are **not** declared complete.
+
+### 16.8 The desktop repair, staged — r9 (desktop only); NOT INSTALLED
+
+- Tag `desktop-repair-2026-10-02-r9` = **`011a122`**. **CI: success** (run 37057025725).
+- **The service is not part of this change**: its code at `011a122` is identical to the
+  installed `7be9050`, which stays installed with its eleven settings untouched.
+- Desktop built from `011a122` (`npm ci`, 259 tests, `npm run tauri build`) and staged as
+  `~/Val previous builds.noindex/Val (desktop repair 2026-10-02 r9 011a122, staged, not installed).app`,
+  binary SHA-256 `b9800ac035f0d5c4cfa2a823be9d69b25938cdce9b5057c96488349924a607f2`.
+  Installed now: r8's `6016a613…7367`; one installed bundle.
+- **Installation (his hands, two steps):** quit Val; move `/Applications/Val.app` to the
+  previous-builds folder under a name recording it as r8's; copy the staged bundle in;
+  verify the fingerprint. No service restart, no settings, no migration.
+- **Rollback:** put r8's bundle back.
+- **A further physical check, limited to what changed or is unverified:** type during
+  Voice (a plain notice, draft kept), turn Voice off (no error under the composer) and
+  send the kept draft; in a long conversation, send and receive without being returned
+  to the top, and scroll up to confirm the view stays; Edit under the title; Remove, with
+  its question, then Reinstate; the cost line; and the two-part typed question through
+  the installed route. Optionally the scripted overlap: let her speak a long answer for
+  a few seconds, ask something else *after* a newer answer exists, and talk over her.

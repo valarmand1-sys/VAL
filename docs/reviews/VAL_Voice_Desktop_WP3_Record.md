@@ -2367,3 +2367,35 @@ r8 (`7be9050`, tag `voice-repair-release-2026-10-02-r8`, CI green) supersedes r6
 - **Next:** his approval; then the one-step-at-a-time installation and the combined
   physical check with the post-Voice typed question (§15.6). Open and separate: the 29
   September backup failure; `verify_restore.py`.
+
+## 56. Handoff — r8 INSTALLED; the physical check of 2 October 2026; desktop repair r9 STAGED, NOT INSTALLED
+
+**WP3 remains PARTIAL. Acceptance is NOT complete.** Record: `VOICE_MODEL.md` §16.
+
+- **Installed state, actual:** service `7be9050` (r8) with the eleven settings, desktop
+  `6016a613…7367`, store `0032`; delivery corrections not applied. Rollback to r5 in
+  `~/val-rollback-20261002/` and the set-aside r5 bundle.
+- **Passed in the room (his words, reconciled with the records):** readiness; a modifier
+  joined and answered once; a replacement that stopped her at once; barge-in at the
+  playback start with nothing obsolete played afterwards; example, explanation and
+  detailed answers he was satisfied with; numerals as heard; mute; the draft kept during
+  Voice. Ordinary turns 2.29–2.36 s speech end → playback — the bench figure, in the room.
+- **Not what it looked like:** the lighthouse test was a barge-in 0.42 s into the first
+  segment of an answer still being written, not the scripted overlap; "That's very good
+  Val." was spoken, not typed.
+- **Causes established:** raw 409 text (stream route did not unwrap the refusal);
+  "recognizer is not running" (an audio chunk refused at close, reported as failure);
+  scrolling (nothing followed new content; a typed send replaced the scrolling element);
+  Remove (the shell shows no dialog for `window.confirm`, which returns false); typed
+  latency (full prompt prefill every typed turn, 0 tokens cached — no load, no
+  classification delay); the $0.0017 (two Anthropic Haiku classification calls for the
+  two new typed conversations, under the 3 and 21 September rulings).
+- **Not established:** how the lighthouse request came to be in the composer (no code
+  path; the quoted text matches the written instruction, not the transcript).
+- **Repaired, desktop only, staged as r9** (`011a122`, CI green, bundle `b9800ac0…07f2`):
+  plain notice, no error at Voice off, scrolling, in-window confirmations, Edit under
+  the title, the cost line. The service is unchanged.
+- **Awaiting his ruling:** priming the typed model's persona prefix (typed latency);
+  whether typed classification should move onto this Mac. Neither built.
+- **Still unverified:** the scripted overlap in the room; typed adequacy through the
+  installed route; the r9 repairs by his eye.
