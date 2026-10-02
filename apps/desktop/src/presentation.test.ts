@@ -228,3 +228,31 @@ describe("the cost line says what is billed and what is local (2 October 2026)",
   });
 });
 
+describe("the cost line under the local-AI rule (2 October 2026)", () => {
+  it("says the rule is in force only when the running service says so", async () => {
+    const { describeCosts } = await import("./presentation");
+    const line = describeCosts({
+      month_to_date_usd: 0.001744,
+      by_task_type: { classification: 0.001744 },
+      uncosted_calls: 0,
+      complete: true,
+      hosted_models_permitted: false,
+      hosted_models_rule: "AI processing runs on this Mac",
+    });
+    expect(line).toBe(
+      "AI processing runs on this Mac; no hosted model is used (owner rule, 2 October 2026). " +
+        "Earlier this month, before the rule: $0.0017 billed by outside providers.",
+    );
+  });
+  it("does not claim the rule for an older service that omits the field", async () => {
+    const { describeCosts } = await import("./presentation");
+    const line = describeCosts({
+      month_to_date_usd: 0.001744,
+      by_task_type: { classification: 0.001744 },
+      uncosted_calls: 0,
+      complete: true,
+    });
+    expect(line).not.toContain("owner rule");
+  });
+});
+

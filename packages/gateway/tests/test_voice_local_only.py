@@ -459,7 +459,10 @@ def test_a_later_typed_turn_in_the_same_sealed_conversation_cannot_leak_it(
 def test_a_new_unsealed_conversation_keeps_its_ordinary_cloud_support(
     store: Engine,
 ) -> None:
-    """§2.7's clean boundary. The seal is narrow, not a global downgrade."""
+    """§2.7's clean boundary: the seal is narrow, not a global downgrade. This holds the
+    seal's own scope with the rule of 2 October 2026 stood down (the conftest fixture);
+    under the rule, which `test_local_ai_rule.py` holds, the new conversation is
+    local-only too — on the rule's ground, not the seal's."""
     local = LocalAdapter([ok("Noted.")])
     cloud = CloudSpy()
     gateway = two_worlds(store, local, cloud)

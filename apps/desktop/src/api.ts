@@ -315,6 +315,9 @@ export interface CostView {
   by_task_type: Record<string, number>;
   uncosted_calls: number;
   complete: boolean;
+  /** Absent from a service older than the rule of 2 October 2026 — then hosted routes were open. */
+  hosted_models_permitted?: boolean;
+  hosted_models_rule?: string | null;
 }
 
 export interface Health {

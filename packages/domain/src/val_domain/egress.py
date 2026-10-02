@@ -64,6 +64,14 @@ class LocalOnlyReason(StrEnum):
     #: §2.6: this request carries content recalled from a sealed conversation,
     #: so the request is local-only wherever it belongs.
     RECALLED_SEALED_CONTENT = "recalled_sealed_content"
+    #: **The governing rule of 2 October 2026 (Lord Armand): local AI processing.**
+    #: Ordinary typed and spoken interaction, and every supporting or background
+    #: AI task, runs on this Mac; no conversation, project, memory, transcript,
+    #: attachment or derived content reaches a hosted model without his
+    #: authorisation for that specific use. It withdraws the temporary exceptions
+    #: that kept consequence classification and preference stripping on cloud
+    #: routes. Every request is local-only on this ground, whatever else is true.
+    OWNER_RULE_LOCAL_AI = "owner_rule_local_ai"
 
 
 class EgressDecision(BaseModel):

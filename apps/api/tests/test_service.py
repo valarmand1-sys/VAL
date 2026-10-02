@@ -791,3 +791,20 @@ def test_the_queue_withholds_the_verdict_until_the_label_is_stored(store: Engine
     assert (
         api.get(f"/classification-review/labelled/{second}").json()["label"]["label"] == "uncertain"
     )
+
+
+def test_the_cost_view_states_the_local_ai_rule_as_the_service_applies_it(
+    monkeypatch: pytest.MonkeyPatch, store: Engine
+) -> None:
+    """The governing rule of 2 October 2026, stated by the running service and never
+    claimed ahead of it: with the rule up, the view says no hosted model is reachable
+    and the month's figures are historical; with it down, it says so."""
+    import val_policy.egress as egress_policy
+
+    api = client(store, ScriptedAdapter(deliberated_script()))
+    monkeypatch.setattr(egress_policy, "HOSTED_MODELS_FORBIDDEN", True)
+    costs = api.get("/costs").json()
+    assert costs["hosted_models_permitted"] is False
+    assert "owner rule, 2 October 2026" in costs["hosted_models_rule"]
+    monkeypatch.setattr(egress_policy, "HOSTED_MODELS_FORBIDDEN", False)
+    assert api.get("/costs").json()["hosted_models_permitted"] is True

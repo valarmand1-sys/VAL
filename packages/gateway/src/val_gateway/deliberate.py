@@ -550,16 +550,10 @@ def send(
             model_call_ids=(),
             resolving_model_call_id=None,
             resolution=None,
-            not_run_reason=(
-                "local-only conversation (live-voice seal): "
-                f"{decision.because()}. The consequentiality classifier and the preference "
-                "strip route are cloud structured configurations, and live-voice content is "
-                "not transmitted off this machine to be classified (owner ruling, "
-                "24 September 2026)."
-            ),
+            not_run_reason=_not_run_reason(decision),
         )
         _LOGGER.info(
-            "consequentiality classification NOT RUN for message %s: local-only conversation "
+            "consequentiality classification NOT RUN for message %s: local-only request "
             "(%s). consequential execution is BLOCKED: required safety gate unavailable under "
             "local-only policy. %s",
             opened.user_message.id,
@@ -1647,6 +1641,33 @@ def _ordinary(
         return unanswered_or_raise(opened, failure)
     bind_response(engine, response, visual)
     return settle_turn(engine, opened, recalled, response, cancelled=cancelled)
+
+
+def _not_run_reason(decision: EgressDecision) -> str:
+    """Why the consequentiality classifier did not run, on the record, exactly.
+
+    Two grounds exist and are named separately. The owner rule of 2 October 2026 makes
+    every request local-only: the classifier and the preference strip are cloud
+    structured configurations with no local replacement yet, so they are **not run** —
+    which is not a finding that the turn was ordinary, and consequential execution
+    stays blocked for want of the gate. The live-voice seal (24 September 2026) is the
+    narrower ground and is still stated when it applies.
+    """
+    grounds = decision.because()
+    if LocalOnlyReason.OWNER_RULE_LOCAL_AI in decision.reasons:
+        return (
+            f"local-only request ({grounds}): hosted AI models are not authorised (owner "
+            "rule, 2 October 2026). The consequentiality classifier and the preference strip "
+            "route are cloud structured configurations with no local replacement yet, so "
+            "the classification was NOT RUN — not a finding that the turn was ordinary — and "
+            "consequential execution remains blocked for want of the gate."
+        )
+    return (
+        f"local-only conversation (live-voice seal): {grounds}. The consequentiality "
+        "classifier and the preference strip route are cloud structured configurations, "
+        "and live-voice content is not transmitted off this machine to be classified "
+        "(owner ruling, 24 September 2026)."
+    )
 
 
 def _classify(

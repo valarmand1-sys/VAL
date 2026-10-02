@@ -35,6 +35,71 @@ from uuid import UUID
 from sqlalchemy import Engine, text
 
 from val_domain.egress import ORDINARY, EgressDecision, LocalOnlyReason, sealed
+from val_domain.gateway import GatewayErrorKind, Hosting, ModelConfig
+
+#: **Local AI processing — the governing rule of 2 October 2026 (Lord Armand).** Not
+#: configuration: it is not read from the environment, no setting turns it off, and a
+#: rollback of any other part of a release leaves it as it is. Hosted model providers
+#: are not built at startup, every request is local-only, and the narrowest door every
+#: provider call passes through refuses a hosted route — or any route whose destination
+#: is not verifiably this machine — before anything is transmitted. Authorisation for a
+#: specific use would be a further ruling, carried explicitly; none exists.
+HOSTED_MODELS_FORBIDDEN = True
+
+#: Providers whose inference runs off this machine. Their adapters are not built while
+#: the rule stands; their keys, where still configured, serve nothing here.
+HOSTED_PROVIDERS = frozenset({"anthropic", "openai", "google"})
+
+OWNER_RULE_STATEMENT = (
+    "hosted AI models are not authorised: ordinary typed and spoken interaction, and "
+    "every supporting or background AI task, runs on this Mac (owner rule, 2 October "
+    "2026, superseding the temporary cloud exceptions for consequence classification and "
+    "preference stripping)"
+)
+
+
+def hosted_model_refusal_for(config: ModelConfig) -> tuple[GatewayErrorKind, str] | None:
+    """Why this route may not be used at all under the rule, or None if it may."""
+    if not HOSTED_MODELS_FORBIDDEN or config.hosting is Hosting.LOCAL:
+        return None
+    return (
+        GatewayErrorKind.HOSTED_MODEL_NOT_AUTHORISED,
+        f"{config.slug} runs off this machine ({config.hosting.value}, provider "
+        f"{config.provider}); {OWNER_RULE_STATEMENT}. Nothing was transmitted and nothing "
+        "was charged.",
+    )
+
+
+def _is_loopback_url(url: str) -> bool:
+    from urllib.parse import urlparse
+
+    host = (urlparse(url).hostname or "").lower()
+    return host in {"127.0.0.1", "localhost", "::1"} or host.endswith(".localhost")
+
+
+def destination_refusal_for(
+    config: ModelConfig, adapter: object
+) -> tuple[GatewayErrorKind, str] | None:
+    """The route says it is local; verify where the adapter actually sends.
+
+    An adapter declares its `destination`: a URL, which must be a loopback address,
+    or `"subprocess"` for inference run as a child process of this service. No
+    declaration, or a non-loopback one, is a refusal — a label is not a destination.
+    """
+    if not HOSTED_MODELS_FORBIDDEN:
+        return None
+    destination = getattr(adapter, "destination", None)
+    if destination == "subprocess":
+        return None
+    if isinstance(destination, str) and _is_loopback_url(destination):
+        return None
+    return (
+        GatewayErrorKind.HOSTED_MODEL_NOT_AUTHORISED,
+        f"{config.slug} is registered as local, but its adapter's destination "
+        f"({destination!r}) is not verified as this machine; {OWNER_RULE_STATEMENT}. "
+        "Nothing was transmitted.",
+    )
+
 
 __all__ = [
     "LiveVoiceConversations",
@@ -114,6 +179,8 @@ def decide_egress(
     establish absence, not evidence of it.
     """
     reasons: list[LocalOnlyReason] = []
+    if HOSTED_MODELS_FORBIDDEN:
+        reasons.append(LocalOnlyReason.OWNER_RULE_LOCAL_AI)
     if live is not None and live.active_in(conversation_id):
         reasons.append(LocalOnlyReason.VOICE_SESSION_ACTIVE)
     if is_conversation_sealed(engine, conversation_id):

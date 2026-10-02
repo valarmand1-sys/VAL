@@ -41,6 +41,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import Engine, text
 from starlette.concurrency import run_in_threadpool
 
+import val_policy.egress as _egress_policy
 from val_api.contracts import (
     AdoptedFragmentRequest,
     BlindPositionView,
@@ -900,6 +901,13 @@ def create_app(
             by_task_type=spend_by_task_type(engine),
             uncosted_calls=uncosted,
             complete=uncosted == 0,
+            hosted_models_permitted=not _egress_policy.HOSTED_MODELS_FORBIDDEN,
+            hosted_models_rule=(
+                "AI processing runs on this Mac (owner rule, 2 October 2026); no hosted "
+                "model is reachable from this service"
+                if _egress_policy.HOSTED_MODELS_FORBIDDEN
+                else None
+            ),
         )
 
     @app.get("/signals/disagreement")

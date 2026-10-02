@@ -919,6 +919,11 @@ class CostView(BaseModel):
     by_task_type: dict[str, float]
     uncosted_calls: int
     complete: bool
+    #: The governing rule of 2 October 2026, as this running service applies it: when
+    #: False, no hosted model is reachable from this process and every figure above is
+    #: historical. Additive; absent from older services, where hosted routes were open.
+    hosted_models_permitted: bool = True
+    hosted_models_rule: str | None = None
 
 
 class DisagreementSignal(BaseModel):

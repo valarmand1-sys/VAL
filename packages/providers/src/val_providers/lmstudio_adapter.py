@@ -288,6 +288,12 @@ class LMStudioAdapter:
 
     # --- bringing the runtime up (owner ruling, 21 September 2026) ------------
 
+    @property
+    def destination(self) -> str:
+        """Where this adapter sends inference: the loopback server it was built for
+        (the governing rule of 2 October 2026 verifies this, not the route's label)."""
+        return self._base_url
+
     def ensure_runtime_ready(self, config: ModelConfig) -> Mapping[str, object]:
         """Make this configuration servable now, and describe what that took.
 

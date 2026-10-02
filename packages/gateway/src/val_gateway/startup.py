@@ -31,6 +31,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import val_domain.registry as registry
 import val_gateway.context as _context
 import val_gateway.delivery as _delivery
+import val_policy.egress as _egress_policy
 from val_domain.gateway import Admission, CacheTtl, CapabilityProfile, ModelConfig, ReasoningEffort
 from val_domain.perception import PerceptionProvider
 from val_domain.registry import active, by_slug
@@ -247,6 +248,17 @@ def build_adapters(providers: set[str]) -> tuple[dict[str, ProviderAdapter], lis
     problems: list[str] = []
 
     for provider in sorted(providers):
+        if _egress_policy.HOSTED_MODELS_FORBIDDEN and provider in _egress_policy.HOSTED_PROVIDERS:
+            # The governing rule of 2 October 2026: no adapter for a hosted provider
+            # exists in this process, so nothing can reach one — whether or not its
+            # key is still configured. The key is neither read nor required.
+            _LOGGER.warning(
+                "hosted provider %s: no adapter built (owner rule, 2 October 2026: AI "
+                "processing runs on this Mac); its routes are unreachable and its key, "
+                "if configured, serves nothing here",
+                provider,
+            )
+            continue
         variable = KEY_VARIABLES.get(provider)
         if variable is None:
             problems.append(f"{provider}: no adapter exists for this provider")

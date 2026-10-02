@@ -172,6 +172,16 @@ const COST_LABELS: Record<string, string> = {
 
 export function describeCosts(costs: CostView): string {
   const money = (value: number) => `$${value.toFixed(4)}`;
+  // The governing rule of 2 October 2026, as the running service states it: once it is
+  // installed, nothing reaches a hosted model, and the month's figure is historical.
+  // Said only when the service says so — never claimed ahead of its installation.
+  if (costs.hosted_models_permitted === false) {
+    const earlier =
+      costs.month_to_date_usd > 0
+        ? `Earlier this month, before the rule: ${money(costs.month_to_date_usd)} billed by outside providers.`
+        : "Nothing billed by outside providers this month.";
+    return `AI processing runs on this Mac; no hosted model is used (owner rule, 2 October 2026). ${earlier}`;
+  }
   const billed = Object.entries(costs.by_task_type)
     .filter(([, value]) => value > 0)
     .map(([task, value]) => `${COST_LABELS[task] ?? task} ${money(value)}`);

@@ -260,6 +260,11 @@ class GatewayErrorKind(StrEnum):
     #: retryable on another route**: retrying is the thing forbidden, and there is
     #: no approval path, because the ruling is that the transcript does not leave.
     LOCAL_ONLY_EGRESS_REFUSED = "local_only_egress_refused"
+    #: The governing rule of 2 October 2026: this call would have reached a hosted
+    #: model, or a route whose destination could not be verified as this machine,
+    #: and no authorisation for that specific use exists. Refused before anything
+    #: is transmitted or reserved; **not retryable on another route**.
+    HOSTED_MODEL_NOT_AUTHORISED = "hosted_model_not_authorised"
     #: Owner execution order, 22 September 2026: Val's voice is local. When the
     #: local speech route cannot produce it, the request **stops here**. No cloud
     #: text-to-speech is called and ElevenLabs is never invoked automatically —

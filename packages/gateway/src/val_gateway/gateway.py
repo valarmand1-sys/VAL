@@ -121,6 +121,7 @@ from val_policy.budget import (
     no_affordable_route_message,
     output_cap_overrun,
 )
+from val_policy.egress import destination_refusal_for, hosted_model_refusal_for
 from val_policy.eligibility import egress_refusal_for, refusal_for, startup_violations
 from val_policy.restricted import preflight, refusal_message
 from val_policy.routing import (
@@ -1569,6 +1570,12 @@ class Gateway:
         # eligibility, before the adapter is looked up, before a runtime is asked
         # to come up and before anything is reserved, so a refused call transmits
         # nothing and charges nothing.
+        # The governing rule of 2 October 2026, first of all and whatever the request
+        # says about its own egress: a hosted route is refused here, by every entrance.
+        hosted_refusal = hosted_model_refusal_for(config)
+        if hosted_refusal is not None:
+            kind, detail = hosted_refusal
+            raise GatewayError(kind, detail)
         egress_refusal = egress_refusal_for(request.egress, config)
         if egress_refusal is not None:
             kind, detail = egress_refusal
@@ -1588,6 +1595,11 @@ class Gateway:
                 GatewayErrorKind.INVALID_REQUEST,
                 f"no adapter is configured for provider {config.provider!r}",
             )
+        # …and the destination is verified, not the label (2 October 2026).
+        destination_refusal = destination_refusal_for(config, adapter)
+        if destination_refusal is not None:
+            kind, detail = destination_refusal
+            raise GatewayError(kind, detail)
 
         # Owner ruling, 21 September 2026: an adapter that can bring its own
         # runtime up is asked to, before anything is reserved or transmitted, so
@@ -2474,12 +2486,13 @@ class Gateway:
             ]
             if not local:
                 return (
-                    "This conversation is local-only, because live-voice content is in it or "
-                    "was recalled into it, and no configuration that runs on this machine is "
-                    f"admitted, eligible and qualified for the "
+                    "This request is local-only — every request is, under the owner rule of "
+                    "2 October 2026 that AI processing runs on this Mac; live-voice content "
+                    "seals a conversation on its own grounds as well — and no configuration "
+                    "that runs on this machine is admitted, eligible and qualified for the "
                     f"{required_profile(request.task_type).value} capability profile this "
-                    "work requires. Nothing was transmitted: the transcript does not leave "
-                    "this machine to obtain an answer (owner ruling, 24 September 2026)."
+                    "work requires. Nothing was transmitted: the content does not leave this "
+                    "machine to obtain an answer."
                 )
         eligible = [
             config

@@ -145,6 +145,12 @@ class LlamaCppAdapter:
 
     # --- the runtime, brought up without a terminal ------------------------------------
 
+    @property
+    def destination(self) -> str:
+        """Where this adapter sends inference: the loopback server it was built for
+        (the governing rule of 2 October 2026 verifies this, not the route's label)."""
+        return self._base_url
+
     def ensure_runtime_ready(self, config: ModelConfig) -> Mapping[str, object]:
         """Declaring `LocalRuntimeAdapter`: serve this configuration now, or say why not."""
         return self._supervisor.ensure_ready(config)
