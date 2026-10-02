@@ -2294,3 +2294,27 @@ test made — one is required.** Record: `qualification/runs/2026-09-29-voice-mo
 - **Open:** the interruption defect and delivery-record overstatement; roman numerals; the
   29 September backup failure; `verify_restore.py` unable to complete on the current schema.
 - **Not claimed:** one-second latency; avatar compatibility.
+
+## 53. Handoff — the repair after the failed physical check; release r6 STAGED, NOT INSTALLED (owner order of 1 October 2026)
+
+**WP3 remains PARTIAL. Physical acceptance remains STOPPED.** Record: `VOICE_MODEL.md` §13.
+
+- **Installed state, actual and unchanged:** service `422ee71` (r5), desktop `e48a4994…`,
+  store `0032`; Voice to stay off until the corrected release is approved. No evidence
+  that typed work or stored data is affected.
+- **Completed in the candidate (`39a7e5d`, tag `voice-repair-release-2026-10-01-r6`, CI
+  green):** interruption reaches the answer actually sounding (playback slot, per-answer
+  heard state, stop told once, explicit `all_offered`); owner precedence over every
+  unheard answer with widened stop phrases and his own interrupting refusals read as
+  stops; delivery accounting reconciled with the player's record, with three historical
+  corrections prepared and not applied; Core conversational guidance after the persona
+  (persona unedited; its §5 "developed prose" reported as the one phrase leaning toward
+  length); speech-only numerals, separable.
+- **Verified:** deterministic regression (5 API tests, his own words included) and the
+  reproduction on the real desktop frontend — playback stopped 269–349 ms after his speech
+  began; a waiting answer never played; stops not answered; ordinary first audio 2.3–2.6 s
+  (r5's figure preserved); a replacement over an answer still being written 5.1–5.8 s.
+- **Acceptance status:** none claimed. Next is his approval to install r6 and one combined
+  physical check. ~1 s is not met; no avatar-compatibility claim.
+- **Open, separate:** the 29 September backup failure; `verify_restore.py` unable to
+  complete (the 30 September verification itself has no gap — §13.7).

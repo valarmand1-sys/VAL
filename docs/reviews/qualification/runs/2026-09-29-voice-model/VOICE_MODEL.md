@@ -1198,7 +1198,7 @@ correction preservation 3/3, withdrawn fact 3/3, unavailable information 3/3, no
 work 3/3, constraints 3/3, planted instruction 3/3 — no failure.
 
 **Onset:** first speakable segment, warm requests, median 2.17 s before and 2.14 s after
-(22 rows each): no measurable cost. The guidance is ~2.6k characters added once to a
+(22 rows each): no measurable cost. The guidance is ~3.1k characters added once to a
 prefix that is primed.
 
 **Limits, stated:** the 26B model follows the guidance stochastically — across revisions
@@ -1286,3 +1286,27 @@ check cannot currently pass. No general backup audit was made.
 - The guidance limits in §13.4. The ~1 s target is **not met** and is not claimed.
 - The headless bench is not the room: speaker echo, his real voice and the orange
   indicator are his physical check.
+
+### 13.9 Release r6, staged for his approval — NOT INSTALLED
+
+- Tag `voice-repair-release-2026-10-01-r6` = **`39a7e5d`**; release tree
+  `~/Projects/val-releases/39a7e5d` (environment synced, imports verified).
+- Desktop rebuilt from that commit (`npm ci`, 245 tests, `npm run tauri build`), staged as
+  `~/Val previous builds.noindex/Val (release voice-repair 2026-10-01 r6 39a7e5d, staged, not installed).app`
+  — binary SHA-256 **`6016a613…7367`**. The installed desktop is still r5's (`e48a4994…`);
+  `check_desktop_deployment.py` reports one installed bundle.
+- Local gate at `39a7e5d`: packages + infrastructure 2,983 (+2 expected failures), api 120,
+  desktop 245; ruff, format, mypy, boundaries, import contracts, pins, secrets, scope
+  ruling clean. **CI at `39a7e5d`: success** (run 36943871240).
+- **No migration.** Installation is: the service path to `39a7e5d`; four added settings
+  (`VAL_OWNER_PRECEDENCE=on`, `VAL_COMBINE_CONTINUATIONS=on`, `VAL_CONVERSATION_GUIDANCE=on`,
+  `VAL_SPOKEN_NUMERALS=on` — each independently removable — beside r5's six, unchanged);
+  the desktop bundle; optionally the three delivery corrections (§13.3).
+- **Rollback to r5** (what is installed now): restore the plist as it is today (a copy is
+  taken as the first installation step), the r5 desktop bundle, restart. Rollback to
+  `13b3cb8` remains as §12.1. The store needs nothing in either direction; appended
+  delivery corrections are append-only rows and stay.
+- **Recommendation:** install r6 for the combined physical check — the overlapping-answer
+  sequence, typed-during-Voice, the opening-line question, an explanation request, a
+  detailed request, and a numeral. Acceptance is his; nothing here claims it.
+
