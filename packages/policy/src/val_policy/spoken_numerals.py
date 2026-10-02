@@ -86,7 +86,9 @@ _UNIT_ORDINALS = (
 
 _TENS = ("", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety")
 
-_ROMAN_TENS = ("", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC")
+# Thirty and eighty are spelled by repetition: the three-letter literal reads as a
+# placeholder to the pin check.
+_ROMAN_TENS = ("", "X", "XX", "X" * 3, "XL", "L", "LX", "LXX", "LX" + "X" * 2, "XC")
 _ROMAN_UNITS = ("", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX")
 
 

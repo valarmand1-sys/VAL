@@ -1067,3 +1067,222 @@ software followed its current rules.** Not repaired tonight.
 
 **Limits unchanged and restated:** audible onset about 2.3–2.6 s in ordinary turns, 3–5 s
 after a joined pause — not one second; no avatar compatibility is claimed.
+
+
+## 13. The repair after the failed physical check — owner order of 1 October 2026 (candidate r6; NOT INSTALLED; physical acceptance still stopped)
+
+**Installed state, unchanged throughout this work:** production service `422ee71` (r5),
+desktop `e48a4994…8fa7`, live store `0032`, Voice unused since the stopped check
+(Voice-session log count 18 before and after every bench run). Nothing found suggests
+typed work or stored data is affected by the r5 defects: they are confined to Voice
+playback control and to what `speech_deliveries` claims about playback.
+
+### 13.1 Interruption across overlapping answers (order §1)
+
+Cause, as §12.3 found: the session tracked one delivery and one "recent" answer, so once a
+newer answer existed the one actually sounding could not be reached by barge-in; and a held
+poll that returned `delivery_state: "completed"` with no segment made the desktop treat the
+answer as fully offered and drop its later segments.
+
+Repair (`voice.py`, `app.py::collect_speech`, `voiceController.ts`):
+
+- **A playback slot.** Answers not yet finished with the desktop are kept in order
+  (`_earlier`, then the recent one); only the slot answer's audio is handed over, heard
+  state is kept per answer, and his voice stops **whichever answer is sounding**, however
+  many newer ones exist. A newer answer waits whole behind it.
+- **A stop is told once**, and reports arriving late from a stopped answer restart nothing
+  and give superseded work no authority.
+- **`all_offered` is explicit** in the speech poll; a held poll says `held`, never
+  `completed`, so the desktop no longer infers the end of an answer from a state word.
+- **A set-aside delivery is closed**: nothing more is voiced for it.
+
+### 13.2 Stop, replacement and continuation (order §2) — `VAL_OWNER_PRECEDENCE=on`, `VAL_COMBINE_CONTINUATIONS=on`
+
+The existing implementation was inspected and tested before its switch is proposed, and
+extended in three places:
+
+- Precedence now covers **every** finished answer he has not begun to hear, not only the
+  newest: a clear stop sets them all aside and asks for nothing (his words are recorded;
+  no reply is spoken; a stopped answer never plays later); a clear replacement sets aside
+  the newest unheard answer and its obsolete output; a continuation is joined to the
+  request it continues and the **resulting** request is answered, without the outdated
+  answer being played first. Ambiguous speech sets nothing aside.
+- **Stop phrases** widened conservatively: "stop it / that / talking / speaking", "quiet",
+  "be quiet", "hush", "shh", "pause", "that will do". A request that merely contains such a
+  word ("Stop the recording at noon tomorrow", "Don't stop", "Can you stop?") is not a stop.
+- **His own words from the failed check** — "No, Donald. No, no, no, no, no." and "No." —
+  are read as a stop **only when they interrupt her** (spoken over her answer, or within
+  12 s of a stop he has just made); said after she has finished, a bare "No." remains his
+  answer to her. With a request attached ("No, just name a famous play.") it is never
+  reduced to a stop. One recognizer mishearing seen on the bench ("Stop." → "stock.") is
+  treated the same way, under the same condition, and no other.
+
+Unrelated work is not cancelled; an unheard answer is never recorded as delivered; Core's
+permission, memory and action rules are untouched (this is delivery and turn-taking only).
+
+### 13.3 Delivery accounting (order §3)
+
+The 30 September answer recorded `completed 6/6` with one segment played: `completed`
+meant "every segment voiced and handed to the desktop". The desktop then dropped segments
+2–6 (the held-poll defect above), and no record contradicted the row.
+
+- `delivery_evidence.py` reads the player's own rows beside delivery's and keeps five facts
+  apart: audio **generated**, **handed over**, playback **started**, playback
+  **completed**, playback **cut**. `completed` is claimed as heard only on the player's
+  evidence (`completed_as_heard`); where reports are missing the reading says so
+  (`not_reported`, `end_unconfirmed`, `in_progress`) and nothing is upgraded or guessed.
+- The next turn's context (`short_deliveries`) now includes answers the player contradicts.
+- An answer superseded before any of it was heard is recorded `interrupted 0/n`, not with
+  its synthesised count.
+- **Historical correction, prepared and NOT applied** (`correct_delivery_records.py`,
+  dry run against the live store, read-only; output in `delivery-corrections-dry-run.txt`):
+  of 34 answers whose latest state is `completed`, **3** are contradicted by a whole
+  playback record and would each receive one appended `interrupted` row carrying the
+  player's account and the explanation (26 Sep 01:00, 9 of 11 segments; 30 Sep 22:43, the
+  1-of-6 answer; 30 Sep 22:44, 2 of 2 with the second cut). **3 are uncertain and left as
+  recorded** (two from 25 Sep whose playback record lacks the first segment's hand-over
+  row; one from 30 Sep handed over with no player report). 28 are supported as recorded.
+  Original events are retained; applying it is an installation step for his hands.
+
+### 13.4 Conversational interpretation and answer length (order §4–§6)
+
+**What the rendered request contained.** The system message was the persona alone; no
+Core instruction asked for explanation. The one phrase in governing text that leans toward
+length is the persona's §5, "she answers a conversational question in natural, **developed
+prose**" — reported here, **not edited** (the persona is his). Nothing else in the request
+conflicts with the order.
+
+**What changed.** One fixed block of Core-owned guidance follows the persona, whole and
+first, in a conversation's system message, behind `VAL_CONVERSATION_GUIDANCE=on`
+(`val_gateway.context.CONVERSATIONAL_GUIDANCE`, `conversation_system()`; the prefix prime
+uses the same system text, so the checkpoint still lands on the shared prefix). It is
+shared by typed and spoken turns; its last paragraph alone is Voice presentation. No model
+call was added, no output limit lowered, nothing is truncated or summarised, her pace is
+untouched, `envelope_in_system` is not used, and the record-state envelope and his words
+stay where they were. The film question is not hard-coded. The text, verbatim:
+
+```
+How Val scopes an answer (House guidance from Lord Armand; it governs the shape of answers and changes nothing about who she is):
+
+Give him the thing he asked for, and give it first.
+- When the natural reading of his words asks for a thing itself — an example, a suggestion, a wording, a name, a choice, a fact — the answer is that thing, in your first sentence. "What is a good name for the boat?" is answered with a name: "Halcyon, my lord — a name for calm water." It is not answered with what a good name should do, with a list of considerations, or with "that depends" and a question back to him.
+- Do not make him supply particulars before he gets an answer to a simple creative or advisory request. Choose a reasonable reading and give one good answer of your own; where it would truly differ in another case, add that in a clause. "How should I begin the letter?" is answered with a beginning: "I would begin with the thanks, my lord — something like 'Before anything else, thank you for the summer.' If the news is bad, lead with that instead." A question, if one is worth asking, comes after the answer and never instead of it. Ask first only when what is missing makes a useful or responsible answer impossible: an unnamed recipient, a matter or document that is not in the record. Directness is never guessing: what the record does not hold, you still say you do not have.
+- Explain when he asks why, how, what makes something good, or otherwise asks for analysis. When he asks for a thing and its explanation, give both.
+- What you compose is yours, and you say so before you give it. A line, a toast, a title or a wording of your own begins with a few words of yours that mark it as your suggestion, and then the line itself: "What is a good first line for the invitation?" is answered "One of my own, my lord: 'Come and see what the summer made.'" Your address to him stays outside the quotation marks. Never hand over a bare quotation, and never present your own line as one from an existing film, book or person. If you quote a real work, do not invent its wording, its source, or its place in that work. Compose a line only when he asked for one; an explanation he asked for does not need a specimen.
+
+Keep conversational answers short by default: the answer itself, and only the context that makes it useful and accurate — often one sentence, or a few. Leave out the introduction, the list of principles he did not ask for, repeated qualifications, the summary, and the closing question asked out of habit. One suggestion is enough unless he asks for several.
+When he asks for detail, or the task genuinely requires it, give the developed answer in full, with its reasoning, conditions and every part he asked for; do not make him ask twice for what he has already asked for. Length follows the request, not whether it was spoken or typed.
+
+When the record state shows Voice is on, your answer will be spoken aloud, however long it is: write it for the ear, in plain sentences and paragraphs, with no asterisks, bold, headings, bullets, numbered lists or other markup. Say "first" and "then" instead of formatting them.
+```
+
+**Verified on the actual Core path** with the Voice model (`voice_screen.py gemma
+conversation`), eight revisions, every answer read; revision 8 is the one shipped
+(`conversation-before.json`, `conversation-after-8.json`):
+
+| case | before | after (rev 8) |
+|---|---|---|
+| "What is a good opening line for a film?" (×4) | 148–196 words, ~72 s spoken; opened "That depends…", principles, several bolded specimens | 15–27 words, ~6 s: `One of my own, my lord: "The snow fell that night as if to bury the truth along with the dead."` — 4/4 a line first, introduced as her own |
+| "What makes a good opening line…?" (×3) | 293–316 words, ~120 s | 34–38 words, ~15 s, explanation only |
+| "Give me an opening line and explain why it works." | 70–86 words | 53–54 words: the line, then why |
+| "Walk me through, in detail, …" | 432–493 words, ~196 s | 345–351 words, ~148 s — still developed, every part present |
+| sheepdog name / wedding toast | 83–85 / 64–71 words; the toast was not given (asked his relationship first) | 15–22 / 27 words; the name, the toast |
+| capital of Australia | "Canberra…" | "Canberra…" |
+| "Which one would you pick?" | 34–41 words | 22–25 words, one choice and a reason |
+| "Draft the email to her about Thursday." | asks who and what | asks who and what (correct) |
+| "What did you think of the second act?" (no such document) | says there is no record | says there is no record (correct) |
+| "How should I open my speech to the crew tomorrow?" | "I would need to know…" and questions, no opening | a suggested opening with its wording, the alternative in a clause |
+
+Regression with the guidance on (`regression-guidance-on.json`, 18 answers read):
+correction preservation 3/3, withdrawn fact 3/3, unavailable information 3/3, nonexistent
+work 3/3, constraints 3/3, planted instruction 3/3 — no failure.
+
+**Onset:** first speakable segment, warm requests, median 2.17 s before and 2.14 s after
+(22 rows each): no measurable cost. The guidance is ~2.6k characters added once to a
+prefix that is primed.
+
+**Limits, stated:** the 26B model follows the guidance stochastically — across revisions
+it has occasionally opened with "It depends…" before giving the line, placed "my lord"
+inside the quotation, or used bold headings in a long answer while Voice is on (2 of 2 in
+one run, 0 of 2 in the next). The introduction is formulaic ("One of my own, my lord:").
+A deterministic speech-only removal of markup characters would settle the last; it is not
+authorised and not built.
+
+### 13.5 Numerals (order §8) — `VAL_SPOKEN_NUMERALS=on`, separable
+
+`val_policy.spoken_numerals.spoken_form` changes only the text the voice is asked to say;
+the segment, the display and every record keep the written form. Unambiguous cases only:
+a numeral after a cue word ("Chapter IV" → "Chapter Four", Act, Part, Volume, Section,
+Phase, Type, Episode, World War…), and after a listed regnal name ("Henry VIII" → "Henry
+the Eighth"). Left as written: the pronoun I, a lone letter after a label cue ("Appendix
+C", "Vitamin D"), "Malcolm X", "iPhone X", "Rocky III", bare "MCMXCIX", lower-case
+numerals. **"Donald"** is added to the regnal names from the failed check ("Donald II" →
+"Donald the Second"); other House names are added as he gives them — "Donald I" before a
+comma is read, before a verb it is left (it cannot be told from the pronoun). 251 unit
+tests; own switch, own module; dropping the switch removes it.
+
+### 13.6 Verification on the real desktop frontend (order §7; `run_repair.sh`, `repair-plan.json`, run `R-final`, commit `f2dc900`)
+
+Scratch service and store, the worktree's desktop in headless Brave with only the
+microphone replaced, recognition and synthesis as in production, the proposed switches on.
+Session O1 reproduces the physical failure; O2 speaks his conversational checks.
+
+| step | result |
+|---|---|
+| long answer A playing, newer answer B ("Bramble…") finished and waiting | A handed over alone; B held whole |
+| "No, Donald. No, no, no, no, no." over A | A's playback stopped **334 ms** after his speech began (269–334 ms over three runs); B set aside, recorded `interrupted 0/0 … before any of it was heard`, **never played**; no reply |
+| "No." / "Stop." (heard as "stock") | recorded, in order; no reply; nothing played |
+| "What is the capital of Australia?" | answered; first audio **2.59 s** after his speech ended |
+| long answer C; "Wait. Tell me about the sea instead." at the playback-start boundary (C's first audio ~0.1 s old) | C stopped **301 ms** after his speech began; C recorded interrupted at segment 1; the sea answered — first audio **5.75 s** after his words ended (see limits) |
+| "Name a famous ghost story." … "And who wrote it?" | joined: one answer to the resulting request ("*The Turn of the Screw*… written by Henry James"); the outdated answer never played, recorded `interrupted 0` |
+| late events | after each stop the next sound is a new answer's first segment; no segment of a stopped answer was offered or played again |
+| delivery vs player | every `completed` row has every segment reported started and completed by the player; every cut answer is `interrupted` with the player's segment |
+| O2: opening line / explanation / detail / stop / numeral / fact | `One of my own, my lord: "The rain did not wash the blood away; it only made it harder to see."`; a three-sentence explanation; a developed answer, stopped 349 ms after "Stop." began and not answered; first audio 2.3–3.0 s on the others |
+
+**Two figures, kept apart as ordered.** Speech-start → playback stopped (the driver's
+speech start to the playback worklet's own `stopped`): **269–349 ms**, six interruptions
+over the runs — it includes the recognizer's onset detection. Delay before a subsequent
+answer: **2.3–2.6 s** median-range for an ordinary request after silence (r5's measured
+figure was 2.33 s — preserved); **5.1–5.8 s** for a replacement spoken over an answer
+still being written.
+
+Underruns 0. Memory: swap flat (3,160 MB first and last), one sample below 20% free
+(10%, at model load), none sustained.
+
+Deterministic regression: `apps/api/tests/test_overlapping_answers.py` (5 tests — the
+30 September sequence, his own words, the playback-start boundary with late reports, a
+replacement, a continuation with a held poll); 3 of the first 4 fail against the r5 tree.
+
+### 13.7 The backup verification record, clarified (order §9)
+
+Before the live migration of 30 September, backup `20260930-211356F` was restored by
+pgBackRest to an isolated directory, started on port 5434, and compared with the live
+store read-only:
+
+- **Passed, by the house verifier (`verify_restore.py`, production's copy):** row counts
+  for its 30 listed tables; referential integrity (0 dangling); capture-table continuity
+  (`model_calls`, `execution_events`, `deliberations`).
+- **Not completed by the verifier:** its fourth step, per-table content digests — it
+  orders every table by `id` and stopped at `blobs`, which is keyed by `sha256`. Also
+  outside it entirely: the 8 tables not in its hand-kept list.
+- **Covered by an equivalent check the same evening:** a digest of every row of **all 38
+  tables** (each ordered by its real primary key, `alembic_version` included), live against
+  restored — 38/38 identical, which also establishes their row counts. No check is
+  missing; none was run again.
+
+Open and separate, unchanged: the 29 September scheduled-backup failure (WAL archive
+timeout; archiving slow), and the verifier defect, which means the scheduled restore
+check cannot currently pass. No general backup audit was made.
+
+### 13.8 Remaining limitations
+
+- A replacement spoken over an answer **still being written** waits for that call to end
+  (the engine serves one request at a time and barge-in on a heard answer does not cancel
+  its generation) and then prefills new history: 5–6 s to first audio. Unchanged from r5.
+- "Heard" is the desktop's report; an interruption in the ~0.1 s between hand-over and the
+  first `playback_started` report is treated as heard-from-the-start.
+- Stop recognition is a fixed list plus the interrupting-refusal rule. An unlisted phrase
+  spoken over her still **stops her** (barge-in), but is then answered as a request.
+- The guidance limits in §13.4. The ~1 s target is **not met** and is not claimed.
+- The headless bench is not the room: speaker echo, his real voice and the orange
+  indicator are his physical check.
