@@ -479,6 +479,16 @@ export type PlaybackState =
   | "playback_interrupted"
   | "playback_failed";
 
+/** A refusal as the service stated it: its `detail`, unwrapped, whatever the route. */
+export async function refusalOf(response: Response): Promise<ApiRefusal> {
+  const body: unknown = await response.json().catch(() => response.statusText);
+  const detail =
+    typeof body === "object" && body !== null && "detail" in body
+      ? (body as { detail: unknown }).detail
+      : body;
+  return new ApiRefusal(response.status, detail);
+}
+
 export class ApiRefusal extends Error {
   readonly status: number;
   readonly detail: unknown;
@@ -551,14 +561,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch (caught) {
     throw new NoResponseError(caught);
   }
-  if (!response.ok) {
-    const body: unknown = await response.json().catch(() => response.statusText);
-    const detail =
-      typeof body === "object" && body !== null && "detail" in body
-        ? (body as { detail: unknown }).detail
-        : body;
-    throw new ApiRefusal(response.status, detail);
-  }
+  if (!response.ok) throw await refusalOf(response);
   return (await response.json()) as T;
 }
 
@@ -600,7 +603,7 @@ export const api = {
       headers: { "Content-Type": "application/octet-stream" },
       body: pcm,
     });
-    if (!response.ok) throw new ApiRefusal(response.status, await response.text());
+    if (!response.ok) throw await refusalOf(response);
   },
   // A null `segment` means nothing is waiting, which is not the same as delivery
   // having ended; `stop` is the instruction to halt what is already sounding.
@@ -808,10 +811,10 @@ async function turnStream(body: TurnBody, handlers: StreamHandlers): Promise<Str
   } catch (caught) {
     throw new NoResponseError(caught);
   }
-  if (!response.ok || response.body === null) {
-    const detail: unknown = await response.json().catch(() => response.statusText);
-    throw new ApiRefusal(response.status, detail);
-  }
+  // The same reading of a refusal as every other request (2 October 2026): the stream
+  // route used to keep the service's whole body, so the typed-during-Voice refusal was
+  // not recognised and reached him as raw HTTP and JSON.
+  if (!response.ok || response.body === null) throw await refusalOf(response);
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   const parser = new EventFrameParser();

@@ -315,6 +315,38 @@ describe("Voice off and lifecycle", () => {
   });
 });
 
+describe("turning Voice off is not a transport failure (physical check, 2 October 2026)", () => {
+  // A chunk still in flight when he pressed Voice off was refused by a session that had
+  // already stopped listening, and the window showed "the recognizer is not running"
+  // under the composer.
+  function failAChunk(world: ReturnType<typeof harness>, detail: string): void {
+    const sender = (world.controller as unknown as {
+      sender: { onFailure(detail: string): void } | null;
+    }).sender;
+    sender?.onFailure(detail);
+  }
+
+  it("a chunk refused while Voice is stopping, or off, reports nothing", async () => {
+    const world = harness();
+    await world.controller.start({ no_project: true });
+    const sender = (world.controller as unknown as {
+      sender: { onFailure(detail: string): void };
+    }).sender;
+    await world.controller.stop();
+    sender.onFailure("the recognizer is not running. No cloud speech recognition was called.");
+    expect(world.controller.state.session).toBe("off");
+    expect(world.controller.state.failure).toBeNull();
+  });
+
+  it("a chunk refused while Voice is live is still a failure, and still releases", async () => {
+    const world = harness();
+    await world.controller.start({ no_project: true });
+    failAChunk(world, "the service went away");
+    expect(world.controller.state.failure).toBe("the service went away");
+    expect(world.tracks[0]!.stops).toBe(1);
+  });
+});
+
 describe("the metrics measure one turn, not a whole session", () => {
   // Owner acceptance, 24 September 2026. The window displayed
   //   transcript -> audible  23210 ms

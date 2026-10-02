@@ -1744,3 +1744,202 @@ above. No desktop bench was repeated. No migration; no backup or restore require
   spoken. Then Voice off, and **one ordinary typed adequacy question through the
   installed route** (§15.4).
 - **Not claimed:** conversational acceptance, physical acceptance, the ~1 s target.
+
+## 16. r8 INSTALLED; the physical check of 2 October 2026, reconciled with the records
+
+**Installed (his approval, his hands, each step verified read-only; 1 October 2026,
+22:36–23:10 CDT):** service `7be9050` (tag `voice-repair-release-2026-10-02-r8`), the
+eleven settings of §15.6 (early audio unset; credentials unchanged, compared by
+fingerprint and never displayed), desktop `6016a613…7367`, store `0032` (no migration),
+historical delivery corrections **not** applied. Rollback material: r5 plist copy in
+`~/val-rollback-20261002/`, r5 desktop set aside as
+`~/Val previous builds.noindex/Val (production desktop e48a4994, r5, replaced by r8 2026-10-02).app`.
+
+**The session:** 2 October, 13:45–13:58 CDT. Two Voice sessions were opened: the first
+13:45:00–13:45:40 (no utterance), the second 13:45:40–13:54:23, conversation
+`01a0fdf0-48a8…`, sixteen utterances.
+
+### 16.1 His results, and what the records add
+
+| # | His observation | What the records show |
+|---|---|---|
+| 1 | Readiness PASS, ~22 s | warm 17.7 s + prime 8.9 s on the first session; 11.2 s + 8.1 s on the second |
+| 2 | She never spoke the lighthouse story; the sheepdog answer played; the story kept appearing as text | **A different case from the scripted one.** The story's first segment was handed over and began playing at 13:46:37.03; his voice cut it 0.42 s later (`playback_interrupted`, "the owner began speaking"). He heard at most a fraction of a 33-character segment. The story's call ran to its end (text went on appearing, 726 characters) while his new request waited behind it. So this demonstrated **barge-in at the playback-start boundary on an answer still being written, with nothing obsolete played afterwards** — not an interruption of audibly established speech while a *newer finished* answer was pending. That scripted case was not exercised in the room; its evidence remains the bench (§13.6, §14.5) and the deterministic tests. |
+| 3 | Modifier PASS; replacement stopped her at once | "Tell me about the sea." was superseded 4.46 s after its endpoint; "in two sentences." was joined and answered once (210 characters, both segments played and completed). The library answer: 794 characters written, segment 1 (64 characters) began at 13:47:52.28 and was cut at 13:47:54.96; segment 2 handed over with no playback-start report. Its reading: `interrupted`, `completion: contradicted`, **0 characters confirmed heard, 64 begun, 794 written**. Text generated and words heard are kept apart. |
+| 5 | Example, explanation, detail: satisfied | Title: 52 characters, one suggestion, introduced as her own. Clapperboard: 593 characters. Location scout: 2,975 characters, 29 segments, every one reported started and completed (`completion: confirmed`); it contains Markdown as written, and **no closing offer**. No extra alternatives in any of the three. This is one session, not a claim that the residues of §15.3 are gone. |
+| 6 | Numerals PASS as heard | The canonical text is "We begin at chapter 4 with Donald II." The speech-only step turns that into "We begin at chapter 4 with Donald the Second." for the voice ("chapter 4" is a digit and is left to the voice, which read it as "four"; "Donald II" was converted by the regnal rule). "the second day of the second month" contains no numeral and reached the voice unchanged. Two contexts, as he says — not every numeral context. |
+| 9 | Mute PASS | no record contradicts it |
+
+### 16.2 Voice timing in the room (his item 7)
+
+Speech end → the desktop's first `playback_started`, every turn with an endpoint anchor
+(speech end taken as the endpoint minus the 0.42 s of silence that defines it):
+
+| utterance | words | speech end → playback | why |
+|---|---|---|---|
+| 1 | Good afternoon, Val. | 2.34 s | ordinary |
+| 2 | lighthouse story | 2.36 s | ordinary |
+| 6 | Describe an old library. | 2.33 s | ordinary |
+| 10 | clapperboards | 2.29 s | ordinary |
+| 11 | location scout | 2.33 s | ordinary |
+| 15 | second day of the second month | 2.70 s | first text 1.48 s instead of ~0.55 s |
+| 13 | chapter 4 / Donald II | 3.28 s | first text 2.13 s: no prepared prefill after the 29-segment answer |
+| 16 | That's very good Val. | 3.42 s | the resume window ran 1.94 s before submission |
+| 7 | No, tell me about a mountain instead. | 4.16 s | spoken over an answer still being written: waited for that call |
+| 3 | What's a good name for a sheepdog? | 4.29 s | the same: the lighthouse call was still running |
+| 5 | in two sentences. (joined) | 5.54 s | 1.54 s resume window, then a turn with no prepared prefill |
+
+**Median of all twelve: 2.99 s. The five ordinary turns: 2.29–2.36 s — the bench figure
+(2.33 s) reproduced in the room.** The 4,144 ms and 3,299 ms he saw in the panel belong
+to the sheepdog turn. Stage breakdown of an ordinary turn, from the service's own marks:
+0.42 s of silence to the endpoint; 0.25–0.32 s to confirm and submit; 0.10 s to dispatch;
+0.17–0.21 s to first text (the prefill was prepared); 0.25–0.30 s to the first speakable
+segment; 0.72 s to synthesise its first audio; 0.30–0.35 s for the desktop to collect it
+and begin playing. The slower turns are slower for three recorded reasons: a request
+spoken over an answer still being written waits for that call (one request at a time);
+a turn whose prefill was not prepared pays ~1.5–2.2 s to first text; a short phrase the
+endpoint judged possibly unfinished waits out its resume window. No change was made.
+
+### 16.3 Typing during and after Voice (his item 4) — two separate events
+
+1. **The 409.** Two typed sends were refused, both at about 13:48 — between the mountain
+   answer and the title request, **while Voice was genuinely on** (session open
+   13:45:40–13:54:23). No stale state: the status line was right. The draft was kept.
+   **Defect:** the notice was raw HTTP and JSON. Cause: the streaming send did not unwrap
+   the service's `detail` as every other request does, so the refusal was not
+   recognised as "typed work waits for Voice". Repaired (`api.ts::refusalOf`, used by
+   every route).
+2. **"the recognizer is not running."** At 13:54:23 an audio chunk still in flight was
+   refused (409) by a session that had just stopped listening, in the same instant as
+   the close. The desktop treated that as a transport failure and showed it under the
+   composer. It was produced by **turning Voice off**, not by Send. Repaired
+   (`voiceController.ts`: a chunk refused while Voice is stopping or off is the ordinary
+   end of Voice and reports nothing; a refusal while live is still a failure).
+3. **Was the draft sent afterwards?** No. "What does a producer do?" is not in the
+   record. After the close the service received no typed send until 13:55:29 ("This has
+   been a test…"), which succeeded. **Remaining uncertainty:** whether a press of Send
+   in that minute was made and swallowed cannot be established from the records — the
+   service saw none, and the desktop's send path has no Voice gate of its own. The four
+   typed sends that followed all went through.
+
+### 16.4 Typed replies after Voice (his item 8)
+
+The four typed replies, matched to their requests (his stopwatch figures are his own;
+these are the service's):
+
+| sent | conversation | first text | total | prompt | reasoning | prompt cache |
+|---|---|---|---|---|---|---|
+| 13:55:29 "This has been a test…" | the spoken one | 16.9 s | 17.1 s (panel: 17.38 / 17.62 s) | 8,545 tokens | 335 tokens | **0 / 8,545** |
+| 13:57:09 "I am going to close you out…" | the spoken one | 13.2 s | 13.5 s | 9,090 | 67 | **0 / 9,090** |
+| 13:58:12 "I am testing the speed…" | new | 11.1 s | 11.1 s (+1.3 s classification) | 6,439 | 172 | **0 / 6,439** |
+| 13:58:52 the same sentence | new, after reopening Val | 4.7 s | 4.8 s (panel: 5.63 / 5.73 s) | 6,439 | 264 | **6,428 / 6,439** |
+
+"That's very good Val." was **spoken** — utterance 16, 13:54:12, answered in 0.8 s with
+Voice still on — and is not a typed reply.
+
+**Cause, from LM Studio's own log:** each slow reply processed its entire prompt from
+zero (`Prompt cache: using 0/8545 tokens`), 8–12 s of prefill at roughly 700 tokens a
+second, before any reasoning. Not model loading (the model was found loaded every
+time), not readiness, not classification (0.8–1.3 s, new conversations only).
+Reasoning added 1–5 s. The fourth was fast because it was the same sentence in an empty
+conversation, so the runtime could reuse the previous request's cache — not because the
+desktop was reopened; quitting the desktop does not restart the service or the model.
+
+**Why nothing is cached for typed work:** on this runtime a later request cannot reuse
+an earlier one's history (§ of 27 September: one checkpoint near each prompt's end), and
+the persona-prefix checkpoint that makes Voice fast is created by the *prefix prime*,
+which is sent only inside a Voice session and — since the Voice model — primes Gemma,
+not GPT-OSS. Typed turns have therefore paid a full prefill since GPT-OSS became the
+typed route; r8's guidance adds ~750 tokens (about a second) to it. Nothing was changed.
+
+**Proposed, for his ruling (not built):** prime GPT-OSS's persona prefix when the
+Partner model returns after Voice, and after each typed answer while idle — the existing
+prime mechanism, extended to typed work. Expected effect: prefill of ~6,400 tokens
+removed from each typed turn (roughly 8–9 s); history and reasoning remain. It adds
+local work after every typed turn, so it falls under the per-turn necessity rule and
+the 25 September prime ruling, which bound priming to Voice.
+
+**Scope, stated:** the planned two-part director/cinematographer question was not asked.
+The typed route was exercised (four replies, functional); typed adequacy through the
+installed route remains **unverified**.
+
+### 16.5 The cost line (his item 10)
+
+**$0.0017 is two real external requests made in this session:** 13:58:13 and 13:58:53,
+provider Anthropic, model `claude-haiku-4-5-20251001`, task `classification`, 727 tokens
+in and 29 out each, $0.000872 each (cost certainty `known`). They are the only metered
+calls since 28 September. Every answer was local: GPT-OSS through LM Studio on
+`127.0.0.1:1234` (4 calls, $0) and Gemma through llama.cpp on `127.0.0.1:8099`
+(14 answers and 24 primes, $0).
+
+It is the **existing consequence-classification route for typed turns**. What is sent:
+the classifier's fixed instructions and the newly typed message alone — the call is made
+before recall or history is assembled. Why typed and not Voice: a conversation he has
+spoken in is sealed local-only, so its classification is recorded NOT RUN (that is why
+the two typed replies in the spoken conversation made no external call); the two **new**
+typed conversations were unsealed and were classified. Rulings it operates under: the
+classifier contract of 3 September 2026 (unknown is never ordinary), and the 21
+September 2026 ruling that left classification and preference stripping on their
+structured cloud routes when GPT-OSS became the typed model — "existing support
+infrastructure left unchanged for now, never a permanent exception". Nothing went
+outside an existing ruling.
+
+**The display was accurate and unclear.** It now reads, from the same figures:
+"Billed by outside providers this month: $0.0017 (consequence classification $0.0017) ·
+her answers and Voice: on this Mac, no charge" (`presentation.ts::describeCosts`).
+
+**What keeping typed classification on this Mac would involve (his decision; not
+done):** a local model admitted to the `structured` profile for the classification task;
+the schema-constrained classifier contract proven on it, with the unknown-is-never-
+ordinary fallback intact; qualification against real labelled exchanges (the fifty
+hand-labelled classifications are the house's evidence for this, and are still being
+collected); a serial local call before every typed answer on a runtime that serves one
+request at a time, so it would add seconds to each typed turn unless a second small
+model is kept resident (memory); and the same decision for preference stripping, which
+a consequential turn also sends out.
+
+### 16.6 Desktop defects found and repaired (candidate r9 desktop; NOT INSTALLED)
+
+| # | Defect | Cause | Repair |
+|---|---|---|---|
+| 4 | raw HTTP/JSON for the typed-during-Voice refusal | the streaming send kept the service's whole body | one refusal reader for every route; the notice is the service's plain sentence |
+| 4 | "the recognizer is not running" after Voice off | an in-flight chunk refused at close, reported as a failure | not a failure while stopping or off |
+| 10 | cost line read as if her work were billed | wording | the line names outside spend and local work |
+| 11 | the view returned to the top on every send and answer | nothing followed new content, and a typed send replaced the scrolling element | `messagesPane.tsx`: follow the newest exchange unless he has scrolled up; his place is kept, including across the element being replaced |
+| 13 | Remove does nothing | every confirmation was `window.confirm`, for which the shell's webview shows no dialog and returns false. No Remove request reached the service on 2 October. The same silent refusal applied to Remove on a message, Move, and the question asked before a conversation change ends Voice. | the question is asked in the window (`confirm.tsx`); nothing happens without his confirming press |
+| 13 | Rename unnoticed | label and place | labelled **Edit**, under the title |
+
+**12 — the spoken request in the composer: cause NOT established.** No code path writes
+speech into the composer: it is written in two places only, his typing and the clearing
+after a settled send (now held by a test). The text he quotes has a comma — "keeper, in
+eight sentences." — which the transcript does not ("keeper in eight sentences."); it
+matches the written test instruction, not the recognizer's words. The service received
+exactly two typed sends during Voice and did not record their content (nothing is
+written on a refusal). The records cannot say how that text came to be in the composer.
+It was never submitted twice: the conversation holds one such message. No change was
+made beyond the structural test.
+
+**13 — what the buttons are, and the coming Trash design.** *Archive* hides a
+conversation from the default sidebar and nothing else — it still resumes and is still
+recalled; "Show archived" brings it back. *Remove* (ruling of 12 September 2026)
+withdraws a conversation from active use: it leaves the sidebar, is not recalled, and
+takes no new messages until **Reinstate**; nothing is deleted. Neither is deletion and
+neither was repurposed. Remove is the nearest existing thing to a Trash — a reversible
+withdrawal — and the Trash and permanent-deletion design may absorb, rename or replace
+it; the repair here only makes its existing question visible, and is neutral to that
+design.
+
+Checks: desktop 259 tests (14 new: the refusal reader, the Voice-off race, four
+scrolling cases, the in-window question, the source assertions, the cost line),
+typecheck, production build. **No service code changed** (`git diff 7be9050 -- packages
+apps/api` is empty): the installed service stays as it is.
+
+### 16.7 Acceptance status
+
+Passed in the room: readiness, the modifier, the replacement, barge-in at the playback
+start, example/explanation/detail answers in this session, numerals as heard, mute,
+draft kept during Voice. **Not complete:** the scripted overlapping case (not exercised
+in the room); typed adequacy through the installed route (not asked); typed latency
+(cause established, remedy awaiting his ruling); the composer text of item 12
+(unexplained); the desktop repairs above (built, not installed, not seen by him).
+Conversational acceptance and Voice as a whole are **not** declared complete.

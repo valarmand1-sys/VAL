@@ -338,6 +338,39 @@ body {
 .conversation-header h2 {
   margin-right: auto;
 }
+/* The title and, under it, the control that edits it (2 October 2026). */
+.conversation-title {
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.conversation-title h2 {
+  margin: 0;
+}
+/* A question asked in the window, where the shell shows no native dialog. */
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.confirm {
+  background: var(--paper, #faf7f0);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-width: 32rem;
+  padding: 1.25rem 1.5rem;
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
 .conversation-actions {
   display: flex;
   gap: 0.4rem;

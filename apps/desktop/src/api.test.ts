@@ -82,3 +82,41 @@ describe("typed work waits while Voice is on (owner order, 30 September 2026)", 
     expect(typedWorkWaitsForVoice(new NoResponseError(new TypeError("Load failed")))).toBeNull();
   });
 });
+
+describe("a refusal reads the same on every route (physical check, 2 October 2026)", () => {
+  // He typed during Voice and was shown "the service answered and refused (HTTP 409):
+  // {"detail":{"voice_active":true,…}}". The streaming send kept the service's whole
+  // body, so the refusal it carries was never recognised.
+  const BODY = {
+    detail: {
+      voice_active: true,
+      message: "Voice is on. Typed messages wait until Voice ends; your words stay as a draft.",
+    },
+  };
+
+  it("the streaming send's 409 is recognised as typed work waiting for Voice", async () => {
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify(BODY), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      })) as typeof fetch;
+    let caught: unknown = null;
+    try {
+      await api.turnStream({ content: "What does a producer do?", no_project: true } as never, {
+        onDelta: () => undefined,
+        onStage: () => undefined,
+      } as never);
+    } catch (failure) {
+      caught = failure;
+    } finally {
+      globalThis.fetch = original;
+    }
+    expect(caught).toBeInstanceOf(ApiRefusal);
+    const notice = typedWorkWaitsForVoice(caught);
+    expect(notice).toBe(BODY.detail.message);
+    expect(notice).not.toContain("HTTP");
+    expect(notice).not.toContain("{");
+  });
+});
+

@@ -22,6 +22,7 @@ import type {
   ReviewProgressView,
   TurnUnanswered,
 } from "./api";
+import type { CostView } from "./api";
 import { NONE_FAILS_INCLUSION_TEST } from "./api";
 
 // An unanswered turn, described by what the record supports (ruled
@@ -156,4 +157,29 @@ export function resolutionOf(
   deliberations: DeliberationView[],
 ): DeliberationView | null {
   return deliberations.find((d) => d.blind_position_id === blind.id) ?? null;
+}
+
+// The cost line under the composer — owner's physical check, 2 October 2026. The figure
+// was accurate and read as if all of Val's work were billed: it is the money sent to
+// outside providers this month, and her own answers (typed and spoken) run on this Mac
+// at no charge. The line now says which is which, from the same figures as before.
+const COST_LABELS: Record<string, string> = {
+  classification: "consequence classification",
+  strip: "preference stripping",
+  conversation: "her answers",
+  light_conversation: "her answers",
+};
+
+export function describeCosts(costs: CostView): string {
+  const money = (value: number) => `$${value.toFixed(4)}`;
+  const billed = Object.entries(costs.by_task_type)
+    .filter(([, value]) => value > 0)
+    .map(([task, value]) => `${COST_LABELS[task] ?? task} ${money(value)}`);
+  const answersBilled = (costs.by_task_type["conversation"] ?? 0) > 0;
+  const external =
+    costs.month_to_date_usd > 0
+      ? `Billed by outside providers this month: ${money(costs.month_to_date_usd)} (${billed.join(", ")})`
+      : "Billed by outside providers this month: $0.0000";
+  const local = answersBilled ? "" : " · her answers and Voice: on this Mac, no charge";
+  return external + local;
 }

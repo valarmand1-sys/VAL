@@ -33,7 +33,10 @@ import type {
   VoiceSessionView,
 } from "./api";
 import { Attachments } from "./attachments";
+import { askToConfirm, ConfirmHost } from "./confirm";
+import { MessagesPane, newScrollMemory, type ScrollMemory } from "./messagesPane";
 import { latestIssuedWins } from "./conversationReads";
+import { describeCosts } from "./presentation";
 import { present, type Presented, type SpokenAnswer } from "./spokenPresentation";
 import {
   NO_TIMINGS,
@@ -147,6 +150,8 @@ export function App(): React.JSX.Element {
   const [clarification, setClarification] = useState<TurnClarification | null>(null);
   const [pendingContent, setPendingContent] = useState<string>("");
   const [composer, setComposer] = useState("");
+  // Where the conversation view stays between updates (`messagesPane.tsx`).
+  const scrollMemory = useRef<ScrollMemory>(newScrollMemory());
   // Ephemeral until sent: selecting a file writes nothing anywhere.
   const [pending, setPending] = useState<PendingAttachment[]>([]);
   const [busy, setBusy] = useState(false);
@@ -434,7 +439,7 @@ export function App(): React.JSX.Element {
    */
   const mayLeaveConversation = useCallback(async (): Promise<boolean> => {
     if (voiceController.current === null || voice.session === "off") return true;
-    if (!window.confirm(LEAVING_VOICE_CONFIRMATION)) return false;
+    if (!(await askToConfirm(LEAVING_VOICE_CONFIRMATION, "End Voice"))) return false;
     await voiceOff();
     return true;
   }, [voice.session, voiceOff]);
@@ -600,6 +605,7 @@ export function App(): React.JSX.Element {
 
   return (
     <div className="app">
+      <ConfirmHost />
       <aside className="sidebar">
         <h1>Val</h1>
         <nav>
@@ -729,7 +735,7 @@ export function App(): React.JSX.Element {
         {view === "review" ? (
           <ReviewPanel onRefused={(message) => setNotice(message)} />
         ) : streaming !== null ? (
-          <StreamingThread detail={detail} streaming={streaming} />
+          <StreamingThread detail={detail} streaming={streaming} scroll={scrollMemory.current} />
         ) : detail === null ? (
           <div className="empty">
             <p>{newConversationLine(entry)}</p>
@@ -738,6 +744,7 @@ export function App(): React.JSX.Element {
           <Thread
             detail={detail}
             projects={projects}
+            scroll={scrollMemory.current}
             spoken={spokenAnswers}
             onRecorded={() => void openConversation(detail.conversation.id)}
             onConversationChanged={async () => {
@@ -940,8 +947,7 @@ export function App(): React.JSX.Element {
         <footer className="signals">
           {costs !== null && (
             <span>
-              Month to date ${costs.month_to_date_usd.toFixed(4)}
-              {" · "}classification ${(costs.by_task_type["classification"] ?? 0).toFixed(4)}
+              {describeCosts(costs)}
               {!costs.complete &&
                 ` · ${costs.uncosted_calls} call(s) with unestablished cost — this figure is what is known, not the whole`}
             </span>
@@ -980,10 +986,11 @@ function TimingPanel(props: { report: TurnTimingReport }): React.JSX.Element {
 function StreamingThread(props: {
   detail: ConversationDetail | null;
   streaming: Streaming;
+  scroll: ScrollMemory;
 }): React.JSX.Element {
   const { detail, streaming } = props;
   return (
-    <div className="messages">
+    <MessagesPane memory={props.scroll} conversation={detail?.conversation.id ?? null}>
       {detail !== null && <h2>{detail.conversation.title}</h2>}
       {detail?.messages.map((message) => (
         <div key={message.id} className={`message ${message.role} ${isLive(message) ? "" : "withdrawn collapsed"}`}>
@@ -1020,7 +1027,7 @@ function StreamingThread(props: {
           </div>
         )}
       </div>
-    </div>
+    </MessagesPane>
   );
 }
 
@@ -1338,9 +1345,13 @@ export function Thread(props: {
   onRefused: (message: string) => void;
   /** Her answers being spoken in Voice, paced to her playback; absent in text mode. */
   spoken?: readonly SpokenAnswer[];
+  /** Where the view stays between updates; its own when rendered alone. */
+  scroll?: ScrollMemory;
 }): React.JSX.Element {
   const { detail, projects, onRecorded, onConversationChanged, onRefused } = props;
   const spoken = props.spoken ?? [];
+  const ownScroll = useRef<ScrollMemory>(newScrollMemory());
+  const scroll = props.scroll ?? ownScroll.current;
   // Segments she began speaking before this window had read her written answer: shown
   // after his message, from the playback facts alone, until the answer itself arrives.
   const early = spoken.filter(
@@ -1349,7 +1360,7 @@ export function Thread(props: {
   );
   const transitions = detail.scope_transitions ?? [];
   return (
-    <div className="messages">
+    <MessagesPane memory={scroll} conversation={detail.conversation.id}>
       <ConversationHeader
         conversation={detail.conversation}
         projects={projects}
@@ -1391,7 +1402,7 @@ export function Thread(props: {
             ))}
         </Fragment>
       ))}
-    </div>
+    </MessagesPane>
   );
 }
 
@@ -1596,9 +1607,9 @@ function MessageBlock(props: {
               className="inline-action"
               disabled={busy}
               onClick={() => {
-                if (window.confirm(REMOVE_MESSAGE_CONFIRMATION)) {
-                  void act(() => api.retractMessage(message.id));
-                }
+                void askToConfirm(REMOVE_MESSAGE_CONFIRMATION, "Remove").then((yes) => {
+                  if (yes) void act(() => api.retractMessage(message.id));
+                });
               }}
             >
               Remove
@@ -1672,24 +1683,27 @@ function ConversationHeader(props: {
           <button onClick={() => setRenaming(false)}>Cancel</button>
         </div>
       ) : (
-        <h2>
-          {conversation.title}
-          {conversation.archived && <span className="archived-tag"> (archived)</span>}
-          {conversation.removed === true && <span className="archived-tag"> (removed)</span>}
-        </h2>
-      )}
-      <div className="conversation-actions">
-        {!renaming && (
+        <div className="conversation-title">
+          <h2>
+            {conversation.title}
+            {conversation.archived && <span className="archived-tag"> (archived)</span>}
+            {conversation.removed === true && <span className="archived-tag"> (removed)</span>}
+          </h2>
+          {/* Owner's physical check, 2 October 2026: the title's edit control sits under
+              the title it edits, and says what it does. */}
           <button
             className="inline-action"
+            title="Edit this conversation's title."
             onClick={() => {
               setTitle(conversation.title);
               setRenaming(true);
             }}
           >
-            Rename
+            Edit
           </button>
-        )}
+        </div>
+      )}
+      <div className="conversation-actions">
         <button
           className="inline-action"
           disabled={busy}
@@ -1719,8 +1733,10 @@ function ConversationHeader(props: {
           onClick={() => {
             if (conversation.removed === true) {
               void act(() => api.reinstateConversation(conversation.id));
-            } else if (window.confirm(REMOVE_CONVERSATION_CONFIRMATION)) {
-              void act(() => api.removeConversation(conversation.id));
+            } else {
+              void askToConfirm(REMOVE_CONVERSATION_CONFIRMATION, "Remove").then((yes) => {
+                if (yes) void act(() => api.removeConversation(conversation.id));
+              });
             }
           }}
         >
@@ -1742,9 +1758,9 @@ function ConversationHeader(props: {
                       name: projects.find((project) => project.id === target)?.name ?? "that project",
                       body: { project_id: target },
                     };
-              if (window.confirm(moveConfirmation(destination.name))) {
-                void act(() => api.moveConversation(conversation.id, destination.body));
-              }
+              void askToConfirm(moveConfirmation(destination.name), "Move").then((yes) => {
+                if (yes) void act(() => api.moveConversation(conversation.id, destination.body));
+              });
             }}
           >
             <option value="">Move to…</option>

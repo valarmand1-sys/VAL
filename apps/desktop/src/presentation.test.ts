@@ -199,3 +199,32 @@ describe("classification review wording (ruling, 7 September 2026)", () => {
     );
   });
 });
+
+describe("the cost line says what is billed and what is local (2 October 2026)", () => {
+  it("names the outside spend and says her answers and Voice are local", async () => {
+    const { describeCosts } = await import("./presentation");
+    const line = describeCosts({
+      month_to_date_usd: 0.001744,
+      by_task_type: { classification: 0.001744, conversation: 0, prefix_prime: 0 },
+      uncosted_calls: 0,
+      complete: true,
+    });
+    expect(line).toBe(
+      "Billed by outside providers this month: $0.0017 (consequence classification $0.0017)" +
+        " · her answers and Voice: on this Mac, no charge",
+    );
+  });
+
+  it("does not call her answers local when an answer was billed", async () => {
+    const { describeCosts } = await import("./presentation");
+    const line = describeCosts({
+      month_to_date_usd: 0.5,
+      by_task_type: { classification: 0.1, conversation: 0.4 },
+      uncosted_calls: 0,
+      complete: true,
+    });
+    expect(line).toContain("her answers $0.4000");
+    expect(line).not.toContain("no charge");
+  });
+});
+

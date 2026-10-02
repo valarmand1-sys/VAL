@@ -410,6 +410,12 @@ export class VoiceController {
         await api.sendVoiceAudio(session, payload);
       },
       (detail) => {
+        // A chunk still in flight when he turns Voice off is refused by a session
+        // that has, correctly, already stopped listening. That is the ordinary end
+        // of Voice, not a transport failure: nothing is reported and nothing is
+        // re-released (2 October 2026 — it had shown "the recognizer is not running"
+        // under the composer after every Voice off that raced a chunk).
+        if (this.status.session === "stopping" || this.status.session === "off") return;
         this.apply(next(this.status, { kind: "transport_failed", detail }));
         void this.releaseEverything();
       },
