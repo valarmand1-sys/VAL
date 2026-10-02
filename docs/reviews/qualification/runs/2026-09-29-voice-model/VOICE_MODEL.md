@@ -1310,3 +1310,255 @@ check cannot currently pass. No general backup audit was made.
   sequence, typed-during-Voice, the opening-line question, an explanation request, a
   detailed request, and a numeral. Acceptance is his; nothing here claims it.
 
+
+## 14. The completion pass — owner order of 2 October 2026 (candidate r7; NOT INSTALLED; production remains r5 with Voice off)
+
+Supersedes r6 as the release proposed for installation. §13 stands except where this
+section says otherwise: the delivery-evidence reading (§13.3), the continuation
+behaviour (§13.2, §13.6), the "stock" rule (§13.2) and the guidance's length paragraph
+(§13.4) are corrected here.
+
+### 14.1 Playback evidence and uncertainty
+
+**The defect he identified, and one beneath it.** `supports_completed` was true for
+`player = "none"`, chosen whenever no `available_to_desktop` row existed. Beneath it:
+`speech_deliveries.voice_session_id` was never written (all 112 live rows, for 47 answers, are NULL), so a
+delivery row did not say which path it took and absence of desktop rows was the only
+signal. There is no production direct-sink path — every delivery the service makes goes
+through a Voice session's `DesktopSink`; the direct `EphemeralSink` exists in tests and
+the service-side bench only — so nothing legitimate is lost by refusing the inference.
+
+**The reading now (`delivery_evidence.py`), three outcomes and only three:**
+
+- **confirmed** — the player reported every generated segment completed. Only this
+  supports `completed_as_heard`.
+- **contradicted** — the player reported a segment interrupted or failed. Only an
+  affirmative report contradicts.
+- **unconfirmed** — everything else: no player record (`no_record`), handed over with no
+  reports (`not_reported`), segments without a start report (`incomplete_reports`), a
+  missing end report (`end_unconfirmed`), playback still under way (`in_progress`).
+  A missing report is not a report of silence: it neither shows the audio was heard nor
+  that it was not.
+
+Carried consistently: `contradicts_completed` (a reported cut only), the API
+(`completion`, `completed_as_heard`, `heard_characters`, `begun_characters`,
+`shortfall`), the historical proposal, and the next model call's context.
+
+**Wording.** "never played" is gone from every reading and from new delivery rows:
+segments without a report are "no playback-start report for segment(s) …"; a cut reads
+"reported cut off while playing (how much of a cut segment was heard is not recorded)".
+
+**A started segment is not heard text.** `confirmed_prefix` is the text of segments
+reported **completed**; `begun_prefix` runs through the last segment reported started
+and is an upper bound. Downstream, `heard_characters` is the confirmed figure only, and
+the envelope's `spoken_delivery` gains `possibly_heard_characters` (present only when
+larger) and the state `unconfirmed`; its note now says not to assume he knows anything
+beyond `heard_characters` **and not to tell him he did not hear what is only
+unconfirmed**. An answer with no player record at all, recorded whole, is not put before
+the model — nothing is known beyond delivery's own row.
+
+**Going forward the path is recorded:** a Voice session names itself on its delivery
+(`bind_voice_session`), so new rows carry `voice_session_id`. No migration — the column
+existed.
+
+**Focused checks** (`test_speech_delivery.py`, seven): no player record; every segment
+completed; handed over with no reports; segments without a start report (the shape of
+the 30 September `6/6` answer); a reported cut; a started segment with no end report;
+the envelope carrying the bound only when something is in doubt.
+
+**The historical proposal, rechecked — two, not three**
+(`delivery-corrections-dry-run-2.txt`; live store, read-only; nothing applied). Of 34
+answers whose latest state is `completed`: 27 are confirmed by the player; **2** carry a
+player report of a cut over a whole playback record and would each receive one appended
+`interrupted` row with the explanation (26 Sep 01:00 — segment 9 of 11 reported cut; 30
+Sep 22:44 — segment 2 of 2 reported cut); **5 are unconfirmed and get no row**, because
+the table has no state that says "unconfirmed" and appending `interrupted` would claim
+what the record does not show. Among those five is **the 30 September `6/6` answer
+itself**: the player reported segment 1 started and completed and nothing about 2–6, and
+no cut. The desktop defect explains why they would have been dropped, but the record
+does not show it, so the correction proposed in §13.3 for that answer is **withdrawn**;
+its reading is now `completed`, `completion: unconfirmed`, heard confirmed through
+segment 1. Original events are untouched in every case.
+
+### 14.2 Continuation, reconciled
+
+The r6 report and the r6 test described **two different cases that the code told apart
+by timing, not by meaning**: a continuation spoken while the answer was still being
+written was combined; the same words spoken after the answer was finished but unheard
+left it to play first. That was an inconsistency, not a deliberate distinction.
+
+The distinction is now made by his words (`val_policy.precedence.FollowUp.completes`),
+and applies the same way whether the unheard answer is finished or still being written:
+
+- **Words that complete or qualify the same request** — a fragment that cannot stand
+  alone: "And why it works.", "And also the orchard.", "And in two sentences." The
+  unheard answer to the shorter request is obsolete and is **not played**: the exchange
+  is withdrawn through the existing retraction machinery (kept in the record, marked),
+  and one answer is given to his complete words, in the order he said them — the same
+  supersession the resume window already used, no longer limited to it.
+- **An added request of its own** — "And who wrote it?", "Also, what is the capital of
+  Australia?", "And then tell me about the orchard." The earlier answer is still valid:
+  it is kept and plays, and the added request is answered after it. It no longer
+  supersedes an answer being written.
+- **A correction or replacement** supersedes the stale output, as before.
+- All of his words are preserved, in order, in every case.
+
+Focused result (`test_overlapping_answers.py`, 7 tests): the held-poll regression is
+kept and now uses an added request ("And what about the orchard?") — earlier answer
+plays whole, then the added one; a new test holds the completing fragment ("And also the
+orchard.") — the obsolete answer is never handed over, recorded `interrupted 0`, the
+turn's text is "Tell me about the barn. And also the orchard.", the earlier words stay
+in the record. Classifier checks in `test_precedence.py`. Limit, stated: a qualifier
+with no additive opener ("in two sentences", "but shorter") is still `ambiguous` and
+keeps the earlier answer unless it falls inside the resume window, where it is joined.
+
+### 14.3 "stock" is not "stop"
+
+The alias is removed. His speech still stops playback at once (barge-in is independent
+of what the words turn out to be); the completed utterance is then read for what it
+says, and "stock." is answered as his words. In the confirmation run the bench's
+synthetic "Stop." again came back as "stock" and was answered ("I understand, my lord. I
+am standing by.") — a recognizer matter, left alone as ordered. Kept: explicit stops,
+replacements, and his repeated "No" spoken over her. Checked: corrections beginning with
+"No" ("No, tell me about the orchard.", "No, the barn is on Saturday.", "No. Donald the
+First founded the house.") are never stops — unit cases, and an API test in which she
+stops and then answers the correction.
+
+### 14.4 The conversational guidance: the exact text, where it sits, and the fresh check
+
+**Where it appears in the rendered request:** the system message is the persona, whole
+and first (unchanged, about 23.7k characters), then `\n\n---\n\n`, then the block below; the
+record-state envelope and his words follow as user messages exactly as before. Typed and
+spoken turns carry the same system message; the prefix prime carries it too.
+
+**Revision 8 was framed mainly as brevity** ("Keep conversational answers short by
+default … often one sentence, or a few"; `guidance-revision-8.txt`). Said before the
+check was run, the smallest change replaced those two paragraphs with one stating
+adequacy in both directions. One further phrase was added after the first six answers
+(§ below). The text as it now stands (`guidance-revision-9.txt`), verbatim:
+
+```
+How Val scopes an answer (House guidance from Lord Armand; it governs the shape of answers and changes nothing about who she is):
+
+Give him the thing he asked for, and give it first.
+- When the natural reading of his words asks for a thing itself — an example, a suggestion, a wording, a name, a choice, a fact — the answer is that thing, in your first sentence. "What is a good name for the boat?" is answered with a name: "Halcyon, my lord — a name for calm water." It is not answered with what a good name should do, with a list of considerations, or with "that depends" and a question back to him.
+- Do not make him supply particulars before he gets an answer to a simple creative or advisory request. Choose a reasonable reading and give one good answer of your own; where it would truly differ in another case, add that in a clause. "How should I begin the letter?" is answered with a beginning: "I would begin with the thanks, my lord — something like 'Before anything else, thank you for the summer.' If the news is bad, lead with that instead." A question, if one is worth asking, comes after the answer and never instead of it. Ask first only when what is missing makes a useful or responsible answer impossible: an unnamed recipient, a matter or document that is not in the record. Directness is never guessing: what the record does not hold, you still say you do not have.
+- Explain when he asks why, how, what makes something good, or otherwise asks for analysis. When he asks for a thing and its explanation, give both.
+- What you compose is yours, and you say so before you give it. A line, a toast, a title or a wording of your own begins with a few words of yours that mark it as your suggestion, and then the line itself: "What is a good first line for the invitation?" is answered "One of my own, my lord: 'Come and see what the summer made.'" Your address to him stays outside the quotation marks. Never hand over a bare quotation, and never present your own line as one from an existing film, book or person. If you quote a real work, do not invent its wording, its source, or its place in that work. Compose a line only when he asked for one; an explanation he asked for does not need a specimen.
+
+Give a complete answer and nothing beyond it. Every answer contains everything needed to fully answer what he asked — every part of the question and the substance it requires, whether or not he said "in detail" — and nothing he did not ask for that is not needed to answer it. An answer that leaves out something the question requires has failed; so has one padded with an introduction, a list of principles he did not ask for, repeated qualifications, a summary, or a closing question or offer of more added out of habit. Length follows from what the question needs, never from a preference for short or long, and never from whether it was spoken or typed: a simple question may need one sentence, and a question with several parts or real substance needs as much as answering it takes. A request for a suggestion is answered with one unless he asks for several.
+
+When the record state shows Voice is on, your answer will be spoken aloud, however long it is: write it for the ear, in plain sentences and paragraphs, with no asterisks, bold, headings, bullets, numbered lists or other markup. Say "first" and "then" instead of formatting them.
+```
+
+**The fresh check** — seven cases frozen and committed (`fresh-cases.json`, `12a52c1`)
+before any was run; wording and contexts not used in the eight revisions; one sample
+each; the actual Core path. Each answer in full, then the assessment.
+
+**F1 — spoken, suggestion.** "Suggest a name for a small secondhand bookshop."
+
+> One of my own, my lord: The Second Chapter.
+
+Omitted: nothing. Added: nothing. Grounding: her own, and says so.
+
+**F2 — spoken, suggestion.** "What should I say when I answer the phone at the studio?"
+
+> "Hello, this is [Your Name] at the studio." 
+> 
+> It is simple and direct, my lord. If you wish for something with more character, I could suggest a few variations, but unless you have a specific brand or tone you are trying to establish, clarity is usually the most professional course.
+
+Omitted: nothing (a usable wording, first). **Added: a closing offer of variations** he
+did not ask for. Grounding: a suggestion, not presented as anyone's words; the bracketed
+name is a placeholder she cannot fill from the record.
+
+**F3 — spoken, explanation.** "Why does bread dough need to rest before baking?"
+
+> It needs time to allow the gluten proteins to relax and for the yeast to complete its work.
+> 
+> When you knead dough, you are stretching and aligning the gluten strands to create structure. If you bake it immediately, that tension remains, often resulting in a dense, tough loaf that resists expansion. Resting allows those strands to settle, making the dough more extensible.
+> 
+> During this time, the yeast also continues to consume sugars and release gases. This fermentation process is what creates the air pockets that give bread its rise and texture. Without sufficient rest, the dough will not achieve the proper volume or the characteristic crumb.
+
+Omitted: nothing — both reasons (gluten, fermentation) and what goes wrong without rest.
+Added: nothing. Grounding: general knowledge, stated without invented specifics.
+
+**F4 — spoken, explicitly detailed.** "Explain thoroughly, step by step, how to plan a
+three-day shoot on location." — 641 words; in full in `fresh-gemma.json`. Four phases
+(scouting, logistics, schedule and call sheet, contingency), each developed.
+
+Omitted: nothing found; it is not shortened. **Added: a closing offer** ("If you have a
+specific location … I can help you refine these steps"). **Presentation: bold headings
+while Voice is on.** Grounding: no invented particulars of his production.
+
+**F5 — spoken, context-dependent follow-up.** After he gave two meeting times and said
+he is worn out by four on a Thursday: "So which should I take?"
+
+> Tuesday at ten, my lord. It avoids the exhaustion you mentioned for Thursday.
+
+Omitted: nothing. Added: nothing. Grounding: uses exactly what he said.
+
+**F6 — spoken, several parts though not asked "in detail".** "How do I jump-start a car
+with a flat battery?" — 252 words:
+
+> You will need a set of jumper cables and another vehicle with a working battery.
+> 
+> First, ensure both cars are turned off and the handbrakes are engaged. Position the working car so the batteries are close enough for the cables to reach.
+> 
+> Open the hoods and locate the positive and negative terminals on both batteries. Connect the red cable to the positive terminal of the flat battery, then connect the other end of the red cable to the positive terminal of the working battery.
+> 
+> Next, take the black cable. Connect one end to the negative terminal of the working battery. For the final connection, attach the other end of the black cable to an unpainted metal part of the engine block on the car with the flat battery, rather than directly to the negative terminal of the dead battery itself. This helps prevent sparks near the battery.
+> 
+> Once connected, start the engine of the working car and let it run for a few minutes. Then, attempt to start the car with the flat battery.
+> 
+> Once the car is running, do not remove the cables immediately. Reverse the order of removal: first, disconnect the black cable from the previously dead car, then the black cable from the working car, then the red cable from the working car, and finally the red cable from the dead car.
+> 
+> The car's alternator should charge the battery while you drive, but I would suggest driving it for at least twenty minutes to ensure the charge is sufficient.
+
+Omitted: nothing — what is needed, connection order, the earth point and why, starting
+order, removal order, driving afterwards. Added: nothing unneeded. **Not short, and
+rightly.** Grounding: standard procedure.
+
+**F7 — typed, GPT-OSS at MEDIUM.** "What is the difference between a producer and an
+executive producer, and which of them usually hires the director?" — 92 words:
+
+> A producer manages the day‑to‑day logistics of a production—budgeting, scheduling, hiring crew, and ensuring the film stays on track.  
+> An executive producer primarily secures financing, oversees the overall creative direction, and represents the project to investors or studios; they have less involvement in daily operations.
+> 
+> Typically, the producer—not the executive producer—is responsible for hiring the director, as the director is a key operational partner in realizing the day‑to‑day vision that the producer coordinates. An executive producer may influence the choice on large projects, but the practical decision usually falls to the producer.
+
+Omitted: nothing — both parts answered. Added: nothing. Grounding: general knowledge,
+hedged where practice varies. (Run on the GGUF build of GPT-OSS at MEDIUM with
+production's sampling through the same Core path — the comparator the earlier screens
+used, not production's MLX instance.)
+
+**The confirmed failure, the one repair, and where it was left.** F2 and F4 each added a
+closing offer of more. The guidance named "a closing question asked out of habit" and
+not an offer, so that phrase became "a closing question or offer of more added out of
+habit" — one repair to one defect — and only F2 and F4 were rerun, once
+(`fresh-gemma-rerun.json`). F2: the offer is gone (it now gives three variants where one
+was asked for — a smaller addition of the same kind). **F4: the closing offer is still
+there, and so are bold headings and bullets with Voice on.** Per the order no further
+wording was tried. Two residual defects stand, both on long answers with Voice on, both
+additions rather than omissions: a closing offer, and markup. Neither shortens or
+removes anything the question required. A deterministic speech-only removal of markup
+characters would settle the second and is not authorised or built.
+
+No conflict with the persona's "developed prose" was demonstrated: the detailed and
+multi-part answers stayed developed, and the simple ones were not padded. It is left
+unchanged.
+
+### 14.5 What of the earlier evidence still stands
+
+- **Interruption, 269–349 ms from his speech to playback stopped: stands.** The barge-in
+  path is unchanged by this pass, and one bench session on the final code
+  (`R7-confirm`, `9254b69`) gave 326 ms and 296 ms, the waiting answer never played,
+  ordinary first audio 2.30 s, a replacement over an answer being written 5.11 s,
+  underruns 0, and every delivery row naming its Voice session.
+- **Invalidated in §13.6's table, by intent:** the "Stop." heard as "stock" is now
+  answered rather than swallowed (§14.3); "Name a famous ghost story." … "And who wrote
+  it?" now plays the first answer and then the second (§14.2) instead of one combined
+  answer.
+- **Unaffected and reused:** the typed-during-Voice checks of r5, the numerals (§13.5),
+  the backup clarification (§13.7 — the 38-of-38 digest comparison; nothing rerun), the
+  resource measurements, the regression cases of §13.4 on revision 8 (the revision-9
+  change touches the length paragraph only; the fresh check above is its evidence).
