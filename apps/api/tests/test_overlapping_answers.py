@@ -227,6 +227,11 @@ def test_his_voice_stops_the_answer_that_is_playing_while_a_newer_one_waits(
         orchard_delivery = reachable.get(f"/messages/{orchard}/delivery").json()
 
     assert adapter.calls == 2, "two answers were asked for; neither stop was answered"
+    with store.connect() as connection:
+        unnamed = connection.execute(
+            text("select count(*) from speech_deliveries where voice_session_id is null")
+        ).scalar_one()
+    assert unnamed == 0, "every delivery row names the Voice session it was spoken in"
     assert _val_messages(store) == 2
     heard = [turn["text"] for turn in view["turns"]]
     assert heard == ["Tell me about the barn.", "What about the orchard?", "Stop.", "Stop."], (

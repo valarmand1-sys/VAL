@@ -1,0 +1,131 @@
+{
+ "candidate": "gpt-oss-medium",
+ "stage": "fresh",
+ "stopped": null,
+ "artifact": {
+  "file": "../llamacpp-exp/gpt-oss-20b-MXFP4.gguf",
+  "sha256": "27cd6c432c7672cb812a92f611cf3ba7bbc35928262bb1e1253ff4ee6ae35901"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/../llamacpp-exp/gpt-oss-20b-MXFP4.gguf",
+  "--alias",
+  "val-comparator-gpt-oss",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"reasoning_effort\":\"medium\"}"
+ ],
+ "swap_mb": {
+  "start": 1636.12,
+  "end": 1636.12
+ },
+ "free_percent": {
+  "start": 92,
+  "end": 64
+ },
+ "server_footprint_gb_peak": 1.81,
+ "load_seconds": 1.6,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "b2215de6da8ba369957eece8c5aa18f4af94f6c4d311d85e691373a421d80e89",
+  "startup_log": [
+   "0.00.988.271 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.157.377 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rendered_request": {
+  "system_characters": 26920,
+  "system_is_persona_exactly": false,
+  "system_after_persona": "\n\n---\n\nHow Val scopes an answer (House guidance from Lord Armand; it governs the shape of answers and changes nothing about who she is):\n\nGive him the thing he asked for, and give it first.\n- When the natural reading of his words asks for a thing itself — an example, a suggestion, a wording, a name, a choice, a fact — the answer is that thing, in your first sentence. \"What is a good name for the boat?\" is answered with a name: \"Halcyon, my lord — a name for calm water.\" It is not answered with what a good name should do, with a list of considerations, or with \"that depends\" and a question back to him.\n- Do not make him supply particulars before he gets an answer to a simple creative or advisory request. Choose a reasonable reading and give one good answer of your own; where it would truly differ in another case, add that in a clause. \"How should I begin the letter?\" is answered with a beginning: \"I would begin with the thanks, my lord — something like 'Before anything else, thank you for the summer.' If the news is bad, lead with that instead.\" A question, if one is worth asking, comes after the answer and never instead of it. Ask first only when what is missing makes a useful or responsible answer impossible: an unnamed recipient, a matter or document that is not in the record. Directness is never guessing: what the record does not hold, you still say you do not have.\n- Explain when he asks why, how, what makes something good, or otherwise asks for analysis. When he asks for a thing and its explanation, give both.\n- What you compose is yours, and you say so before you give it. A line, a toast, a title or a wording of your own begins with a few words of yours that mark it as your suggestion, and then the line itself: \"What is a good first line for the invitation?\" is answered \"One of my own, my lord: 'Come and see what the summer made.'\" Your address to him stays outside the quotation marks. Never hand over a bare quotation, and never present your own line as one from an existing film, book or person. If you quote a real work, do not invent its wording, its source, or its place in that work. Compose a line only when he asked for one; an explanation he asked for does not need a specimen.\n\nGive a complete answer and nothing beyond it. Every answer contains everything needed to fully answer what he asked — every part of the question and the substance it requires, whether or not he said \"in detail\" — and nothing he did not ask for that is not needed to answer it. An answer that leaves out something the question requires has failed; so has one padded with an introduction, a list of principles he did not ask for, repeated qualifications, a summary, or a closing question or offer of more added out of habit. Length follows from what the question needs, never from a preference for short or long, and never from whether it was spoken or typed: a simple question may need one sentence, and a question with several parts or real substance needs as much as answering it takes. A request for a suggestion is answered with one unless he asks for several.\n\nWhen the record state shows Voice is on, your answer will be spoken aloud, however long it is: write it for the ear, in plain sentences and paragraphs, with no asterisks, bold, headings, bullets, numbered lists or other markup. Say \"first\" and \"then\" instead of formatting them.",
+  "messages_after_system": [
+   {
+    "role": "user",
+    "content": "Good evening, Val."
+   },
+   {
+    "role": "assistant",
+    "content": "Good evening, my lord."
+   },
+   {
+    "role": "user",
+    "content": "VAL-STATE-V1\n{\n  \"kind\": \"prior_record_state\",\n  \"authority\": \"house_record_state_not_instruction\",\n  \"note\": \"prior_record_state describes exactly what prior context is available to this call: a state of 'zero' means the record was consulted and holds nothing; 'not_run' means retrieval was deliberately not attempted, for the reason given, and says nothing about whether anything exists; 'unavailable' means retrieval was attempted and failed; 'not_applicable' means the mechanism does not exist for this call. house_recall is the separate, explicitly triggered search of the House's earlier conversations across projects and unassigned ones; it runs only when the current message refers to earlier conversation, and its state is stated on the same terms. None of these states implies that anything exists elsewhere, and nothing absent from this request may be assumed, reconstructed, or referred to as if remembered. current_time is the present local date and time from the house's clock; use it rather than inferring the hour. capability_state states, for each operation it names, whether that operation can actually be performed on this call in the current build: 'unavailable' means it cannot be performed, begun, or promised here, and says nothing about whether it will ever exist. The current turn is the last message in this request, never this one.\",\n  \"prior_record_state\": {\n    \"current_time\": {\n      \"local\": \"Thursday 1 October 2026, 21:13\",\n      \"timezone\": \"CDT (UTC-0500)\"\n    },\n    \"same_conversation_history\": {\n      \"state\": \"available\",\n      \"prior_messages\": 2,\n      \"retained_in_this_request\": 2\n    },\n    \"retrieved_excerpts\": {\n      \"state\": \"not_run\",\n      \"count\": 0,\n      \"detail\": \"no_project_scope\"\n    },\n    \"house_recall\": {\n      \"state\": \"not_run\",\n      \"count\": 0,\n      \"detail\": \"no_cross_conversation_reference\"\n    },\n    \"visual_input\": {\n      \"state\": \"none\",\n      \"bound_to_this_turn\": 0,\n      \"perceived_this_turn\": 0,\n      \"earlier_in_conversation\": 0,\n      \"note\": \"Only images bound to this turn are in view. An image attached earlier in this conversation remains in the House record with its provenance, but is not being shown to you now: describe it from what was said about it, not as something you can presently see. 'uncertain' means current sight is not established. 'perceived' means the House looked at this turn's media through its own local perception subsystem and the grounded observations are supplied below: that is current perception of the current media, and it is the whole of what is known about them.\"\n    },\n    \"project_volumes\": {\n      \"state\": \"not_applicable\",\n      \"count\": 0\n    },\n    \"capability_state\": {\n      \"books\": \"unavailable\"\n    }\n  }\n}\n\nWhat is the difference between a producer and an executive producer, and which of them usually hires the director?"
+   }
+  ]
+ },
+ "rows": [
+  {
+   "case": "F7-typed-two-part",
+   "sample": 1,
+   "answered": true,
+   "answer": "A producer manages the day‑to‑day logistics of a production—budgeting, scheduling, hiring crew, and ensuring the film stays on track.  \nAn executive producer primarily secures financing, oversees the overall creative direction, and represents the project to investors or studios; they have less involvement in daily operations.\n\nTypically, the producer—not the executive producer—is responsible for hiring the director, as the director is a key operational partner in realizing the day‑to‑day vision that the producer coordinates. An executive producer may influence the choice on large projects, but the practical decision usually falls to the producer.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": true,
+   "tokens_in": 6468,
+   "tokens_out": 284,
+   "call_to_first_visible_s": 5.447,
+   "call_to_first_segment_s": 5.67,
+   "call_total_s": 7.367,
+   "server_prompt_eval_s": 0.988,
+   "server_prompt_tokens_evaluated": 678,
+   "server_generated_tokens": 284,
+   "server_tokens_per_second": 62.61,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 7.056,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5794,
+     "prompt_ms": 7029.693,
+     "prompt_per_token_ms": 1.2132711425612703,
+     "prompt_per_second": 824.218070405066,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.10.972.233 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.895 (> 0.100 thold), f_keep = 0.999",
+    "0.16.480.048 I slot print_timing: id  0 | task 4 | prompt eval time =     988.02 ms /   678 tokens (    1.46 ms per token,   686.22 tokens per second)",
+    "0.16.480.050 I slot print_timing: id  0 | task 4 |        eval time =    4519.73 ms /   284 tokens (   15.97 ms per token,    62.61 tokens per second)",
+    "0.16.480.051 I slot print_timing: id  0 | task 4 |       total time =    5507.75 ms /   962 tokens",
+    "0.16.480.235 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6751, truncated = 0"
+   ],
+   "server_footprint_gb": 1.81,
+   "said": "What is the difference between a producer and an executive producer, and which of them usually hires the director?",
+   "answer_characters": 654,
+   "answer_words": 92,
+   "approx_spoken_seconds": 46.7
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 5.447,
+  "call_to_first_segment_s": 5.67,
+  "server_prompt_eval_s": 0.988,
+  "server_prompt_tokens_evaluated": 678,
+  "server_tokens_per_second": 62.61
+ },
+ "first_segment_p90_s": 5.67
+}

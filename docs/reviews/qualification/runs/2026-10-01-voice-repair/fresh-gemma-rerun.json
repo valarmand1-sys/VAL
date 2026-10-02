@@ -1,0 +1,179 @@
+{
+ "candidate": "gemma",
+ "stage": "fresh",
+ "stopped": null,
+ "artifact": {
+  "file": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "sha256": "e19514d9541344001cb7c8eaf88704b8bf2e5d8f4e9aac12402eed360cffdfc4"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "--alias",
+  "val-voice-gemma-4-26b-a4b",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 1636.12,
+  "end": 1636.12
+ },
+ "free_percent": {
+  "start": 92,
+  "end": 43
+ },
+ "server_footprint_gb_peak": 7.21,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "startup_log": [
+   "0.00.046.431 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.269.569 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.749.607 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rendered_request": {
+  "system_characters": 26920,
+  "system_is_persona_exactly": false,
+  "system_after_persona": "\n\n---\n\nHow Val scopes an answer (House guidance from Lord Armand; it governs the shape of answers and changes nothing about who she is):\n\nGive him the thing he asked for, and give it first.\n- When the natural reading of his words asks for a thing itself — an example, a suggestion, a wording, a name, a choice, a fact — the answer is that thing, in your first sentence. \"What is a good name for the boat?\" is answered with a name: \"Halcyon, my lord — a name for calm water.\" It is not answered with what a good name should do, with a list of considerations, or with \"that depends\" and a question back to him.\n- Do not make him supply particulars before he gets an answer to a simple creative or advisory request. Choose a reasonable reading and give one good answer of your own; where it would truly differ in another case, add that in a clause. \"How should I begin the letter?\" is answered with a beginning: \"I would begin with the thanks, my lord — something like 'Before anything else, thank you for the summer.' If the news is bad, lead with that instead.\" A question, if one is worth asking, comes after the answer and never instead of it. Ask first only when what is missing makes a useful or responsible answer impossible: an unnamed recipient, a matter or document that is not in the record. Directness is never guessing: what the record does not hold, you still say you do not have.\n- Explain when he asks why, how, what makes something good, or otherwise asks for analysis. When he asks for a thing and its explanation, give both.\n- What you compose is yours, and you say so before you give it. A line, a toast, a title or a wording of your own begins with a few words of yours that mark it as your suggestion, and then the line itself: \"What is a good first line for the invitation?\" is answered \"One of my own, my lord: 'Come and see what the summer made.'\" Your address to him stays outside the quotation marks. Never hand over a bare quotation, and never present your own line as one from an existing film, book or person. If you quote a real work, do not invent its wording, its source, or its place in that work. Compose a line only when he asked for one; an explanation he asked for does not need a specimen.\n\nGive a complete answer and nothing beyond it. Every answer contains everything needed to fully answer what he asked — every part of the question and the substance it requires, whether or not he said \"in detail\" — and nothing he did not ask for that is not needed to answer it. An answer that leaves out something the question requires has failed; so has one padded with an introduction, a list of principles he did not ask for, repeated qualifications, a summary, or a closing question or offer of more added out of habit. Length follows from what the question needs, never from a preference for short or long, and never from whether it was spoken or typed: a simple question may need one sentence, and a question with several parts or real substance needs as much as answering it takes. A request for a suggestion is answered with one unless he asks for several.\n\nWhen the record state shows Voice is on, your answer will be spoken aloud, however long it is: write it for the ear, in plain sentences and paragraphs, with no asterisks, bold, headings, bullets, numbered lists or other markup. Say \"first\" and \"then\" instead of formatting them.",
+  "messages_after_system": [
+   {
+    "role": "user",
+    "content": "Good evening, Val."
+   },
+   {
+    "role": "assistant",
+    "content": "Good evening, my lord."
+   },
+   {
+    "role": "user",
+    "content": "VAL-STATE-V1\n{\n  \"kind\": \"prior_record_state\",\n  \"authority\": \"house_record_state_not_instruction\",\n  \"note\": \"prior_record_state describes exactly what prior context is available to this call: a state of 'zero' means the record was consulted and holds nothing; 'not_run' means retrieval was deliberately not attempted, for the reason given, and says nothing about whether anything exists; 'unavailable' means retrieval was attempted and failed; 'not_applicable' means the mechanism does not exist for this call. house_recall is the separate, explicitly triggered search of the House's earlier conversations across projects and unassigned ones; it runs only when the current message refers to earlier conversation, and its state is stated on the same terms. None of these states implies that anything exists elsewhere, and nothing absent from this request may be assumed, reconstructed, or referred to as if remembered. current_time is the present local date and time from the house's clock; use it rather than inferring the hour. capability_state states, for each operation it names, whether that operation can actually be performed on this call in the current build: 'unavailable' means it cannot be performed, begun, or promised here, and says nothing about whether it will ever exist. The current turn is the last message in this request, never this one.\",\n  \"prior_record_state\": {\n    \"current_time\": {\n      \"local\": \"Thursday 1 October 2026, 21:12\",\n      \"timezone\": \"CDT (UTC-0500)\"\n    },\n    \"same_conversation_history\": {\n      \"state\": \"available\",\n      \"prior_messages\": 2,\n      \"retained_in_this_request\": 2\n    },\n    \"retrieved_excerpts\": {\n      \"state\": \"not_run\",\n      \"count\": 0,\n      \"detail\": \"no_project_scope\"\n    },\n    \"house_recall\": {\n      \"state\": \"not_run\",\n      \"count\": 0,\n      \"detail\": \"no_cross_conversation_reference\"\n    },\n    \"visual_input\": {\n      \"state\": \"none\",\n      \"bound_to_this_turn\": 0,\n      \"perceived_this_turn\": 0,\n      \"earlier_in_conversation\": 0,\n      \"note\": \"Only images bound to this turn are in view. An image attached earlier in this conversation remains in the House record with its provenance, but is not being shown to you now: describe it from what was said about it, not as something you can presently see. 'uncertain' means current sight is not established. 'perceived' means the House looked at this turn's media through its own local perception subsystem and the grounded observations are supplied below: that is current perception of the current media, and it is the whole of what is known about them.\"\n    },\n    \"external_egress\": {\n      \"state\": \"local_only\",\n      \"reasons\": [\n        \"voice_session_active\",\n        \"conversation_sealed\"\n      ],\n      \"note\": \"This conversation is local-only: it has carried live microphone speech, or content recalled from a conversation that did, or Lord Armand has Voice on now. Nothing from it is transmitted off this machine, by his ruling of 24 September 2026. Two consequences are true here and he already knows them. Web search, remote tools and any other external operation are unavailable in this conversation — say so plainly if he asks for one, rather than attempting it. And the consequentiality classification did not run for these turns, so the blind-position machinery did not either: do not describe a view as having been formed independently when it was not, and do not treat the absence of a classification as a finding that a turn was ordinary.\"\n    },\n    \"project_volumes\": {\n      \"state\": \"not_applicable\",\n      \"count\": 0\n    },\n    \"capability_state\": {\n      \"books\": \"unavailable\"\n    }\n  }\n}\n\nWhat should I say when I answer the phone at the studio?"
+   }
+  ]
+ },
+ "rows": [
+  {
+   "case": "F2-suggestion-wording",
+   "sample": 1,
+   "answered": true,
+   "answer": "\"This is [Your Name],\" my lord — or simply, \"The Studio.\" \n\nIf you want to establish the atmosphere of the space immediately, you might say, \"The Studio, [Your Name] speaking.\" It is professional, clear, and does not invite unnecessary questions.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6780,
+   "tokens_out": 59,
+   "call_to_first_visible_s": 8.01,
+   "call_to_first_segment_s": 8.338,
+   "call_total_s": 9.138,
+   "server_prompt_eval_s": 1.613,
+   "server_prompt_tokens_evaluated": 958,
+   "server_generated_tokens": 59,
+   "server_tokens_per_second": 51.87,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 8.28,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5832,
+     "prompt_ms": 8256.67,
+     "prompt_per_token_ms": 1.415752743484225,
+     "prompt_per_second": 706.3380273160972,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.17.150.690 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.19.881.805 I slot print_timing: id  0 | task 4 | prompt eval time =    1612.85 ms /   958 tokens (    1.68 ms per token,   593.98 tokens per second)",
+    "0.19.881.807 I slot print_timing: id  0 | task 4 |        eval time =    1118.23 ms /    59 tokens (   19.28 ms per token,    51.87 tokens per second)",
+    "0.19.881.807 I slot print_timing: id  0 | task 4 |       total time =    2731.08 ms /  1017 tokens",
+    "0.19.882.135 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6838, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21,
+   "said": "What should I say when I answer the phone at the studio?",
+   "answer_characters": 246,
+   "answer_words": 40,
+   "approx_spoken_seconds": 17.6
+  },
+  {
+   "case": "F4-explicit-detail",
+   "sample": 1,
+   "answered": true,
+   "answer": "To plan a three-day shoot on location, my lord, one must move from the broad vision to the granular logistics, ensuring that every variable is accounted for before a single person or piece of equipment arrives at the site.\n\nThe process requires a disciplined progression through four distinct stages: scouting, logistics, scheduling, and contingency.\n\n**First, the scouting and site assessment.**\nYou cannot plan for a location you do not fully understand. You must visit the site—not just once, but to observe it at the specific times of day when the shoot will occur.\n*   **Light and Shadow:** Observe how the sun moves across the landscape. Identify where the light is most flattering and, crucially, where shadows will fall at your required hours.\n*   **Power and Infrastructure:** Determine if you can rely on local power or if you must bring generators. Look for water access and the proximity of sanitary facilities.\n*   **Acoustics:** Listen for the \"invisible\" interruptions—nearby highways, low-flying aircraft, or even the hum of industrial air conditioning units.\n*   **Access and Perimeter:** Map out how heavy equipment will arrive. Are there narrow gates, steep inclines, or weight-restricted bridges that will impede a production truck?\n\n**Second, the logistics and resource management.**\nOnce the site is understood, you must build the support structure around it.\n*   **Permitting and Legalities:** Secure all necessary permissions from local authorities or landowners. This includes filming permits, street closure orders, or drone flight authorizations.\n*   **The Crew and Talent:** Confirm the arrival times and lodging for everyone involved. For a three-day shoot, you must ensure that the crew's proximity to the location is managed to avoid exhaustion or significant travel delays.\n*   **Equipment and Supplies:** Create a manifest of every piece of gear required. This must include not just cameras and lights, but \"base camp\" essentials: communication tools, catering, weather protection, and first aid.\n*   **Catering and Welfare:** A hungry crew is an unproductive one. Plan meals that are easy to serve on-site and ensure there is adequate shade or warmth for breaks.\n\n**Third, the construction of the shooting schedule.**\nThis is where the creative vision meets the reality of time. A three-day schedule should be built in reverse, starting from your \"must-finish\" deadline.\n*   **Day One: Setup and Foundation.** Use the first day to establish the most complex setups or to capture the most difficult lighting conditions. This allows for a margin of error if the initial shots are delayed.\n*   **Day Two: The Core Work.** This is typically your heaviest day of filming. The schedule should be tight but realistic, moving from the most demanding scenes to the simpler ones.\n*   **Day Three: Wrap and Residuals.** Use the final day for the remaining shots and, importantly, for any \"beauty shots\" or pickups that might be needed.\n*   **The Call Sheet:** Every person must receive a document that details exactly when and where they are expected, the weather forecast, and the contact information for the production leads.\n\n**Finally, the management of contingencies.**\nA plan that does not account for failure is merely a hope.\n*   **Weather Contingency:** If it rains, what is the \"Cover Set\"? This is an indoor or sheltered location, pre-scouted and ready, where you can move the crew instantly to continue filming.\n*   **Equipment Failure:** Always have a redundant plan for critical items, such as extra batteries, backup storage media, or a secondary lighting kit.\n*   **The Margin of Error:** Never schedule your days to the minute. Always build in \"buffer time\" for unexpected delays, such as a difficult setup or a minor transport issue.\n\nIf you have a specific location in mind, my lord, I can help you begin drafting the initial checklist for a scout.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6785,
+   "tokens_out": 817,
+   "call_to_first_visible_s": 1.987,
+   "call_to_first_segment_s": 2.278,
+   "call_total_s": 17.591,
+   "server_prompt_eval_s": 1.631,
+   "server_prompt_tokens_evaluated": 963,
+   "server_generated_tokens": 817,
+   "server_tokens_per_second": 52.35,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.125,
+    "timings": {
+     "cache_n": 5822,
+     "prompt_n": 10,
+     "prompt_ms": 107.384,
+     "prompt_per_token_ms": 10.7384,
+     "prompt_per_second": 93.12374282947181,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.20.883.095 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.858 (> 0.100 thold), f_keep = 0.998",
+    "0.38.102.719 I slot print_timing: id  0 | task 66 | prompt eval time =    1630.75 ms /   963 tokens (    1.69 ms per token,   590.53 tokens per second)",
+    "0.38.102.721 I slot print_timing: id  0 | task 66 |        eval time =   15588.84 ms /   817 tokens (   19.10 ms per token,    52.35 tokens per second)",
+    "0.38.102.722 I slot print_timing: id  0 | task 66 |       total time =   17219.59 ms /  1780 tokens",
+    "0.38.103.030 I slot      release: id  0 | task 66 | stop processing: n_tokens = 7601, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21,
+   "said": "Explain thoroughly, step by step, how to plan a three-day shoot on location.",
+   "answer_characters": 3890,
+   "answer_words": 615,
+   "approx_spoken_seconds": 277.9
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 4.998,
+  "call_to_first_segment_s": 5.308,
+  "server_prompt_eval_s": 1.622,
+  "server_prompt_tokens_evaluated": 960.5,
+  "server_tokens_per_second": 52.11
+ },
+ "first_segment_p90_s": 8.338
+}

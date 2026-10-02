@@ -2003,7 +2003,7 @@ class VoiceSession:
 
         Called with the lock held, for a finished answer he has not begun to hear whose
         request his new words complete. Returns False — and changes nothing — when the
-        answer is not the latest turn's, or the withdrawal is refused (the refusal is
+        answer is not the most recent turn's, or the withdrawal is refused (the refusal is
         recorded on the turn, and the earlier answer then plays as it would have).
         """
         answered = getattr(held, "message_id", None)
@@ -2903,6 +2903,11 @@ class VoiceSession:
                 delivery.interrupt("the turn produced no answer of Val's to speak")
             else:
                 val_message_id, val_text = answer
+                # The session exists by now (his utterance was recorded in it); the
+                # delivery's rows, written at this bind, name it.
+                name = getattr(delivery, "bind_voice_session", None)
+                if callable(name):
+                    name(self._session_id)
                 delivery.bind(val_message_id)
                 delivery.finish(val_text)
                 delivery.record_segments()

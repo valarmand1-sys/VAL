@@ -82,7 +82,7 @@ from val_policy.speech_segments import SpeechSegmenter  # noqa: E402
 
 CANDIDATE, STAGE, OUT = sys.argv[1], sys.argv[2], Path(sys.argv[3])
 OPTIONS = dict(zip(sys.argv[4::2], sys.argv[5::2], strict=True))
-assert STAGE in ("verify", "critical", "ordinary", "pressure", "conversation")
+assert STAGE in ("verify", "critical", "ordinary", "pressure", "conversation", "fresh")
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[4]
 MODELS = Path.home() / ".val-models/voice-candidates"

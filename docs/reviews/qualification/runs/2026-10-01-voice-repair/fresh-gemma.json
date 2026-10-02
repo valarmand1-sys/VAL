@@ -1,0 +1,367 @@
+{
+ "candidate": "gemma",
+ "stage": "fresh",
+ "stopped": null,
+ "artifact": {
+  "file": "gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "sha256": "e19514d9541344001cb7c8eaf88704b8bf2e5d8f4e9aac12402eed360cffdfc4"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/gemma-4-26B-A4B-it-Q4_K_M.gguf",
+  "--alias",
+  "val-voice-gemma-4-26b-a4b",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 1636.12,
+  "end": 1636.12
+ },
+ "free_percent": {
+  "start": 92,
+  "end": 43
+ },
+ "server_footprint_gb_peak": 7.21,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "6a1015c47ccfcfa67c3b772385bccee357a4d37c3cda37bd202e9047f391ab82",
+  "startup_log": [
+   "0.00.091.883 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.331.713 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.854.140 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rendered_request": {
+  "system_characters": 26903,
+  "system_is_persona_exactly": false,
+  "system_after_persona": "\n\n---\n\nHow Val scopes an answer (House guidance from Lord Armand; it governs the shape of answers and changes nothing about who she is):\n\nGive him the thing he asked for, and give it first.\n- When the natural reading of his words asks for a thing itself — an example, a suggestion, a wording, a name, a choice, a fact — the answer is that thing, in your first sentence. \"What is a good name for the boat?\" is answered with a name: \"Halcyon, my lord — a name for calm water.\" It is not answered with what a good name should do, with a list of considerations, or with \"that depends\" and a question back to him.\n- Do not make him supply particulars before he gets an answer to a simple creative or advisory request. Choose a reasonable reading and give one good answer of your own; where it would truly differ in another case, add that in a clause. \"How should I begin the letter?\" is answered with a beginning: \"I would begin with the thanks, my lord — something like 'Before anything else, thank you for the summer.' If the news is bad, lead with that instead.\" A question, if one is worth asking, comes after the answer and never instead of it. Ask first only when what is missing makes a useful or responsible answer impossible: an unnamed recipient, a matter or document that is not in the record. Directness is never guessing: what the record does not hold, you still say you do not have.\n- Explain when he asks why, how, what makes something good, or otherwise asks for analysis. When he asks for a thing and its explanation, give both.\n- What you compose is yours, and you say so before you give it. A line, a toast, a title or a wording of your own begins with a few words of yours that mark it as your suggestion, and then the line itself: \"What is a good first line for the invitation?\" is answered \"One of my own, my lord: 'Come and see what the summer made.'\" Your address to him stays outside the quotation marks. Never hand over a bare quotation, and never present your own line as one from an existing film, book or person. If you quote a real work, do not invent its wording, its source, or its place in that work. Compose a line only when he asked for one; an explanation he asked for does not need a specimen.\n\nGive a complete answer and nothing beyond it. Every answer contains everything needed to fully answer what he asked — every part of the question and the substance it requires, whether or not he said \"in detail\" — and nothing he did not ask for that is not needed to answer it. An answer that leaves out something the question requires has failed; so has one padded with an introduction, a list of principles he did not ask for, repeated qualifications, a summary, or a closing question asked out of habit. Length follows from what the question needs, never from a preference for short or long, and never from whether it was spoken or typed: a simple question may need one sentence, and a question with several parts or real substance needs as much as answering it takes. A request for a suggestion is answered with one unless he asks for several.\n\nWhen the record state shows Voice is on, your answer will be spoken aloud, however long it is: write it for the ear, in plain sentences and paragraphs, with no asterisks, bold, headings, bullets, numbered lists or other markup. Say \"first\" and \"then\" instead of formatting them.",
+  "messages_after_system": [
+   {
+    "role": "user",
+    "content": "Good evening, Val."
+   },
+   {
+    "role": "assistant",
+    "content": "Good evening, my lord."
+   },
+   {
+    "role": "user",
+    "content": "VAL-STATE-V1\n{\n  \"kind\": \"prior_record_state\",\n  \"authority\": \"house_record_state_not_instruction\",\n  \"note\": \"prior_record_state describes exactly what prior context is available to this call: a state of 'zero' means the record was consulted and holds nothing; 'not_run' means retrieval was deliberately not attempted, for the reason given, and says nothing about whether anything exists; 'unavailable' means retrieval was attempted and failed; 'not_applicable' means the mechanism does not exist for this call. house_recall is the separate, explicitly triggered search of the House's earlier conversations across projects and unassigned ones; it runs only when the current message refers to earlier conversation, and its state is stated on the same terms. None of these states implies that anything exists elsewhere, and nothing absent from this request may be assumed, reconstructed, or referred to as if remembered. current_time is the present local date and time from the house's clock; use it rather than inferring the hour. capability_state states, for each operation it names, whether that operation can actually be performed on this call in the current build: 'unavailable' means it cannot be performed, begun, or promised here, and says nothing about whether it will ever exist. The current turn is the last message in this request, never this one.\",\n  \"prior_record_state\": {\n    \"current_time\": {\n      \"local\": \"Thursday 1 October 2026, 21:11\",\n      \"timezone\": \"CDT (UTC-0500)\"\n    },\n    \"same_conversation_history\": {\n      \"state\": \"available\",\n      \"prior_messages\": 2,\n      \"retained_in_this_request\": 2\n    },\n    \"retrieved_excerpts\": {\n      \"state\": \"not_run\",\n      \"count\": 0,\n      \"detail\": \"no_project_scope\"\n    },\n    \"house_recall\": {\n      \"state\": \"not_run\",\n      \"count\": 0,\n      \"detail\": \"no_cross_conversation_reference\"\n    },\n    \"visual_input\": {\n      \"state\": \"none\",\n      \"bound_to_this_turn\": 0,\n      \"perceived_this_turn\": 0,\n      \"earlier_in_conversation\": 0,\n      \"note\": \"Only images bound to this turn are in view. An image attached earlier in this conversation remains in the House record with its provenance, but is not being shown to you now: describe it from what was said about it, not as something you can presently see. 'uncertain' means current sight is not established. 'perceived' means the House looked at this turn's media through its own local perception subsystem and the grounded observations are supplied below: that is current perception of the current media, and it is the whole of what is known about them.\"\n    },\n    \"external_egress\": {\n      \"state\": \"local_only\",\n      \"reasons\": [\n        \"voice_session_active\",\n        \"conversation_sealed\"\n      ],\n      \"note\": \"This conversation is local-only: it has carried live microphone speech, or content recalled from a conversation that did, or Lord Armand has Voice on now. Nothing from it is transmitted off this machine, by his ruling of 24 September 2026. Two consequences are true here and he already knows them. Web search, remote tools and any other external operation are unavailable in this conversation — say so plainly if he asks for one, rather than attempting it. And the consequentiality classification did not run for these turns, so the blind-position machinery did not either: do not describe a view as having been formed independently when it was not, and do not treat the absence of a classification as a finding that a turn was ordinary.\"\n    },\n    \"project_volumes\": {\n      \"state\": \"not_applicable\",\n      \"count\": 0\n    },\n    \"capability_state\": {\n      \"books\": \"unavailable\"\n    }\n  }\n}\n\nSuggest a name for a small secondhand bookshop."
+   }
+  ]
+ },
+ "rows": [
+  {
+   "case": "F1-suggestion-name",
+   "sample": 1,
+   "answered": true,
+   "answer": "One of my own, my lord: The Second Chapter.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6773,
+   "tokens_out": 13,
+   "call_to_first_visible_s": 7.995,
+   "call_to_first_segment_s": 8.15,
+   "call_total_s": 8.237,
+   "server_prompt_eval_s": 1.615,
+   "server_prompt_tokens_evaluated": 955,
+   "server_generated_tokens": 13,
+   "server_tokens_per_second": 51.15,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 8.316,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5828,
+     "prompt_ms": 8287.404,
+     "prompt_per_token_ms": 1.4219979409746055,
+     "prompt_per_second": 703.235898720516,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.17.382.611 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.19.231.881 I slot print_timing: id  0 | task 4 | prompt eval time =    1614.62 ms /   955 tokens (    1.69 ms per token,   591.47 tokens per second)",
+    "0.19.231.883 I slot print_timing: id  0 | task 4 |        eval time =     234.61 ms /    13 tokens (   19.55 ms per token,    51.15 tokens per second)",
+    "0.19.231.884 I slot print_timing: id  0 | task 4 |       total time =    1849.22 ms /   968 tokens",
+    "0.19.232.202 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6785, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2,
+   "said": "Suggest a name for a small secondhand bookshop.",
+   "answer_characters": 43,
+   "answer_words": 9,
+   "approx_spoken_seconds": 3.1
+  },
+  {
+   "case": "F2-suggestion-wording",
+   "sample": 1,
+   "answered": true,
+   "answer": "\"Hello, this is [Your Name] at the studio.\" \n\nIt is simple and direct, my lord. If you wish for something with more character, I could suggest a few variations, but unless you have a specific brand or tone you are trying to establish, clarity is usually the most professional course.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6776,
+   "tokens_out": 64,
+   "call_to_first_visible_s": 1.965,
+   "call_to_first_segment_s": 2.217,
+   "call_total_s": 3.175,
+   "server_prompt_eval_s": 1.61,
+   "server_prompt_tokens_evaluated": 958,
+   "server_generated_tokens": 64,
+   "server_tokens_per_second": 52.36,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.129,
+    "timings": {
+     "cache_n": 5818,
+     "prompt_n": 10,
+     "prompt_ms": 113.162,
+     "prompt_per_token_ms": 11.3162,
+     "prompt_per_second": 88.36888708223609,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.20.222.757 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.23.035.699 I slot print_timing: id  0 | task 20 | prompt eval time =    1609.80 ms /   958 tokens (    1.68 ms per token,   595.11 tokens per second)",
+    "0.23.035.701 I slot print_timing: id  0 | task 20 |        eval time =    1203.10 ms /    64 tokens (   19.10 ms per token,    52.36 tokens per second)",
+    "0.23.035.702 I slot print_timing: id  0 | task 20 |       total time =    2812.90 ms /  1022 tokens",
+    "0.23.035.997 I slot      release: id  0 | task 20 | stop processing: n_tokens = 6839, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2,
+   "said": "What should I say when I answer the phone at the studio?",
+   "answer_characters": 283,
+   "answer_words": 50,
+   "approx_spoken_seconds": 20.2
+  },
+  {
+   "case": "F3-explanation",
+   "sample": 1,
+   "answered": true,
+   "answer": "It needs time to allow the gluten proteins to relax and for the yeast to complete its work.\n\nWhen you knead dough, you are stretching and aligning the gluten strands to create structure. If you bake it immediately, that tension remains, often resulting in a dense, tough loaf that resists expansion. Resting allows those strands to settle, making the dough more extensible.\n\nDuring this time, the yeast also continues to consume sugars and release gases. This fermentation process is what creates the air pockets that give bread its rise and texture. Without sufficient rest, the dough will not achieve the proper volume or the characteristic crumb.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6773,
+   "tokens_out": 124,
+   "call_to_first_visible_s": 1.952,
+   "call_to_first_segment_s": 2.315,
+   "call_total_s": 4.301,
+   "server_prompt_eval_s": 1.605,
+   "server_prompt_tokens_evaluated": 955,
+   "server_generated_tokens": 124,
+   "server_tokens_per_second": 52.44,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.13,
+    "timings": {
+     "cache_n": 5818,
+     "prompt_n": 10,
+     "prompt_ms": 113.942,
+     "prompt_per_token_ms": 11.3942,
+     "prompt_per_second": 87.76395007986521,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.24.017.344 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.27.967.624 I slot print_timing: id  0 | task 87 | prompt eval time =    1604.77 ms /   955 tokens (    1.68 ms per token,   595.10 tokens per second)",
+    "0.27.967.626 I slot print_timing: id  0 | task 87 |        eval time =    2345.47 ms /   124 tokens (   19.07 ms per token,    52.44 tokens per second)",
+    "0.27.967.627 I slot print_timing: id  0 | task 87 |       total time =    3950.24 ms /  1079 tokens",
+    "0.27.967.921 I slot      release: id  0 | task 87 | stop processing: n_tokens = 6896, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2,
+   "said": "Why does bread dough need to rest before baking?",
+   "answer_characters": 649,
+   "answer_words": 106,
+   "approx_spoken_seconds": 46.4
+  },
+  {
+   "case": "F4-explicit-detail",
+   "sample": 1,
+   "answered": true,
+   "answer": "To plan a three-day shoot on location, my lord, one must move from the broad vision to the minute logistical detail. It is a process of layering certainty over uncertainty. I shall break this down into four distinct phases: Discovery, Logistics, Scheduling, and Execution.\n\n**The First Phase: Discovery and Scouting**\n\nBefore a single person is hired, you must define the scope. You cannot plan for a crew of fifty if you only have the budget for five.\n\nFirst, establish the creative requirements. What is the essential story? This dictates the scale. Once the scale is set, you must identify your locations. You should conduct a location scout—not merely looking at the scenery, but looking at the infrastructure. A beautiful field is useless if there is no way to power a camera or keep a crew from wilting in the sun.\n\nDuring the scout, you are looking for three things: access, power, and light. Can vehicles reach the site? Is there a nearby source of electricity, or must you rent generators? Most importantly, how does the light change in that space at the hours you intend to shoot?\n\n**The Second Phase: Logistics and Infrastructure**\n\nOnce the location is chosen, you must build the world around it. This is the most strenuous part of the planning.\n\nYou must secure permits and permissions. Depending on where you are, this may involve local councils, private landowners, or even wildlife services. Do not leave this to the last minute; bureaucracy moves much slower than a film crew.\n\nNext, you must arrange the \"base camp.\" This is the area where the crew eats, rests, and prepares. It requires separate logistics from the \"set\" itself. You will need to coordinate transport—how do the actors, the crew, and the heavy equipment arrive? You must also arrange for catering and sanitation. A hungry or uncomfortable crew is a slow and resentful one.\n\nFinally, there is the equipment and the crew. You must finalize your kit list—cameras, lenses, lighting, and grip—and ensure every piece of gear has a confirmed delivery and retrieval time. You must also confirm your key personnel: the Director of Photography, the Sound Recordist, and the Production Manager.\n\n**The Third Phase: The Schedule and the Call Sheet**\n\nWith the logistics in place, you move to the temporal plan.\n\nYou will create a \"Stripboard\" or a shooting schedule. This is not a simple list of scenes; it is a strategic arrangement. You group scenes by location to minimize travel time. You group scenes by lighting requirements—shooting all your \"golden hour\" scenes in one block. You must also account for \"turnaround time,\" ensuring that no crew member is expected to work so many hours that they are legally or physically unable to perform safely the next day.\n\nThe final output of this phase is the Call Sheet. This is the single most important document for the shoot. It must be issued to every member of the crew well in advance of the first day. It must state exactly when and where they are needed, the weather forecast, the nearest hospital, and the contact details for the production office.\n\n**The Fourth Phase: The Execution and Contingency**\n\nThe final step is the plan for when things go wrong.\n\nA three-day shoot is a fragile thing. You must have a \"contingency plan\" for weather. If it rains on day two, which scenes can be moved to an indoor location? If a key piece of equipment breaks, who is the local rental house you can call?\n\nOn the actual days of the shoot, the plan is to follow the Call Sheet with disciplined precision, while allowing the Production Manager to manage the small, inevitable frictions of the day.\n\nIf you have a specific location or a particular type of production in mind, I can help you refine these steps into a more concrete checklist.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6781,
+   "tokens_out": 795,
+   "call_to_first_visible_s": 1.977,
+   "call_to_first_segment_s": 2.265,
+   "call_total_s": 17.158,
+   "server_prompt_eval_s": 1.627,
+   "server_prompt_tokens_evaluated": 963,
+   "server_generated_tokens": 795,
+   "server_tokens_per_second": 52.33,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.131,
+    "timings": {
+     "cache_n": 5818,
+     "prompt_n": 10,
+     "prompt_ms": 113.527,
+     "prompt_per_token_ms": 11.3527,
+     "prompt_per_second": 88.08477278532861,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.28.958.079 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.858 (> 0.100 thold), f_keep = 0.998",
+    "0.45.758.642 I slot print_timing: id  0 | task 214 | prompt eval time =    1626.60 ms /   963 tokens (    1.69 ms per token,   592.03 tokens per second)",
+    "0.45.758.644 I slot print_timing: id  0 | task 214 |        eval time =   15173.92 ms /   795 tokens (   19.11 ms per token,    52.33 tokens per second)",
+    "0.45.758.645 I slot print_timing: id  0 | task 214 |       total time =   16800.52 ms /  1758 tokens",
+    "0.45.758.944 I slot      release: id  0 | task 214 | stop processing: n_tokens = 7575, truncated = 0"
+   ],
+   "server_footprint_gb": 7.2,
+   "said": "Explain thoroughly, step by step, how to plan a three-day shoot on location.",
+   "answer_characters": 3758,
+   "answer_words": 641,
+   "approx_spoken_seconds": 268.4
+  },
+  {
+   "case": "F5-context-follow-up",
+   "sample": 1,
+   "answered": true,
+   "answer": "Tuesday at ten, my lord. It avoids the exhaustion you mentioned for Thursday.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 7315,
+   "tokens_out": 17,
+   "call_to_first_visible_s": 2.842,
+   "call_to_first_segment_s": 2.981,
+   "call_total_s": 3.16,
+   "server_prompt_eval_s": 2.488,
+   "server_prompt_tokens_evaluated": 1497,
+   "server_generated_tokens": 17,
+   "server_tokens_per_second": 51.35,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.133,
+    "timings": {
+     "cache_n": 5818,
+     "prompt_n": 10,
+     "prompt_ms": 117.384,
+     "prompt_per_token_ms": 11.7384,
+     "prompt_per_second": 85.19048592653172,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.46.760.876 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.795 (> 0.100 thold), f_keep = 0.998",
+    "0.49.560.890 I slot print_timing: id  0 | task 1012 | prompt eval time =    2488.41 ms /  1497 tokens (    1.66 ms per token,   601.59 tokens per second)",
+    "0.49.560.892 I slot print_timing: id  0 | task 1012 |        eval time =     311.56 ms /    17 tokens (   19.47 ms per token,    51.35 tokens per second)",
+    "0.49.560.893 I slot print_timing: id  0 | task 1012 |       total time =    2799.97 ms /  1514 tokens",
+    "0.49.561.215 I slot      release: id  0 | task 1012 | stop processing: n_tokens = 7331, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21,
+   "said": "So which should I take?",
+   "answer_characters": 77,
+   "answer_words": 13,
+   "approx_spoken_seconds": 5.5
+  },
+  {
+   "case": "F6-several-parts-unprompted",
+   "sample": 1,
+   "answered": true,
+   "answer": "You will need a set of jumper cables and another vehicle with a working battery.\n\nFirst, ensure both cars are turned off and the handbrakes are engaged. Position the working car so the batteries are close enough for the cables to reach.\n\nOpen the hoods and locate the positive and negative terminals on both batteries. Connect the red cable to the positive terminal of the flat battery, then connect the other end of the red cable to the positive terminal of the working battery.\n\nNext, take the black cable. Connect one end to the negative terminal of the working battery. For the final connection, attach the other end of the black cable to an unpainted metal part of the engine block on the car with the flat battery, rather than directly to the negative terminal of the dead battery itself. This helps prevent sparks near the battery.\n\nOnce connected, start the engine of the working car and let it run for a few minutes. Then, attempt to start the car with the flat battery.\n\nOnce the car is running, do not remove the cables immediately. Reverse the order of removal: first, disconnect the black cable from the previously dead car, then the black cable from the working car, then the red cable from the working car, and finally the red cable from the dead car.\n\nThe car's alternator should charge the battery while you drive, but I would suggest driving it for at least twenty minutes to ensure the charge is sufficient.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6776,
+   "tokens_out": 292,
+   "call_to_first_visible_s": 1.972,
+   "call_to_first_segment_s": 2.28,
+   "call_total_s": 7.544,
+   "server_prompt_eval_s": 1.618,
+   "server_prompt_tokens_evaluated": 958,
+   "server_generated_tokens": 292,
+   "server_tokens_per_second": 52.29,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.135,
+    "timings": {
+     "cache_n": 5818,
+     "prompt_n": 10,
+     "prompt_ms": 118.211,
+     "prompt_per_token_ms": 11.8211,
+     "prompt_per_second": 84.59449628207189,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.50.565.358 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.57.748.375 I slot print_timing: id  0 | task 1032 | prompt eval time =    1617.74 ms /   958 tokens (    1.69 ms per token,   592.19 tokens per second)",
+    "0.57.748.377 I slot print_timing: id  0 | task 1032 |        eval time =    5565.24 ms /   292 tokens (   19.12 ms per token,    52.29 tokens per second)",
+    "0.57.748.378 I slot print_timing: id  0 | task 1032 |       total time =    7182.98 ms /  1250 tokens",
+    "0.57.748.671 I slot      release: id  0 | task 1032 | stop processing: n_tokens = 7067, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21,
+   "said": "How do I jump-start a car with a flat battery?",
+   "answer_characters": 1426,
+   "answer_words": 252,
+   "approx_spoken_seconds": 101.9
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 1.974,
+  "call_to_first_segment_s": 2.297,
+  "server_prompt_eval_s": 1.617,
+  "server_prompt_tokens_evaluated": 958.0,
+  "server_tokens_per_second": 52.31
+ },
+ "first_segment_p90_s": 8.15
+}

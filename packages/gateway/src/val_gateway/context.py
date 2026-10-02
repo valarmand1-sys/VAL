@@ -1122,11 +1122,12 @@ CONVERSATIONAL_GUIDANCE = "\n".join(
             "not ask for that is not needed to answer it. An answer that leaves out something"
             " the question requires has failed; so has one padded with an introduction, a "
             "list of principles he did not ask for, repeated qualifications, a summary, or a "
-            "closing question asked out of habit. Length follows from what the question "
-            "needs, never from a preference for short or long, and never from whether it was "
-            "spoken or typed: a simple question may need one sentence, and a question with "
-            "several parts or real substance needs as much as answering it takes. A request "
-            "for a suggestion is answered with one unless he asks for several."
+            "closing question or offer of more added out of habit. Length follows from what "
+            "the question needs, never from a preference for short or long, and never from "
+            "whether it was spoken or typed: a simple question may need one sentence, and a "
+            "question with several parts or real substance needs as much as answering it "
+            "takes. A request for a suggestion is answered with one unless he asks for "
+            "several."
         ),
         "",
         (
