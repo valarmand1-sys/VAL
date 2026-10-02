@@ -377,10 +377,13 @@ def test_the_record_says_what_was_heard_of_a_finished_answer_cut_short(store: En
     assert last[2] == f"{first.text} {second.text}", "exactly the segments that had begun"
     assert last[3] == 2 and last[4] == len(ordered)
     assert f"segment {second.index} was cut off while playing" in last[5]
-    assert "never played" in last[5]
+    assert "no playback-start report" in last[5]
     (short,) = short_deliveries(store, conversation)
-    assert short.state.value == "interrupted", "later context knows he did not hear it all"
-    assert short.delivered_characters == len(last[2]) < short.total_characters
+    assert short.state == "interrupted", "later context knows he did not hear it all"
+    # 2 October 2026: the segments that had begun bound what he may have heard; the one
+    # cut off is not handed on as heard text.
+    assert short.possibly_heard_characters == len(last[2]) < short.total_characters
+    assert short.delivered_characters < short.possibly_heard_characters
     assert delivery.sink.stopped_because is not None, "nothing more is handed over"
 
 

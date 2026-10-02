@@ -280,6 +280,14 @@ class SpeechDelivery:
 
     # --- what the outside asks ------------------------------------------------------
 
+    def bind_voice_session(self, voice_session_id: UUID | None) -> None:
+        """Name the Voice session this delivery speaks in, so its rows say which path
+        they took (2 October 2026: they never did, and the path could only be guessed
+        from the absence of desktop rows). Before the first row is written."""
+        with self._lock:
+            if self._voice_session_id is None:
+                self._voice_session_id = voice_session_id
+
     def _is_closed(self) -> bool:
         """Read the flag under the lock. A method rather than a bare attribute
         read, because it is changed by the synthesis worker and by `interrupt`
@@ -540,10 +548,11 @@ class SpeechDelivery:
         if cut is not None:
             detail += f"; segment {cut} was cut off while playing"
         if unplayed:
+            # What is known, not more: these were voiced and no playback of them was
+            # reported begun. Whether any sounded is the player's to say.
             detail += (
-                f"; segment{'s' if len(unplayed) > 1 else ''} "
+                f"; no playback-start report for segment{'s' if len(unplayed) > 1 else ''} "
                 + ", ".join(str(index) for index in unplayed)
-                + " never played"
             )
         self.state, self.reason = DeliveryState.INTERRUPTED, detail
         self._recorded_heard = len(heard)
@@ -894,21 +903,30 @@ class DeliveryRecord:
     segments_total: int | None
     reason: str | None
     events: int
-    #: The player's account of the same answer (owner order, 1 October 2026): what the
-    #: desktop reported its output device did. `state` above is what delivery recorded
-    #: — audio voiced and handed over; this is whether it was heard. See
-    #: `val_gateway.delivery_evidence`.
-    player: str = "none"
+    #: The player's account of the same answer (owner orders, 1 and 2 October 2026):
+    #: what the desktop reported its output device did. `state` above is what delivery
+    #: recorded — audio voiced and handed over; these say whether, and how far, the
+    #: player confirms it was heard. See `val_gateway.delivery_evidence`.
+    player: str = "no_record"
+    #: `confirmed`, `contradicted` or `unconfirmed` — the player's evidence about the
+    #: delivery's end. Unconfirmed is not a finding of silence.
+    completion: str = "unconfirmed"
     segments_handed_over: int = 0
     segments_started: int = 0
     segments_completed: int = 0
+    #: Characters of segments the player reported completed: the most that can be said
+    #: to have been heard. None when there is no player record at all.
     heard_characters: int | None = None
+    #: Characters through the last segment the player reported started — an upper bound
+    #: the reports cover, whose tail was heard in part at most. None with no record.
+    begun_characters: int | None = None
     shortfall: str | None = None
 
     @property
     def completed_as_heard(self) -> bool:
-        """Whether a completed delivery may be claimed as heard to its end."""
-        return self.state is DeliveryState.COMPLETED and self.player in ("none", "confirmed")
+        """Whether a completed delivery may be claimed as heard to its end: only on the
+        player's affirmative report of every segment, never on a missing record."""
+        return self.state is DeliveryState.COMPLETED and self.completion == "confirmed"
 
 
 _NEWEST = text(
@@ -943,10 +961,14 @@ def delivery_for(engine: Engine, message_id: UUID) -> DeliveryRecord | None:
         reason=row.reason,
         events=events,
         player=evidence.player,
+        completion=evidence.completion,
         segments_handed_over=evidence.segments_handed_over,
         segments_started=evidence.segments_started,
         segments_completed=evidence.segments_completed,
-        heard_characters=None if evidence.player == "none" else len(evidence.heard_prefix),
+        heard_characters=(
+            None if evidence.player == "no_record" else len(evidence.confirmed_prefix)
+        ),
+        begun_characters=(None if evidence.player == "no_record" else len(evidence.begun_prefix)),
         shortfall=evidence.shortfall,
     )
 
@@ -972,20 +994,26 @@ class ShortDelivery:
     """A Val answer the owner did not hear the whole of."""
 
     message_id: UUID
-    state: DeliveryState
+    #: `interrupted`, `failed`, `not_started` — or `unconfirmed`: recorded as delivered
+    #: whole, and the player's reports do not confirm it (nor show otherwise).
+    state: str
+    #: Characters confirmed heard: segments the player reported completed. Where there
+    #: is no player record, what delivery itself recorded as delivered.
     delivered_characters: int
     total_characters: int
     reason: str | None
+    #: The most he may have heard: through a segment that had begun when delivery
+    #: stopped, or — where reports are simply missing — the whole answer. Equal to
+    #: `delivered_characters` when nothing beyond it is in doubt.
+    possibly_heard_characters: int = 0
 
     @property
     def heard_nothing(self) -> bool:
         return self.delivered_characters == 0
 
 
-#: Answers delivery recorded as voiced and handed over whole, where the player's rows
-#: show less: a segment handed to the desktop and never reported started, or fewer
-#: segments handed over than were generated. Candidates only — whether playback is over,
-#: and so whether the shortfall is a fact yet, is decided per answer.
+#: Answers delivery recorded as voiced and handed over, that have a player record.
+#: Candidates only: what that record supports is decided per answer.
 _PLAYER_SHORT = text(
     "select d.message_id, d.segments_total, m.content, m.sequence "
     "  from speech_deliveries d "
@@ -995,63 +1023,77 @@ _PLAYER_SHORT = text(
     "                   where x.message_id = d.message_id) "
     "   and d.state in ('completed', 'started') "
     "   and exists (select 1 from speech_playbacks p where p.message_id = d.message_id) "
-    "   and ( "
-    "     exists (select 1 from speech_playbacks h "
-    "              where h.message_id = d.message_id and h.state = 'available_to_desktop' "
-    "                and not exists (select 1 from speech_playbacks s "
-    "                                 where s.message_id = h.message_id "
-    "                                   and s.segment_index = h.segment_index "
-    "                                   and s.state = 'playback_started')) "
-    "     or (select count(distinct h.segment_index) from speech_playbacks h "
-    "          where h.message_id = d.message_id and h.state = 'available_to_desktop') "
-    "        < coalesce(d.segments_total, 0) "
-    "   ) "
     " order by m.sequence desc"
 )
 
 
 def short_deliveries(engine: Engine, conversation_id: UUID) -> tuple[ShortDelivery, ...]:
-    """Answers in this conversation whose speech ended short, newest first.
+    """Answers in this conversation not confirmed as heard whole, newest first.
 
-    Two sources, and the player's is the stricter (owner order, 1 October 2026): an answer
-    whose delivery ended short by its own record, and an answer recorded as delivered
-    whole that the player's reports show was not played whole. The second is stated only
-    once playback of that answer is known to be over — an answer still playing has
-    segments that have not started *yet*, which is not the same thing.
+    Three sources (owner orders, 1 and 2 October 2026):
+
+    - delivery's own record ended short (`interrupted`, `failed`, `not_started`);
+    - delivery recorded the answer whole and the player **reported a cut** — stated as
+      `interrupted`;
+    - delivery recorded the answer whole, playback is over, and the player's reports do
+      not confirm it — stated as `unconfirmed`, which is not a finding that it went
+      unheard.
+
+    In every case what is given as heard is only what the player reported **completed**;
+    a segment that had begun, or one with no report, is carried as "possibly heard" and
+    never as heard text. An answer still playing is not listed: its missing reports are
+    not missing *yet*. An answer with no player record at all, recorded whole, is not
+    listed either — nothing is known beyond delivery's own row.
     """
     with engine.connect() as connection:
         rows = connection.execute(_SHORT_DELIVERIES, {"conversation": conversation_id}).all()
-        found = {
-            row.message_id: (
-                row.sequence,
-                ShortDelivery(
-                    message_id=row.message_id,
-                    state=DeliveryState(row.state),
-                    delivered_characters=row.delivered_characters,
-                    total_characters=len(row.content or ""),
-                    reason=row.reason,
-                ),
-            )
-            for row in rows
-        }
-        for row in connection.execute(_PLAYER_SHORT, {"conversation": conversation_id}).all():
+        found: dict[UUID, tuple[int, ShortDelivery]] = {}
+        for row in rows:
+            total = len(row.content or "")
             evidence = player_evidence(
                 connection, row.message_id, segments_total=row.segments_total
             )
-            if not evidence.contradicts_completed:
-                continue
+            if evidence.player == "no_record":
+                # Nothing from a player: delivery's prefix is what left for the ear,
+                # which is the most he can have heard and not a confirmation of it.
+                confirmed, possible = 0, row.delivered_characters
+            else:
+                confirmed = len(evidence.confirmed_prefix)
+                possible = max(len(evidence.begun_prefix), confirmed)
             found[row.message_id] = (
                 row.sequence,
                 ShortDelivery(
                     message_id=row.message_id,
-                    state=(
-                        DeliveryState.INTERRUPTED
-                        if evidence.segments_started
-                        else DeliveryState.NOT_STARTED
-                    ),
-                    delivered_characters=len(evidence.heard_prefix),
-                    total_characters=len(row.content or ""),
+                    state=row.state,
+                    delivered_characters=min(confirmed, total),
+                    total_characters=total,
+                    reason=row.reason,
+                    possibly_heard_characters=min(possible, total),
+                ),
+            )
+        for row in connection.execute(_PLAYER_SHORT, {"conversation": conversation_id}).all():
+            evidence = player_evidence(
+                connection, row.message_id, segments_total=row.segments_total
+            )
+            if evidence.completion == "confirmed" or not evidence.over:
+                continue
+            total = len(row.content or "")
+            confirmed = min(len(evidence.confirmed_prefix), total)
+            if evidence.contradicts_completed:
+                state = DeliveryState.INTERRUPTED.value
+                possible = min(max(len(evidence.begun_prefix), confirmed), total)
+            else:
+                # Reports are missing, not contrary: he may have heard all of it.
+                state, possible = "unconfirmed", total
+            found[row.message_id] = (
+                row.sequence,
+                ShortDelivery(
+                    message_id=row.message_id,
+                    state=state,
+                    delivered_characters=confirmed,
+                    total_characters=total,
                     reason=f"player evidence: {evidence.shortfall}",
+                    possibly_heard_characters=possible,
                 ),
             )
     return tuple(short for _, short in sorted(found.values(), key=lambda item: -item[0]))

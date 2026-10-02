@@ -505,11 +505,15 @@ class ShortSpokenAnswer:
     """
 
     answer_position: int
-    #: `interrupted`, `failed` or `not_started`, from the append-only record.
+    #: `interrupted`, `failed` or `not_started`, from the append-only record — or
+    #: `unconfirmed`: delivered whole by the record, not confirmed by the player.
     state: str
+    #: Characters confirmed heard (segments the player reported completed).
     heard_characters: int
     generated_characters: int
     reason: str | None = None
+    #: The most he may have heard, when that is more than what is confirmed.
+    possibly_heard_characters: int | None = None
 
 
 @dataclass(frozen=True)
@@ -745,6 +749,16 @@ class PriorRecordState:
                                 "answer_position": answer.answer_position,
                                 "state": answer.state,
                                 "heard_characters": answer.heard_characters,
+                                **(
+                                    {
+                                        "possibly_heard_characters": (
+                                            answer.possibly_heard_characters
+                                        )
+                                    }
+                                    if answer.possibly_heard_characters is not None
+                                    and answer.possibly_heard_characters > answer.heard_characters
+                                    else {}
+                                ),
                                 "generated_characters": answer.generated_characters,
                                 **({"reason": answer.reason} if answer.reason else {}),
                             }
@@ -894,11 +908,15 @@ LOCAL_ONLY_NOTE = (
 #: her. Both facts are true, and the second one governs what she may assume he knows.
 SPOKEN_DELIVERY_NOTE = (
     "One or more of your earlier answers in this conversation was spoken aloud and "
-    "was not heard in full: the text below is in the record because you wrote it, "
-    "and `heard_characters` is how much of it actually reached Lord Armand before "
-    "delivery stopped. Do not assume he knows the part he did not hear. If it "
-    "matters, say it again plainly rather than referring back to it as something "
-    "already settled between you."
+    "is not confirmed as heard in full: the text below is in the record because you "
+    "wrote it. `heard_characters` is how much of it the player confirmed reached Lord "
+    "Armand. `possibly_heard_characters`, where present, is the most he may have "
+    "heard: playback had begun on a further part when it stopped, or (state "
+    "`unconfirmed`) the player's reports are missing, which shows neither that he "
+    "heard the rest nor that he did not. Do not assume he knows anything beyond "
+    "`heard_characters`, and do not tell him he did not hear what is only "
+    "unconfirmed. If it matters, say it again plainly rather than referring back to "
+    "it as something already settled between you."
 )
 
 
@@ -1098,17 +1116,17 @@ CONVERSATIONAL_GUIDANCE = "\n".join(
         ),
         "",
         (
-            "Keep conversational answers short by default: the answer itself, and only the "
-            "context that makes it useful and accurate — often one sentence, or a few. Leave "
-            "out the introduction, the list of principles he did not ask for, repeated "
-            "qualifications, the summary, and the closing question asked out of habit. One "
-            "suggestion is enough unless he asks for several."
-        ),
-        (
-            "When he asks for detail, or the task genuinely requires it, give the developed "
-            "answer in full, with its reasoning, conditions and every part he asked for; do "
-            "not make him ask twice for what he has already asked for. Length follows the "
-            "request, not whether it was spoken or typed."
+            "Give a complete answer and nothing beyond it. Every answer contains everything "
+            "needed to fully answer what he asked — every part of the question and the "
+            'substance it requires, whether or not he said "in detail" — and nothing he did '
+            "not ask for that is not needed to answer it. An answer that leaves out something"
+            " the question requires has failed; so has one padded with an introduction, a "
+            "list of principles he did not ask for, repeated qualifications, a summary, or a "
+            "closing question asked out of habit. Length follows from what the question "
+            "needs, never from a preference for short or long, and never from whether it was "
+            "spoken or typed: a simple question may need one sentence, and a question with "
+            "several parts or real substance needs as much as answering it takes. A request "
+            "for a suggestion is answered with one unless he asks for several."
         ),
         "",
         (

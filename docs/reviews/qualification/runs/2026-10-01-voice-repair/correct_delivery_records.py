@@ -6,11 +6,11 @@ playback reports show that less was played, this appends ONE corrective row per 
 the original events stay exactly as written (the table is append-only), and the new row
 carries what the player reported and why the correction was made.
 
-Corrected: answers whose latest delivery state is `completed` and whose player evidence
-is `partial` (the player reported some segments and playback is known to be over), and
-whose playback record covers every generated segment.
-NOT corrected, only listed: `not_reported` and `end_unconfirmed` — the evidence there is
-missing, not contrary, and a missing report is recorded as uncertainty, never as silence.
+Corrected (2 October 2026): only answers whose latest delivery state is `completed`, whose
+playback record covers every generated segment, and for which **the player itself
+reported a segment interrupted or failed**. Listed and left alone: every answer whose
+reports are merely missing — a missing report is not a report of silence, the table has
+no state that says "unconfirmed", and the reading (`delivery_for`) states that instead.
 
 Dry run by default (read-only transaction). `--apply` writes; that is the owner's step.
 
@@ -55,19 +55,14 @@ def main() -> int:
             )
             stamp = f"{row.recorded_at:%Y-%m-%d %H:%M:%S%z} {row.message_id}"
             whole_record = evidence.segments_handed_over >= (row.segments_total or 0)
-            if evidence.player == "partial" and not whole_record:
-                # The playback record itself is incomplete (before 25 September's repair a
-                # segment voiced before the answer was written left no hand-over row), so
-                # what he heard cannot be stated as a prefix. Left as recorded.
-                uncertain += 1
-                print(
-                    f"UNCERTAIN {stamp}: the playback record does not cover every segment "
-                    f"({evidence.shortfall}) — left as recorded"
-                )
-            elif evidence.player == "partial":
+            if evidence.contradicts_completed and whole_record:
+                # The player itself reported a cut: the one case a correction is
+                # supported. The appended row follows the table's own rule for a cut
+                # (the prefix runs through the segment that was sounding); how much of
+                # that segment was heard is not recorded, and the reason says so.
                 corrected += 1
                 reason = (
-                    "Corrected 1 October 2026 from the player's record: "
+                    "Corrected 2 October 2026 from the player's record: "
                     f"{evidence.shortfall}. Event {row.event} recorded completed "
                     f"{row.segments_delivered}/{row.segments_total}, which described audio "
                     "handed to the desktop, not audio played. The original events are kept."
@@ -80,25 +75,33 @@ def main() -> int:
                             "message_id": row.message_id,
                             "voice_session_id": row.voice_session_id,
                             "event": row.event + 1,
-                            "prefix": evidence.heard_prefix,
-                            "characters": len(evidence.heard_prefix),
+                            "prefix": evidence.begun_prefix,
+                            "characters": len(evidence.begun_prefix),
                             "segments": evidence.segments_started,
                             "total": row.segments_total,
                             "reason": reason,
                         },
                     )
-            elif evidence.player in ("not_reported", "end_unconfirmed", "in_progress"):
+            elif evidence.completion == "unconfirmed":
+                # Missing reports are not contrary reports. No row can say "unconfirmed"
+                # (the table has no such state), and none is appended: the reading
+                # (`delivery_for`, the next turn's context) states the uncertainty.
                 uncertain += 1
                 print(
-                    f"UNCERTAIN {stamp}: player={evidence.player}, handed over "
-                    f"{evidence.segments_handed_over}, started {evidence.segments_started}, "
-                    f"completed {evidence.segments_completed} — left as recorded"
+                    f"UNCONFIRMED {stamp}: player={evidence.player} — {evidence.shortfall} "
+                    "— no row appended"
+                )
+            elif evidence.contradicts_completed:
+                uncertain += 1
+                print(
+                    f"UNCONFIRMED {stamp}: a cut was reported but the playback record does "
+                    f"not cover every segment ({evidence.shortfall}) — no row appended"
                 )
             else:
                 confirmed += 1
     print(
         f"\n{'APPLIED' if apply else 'DRY RUN (nothing written)'}: {corrected} to correct, "
-        f"{uncertain} uncertain and left as recorded, {confirmed} supported as recorded"
+        f"{uncertain} unconfirmed and left as recorded, {confirmed} confirmed by the player"
     )
     return 0
 

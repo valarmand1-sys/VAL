@@ -569,6 +569,16 @@ if STAGE == "conversation":
     ]
     SAMPLES_BY_CASE = {label: count for label, _, _, count in CONVERSATION}
     SAMPLES = max(SAMPLES_BY_CASE.values())
+elif STAGE == "fresh":
+    # 2 October 2026: cases frozen in a file before they were run; each says whether it
+    # is spoken (Voice on) or typed, and which candidate answers it.
+    FRESH = json.loads(Path(OPTIONS["--file"]).read_text())["cases"]
+    FRESH = [c for c in FRESH if c["candidate"] == CANDIDATE]
+    CASES = [
+        (c["label"], [tuple(pair) for pair in c["history"]] or GREETING, c["words"]) for c in FRESH
+    ]
+    TYPED = {c["label"] for c in FRESH if c["mode"] == "typed"}
+    SAMPLES = 1
 elif STAGE == "pressure":
     CASES = PRESSURE
     SAMPLES = int(OPTIONS.get("--samples", 3))
@@ -640,9 +650,10 @@ for label, history, words in CASES:
         called_at = time.monotonic()
         # In the conversation stage the turn is spoken with Voice on, as in the room: the
         # record state then says so (external_egress reasons include voice_session_active).
+        typed = STAGE == "fresh" and label in TYPED
         live = (
             {"live_voice": LiveVoiceConversations([conversation])}
-            if STAGE == "conversation"
+            if STAGE == "conversation" or (STAGE == "fresh" and not typed)
             else {}
         )
         got = send(
@@ -651,8 +662,8 @@ for label, history, words in CASES:
             words,
             catalogue=catalogue,
             conversation_id=conversation,
-            spoken=True,
-            seal_route=SealRoute.UTTERANCE_FINALIZED,
+            spoken=not typed,
+            seal_route=None if typed else SealRoute.UTTERANCE_FINALIZED,
             fast_route=NO_FAST_ROUTE,
             on_delta=lambda piece, sink=deltas: sink.append((time.monotonic(), piece)),
             **live,
@@ -728,7 +739,7 @@ for label, history, words in CASES:
             "server_lines": lines,
             "server_footprint_gb": footprint_gb(server.pid),
         }
-        if STAGE == "conversation":
+        if STAGE in ("conversation", "fresh"):
             said = answer or ""
             row["said"] = words
             row["answer_characters"] = len(said)

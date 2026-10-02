@@ -1998,6 +1998,62 @@ class VoiceSession:
             )
             self.state = VoiceSessionState.THINKING
 
+    def _join_completed_request_locked(self, pending: _Pending, held: Delivery) -> bool:
+        """Withdraw the exchange `held` answered and make his complete words the turn.
+
+        Called with the lock held, for a finished answer he has not begun to hear whose
+        request his new words complete. Returns False — and changes nothing — when the
+        answer is not the latest turn's, or the withdrawal is refused (the refusal is
+        recorded on the turn, and the earlier answer then plays as it would have).
+        """
+        answered = getattr(held, "message_id", None)
+        turn = self._turns[-1] if self._turns else None
+        if (
+            turn is None
+            or answered is None
+            or turn.answer_message_id != answered
+            or turn.superseded_by is not None
+            or turn.revised_to is not None
+        ):
+            return False
+        try:
+            retract(
+                self._engine,
+                turn.message_id,
+                note=(
+                    "superseded: the owner's next words completed this request before "
+                    "any of the answer was heard, so the exchange is withdrawn in favour "
+                    "of the complete wording"
+                ),
+            )
+        except RevisionRefusedError as refused:
+            note = f"{refused.reason}: {refused}"
+            self._turns = [
+                replace(each, merge_refused=note) if each.message_id == turn.message_id else each
+                for each in self._turns
+            ]
+            return False
+        cut = getattr(held, "cut_playback", None)
+        if callable(cut):
+            cut(
+                "superseded: the owner's next words completed the request before any of "
+                "it was heard",
+                set(),
+            )
+            self._remember_stopped_locked(held)
+        combined = f"{turn.utterance.text.rstrip()} {pending.utterance.text.lstrip()}".strip()
+        self._turns = [
+            replace(each, superseded_by=combined) if each.message_id == turn.message_id else each
+            for each in self._turns
+        ]
+        pending.utterance = replace(
+            pending.utterance,
+            text=combined,
+            merged_from=(*turn.utterance.merged_from, turn.utterance.utterance),
+        )
+        pending.provisional_events += turn.provisional_events
+        return True
+
     def _size_grace(self, pending: _Pending) -> None:
         """Adaptive turn completion (owner order §7): the window this utterance earns."""
         if self._adaptive_endpoint:
@@ -2157,6 +2213,25 @@ class VoiceSession:
                             set(),
                         )
                         self._remember_stopped_locked(held)
+                joined = False
+                if (
+                    relation.kind == "continuation"
+                    and relation.completes
+                    and self._combine_continuations
+                    and inflight is None
+                    and waiting
+                ):
+                    # **His words complete the request that answer was for** (2 October
+                    # 2026): the answer to the shorter request is obsolete and he has
+                    # heard none of it, so it is not played first. The same supersession
+                    # as speech resumed inside the window (`_merge_after_submission`):
+                    # the earlier exchange is withdrawn — kept in the record, marked —
+                    # and his complete words, in the order he said them, are the turn.
+                    # An added request of its own (`completes` false) never comes here:
+                    # the earlier answer is still valid and plays.
+                    joined = self._join_completed_request_locked(pending, waiting[-1])
+                    if joined:
+                        set_aside = waiting[-1:]
                 if waiting or inflight is None:
                     if inflight is None:
                         pending.follow_up = relation.kind
@@ -2175,7 +2250,9 @@ class VoiceSession:
                                 "reason": relation.reason,
                                 "answer_heard": False,
                                 "stop_only": pending.stop_only,
-                                "outcome": "superseded" if set_aside else "kept",
+                                "outcome": (
+                                    "joined" if joined else "superseded" if set_aside else "kept"
+                                ),
                                 "decided_mono": time.monotonic(),
                             }
                         ),
@@ -2220,6 +2297,9 @@ class VoiceSession:
                     combine = (
                         self._combine_continuations
                         and relation.kind == "continuation"
+                        # Only words that complete the same request; an added request
+                        # of its own leaves the answer being made in force (2 Oct 2026).
+                        and relation.completes
                         and inflight.combined_depth < MAX_COMBINED_RESTARTS
                     )
                     if (
@@ -2411,6 +2491,10 @@ class VoiceSession:
         # speaking the first sentence while she is still writing the second. It
         # receives only Core's visible output, through Core's own delta sink.
         delivery = None if self._speech is None else self._speech()
+        bind = getattr(delivery, "bind_voice_session", None)
+        if callable(bind):
+            with self._lock:
+                bind(self._session_id)
         pending.delivery = delivery
         with self._lock:
             # The answers this turn's delivery replaces (1 October 2026): a finished one

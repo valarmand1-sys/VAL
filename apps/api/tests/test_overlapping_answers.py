@@ -240,7 +240,7 @@ def test_his_voice_stops_the_answer_that_is_playing_while_a_newer_one_waits(
     assert barn_delivery["segments_delivered"] == 1
     assert barn_delivery["completed_as_heard"] is False
     assert f"segment {first} was cut off while playing" in barn_delivery["reason"]
-    assert "never played" in barn_delivery["reason"]
+    assert "no playback-start report" in barn_delivery["reason"]
     assert orchard_delivery["state"] == "interrupted"
     assert orchard_delivery["segments_delivered"] == 0, "none of it is recorded as heard"
     assert orchard_delivery["completed_as_heard"] is False
@@ -325,17 +325,21 @@ def test_a_replacement_sets_aside_a_finished_answer_he_has_not_heard(store: Engi
     assert "before any of it was heard" in barn_delivery["reason"]
 
 
-def test_a_continuation_keeps_the_unheard_answer_and_a_held_poll_closes_nothing(
+def test_an_added_request_keeps_the_unheard_answer_and_a_held_poll_closes_nothing(
     store: Engine,
 ) -> None:
-    """Her earlier answer plays whole, then the answer to what he added. And the defect
-    behind the record that read `completed 6/6`: a poll held for his words carried no
-    segment while the delivery read `completed`, and the desktop took that for the end."""
+    """**An added request of its own** ("And what about the orchard?") leaves the earlier
+    answer valid: it plays whole, then the answer to what he added. A fragment that
+    completes the same request is the other case, held by the test after this one.
+
+    And the defect behind the record that read `completed 6/6`: a poll held for his
+    words carried no segment while the delivery read `completed`, and the desktop took
+    that for the end."""
     recognizer = ScriptedRecognizer(
         batches=[
             [started(1), final("Tell me about the barn.", 1)],
             [started(2)],
-            [final("And also the orchard.", 2)],
+            [final("And what about the orchard?", 2)],
         ]
     )
     adapter = ScriptedAdapter([ok(BARN), ok(ORCHARD)])
@@ -367,6 +371,83 @@ def test_a_continuation_keeps_the_unheard_answer_and_a_held_poll_closes_nothing(
     assert barn_delivery["completed_as_heard"] is True
     assert _segments_of(offers, orchard) == [], "the newer answer waits for the older to finish"
     assert _segments_of(rest, orchard), "and then it is spoken"
+
+
+def test_words_that_complete_the_request_do_not_play_the_obsolete_answer_first(
+    store: Engine,
+) -> None:
+    """ "Tell me about the barn." … "And also the orchard." — his words complete the same
+    request, so the finished, unheard answer to the shorter one is not played: the
+    exchange is withdrawn (kept in the record), and one answer is given to his complete
+    words, in the order he said them."""
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [started(1), final("Tell me about the barn.", 1)],
+            [started(2)],
+            [final("And also the orchard.", 2)],
+        ]
+    )
+    adapter = ScriptedAdapter([ok(BARN), ok(ORCHARD)])
+    with _client(store, adapter, recognizer) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        _hear(reachable, session)
+        barn = _answer_id(_turns(reachable, session, 1), 0)
+        _hear(reachable, session)  # he begins to speak before any of it is handed over
+        assert all(_offer(reachable, session)["segment"] is None for _ in range(5))
+        _hear(reachable, session)
+        view = _turns(reachable, session, 2)
+        joined = _answer_id(view, 1)
+        offers = _collect(reachable, session, seconds=6.0)
+        barn_delivery = reachable.get(f"/messages/{barn}/delivery").json()
+
+    assert _segments_of(offers, barn) == [], "the obsolete answer is never handed over"
+    assert _segments_of(offers, joined), "the answer to his complete words is spoken"
+    assert view["turns"][1]["merged_from"], "the turn names the utterance it was joined from"
+    assert view["turns"][1]["text"] == "Tell me about the barn. And also the orchard.", (
+        "all of his words, in order"
+    )
+    assert barn_delivery["state"] == "interrupted"
+    assert barn_delivery["segments_delivered"] == 0
+    assert barn_delivery["completed_as_heard"] is False
+    assert adapter.calls == 2
+    with store.connect() as connection:
+        kept = connection.execute(
+            text("select count(*) from messages where content = 'Tell me about the barn.'")
+        ).scalar_one()
+    assert kept == 1, "the earlier words stay in the record"
+
+
+def test_a_correction_beginning_with_no_stops_her_and_is_answered(store: Engine) -> None:
+    """A substantive correction that opens with "No" is his request, not a stop."""
+    recognizer = ScriptedRecognizer(
+        batches=[
+            [started(1), final("Tell me about the barn.", 1)],
+            [started(2)],
+            [final("No, tell me about the orchard.", 2)],
+        ]
+    )
+    adapter = ScriptedAdapter([ok(BARN), ok(ORCHARD)])
+    with _client(store, adapter, recognizer) as reachable:
+        session = reachable.post("/voice/sessions", json={"project": "Project Alpha"}).json()[
+            "session"
+        ]
+        _hear(reachable, session)
+        barn = _answer_id(_turns(reachable, session, 1), 0)
+        offers = _collect(reachable, session)
+        first = _segments_of(offers, barn)[0]
+        assert _report(reachable, session, barn, first, "playback_started") == 200
+        _hear(reachable, session)  # his voice, over her
+        assert _offer(reachable, session)["stop"] is True, "she stops at once"
+        assert _report(reachable, session, barn, first, "playback_interrupted") == 200
+        _hear(reachable, session)
+        view = _turns(reachable, session, 2)
+        orchard = _answer_id(view, 1)
+        assert _segments_of(_collect(reachable, session, seconds=6.0), orchard), "and answers"
+
+    assert view["turns"][1]["text"] == "No, tell me about the orchard."
+    assert adapter.calls == 2
 
 
 def test_his_own_words_from_the_physical_check_stop_her_and_are_not_answered(

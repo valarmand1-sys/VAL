@@ -1011,10 +1011,11 @@ def spoken_delivery_facts(
         facts.append(
             ShortSpokenAnswer(
                 answer_position=index + 1,
-                state=found.state.value,
+                state=found.state,
                 heard_characters=found.delivered_characters,
                 generated_characters=found.total_characters,
                 reason=found.reason,
+                possibly_heard_characters=found.possibly_heard_characters,
             )
         )
     return tuple(facts)

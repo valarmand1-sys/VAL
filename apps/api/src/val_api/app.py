@@ -973,7 +973,9 @@ def create_app(
             segments_handed_over=found.segments_handed_over,
             segments_started=found.segments_started,
             segments_completed=found.segments_completed,
+            completion=found.completion,
             heard_characters=found.heard_characters,
+            begun_characters=found.begun_characters,
             shortfall=found.shortfall,
             completed_as_heard=found.completed_as_heard,
         )

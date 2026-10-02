@@ -1121,17 +1121,24 @@ class DeliveryView(BaseModel):
     segments_total: int | None
     reason: str | None
     events: int
-    #: The player's account (1 October 2026): `state` is what delivery recorded — audio
-    #: voiced and handed over; these say what the desktop reported its speakers did.
-    #: `none` (not delivered through a desktop), `confirmed`, `end_unconfirmed`,
-    #: `in_progress`, `partial`, `not_reported`.
-    player: str = "none"
+    #: The player's account (1 and 2 October 2026): `state` is what delivery recorded —
+    #: audio voiced and handed over; these say what the desktop reported its speakers
+    #: did. `player`: `no_record`, `confirmed`, `interrupted`, `end_unconfirmed`,
+    #: `in_progress`, `incomplete_reports`, `not_reported`.
+    player: str = "no_record"
+    #: `confirmed` (every segment reported completed), `contradicted` (a segment
+    #: reported cut), or `unconfirmed` — which is not a finding that it went unheard.
+    completion: str = "unconfirmed"
     segments_handed_over: int = 0
     segments_started: int = 0
     segments_completed: int = 0
+    #: Characters of segments reported completed: the most that is confirmed heard.
     heard_characters: int | None = None
+    #: Characters through the last segment reported started; its tail was heard in
+    #: part at most.
+    begun_characters: int | None = None
     shortfall: str | None = None
-    #: True only when a completed delivery is supported by the player's evidence.
+    #: True only when a completed delivery is confirmed by the player's reports.
     completed_as_heard: bool = False
 
 

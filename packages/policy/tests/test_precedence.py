@@ -210,8 +210,49 @@ def test_a_refusal_with_a_request_is_never_reduced_to_a_stop(words: str) -> None
     assert follow_up(words, interrupting=True).kind != "stop"
 
 
-def test_a_clipped_stop_the_recognizer_misheard_is_a_stop_only_when_it_interrupts() -> None:
-    """Bench of 1 October 2026: "Stop." came back as "stock." and was answered aloud."""
-    assert follow_up("stock.", interrupting=True).kind == "stop"
-    assert follow_up("stock.").kind == "ambiguous"
-    assert follow_up("Check the stock.", interrupting=True).kind != "stop"
+def test_stock_is_not_stop() -> None:
+    """2 October 2026: the bench's "Stop." once came back as "stock."; that one
+    transcription is not evidence, and an interruption about stock is a request."""
+    for words in ("stock.", "Stock", "Check the stock.", "What about the stock?"):
+        assert follow_up(words, interrupting=True).kind != "stop", words
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "No, the barn is on Saturday.",
+        "No, I said the orchard.",
+        "No, make it shorter.",
+        "No no, tell me about the sea.",
+        "No, not that one, the second title.",
+        "No. Donald the First founded the house.",
+    ],
+)
+def test_a_substantive_correction_beginning_with_no_is_never_a_stop(words: str) -> None:
+    assert follow_up(words, interrupting=True).kind != "stop"
+    assert follow_up(words).kind != "stop"
+
+
+@pytest.mark.parametrize(
+    "words",
+    ["And why it works.", "And also the orchard.", "Also the stables.", "And in two sentences."],
+)
+def test_a_fragment_completes_the_same_request(words: str) -> None:
+    relation = follow_up(words)
+    assert relation.kind == "continuation" and relation.completes is True
+
+
+@pytest.mark.parametrize(
+    "words",
+    [
+        "And who wrote it?",
+        "Also, what is the capital of Australia?",
+        "And also name a fruit, if you would.",
+        "And then tell me about the orchard.",
+        "Also could you check the date.",
+    ],
+)
+def test_an_added_request_of_its_own_does_not_complete_the_earlier_one(words: str) -> None:
+    relation = follow_up(words)
+    assert relation.kind == "continuation" and relation.completes is False
+    assert relation.supersedes is False

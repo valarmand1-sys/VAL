@@ -684,10 +684,13 @@ def test_the_next_turn_is_told_how_much_of_the_last_answer_he_heard(
 
     (short,) = short_deliveries(store, conversation)
     assert short.message_id == message_id
-    assert short.state is DeliveryState.INTERRUPTED
-    assert short.delivered_characters == len(heard)
+    assert short.state == "interrupted"
+    # 2 October 2026: what left for the ear is the most he can have heard, not a
+    # confirmation that he heard it. With no player record nothing is confirmed.
+    assert short.possibly_heard_characters == len(heard)
+    assert short.delivered_characters == 0
     assert short.total_characters == len(ANSWER)
-    assert short.delivered_characters < short.total_characters, "he did not hear all of it"
+    assert short.possibly_heard_characters < short.total_characters, "not all of it"
 
 
 def test_a_fully_heard_answer_says_nothing_in_the_envelope(store: Engine) -> None:
@@ -727,7 +730,9 @@ def test_the_envelope_names_the_unheard_answer_and_tells_val_what_it_means(
     spoken = document["spoken_delivery"]
     assert isinstance(spoken, dict)
     assert spoken["note"] == SPOKEN_DELIVERY_NOTE
-    assert "Do not assume he knows the part he did not hear" in SPOKEN_DELIVERY_NOTE
+    assert "Do not assume he knows anything beyond `heard_characters`" in SPOKEN_DELIVERY_NOTE
+    assert "do not tell him he did not hear what is only unconfirmed" in SPOKEN_DELIVERY_NOTE
+    assert "possibly_heard_characters" not in spoken["answers"][0], "absent when not in doubt"
     assert spoken["answers"][0]["heard_characters"] == 17
     assert spoken["answers"][0]["generated_characters"] == len(ANSWER)
 
@@ -922,3 +927,210 @@ def test_with_the_numeral_switch_off_the_voice_is_handed_the_exact_slice(store: 
     delivery = a_delivery(store, voice)
     deliver(delivery, "We resume at Chapter IV, my lord. I have marked the page.")
     assert any("Chapter IV" in said for said in voice.spoken)
+
+
+# =============================================================================
+# Player evidence and uncertainty (owner order, 2 October 2026, §1). A missing report is
+# not a report: completion is claimed only on the player's affirmative word, a
+# contradiction only on its affirmative report of a cut, and everything else is
+# unconfirmed — which never becomes "he heard nothing" downstream.
+# =============================================================================
+
+_SEGMENT_TEXTS = ("Evening, my lord.", "The two readers disagree.", "Both can be true.")
+
+
+def _completed_answer(store: Engine) -> tuple[UUID, UUID]:
+    conversation = a_conversation(store)
+    _a_user_message(store, conversation, "What do you make of it?")
+    message_id = _a_val_message(store, conversation, " ".join(_SEGMENT_TEXTS))
+    with store.begin() as connection:
+        for event, (state, delivered) in enumerate((("started", 1), ("completed", 3)), start=1):
+            prefix = " ".join(_SEGMENT_TEXTS[:delivered])
+            connection.execute(
+                text(
+                    "insert into speech_deliveries (message_id, event, state, delivered_prefix,"
+                    " delivered_characters, segments_delivered, segments_total) "
+                    "values (:m, :e, :s, :p, :c, :d, 3)"
+                ),
+                {
+                    "m": message_id,
+                    "e": event,
+                    "s": state,
+                    "p": prefix,
+                    "c": len(prefix),
+                    "d": delivered,
+                },
+            )
+    return conversation, message_id
+
+
+def _player_says(store: Engine, message_id: UUID, *reports: tuple[int, str]) -> None:
+    """Append player rows: (segment, state). The record is then old enough to be over."""
+    with store.begin() as connection:
+        counts: dict[int, int] = {}
+        for segment, state in reports:
+            counts[segment] = counts.get(segment, 0) + 1
+            connection.execute(
+                text(
+                    "insert into speech_playbacks (message_id, segment_index, event, state, "
+                    "text, reason, recorded_at) values (:m, :i, :e, :s, :t, :r, "
+                    "now() - interval '10 minutes')"
+                ),
+                {
+                    "m": message_id,
+                    "i": segment,
+                    "e": counts[segment],
+                    "s": state,
+                    "t": _SEGMENT_TEXTS[segment - 1],
+                    "r": "the owner spoke" if state == "playback_interrupted" else None,
+                },
+            )
+
+
+def _handed(*segments: int) -> list[tuple[int, str]]:
+    return [(segment, "available_to_desktop") for segment in segments]
+
+
+def test_no_player_record_is_unconfirmed_and_never_completed_as_heard(store: Engine) -> None:
+    """Missing desktop rows do not establish that a sink played the answer."""
+    conversation, message_id = _completed_answer(store)
+    found = delivery_for(store, message_id)
+    assert found is not None and found.state is DeliveryState.COMPLETED
+    assert found.player == "no_record"
+    assert found.completion == "unconfirmed"
+    assert found.completed_as_heard is False
+    assert found.heard_characters is None, "nothing is known, so nothing is stated"
+    assert short_deliveries(store, conversation) == (), "and nothing is told to the model"
+
+
+def test_every_segment_reported_completed_is_the_only_confirmation(store: Engine) -> None:
+    conversation, message_id = _completed_answer(store)
+    _player_says(
+        store,
+        message_id,
+        *_handed(1, 2, 3),
+        *[(i, state) for i in (1, 2, 3) for state in ("playback_started", "playback_completed")],
+    )
+    found = delivery_for(store, message_id)
+    assert found is not None
+    assert (found.player, found.completion, found.completed_as_heard) == (
+        "confirmed",
+        "confirmed",
+        True,
+    )
+    assert short_deliveries(store, conversation) == ()
+
+
+def test_handed_over_with_no_reports_is_unconfirmed_not_unheard(store: Engine) -> None:
+    conversation, message_id = _completed_answer(store)
+    _player_says(store, message_id, *_handed(1, 2, 3))
+    found = delivery_for(store, message_id)
+    assert found is not None
+    assert (found.player, found.completion) == ("not_reported", "unconfirmed")
+    assert found.completed_as_heard is False
+    assert "nothing shows they were not" in (found.shortfall or "")
+    (short,) = short_deliveries(store, conversation)
+    assert short.state == "unconfirmed"
+    assert short.delivered_characters == 0
+    assert short.possibly_heard_characters == short.total_characters, (
+        "he may have heard all of it: silence from the player proves nothing"
+    )
+    assert short.heard_nothing is True  # nothing *confirmed*; the state says why
+
+
+def test_segments_without_a_start_report_are_unconfirmed_not_contradicted(
+    store: Engine,
+) -> None:
+    """The shape of the 30 September answer recorded `completed 6/6`: the first segment
+    played and reported, the rest handed over with no report, and no cut reported."""
+    conversation, message_id = _completed_answer(store)
+    _player_says(
+        store,
+        message_id,
+        *_handed(1, 2, 3),
+        (1, "playback_started"),
+        (1, "playback_completed"),
+    )
+    found = delivery_for(store, message_id)
+    assert found is not None
+    assert (found.player, found.completion) == ("incomplete_reports", "unconfirmed")
+    assert found.completed_as_heard is False
+    assert "no playback-start report for segment(s) 2, 3" in (found.shortfall or "")
+    assert "never played" not in (found.shortfall or "")
+    assert found.heard_characters == len(_SEGMENT_TEXTS[0])
+    (short,) = short_deliveries(store, conversation)
+    assert short.state == "unconfirmed"
+    assert short.delivered_characters == len(_SEGMENT_TEXTS[0])
+    assert short.possibly_heard_characters == short.total_characters
+
+
+def test_a_reported_cut_contradicts_and_the_cut_segment_is_not_heard_text(
+    store: Engine,
+) -> None:
+    conversation, message_id = _completed_answer(store)
+    _player_says(
+        store,
+        message_id,
+        *_handed(1, 2, 3),
+        (1, "playback_started"),
+        (1, "playback_completed"),
+        (2, "playback_started"),
+        (2, "playback_interrupted"),
+    )
+    found = delivery_for(store, message_id)
+    assert found is not None
+    assert (found.player, found.completion) == ("interrupted", "contradicted")
+    assert found.completed_as_heard is False
+    assert found.heard_characters == len(_SEGMENT_TEXTS[0]), "only the completed segment"
+    assert found.begun_characters == len(" ".join(_SEGMENT_TEXTS[:2]))
+    assert "how much of a cut segment was heard is not recorded" in (found.shortfall or "")
+    (short,) = short_deliveries(store, conversation)
+    assert short.state == "interrupted"
+    assert short.delivered_characters == len(_SEGMENT_TEXTS[0])
+    assert short.possibly_heard_characters == len(" ".join(_SEGMENT_TEXTS[:2]))
+
+
+def test_a_started_segment_with_no_end_report_is_not_heard_text(store: Engine) -> None:
+    conversation, message_id = _completed_answer(store)
+    _player_says(
+        store,
+        message_id,
+        *_handed(1, 2, 3),
+        *[(i, "playback_started") for i in (1, 2, 3)],
+        (1, "playback_completed"),
+        (2, "playback_completed"),
+    )
+    found = delivery_for(store, message_id)
+    assert found is not None
+    assert (found.player, found.completion) == ("end_unconfirmed", "unconfirmed")
+    assert found.heard_characters == len(" ".join(_SEGMENT_TEXTS[:2]))
+    assert "no playback-end report for segment(s) 3" in (found.shortfall or "")
+    (short,) = short_deliveries(store, conversation)
+    assert short.state == "unconfirmed"
+    assert short.delivered_characters < short.possibly_heard_characters
+
+
+def test_the_envelope_carries_the_bound_only_when_something_is_in_doubt() -> None:
+    from val_gateway.context import PriorRecordState, ShortSpokenAnswer
+
+    state = PriorRecordState(
+        history_state="available",
+        history_prior_messages=2,
+        history_retained_messages=2,
+        retrieval_state="not_run",
+        retrieval_excerpts=0,
+        spoken_delivery=(
+            ShortSpokenAnswer(
+                answer_position=2,
+                state="unconfirmed",
+                heard_characters=17,
+                generated_characters=62,
+                reason="player evidence: no playback-start report for segment(s) 2, 3",
+                possibly_heard_characters=62,
+            ),
+        ),
+    )
+    answer = state.as_document()["spoken_delivery"]["answers"][0]  # type: ignore[index]
+    assert answer["state"] == "unconfirmed"
+    assert answer["heard_characters"] == 17
+    assert answer["possibly_heard_characters"] == 62

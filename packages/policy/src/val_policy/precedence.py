@@ -126,6 +126,12 @@ _CONTINUATION_CLOSER = re.compile(r"\b(?:too|as well|also|after that|afterwards)
 class FollowUp:
     kind: Kind
     reason: str
+    #: For a continuation only (2 October 2026): whether his words **complete or qualify
+    #: the same request** — a fragment that cannot stand alone ("and why it works", "and
+    #: also the orchard") — rather than **add a request of their own** ("And who wrote
+    #: it?", "Also, name a fruit."). The first makes an unheard answer to the shorter
+    #: request obsolete; the second leaves it valid.
+    completes: bool = False
 
     @property
     def supersedes(self) -> bool:
@@ -164,15 +170,34 @@ def _clauses(text: str) -> list[tuple[str, bool]]:
 _REFUSAL_WORD = re.compile(r"^(?:no|nope|nah)$", re.IGNORECASE)
 
 
-#: What the recognizer has returned for a short, clipped "Stop." (bench of 1 October 2026:
-#: "stock."). One word, and only when it interrupts her — never a general synonym.
-_MISHEARD_STOP = re.compile(r"^(?:stock|stopp|stops|stopped|top)$", re.IGNORECASE)
-
-
 def _refusal_only(lowered: str) -> bool:
     words = re.findall(r"[a-z']+", lowered)
     refusals = sum(1 for word in words if _REFUSAL_WORD.match(word))
     return refusals >= 1 and len(words) - refusals <= 1 and (refusals >= 2 or len(words) == 1)
+
+
+#: After the additive opener, words that begin a request able to stand on its own: a
+#: direct question by inversion, or an instruction. A wh-word alone does not decide it
+#: ("and why it works" is a fragment; "And who wrote it?" is a question) — there the
+#: recognizer's question mark does.
+_STANDALONE_OPENER = re.compile(
+    r"^(?:can|could|would|will|do|does|did|is|are|was|were|shall|should|may|might|have|has|"
+    r"please|tell|give|explain|show|read|describe|make|draft|send|find|look|list|name|write|"
+    r"say|check|remind|let|put|take|try|use|add|what about|how about)\b",
+    re.IGNORECASE,
+)
+
+
+def _stands_alone(utterance: str, opening: str) -> bool:
+    if utterance.strip().endswith("?"):
+        return True
+    remainder = opening
+    while True:
+        stripped = _CONTINUATION_OPENER.sub("", remainder, count=1).strip(" ,")
+        if stripped == remainder:
+            break
+        remainder = stripped
+    return bool(_STANDALONE_OPENER.match(remainder))
 
 
 def follow_up(utterance: str, *, interrupting: bool = False) -> FollowUp:
@@ -186,8 +211,6 @@ def follow_up(utterance: str, *, interrupting: bool = False) -> FollowUp:
     lowered = _prepare(utterance).lower()
     if interrupting and _refusal_only(lowered):
         return FollowUp("stop", "a refusal and nothing else, spoken over her answer")
-    if interrupting and _MISHEARD_STOP.match(lowered.strip(" .!,")):
-        return FollowUp("stop", "one word the recognizer gives for a clipped 'stop'")
     clauses = _clauses(lowered)
     if not clauses:
         return FollowUp("ambiguous", "nothing said, or only discourse markers")
@@ -232,5 +255,11 @@ def follow_up(utterance: str, *, interrupting: bool = False) -> FollowUp:
         return FollowUp("stop", f"a pause and nothing else: {clauses[weak_stops[0]][0]!r}")
     opening = _ADDRESS.sub(" ", re.split(r"[.!?;:,]", lowered.strip())[0]).strip()
     if _CONTINUATION_OPENER.match(opening) or _CONTINUATION_CLOSER.search(clauses[-1][0]):
-        return FollowUp("continuation", "opens or closes as an addition to the earlier request")
+        if _stands_alone(utterance, opening):
+            return FollowUp(
+                "continuation", "an added request of its own, after the earlier one", False
+            )
+        return FollowUp(
+            "continuation", "a fragment that completes or qualifies the earlier request", True
+        )
     return FollowUp("ambiguous", "neither an explicit stop or replacement nor a clear continuation")

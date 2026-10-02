@@ -48,10 +48,20 @@ def test_the_guidance_states_each_requirement_of_the_order() -> None:
         "Explain when he asks why",
         "Ask first only when what is missing makes a useful or responsible answer impossible",
         "you still say you do not have",
-        "short by default",
-        "give the developed answer in full",
-        "not whether it was spoken or typed",
+        "Give a complete answer and nothing beyond it",
+        "An answer that leaves out something the question requires has failed",
+        "Length follows from what the question needs",
+        "never from whether it was spoken or typed",
         "never present your own line as one from an existing film, book or person",
         "do not invent its wording, its source",
     ):
         assert " ".join(required.split()) in " ".join(guidance.split()), required
+
+
+def test_the_guidance_states_adequacy_and_not_a_preference_for_brevity() -> None:
+    """Owner order, 2 October 2026: the standard is an answer with everything the
+    question needs and nothing it does not — not a short answer."""
+    lowered = context.CONVERSATIONAL_GUIDANCE.lower()
+    for brevity in ("short by default", "keep conversational answers short", "be brief"):
+        assert brevity not in lowered
+    assert "never from a preference for short or long" in lowered

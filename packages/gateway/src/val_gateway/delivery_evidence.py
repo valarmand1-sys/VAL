@@ -1,9 +1,7 @@
 """What the player says about an answer, laid beside what delivery recorded.
 
-Owner order, 1 October 2026 (delivery accounting). On 30 September an answer of six
-segments was recorded `completed 6/6` while the desktop played only its first: the other
-five were handed over and thrown away unplayed, and the next turn was told he had heard
-all of it.
+Owner orders, 1 and 2 October 2026 (delivery accounting). On 30 September an answer of
+six segments was recorded `completed 6/6` while the player reported only its first.
 
 Two records describe one spoken answer, and they are about different things:
 
@@ -14,16 +12,27 @@ Two records describe one spoken answer, and they are about different things:
   (the service's own row), and then the desktop's reports of what its output device did
   with it: started, completed, interrupted, failed.
 
-Five facts are kept apart here and never inferred from one another: audio **generated**
-(the delivery's segment count), **handed over** (`available_to_desktop`), playback
-**started**, playback **completed**, and playback **cut** (interrupted or failed).
+Five facts are kept apart and never inferred from one another: audio **generated**,
+**handed over**, playback **started**, playback **completed**, playback **cut**.
 
-**Completed delivery is claimed only on the player's evidence.** Where the player reported
-less than delivery recorded — and playback of the answer is known to be over — the
-answer is read as heard only as far as the player says. Where the player's evidence is
-missing or still arriving, that is what the reading says; nothing is upgraded and nothing
-is guessed. Nothing is rewritten: both records stay exactly as they were written, and
-this is a reading of them.
+**Three readings, and only three** (2 October 2026):
+
+- *confirmed* — the player reported every segment completed. Only this supports claiming
+  a completed delivery as heard to its end.
+- *contradicted* — the player reported a segment interrupted or failed. Only an
+  affirmative report contradicts.
+- *unconfirmed* — everything else: no player rows at all, rows with no reports, a missing
+  start or end report, playback still under way. **A missing report is not a report of
+  silence**: it does not show the audio was heard, and it does not show it was not.
+  Nothing is inferred from absence in either direction. This includes a delivery with no
+  player rows: no production path delivers to a sink that is itself the listener, and a
+  delivery row does not say which path it took, so missing desktop rows establish nothing.
+
+**What was heard is bounded, not stated.** `confirmed_prefix` is the text of segments the
+player reported completed — the most that can be said to have been heard. `begun_prefix`
+runs through the last segment reported started: a segment that began and was cut, or
+whose end was never reported, was heard *in part at most*, and is never handed on as
+heard text. Nothing is rewritten: both records stay as written, and this is a reading.
 """
 
 from __future__ import annotations
@@ -35,22 +44,24 @@ from uuid import UUID
 from sqlalchemy import Connection, text
 
 Player = Literal[
-    # No hand-off rows at all: the answer was not delivered through a desktop (a direct
-    # sink, or a record older than the playback record). Delivery's own word stands.
-    "none",
-    # Every handed-over segment was reported completed.
+    # No player rows for this answer at all. Completion is unconfirmed: the absence of
+    # desktop rows does not show how, or whether, the audio was played.
+    "no_record",
+    # Every generated segment was handed over and reported completed.
     "confirmed",
-    # Every handed-over segment was reported started; an end report is missing. He heard
-    # it begin; whether its last segment finished is not on record.
+    # The player reported a segment of this answer interrupted or failed.
+    "interrupted",
+    # Every handed-over segment was reported started; an end report is missing.
     "end_unconfirmed",
     # Playback may still be under way: nothing says it is over.
     "in_progress",
-    # Over, and only some of what was generated was reported started.
-    "partial",
-    # Over, handed to the desktop, and the player reported nothing about it. Not
-    # evidence that it was silent; evidence that nothing confirms he heard it.
+    # Over; some segments have no playback-start report, and no cut was reported.
+    "incomplete_reports",
+    # Over; handed to the desktop, and the player reported nothing about it.
     "not_reported",
 ]
+
+Completion = Literal["confirmed", "contradicted", "unconfirmed"]
 
 #: Playback rows this old with nothing since are read as over, when nothing else says so.
 STALE_AFTER_SECONDS = 300.0
@@ -92,21 +103,46 @@ class PlayerEvidence:
     segments_handed_over: int
     segments_started: int
     segments_completed: int
-    #: The text of the segments reported started, in order: what he can be said to have
-    #: begun to hear. Empty when the player reported nothing.
-    heard_prefix: str
-    #: In words, when the player's account is less than delivery recorded; else None.
+    #: Text of the segments the player reported **completed**, in order: the most that
+    #: can be said to have been heard.
+    confirmed_prefix: str
+    #: Text through the last segment reported **started**. Its tail — a segment cut off,
+    #: or one whose end was never reported — was heard in part at most. An upper bound
+    #: on what the player's reports cover; never heard text.
+    begun_prefix: str
+    #: Whether playback of this answer is known to be over.
+    over: bool
+    #: In words, what the player's rows do and do not show, when that is less than a
+    #: confirmed whole; else None.
     shortfall: str | None
 
     @property
+    def completion(self) -> Completion:
+        if self.player == "confirmed":
+            return "confirmed"
+        if self.player == "interrupted":
+            return "contradicted"
+        return "unconfirmed"
+
+    @property
     def supports_completed(self) -> bool:
-        """May a `completed` delivery be claimed as heard to its end?"""
-        return self.player in ("none", "confirmed")
+        """May a `completed` delivery be claimed as heard to its end? Only on the
+        player's affirmative report of every segment."""
+        return self.player == "confirmed"
 
     @property
     def contradicts_completed(self) -> bool:
-        """Does the player's account show a `completed` delivery was not heard whole?"""
-        return self.player in ("partial", "not_reported")
+        """Does a player report show a `completed` delivery was cut? Only an
+        affirmative report of interruption or failure; never a missing one."""
+        return self.player == "interrupted"
+
+
+def _join(rows: list) -> str:  # type: ignore[type-arg]
+    return " ".join(row.text or "" for row in rows)
+
+
+def _indices(rows: list) -> str:  # type: ignore[type-arg]
+    return ", ".join(str(row.segment_index) for row in rows)
 
 
 def player_evidence(
@@ -116,70 +152,76 @@ def player_evidence(
     rows = connection.execute(_SEGMENTS, {"id": message_id}).all()
     handed = [row for row in rows if row.handed]
     if not handed:
-        return PlayerEvidence("none", 0, 0, 0, "", None)
+        return PlayerEvidence(
+            "no_record",
+            0,
+            0,
+            0,
+            "",
+            "",
+            False,
+            "no player record for this answer: completion is unconfirmed",
+        )
     started = [row for row in handed if row.started]
     completed = [row for row in handed if row.completed]
     cut = [row for row in handed if row.cut]
-    heard_prefix = "".join(row.text or "" for row in started)
+    confirmed_prefix = _join(completed)
+    begun_prefix = _join(started)
     generated = segments_total if segments_total is not None else len(handed)
     everything_handed = len(handed) >= generated
+    counts = (len(handed), len(started), len(completed))
     if everything_handed and len(completed) == len(handed) and not cut:
+        return PlayerEvidence("confirmed", *counts, confirmed_prefix, begun_prefix, True, None)
+
+    no_start = [row for row in handed if not row.started]
+    unhanded = max(0, generated - len(handed))
+    parts: list[str] = []
+    if started:
+        parts.append(f"playback-start reports for segment(s) {_indices(started)} of {generated}")
+    if cut:
+        parts.append(
+            f"segment(s) {_indices(cut)} reported cut off while playing "
+            "(how much of a cut segment was heard is not recorded)"
+        )
+    ended = {row.segment_index for row in completed} | {row.segment_index for row in cut}
+    open_ended = [row for row in started if row.segment_index not in ended]
+    if open_ended:
+        parts.append(f"no playback-end report for segment(s) {_indices(open_ended)}")
+    if no_start:
+        parts.append(f"no playback-start report for segment(s) {_indices(no_start)}")
+    if unhanded:
+        parts.append(f"no hand-over row for {unhanded} segment(s)")
+    shortfall = "; ".join(parts)
+
+    if cut:
         return PlayerEvidence(
-            "confirmed", len(handed), len(started), len(completed), heard_prefix, None
+            "interrupted", *counts, confirmed_prefix, begun_prefix, True, shortfall
         )
     over_facts = connection.execute(_OVER, {"id": message_id}).one()
     over = bool(
-        cut
-        or over_facts.session_closed
+        over_facts.session_closed
         or over_facts.later_answer_started
         or float(over_facts.idle_seconds) >= STALE_AFTER_SECONDS
     )
     if not over:
         return PlayerEvidence(
-            "in_progress", len(handed), len(started), len(completed), heard_prefix, None
+            "in_progress", *counts, confirmed_prefix, begun_prefix, False, shortfall
         )
     if not started:
         return PlayerEvidence(
             "not_reported",
-            len(handed),
-            0,
-            0,
+            *counts,
             "",
-            (
-                f"{len(handed)} of {generated} segment(s) were handed to the desktop and the "
-                "player reported nothing about them: nothing confirms any of it was heard"
-            ),
+            "",
+            True,
+            f"{len(handed)} of {generated} segment(s) were handed to the desktop and the "
+            "player reported nothing about them: nothing confirms they were heard, and "
+            "nothing shows they were not",
         )
-    if everything_handed and len(started) == len(handed) and not cut:
+    if everything_handed and len(started) == len(handed):
         return PlayerEvidence(
-            "end_unconfirmed",
-            len(handed),
-            len(started),
-            len(completed),
-            heard_prefix,
-            None,
+            "end_unconfirmed", *counts, confirmed_prefix, begun_prefix, True, shortfall
         )
-    never = [row.segment_index for row in handed if not row.started]
-    unhanded = max(0, generated - len(handed))
-    parts = [
-        f"the player reported playback of segment(s) "
-        f"{', '.join(str(row.segment_index) for row in started)} of {generated}"
-    ]
-    if cut:
-        parts.append("segment(s) " + ", ".join(str(row.segment_index) for row in cut) + " cut off")
-    if never:
-        parts.append(
-            "segment(s) "
-            + ", ".join(str(index) for index in never)
-            + " handed over and never played"
-        )
-    if unhanded:
-        parts.append(f"{unhanded} segment(s) never handed over")
     return PlayerEvidence(
-        "partial",
-        len(handed),
-        len(started),
-        len(completed),
-        heard_prefix,
-        "; ".join(parts),
+        "incomplete_reports", *counts, confirmed_prefix, begun_prefix, True, shortfall
     )
