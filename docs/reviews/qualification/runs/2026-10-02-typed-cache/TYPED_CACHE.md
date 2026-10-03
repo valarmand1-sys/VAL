@@ -110,8 +110,8 @@ stamps, growing with the conversation.
 - A warm refresh costs the runtime 0.23–0.49 s (`model_calls` latency), 1 s after the
   answer. A message arriving inside that window waits at most that long. None of the
   measured turns did (3 s spacing).
-- A **cold** prime costs 8–10 s (9.96 s at service start; 20.9 s once, after the §6
-  stall), and a message arriving during it waits for it: the first typed turn in each run
+- A **cold** prime costs 8–10 s (9.96 s at service start; 20.9 s once, cold after the §6
+  sleep), and a message arriving during it waits for it: the first typed turn in each run
   (bench artefact) and the 37.4 s turn in §6 (real exposure: after any eviction or
   unload, the refresh runs cold and the next message may wait).
 - The first typed turn after Voice: see §5.
@@ -142,21 +142,28 @@ prefills cold (~10 s) — his "Canberra, about 13 seconds" and the 16.5 s draft 
 the r9 check are this case. `on` re-primes after that turn. Keeping GPT-OSS resident
 (a longer TTL, ~12 GB held) would remove it; that is a memory decision and his.
 
-## 6. An anomaly, recorded as observed
+## 6. The "stall" of turn 4 was the Mac asleep — corrected 2 October 2026, 22:00
 
-T3-typed-only-on, turn 4 ("Give me a title for a film about an orchard."): the runtime
-finished prefill at 20:39:29 and logged nothing until "Finished streaming response" at
-20:45:54 — 385 s for a 271-token answer that reads normally (398 characters). The three
-instruments disagree on this turn: the bench's stream closed at 91.2 s, `model_calls`
-latency 89.4 s, the service's completion log and the runtime's at 20:45:54–55. During the
-window swap grew 4.37 → 8.21 GB and returned to 4.25 GB afterwards (free never below
-59%). The LM Studio log carries 27 `UnboundLocalError: cannot access local variable
-'token'` entries today, all after 20:00, none on 30 September or 1 October; the first
-follows an `applyPromptTemplate` (the exact preflight's inspector), not a prime, so it is
-not shown to belong to the prime. The turn's own request hit the cache normally
-(5,790/7,136). **Not explained; not attributed to the prime; production runs the same
-runtime and carries the same exposure.** The next refresh ran cold (20.9 s) and the
-following turn waited behind it (37.4 s).
+First recorded as a runtime stall; the power log settles it. `pmset -g log`: **"Entering
+Sleep state due to 'Low Power Sleep'" at 20:39:33** and **"Wake from Hibernate … due to
+trackpadkeyboard/UserActivity" at 20:45:52**. T3-typed-only-on turn 4 was sent at 20:39:27;
+the runtime finished its prefill at 20:39:29 and the machine slept four seconds later.
+
+The three durations reconcile exactly: the bench's 91.2 s and `model_calls`' 89.4 s are
+`time.monotonic()` figures, and macOS's monotonic clock **does not advance while the
+machine sleeps**; the 385 s between the runtime's "prefill done" and "Finished streaming
+response" is wall-clock, and includes 6 min 19 s of sleep. The bench's own `at_s` column
+(monotonic) shows turn 4 taking ~94 s of awake time; the service's epoch stamps show the
+wall-clock gap. The swap "growth" (4.37 → 8.21 GB, back to 4.25 GB on wake) is the
+hibernation image, not generation. The 27 `UnboundLocalError` entries in the LM Studio
+log are unrelated to this turn (the first follows the inspector's template application).
+
+**Not a runtime defect, not a Val defect, not caused by the prime.** The known
+limitations stand as recorded elsewhere: a prefill in progress is not cancellable at the
+engine; a superseded stream's socket is shut down client-side; the typed output allowance
+is 6,144 tokens and the adapter's read timeout 600 s. The only lesson for benches is
+`caffeinate -i` around a run, adopted in the writing comparison. The 20.9 s refresh prime
+and 37.4 s turn that followed were the cache going cold through the sleep.
 
 ## 7. Memory
 
@@ -192,8 +199,8 @@ typed message will show it in `/opt/homebrew/var/log/val/api.log`.
    turn is warm).
 5. Six seconds is met by the median steady-state turn and not by every turn; the ~1 s
    target remains unmet and is not claimed.
-6. One runtime stall of 385 s with 3.8 GB of swap growth is on record (§6), unexplained,
-   and not caused by this work.
+6. The 385 s "stall" was the Mac asleep (§6, power log); no runtime defect is on record from
+   these runs.
 
 ## 9. Proposed release r11
 
@@ -229,5 +236,5 @@ Rollback never restores a hosted route: r10's plist has no hosted key and none i
 anywhere the rollback reads.
 
 Not in the release and still open: the readiness indication after Voice, the TTL/resident
-memory question, the §6 stall, classification's local replacement (not approved), the
+memory question, classification's local replacement (not approved), the
 ~1 s target.

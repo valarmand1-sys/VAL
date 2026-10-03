@@ -1989,6 +1989,6 @@ prefilled its whole prompt from zero (8–10 s). With `VAL_TYPED_PRIME=on` an or
 turn's first visible text moves from 10–19 s to 2.5–8 s; `transition` decays after about
 five distinct turns (the runtime evicts the checkpoint) and is not sufficient. Not
 improved and not improvable by a prime: the first typed turn after Voice or after an idle
-hour (GPT-OSS reload plus one cold prefill, 16–21 s). One unexplained runtime stall of
-385 s with 3.8 GB of swap growth is on record (§6 there). Proposed release r11 (§9
+hour (GPT-OSS reload plus one cold prefill, 16–21 s). The 385 s "stall" first recorded there was
+the Mac asleep (power log: Low Power Sleep 20:39:33, wake 20:45:52; §6 there, corrected). Proposed release r11 (§9
 there) carries the prime and the message versions; his approval is required.
