@@ -14,6 +14,7 @@ Usage: typed_cache_bench.py LABEL OUT.json
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -46,9 +47,12 @@ def log_lines_since(path: Path, offset: int) -> tuple[list[str], int]:
 
 
 def cache_facts(lines: list[str]) -> dict:
+    # The turn's own request is the longest prompt in its window: a prime's prompt is the
+    # persona and a filler (5,801 tokens), shorter than any turn, and one can interleave.
     using = [
         m for m in (re.search(r"Prompt cache: using (\d+)/(\d+)", line) for line in lines) if m
     ]
+    using = sorted(using, key=lambda m: int(m.group(2)))
     progress = [line for line in lines if "Prompt processing progress" in line]
     stamps = [re.search(r"\[(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\]", line) for line in progress]
     first = next((s.group(1) for s in stamps if s), None)
@@ -102,6 +106,9 @@ def typed_turn(
 
 def main() -> int:
     label, out = sys.argv[1], Path(sys.argv[2])
+    typed_only = int(os.environ.get("TYPED_ONLY_TURNS", "0"))
+    if typed_only:
+        return typed_only_run(label, out, typed_only)
     client = httpx.Client()
     log = newest_log()
     offset = len(log.read_text(errors="replace"))
@@ -153,6 +160,42 @@ def main() -> int:
     out.write_text(
         json.dumps({"label": label, "rows": rows, "transition": transition}, indent=1) + "\n"
     )
+    return 0
+
+
+TYPED_ONLY = [
+    "Suggest a name for a small secondhand bookshop.",
+    "Why that one?",
+    "What is the difference between a producer and an executive producer?",
+    "Give me a title for a film about an orchard.",
+    "Which of those titles do you prefer, and why?",
+    "What should I say when I answer the phone at the studio?",
+    "How long should a cold open be?",
+    "Name a famous ghost story.",
+    "And who wrote it?",
+    "Thank you.",
+]
+
+
+def typed_only_run(label: str, out: Path, turns: int) -> int:
+    """A longer typed-only sequence in one conversation: does the prepared prefix
+    survive many differing turns? (The runtime's cache evicts by distinct prompts.)"""
+    client = httpx.Client()
+    log = newest_log()
+    offset = len(log.read_text(errors="replace"))
+    rows: list[dict] = []
+    conversation = None
+    t0 = time.monotonic()
+    time.sleep(12)  # let the start-up prime finish, as a service that has been up would have
+    for text in TYPED_ONLY[:turns]:
+        row, offset = typed_turn(client, conversation, text, log, offset)
+        row["phase"] = "typed_only"
+        row["at_s"] = round(time.monotonic() - t0, 1)
+        conversation = conversation or row["conversation_id"]
+        rows.append(row)
+        print(json.dumps(row), flush=True)
+        time.sleep(3)
+    out.write_text(json.dumps({"label": label, "rows": rows, "transition": None}, indent=1) + "\n")
     return 0
 
 

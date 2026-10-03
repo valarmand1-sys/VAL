@@ -5,9 +5,9 @@
 # the cache-renewal allowlist, so the runtime behaves exactly as production's instance).
 # Gemma is started by the service's own supervisor on 8099 for the Voice transition.
 # Production, its store, its models and its instance are not touched. Usage:
-#   run_typed_cache.sh off|transition|on LABEL
+#   run_typed_cache.sh off|transition|on LABEL [TYPED_ONLY_TURNS]
 set -u
-MODE=$1; LABEL=$2
+MODE=$1; LABEL=$2; export TYPED_ONLY_TURNS=${3:-0}
 ROOT=/Users/josepharmand/Projects/val-dev
 D=$ROOT/docs/reviews/qualification/runs/2026-09-28-checkpoint
 O=$ROOT/docs/reviews/qualification/runs/2026-10-02-typed-cache

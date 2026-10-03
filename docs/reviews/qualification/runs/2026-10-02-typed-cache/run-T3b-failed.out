@@ -1,0 +1,22 @@
+=== T3-typed-only-transition (typed prime: transition) 20:33:17 commit f7db6c8 dirty=0
+service up after 2.1 s
+Traceback (most recent call last):
+  File "/Users/josepharmand/Projects/val-dev/docs/reviews/qualification/runs/2026-10-02-typed-cache/typed_cache_bench.py", line 167, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/josepharmand/Projects/val-dev/docs/reviews/qualification/runs/2026-10-02-typed-cache/typed_cache_bench.py", line 111, in main
+    return typed_only_run(label, out, typed_only)
+           ^^^^^^^^^^^^^^
+NameError: name 'typed_only_run' is not defined. Did you mean: 'typed_only'?
+DONE T3-typed-only-transition 20:33:35
+=== T3-typed-only-on (typed prime: on) 20:33:35 commit f7db6c8 dirty=0
+service up after 1.6 s
+Traceback (most recent call last):
+  File "/Users/josepharmand/Projects/val-dev/docs/reviews/qualification/runs/2026-10-02-typed-cache/typed_cache_bench.py", line 167, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/josepharmand/Projects/val-dev/docs/reviews/qualification/runs/2026-10-02-typed-cache/typed_cache_bench.py", line 111, in main
+    return typed_only_run(label, out, typed_only)
+           ^^^^^^^^^^^^^^
+NameError: name 'typed_only_run' is not defined. Did you mean: 'typed_only'?
+DONE T3-typed-only-on 20:33:52
