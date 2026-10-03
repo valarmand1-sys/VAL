@@ -40,15 +40,20 @@ def test_nothing_is_primed_while_voice_holds_the_memory(store: Engine) -> None:
     assert adapter.sent == [] and adapter.warmed == []
 
 
-def test_no_prime_is_sent_while_a_typed_turn_is_in_flight(store: Engine) -> None:
-    adapter = PrimingAdapter([ok("unused")])
+def test_a_refresh_stands_aside_for_a_waiting_turn_but_the_transition_prime_does_not(
+    store: Engine,
+) -> None:
+    adapter = PrimingAdapter([ok("Good"), ok("Good")])
     gateway = a_gateway(store, adapter)
     gateway.typed_turn_started()
-    result = gateway.prime_typed_prefix()
-    assert result["primed"] is False and "owner request is waiting" in str(result["reason"])
+    refresh = gateway.prime_typed_prefix(refresh=True)
+    assert refresh["primed"] is False and "owner request is waiting" in str(refresh["reason"])
     assert adapter.sent == []
-    gateway.typed_turn_finished()
+    # The prime at start or after Voice computes the prefix that waiting request needs.
     assert gateway.prime_typed_prefix()["primed"] is True
+    assert len(adapter.sent) == 1
+    gateway.typed_turn_finished()
+    assert gateway.prime_typed_prefix(refresh=True)["primed"] is True
 
 
 def test_the_partner_returning_after_voice_is_primed_only_when_the_mode_says_so(

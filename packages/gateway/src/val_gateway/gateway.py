@@ -1066,12 +1066,26 @@ class Gateway:
         with self._residency_lock:
             return self._typed_in_flight == 0 and not self._voice_holds_memory
 
+    def _voice_not_holding(self) -> bool:
+        with self._residency_lock:
+            return not self._voice_holds_memory
+
     def prime_typed_prefix(
-        self, still_wanted: Callable[[], bool] | None = None
+        self, still_wanted: Callable[[], bool] | None = None, *, refresh: bool = False
     ) -> Mapping[str, object]:
-        """Compute the typed route's shared prefix in its runtime, unless Voice holds the
-        memory or a typed request is waiting. Recorded as `prefix_prime`, like every prime."""
-        wanted = still_wanted or self._typed_prime_wanted
+        """Compute the typed route's shared prefix in its runtime. Recorded as
+        `prefix_prime`, like every prime.
+
+        Never while Voice holds the memory. A **refresh** after an answer stands aside
+        when a typed request is already waiting (it is cheap and can wait for the next
+        idle moment). The prime at start and after Voice does **not** stand aside for a
+        waiting request: measured 2 October 2026, a typed message arriving a second
+        after Voice ended made the prime step back and then paid the whole prompt cold —
+        and so did the turn after it. The prime computes exactly the prefix that request
+        needs; the request waits for it once (no longer than its own cold prefill) and
+        every turn after reuses it.
+        """
+        wanted = still_wanted or (self._typed_prime_wanted if refresh else self._voice_not_holding)
         with self._residency_lock:
             if self._voice_holds_memory:
                 return {
@@ -1113,7 +1127,7 @@ class Gateway:
                         break
                 else:
                     return
-                self.prime_typed_prefix()
+                self.prime_typed_prefix(refresh=True)
             finally:
                 with self._residency_lock:
                     self._typed_refresh_pending = False
