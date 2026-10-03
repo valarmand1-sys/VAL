@@ -1980,3 +1980,15 @@ Conversational acceptance and Voice as a whole are **not** declared complete.
 
 Not blocking anything. The quoted "six seconds" of the earlier session was a repeated
 request in an empty conversation reusing the runtime's cache, and is **not** a baseline.
+
+## 17. Typed prefix preparation for GPT-OSS, measured — 2 October 2026 (candidate r11; NOT RULED, NOT DEPLOYED)
+
+Record: `docs/reviews/qualification/runs/2026-10-02-typed-cache/TYPED_CACHE.md`. The
+typed delay had one cause: no reusable checkpoint outside Voice, so every typed turn
+prefilled its whole prompt from zero (8–10 s). With `VAL_TYPED_PRIME=on` an ordinary typed
+turn's first visible text moves from 10–19 s to 2.5–8 s; `transition` decays after about
+five distinct turns (the runtime evicts the checkpoint) and is not sufficient. Not
+improved and not improvable by a prime: the first typed turn after Voice or after an idle
+hour (GPT-OSS reload plus one cold prefill, 16–21 s). One unexplained runtime stall of
+385 s with 3.8 GB of swap growth is on record (§6 there). Proposed release r11 (§9
+there) carries the prime and the message versions; his approval is required.
