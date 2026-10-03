@@ -64,9 +64,13 @@ def cache_facts(lines: list[str]) -> dict:
 def typed_turn(
     client: httpx.Client, conversation: str | None, text: str, log: Path, offset: int
 ) -> tuple[dict, int]:
-    body = {"content": text, "no_project": True}
-    if conversation:
-        body["conversation_id"] = conversation
+    # The first turn opens an unassigned conversation; every later turn names it — as the
+    # desktop does — so the sequence is one conversation with growing history.
+    body: dict[str, object] = (
+        {"content": text, "conversation_id": conversation}
+        if conversation
+        else {"content": text, "no_project": True}
+    )
     sent = time.monotonic()
     first_delta = None
     settled = None
