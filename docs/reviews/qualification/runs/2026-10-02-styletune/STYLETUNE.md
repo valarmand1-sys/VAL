@@ -11,7 +11,7 @@ testing, integration and preparation for installation are authorised; installati
 under the same authorisation once the registered conditions pass **and** he confirms the
 writing meets his standard. Production is unchanged until then.
 
-**Status: criteria registered below before any measurement. Nothing measured yet.**
+**Status (3 October 2026, 00:05): STOPPED on a confirmed failure of registered condition T5 — the first typed request after Voice. Not integrated, not installed. Production unchanged (r10). The eight writing answers exist and are put to him as pairs; his judgement and the one decision in §7 are open.**
 
 ---
 
@@ -132,3 +132,112 @@ his judgement has its material whatever follows) → T5 floor and T4 (the switch
 cold start, service level) → critical and pressure cases → ordinary and sustained timing
 → his judgement → integration → desktop measurement → release. The first confirmed
 disqualifying result stops the benchmarks and integration that follow it.
+
+## 5. Results
+
+### 5.1 Download and probe (3.4) — PASS
+
+Downloaded from the pinned revision; sha256 `73742ed0…ec50` equals the pin. Probe
+(`probe-styletune.json`, `voice_screen.py styletune verify --mode typed`): the rendered
+prompt opens `<|turn>system` with the persona verbatim and whole, carries the record-state
+envelope in the last user turn, and ends `<|turn>model\n<|channel>thought\n<channel|>` —
+the thought channel opened and closed empty; no thinking tokens in the prompt; the request
+carried temperature 1.0, top-p 0.95, top-k 64, `enable_thinking: false`, `max_tokens`
+6,144, and the server reported the same (its own defaults elsewhere: min-p 0.05, no
+repeat penalty); window 32,768; build `b10964-b29c606e2`; the turn evaluated 951 prompt
+tokens after the prime (the prefix was reused); timing capture works. The GGUF's embedded
+template differs in digest from the Voice model's GGUF (`1d35a24a…` against `6a1015c4…`:
+a different quantizer's embedding); the rendered structure is the same and correct.
+Load 3.1 s with the file in the page cache.
+
+### 5.2 The eight writing tasks — generated, `answers-W2-styletune.json`
+
+All eight answered, one route (`…styletune-v2-q4km-llamacpp-typed-experiment`), typed prime
+established, no sleep, free memory never below 29%, no swap growth. GPT-OSS's answers are
+the existing `answers-W1-gptoss.json`, not regenerated. Pairs drawn once
+(`pairs/BLIND.md`, `pairs/mapping.json`); per-answer timings recorded and withheld until
+he has judged.
+
+Correctness, grounding and instruction following, read separately from style (letters as
+drawn; the mapping stays sealed):
+
+| task | Answer A | Answer B |
+|---|---|---|
+| P1 | faithful light edit; **labels his passage "One of my own"** — an attribution error (it is his) | faithful light edit; changes "not little" to "not small" (his joke's wording altered) |
+| P2 | meaning kept, three sentences | meaning kept; labelled "One of my own" (her rewrite — defensible) |
+| P3 | 8 lines, names only, as asked | 8 lines, names only, as asked |
+| P4 | two sentences; drops the technology and platforms content | keeps the content; still some brochure phrasing ("high-quality", "state-of-the-art") |
+| P5 | ~240 words, director unnamed and ungendered | ~240 words, director unnamed ("he") |
+| P6 | **two wrong figures: "one eightieth of a second" at 24 fps (it is 1/48) and "one sixtieth" at 60 fps (it is 1/120)** | figures right (1/48, 1/120); "about a third" of the blur is wrong (it is 40%); an unsupported claim about the eye's 1/60 s integration; LaTeX markup in a conversational answer; a muddled closing parenthesis |
+| P7 | a troubleshooting manual in reply to a remark; **invents house history** ("standard practices that have served House Armand for generations", "proven reliable in our experience") | a brief, fitting reply |
+| P8 | correct, short | correct, short |
+
+Against §3.2 for the candidate: **one material regression in eight** (P6: wrong verifiable
+figures where GPT-OSS's core figures are right) — below the rejection line of more than
+two. GPT-OSS's own failures in these answers (P7 invented continuity — its declared
+production weakness; P6's secondary errors) are recorded as failures, not as a standard.
+The P6 error matters beyond its count: a style tune that changes token selection got two
+numbers wrong in a technical explanation.
+
+### 5.3 T5, the first typed request after Voice — **FAILED at the floor (confirmed, two samples)**
+
+`switch_floor.py`, the installed runtime with the house's own flags, on its own port:
+the Voice model's server up and used, then stopped; the candidate's server started; one
+streamed request with the persona as its system message (5,094 prompt tokens).
+
+| | sample 1 | sample 2 |
+|---|---|---|
+| Voice model stopped | 0.20 s | 0.19 s |
+| candidate ready (load) | 10.89 s | 9.77 s |
+| ready → first visible token (cold prefill of the persona) | 7.06 s | 7.06 s |
+| **Voice ends → first visible token** | **17.95 s** | **16.83 s** |
+| the next request, prefix cached | 0.13 s | 0.13 s |
+
+Registered pass: ≤ 4.18 s. The prefill alone (7.06 s) exceeds it; the load alone (9.8–10.9
+s, because the 17 GB file does not stay in the page cache beside the Voice model)
+exceeds it. This is a floor — Core's work, the recorded prime and the desktop are not in
+it — so no integration under one cognition model at a time can pass T5. For comparison,
+GPT-OSS today: 16–21 s for the same transition (`TYPED_CACHE.md` §5). **The candidate does
+not make the post-Voice delay better or worse; it does not solve it.**
+
+Why, and what was considered without being built:
+
+- The delay is the cost of **switching models at all**. The candidate differs from the
+  Voice model in one tensor of 659, but as two files they share nothing in memory.
+- Holding both (≈34 GB of weights beside recognition, synthesis and the system on 48 GB)
+  is outside the one-model policy, and one such server already takes free memory to
+  29–41%. Not tested.
+- llama.cpp's slot save/restore could remove the 7 s prefill (a supported server feature);
+  the ~10 s load would remain. Not built — it cannot reach the threshold.
+- Applying only the changed tensor to the resident Voice model would need an engine
+  modification, which the order excludes.
+
+### 5.4 Not run
+
+Stopped by the rule in his §5 once T5 was confirmed: the critical and pressure cases
+(§3.1), ordinary and sustained timing (T1–T3), first use (T4), resources under the
+intended policy (T6), the deep-reasoning transitions (T7), integration, desktop
+measurement, release. Per-answer onsets from the writing run exist and are withheld
+until he judges the writing.
+
+## 6. What stands
+
+Production r10 unchanged. No routing change, no registry change in `packages/` (the
+candidate was registered in the harness process only). The model file is kept at
+`~/.val-models/voice-candidates/` (17.2 GB; free disk 17 GiB) pending his word. GPT-OSS
+caching work kept; r11 not installed; message versions untouched.
+
+## 7. The one decision that is his
+
+The registered conditions cannot all pass with three different models for three roles on
+this machine, because any Voice → typing change of model costs 17–21 s on the first typed
+request. That leaves three courses, none taken here:
+
+1. **Accept the switch delay** after Voice for the candidate (as exists today with
+   GPT-OSS), withdrawing T5 — then the remaining checks (critical cases first) resume.
+2. **One Gemma for both roles**, so that Voice → typing changes nothing in memory: either
+   the candidate also as the Voice model (needs the Voice qualification repeated on it;
+   his instruction that regular Gemma remains the Voice model would change), or regular
+   Gemma for typing (the W1 comparison he set aside).
+3. **Stop here**: keep GPT-OSS for typing as it is.
+
