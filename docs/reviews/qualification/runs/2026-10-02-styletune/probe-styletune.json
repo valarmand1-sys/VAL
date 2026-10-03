@@ -1,0 +1,167 @@
+{
+ "candidate": "styletune",
+ "stage": "verify",
+ "stopped": null,
+ "artifact": {
+  "file": "Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+  "sha256": "73742ed0dfd5f77db687964a3b7b178c424e1bd89f0a4d47e77b8ed87af2ec50"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+  "--alias",
+  "val-typed-styletune-v2",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 2539.19,
+  "end": 2531.19
+ },
+ "free_percent": {
+  "start": 91,
+  "end": 29
+ },
+ "server_footprint_gb_peak": 7.25,
+ "load_seconds": 3.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "1d35a24a2a63cc600c0cab43628a6df4cd3318e959b03307cf5f9f7e29ecf783",
+  "startup_log": [
+   "0.00.095.171 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.352.044 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.02.954.818 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "verification": {
+  "body_keys": [
+   "chat_template_kwargs",
+   "max_tokens",
+   "messages",
+   "model",
+   "temperature",
+   "top_k",
+   "top_p"
+  ],
+  "body_sampling": {
+   "temperature": 1.0,
+   "top_p": 0.95,
+   "top_k": 64,
+   "presence_penalty": null,
+   "chat_template_kwargs": {
+    "enable_thinking": false
+   },
+   "max_tokens": 6144
+  },
+  "rendered_chars": 30761,
+  "rendered_head": "<|turn>system\n# 03 — Persona Specification v1.9\n\n**The Maester of House Armand**\n\nThis document defines who Val is. It g",
+  "rendered_tail": "\": {\n      \"books\": \"unavailable\"\n    }\n  }\n}\n\nExplain the difference between suspense and surprise in a scene.<turn|>\n<|turn>model\n<|channel>thought\n<channel|>",
+  "persona_verbatim_at": 14,
+  "envelope_marker_at": 27035,
+  "persona_trimmed_verbatim_at": 14,
+  "persona_chars": 23550,
+  "persona_trimmed_chars": 23549,
+  "user_turn_starts": [
+   26942,
+   27023
+  ],
+  "envelope_in_last_user_turn": true,
+  "thinking_tokens_in_prompt": [],
+  "server_reported_params": {
+   "temperature": 1.0,
+   "top_k": 64,
+   "top_p": 0.949999988079071,
+   "min_p": 0.05000000074505806,
+   "presence_penalty": 0.0,
+   "repeat_penalty": 1.0,
+   "repeat_last_n": 64,
+   "samplers": [
+    "penalties",
+    "dry",
+    "top_n_sigma",
+    "top_k",
+    "typ_p",
+    "top_p",
+    "min_p",
+    "xtc",
+    "temperature"
+   ],
+   "n_predict": 6144,
+   "max_tokens": 6144
+  },
+  "timing_capture_works": true
+ },
+ "rows": [
+  {
+   "case": "O3-substantive",
+   "sample": 1,
+   "answered": true,
+   "answer": "Surprise is a sudden disruption of expectation. It occurs when an event happens that the audience did not anticipate, often shifting the direction of the scene in an instant. It provides a shock, but because it arrives without warning, it offers no opportunity for the audience to react before the moment has passed.\n\nSuspense, by contrast, is the tension that comes from expectation. It exists when the audience knows something that the characters do not—or when they understand the consequences of a looming event that the characters have yet to face. Suspense requires information; it gives the audience the burden of anticipation, forcing them to wait for the inevitable moment when the unknown becomes known.\n\nIn short, surprise is the moment the bomb goes off; suspense is the audience watching the clock tick down while the character remains unaware of the device beneath the table.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6773,
+   "tokens_out": 169,
+   "call_to_first_visible_s": 1.889,
+   "call_to_first_segment_s": 2.059,
+   "call_total_s": 5.049,
+   "server_prompt_eval_s": 1.577,
+   "server_prompt_tokens_evaluated": 951,
+   "server_generated_tokens": 169,
+   "server_tokens_per_second": 53.36,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 8.189,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5832,
+     "prompt_ms": 8143.399,
+     "prompt_per_token_ms": 1.3963304183813443,
+     "prompt_per_second": 716.1628700742773,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.12.338.275 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.860 (> 0.100 thold), f_keep = 0.998",
+    "0.17.063.526 I slot print_timing: id  0 | task 4 | prompt eval time =    1576.81 ms /   951 tokens (    1.66 ms per token,   603.12 tokens per second)",
+    "0.17.063.528 I slot print_timing: id  0 | task 4 |        eval time =    3148.41 ms /   169 tokens (   18.74 ms per token,    53.36 tokens per second)",
+    "0.17.063.528 I slot print_timing: id  0 | task 4 |       total time =    4725.21 ms /  1120 tokens",
+    "0.17.063.881 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6941, truncated = 0"
+   ],
+   "server_footprint_gb": 7.25
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 1.889,
+  "call_to_first_segment_s": 2.059,
+  "server_prompt_eval_s": 1.577,
+  "server_prompt_tokens_evaluated": 951,
+  "server_tokens_per_second": 53.36
+ },
+ "first_segment_p90_s": 2.059
+}

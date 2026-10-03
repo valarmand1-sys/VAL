@@ -88,7 +88,7 @@ def first_token(alias: str, system: str, user: str) -> tuple[float, float, dict]
             if chunk.get("usage"):
                 usage = chunk["usage"]
             for choice in chunk.get("choices") or []:
-                if first is None and (choice.get("delta") or {}).get("content", "").strip():
+                if first is None and ((choice.get("delta") or {}).get("content") or "").strip():
                     first = time.monotonic()
     return (first or time.monotonic()) - sent, time.monotonic() - sent, usage
 
@@ -99,7 +99,18 @@ def main() -> int:
         assert probe.connect_ex(("127.0.0.1", PORT)) != 0, f"port {PORT} is in use: not starting"
     result: dict = {"port": PORT, "persona_chars": len(PERSONA)}
     began = time.monotonic()
+    children: list[subprocess.Popen[bytes]] = []
+    try:
+        return measure(result, began, children)
+    finally:  # whatever happens, this script's own servers are stopped
+        for child in children:
+            if child.poll() is None:
+                child.terminate()
+
+
+def measure(result: dict, began: float, children: list[subprocess.Popen[bytes]]) -> int:
     voice = start(VOICE, "floor-voice")
+    children.append(voice)
     result["voice_model_load_s"] = round(time.monotonic() - began, 2)
     first_token("floor-voice", PERSONA, "Good evening, Val.")  # the session it has just had
     t0 = time.monotonic()
@@ -107,6 +118,7 @@ def main() -> int:
     voice.wait(timeout=30)
     result["voice_model_stopped_s"] = round(time.monotonic() - t0, 2)
     typed = start(TYPED, "floor-typed")
+    children.append(typed)
     result["t0_to_candidate_ready_s"] = round(time.monotonic() - t0, 2)
     onset, complete, usage = first_token(
         "floor-typed", PERSONA, "What makes a good opening line for a film?"

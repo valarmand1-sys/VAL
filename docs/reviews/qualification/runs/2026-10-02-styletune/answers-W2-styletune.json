@@ -1,0 +1,182 @@
+{
+ "model": "styletune",
+ "label": "W2-styletune",
+ "order": "forward",
+ "prime": {
+  "at": 1791003038.701,
+  "primed": true,
+  "outcome": "established",
+  "slug": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed-experiment",
+  "engine": "llama.cpp",
+  "boundary_tokens": 5824,
+  "boundary_sha256": "",
+  "prime_tokens": 5832,
+  "model_call_id": "01a10019-93e0-7d17-b0af-45fdb5d15f87",
+  "seconds": 8.323
+ },
+ "routes_seen": [
+  "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed-experiment"
+ ],
+ "rows": [
+  {
+   "id": "P1",
+   "kind": "editing a passage of prose while preserving the owner's voice",
+   "sent_at_utc": "2026-10-03T04:50:39+00:00",
+   "first_visible_s": 1.901,
+   "complete_s": 4.305,
+   "complete_wall_s": 4.305,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "One of my own, my lord:\n\n\"The orchard sat at the bottom of the valley where the fog came in first and left last; by the time we had the camera up on the rise, the light had already shifted from what we had scouted the week before, and nobody wanted to be the one to say it. Marcus kept checking his meter like it owed him money. I had wanted this shot since the first time I walked the rows in March when the trees were bare, and I was not going to let a little weather talk me out of it\u2014even though the weather, to be fair, was not little.\"",
+   "answer_chars": 541,
+   "timing": {
+    "gateway_first_output_ms": 1802,
+    "gateway_latency_ms": 4200,
+    "api_first_delta_ms": 1892,
+    "api_total_ms": 4297,
+    "api_response_started_ms": 40
+   },
+   "error": null
+  },
+  {
+   "id": "P2",
+   "kind": "rewriting a weak paragraph",
+   "sent_at_utc": "2026-10-03T04:50:46+00:00",
+   "first_visible_s": 1.787,
+   "complete_s": 3.11,
+   "complete_wall_s": 3.11,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "One of my own, my lord: \"Several converging forces have reshaped the film industry in recent years. Technological innovation has fundamentally altered production, while shifting audience preferences have redefined content demands. Complemented by the rise of streaming services, which has revolutionized distribution and consumption, these shifts mean that modern filmmaking bears little resemblance to the industry of the past.\"",
+   "answer_chars": 429,
+   "timing": {
+    "gateway_first_output_ms": 1712,
+    "gateway_latency_ms": 3028,
+    "api_first_delta_ms": 1782,
+    "api_total_ms": 3105,
+    "api_response_started_ms": 19
+   },
+   "error": null
+  },
+  {
+   "id": "P3",
+   "kind": "writing natural dialogue",
+   "sent_at_utc": "2026-10-03T04:50:52+00:00",
+   "first_visible_s": 1.645,
+   "complete_s": 4.524,
+   "complete_wall_s": 4.524,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Scout: Afternoon, sir. Do you have a moment to chat about the north pasture?\n\nFarmer: I know what you're after, and the answer is no.\n\nScout: I understand your hesitation, but this production could really benefit from that old oak grove.\n\nFarmer: That grove has seen enough strangers passing through this week alone.\n\nScout: We would be careful with the livestock and ensure no gates are left unlatched.\n\nFarmer: It isn't the gates I'm worried about, it's the noise and the trampled earth.\n\nScout: We can schedule the filming entirely outside of your grazing hours.\n\nFarmer: Then you can schedule it somewhere else, because my land stays as it is.",
+   "answer_chars": 647,
+   "timing": {
+    "gateway_first_output_ms": 1573,
+    "gateway_latency_ms": 4445,
+    "api_first_delta_ms": 1640,
+    "api_total_ms": 4518,
+    "api_response_started_ms": 15
+   },
+   "error": null
+  },
+  {
+   "id": "P4",
+   "kind": "improving professional copy",
+   "sent_at_utc": "2026-10-03T04:50:59+00:00",
+   "first_visible_s": 1.744,
+   "complete_s": 2.541,
+   "complete_wall_s": 2.541,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "One of my own, my lord: \"We craft cinema through precise storytelling and technical discipline. Our work focuses on creating enduring narratives that command attention, supported by a team committed to the rigour of production.\"",
+   "answer_chars": 228,
+   "timing": {
+    "gateway_first_output_ms": 1664,
+    "gateway_latency_ms": 2455,
+    "api_first_delta_ms": 1739,
+    "api_total_ms": 2535,
+    "api_response_started_ms": 29
+   },
+   "error": null
+  },
+  {
+   "id": "P5",
+   "kind": "developing a short scene",
+   "sent_at_utc": "2026-10-03T04:51:05+00:00",
+   "first_visible_s": 1.686,
+   "complete_s": 7.261,
+   "complete_wall_s": 7.261,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "The orchard was a maze of silver and ink. Under the harsh glare of the production lights, the apple trees had appeared crisp, their fruit polished like garnets; now, swallowed by the sudden dark, they were merely jagged silhouettes pressing against a bruised sky.\n\nWhen the generator died, the silence that rushed in was heavier than the noise it replaced. For three heartbeats, the crew stood frozen, faces drained of color by the fading emergency lanterns. Then came the command. It was quiet, delivered with the casual authority of someone used to commanding shadows, but it stopped the frantic movement toward the power cables. The shoot would not pause. The lights would stay dark, and the camera would find its way through what remained.\n\nThe crew moved with a new, desperate carefulness. Handheld torches were positioned low to the ground, casting long, raking shadows that stretched between the gnarled trunks. The apples no longer glowed; they caught only dull glints of moonlight, looking like ancient, buried treasure. The air grew colder, tasting of damp earth and rotting fruit. Without the artificial heat, the frost began to bloom on the fallen leaves.\n\nBehind the lens, the focus pulled sharply, finding a single branch swaying in the wind. The frame was grainy, indistinct, and haunted. The shadows were no longer controlled\u2014they were alive, creeping across the grass with every breath of wind. It was worse than the planned footage, but it was true.",
+   "answer_chars": 1467,
+   "timing": {
+    "gateway_first_output_ms": 1614,
+    "gateway_latency_ms": 7182,
+    "api_first_delta_ms": 1682,
+    "api_total_ms": 7256,
+    "api_response_started_ms": 17
+   },
+   "error": null
+  },
+  {
+   "id": "P6",
+   "kind": "explaining something technical conversationally",
+   "sent_at_utc": "2026-10-03T04:51:15+00:00",
+   "first_visible_s": 1.645,
+   "complete_s": 7.014,
+   "complete_wall_s": 7.014,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Good evening, my lord.\n\nThe reason that shutter angle feels natural to our eyes is because it mimics how we perceive motion when we move our own gaze. When something moves quickly across our field of vision, our vision doesn't capture each instant with perfect, frozen clarity; instead, there is a slight, organic smear\u2014a streak that tells our brain exactly where the object has been during the moment of perception.\n\nBy setting the shutter to 180 degrees at 24 frames per second, you are ensuring that each frame contains exactly one eightieth of a second of exposure. That specific duration of blur matches the mathematical relationship between the frame rate and the persistence of vision. It creates just enough motion blur to bridge the gap between the still images, making the motion appear fluid rather than strobing.\n\nWhen you increase the frame rate to 60 frames per second while keeping that same 180-degree shutter angle, each individual frame now only exposes for one sixtieth of a second. Because the shutter is open for a much shorter duration, there is less time for any movement to occur during the exposure. The consequence is that the motion blur is significantly reduced. The movement will appear much sharper, crisper, and almost unnaturally clear\u2014what some might call 'staccato'\u2014because the 'smear' that our brains rely on to smooth motion has been stripped away.",
+   "answer_chars": 1384,
+   "timing": {
+    "gateway_first_output_ms": 1573,
+    "gateway_latency_ms": 6933,
+    "api_first_delta_ms": 1640,
+    "api_total_ms": 7008,
+    "api_response_started_ms": 15
+   },
+   "error": null
+  },
+  {
+   "id": "P7",
+   "kind": "an ordinary social exchange",
+   "sent_at_utc": "2026-10-03T04:51:25+00:00",
+   "first_visible_s": 1.65,
+   "complete_s": 2.127,
+   "complete_wall_s": 2.127,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Good evening, my lord. I am sorry to hear that. It sounds as though it has been a most exhausting day.",
+   "answer_chars": 102,
+   "timing": {
+    "gateway_first_output_ms": 1577,
+    "gateway_latency_ms": 2048,
+    "api_first_delta_ms": 1645,
+    "api_total_ms": 2122,
+    "api_response_started_ms": 16
+   },
+   "error": null
+  },
+  {
+   "id": "P8",
+   "kind": "a question whose adequate answer is short",
+   "sent_at_utc": "2026-10-03T04:51:30+00:00",
+   "first_visible_s": 1.634,
+   "complete_s": 2.298,
+   "complete_wall_s": 2.298,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "A two-hour screenplay is roughly one hundred and twenty pages, my lord. The standard rule of thumb is that one page of script equals approximately one minute of screen time.",
+   "answer_chars": 173,
+   "timing": {
+    "gateway_first_output_ms": 1562,
+    "gateway_latency_ms": 2220,
+    "api_first_delta_ms": 1630,
+    "api_total_ms": 2295,
+    "api_response_started_ms": 15
+   },
+   "error": null
+  }
+ ]
+}
