@@ -11,7 +11,7 @@ testing, integration and preparation for installation are authorised; installati
 under the same authorisation once the registered conditions pass **and** he confirms the
 writing meets his standard. Production is unchanged until then.
 
-**Status (3 October 2026, 00:05): STOPPED on a confirmed failure of registered condition T5 — the first typed request after Voice. Not integrated, not installed. Production unchanged (r10). The eight writing answers exist and are put to him as pairs; his judgement and the one decision in §7 are open.**
+**Status (3 October 2026, evening): RESUMED. T5 failed as registered and that result stands as history; he has since ACCEPTED the Voice → typing changeover as a one-time preparation delay (§8), so it no longer disqualifies the candidate by itself. The mapping and the eight timings are revealed (§8.2). Remaining evaluation in progress: critical cases, then ordinary and sustained timing. Not integrated, not installed; production r10.**
 
 ---
 
@@ -240,4 +240,47 @@ request. That leaves three courses, none taken here:
    his instruction that regular Gemma remains the Voice model would change), or regular
    Gemma for typing (the W1 comparison he set aside).
 3. **Stop here**: keep GPT-OSS for typing as it is.
+
+## 8. His ruling on T5, and the reveal — 3 October 2026
+
+### 8.1 The changeover is accepted as a one-time preparation delay
+
+His words: "I accept the measured 16.83–17.95-second changeover from Voice to the text
+model, provided that it is a one-time preparation delay and subsequent ordinary typed
+replies meet the speed requirements. … I do not require the model switch itself to be as
+fast as an ordinary reply. I require fast replies once the switch is complete. Do not
+incur that loading delay again on every message. … Preserve the original failed T5 result
+as historical evidence, but record that I have now accepted this transition cost. It no
+longer disqualifies StyleTune V2 by itself."
+
+So: **T5 as registered (≤ 4.18 s) FAILED at 16.83–17.95 s and is not rewritten.** In force
+from now, by his ruling and not by a change of mine: the changeover is a preparation
+delay that may happen once per change of model; it must be shown truthfully, a message
+submitted during it is preserved, it can be cancelled, and it is never submitted twice;
+**no load or cold prefill may recur on ordinary messages**; cold starts and idle reloads
+are reported separately so he knows when preparation happens again. The warm thresholds
+(T1–T3) and every quality requirement are unchanged. A confirmed disqualifying quality,
+ordinary-speed or resource failure stops the work at once.
+
+### 8.2 The mapping and the eight timings (revealed on his instruction)
+
+Read from the saved `pairs/mapping.json` by `present.py reveal` (mapping unchanged,
+verified against the text shown). Answers not regenerated. Timings are harness receipt on
+the loopback, not desktop display; both models were prepared with the typed prime before
+the first task.
+
+| task | shown as A | shown as B | StyleTune onset / complete | GPT-OSS onset / complete |
+|---|---|---|---|---|
+| P1 | StyleTune | GPT-OSS | 1.90 s / 4.31 s | 5.67 s / 7.38 s |
+| P2 | GPT-OSS | StyleTune | 1.79 s / 3.11 s | 6.30 s / 6.90 s |
+| P3 | StyleTune | GPT-OSS | 1.65 s / 4.52 s | 22.53 s / 24.78 s |
+| P4 | StyleTune | GPT-OSS | 1.74 s / 2.54 s | 16.04 s / 17.04 s |
+| P5 | StyleTune | GPT-OSS | 1.69 s / 7.26 s | 9.99 s / 14.61 s |
+| P6 | StyleTune | GPT-OSS | 1.65 s / 7.01 s | 21.69 s / 27.13 s |
+| P7 | GPT-OSS | StyleTune | 1.65 s / 2.13 s | 9.48 s / 17.11 s |
+| P8 | GPT-OSS | StyleTune | 1.63 s / 2.30 s | 6.96 s / 7.52 s |
+| median | | | **1.67 s / 3.71 s** | **9.73 s / 14.86 s** |
+
+Every StyleTune onset in the eight is under the 2.33 s median line and the 4.18 s ceiling
+(T1/T2 at the service level; the desktop measurement is still to come).
 

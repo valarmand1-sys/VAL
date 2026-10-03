@@ -1,0 +1,52 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_layer_0_schema, Layer 0 schema — the seven tables of 04-layer-0.md §2.
+INFO  [alembic.runtime.migration] Running upgrade 0001_layer_0_schema -> 0002_reaction_and_ideas, Reaction is not intent, and the idea lifecycle — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0002_reaction_and_ideas -> 0003_budget_reservations, Pre-call budget reservations, and truthful cost — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0003_budget_reservations -> 0004_supersede_zero_costs, Supersede the fabricated zero costs without touching them — §2.2 amendment.
+INFO  [alembic.runtime.migration] Running upgrade 0004_supersede_zero_costs -> 0005_persona_provenance, Persona provenance and per-call attribution — WP-0.5.
+INFO  [alembic.runtime.migration] Running upgrade 0005_persona_provenance -> 0006_project_attribution, What a stored project_id means — §2.2 amendment, WP-0.6 corrective round.
+INFO  [alembic.runtime.migration] Running upgrade 0006_project_attribution -> 0007_legacy_attribution_closed, Close the legacy-attribution set for good — WP-0.6 corrective round two.
+INFO  [alembic.runtime.migration] Running upgrade 0007_legacy_attribution_closed -> 0008_conversation_scope_recall, Conversation scope is history; recall is project-scoped — WP-0.7.
+INFO  [alembic.runtime.migration] Running upgrade 0008_conversation_scope_recall -> 0009_evidence_is_immutable, Evidence rows cannot be edited — current-version closure pass, 18 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0009_evidence_is_immutable -> 0010_terminal_state_is_evidence, The provider's terminal state is durable evidence — independent-review correction.
+INFO  [alembic.runtime.migration] Running upgrade 0010_terminal_state_is_evidence -> 0011_blind_position_evidence, The blind position is durable evidence — WP-0.9, ruling of 19 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0011_blind_position_evidence -> 0012_archive_is_presentation, `archived_at`, and the demonstration fixtures marked — 31 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0012_archive_is_presentation -> 0013_classification_evidence, A turn's classification is durable evidence — ruling of 3 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0013_classification_evidence -> 0014_classification_review, Hand-labelling of classifications — ruling of 7 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0014_classification_review -> 0015_model_call_cache_usage, Prompt-cache evidence per call — ruling of 8 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0015_model_call_cache_usage -> 0016_message_revisions, Message revision and retraction as appended facts — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0016_message_revisions -> 0017_conversation_removals, Conversation Remove and Reinstate as appended facts — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0017_conversation_removals -> 0018_scope_transitions, Explicit scope transitions with immutable history — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0018_scope_transitions -> 0019_answer_recall_sources, House Recall grounding continuity as provenance — ruling of 13 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0019_answer_recall_sources -> 0020_exchange_measurements, Exchange identity on reservations, and per-call measurement — ruling of 13 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0020_exchange_measurements -> 0021_prompt_cache_diagnostics, Prompt-cache diagnostics on the measurement sidecar — ruling of 15 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0021_prompt_cache_diagnostics -> 0022_runtime_provenance, Runtime provenance on the measurement sidecar — ruling of 16 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0022_runtime_provenance -> 0023_second_local_provider, The known-$0 clause names the second unmetered LOCAL provider — ruling of 18 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0023_second_local_provider -> 0024_attachment_substrate, Attachment Substrate v1.2 — the six append-only tables. Owner ruling, 19 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0024_attachment_substrate -> 0025_local_visual_perception, Local visual perception: the record of what Val looked at, and what she saw.
+INFO  [alembic.runtime.migration] Running upgrade 0025_local_visual_perception -> 0026_local_audio_perception, Audio joins the perception record — owner execution order, 22 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0026_local_audio_perception -> 0027_local_speech, Val's voice, on the record — owner execution order, 22 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0027_local_speech -> 0028_voice_input, Val listens, and the record stays text — owner execution order, 23 Sept 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0028_voice_input -> 0029_speech_delivery, What the owner actually heard — owner execution order, 23 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0029_speech_delivery -> 0030_voice_local_only, The live-voice seal — owner execution order, 24 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0030_voice_local_only -> 0031_prefix_prime, A prefix prime is a model call, and the record says so — owner order, 25 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0031_prefix_prime -> 0032_light_conversation, Light conversation, and its speculative preparation, are on the record — 26 Sept 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0032_light_conversation -> 0033_message_version_selections, Continuing from an earlier version of a message — owner order, 2 October 2026 (§C).
+WARNI [val_gateway.startup] CANDIDATE Voice model for this process: spoken turns are pinned to gemma-4-26b-a4b-q4km-llamacpp-voice (gemma-4-26b-a4b-it); typed and complex work stays on the Partner route. Not an admission; the registry on disk is unchanged.
+WARNI [val_gateway.startup] hosted provider anthropic: no adapter built (owner rule, 2 October 2026: AI processing runs on this Mac); its routes are unreachable and its key, if configured, serves nothing here
+WARNI [val_gateway.startup] hosted provider openai: no adapter built (owner rule, 2 October 2026: AI processing runs on this Mac); its routes are unreachable and its key, if configured, serves nothing here
+WARNI [val_gateway.startup] CANDIDATE Voice turn prefill for this process: a spoken turn's request, without his words, is prepared in the local Voice runtime when he begins to speak.
+WARNI [val_gateway.startup] CANDIDATE conversational guidance for this process: Core's guidance on how an answer is scoped follows the persona in every conversation's system message (3363 characters; the persona is unchanged and still whole).
+WARNI [val_gateway.startup] CANDIDATE spoken formatting for this process: recognised Markdown formatting is not voiced; every word is, and the written text is unchanged.
+WARNI [val_gateway.startup] CANDIDATE spoken numerals for this process: unambiguous Roman numerals are voiced as numbers; the written text is unchanged.
+WARNI [val_gateway.startup] CANDIDATE Voice releases the Partner model for this process: Voice On unloads it while the Voice model is resident; Voice ending loads it again.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "C6-nonexistent-work", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6770, "tokens_out": 16, "call_to_first_visible_s": 1.877, "call_to_first_segment_s": null, "call_total_s": 2.172, "server_prompt_eval_s": 1.567, "server_prompt_tokens_evaluated": 948, "server_generated_tokens": 16, "server_tokens_per_second": 52.25, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.26}
+   ANSWER: I do not have that in the record I can see, my lord.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "C6-nonexistent-work", "sample": 2, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6770, "tokens_out": 16, "call_to_first_visible_s": 1.637, "call_to_first_segment_s": null, "call_total_s": 1.929, "server_prompt_eval_s": 1.571, "server_prompt_tokens_evaluated": 948, "server_generated_tokens": 16, "server_tokens_per_second": 52.4, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.26}
+   ANSWER: I do not have that in the record I can see, my lord.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "C6-nonexistent-work", "sample": 3, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6770, "tokens_out": 26, "call_to_first_visible_s": 1.63, "call_to_first_segment_s": 1.914, "call_total_s": 2.11, "server_prompt_eval_s": 1.565, "server_prompt_tokens_evaluated": 948, "server_generated_tokens": 26, "server_tokens_per_second": 52.92, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.26}
+   ANSWER: I do not have that in the record I can see, my lord. I have no contract from a distributor before me.
