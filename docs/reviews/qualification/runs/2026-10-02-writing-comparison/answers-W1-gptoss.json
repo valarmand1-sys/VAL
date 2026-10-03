@@ -1,0 +1,182 @@
+{
+ "model": "gptoss",
+ "label": "W1-gptoss",
+ "order": "forward",
+ "prime": {
+  "at": 1790996959.689,
+  "primed": true,
+  "outcome": "established",
+  "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+  "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0",
+  "boundary_tokens": 5790,
+  "boundary_sha256": "a52ae96b6cd6cabbb41bcea35283e7021009bba0e9cc02788a2399d234ae6e24",
+  "prime_tokens": 5801,
+  "model_call_id": "01a0ffbc-d1c1-732d-b754-cdc0bd45d02f",
+  "seconds": 7.639
+ },
+ "routes_seen": [
+  "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+ ],
+ "rows": [
+  {
+   "id": "P1",
+   "kind": "editing a passage of prose while preserving the owner's voice",
+   "sent_at_utc": "2026-10-03T03:09:20+00:00",
+   "first_visible_s": 5.665,
+   "complete_s": 7.376,
+   "complete_wall_s": 7.376,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "The orchard sat at the bottom of the valley where fog came in first and left last, so by the time we had the camera up on the rise the light was already different from what we'd scouted a week earlier, and nobody wanted to be the one to point it out. Marcus kept checking his meter like it owed him money. I had wanted this shot since the first time I walked those rows in March, when the trees were bare, and I wasn\u2019t going to let a little weather talk me out of it\u2014though, to be fair, the weather was not small.",
+   "answer_chars": 513,
+   "timing": {
+    "gateway_first_output_ms": 5524,
+    "gateway_latency_ms": 7225,
+    "api_first_delta_ms": 5654,
+    "api_total_ms": 7365,
+    "api_response_started_ms": 56
+   },
+   "error": null
+  },
+  {
+   "id": "P2",
+   "kind": "rewriting a weak paragraph",
+   "sent_at_utc": "2026-10-03T03:09:30+00:00",
+   "first_visible_s": 6.298,
+   "complete_s": 6.898,
+   "complete_wall_s": 6.898,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "The film industry has changed markedly in recent years. Technological advances, shifting audience tastes, and the rise of streaming platforms have all reshaped production, distribution, and viewing. Together these forces make contemporary filmmaking distinct from its past.",
+   "answer_chars": 273,
+   "timing": {
+    "gateway_first_output_ms": 6218,
+    "gateway_latency_ms": 6809,
+    "api_first_delta_ms": 6292,
+    "api_total_ms": 6891,
+    "api_response_started_ms": 16
+   },
+   "error": null
+  },
+  {
+   "id": "P3",
+   "kind": "writing natural dialogue",
+   "sent_at_utc": "2026-10-03T03:09:40+00:00",
+   "first_visible_s": 22.531,
+   "complete_s": 24.779,
+   "complete_wall_s": 24.779,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Location Scout: Good evening, sir. I\u2019m from the production company\u2014  \nElderly Farmer: Aye, go on.  \nLocation Scout: We're looking for a rustic farm setting for our new film, and your land seems perfect.  \nElderly Farmer: I\u2019ve heard plenty of those. They come, film and fuss.  \nLocation Scout: We promise minimal disruption; we\u2019ll set up early, keep noise low.  \nElderly Farmer: I\u2019m not sure. My fields need tending, and the crew will disturb my animals.  \nLocation Scout: We can schedule around harvest time, and we\u2019ll compensate for any inconvenience.  \nElderly Farmer: Compensation is good, but I still worry about the noise.",
+   "answer_chars": 627,
+   "timing": {
+    "gateway_first_output_ms": 22444,
+    "gateway_latency_ms": 24685,
+    "api_first_delta_ms": 22524,
+    "api_total_ms": 24772,
+    "api_response_started_ms": 16
+   },
+   "error": null
+  },
+  {
+   "id": "P4",
+   "kind": "improving professional copy",
+   "sent_at_utc": "2026-10-03T03:10:08+00:00",
+   "first_visible_s": 16.04,
+   "complete_s": 17.044,
+   "complete_wall_s": 17.044,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Our studio specializes in producing high\u2011quality content that engages audiences across film, television and digital platforms. We combine state\u2011of\u2011the\u2011art technology with a seasoned creative team to craft narratives that resonate and endure. Our focus is on delivering productions of the highest artistic and technical standards, ensuring each project meets the expectations of its intended audience.",
+   "answer_chars": 400,
+   "timing": {
+    "gateway_first_output_ms": 15947,
+    "gateway_latency_ms": 16943,
+    "api_first_delta_ms": 16035,
+    "api_total_ms": 17038,
+    "api_response_started_ms": 22
+   },
+   "error": null
+  },
+  {
+   "id": "P5",
+   "kind": "developing a short scene",
+   "sent_at_utc": "2026-10-03T03:10:28+00:00",
+   "first_visible_s": 9.986,
+   "complete_s": 14.605,
+   "complete_wall_s": 14.605,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "The orchard lay silent under a quilt of stars, the apple trees standing like quiet sentinels. A thin mist curled around their trunks, catching the faint glow of the film lights that had been set up for a night shoot. The generator, humming once with steady rhythm, sputtered and died in a sudden, hollow silence.\n\nA hush fell over the crew. The director\u2014his face still lit by the low light of a portable lantern\u2014stood, eyes flicking between the darkened generator and the trembling strings of the camera\u2019s tripod. He lifted a hand, then a whisper rose from his lips: \u201cWe\u2019ll keep going.\u201d\n\nThe crew exchanged glances that spoke of uncertainty, but the director\u2019s calm voice steadied them. \u201cUse what we have,\u201d he said simply, pointing to the single headlamp that hovered over the set. \u201cIt\u2019s dim, but it will show us the way.\u201d\n\nThe camera\u2019s operator, eyes narrowed against the cold night, adjusted the focus. The director turned to the actors, who had paused in their positions, breathing shallowly under the orchard\u2019s cool air. \u201cMove slowly,\u201d he instructed, his tone unhurried yet decisive.\n\nThe lantern\u2019s light pooled over the rows of apple trees, casting long shadows that danced with each slight shift. The director\u2019s decision to press on in the faint glow was a quiet testament to perseverance, and as the crew resumed their work, the orchard seemed to accept the dimmer illumination with a patient grace.",
+   "answer_chars": 1406,
+   "timing": {
+    "gateway_first_output_ms": 9900,
+    "gateway_latency_ms": 14513,
+    "api_first_delta_ms": 9980,
+    "api_total_ms": 14600,
+    "api_response_started_ms": 18
+   },
+   "error": null
+  },
+  {
+   "id": "P6",
+   "kind": "explaining something technical conversationally",
+   "sent_at_utc": "2026-10-03T03:10:45+00:00",
+   "first_visible_s": 21.686,
+   "complete_s": 27.129,
+   "complete_wall_s": 27.128,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "My lord, the 180\u2011degree shutter at 24\u202ffps is a long\u2011standing compromise between camera mechanics and how we see motion.  \nA 180\u00b0 shutter means the film or sensor is exposed for exactly half a frame period. At 24\u202ffps that exposure time is  \n\n\\[\n\\frac{1}{24}\\text{\u202fs} \\times \\tfrac{180^\\circ}{360^\\circ}= \\tfrac{1}{48}\\text{\u202fs} \\approx 0.0208\\text{s}.\n\\]\n\nThe human eye integrates light over roughly 1/60\u202fs, so an exposure of about 0.02\u202fs sits close to that integration window. The resulting motion blur looks natural because it matches what our visual system expects.\n\nWhen you double the frame rate to 60\u202ffps and keep the shutter angle at 180\u00b0, the exposure time halves:\n\n\\[\n\\tfrac{1}{60}\\text{s} \\times \\tfrac{180^\\circ}{360^\\circ}= \\tfrac{1}{120}\\text{s} \\approx 0.0083\\text{s}.\n\\]\n\nNow the blur is only about a third of what it was at 24\u202ffps, making motion appear crisper or even stroboscopic. To preserve the same \u201cnatural\u201d blur at 60\u202ffps you would need a slower shutter\u2014either a larger shutter angle (e.g., 270\u00b0 or more) or an exposure time closer to 1/48\u202fs (about 1/30\u202ffps equivalent). In practice, many cinematographers either accept the sharper look at 60\u202ffps or deliberately set a slower shutter to maintain that classic motion blur.",
+   "answer_chars": 1242,
+   "timing": {
+    "gateway_first_output_ms": 16033,
+    "gateway_latency_ms": 21458,
+    "api_first_delta_ms": 21682,
+    "api_total_ms": 27124,
+    "api_response_started_ms": 30
+   },
+   "error": null
+  },
+  {
+   "id": "P7",
+   "kind": "an ordinary social exchange",
+   "sent_at_utc": "2026-10-03T03:11:15+00:00",
+   "first_visible_s": 9.476,
+   "complete_s": 17.113,
+   "complete_wall_s": 17.113,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Good evening, my lord.  \nThe generator failing twice in a short span usually points to one of three causes: a fuel\u2011related fault, an electrical or mechanical component wear, or a control\u2011system glitch. Without a volume to cite, I draw on the standard practices that have served House Armand for generations.\n\n1. **Fuel and supply**  \n   * Check the fuel level; if it is low, a sudden drop can cause hard starts.  \n   * Inspect the fuel filter for clogging; replace it if you see any obstruction or sediment.  \n   * Verify that the fuel lines are free of leaks and kinked; a vacuum in the line can lead to intermittent operation.\n\n2. **Engine condition**  \n   * Inspect oil and coolant levels; low fluid can cause the engine to stall when it heats up.  \n   * Look at spark plugs and ignition coils; worn electrodes can lead to misfiring, especially under load.  \n   * If the generator has a mechanical governor or throttle plate, ensure it is clean and moving freely.\n\n3. **Electrical and control systems**  \n   * Examine the circuit breaker or protection relay; a tripped breaker will prevent the generator from starting.  \n   * Verify that the alternator output is within spec; a sagging voltage can trigger protective shutdowns.  \n   * If the generator has an on\u2011board computer, check for fault codes\u2014these often point to a specific component.\n\n4. **Operational context**  \n   * If the lot\u2019s power demand has increased since you last ran the generator, the load may exceed its rated capacity.  \n   * Consider whether a battery backup or inverter was used during the outage; intermittent switching between sources can stress the generator.\n\n**Next steps for you:**  \n- Run a full diagnostic check of the fuel system, oil and coolant levels, and spark plugs.  \n- Inspect the alternator output with a multimeter; note any voltage drops when you attempt to start it.  \n- If all mechanical and fuel checks are clear, review the control panel for any fault indications.\n\nIf after these steps the generator still fails, it may be time to consult a specialist or replace worn components. I have no book on generators in the house\u2019s library, but this outline reflects what has proven reliable in our experience. Let me know if you need further detail or assistance arranging a maintenance check.",
+   "answer_chars": 2288,
+   "timing": {
+    "gateway_first_output_ms": 9384,
+    "gateway_latency_ms": 17004,
+    "api_first_delta_ms": 9469,
+    "api_total_ms": 17105,
+    "api_response_started_ms": 18
+   },
+   "error": null
+  },
+  {
+   "id": "P8",
+   "kind": "a question whose adequate answer is short",
+   "sent_at_utc": "2026-10-03T03:11:36+00:00",
+   "first_visible_s": 6.961,
+   "complete_s": 7.519,
+   "complete_wall_s": 7.519,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "About\u202f120 pages. A common rule of thumb in the industry is that one page of a shooting script corresponds to roughly one minute of screen time, so two hours\u2014\u2248120 minutes\u2014translate into a script around that length.",
+   "answer_chars": 213,
+   "timing": {
+    "gateway_first_output_ms": 6862,
+    "gateway_latency_ms": 7408,
+    "api_first_delta_ms": 6956,
+    "api_total_ms": 7512,
+    "api_response_started_ms": 23
+   },
+   "error": null
+  }
+ ]
+}

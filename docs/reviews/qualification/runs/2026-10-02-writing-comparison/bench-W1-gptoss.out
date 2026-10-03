@@ -1,6 +1,3 @@
-=== W1-gptoss model=gptoss order=forward 22:09:00 commit 2b04803 dirty=0
-GPT-OSS cold load 6.8 s
-service up after 2.1 s
 {"prime": {"at": 1790996959.689, "primed": true, "outcome": "established", "slug": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner", "engine": "mlx-llm-mac-arm64-apple-metal-advsimd@1.11.0", "boundary_tokens": 5790, "boundary_sha256": "a52ae96b6cd6cabbb41bcea35283e7021009bba0e9cc02788a2399d234ae6e24", "prime_tokens": 5801, "model_call_id": "01a0ffbc-d1c1-732d-b754-cdc0bd45d02f", "seconds": 7.639}}
 {"id": "P1", "kind": "editing a passage of prose while preserving the owner's voice", "sent_at_utc": "2026-10-03T03:09:20+00:00", "first_visible_s": 5.665, "complete_s": 7.376, "complete_wall_s": 7.376, "sleep_suspected": false, "outcome": "answered", "answer_chars": 513, "timing": {"gateway_first_output_ms": 5524, "gateway_latency_ms": 7225, "api_first_delta_ms": 5654, "api_total_ms": 7365, "api_response_started_ms": 56}, "error": null}
 {"id": "P2", "kind": "rewriting a weak paragraph", "sent_at_utc": "2026-10-03T03:09:30+00:00", "first_visible_s": 6.298, "complete_s": 6.898, "complete_wall_s": 6.898, "sleep_suspected": false, "outcome": "answered", "answer_chars": 273, "timing": {"gateway_first_output_ms": 6218, "gateway_latency_ms": 6809, "api_first_delta_ms": 6292, "api_total_ms": 6891, "api_response_started_ms": 16}, "error": null}
@@ -11,6 +8,3 @@ service up after 2.1 s
 {"id": "P7", "kind": "an ordinary social exchange", "sent_at_utc": "2026-10-03T03:11:15+00:00", "first_visible_s": 9.476, "complete_s": 17.113, "complete_wall_s": 17.113, "sleep_suspected": false, "outcome": "answered", "answer_chars": 2288, "timing": {"gateway_first_output_ms": 9384, "gateway_latency_ms": 17004, "api_first_delta_ms": 9469, "api_total_ms": 17105, "api_response_started_ms": 18}, "error": null}
 {"id": "P8", "kind": "a question whose adequate answer is short", "sent_at_utc": "2026-10-03T03:11:36+00:00", "first_visible_s": 6.961, "complete_s": 7.519, "complete_wall_s": 7.519, "sleep_suspected": false, "outcome": "answered", "answer_chars": 213, "timing": {"gateway_first_output_ms": 6862, "gateway_latency_ms": 7408, "api_first_delta_ms": 6956, "api_total_ms": 7512, "api_response_started_ms": 23}, "error": null}
 {"routes_seen": ["gpt-oss-20b-mxfp4-mlx-lmstudio-partner"]}
-DONE W1-gptoss 22:11:50
-=== W1-gemma model=gemma order=reverse 22:11:50 commit e3ae99a dirty=0
-a llama-server is running: not starting

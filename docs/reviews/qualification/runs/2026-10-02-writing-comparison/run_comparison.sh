@@ -23,10 +23,12 @@ export VAL_CONVERSATION_GUIDANCE=on VAL_SPOKEN_NUMERALS=on VAL_SPOKEN_FORMATTING
 unset VAL_VOICE_MODEL VAL_VOICE_RELEASES_PARTNER VAL_VOICE_EARLY_AUDIO VAL_FAST_ROUTE_TIERS VAL_TIER1_ROUTE VAL_SPECULATION VAL_ADAPTIVE_GRACE VAL_REQUEST_CONSTRUCTION
 echo "=== $LABEL model=$MODEL order=$ORDER $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps | wc -l | tr -d ' ')"
 $LMS unload $EXP > /dev/null 2>&1
-pkill -f "llama-server.*--port 8099" 2>/dev/null; sleep 2
+# A listener on 8099 is a Voice runtime (this harness's or production's); `pgrep -f` was
+# a false guard — it matched the shell running the check (W1-gemma refused on it).
+for pid in $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null); do kill $pid; done; sleep 3
 RESIDENT=$($LMS ps 2>/dev/null | grep -cE "gpt-oss|gemma|LOADED|IDLE")
 [[ $RESIDENT == 0 ]] || { echo "a model is resident in LM Studio (production in use?): not starting"; $LMS ps; exit 2; }
-pgrep -f "llama-server" > /dev/null && { echo "a llama-server is running: not starting"; exit 2; }
+[[ -z $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null) ]] || { echo "a Voice runtime still listens on 8099: not starting"; exit 2; }
 ( while true; do printf "%s\t%s\t%s\n" "$(date +%s)" "$(memory_pressure | awk '/free percentage/ {gsub("%",""); print $NF}')" "$(sysctl -n vm.swapusage | awk '{gsub("M","",$6); print $6}')"; sleep 5; done ) > $O/memory-$LABEL.tsv &
 MEMORY=$!
 COLD_LOAD=none
@@ -44,7 +46,7 @@ curl -fsS http://127.0.0.1:8766/health >/dev/null || { echo "service did not sta
 echo "service up after $(python3 -c "import time; print(round(time.time()-$T_START,1))") s"
 caffeinate -i uv run --project $ROOT python $O/compare_bench.py $MODEL $LABEL $ORDER $O/answers-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out
 kill $SERVICE 2>/dev/null; sleep 3
-pkill -f "llama-server.*--port 8099" 2>/dev/null
+for pid in $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null); do kill $pid; done
 $LMS unload $EXP > /dev/null 2>&1
 kill $MEMORY 2>/dev/null
 grep -E "typed prime|local runtime ready|unmetered local route" $O/service-$LABEL.log | cut -c1-240 > $O/routes-$LABEL.log
