@@ -53,7 +53,7 @@ from val_domain.gateway import Admission, CapabilityProfile  # noqa: E402
 from val_gateway.persona import seed  # noqa: E402
 
 COMPARE = os.environ["VAL_COMPARE"]
-assert COMPARE in ("gptoss", "gemma"), COMPARE
+assert COMPARE in ("gptoss", "gemma", "styletune"), COMPARE
 GEMMA = "gemma-4-26b-a4b-q4km-llamacpp-voice"
 
 PRODUCTION_IDENTIFIER = "openai/gpt-oss-20b"
@@ -101,6 +101,61 @@ if COMPARE == "gemma":
         and c.provider in ("lmstudio", "llamacpp")
     ]
     assert partners == [GEMMA], partners
+
+if COMPARE == "styletune":
+    # Owner order, 2 October 2026 (23:18): Gemma 4 26B-A4B StyleTune V2 as the typed route,
+    # in this process only. The entry is the Voice model's with the identifier and artifact
+    # changed — same runtime, flags, thinking switch and sampling — and the launch
+    # specification names the pinned file (`2026-10-02-styletune/STYLETUNE.md` §1).
+    import uuid
+
+    import val_providers.llamacpp_runtime as _llamacpp_runtime
+
+    STYLETUNE = "gemma-4-26b-a4b-styletune-v2"
+    base = registry.by_slug(GEMMA)
+    assert base is not None, GEMMA
+    typed = base.model_copy(
+        update={
+            "id": uuid.uuid5(base.id, "styletune-v2-typed-2026-10-02"),
+            "slug": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed-experiment",
+            "model_identifier": STYLETUNE,
+            "display_name": "Gemma 4 26B-A4B StyleTune V2 (Q4_K_M GGUF, llama.cpp, thinking off — "
+            "typed candidate, this process only)",
+            "admission": Admission.PROVISIONALLY_ADMITTED,
+            "capability_profiles": frozenset({CapabilityProfile.PARTNER}),
+            "qualification_targets": frozenset(),
+            "known_weaknesses": (),
+        }
+    )
+    registry.REGISTRY = (
+        *(
+            config.model_copy(
+                update={
+                    "capability_profiles": config.capability_profiles - {CapabilityProfile.PARTNER}
+                }
+            )
+            if config.provider == "lmstudio"
+            and CapabilityProfile.PARTNER in config.capability_profiles
+            else config
+            for config in registry.REGISTRY
+        ),
+        typed,
+    )
+    _llamacpp_runtime.LAUNCH_SPECS = {
+        **_llamacpp_runtime.LAUNCH_SPECS,
+        STYLETUNE: _llamacpp_runtime.LaunchSpec(
+            file="Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+            sha256="73742ed0dfd5f77db687964a3b7b178c424e1bd89f0a4d47e77b8ed87af2ec50",
+            flags=("--chat-template-kwargs", '{"enable_thinking":false}'),
+        ),
+    }
+    partners = [
+        config.slug
+        for config in registry.active()
+        if CapabilityProfile.PARTNER in config.capability_profiles
+        and config.provider in ("lmstudio", "llamacpp")
+    ]
+    assert partners == [typed.slug], partners
 
 EXPERIMENT_KEY = os.environ.get("VAL_EXPERIMENT_MODEL_KEY")
 if EXPERIMENT_KEY and COMPARE == "gptoss":

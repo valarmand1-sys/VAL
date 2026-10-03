@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Blind writing comparison, one model at a time — 2 October 2026 (owner authorisation).
-#   run_comparison.sh gptoss|gemma LABEL forward|reverse
+#   run_comparison.sh gptoss|gemma|styletune LABEL forward|reverse
 # One model resident at a time: the other's instance or server is stopped first, and the
 # run refuses to start if any model is resident in LM Studio (production's instance would
 # mean he is using Val). GPT-OSS is loaded here as the second instance `val-exp-prod`
@@ -23,12 +23,20 @@ export VAL_CONVERSATION_GUIDANCE=on VAL_SPOKEN_NUMERALS=on VAL_SPOKEN_FORMATTING
 unset VAL_VOICE_MODEL VAL_VOICE_RELEASES_PARTNER VAL_VOICE_EARLY_AUDIO VAL_FAST_ROUTE_TIERS VAL_TIER1_ROUTE VAL_SPECULATION VAL_ADAPTIVE_GRACE VAL_REQUEST_CONSTRUCTION
 echo "=== $LABEL model=$MODEL order=$ORDER $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps | wc -l | tr -d ' ')"
 $LMS unload $EXP > /dev/null 2>&1
-# A listener on 8099 is a Voice runtime (this harness's or production's); `pgrep -f` was
-# a false guard — it matched the shell running the check (W1-gemma refused on it).
-for pid in $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null); do kill $pid; done; sleep 3
+# Corrected 2 October 2026 (owner order §7): a listener on 8099 at the start belongs to
+# production Voice or another run. The harness REFUSES; it never stops a process it did
+# not start. (`pgrep -f` was a false guard — it matched the shell running the check.)
 RESIDENT=$($LMS ps 2>/dev/null | grep -cE "gpt-oss|gemma|LOADED|IDLE")
 [[ $RESIDENT == 0 ]] || { echo "a model is resident in LM Studio (production in use?): not starting"; $LMS ps; exit 2; }
-[[ -z $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null) ]] || { echo "a Voice runtime still listens on 8099: not starting"; exit 2; }
+[[ -z $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null) ]] || { echo "port 8099 has a listener this run did not start (production Voice?): not starting"; exit 2; }
+owned_by_service() {  # is PID $1 a descendant of the service this run started?
+  local p=$1 n=0
+  while [[ -n $p && $p != 1 && $n -lt 8 ]]; do
+    [[ $p == $SERVICE ]] && return 0
+    p=$(ps -o ppid= -p $p 2>/dev/null | tr -d ' '); n=$((n+1))
+  done
+  return 1
+}
 ( while true; do printf "%s\t%s\t%s\n" "$(date +%s)" "$(memory_pressure | awk '/free percentage/ {gsub("%",""); print $NF}')" "$(sysctl -n vm.swapusage | awk '{gsub("M","",$6); print $6}')"; sleep 5; done ) > $O/memory-$LABEL.tsv &
 MEMORY=$!
 COLD_LOAD=none
@@ -45,8 +53,10 @@ for i in $(seq 1 360); do curl -fsS http://127.0.0.1:8766/health >/dev/null 2>&1
 curl -fsS http://127.0.0.1:8766/health >/dev/null || { echo "service did not start"; kill $SERVICE $MEMORY; exit 1; }
 echo "service up after $(python3 -c "import time; print(round(time.time()-$T_START,1))") s"
 caffeinate -i uv run --project $ROOT python $O/compare_bench.py $MODEL $LABEL $ORDER $O/answers-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out
+OURS=""
+for pid in $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null); do owned_by_service $pid && OURS="$OURS $pid"; done
 kill $SERVICE 2>/dev/null; sleep 3
-for pid in $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null); do kill $pid; done
+for pid in ${=OURS}; do kill $pid 2>/dev/null; done   # only the server this run's service started
 $LMS unload $EXP > /dev/null 2>&1
 kill $MEMORY 2>/dev/null
 grep -E "typed prime|local runtime ready|unmetered local route" $O/service-$LABEL.log | cut -c1-240 > $O/routes-$LABEL.log

@@ -21,6 +21,10 @@ from pathlib import Path
 def main() -> int:
     first, second, blind_out, mapping_out = (Path(p) for p in sys.argv[1:5])
     reveal_out = Path(sys.argv[5]) if len(sys.argv) > 5 else None
+    if mapping_out.exists():
+        # Corrected 2 October 2026: a saved mapping is never redrawn or overwritten; the
+        # reveal for pairs already shown is made by `present.py reveal` from that file.
+        raise SystemExit(f"{mapping_out} exists: use present.py reveal; nothing was changed")
     runs = [json.loads(first.read_text()), json.loads(second.read_text())]
     by_id = [{row["id"]: row for row in run["rows"]} for run in runs]
     prompts = json.loads((Path(__file__).resolve().parent / "prompts.json").read_text())["prompts"]

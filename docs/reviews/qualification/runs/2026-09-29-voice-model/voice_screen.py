@@ -106,6 +106,17 @@ CANDIDATES = {
         "extra": {"presence_penalty": 1.5},
     },
 }
+# 2 October 2026 (owner order): the typed-conversation candidate. Same runtime, flags and
+# sampling as the Voice model; run with `--mode typed` (the proposed role).
+CANDIDATES["styletune"] = {
+    "file": "Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+    "sha256": "73742ed0dfd5f77db687964a3b7b178c424e1bd89f0a4d47e77b8ed87af2ec50",
+    "alias": "val-typed-styletune-v2",
+    "slug": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed-experiment",
+    "display": "Gemma 4 26B-A4B StyleTune V2 (Q4_K_M GGUF, llama.cpp, thinking off — typed candidate, this process only)",
+    "config": {"temperature": 1.0, "top_p": 0.95, "top_k": 64, "thinking_enabled": False},
+    "extra": {},
+}
 # A dry run of the harness itself, on a file already on disk. Not a candidate.
 CANDIDATES["harness-check"] = {
     "file": "../llamacpp-exp/gpt-oss-20b-MXFP4.gguf",
@@ -237,6 +248,17 @@ flags = [
     "--chat-template-kwargs",
     '{"reasoning_effort":"medium"}' if CHOSEN.get("reasons") else '{"enable_thinking":false}',
 ]
+# 2 October 2026: the port is production Voice's too. A listener means production (or
+# another run) owns it: refuse, never stop someone else's server.
+import socket as _socket  # noqa: E402
+
+with _socket.socket() as _probe:
+    _probe.settimeout(0.5)
+    if _probe.connect_ex(("127.0.0.1", PORT)) == 0:
+        keyfile.unlink(missing_ok=True)
+        sys.exit(
+            f"port {PORT} already has a listener (production Voice or another run): not starting"
+        )
 swap_start, free_start = swap_mb(), free_percent()
 loaded_at = time.monotonic()
 server = subprocess.Popen(flags, stdout=open(LOG, "w"), stderr=subprocess.STDOUT)
@@ -650,7 +672,7 @@ for label, history, words in CASES:
         called_at = time.monotonic()
         # In the conversation stage the turn is spoken with Voice on, as in the room: the
         # record state then says so (external_egress reasons include voice_session_active).
-        typed = STAGE == "fresh" and label in TYPED
+        typed = OPTIONS.get("--mode") == "typed" or (STAGE == "fresh" and label in TYPED)
         live = (
             {"live_voice": LiveVoiceConversations([conversation])}
             if STAGE == "conversation" or (STAGE == "fresh" and not typed)
