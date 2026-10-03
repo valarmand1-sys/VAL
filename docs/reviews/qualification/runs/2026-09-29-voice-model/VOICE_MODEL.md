@@ -1964,3 +1964,19 @@ Conversational acceptance and Voice as a whole are **not** declared complete.
   its question, then Reinstate; the cost line; and the two-part typed question through
   the installed route. Optionally the scripted overlap: let her speak a long answer for
   a few seconds, ask something else *after* a newer answer exists, and talk over her.
+
+### 16.9 His focused check of r9 (received 2 October, evening), reconciled with the records
+
+| # | His result | Records (service log and store, 15:34–15:46 CDT) |
+|---|---|---|
+| 1 | readiness ~25.03 s | two sessions opened; warm + prime as before |
+| 2 | typed notice during Voice: PASS, text kept; "looks cramped" | one `POST /turns/stream` 409 during the session. **Recorded for later design work:** the notice's layout. |
+| 3 | draft sent after Voice off: PASS; reply ~16.52 s | "What does a producer do?" sent 15:39:30, answered 15:39:48 (first text 15.5 s, GPT-OSS local); a second typed conversation at 15:45 took 11.3 s. The delay is the full-prompt prefill of §16.4; r9 did not include the typed-cache change. |
+| 4 | scrolling: PASS | — |
+| 5 | editing: save and cancel worked; **the edited message was not answered** | by design at r9 (the 12 September "no regeneration" rule) — now superseded: see `VAL_Message_Versions_Record.md`. |
+| 6 | conversation Remove/Archive/Reinstate: worked | `remove`, `archive`, `reinstate`, `remove` requests at 15:45–15:46, all 200 |
+| 7 | message removal worked; **no way to reinstate** | the service always allowed it (a revision returning the wording); the desktop had no control — added. |
+| 8 | — | **The two-part director/cinematographer question was not asked** (no such message in the record). Typed adequacy through the installed route remains unverified. |
+
+Not blocking anything. The quoted "six seconds" of the earlier session was a repeated
+request in an empty conversation reusing the runtime's cache, and is **not** a baseline.
