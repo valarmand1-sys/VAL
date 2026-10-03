@@ -1,0 +1,182 @@
+{
+ "model": "gemma",
+ "label": "W1-gemma",
+ "order": "reverse",
+ "prime": {
+  "at": 1790997699.103,
+  "primed": true,
+  "outcome": "established",
+  "slug": "gemma-4-26b-a4b-q4km-llamacpp-voice",
+  "engine": "llama.cpp",
+  "boundary_tokens": 5824,
+  "boundary_sha256": "",
+  "prime_tokens": 5832,
+  "model_call_id": "01a0ffc8-1a14-7b28-884c-2a4099cdb287",
+  "seconds": 8.373
+ },
+ "routes_seen": [
+  "gemma-4-26b-a4b-q4km-llamacpp-voice"
+ ],
+ "rows": [
+  {
+   "id": "P8",
+   "kind": "a question whose adequate answer is short",
+   "sent_at_utc": "2026-10-03T03:21:39+00:00",
+   "first_visible_s": 1.682,
+   "complete_s": 1.993,
+   "complete_wall_s": 1.993,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "A two-hour screenplay is roughly one hundred and twenty pages, my lord.",
+   "answer_chars": 71,
+   "timing": {
+    "gateway_first_output_ms": 1583,
+    "gateway_latency_ms": 1886,
+    "api_first_delta_ms": 1676,
+    "api_total_ms": 1987,
+    "api_response_started_ms": 31
+   },
+   "error": null
+  },
+  {
+   "id": "P7",
+   "kind": "an ordinary social exchange",
+   "sent_at_utc": "2026-10-03T03:21:44+00:00",
+   "first_visible_s": 1.692,
+   "complete_s": 3.153,
+   "complete_wall_s": 3.153,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Good evening, my lord. I am sorry to hear it. There is little more taxing than a day spent fighting for the light, especially when the tools themselves fail you. \n\nCome, sit by the fire. The study is warm, and the night is quiet. Shall we focus on something else, or is there something from the day you wish to set down?",
+   "answer_chars": 320,
+   "timing": {
+    "gateway_first_output_ms": 1627,
+    "gateway_latency_ms": 3081,
+    "api_first_delta_ms": 1688,
+    "api_total_ms": 3148,
+    "api_response_started_ms": 13
+   },
+   "error": null
+  },
+  {
+   "id": "P6",
+   "kind": "explaining something technical conversationally",
+   "sent_at_utc": "2026-10-03T03:21:50+00:00",
+   "first_visible_s": 1.673,
+   "complete_s": 8.188,
+   "complete_wall_s": 8.188,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Good evening, my lord. It is a matter of how much of the motion's path is captured in a single, frozen moment.\n\nWhen you use a 180-degree shutter at 24 frames per second, you are essentially choosing a shutter speed of 1/48th of a second. This is a deliberate choice because it allows the shutter to remain open for a duration that is roughly half the length of the frame itself. Because the shutter is open long enough to capture the movement of an object from one position to a slightly different one before the next frame begins, it creates a subtle, intentional smear. Our eyes do not perceive the world in discrete, static snapshots; we perceive continuous motion. That slight blur mimics the way our biological vision processes movement, making the motion feel fluid and \"natural\" to us.\n\nIf you move to 60 frames per second but keep that 180-degree rule, your shutter speed tightens to 1/120th of a second. The motion will still have some blur, but it will feel much \"crisper\" and more clinical.\n\nHowever, if you were to shoot at 60 frames per second with a much faster shutter\u2014say, a 45-degree shutter\u2014the motion blur would almost vanish. Each frame would be a perfectly sharp, frozen slice of time. This results in what people often call the \"stutter\" effect or the \"soap opera effect.\" Without that motion blur to bridge the gap between frames, your brain perceives each image as a distinct, disconnected event, which can feel jarring or hyper-real, rather than cinematic.",
+   "answer_chars": 1482,
+   "timing": {
+    "gateway_first_output_ms": 1600,
+    "gateway_latency_ms": 8109,
+    "api_first_delta_ms": 1668,
+    "api_total_ms": 8183,
+    "api_response_started_ms": 18
+   },
+   "error": null
+  },
+  {
+   "id": "P5",
+   "kind": "developing a short scene",
+   "sent_at_utc": "2026-10-03T03:22:01+00:00",
+   "first_visible_s": 1.747,
+   "complete_s": 7.53,
+   "complete_wall_s": 7.53,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "The orchard was a labyrinth of silver and shadow, the heavy scent of ripening fruit thick in the damp night air. Overhead, the skeletal branches of the Braeburns caught the stray light from the production trailers, casting long, spindly fingers across the grass. Every few minutes, the rhythmic hum of the generator provided a mechanical heartbeat to the quiet, punctuated only by the soft scuff of boots on fallen leaves.\n\nThen, the heartbeat stopped.\n\nThe sudden silence was more jarring than the noise had been. The small, artificial world of the set collapsed into true darkness, leaving only the pale, lunar glow filtering through the canopy. A collective groan drifted from the crew, followed by the frantic clicking of flashlights and the low murmur of frustration.\n\n\"We can't wait for the repair crew, not with the light shifting like this,\" a voice rang out from the edge of the light, sharp and unyielding. \"The moon is high enough. We keep the cameras rolling. We work with the shadows we have.\"\n\nThere was a beat of hesitation. The actors stood frozen in the gloom, their faces half-submerged in darkness. But the command had been given. The crew moved with a renewed, quiet urgency, repositioning reflectors to catch the moonlight and adjusting the focus pulls. The scene began again, not with the polished brilliance of a studio, but with a raw, grainy intimacy, as if the orchard itself were a participant in the secret being filmed.",
+   "answer_chars": 1448,
+   "timing": {
+    "gateway_first_output_ms": 1667,
+    "gateway_latency_ms": 7444,
+    "api_first_delta_ms": 1743,
+    "api_total_ms": 7526,
+    "api_response_started_ms": 29
+   },
+   "error": null
+  },
+  {
+   "id": "P4",
+   "kind": "improving professional copy",
+   "sent_at_utc": "2026-10-03T03:22:12+00:00",
+   "first_visible_s": 1.795,
+   "complete_s": 4.475,
+   "complete_wall_s": 4.475,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "One of my own, my lord: \"We are a production company dedicated to the craft of cinematic storytelling. By combining technical precision with a commitment to narrative depth, we develop impactful content designed for lasting resonance.\"\n\nThe original draft relies too heavily on marketing adjectives\u2014\"dynamic,\" \"innovative,\" \"passionate\"\u2014which tend to undermine authority rather than establish it. A serious production company does not need to claim it is passionate; the quality of its work and the clarity of its purpose should demonstrate that. I have stripped away the brochure-style \"call to action\" at the end, as a company of substance typically invites partnership through its standard of excellence rather than through a direct plea.",
+   "answer_chars": 741,
+   "timing": {
+    "gateway_first_output_ms": 1729,
+    "gateway_latency_ms": 4404,
+    "api_first_delta_ms": 1792,
+    "api_total_ms": 4472,
+    "api_response_started_ms": 12
+   },
+   "error": null
+  },
+  {
+   "id": "P3",
+   "kind": "writing natural dialogue",
+   "sent_at_utc": "2026-10-03T03:22:19+00:00",
+   "first_visible_s": 1.668,
+   "complete_s": 5.669,
+   "complete_wall_s": 5.669,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "Scout: Morning, Mr. Henderson. I was hoping we could talk for a moment about the north pasture.\n\nFarmer: If it's about the cameras and the cables, you can save your breath.\n\nScout: We\u2019re just looking at the light hitting the creek bed around noon.\n\nFarmer: There\u2019s nothing in that creek worth a film crew's time.\n\nScout: It\u2019s actually perfect for the scene we\u2019re planning.\n\nFarmer: I don't care if it's the Garden of Eden; my sheep don't like strangers.\n\nScout: We would be in and out in a single afternoon, and we\u2019d repair any tracks.\n\nFarmer: You say that now, but I'll be picking plastic out of the mud for a month.\n\nScout: I can assure you, we'll leave it exactly as we found it.\n\nFarmer: Then you've found it quite well enough, because you're leaving.",
+   "answer_chars": 756,
+   "timing": {
+    "gateway_first_output_ms": 1601,
+    "gateway_latency_ms": 5596,
+    "api_first_delta_ms": 1662,
+    "api_total_ms": 5664,
+    "api_response_started_ms": 13
+   },
+   "error": null
+  },
+  {
+   "id": "P2",
+   "kind": "rewriting a weak paragraph",
+   "sent_at_utc": "2026-10-03T03:22:28+00:00",
+   "first_visible_s": 1.839,
+   "complete_s": 2.868,
+   "complete_wall_s": 2.868,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "One of my own, my lord: \"The film industry has undergone a profound transformation driven by a convergence of forces: rapid technological advancement, shifting audience expectations, and the disruptive rise of streaming distribution. Together, these factors have fundamentally altered the landscape of modern filmmaking.\"",
+   "answer_chars": 321,
+   "timing": {
+    "gateway_first_output_ms": 1764,
+    "gateway_latency_ms": 2788,
+    "api_first_delta_ms": 1834,
+    "api_total_ms": 2863,
+    "api_response_started_ms": 15
+   },
+   "error": null
+  },
+  {
+   "id": "P1",
+   "kind": "editing a passage of prose while preserving the owner's voice",
+   "sent_at_utc": "2026-10-03T03:22:34+00:00",
+   "first_visible_s": 1.909,
+   "complete_s": 4.39,
+   "complete_wall_s": 4.389,
+   "sleep_suspected": false,
+   "outcome": "answered",
+   "answer": "One of my own, my lord:\n\nThe orchard sat at the bottom of the valley where the fog arrived first and lingered last; by the time we had the camera up on the rise, the light had already shifted from what we had scouted the week before, and no one wanted to be the one to say it. Marcus kept checking his meter like it owed him money. I had wanted this shot since the first time I walked the rows in March, when the trees were bare, and I was not going to let a little weather talk me out of it\u2014even though the weather, to be fair, was not little.",
+   "answer_chars": 544,
+   "timing": {
+    "gateway_first_output_ms": 1837,
+    "gateway_latency_ms": 4312,
+    "api_first_delta_ms": 1905,
+    "api_total_ms": 4386,
+    "api_response_started_ms": 16
+   },
+   "error": null
+  }
+ ]
+}

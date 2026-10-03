@@ -24,7 +24,6 @@ Production's environment is read from its launchd definition and nothing from it
 from __future__ import annotations
 
 # ruff: noqa: S101  (a harness: assertions are its refusals)
-
 import logging
 import os
 import plistlib

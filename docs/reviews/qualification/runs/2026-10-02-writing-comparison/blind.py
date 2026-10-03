@@ -12,7 +12,6 @@ only when asked for, after the judgement) carries the mapping and the timings.
 from __future__ import annotations
 
 # ruff: noqa: E501
-
 import json
 import random
 import sys
