@@ -2399,3 +2399,28 @@ r8 (`7be9050`, tag `voice-repair-release-2026-10-02-r8`, CI green) supersedes r6
   whether typed classification should move onto this Mac. Neither built.
 - **Still unverified:** the scripted overlap in the room; typed adequacy through the
   installed route; the r9 repairs by his eye.
+
+## 57. Handoff — r9 desktop installed; the local-AI rule (r10) installed; typed caching next (2 October 2026, evening)
+
+**WP3 remains PARTIAL. Acceptance is NOT complete.**
+
+- **Installed state, actual:** service `7921a00` (r10 — r8's Voice release plus the
+  local-AI rule) with the eleven Voice settings and **no hosted key**; desktop
+  `366cc97f…bb58`; store `0032`. Records: `VAL_Local_AI_Rule_Record.md` §9,
+  `VOICE_MODEL.md` §16.
+- **His r9 check** was performed (service records 15:34–15:46: typed refusal during Voice,
+  the kept draft sent after Voice off, a disposable conversation Removed, Archived,
+  Reinstated and Removed through the in-window question); his written observations were
+  sent to another assistant and have not reached this one — he will forward them. Not
+  asked: the two-part typed adequacy question. Nothing blocked by this.
+- **Under the rule:** typed conversations are no longer classified; Voice is unchanged.
+- **Continuation point — typed caching (authorised 2 October 2026, not started):** in
+  isolation, under the rule: establish which prefix GPT-OSS can reuse across differing
+  typed requests (the fixed persona + guidance system block versus changing history);
+  reuse the existing prefix-prime mechanism with the least preparation that shows reuse;
+  respect residency (never beside Gemma during Voice; never behind an active request;
+  never a new wait before his next message); measure differing typed turns, a
+  follow-up and the Voice→typed transition; report send → first visible answer, cache
+  reuse and remaining prefill, first-turn preparation and waiting, retention over
+  following turns, resource and readiness cost. GPT-OSS MEDIUM unchanged. The 8–9 s
+  saving is an estimate, not a result.

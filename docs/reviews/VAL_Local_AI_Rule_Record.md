@@ -171,3 +171,36 @@ Every `model_calls` row and cost stays as recorded. The service's `/costs` now c
 `hosted_models_permitted` and `hosted_models_rule`; the desktop distinguishes the
 month's historical charges from current local processing only when the running service
 reports the rule — it never claims the rule ahead of installation.
+
+## 9. INSTALLED — 2 October 2026, 18:50–19:20 CDT (his approval, his hands, each step verified read-only)
+
+- Service `7921a00` (tag `local-ai-rule-2026-10-02-r10`) from `~/Projects/val-releases/7921a00`,
+  started twice: first with r8's configuration (verified), then — after the typed
+  request-path check — with `VAL_ANTHROPIC_API_KEY` and `VAL_OPENAI_API_KEY` **removed from
+  the active plist** (his authorisation). The running process's environment holds the
+  fourteen expected variables and no hosted key. Store `0032`, no migration. Desktop
+  `366cc97f…bb58` installed; r9's (`b9800ac0…`) set aside.
+- **Request-path check (19:03 CDT):** his typed "What is the capital of Australia?" in a
+  new conversation — answered "Canberra, my lord." by one call to `openai/gpt-oss-20b` at
+  `http://127.0.0.1:1234/v1`, $0 (first text 12.9 s); the classification row: no verdict,
+  not established, 0 attempts, 0 calls, reason naming the rule; the service's outbound
+  requests since startup: `127.0.0.1:1234` only; the process's connections: the local
+  store, LM Studio and its own listener.
+- **The classification gate, confirmed before installation** (his point 1):
+  `val_policy.consequence.execution_refusal` refuses on no record, not-run, or nothing
+  established, and permits only an established verdict; `EXECUTION_GATED_ON_CLASSIFICATION`
+  is empty because nothing in Layer 0 acts outside the conversation; the local-only branch
+  never enters the blind-position path; `execution_events` executes nothing; the review
+  path calls no model. Tests: `test_egress_policy.py` (not-run ≠ not-consequential; blocked
+  on not-run, on no record, on nothing established), `test_local_ai_rule.py`.
+- **Safe recovery under the rule:** no older service satisfies it. If r10 misbehaves, stop
+  the service (`launchctl bootout gui/$(id -u)/house.armand.val.api`) and leave it stopped
+  while r10 is repaired. The plist copies `~/val-rollback-20260930/…13b3cb8`,
+  `~/val-rollback-20261002/…r5-422ee71` and `…r8-7be9050` contain hosted keys and are
+  **historical records, unsuitable for restoration**. Desktop rollback (to the r9 bundle)
+  changes nothing about the rule.
+- **Temporary governance limitations in force:** consequence classification NOT RUN on
+  every turn; preference strip, blind position and deliberation not reached; consequential
+  execution blocked for want of the gate; gate point-5 evidence paused. Local replacements
+  (§6) proposed, **not approved**.
+- Backups, external tools, Voice settings and the models: unchanged.
