@@ -197,8 +197,12 @@ typed message will show it in `/opt/homebrew/var/log/val/api.log`.
 
 ## 9. Proposed release r11
 
-`tag typed-prime-versions-2026-10-02-r11` on branch `latency-2026-09-28`, CI on
-`release/voice-model-2026-09-29`, containing since r10 (`7921a00`): the typed prime
+Tag `typed-prime-versions-2026-10-02-r11` = `e646948` on branch `latency-2026-09-28`; CI run
+37087808736 on `release/voice-model-2026-09-29` green (3 October 2026 01:53 UTC). Desktop built
+from that source (`npm ci`, 264 tests, `npm run tauri build`; the desktop tree is unchanged since
+`3dae393`) and staged as `~/Val previous builds.noindex/Val (typed-prime-versions 2026-10-02 r11
+e646948, staged, not installed).app`, `val_desktop` digest `c9aceaa0e6ccfa467956778dfa2019e18ea60bee
+f98299b47ffbe2c2b9e2400f` (installed r10: `366cc97f…bb58`). Contains since r10 (`7921a00`): the typed prime
 (§2); message editing, versions and reinstatement (`VAL_Message_Versions_Record.md`,
 migration `0033_message_version_selections`); the bench and these records. Installation
 is by his hands, one step at a time, with the usual confirmation per step; the exact
