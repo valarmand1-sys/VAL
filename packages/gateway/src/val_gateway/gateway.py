@@ -46,6 +46,7 @@ violation, because a check that only fires when the call is made is not the
 guarantee `04-layer-0.md` §1.1 claims.
 """
 
+import json
 import logging
 import threading
 import time
@@ -512,6 +513,10 @@ class Gateway:
         #: conversation or a fallback therefore never runs beside the Voice model; it
         #: replaces it, and the Voice model is brought back afterwards.
         self._voice_holds_memory = False
+        #: Typed prefix preparation (2 October 2026): "off", "transition" or "on".
+        self.typed_prime: str = "off"
+        self._typed_in_flight = 0
+        self._typed_refresh_pending = False
         #: Calls in flight on each local configuration; the local configurations this
         #: gateway has seen resident; the lock over both. A release never lands on a model
         #: another request is using: it waits for the last call to settle.
@@ -622,7 +627,10 @@ class Gateway:
         return result
 
     def _prime_route(
-        self, task_type: TaskType, still_wanted: Callable[[], bool]
+        self,
+        task_type: TaskType,
+        still_wanted: Callable[[], bool],
+        config: ModelConfig | None = None,
     ) -> Mapping[str, object]:
         """Leave the computation of Val's persona in the local runtime, for later turns.
 
@@ -645,7 +653,8 @@ class Gateway:
         the prefix his request would otherwise compute itself, so waiting for it is
         never longer than doing that work from nothing.
         """
-        config = self._spoken_turn_route(task_type)
+        if config is None:
+            config = self._spoken_turn_route(task_type)
         if config is None:
             return {"primed": False, "outcome": "skipped", "reason": "no admitted partner route"}
         adapter = self._adapters[config.provider]
@@ -1020,7 +1029,96 @@ class Gateway:
         except LocalRuntimeUnavailableError as failure:
             self._observe_block(f"re-warming {partner.slug} after Voice did not succeed: {failure}")
             return {"warmed": False, "slug": partner.slug, "reason": str(failure)}
-        return {"warmed": True, "slug": partner.slug, **dict(readiness)}
+        result: dict[str, object] = {"warmed": True, "slug": partner.slug, **dict(readiness)}
+        if self.typed_prime != "off":
+            result["primed"] = self.prime_typed_prefix()
+        return result
+
+    # --- typed prefix preparation (owner authorisation, 2 October 2026) ------------------
+    #
+    # What the Voice prime does for the spoken route, for the typed one: the persona and
+    # Core's guidance — the system block every typed turn shares — computed once in the
+    # runtime, so a typed turn processes only its own history and words. The changing
+    # history is not prepared: on this runtime a later request cannot reuse an earlier
+    # one's history (27 September 2026), so preparing it would be work with no reuse.
+    #
+    # `typed_prime` is set by the composition root: "off" (the service as before),
+    # "transition" (prime when the service starts and when the Partner model returns
+    # after Voice), "on" ("transition", and a refresh after each typed answer once the
+    # service has been idle for `TYPED_REFRESH_IDLE_SECONDS`). Residency is respected:
+    # nothing is primed while Voice holds the memory, and never ahead of a request.
+
+    #: How long the service must have been idle — no typed turn in flight — before a
+    #: refresh prime is dispatched after an answer.
+    TYPED_REFRESH_IDLE_SECONDS = 1.0
+
+    def typed_turn_started(self) -> None:
+        with self._residency_lock:
+            self._typed_in_flight += 1
+
+    def typed_turn_finished(self) -> None:
+        with self._residency_lock:
+            self._typed_in_flight = max(0, self._typed_in_flight - 1)
+        if self.typed_prime == "on":
+            self.schedule_typed_refresh()
+
+    def _typed_prime_wanted(self) -> bool:
+        with self._residency_lock:
+            return self._typed_in_flight == 0 and not self._voice_holds_memory
+
+    def prime_typed_prefix(
+        self, still_wanted: Callable[[], bool] | None = None
+    ) -> Mapping[str, object]:
+        """Compute the typed route's shared prefix in its runtime, unless Voice holds the
+        memory or a typed request is waiting. Recorded as `prefix_prime`, like every prime."""
+        wanted = still_wanted or self._typed_prime_wanted
+        with self._residency_lock:
+            if self._voice_holds_memory:
+                return {
+                    "primed": False,
+                    "outcome": "skipped",
+                    "reason": "Voice holds the memory; the typed route is not loaded beside it",
+                }
+        config = self._typed_turn_route()
+        if config is None:
+            return {"primed": False, "outcome": "skipped", "reason": "no typed route"}
+        if self.voice_configuration is not None and config is self.voice_configuration:
+            return {
+                "primed": False,
+                "outcome": "skipped",
+                "reason": "the typed route is the Voice route",
+            }
+        result = self._prime_route(TaskType.CONVERSATION, wanted, config=config)
+        _LOGGER.info(
+            "typed prime: %s",
+            json.dumps({k: v for k, v in result.items() if k != "light"}, default=str),
+        )
+        return result
+
+    def schedule_typed_refresh(self) -> None:
+        """A refresh prime after a typed answer, once the service is idle; coalesced, so
+        several answers in quick succession produce one. Never ahead of a request: the
+        prime asks again at the last moment and stands aside if one has arrived."""
+        with self._residency_lock:
+            if self._typed_refresh_pending:
+                return
+            self._typed_refresh_pending = True
+
+        def refresh() -> None:
+            try:
+                deadline = time.monotonic() + 60.0
+                while time.monotonic() < deadline:
+                    time.sleep(self.TYPED_REFRESH_IDLE_SECONDS)
+                    if self._typed_prime_wanted():
+                        break
+                else:
+                    return
+                self.prime_typed_prefix()
+            finally:
+                with self._residency_lock:
+                    self._typed_refresh_pending = False
+
+        threading.Thread(target=refresh, name="typed-refresh-prime", daemon=True).start()
 
     def warm_cognition(self) -> Mapping[str, object]:
         """Bring the ordinary conversation route's local runtime up, early.

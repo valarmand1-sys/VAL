@@ -525,6 +525,10 @@ SPOKEN_NUMERALS_SETTING = "VAL_SPOKEN_NUMERALS"
 #: Candidate (owner authorisation, 2 October 2026): recognised Markdown formatting is not
 #: spoken; the written text is untouched (`val_policy.spoken_format`).
 SPOKEN_FORMATTING_SETTING = "VAL_SPOKEN_FORMATTING"
+#: Candidate (owner authorisation, 2 October 2026): typed prefix preparation —
+#: "transition" (at start and when the Partner model returns after Voice) or "on"
+#: (that, and a refresh after each typed answer once idle). Unset: as before.
+TYPED_PRIME_SETTING = "VAL_TYPED_PRIME"
 VOICE_MODEL_SETTING = "VAL_VOICE_MODEL"
 VOICE_MODELS = {"gemma-4-26b-a4b": "gemma-4-26b-a4b-q4km-llamacpp-voice"}
 
@@ -970,6 +974,20 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         _LOGGER.warning(
             "CANDIDATE spoken numerals for this process: unambiguous Roman numerals are "
             "voiced as numbers; the written text is unchanged."
+        )
+    typed_prime = os.environ.get(TYPED_PRIME_SETTING, "").strip().lower() or "off"
+    if typed_prime not in {"off", "transition", "on"}:
+        raise StartupRefusedError(
+            [f"{TYPED_PRIME_SETTING}: must be unset, transition or on, not {typed_prime!r}"]
+        )
+    gateway.typed_prime = typed_prime
+    if typed_prime != "off":
+        _LOGGER.warning(
+            "CANDIDATE typed prefix preparation for this process (%s): the typed route's "
+            "persona prefix is computed in its runtime at start and when the Partner model "
+            "returns after Voice%s; never while Voice holds the memory, never ahead of a request.",
+            typed_prime,
+            ", and refreshed after each typed answer once idle" if typed_prime == "on" else "",
         )
     if gateway.voice_releases_partner:
         _LOGGER.warning(

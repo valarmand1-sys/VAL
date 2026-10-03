@@ -28,7 +28,7 @@ import logging
 import time
 from base64 import b64decode, b64encode
 from binascii import Error as BinasciiError
-from collections.abc import AsyncIterator, Callable, Mapping
+from collections.abc import AsyncIterator, Callable, Iterator, Mapping
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -289,6 +289,11 @@ def create_app(
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         """A recognizer is a subprocess; the service does not leave one behind."""
+        # Typed prefix preparation (owner authorisation, 2 October 2026): when it is on,
+        # the typed route's persona prefix is computed once the service is up, off the
+        # request path, so the first typed turn does not pay the whole prompt.
+        if getattr(gateway, "typed_prime", "off") != "off":
+            Thread(target=gateway.prime_typed_prefix, name="typed-prime", daemon=True).start()
         yield
         sessions.close_all()
 
@@ -659,6 +664,7 @@ def create_app(
     def turn(request: TurnRequest) -> TurnResponse:
         """One thing said to Val, through the full WP-0.9 deliberated path."""
         _voice_has_priority()
+        gateway.typed_turn_started()
         try:
             outcome = deliberated_send(
                 engine,
@@ -692,6 +698,8 @@ def create_app(
         except ConversationRemovedError as removed:
             # Ruling, 12 September 2026: refused before anything is written.
             raise HTTPException(status_code=409, detail=str(removed)) from removed
+        finally:
+            gateway.typed_turn_finished()
 
         return render_turn(outcome)
 
@@ -755,16 +763,27 @@ def create_app(
         been sent (`val_api.streaming`).
         """
         _voice_has_priority()  # before the status line: the desktop sees a plain 409
+        events = turn_event_stream(
+            engine,
+            gateway,
+            request,
+            render_turn,
+            _candidates(request),
+            # The seal's transient layer reaches the streaming door too.
+            live_voice=sessions.live_conversations(),
+        )
+
+        def counted() -> Iterator[bytes]:
+            # The typed turn is in flight for as long as its events are: a refresh prime
+            # (2 October 2026) waits for the stream to end, never behind it.
+            gateway.typed_turn_started()
+            try:
+                yield from events
+            finally:
+                gateway.typed_turn_finished()
+
         return StreamingResponse(
-            turn_event_stream(
-                engine,
-                gateway,
-                request,
-                render_turn,
-                _candidates(request),
-                # The seal's transient layer reaches the streaming door too.
-                live_voice=sessions.live_conversations(),
-            ),
+            counted(),
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )
