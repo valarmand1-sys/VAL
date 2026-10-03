@@ -259,6 +259,17 @@ SPECIFIED: dict[str, tuple[str, ...]] = {
         "authored_by",
         "note",
     ),
+    # §2.1 amendment, 2 October 2026: continuing from an earlier version of one of
+    # Lord Armand's messages, as an appended fact.
+    "message_version_selections": (
+        "id",
+        "created_at",
+        "conversation_id",
+        "message_id",
+        "revision_number",
+        "after_sequence",
+        "note",
+    ),
     # §2.1 amendment, 12 September 2026: conversation Remove/Reinstate facts.
     "conversation_removals": (
         "id",
@@ -657,6 +668,8 @@ SPECIFIED_NULLABLE: frozenset[tuple[str, str]] = frozenset(
         # 12 September 2026: a retraction carries no wording; a note is never required.
         ("message_revisions", "content"),
         ("message_revisions", "note"),
+        # 2 October 2026: a version selection's note is never required.
+        ("message_version_selections", "note"),
         ("conversation_removals", "note"),
         # NULL on either side of a move means explicitly no project.
         ("conversation_scope_transitions", "from_project_id"),

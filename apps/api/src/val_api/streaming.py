@@ -50,7 +50,7 @@ from sqlalchemy import Engine
 from val_api.contracts import TurnRequest
 from val_gateway.attachments import CandidateAttachment
 from val_gateway.conversations import ConversationRemovedError
-from val_gateway.deliberate import DeliberatedOutcome, TurnStage
+from val_gateway.deliberate import DeliberatedOutcome, TurnStage, answer_revision
 from val_gateway.deliberate import send as deliberated_send
 from val_gateway.exchange import RestrictedContentRefusedError
 from val_gateway.gateway import Gateway
@@ -112,23 +112,42 @@ def turn_event_stream(
 
     def run() -> None:
         try:
-            outcome = deliberated_send(
-                engine,
-                gateway,
-                request.content,
-                catalogue=load_catalogue(engine),
-                signals=ProjectSignals(
-                    explicit_selection=request.project,
-                    explicit_no_project=request.no_project,
-                ),
-                conversation_id=request.conversation_id,
-                title=request.title,
-                max_output_tokens=request.max_output_tokens,
-                on_delta=lambda text: events.put(_Delta(text)),
-                on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
-                attachments=attachments,
-                live_voice=live_voice,
-            )
+            if request.revise_message_id is not None:
+                # Owner order, 2 October 2026 (§B): a correction is answered, once, on
+                # the streaming door exactly as on the plain one.
+                outcome = answer_revision(
+                    engine,
+                    gateway,
+                    request.revise_message_id,
+                    request.content,
+                    max_output_tokens=request.max_output_tokens,
+                    on_delta=lambda text: events.put(_Delta(text)),
+                    on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
+                    live_voice=live_voice,
+                )
+            else:
+                outcome = deliberated_send(
+                    engine,
+                    gateway,
+                    request.content,
+                    catalogue=load_catalogue(engine),
+                    signals=ProjectSignals(
+                        explicit_selection=request.project,
+                        explicit_no_project=request.no_project,
+                    ),
+                    conversation_id=request.conversation_id,
+                    title=request.title,
+                    max_output_tokens=request.max_output_tokens,
+                    on_delta=lambda text: events.put(_Delta(text)),
+                    on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
+                    attachments=attachments,
+                    live_voice=live_voice,
+                    continue_from=(
+                        (request.continue_from_message_id, request.continue_from_revision or 0)
+                        if request.continue_from_message_id is not None
+                        else None
+                    ),
+                )
         except BaseException as error:
             events.put(_Failed(error))
             return

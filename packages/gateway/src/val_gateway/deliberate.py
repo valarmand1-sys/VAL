@@ -156,6 +156,7 @@ from val_gateway.loop import (
 from val_gateway.memory import DEFAULT_LIMIT, RecalledMessage
 from val_gateway.persona import DatabasePersonaLoader, PersonaUnavailableError
 from val_gateway.projects import ProjectSession
+from val_gateway.revisions import revise
 from val_gateway.seal import SealRoute
 from val_gateway.speculation import PreparedAnswer, fingerprint, record_preparation
 from val_gateway.tier1 import tier1_messages
@@ -354,6 +355,7 @@ def send(
     prepared: PreparedAnswer | None = None,
     cancelled: Callable[[], bool] | None = None,
     withhold_answer: bool = False,
+    continue_from: tuple[UUID, int] | None = None,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
 
@@ -443,6 +445,7 @@ def send(
         # conversation's local-only seal are committed together, by `open_turn`,
         # on one transaction. `seal_route` says which route to canonical this is.
         seal=seal_route if spoken else None,
+        continue_from=continue_from,
     )
     mark("message_persisted")
     if isinstance(opened, ClarificationNeeded):
@@ -452,6 +455,105 @@ def send(
             on_persisted(opened.conversation.id, opened.user_message.id)
         except Exception:  # presentation must never cost the turn
             _LOGGER.exception("the persisted-message sink failed; the turn continues")
+    return _answer_opened(
+        engine,
+        gateway,
+        opened,
+        content=content,
+        classification=classification,
+        recall_limit=recall_limit,
+        max_output_tokens=max_output_tokens,
+        on_delta=on_delta,
+        on_stage=on_stage,
+        candidate=candidate,
+        live_voice=live_voice,
+        spoken=spoken,
+        fast_route=fast_route,
+        prepared=prepared,
+        cancelled=cancelled,
+        withhold_answer=withhold_answer,
+    )
+
+
+def answer_revision(
+    engine: Engine,
+    gateway: Gateway,
+    message_id: UUID,
+    content: str,
+    *,
+    note: str | None = None,
+    classification: Classification = Classification.PROTECTED,
+    recall_limit: int = DEFAULT_LIMIT,
+    max_output_tokens: int = CONVERSATION_MAX_OUTPUT_TOKENS,
+    on_delta: DeltaSink | None = None,
+    on_stage: StageSink | None = None,
+    live_voice: LiveVoiceConversations | None = None,
+) -> DeliberatedOutcome:
+    """Correct one of his messages and answer the corrected wording (owner order,
+    2 October 2026 §B).
+
+    The correction is recorded first, as a revision fact — a new version of the
+    message, whose continuation is empty until this answer begins it. The earlier
+    answer, and whatever followed it, stay with the version they answered and are not
+    in this turn's view (`working_thread`); nothing is withdrawn, re-appended or
+    rewritten. Then the same path as any turn runs on the conversation as it now
+    stands, and one answer is appended at its end. A refused correction (unchanged
+    wording, a deliberated message, Restricted content) answers nothing.
+    """
+    mark("turn_start")
+    revise(engine, message_id, content, note=note)
+    conversation_id = conversations.conversation_of_message(engine, message_id)
+    conversation, scope = conversations.resume(engine, conversation_id)
+    thread = conversations.working(engine, conversation_id)
+    corrected = next(m for m in thread.messages if m.record.id == message_id)
+    opened = OpenedTurn(
+        conversation=conversation,
+        scope=scope,
+        user_message=corrected.working_record(),
+        attachments=(),
+        answering_revision=True,
+    )
+    mark("message_persisted")
+    return _answer_opened(
+        engine,
+        gateway,
+        opened,
+        content=content,
+        classification=classification,
+        recall_limit=recall_limit,
+        max_output_tokens=max_output_tokens,
+        on_delta=on_delta,
+        on_stage=on_stage,
+        candidate=None,
+        live_voice=live_voice,
+        spoken=False,
+        fast_route=None,
+        prepared=None,
+        cancelled=None,
+        withhold_answer=False,
+    )
+
+
+def _answer_opened(
+    engine: Engine,
+    gateway: Gateway,
+    opened: OpenedTurn,
+    *,
+    content: str,
+    classification: Classification,
+    recall_limit: int,
+    max_output_tokens: int,
+    on_delta: DeltaSink | None,
+    on_stage: StageSink | None,
+    candidate: ModelConfig | None,
+    live_voice: LiveVoiceConversations | None,
+    spoken: bool,
+    fast_route: FastRoute | None,
+    prepared: PreparedAnswer | None,
+    cancelled: Callable[[], bool] | None,
+    withhold_answer: bool,
+) -> DeliberatedOutcome:
+    """Steps 4 onward, for a turn whose message is now history."""
     if withhold_answer:
         _LOGGER.info("owner stop: message %s recorded; no answer asked for", opened.user_message.id)
         return UnansweredTurn(
@@ -1292,7 +1394,7 @@ def _light_tier(
     if fast_route is None or not fast_route.enabled:
         return None
     thread = conversations.working(
-        engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
+        engine, opened.conversation.id, as_of_sequence=opened.as_of_sequence
     )
     verdict = tier1_eligibility(thread, content, opened.user_message.sequence, fast_route)
     _LOGGER.info(
@@ -1324,13 +1426,18 @@ def tier1_eligibility(
         (m.record.content for m in reversed(earlier) if m.record.role is StoredRole.VAL), None
     )
     prior_turns = sum(1 for m in earlier if m.record.role is StoredRole.USER)
-    if prior_turns > 0 and previous is None:
-        return RouteDecision(None, "uncertain state: earlier turns but no answer of hers to read")
     last_user = next((m for m in reversed(earlier) if m.record.role is StoredRole.USER), None)
-    if last_user is not None and last_user.state is not MessageState.CURRENT:
+    # Correction-sensitivity is read first (2 October 2026): a corrected message's
+    # earlier answer now stays with its version, out of view, so the correction must
+    # not be mistaken for a missing answer.
+    if last_user is not None and (
+        last_user.state is not MessageState.CURRENT or last_user.version > 1
+    ):
         return RouteDecision(
             None, "correction-sensitive: the previous message was corrected or withdrawn"
         )
+    if prior_turns > 0 and previous is None:
+        return RouteDecision(None, "uncertain state: earlier turns but no answer of hers to read")
     if thread.live_records() and any(
         m.record.sequence == sequence for m in live if m.state is not MessageState.CURRENT
     ):
@@ -1456,7 +1563,7 @@ def _ordinary(
         # the turn, his words. Recall is deliberately not run; the ordinary assembly is
         # made only if this route has to fall back.
         thread = conversations.working(
-            engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
+            engine, opened.conversation.id, as_of_sequence=opened.as_of_sequence
         )
         messages, projection = tier1_messages(
             thread,

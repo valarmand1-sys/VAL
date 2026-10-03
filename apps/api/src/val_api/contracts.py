@@ -321,6 +321,17 @@ class AttachmentView(BaseModel):
         )
 
 
+class VersionView(BaseModel):
+    """One version of one of Lord Armand's messages (owner order, 2 October 2026 §C)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    number: int
+    revision_number: int
+    content: str
+    created_at: datetime
+
+
 class MessageView(BaseModel):
     """One message. In a conversation detail, `content` is the wording in force.
 
@@ -349,6 +360,12 @@ class MessageView(BaseModel):
     #: the order they were attached. Empty on every message that carries none,
     #: which is every message the house held before today.
     attachments: list[AttachmentView] = Field(default_factory=list)
+    #: Versions (owner order, 2 October 2026 §C): the version shown, all of them, and
+    #: whether this message is in the view (an alternative version's continuation is
+    #: served, kept, with `in_view` false).
+    version: int = 1
+    versions: list[VersionView] = Field(default_factory=list)
+    in_view: bool = True
 
     @classmethod
     def of(cls, record: MessageRecord) -> MessageView:
@@ -385,6 +402,17 @@ class MessageView(BaseModel):
                 else None
             ),
             attachments=[AttachmentView.of(act) for act in attachments],
+            version=message.version,
+            versions=[
+                VersionView(
+                    number=v.number,
+                    revision_number=v.revision_number,
+                    content=v.content,
+                    created_at=v.created_at,
+                )
+                for v in message.versions
+            ],
+            in_view=message.in_view,
         )
 
 
@@ -772,6 +800,14 @@ class TurnRequest(BaseModel):
     #: events as the house begins each stage of the turn. Opt-in, so the stream
     #: a client did not ask to change is unchanged. Ignored by `POST /turns`.
     progress: bool = False
+    #: Owner order, 2 October 2026 (§B): answer a corrected wording of this message of
+    #: his — `content` is the correction; the message is not re-appended. With it,
+    #: `conversation_id`, `project`, `no_project` and `title` are ignored.
+    revise_message_id: UUID | None = None
+    #: Owner order, 2 October 2026 (§C): this message continues from an earlier version
+    #: of one of his messages — the version number of its record, 0 the original.
+    continue_from_message_id: UUID | None = None
+    continue_from_revision: int | None = None
 
 
 class DeliberationGlimpse(BaseModel):

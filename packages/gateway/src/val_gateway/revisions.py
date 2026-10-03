@@ -209,3 +209,37 @@ def retract(engine: Engine, message_id: UUID, *, note: str | None = None) -> Mes
         return _insert(
             connection, anchor, message_id, kind=RevisionKind.RETRACTION, content=None, note=note
         )
+
+
+_INSERT_SELECTION = text(
+    "insert into message_version_selections "
+    "  (conversation_id, message_id, revision_number, after_sequence, note) "
+    "values (:conversation_id, :message_id, :revision_number, :after_sequence, :note) "
+    "returning id, conversation_id, message_id, revision_number, after_sequence, note, created_at"
+)
+
+
+def record_version_selection(
+    connection: Connection,
+    *,
+    conversation_id: UUID,
+    message_id: UUID,
+    revision_number: int,
+    after_sequence: int,
+    note: str | None = None,
+) -> None:
+    """Lord Armand continued from version `revision_number` of `message_id` (owner
+    order, 2 October 2026 §C). Written inside the caller's transaction — the one that
+    appends the message he continued with — with `after_sequence` the sequence just
+    before that message, so the continuation is exact. The database's coherence
+    trigger refuses a message that is not his, or a revision that does not exist."""
+    connection.execute(
+        _INSERT_SELECTION,
+        {
+            "conversation_id": conversation_id,
+            "message_id": message_id,
+            "revision_number": revision_number,
+            "after_sequence": after_sequence,
+            "note": note,
+        },
+    )

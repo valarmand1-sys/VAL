@@ -86,9 +86,13 @@ def test_a_revision_applies_only_to_turns_after_it_was_recorded() -> None:
     assert later.live_records()[0].content == "Open on the close-up."
     assert later.messages[0].state is MessageState.CORRECTED
     assert later.messages[0].record.content == "Open on the wide shot.", "the original is untouched"
-    # Val's answer stays attached to the wording she received, and says so.
-    assert later.messages[1].answered_state is MessageState.CORRECTED
+    # Owner order, 2 October 2026 (§C): Val's answer stays attached to the wording she
+    # received — as that version's continuation. It is kept, untouched, and is not part
+    # of the view of the corrected version; the message appended after the correction is.
     assert later.messages[1].content == "The wide shot, my lord."
+    assert later.messages[1].in_view is False and not later.messages[1].live
+    assert [item.record.sequence for item in later.live()] == [1, 5]
+    assert later.messages[0].version == 2 and len(later.messages[0].versions) == 2
 
 
 def test_a_fact_recorded_at_the_turns_own_sequence_is_invisible_to_that_turn() -> None:

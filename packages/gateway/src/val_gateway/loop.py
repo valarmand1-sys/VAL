@@ -71,7 +71,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Connection, Engine
+from sqlalchemy import Connection, Engine, text
 
 from val_domain.conversation import (
     ConversationRecord,
@@ -135,6 +135,7 @@ from val_gateway.memory import (
 )
 from val_gateway.perception import TurnPerception, perceive_turn, record_handoff
 from val_gateway.projects import ProjectSession
+from val_gateway.revisions import record_version_selection
 from val_gateway.seal import SealRoute, apply_seal
 from val_policy.budget import CONVERSATION_MAX_OUTPUT_TOKENS
 from val_policy.egress import escalate_for_recall
@@ -219,6 +220,17 @@ class OpenedTurn:
     #: turn, in order. Empty on an ordinary text turn, which is every turn the
     #: house had before today.
     attachments: tuple[AttachmentAct, ...] = ()
+    #: Owner order, 2 October 2026 (§B): this turn answers a corrected wording of a
+    #: message already in the conversation. The message is not re-appended; the
+    #: conversation is read as it stands now — the correction in force, the earlier
+    #: wording's continuation out of view — and the answer is appended at the end.
+    answering_revision: bool = False
+
+    @property
+    def as_of_sequence(self) -> int | None:
+        """How far the conversation is read for this turn: as of its own message, or —
+        answering a revision — as it stands now, which is what the correction made."""
+        return None if self.answering_revision else self.user_message.sequence
 
 
 #: The two forms of an explicit current-interaction scope choice. WP-0.6 put
@@ -556,8 +568,15 @@ def open_turn(
     title: str | None = None,
     attachments: tuple[CandidateAttachment, ...] = (),
     seal: SealRoute | None = None,
+    continue_from: tuple[UUID, int] | None = None,
 ) -> OpenedTurn | ClarificationNeeded:
     """Steps 1-3: preflight what was typed, resolve scope, persist the message.
+
+    `continue_from` (owner order, 2 October 2026 §C) names a message of his and the
+    version of it he is continuing from — `(message_id, revision_number)`, 0 for the
+    original wording. The selection is recorded in the same transaction as this
+    message, numbered just before it, so this message and what follows belong to
+    that version's continuation.
 
     `seal` (owner ruling, 24 September 2026, Voice work package 3 §2.1) says that
     this message is live-microphone-derived text becoming canonical, and by which
@@ -644,10 +663,22 @@ def open_turn(
     #    blob, no attachment, no association, no processing event, and no message.
     acts: tuple[AttachmentAct, ...] = ()
     mark("message_append_start")
-    if attachments or seal is not None:
+    if attachments or seal is not None or continue_from is not None:
 
         def _commit(connection: Connection, message_id: UUID) -> None:
             nonlocal acts
+            if continue_from is not None:
+                branch_id, revision_number = continue_from
+                sequence = connection.execute(
+                    text("select sequence from messages where id = :id"), {"id": message_id}
+                ).scalar_one()
+                record_version_selection(
+                    connection,
+                    conversation_id=conversation.id,
+                    message_id=branch_id,
+                    revision_number=revision_number,
+                    after_sequence=int(sequence) - 1,
+                )
             if attachments:
                 acts = commit_acts(connection, message_id, attachments, admitted)
             if seal is not None:
@@ -728,7 +759,7 @@ def assemble_turn(
     #    reconstruction of this turn yields exactly what it received.
     if thread is None:
         thread = conversations.working(
-            engine, opened.conversation.id, as_of_sequence=opened.user_message.sequence
+            engine, opened.conversation.id, as_of_sequence=opened.as_of_sequence
         )
     history = thread.live_records()
     turns, selection = select_conversation(history)

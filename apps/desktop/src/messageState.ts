@@ -102,3 +102,39 @@ export function answeredAfter(messages: MessageView[], messageId: string): boole
   const at = messages.findIndex((message) => message.id === messageId);
   return at >= 0 && messages.slice(at + 1).some((message) => message.role === "val");
 }
+
+// Reinstating a withdrawn message — owner order, 2 October 2026 (§D). The wording in
+// force when it was withdrawn is sent back as a revision; the service reads a revision
+// that returns the withdrawn wording as a reinstatement, not a correction, and the
+// answer that followed it returns with it. Nothing is generated or re-sent.
+export function reinstateWording(message: MessageView): string | null {
+  if (message.state !== "withdrawn") return null;
+  let wording = message.original_content ?? message.content;
+  let before: string | null = null;
+  for (const fact of message.revisions ?? []) {
+    if (fact.kind === "retraction") before = wording;
+    else if (fact.content !== null) wording = fact.content;
+  }
+  return before ?? wording;
+}
+
+export const REINSTATE_MESSAGE_CONFIRMATION =
+  "Reinstate this message and Val's reply? Both return to the conversation as they were; " +
+  "nothing is sent again and no new answer is made.";
+
+/** The versions of his messages he is viewing that are not the version in force. */
+export function continuingFrom(
+  messages: MessageView[],
+): { message_id: string; revision_number: number } | null {
+  for (const message of messages) {
+    const versions = message.versions ?? [];
+    if (message.role !== "user" || versions.length < 2) continue;
+    const shown = message.version ?? versions.length;
+    if (shown !== versions.length) {
+      const chosen = versions.find((v) => v.number === shown);
+      if (chosen) return { message_id: message.id, revision_number: chosen.revision_number };
+    }
+  }
+  return null;
+}
+

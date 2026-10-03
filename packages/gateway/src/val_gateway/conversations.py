@@ -64,7 +64,7 @@ to get wrong.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from uuid import UUID
 
 from sqlalchemy import Connection, Engine, text
@@ -76,6 +76,7 @@ from val_domain.conversation import (
     RevisionKind,
     ScopeTransitionRecord,
     StoredRole,
+    VersionSelectionRecord,
     WorkingThread,
     working_thread,
 )
@@ -452,8 +453,32 @@ def revision_record(row: object) -> MessageRevisionRecord:
     )
 
 
+_SELECT_SELECTIONS = text(
+    "select id, conversation_id, message_id, revision_number, after_sequence, note, created_at "
+    "  from message_version_selections where conversation_id = :id "
+    " order by after_sequence, created_at"
+)
+
+
+def selection_record(row: object) -> VersionSelectionRecord:
+    """One `message_version_selections` row as its domain record."""
+    return VersionSelectionRecord(
+        id=row.id,  # type: ignore[attr-defined]
+        conversation_id=row.conversation_id,  # type: ignore[attr-defined]
+        message_id=row.message_id,  # type: ignore[attr-defined]
+        revision_number=row.revision_number,  # type: ignore[attr-defined]
+        after_sequence=row.after_sequence,  # type: ignore[attr-defined]
+        created_at=row.created_at,  # type: ignore[attr-defined]
+        note=row.note,  # type: ignore[attr-defined]
+    )
+
+
 def working(
-    engine: Engine, conversation_id: UUID, *, as_of_sequence: int | None = None
+    engine: Engine,
+    conversation_id: UUID,
+    *,
+    as_of_sequence: int | None = None,
+    view: Mapping[UUID, int] | None = None,
 ) -> WorkingThread:
     """The conversation as it stood for the turn at `as_of_sequence` — or now.
 
@@ -465,10 +490,13 @@ def working(
     with engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
         history_rows = connection.execute(_SELECT_HISTORY, {"id": conversation_id}).all()
         fact_rows = connection.execute(_SELECT_FACTS, {"id": conversation_id}).all()
+        selection_rows = connection.execute(_SELECT_SELECTIONS, {"id": conversation_id}).all()
     return working_thread(
         tuple(_message(row) for row in history_rows),
         tuple(revision_record(row) for row in fact_rows),
         as_of_sequence=as_of_sequence,
+        selections=tuple(selection_record(row) for row in selection_rows),
+        view=view,
     )
 
 
@@ -484,8 +512,13 @@ def working_with(engine: Engine, conversation_id: UUID, extra: MessageRecord) ->
     with engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection:
         history_rows = connection.execute(_SELECT_HISTORY, {"id": conversation_id}).all()
         fact_rows = connection.execute(_SELECT_FACTS, {"id": conversation_id}).all()
+        selection_rows = connection.execute(_SELECT_SELECTIONS, {"id": conversation_id}).all()
     history = tuple(_message(row) for row in history_rows)
-    return working_thread((*history, extra), tuple(revision_record(row) for row in fact_rows))
+    return working_thread(
+        (*history, extra),
+        tuple(revision_record(row) for row in fact_rows),
+        selections=tuple(selection_record(row) for row in selection_rows),
+    )
 
 
 def prospective_thread(extra: MessageRecord) -> WorkingThread:
@@ -667,3 +700,14 @@ def scope_transitions(engine: Engine, conversation_id: UUID) -> tuple[ScopeTrans
         )
         for row in rows
     )
+
+
+def conversation_of_message(engine: Engine, message_id: UUID) -> UUID:
+    """The conversation a message belongs to, or `ConversationNotFoundError`."""
+    with engine.connect() as connection:
+        row = connection.execute(
+            text("select conversation_id from messages where id = :id"), {"id": message_id}
+        ).one_or_none()
+    if row is None:
+        raise ConversationNotFoundError(message_id)
+    return row.conversation_id  # type: ignore[no-any-return]

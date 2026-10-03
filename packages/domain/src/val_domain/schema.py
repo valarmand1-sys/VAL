@@ -1233,6 +1233,48 @@ class MessageRevision(Base):
     )
 
 
+class MessageVersionSelection(Base):
+    """Owner order, 2 October 2026 (§C) — `message_version_selections`.
+
+    Lord Armand continued the conversation from an earlier version of one of his
+    messages. Numbered under the conversation row lock like a revision
+    (`after_sequence`), so the messages appended after it belong to that version's
+    continuation. `revision_number` 0 names the original wording; a coherence
+    trigger refuses a Val message, a mismatched conversation and a revision that
+    does not exist. Append-only (`0033`).
+    """
+
+    __tablename__ = "message_version_selections"
+
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, server_default=text("uuidv7()")
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
+    conversation_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("conversations.id", ondelete="NO ACTION"),
+        nullable=False,
+    )
+    message_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="NO ACTION"), nullable=False
+    )
+    revision_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    after_sequence: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        CheckConstraint("revision_number >= 0", name="revision_number_not_negative"),
+        CheckConstraint("after_sequence > 0", name="after_sequence_positive"),
+        Index(
+            "ix_message_version_selections_conversation_id_after_sequence",
+            "conversation_id",
+            "after_sequence",
+        ),
+    )
+
+
 class ConversationRemoval(Base):
     """§2.1 amendment, 12 September 2026 — `conversation_removals`.
 
@@ -2435,6 +2477,7 @@ SPECIFIED_TABLES = frozenset(
         "conversation_scope_transitions",
         "messages",
         "message_revisions",
+        "message_version_selections",
         "personas",
         "model_calls",
         "model_call_cache_usage",

@@ -45,6 +45,7 @@ there is nothing to disambiguate. See `VAL_Open_Decisions.md` item 9.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import datetime
 from enum import StrEnum
@@ -156,6 +157,35 @@ class MessageRevisionRecord:
 
 
 @dataclass(frozen=True)
+class VersionSelectionRecord:
+    """One appended fact: Lord Armand continued the conversation from an earlier
+    version of one of his messages (owner order, 2 October 2026 §C). Numbered under
+    the conversation row lock like a revision: messages with `sequence >
+    after_sequence` belong to the selected version's continuation until the next
+    version event for that message. `revision_number` 0 is the original wording."""
+
+    id: UUID
+    conversation_id: UUID
+    message_id: UUID
+    revision_number: int
+    after_sequence: int
+    created_at: datetime
+    note: str | None = None
+
+
+@dataclass(frozen=True)
+class MessageVersion:
+    """One version of one of Lord Armand's messages: its wording, and the facts that
+    make it. `number` counts versions from 1 for display ("2 of 3"); `revision_number`
+    is the record's own key (0 for the original wording)."""
+
+    number: int
+    revision_number: int
+    content: str
+    created_at: datetime
+
+
+@dataclass(frozen=True)
 class WorkingMessage:
     """A stored message as it stands at one point in the conversation's order.
 
@@ -171,13 +201,23 @@ class WorkingMessage:
     state: MessageState
     answered_state: MessageState | None = None
     revisions: tuple[MessageRevisionRecord, ...] = ()
+    #: Versions (owner order, 2 October 2026 §C). A user message that was edited has
+    #: one version per wording; `version` is the one this thread shows, counted from
+    #: 1. A message with a single version has `versions == ()`.
+    versions: tuple[MessageVersion, ...] = ()
+    version: int = 1
+    #: False when this message belongs to the continuation of a version other than the
+    #: one shown: an alternative, kept with its own version, not withdrawn and not part
+    #: of this view of the conversation.
+    in_view: bool = True
 
     @property
     def live(self) -> bool:
-        """Whether this message belongs to the working conversation: not withdrawn,
-        and not Val's immediate answer to a withdrawn message."""
+        """Whether this message belongs to the working conversation: in the view, not
+        withdrawn, and not Val's immediate answer to a withdrawn message."""
         return (
-            self.state is not MessageState.WITHDRAWN
+            self.in_view
+            and self.state is not MessageState.WITHDRAWN
             and self.answered_state is not MessageState.WITHDRAWN
         )
 
@@ -213,6 +253,8 @@ def working_thread(
     facts: tuple[MessageRevisionRecord, ...],
     *,
     as_of_sequence: int | None = None,
+    selections: tuple[VersionSelectionRecord, ...] = (),
+    view: Mapping[UUID, int] | None = None,
 ) -> WorkingThread:
     """The conversation as it stood for the turn at `as_of_sequence`.
 
@@ -226,7 +268,18 @@ def working_thread(
 
     For each user message the newest applicable fact decides: none → current;
     a revision → corrected, with its wording; a retraction → withdrawn. A
-    revision after a retraction reinstates the message with the new wording.
+    revision after a retraction reinstates the message; with the wording that
+    was withdrawn it is a plain reinstatement (`current`, no new version), with
+    other wording a correction.
+
+    **Versions (owner order, 2 October 2026 §C).** Each correction of a user
+    message is a version of it, and each version keeps its own continuation: the
+    messages appended while that version was the one in force. A version comes
+    into force when its revision is recorded, and again when a
+    `VersionSelectionRecord` names it (Lord Armand continued from it). `view`
+    names the version to show for a message; absent, the version in force now is
+    shown. Messages in another version's continuation are kept, untouched, with
+    `in_view = False`: they are not withdrawn and not part of this view.
     """
     visible = (
         history
@@ -238,6 +291,65 @@ def working_thread(
         if as_of_sequence is not None and fact.after_sequence >= as_of_sequence:
             continue
         applicable.setdefault(fact.message_id, []).append(fact)
+    chosen: dict[UUID, list[VersionSelectionRecord]] = {}
+    for selection in sorted(selections, key=lambda item: (item.after_sequence, item.created_at)):
+        if as_of_sequence is not None and selection.after_sequence >= as_of_sequence:
+            continue
+        chosen.setdefault(selection.message_id, []).append(selection)
+
+    by_id = {record.id: record for record in visible}
+    #: Per edited user message: its versions, and the events that put a version in
+    #: force — (after_sequence, order, version number) — from its own sequence on.
+    branch_points: dict[UUID, tuple[tuple[MessageVersion, ...], list[tuple[int, int, int]]]] = {}
+    for message_id, own_facts in applicable.items():
+        record = by_id.get(message_id)
+        if record is None or record.role is not StoredRole.USER:
+            continue
+        versions = [MessageVersion(1, 0, record.content, record.created_at)]
+        events: list[tuple[int, int, int]] = [(record.sequence - 1, 0, 1)]
+        wording_before_withdrawal: str | None = None
+        for fact in own_facts:
+            if fact.kind is RevisionKind.RETRACTION:
+                wording_before_withdrawal = versions[-1].content
+                continue
+            if fact.content is None:
+                continue
+            if wording_before_withdrawal is not None and fact.content == wording_before_withdrawal:
+                # A plain reinstatement: the withdrawn wording returns; no new version.
+                wording_before_withdrawal = None
+                continue
+            wording_before_withdrawal = None
+            versions.append(
+                MessageVersion(
+                    len(versions) + 1, fact.revision_number, fact.content, fact.created_at
+                )
+            )
+            events.append((fact.after_sequence, fact.revision_number, len(versions)))
+        by_revision = {version.revision_number: version.number for version in versions}
+        for selection in chosen.get(message_id, ()):
+            number = by_revision.get(selection.revision_number)
+            if number is not None:
+                events.append((selection.after_sequence, 10**9 + selection.revision_number, number))
+        if len(versions) > 1:
+            events.sort()
+            branch_points[message_id] = (tuple(versions), events)
+
+    def in_force(events: list[tuple[int, int, int]], at_sequence: int) -> int:
+        """The version in force for a message appended at `at_sequence`."""
+        current = 1
+        for after, _, number in events:
+            if after < at_sequence:
+                current = number
+            else:
+                break
+        return current
+
+    shown: dict[UUID, int] = {}
+    for message_id, (known, events) in branch_points.items():
+        wanted = view.get(message_id) if view else None
+        shown[message_id] = (
+            wanted if wanted is not None and 1 <= wanted <= len(known) else events[-1][2]
+        )
 
     working: list[WorkingMessage] = []
     previous: WorkingMessage | None = None
@@ -248,14 +360,39 @@ def working_thread(
         if record.role is StoredRole.USER and own:
             newest = own[-1]
             if newest.kind is RevisionKind.REVISION and newest.content is not None:
-                content, state = newest.content, MessageState.CORRECTED
+                content = newest.content
+                withdrawn_wording = _wording_before_the_last_withdrawal(record.content, own)
+                state = (
+                    MessageState.CURRENT
+                    if withdrawn_wording is not None and withdrawn_wording == newest.content
+                    else MessageState.CORRECTED
+                )
             elif newest.kind is RevisionKind.RETRACTION:
                 state = MessageState.WITHDRAWN
+        # In the view: every branch point before this message, itself in the view,
+        # must have had the shown version in force when this message was appended.
+        in_view = True
+        for branch_id, (_, events) in branch_points.items():
+            branch = by_id[branch_id]
+            if branch.sequence >= record.sequence:
+                continue
+            if any(message.record.id == branch_id and not message.in_view for message in working):
+                continue
+            if in_force(events, record.sequence) != shown[branch_id]:
+                in_view = False
+                break
+        versions_of = branch_points[record.id][0] if record.id in branch_points else ()
+        version_shown = shown.get(record.id, 1)
+        if versions_of and record.role is StoredRole.USER:
+            content = versions_of[version_shown - 1].content
+            if state is not MessageState.WITHDRAWN:
+                state = MessageState.CORRECTED if version_shown > 1 else MessageState.CURRENT
         answered_state = (
             previous.state
             if record.role is StoredRole.VAL
             and previous is not None
             and previous.record.role is StoredRole.USER
+            and in_view
             else None
         )
         message = WorkingMessage(
@@ -264,11 +401,28 @@ def working_thread(
             state=state,
             answered_state=answered_state,
             revisions=own,
+            versions=versions_of,
+            version=version_shown,
+            in_view=in_view,
         )
         working.append(message)
-        if record.role in (StoredRole.USER, StoredRole.VAL):
+        if record.role in (StoredRole.USER, StoredRole.VAL) and in_view:
             previous = message
     return WorkingThread(messages=tuple(working))
+
+
+def _wording_before_the_last_withdrawal(
+    original: str, facts: tuple[MessageRevisionRecord, ...]
+) -> str | None:
+    """The wording in force when the message was last withdrawn, or None if it never was."""
+    wording = original
+    before: str | None = None
+    for fact in facts:
+        if fact.kind is RevisionKind.RETRACTION:
+            before = wording
+        elif fact.content is not None:
+            wording = fact.content
+    return before
 
 
 @dataclass(frozen=True)

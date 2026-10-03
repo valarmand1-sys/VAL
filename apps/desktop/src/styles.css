@@ -583,3 +583,17 @@ body {
   opacity: 0.7;
   margin: 0.35rem 0 0;
 }
+
+/* Versions of a corrected message, and where the view is among them (2 October 2026). */
+.message .versions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+.message .versions .version-position {
+  font-variant-numeric: tabular-nums;
+}
+

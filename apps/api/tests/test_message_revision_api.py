@@ -66,8 +66,15 @@ def test_a_correction_is_shown_in_place_with_the_original_and_the_answer_marked(
     assert user["state"] == "corrected"
     assert [r["kind"] for r in user["revisions"]] == ["revision"]
     assert user["revision_refusal"] is None
+    # Owner order, 2 October 2026 (§C): the correction is version 2; the answer to the
+    # earlier wording stays with version 1, served but not in this view.
+    assert user["version"] == 2 and [v["number"] for v in user["versions"]] == [1, 2]
     assert val["content"] == "The wide shot, my lord."
-    assert val["answered_state"] == "corrected"
+    assert val["in_view"] is False
+    earlier = api.get(f"/conversations/{conversation_id}", params={"view": f"{user_id}:1"}).json()
+    user_v1, val_v1 = earlier["messages"]
+    assert user_v1["content"] == "Open on the wide shot?" and user_v1["version"] == 1
+    assert val_v1["in_view"] is True and val_v1["answered_state"] == "current"
 
 
 def test_a_retraction_is_marked_and_destroys_nothing(store: Engine) -> None:

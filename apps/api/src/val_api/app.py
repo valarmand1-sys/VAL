@@ -130,6 +130,7 @@ from val_gateway.conversations import (
 )
 from val_gateway.deliberate import (
     DeliberatedOutcome,
+    answer_revision,
     prefill_voice_turn,
     prepare_light_answer,
 )
@@ -366,8 +367,16 @@ def create_app(
         )
         return [ConversationView.of(record) for record in records]
 
+    def _continue_from(request: TurnRequest) -> tuple[UUID, int] | None:
+        if request.continue_from_message_id is None:
+            return None
+        return (request.continue_from_message_id, request.continue_from_revision or 0)
+
     @app.get("/conversations/{conversation_id}")
-    def conversation_detail(conversation_id: UUID) -> ConversationDetail:
+    def conversation_detail(conversation_id: UUID, view: str | None = None) -> ConversationDetail:
+        """`view` (owner order, 2 October 2026 §C): which version of which message to
+        show — `message_id:number,...`; absent, the versions in force. Viewing is a
+        read: nothing is recorded and nothing is generated."""
         try:
             record = conversations.load(engine, conversation_id)
         except ConversationNotFoundError as missing:
@@ -395,7 +404,9 @@ def create_app(
                     # separately, by digest.
                     attachments=acts_for_message(engine, message.record.id),
                 )
-                for message in conversations.working(engine, conversation_id).messages
+                for message in conversations.working(
+                    engine, conversation_id, view=_parse_view(view)
+                ).messages
             ],
             classifications=[
                 ClassificationView.of(row) for row in classifications_for(engine, conversation_id)
@@ -666,6 +677,20 @@ def create_app(
         _voice_has_priority()
         gateway.typed_turn_started()
         try:
+            if request.revise_message_id is not None:
+                # Owner order, 2 October 2026 (§B): a correction is answered, once.
+                try:
+                    outcome = answer_revision(
+                        engine,
+                        gateway,
+                        request.revise_message_id,
+                        request.content,
+                        max_output_tokens=request.max_output_tokens,
+                        live_voice=sessions.live_conversations(),
+                    )
+                except RevisionRefusedError as refused:
+                    raise _revision_http_error(refused) from refused
+                return render_turn(outcome)
             outcome = deliberated_send(
                 engine,
                 gateway,
@@ -676,6 +701,7 @@ def create_app(
                     explicit_no_project=request.no_project,
                 ),
                 conversation_id=request.conversation_id,
+                continue_from=_continue_from(request),
                 title=request.title,
                 max_output_tokens=request.max_output_tokens,
                 attachments=_candidates(request),
@@ -976,6 +1002,20 @@ def create_app(
             )
 
         return build
+
+    def _parse_view(view: str | None) -> dict[UUID, int] | None:
+        if not view:
+            return None
+        chosen: dict[UUID, int] = {}
+        for item in view.split(","):
+            if ":" not in item:
+                continue
+            message_id, number = item.split(":", 1)
+            try:
+                chosen[UUID(message_id)] = int(number)
+            except ValueError:
+                continue
+        return chosen or None
 
     def voice_session_or_404(session: UUID) -> VoiceSession:
         live = sessions.get(session)

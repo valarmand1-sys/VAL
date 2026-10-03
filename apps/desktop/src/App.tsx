@@ -92,6 +92,9 @@ import {
   REMOVED_CONVERSATION_NOTICE,
   transitionLine,
   userStateLine,
+  continuingFrom,
+  reinstateWording,
+  REINSTATE_MESSAGE_CONFIRMATION,
 } from "./messageState";
 import { enterProject, initialEntry, newChatEntry, newConversationLine, turnScopeFields } from "./scope";
 import { newTurnClock, PROGRESS_NOTE, STAGE_WORDS, timingLines } from "./timing";
@@ -229,10 +232,22 @@ export function App(): React.JSX.Element {
     })();
   }, [refreshConversations, showArchived]);
 
+  // Which version of which message is shown (owner order, 2 October 2026 §C); viewing
+  // is a read. Reset when the conversation changes.
+  const shownVersions = useRef<Record<string, number>>({});
   const openConversation = useCallback(async (id: string) => {
-    const outcome = await reads.current.read(() => api.conversation(id));
+    const outcome = await reads.current.read(() =>
+      api.conversation(id, shownVersions.current),
+    );
     if (outcome.applied) setClarification(null);
   }, []);
+  const navigateVersion = useCallback(
+    async (conversationId: string, messageId: string, number: number) => {
+      shownVersions.current = { ...shownVersions.current, [messageId]: number };
+      await openConversation(conversationId);
+    },
+    [openConversation],
+  );
 
   // Entering a project, or leaving to everything. Entering is the one intentional
   // act that makes the next new conversation project-scoped.
@@ -511,6 +526,7 @@ export function App(): React.JSX.Element {
       content: string,
       projectOverride?: string,
       attached: PendingAttachment[] = [],
+      options: { reviseMessageId?: string } = {},
     ): Promise<boolean> => {
       if (content.trim() === "" || busy) return false;
       setBusy(true);
@@ -530,8 +546,29 @@ export function App(): React.JSX.Element {
             : turnScopeFields(entry, detail?.conversation ?? null);
         const attachments =
           attached.length === 0 ? undefined : await Promise.all(attached.map(asAttachmentInput));
+        // Owner order, 2 October 2026: a saved correction is answered (§B); a message sent
+        // while an earlier version is shown continues from that version (§C).
+        const continuing =
+          options.reviseMessageId === undefined && detail !== null
+            ? continuingFrom(detail.messages)
+            : null;
+        const versionFields =
+          options.reviseMessageId !== undefined
+            ? { revise_message_id: options.reviseMessageId }
+            : continuing !== null
+              ? {
+                  continue_from_message_id: continuing.message_id,
+                  continue_from_revision: continuing.revision_number,
+                }
+              : {};
         const result = await api.turnStream(
-          { content, ...scopeFields, progress: true, ...(attachments ? { attachments } : {}) },
+          {
+            content,
+            ...scopeFields,
+            ...versionFields,
+            progress: true,
+            ...(attachments ? { attachments } : {}),
+          },
           {
             onDelta: (text) => {
               if (clock.firstDeltaMs === null) {
@@ -576,6 +613,7 @@ export function App(): React.JSX.Element {
         // Evidence for the undiagnosed delta-to-paint question: the whole record,
         // in the developer console. Not persisted anywhere.
         console.info("val.turn.timing", JSON.stringify({ ...report, service: outcome.timing }));
+        shownVersions.current = {};
         await openConversation(outcome.conversation.id);
         await refreshConversations(scope);
         await refreshSignals();
@@ -745,6 +783,12 @@ export function App(): React.JSX.Element {
             detail={detail}
             projects={projects}
             scroll={scrollMemory.current}
+            onNavigate={(messageId, number) =>
+              void navigateVersion(detail.conversation.id, messageId, number)
+            }
+            onAnswerRevision={(messageId, content) =>
+              send(content, undefined, [], { reviseMessageId: messageId })
+            }
             spoken={spokenAnswers}
             onRecorded={() => void openConversation(detail.conversation.id)}
             onConversationChanged={async () => {
@@ -1347,6 +1391,10 @@ export function Thread(props: {
   spoken?: readonly SpokenAnswer[];
   /** Where the view stays between updates; its own when rendered alone. */
   scroll?: ScrollMemory;
+  /** Show another version of one of his messages (2 October 2026 §C). A read. */
+  onNavigate?: (messageId: string, number: number) => void;
+  /** Answer a saved correction (2 October 2026 §B). Resolves false when refused. */
+  onAnswerRevision?: (messageId: string, content: string) => Promise<boolean>;
 }): React.JSX.Element {
   const { detail, projects, onRecorded, onConversationChanged, onRefused } = props;
   const spoken = props.spoken ?? [];
@@ -1374,7 +1422,10 @@ export function Thread(props: {
             {transitionLine(transition, projects)}
           </div>
         ))}
-      {detail.messages.map((message) => (
+      {detail.messages
+        // Another version's continuation is kept, with its version; not shown here.
+        .filter((message) => message.in_view !== false)
+        .map((message) => (
         <Fragment key={message.id}>
           <MessageBlock
             message={message}
@@ -1382,6 +1433,8 @@ export function Thread(props: {
             spoken={spoken}
             onRecorded={onRecorded}
             onRefused={onRefused}
+            onNavigate={props.onNavigate}
+            onAnswerRevision={props.onAnswerRevision}
           />
           {early
             .filter((answer) => answer.turn === message.id)
@@ -1412,6 +1465,8 @@ function MessageBlock(props: {
   spoken?: readonly SpokenAnswer[];
   onRecorded: () => void;
   onRefused: (message: string) => void;
+  onNavigate?: ((messageId: string, number: number) => void) | undefined;
+  onAnswerRevision?: ((messageId: string, content: string) => Promise<boolean>) | undefined;
 }): React.JSX.Element {
   const { message, detail, onRecorded, onRefused } = props;
   // Only her answers being spoken are paced; every other message is shown whole.
@@ -1482,6 +1537,27 @@ function MessageBlock(props: {
               </button>
             </>
           )}
+          {message.role === "user" && message.state === "withdrawn" && (
+            <>
+              {" "}
+              {/* Owner order, 2 October 2026 (§D): the withdrawn exchange returns as it
+                  was — its wording sent back as a revision the service reads as a
+                  reinstatement; Val's reply returns with it; nothing is generated. */}
+              <button
+                className="inline-action"
+                disabled={busy}
+                onClick={() => {
+                  const wording = reinstateWording(message);
+                  if (wording === null) return;
+                  void askToConfirm(REINSTATE_MESSAGE_CONFIRMATION, "Reinstate").then((yes) => {
+                    if (yes) void act(() => api.reviseMessage(message.id, wording));
+                  });
+                }}
+              >
+                Reinstate
+              </button>
+            </>
+          )}
         </div>
       )}
       {answerLine !== null && (
@@ -1509,19 +1585,51 @@ function MessageBlock(props: {
           <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={3} autoFocus />
           <button
             disabled={busy || draft.trim() === "" || draft === message.content}
-            onClick={() =>
-              void act(async () => {
-                await api.reviseMessage(message.id, draft);
-                setEditing(false);
-              })
-            }
+            onClick={() => {
+              // Owner order, 2 October 2026 (§B): a saved correction is answered. The
+              // editor closes only when the answer was taken on; a refusal (Voice on,
+              // typed work waits) keeps the proposed edit here with its explanation.
+              if (props.onAnswerRevision === undefined) {
+                void act(async () => {
+                  await api.reviseMessage(message.id, draft);
+                  setEditing(false);
+                });
+                return;
+              }
+              void props.onAnswerRevision(message.id, draft).then((taken) => {
+                if (taken) setEditing(false);
+              });
+            }}
           >
-            Save correction
+            Save and answer
           </button>
           <button onClick={() => setEditing(false)}>Cancel</button>
         </div>
       ) : (
         <>
+          {message.role === "user" && (message.versions ?? []).length > 1 && (
+            <div className="versions" aria-label="Versions of this message">
+              <button
+                className="inline-action"
+                disabled={(message.version ?? 1) <= 1}
+                aria-label="Earlier version"
+                onClick={() => props.onNavigate?.(message.id, (message.version ?? 1) - 1)}
+              >
+                ‹
+              </button>
+              <span className="version-position">
+                {message.version ?? 1} of {(message.versions ?? []).length}
+              </span>
+              <button
+                className="inline-action"
+                disabled={(message.version ?? 1) >= (message.versions ?? []).length}
+                aria-label="Later version"
+                onClick={() => props.onNavigate?.(message.id, (message.version ?? 1) + 1)}
+              >
+                ›
+              </button>
+            </div>
+          )}
           <div className="content">
             {presented !== null ? <SpokenContent presented={presented} /> : message.content}
           </div>

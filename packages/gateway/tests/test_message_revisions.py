@@ -194,8 +194,11 @@ def test_an_earlier_call_reconstructs_exactly_after_a_revision(store: Engine) ->
             conversation=third.conversation, scope=third.scope, user_message=third.user_message
         ),
     )
-    assert reconstructed_third[0].content == CORRECTED_A
-    assert reconstructed_third[1].content == "The wide shot, my lord."
+    # Owner order, 2 October 2026 (§C): the correction began a new version; the
+    # exchanges that followed the earlier wording are that version's continuation and
+    # are not in the later turn's view.
+    spoken = [m.content for m in reconstructed_third if not m.content.startswith("VAL-STATE")]
+    assert spoken == [CORRECTED_A, "Thank you."]
 
 
 def test_a_revision_recorded_while_a_turn_is_open_is_invisible_to_it(store: Engine) -> None:
@@ -258,10 +261,14 @@ def test_a_later_turn_is_told_the_earlier_message_was_corrected_after_its_answer
     revise(store, first.user_message.id, CORRECTED_A)
     _say(store, "Thank you.", first.conversation.id, "My lord.")
     adapter = _say.last_adapter  # type: ignore[attr-defined]
-    assert adapter.sent_messages[0].content == CORRECTED_A
-    assert adapter.sent_messages[1].content == "The wide shot, my lord."
+    # Owner order, 2 October 2026 (§C): the answer to the earlier wording belongs to
+    # that version's continuation and is not in the corrected version's view, so the
+    # later turn receives the corrected wording and then its own words — and no
+    # answer-to-earlier-wording fact, because none is in view.
+    spoken = [m.content for m in adapter.sent_messages if not m.content.startswith("VAL-STATE")]
+    assert spoken == [CORRECTED_A, "Thank you."]
     history = _state(adapter)["same_conversation_history"]
-    assert history["corrected_after_answer"] == [{"message_position": 1, "answer_position": 2}]
+    assert history.get("corrected_after_answer", []) == []
     assert "withdrawn_exchanges" not in history
 
 
@@ -436,7 +443,10 @@ def test_a_revision_after_a_retraction_reinstates_the_message(store: Engine) -> 
     fact = revise(store, first.user_message.id, ASK_A)
     assert fact.revision_number == 2
     thread = conv.working(store, first.conversation.id)
-    assert thread.messages[0].state is MessageState.CORRECTED
+    # The withdrawn wording returned: a reinstatement, not a correction and not a new
+    # version (owner order, 2 October 2026 §D) — its answer returns with it.
+    assert thread.messages[0].state is MessageState.CURRENT
+    assert thread.messages[0].versions == ()
     assert thread.messages[0].live and thread.messages[1].live
 
 

@@ -59,6 +59,14 @@ export interface ScopeTransitionView {
 export type MessageState = "current" | "corrected" | "withdrawn";
 
 // One appended revision or retraction fact — ruling, 12 September 2026.
+// One version of one of Lord Armand's messages — owner order, 2 October 2026 (§C).
+export interface VersionView {
+  number: number;
+  revision_number: number;
+  content: string;
+  created_at: string;
+}
+
 export interface RevisionView {
   id: string;
   message_id: string;
@@ -117,6 +125,10 @@ export interface MessageView {
   revision_refusal?: string | null;
   // Absent means none, which is true of every message before 19 September 2026.
   attachments?: AttachmentView[];
+  /** Versions (2 October 2026 §C): the one shown, all of them, and whether this message is in the view. */
+  version?: number;
+  versions?: VersionView[];
+  in_view?: boolean;
 }
 
 export type Ordering = "enforced" | "contaminated";
@@ -675,7 +687,12 @@ export const api = {
     const suffix = parameters.size > 0 ? `?${parameters.toString()}` : "";
     return request<ConversationView[]>(`/conversations${suffix}`);
   },
-  conversation: (id: string) => request<ConversationDetail>(`/conversations/${id}`),
+  // `view` (2 October 2026 §C): which version of which message to show, as the service
+  // reads it — "id:number,…". A read: nothing is recorded and nothing is generated.
+  conversation: (id: string, view?: Record<string, number>) =>
+    request<ConversationDetail>(
+      `/conversations/${id}${viewQuery(view)}`,
+    ),
   // Conversation management — ruling, 12 September 2026. Rename sets the
   // presentation-class title; archive hides from the default listing and
   // changes nothing else.
@@ -759,8 +776,19 @@ export interface AttachmentInput {
   classification: AttachmentClassification;
 }
 
+export function viewQuery(view: Record<string, number> | undefined): string {
+  const entries = Object.entries(view ?? {});
+  if (entries.length === 0) return "";
+  return `?view=${encodeURIComponent(entries.map(([id, n]) => `${id}:${n}`).join(","))}`;
+}
+
 export interface TurnBody {
   content: string;
+  /** 2 October 2026 §B: answer this corrected wording of this message of his. */
+  revise_message_id?: string;
+  /** 2 October 2026 §C: this message continues from an earlier version of one of his. */
+  continue_from_message_id?: string;
+  continue_from_revision?: number;
   attachments?: AttachmentInput[];
   conversation_id?: string;
   project?: string;
