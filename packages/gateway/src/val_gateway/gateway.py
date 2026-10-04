@@ -976,14 +976,17 @@ class Gateway:
         pair of resident models behind the others' backs."""
         adapter = cast(LocalRuntimeAdapter, self._adapters[config.provider])
         self._transition_to(config)
+        # The mark belongs to whoever set it: a prime that brings the model up sets it for
+        # the whole of its preparation, and the load inside it must not lift it early
+        # (found 3 October 2026: the state read ready while the prefix was still computing).
         with self._residency_lock:
-            arriving = config.slug not in self._resident_local
-            if arriving:
+            owned = config.slug not in self._resident_local and self._preparing is None
+            if owned:
                 self._preparing = config.slug
         try:
             return self._bring_up(adapter, config)
         finally:
-            if arriving:
+            if owned:
                 with self._residency_lock:
                     if self._preparing == config.slug:
                         self._preparing = None
@@ -1207,6 +1210,20 @@ class Gateway:
         if not deep and self.typed_prime != "off":
             result["primed"] = self.prime_typed_prefix()
         return result
+
+    def prepare_after_cancelled_changeover(self) -> bool:
+        """A message cancelled while its text model was being brought up leaves the model
+        resident and nothing useful computed. Prepare the persona prefix once the service
+        is idle, so the next message does not pay the cold preparation (found 3 October
+        2026: 10.4 s). Only then — after an answered turn the runtime already holds the
+        conversation, and a prime would replace it."""
+        typed = self._typed_turn_route()
+        with self._residency_lock:
+            changing = typed is not None and self._preparing == typed.slug
+        if not changing or self.typed_prime == "off":
+            return False
+        self.schedule_typed_refresh()
+        return True
 
     def schedule_typed_refresh(self) -> None:
         """A refresh prime after a typed answer, once the service is idle; coalesced, so

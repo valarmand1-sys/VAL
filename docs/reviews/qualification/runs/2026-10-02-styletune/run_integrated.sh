@@ -15,7 +15,8 @@ O=$ROOT/docs/reviews/qualification/runs/2026-10-02-styletune
 LMS=$HOME/.lmstudio/bin/lms
 EXP=val-exp-prod
 cd $ROOT
-export VAL_TYPED_MODEL=gemma-4-26b-a4b-styletune-v2
+# CONTROL=1: production's own configuration (no typed model), the Voice control script.
+if [[ ${CONTROL:-0} == 1 ]]; then unset VAL_TYPED_MODEL; BENCH=voice_control.py; else export VAL_TYPED_MODEL=gemma-4-26b-a4b-styletune-v2; BENCH=integrated_bench.py; fi
 export VAL_VOICE_MODEL=gemma-4-26b-a4b VAL_VOICE_RELEASES_PARTNER=on
 export VAL_EXPERIMENT_MODEL_IDENTIFIER=$EXP VAL_EXPERIMENT_MODEL_KEY=openai/gpt-oss-20b
 export VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1
@@ -23,7 +24,7 @@ export VAL_LLAMACPP_API_KEY=$(python3 -c "import secrets; print(secrets.token_he
 export VAL_ADAPTIVE_ENDPOINT=on VAL_VOICE_TURN_PREFILL=on VAL_OWNER_PRECEDENCE=on VAL_COMBINE_CONTINUATIONS=on
 export VAL_CONVERSATION_GUIDANCE=on VAL_SPOKEN_NUMERALS=on VAL_SPOKEN_FORMATTING=on
 unset VAL_TYPED_PRIME VAL_VOICE_EARLY_AUDIO VAL_FAST_ROUTE_TIERS VAL_TIER1_ROUTE VAL_SPECULATION VAL_ADAPTIVE_GRACE VAL_REQUEST_CONSTRUCTION
-echo "=== $LABEL $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps | wc -l | tr -d ' ')"
+echo "=== $LABEL control=${CONTROL:-0} $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps | wc -l | tr -d ' ')"
 RESIDENT=$($LMS ps 2>/dev/null | grep -cE "gpt-oss|gemma|LOADED|IDLE")
 [[ $RESIDENT == 0 ]] || { echo "a model is resident in LM Studio (production in use?): not starting"; exit 2; }
 [[ -z $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null) ]] || { echo "port 8099 has a listener this run did not start (production Voice?): not starting"; exit 2; }
@@ -53,7 +54,7 @@ owned_by_service() {
 }
 for i in $(seq 1 480); do curl -fsS http://127.0.0.1:8766/health >/dev/null 2>&1 && break; sleep 0.25; done
 curl -fsS http://127.0.0.1:8766/health >/dev/null || { echo "service did not start"; tail -5 $O/service-$LABEL.log; kill $SERVICE $MEMORY; exit 1; }
-caffeinate -i uv run --project $ROOT python $O/integrated_bench.py $O/integrated-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out
+if [[ $BENCH == voice_control.py ]]; then caffeinate -i uv run --project $ROOT python $O/$BENCH $O/integrated-$LABEL.json 2>&1 | tee $O/bench-$LABEL.out; else caffeinate -i uv run --project $ROOT python $O/$BENCH $O/integrated-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out; fi
 OURS=""
 for pid in $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null); do owned_by_service $pid && OURS="$OURS $pid"; done
 kill $SERVICE 2>/dev/null; sleep 3

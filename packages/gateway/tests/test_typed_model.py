@@ -268,3 +268,43 @@ def test_voice_on_releases_the_deep_model_too_when_that_is_what_was_resident(
     gateway.warm_cognition()  # Voice On, with GPT-OSS resident
     assert adapter.loaded == {voice_model.model_identifier}
     assert ("release", deep.model_identifier) in adapter.events
+
+
+def test_a_prime_that_brings_the_model_up_is_shown_as_preparing_until_it_ends(
+    store: Engine, typed_model: tuple[ModelConfig, ModelConfig]
+) -> None:
+    """The load inside the prime must not lift the prime's own mark (3 October 2026)."""
+    typed, _ = typed_model
+    seen: list[object] = []
+
+    class Watches(PrimingAdapter):
+        def ensure_runtime_ready(self, config: ModelConfig) -> dict[str, object]:
+            result = super().ensure_runtime_ready(config)
+            seen.append(("loaded", gateway.cognition_state()["preparing"]))
+            return result
+
+        def complete(self, *args, **kwargs) -> object:  # noqa: ANN002, ANN003
+            seen.append(("priming", gateway.cognition_state()["preparing"]))
+            return super().complete(*args, **kwargs)
+
+    adapter = Watches([ok("Good")])
+    gateway = typed_gateway(store, adapter, typed_model)  # type: ignore[arg-type]
+    gateway.typed_prime = "transition"
+    assert gateway.prime_typed_prefix()["primed"] is True
+    assert ("priming", typed.slug) in seen, "still preparing while the prefix is computed"
+    assert gateway.cognition_state()["preparing"] is None
+    assert gateway.cognition_state()["typed_ready"] is True
+
+
+def test_a_cancel_during_a_changeover_prepares_the_model_afterwards_and_only_then(
+    store: Engine, typed_model: tuple[ModelConfig, ModelConfig]
+) -> None:
+    typed, _ = typed_model
+    gateway = typed_gateway(store, Residency(), typed_model)
+    gateway.typed_prime = "transition"
+    scheduled: list[bool] = []
+    gateway.schedule_typed_refresh = lambda: scheduled.append(True)  # type: ignore[method-assign]
+    assert gateway.prepare_after_cancelled_changeover() is False, "nothing changing"
+    gateway._preparing = typed.slug  # the message's changeover is under way
+    assert gateway.prepare_after_cancelled_changeover() is True
+    assert scheduled == [True]

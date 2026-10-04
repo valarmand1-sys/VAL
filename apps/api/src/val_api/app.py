@@ -713,6 +713,9 @@ def create_app(
         if flag is None:
             return {"cancelled": False}
         flag.set()
+        after = getattr(gateway, "prepare_after_cancelled_changeover", None)
+        if callable(after):
+            after()
         return {"cancelled": True}
 
     @app.get("/cognition")
