@@ -38,6 +38,32 @@ TURNS = [
     "Thank you.",
 ]
 
+# A longer conversation with substantial answers, so the history reaches several thousand
+# tokens: does onset stay flat well past the first few messages? (Frozen 3 October 2026
+# before it was run.)
+LONG = [
+    *TURNS[:11],
+    "Develop a short scene in prose, about two hundred words: a location scout arrives at a farm at dawn.",
+    "Now the same scene from the farmer's point of view, about two hundred words.",
+    "Which of the two versions is stronger, and why?",
+    "Explain, conversationally, what a line producer does on a small film.",
+    "And how is that different from a unit production manager?",
+    "Give me five possible titles for the farm film.",
+    "Which one would you pick?",
+    "Write a logline for it using that title.",
+    "Tighten that logline to under twenty-five words.",
+    "Explain the difference between coverage and a master shot.",
+    "When would you skip coverage altogether?",
+    "Draft a three-sentence note thanking the crew for a hard night shoot.",
+    "Make it warmer, but no longer.",
+    "What are three common mistakes in a first short film?",
+    "Which of those is hardest to fix in the edit?",
+    "Summarise what we have discussed about the farm film so far, in four sentences.",
+    "What was the first thing I asked you in this conversation?",
+    "Suggest what I should work on tomorrow morning, in two sentences.",
+    "Thank you.",
+]
+
 
 def wait_for_prime(log: Path, deadline_s: float = 300.0) -> dict:
     started = time.monotonic()
@@ -103,7 +129,7 @@ def main() -> int:
     else:
         result["prime"] = wait_for_prime(log)
         conversation = None
-        for text in TURNS:
+        for text in LONG if mode == "long" else TURNS:
             row = turn(client, conversation, text)
             conversation = conversation or row["conversation_id"]
             rows.append(row)
@@ -112,8 +138,11 @@ def main() -> int:
         onsets = [r["onset_s"] for r in rows if r["onset_s"] is not None]
         result["onset_median_s"] = round(statistics.median(onsets), 3)
         result["onset_max_s"] = max(onsets)
-        result["first_half_median_s"] = round(statistics.median(onsets[:6]), 3)
-        result["second_half_median_s"] = round(statistics.median(onsets[6:]), 3)
+        half = len(onsets) // 2
+        result["first_half_median_s"] = round(statistics.median(onsets[:half]), 3)
+        result["second_half_median_s"] = round(statistics.median(onsets[half:]), 3)
+        result["last_five_median_s"] = round(statistics.median(onsets[-5:]), 3)
+        result["final_prompt_tokens"] = ((rows[-1].get("timing") or {}).get("prompt_tokens"))
     result["rows"] = rows
     out.write_text(json.dumps(result, indent=1) + "\n")
     print(json.dumps({k: v for k, v in result.items() if k != "rows"}), flush=True)

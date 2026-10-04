@@ -1,6 +1,6 @@
 #!/bin/zsh
 # StyleTune V2 through Val Core's typed path, in isolation — 2 October 2026 (owner order).
-#   run_styletune.sh writing|sustained|cold LABEL
+#   run_styletune.sh writing|sustained|long|cold LABEL
 # The scratch service (port 8766, scratch store val_test) with the candidate as the typed
 # route in that process only; its llama.cpp server is started by the service's own
 # supervisor on 8099. One cognition model at a time: the run REFUSES to start if LM Studio
@@ -46,6 +46,7 @@ echo "service up after $(python3 -c "import time; print(round(time.time()-$T_STA
 case $STAGE in
   writing)   caffeinate -i uv run --project $ROOT python $W/compare_bench.py styletune $LABEL forward $O/answers-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out ;;
   sustained) caffeinate -i uv run --project $ROOT python $O/typed_timing.py sustained styletune $LABEL $O/timing-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out ;;
+  long)      caffeinate -i uv run --project $ROOT python $O/typed_timing.py long styletune $LABEL $O/timing-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out ;;
   cold)      caffeinate -i uv run --project $ROOT python $O/typed_timing.py cold styletune $LABEL $O/timing-$LABEL.json $O/service-$LABEL.log 2>&1 | tee $O/bench-$LABEL.out ;;
   *) echo "unknown stage $STAGE" ;;
 esac

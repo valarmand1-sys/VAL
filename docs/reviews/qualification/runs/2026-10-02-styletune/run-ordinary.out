@@ -1,0 +1,135 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_layer_0_schema, Layer 0 schema — the seven tables of 04-layer-0.md §2.
+INFO  [alembic.runtime.migration] Running upgrade 0001_layer_0_schema -> 0002_reaction_and_ideas, Reaction is not intent, and the idea lifecycle — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0002_reaction_and_ideas -> 0003_budget_reservations, Pre-call budget reservations, and truthful cost — 04-layer-0.md §2 amendments.
+INFO  [alembic.runtime.migration] Running upgrade 0003_budget_reservations -> 0004_supersede_zero_costs, Supersede the fabricated zero costs without touching them — §2.2 amendment.
+INFO  [alembic.runtime.migration] Running upgrade 0004_supersede_zero_costs -> 0005_persona_provenance, Persona provenance and per-call attribution — WP-0.5.
+INFO  [alembic.runtime.migration] Running upgrade 0005_persona_provenance -> 0006_project_attribution, What a stored project_id means — §2.2 amendment, WP-0.6 corrective round.
+INFO  [alembic.runtime.migration] Running upgrade 0006_project_attribution -> 0007_legacy_attribution_closed, Close the legacy-attribution set for good — WP-0.6 corrective round two.
+INFO  [alembic.runtime.migration] Running upgrade 0007_legacy_attribution_closed -> 0008_conversation_scope_recall, Conversation scope is history; recall is project-scoped — WP-0.7.
+INFO  [alembic.runtime.migration] Running upgrade 0008_conversation_scope_recall -> 0009_evidence_is_immutable, Evidence rows cannot be edited — current-version closure pass, 18 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0009_evidence_is_immutable -> 0010_terminal_state_is_evidence, The provider's terminal state is durable evidence — independent-review correction.
+INFO  [alembic.runtime.migration] Running upgrade 0010_terminal_state_is_evidence -> 0011_blind_position_evidence, The blind position is durable evidence — WP-0.9, ruling of 19 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0011_blind_position_evidence -> 0012_archive_is_presentation, `archived_at`, and the demonstration fixtures marked — 31 August 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0012_archive_is_presentation -> 0013_classification_evidence, A turn's classification is durable evidence — ruling of 3 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0013_classification_evidence -> 0014_classification_review, Hand-labelling of classifications — ruling of 7 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0014_classification_review -> 0015_model_call_cache_usage, Prompt-cache evidence per call — ruling of 8 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0015_model_call_cache_usage -> 0016_message_revisions, Message revision and retraction as appended facts — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0016_message_revisions -> 0017_conversation_removals, Conversation Remove and Reinstate as appended facts — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0017_conversation_removals -> 0018_scope_transitions, Explicit scope transitions with immutable history — ruling of 12 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0018_scope_transitions -> 0019_answer_recall_sources, House Recall grounding continuity as provenance — ruling of 13 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0019_answer_recall_sources -> 0020_exchange_measurements, Exchange identity on reservations, and per-call measurement — ruling of 13 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0020_exchange_measurements -> 0021_prompt_cache_diagnostics, Prompt-cache diagnostics on the measurement sidecar — ruling of 15 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0021_prompt_cache_diagnostics -> 0022_runtime_provenance, Runtime provenance on the measurement sidecar — ruling of 16 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0022_runtime_provenance -> 0023_second_local_provider, The known-$0 clause names the second unmetered LOCAL provider — ruling of 18 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0023_second_local_provider -> 0024_attachment_substrate, Attachment Substrate v1.2 — the six append-only tables. Owner ruling, 19 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0024_attachment_substrate -> 0025_local_visual_perception, Local visual perception: the record of what Val looked at, and what she saw.
+INFO  [alembic.runtime.migration] Running upgrade 0025_local_visual_perception -> 0026_local_audio_perception, Audio joins the perception record — owner execution order, 22 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0026_local_audio_perception -> 0027_local_speech, Val's voice, on the record — owner execution order, 22 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0027_local_speech -> 0028_voice_input, Val listens, and the record stays text — owner execution order, 23 Sept 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0028_voice_input -> 0029_speech_delivery, What the owner actually heard — owner execution order, 23 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0029_speech_delivery -> 0030_voice_local_only, The live-voice seal — owner execution order, 24 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0030_voice_local_only -> 0031_prefix_prime, A prefix prime is a model call, and the record says so — owner order, 25 September 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0031_prefix_prime -> 0032_light_conversation, Light conversation, and its speculative preparation, are on the record — 26 Sept 2026.
+INFO  [alembic.runtime.migration] Running upgrade 0032_light_conversation -> 0033_message_version_selections, Continuing from an earlier version of a message — owner order, 2 October 2026 (§C).
+WARNI [val_gateway.startup] CANDIDATE Voice model for this process: spoken turns are pinned to gemma-4-26b-a4b-q4km-llamacpp-voice (gemma-4-26b-a4b-it); typed and complex work stays on the Partner route. Not an admission; the registry on disk is unchanged.
+WARNI [val_gateway.startup] hosted provider anthropic: no adapter built (owner rule, 2 October 2026: AI processing runs on this Mac); its routes are unreachable and its key, if configured, serves nothing here
+WARNI [val_gateway.startup] hosted provider openai: no adapter built (owner rule, 2 October 2026: AI processing runs on this Mac); its routes are unreachable and its key, if configured, serves nothing here
+WARNI [val_gateway.startup] CANDIDATE Voice turn prefill for this process: a spoken turn's request, without his words, is prepared in the local Voice runtime when he begins to speak.
+WARNI [val_gateway.startup] CANDIDATE conversational guidance for this process: Core's guidance on how an answer is scoped follows the persona in every conversation's system message (3363 characters; the persona is unchanged and still whole).
+WARNI [val_gateway.startup] CANDIDATE spoken formatting for this process: recognised Markdown formatting is not voiced; every word is, and the written text is unchanged.
+WARNI [val_gateway.startup] CANDIDATE spoken numerals for this process: unambiguous Roman numerals are voiced as numbers; the written text is unchanged.
+WARNI [val_gateway.startup] CANDIDATE Voice releases the Partner model for this process: Voice On unloads it while the Voice model is resident; Voice ending loads it again.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O1-greeting-question", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6752, "tokens_out": 22, "call_to_first_visible_s": 1.798, "call_to_first_segment_s": 1.912, "call_total_s": 2.216, "server_prompt_eval_s": 1.541, "server_prompt_tokens_evaluated": 930, "server_generated_tokens": 22, "server_tokens_per_second": 52.65, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: Good evening, my lord. I am well, thank you. What shall we turn our attention to?
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O2-system-check", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6756, "tokens_out": 16, "call_to_first_visible_s": 1.597, "call_to_first_segment_s": 1.712, "call_total_s": 1.887, "server_prompt_eval_s": 1.549, "server_prompt_tokens_evaluated": 934, "server_generated_tokens": 16, "server_tokens_per_second": 52.89, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: Good evening, my lord. I am here, and I am listening.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O3-substantive", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6773, "tokens_out": 175, "call_to_first_visible_s": 1.626, "call_to_first_segment_s": 1.929, "call_total_s": 4.909, "server_prompt_eval_s": 1.562, "server_prompt_tokens_evaluated": 951, "server_generated_tokens": 175, "server_tokens_per_second": 53.08, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: Surprise is a sudden revelation that catches a character or an audience off guard, usually because the information was hidden until the moment of impact. It is a single point of shock—the door swings open to reveal an assassin, or a letter arrives with unexpected news. Once the revelation has occurred, the shock dissipates.
+           
+           Suspense, however, is the tension that exists in the space *before* the revelation. It requires the audience to possess information that the characters do not, or to anticipate an inevitable event that hasn't yet arrived. In a scene of suspense, the audience sees the assassin hiding behind the door before the character enters the room. The tension comes from the dread of what is about to happen, and that feeling persists as long as the threat remains unresolved.
+           
+           In short, surprise is about what happens; suspense is about what might happen.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O4-follow-up", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6832, "tokens_out": 59, "call_to_first_visible_s": 1.714, "call_to_first_segment_s": 1.943, "call_total_s": 2.811, "server_prompt_eval_s": 1.659, "server_prompt_tokens_evaluated": 1010, "server_generated_tokens": 59, "server_tokens_per_second": 53.07, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: The second—the sound that continues past its natural conclusion—would be most effective, my lord. In darkness, the ear becomes the primary instrument of survival. When a sound persists where silence should be, the mind fills the void with dread, imagining threats that the eyes cannot yet confirm.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O5-creative", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6776, "tokens_out": 45, "call_to_first_visible_s": 1.605, "call_to_first_segment_s": 1.76, "call_total_s": 2.446, "server_prompt_eval_s": 1.548, "server_prompt_tokens_evaluated": 954, "server_generated_tokens": 45, "server_tokens_per_second": 52.79, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: One of my own, my lord: The lantern room had grown unnaturally cold, though the oil burned bright against the storm. Something moved behind the glass, something that cast no shadow when the light passed through it.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O6-creative-follow-up", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6792, "tokens_out": 68, "call_to_first_visible_s": 1.648, "call_to_first_segment_s": 1.859, "call_total_s": 2.925, "server_prompt_eval_s": 1.59, "server_prompt_tokens_evaluated": 970, "server_generated_tokens": 68, "server_tokens_per_second": 52.77, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: I would lean toward *Late Fruit*, my lord. For a festival audience, it carries a certain poetic weight without being overly sentimental. It suggests something of consequence—a harvest that has been delayed or a story that arrives at the end of a cycle—which tends to engage festival crowds who look for metaphor and texture in a film.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O7-speed", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6784, "tokens_out": 96, "call_to_first_visible_s": 1.632, "call_to_first_segment_s": 1.88, "call_total_s": 3.436, "server_prompt_eval_s": 1.577, "server_prompt_tokens_evaluated": 962, "server_generated_tokens": 96, "server_tokens_per_second": 52.89, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: If the delay was caused by the system processing the text aloud, my lord, I have no way to alter that speed; it is a matter of the voice itself. However, if it was the time taken to generate the words, we might find the conversation moves more swiftly if you use explicit form constraints. When you ask for a simple answer, a single word, or a specific number of sentences, it reduces the amount of reasoning and composition I must perform before speaking.
+WARNI [val.gateway] local runtime ready: state=already serving, model=val-typed-styletune-v2, n_ctx=32768, build=b10964-b29c606e2
+{"case": "O8-what-she-heard", "sample": 1, "answered": true, "routed_to_candidate": true, "reasoning_present": false, "tokens_in": 6786, "tokens_out": 17, "call_to_first_visible_s": 1.643, "call_to_first_segment_s": 1.815, "call_total_s": 1.954, "server_prompt_eval_s": 1.576, "server_prompt_tokens_evaluated": 964, "server_generated_tokens": 17, "server_tokens_per_second": 52.53, "stream_matches_answer": true, "thinking_markup_in_answer": false, "bonjour": false, "server_footprint_gb": 7.2}
+   ANSWER: You said, "Good evening, Val. I'm checking the system."
+{
+ "candidate": "styletune",
+ "stage": "ordinary",
+ "stopped": null,
+ "artifact": {
+  "file": "Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+  "sha256": "73742ed0dfd5f77db687964a3b7b178c424e1bd89f0a4d47e77b8ed87af2ec50"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+  "--alias",
+  "val-typed-styletune-v2",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 1193.56,
+  "end": 1193.56
+ },
+ "free_percent": {
+  "start": 78,
+  "end": 28
+ },
+ "server_footprint_gb_peak": 7.2,
+ "load_seconds": 2.1,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "1d35a24a2a63cc600c0cab43628a6df4cd3318e959b03307cf5f9f7e29ecf783",
+  "startup_log": [
+   "0.00.047.159 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.383.788 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.878.407 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "medians": {
+  "call_to_first_visible_s": 1.637,
+  "call_to_first_segment_s": 1.869,
+  "server_prompt_eval_s": 1.569,
+  "server_prompt_tokens_evaluated": 958.0,
+  "server_tokens_per_second": 52.84
+ },
+ "first_segment_p90_s": 1.943
+}
