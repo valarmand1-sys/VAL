@@ -96,6 +96,7 @@ def turn_event_stream(
     render: Callable[[DeliberatedOutcome], BaseModel],
     attachments: tuple[CandidateAttachment, ...] = (),
     live_voice: LiveVoiceConversations | None = None,
+    cancelled: Callable[[], bool] | None = None,
 ) -> Iterator[bytes]:
     """Run one deliberated turn on a worker thread; yield its events as they happen.
 
@@ -124,6 +125,7 @@ def turn_event_stream(
                     on_delta=lambda text: events.put(_Delta(text)),
                     on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
                     live_voice=live_voice,
+                    deep_reasoning=request.deep_reasoning,
                 )
             else:
                 outcome = deliberated_send(
@@ -142,6 +144,8 @@ def turn_event_stream(
                     on_stage=lambda stage: events.put(_Stage(stage, time.monotonic())),
                     attachments=attachments,
                     live_voice=live_voice,
+                    deep_reasoning=request.deep_reasoning,
+                    cancelled=cancelled,
                     continue_from=(
                         (request.continue_from_message_id, request.continue_from_revision or 0)
                         if request.continue_from_message_id is not None
@@ -153,6 +157,16 @@ def turn_event_stream(
             return
         events.put(_Done(outcome))
 
+    # Ruling of 3 October 2026: when the model this turn needs is not ready (a change of
+    # model, or first use), say so before anything else — from the gateway's own state,
+    # at this moment. The message is persisted by the turn and answered when the model
+    # is ready; the wait is never presented as her composing.
+    state_of = getattr(gateway, "cognition_state", None)
+    if request.progress and callable(state_of):
+        state = state_of()
+        wants_deep = request.deep_reasoning and state.get("deep_model") is not None
+        if state.get("configured") and not state.get("deep_ready" if wants_deep else "typed_ready"):
+            yield sse("stage", {"stage": TurnStage.PREPARING_MODEL.value, "api_ms": 0})
     threading.Thread(target=run, name="val-turn-stream", daemon=True).start()
 
     first_delta_ms: int | None = None

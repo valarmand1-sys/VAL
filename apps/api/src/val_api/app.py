@@ -32,7 +32,7 @@ from collections.abc import AsyncIterator, Callable, Iterator, Mapping
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from threading import Thread
+from threading import Event, Lock, Thread
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -45,6 +45,7 @@ import val_policy.egress as _egress_policy
 from val_api.contracts import (
     AdoptedFragmentRequest,
     BlindPositionView,
+    CancelRequest,
     CandidateView,
     ClassificationReviewView,
     ClassificationView,
@@ -68,6 +69,7 @@ from val_api.contracts import (
     MoveRequest,
     PlaybackEventView,
     PlaybackReport,
+    PrepareRequest,
     ProjectCreateRequest,
     ProjectView,
     QueuedExchangeView,
@@ -671,10 +673,80 @@ def create_app(
             },
         )
 
+    # Ruling of 3 October 2026: a submission is answered once and can be cancelled. The
+    # desktop names each submission; a second request with the same name while the first
+    # is waiting or being answered is refused, and a cancel sets the flag Core already
+    # honours (a superseded call: his message kept, nothing fabricated).
+    in_flight: dict[str, Event] = {}
+    in_flight_lock = Lock()
+
+    def _begin(request: TurnRequest) -> Event | None:
+        if request.request_id is None:
+            return None
+        with in_flight_lock:
+            if request.request_id in in_flight:
+                raise HTTPException(
+                    status_code=409,
+                    detail={
+                        "duplicate": True,
+                        "message": (
+                            "This message was already submitted and is waiting or being "
+                            "answered. Nothing was submitted again."
+                        ),
+                    },
+                )
+            flag = Event()
+            in_flight[request.request_id] = flag
+            return flag
+
+    def _end(request: TurnRequest) -> None:
+        if request.request_id is not None:
+            with in_flight_lock:
+                in_flight.pop(request.request_id, None)
+
+    @app.post("/turns/cancel")
+    def cancel_turn(request: CancelRequest) -> dict[str, bool]:
+        """Cancel a waiting or in-flight submission. Its message stays in the record,
+        unanswered; if the answer was already being written the call is superseded."""
+        with in_flight_lock:
+            flag = in_flight.get(request.request_id)
+        if flag is None:
+            return {"cancelled": False}
+        flag.set()
+        return {"cancelled": True}
+
+    @app.get("/cognition")
+    def cognition() -> dict[str, object]:
+        """Which local cognition model holds the memory, and what is ready — the facts
+        the desktop shows. Presentation only; nothing here routes or permits anything."""
+        state_of = getattr(gateway, "cognition_state", None)
+        state = dict(state_of()) if callable(state_of) else {"configured": False}
+        state["voice_open"] = sessions.open_count() > 0
+        return state
+
+    @app.post("/cognition/prepare")
+    def prepare_cognition(request: PrepareRequest) -> dict[str, object]:
+        """Begin preparing the ordinary typed model, or the deep-reasoning model, off any
+        message's path (his deliberate choice of mode). Refused while Voice is on."""
+        prepare = getattr(gateway, "prepare_cognition", None)
+        if not callable(prepare) or getattr(gateway, "typed_configuration", None) is None:
+            return {"started": False, "reason": "no typed model is configured"}
+        if sessions.open_count() > 0:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "voice_active": True,
+                    "message": "Voice is on; the text model is prepared when Voice ends.",
+                },
+            )
+        Thread(target=prepare, args=(request.deep,), name="prepare-cognition", daemon=True).start()
+        return {"started": True, "deep": request.deep}
+
     @app.post("/turns")
     def turn(request: TurnRequest) -> TurnResponse:
         """One thing said to Val, through the full WP-0.9 deliberated path."""
         _voice_has_priority()
+        flag = _begin(request)
         gateway.typed_turn_started()
         try:
             if request.revise_message_id is not None:
@@ -687,6 +759,7 @@ def create_app(
                         request.content,
                         max_output_tokens=request.max_output_tokens,
                         live_voice=sessions.live_conversations(),
+                        deep_reasoning=request.deep_reasoning,
                     )
                 except RevisionRefusedError as refused:
                     raise _revision_http_error(refused) from refused
@@ -711,6 +784,8 @@ def create_app(
                 # stays false: this is not microphone-derived text, so it does not
                 # durably seal anything by itself.
                 live_voice=sessions.live_conversations(),
+                deep_reasoning=request.deep_reasoning,
+                cancelled=flag.is_set if flag is not None else None,
             )
         except AdmissionRefusedError as refused:
             # Ruling, 19 September 2026: a file that could not be admitted
@@ -726,6 +801,7 @@ def create_app(
             raise HTTPException(status_code=409, detail=str(removed)) from removed
         finally:
             gateway.typed_turn_finished()
+            _end(request)
 
         return render_turn(outcome)
 
@@ -789,6 +865,7 @@ def create_app(
         been sent (`val_api.streaming`).
         """
         _voice_has_priority()  # before the status line: the desktop sees a plain 409
+        flag = _begin(request)  # likewise: a duplicate submission is a plain 409
         events = turn_event_stream(
             engine,
             gateway,
@@ -797,6 +874,7 @@ def create_app(
             _candidates(request),
             # The seal's transient layer reaches the streaming door too.
             live_voice=sessions.live_conversations(),
+            cancelled=flag.is_set if flag is not None else None,
         )
 
         def counted() -> Iterator[bytes]:
@@ -807,6 +885,7 @@ def create_app(
                 yield from events
             finally:
                 gateway.typed_turn_finished()
+                _end(request)
 
         return StreamingResponse(
             counted(),

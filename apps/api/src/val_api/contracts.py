@@ -808,6 +808,25 @@ class TurnRequest(BaseModel):
     #: of one of his messages — the version number of its record, 0 the original.
     continue_from_message_id: UUID | None = None
     continue_from_revision: int | None = None
+    #: Owner order, 2 October 2026 §6: he chose deep reasoning for this conversation.
+    #: Where a deep-reasoning route is configured, the turn is asked of it and nothing
+    #: else; elsewhere the flag changes nothing.
+    deep_reasoning: bool = False
+    #: The desktop's own identifier for this submission (ruling of 3 October 2026): the
+    #: same message is never answered twice, and a waiting turn can be cancelled by it.
+    request_id: str | None = Field(default=None, min_length=8, max_length=64)
+
+
+class CancelRequest(BaseModel):
+    """Cancel a submission that is waiting or being answered, by the desktop's id."""
+
+    request_id: str = Field(min_length=8, max_length=64)
+
+
+class PrepareRequest(BaseModel):
+    """Prepare the ordinary typed model, or the deep-reasoning model, now."""
+
+    deep: bool = False
 
 
 class DeliberationGlimpse(BaseModel):
