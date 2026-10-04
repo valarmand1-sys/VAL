@@ -565,6 +565,51 @@ def enable_voice_model(key: str) -> ModelConfig:
     return promoted
 
 
+#: Owner order, 2 October 2026 ("CORRECT THE TEXT-MODEL TASK…"), and his ruling of
+#: 3 October: the model that carries ordinary typed conversation and writing, in this
+#: process only. With it set, the Partner entry (GPT-OSS MEDIUM) becomes the
+#: deliberate deep-reasoning route — reached only by a turn that asks for it — and
+#: local cognition models are used one at a time at all times, not only during Voice.
+TYPED_MODEL_SETTING = "VAL_TYPED_MODEL"
+TYPED_MODELS = {"gemma-4-26b-a4b-styletune-v2": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"}
+
+
+def configured_typed_model() -> tuple[str | None, str | None]:
+    raw = os.environ.get(TYPED_MODEL_SETTING, "").strip().lower()
+    if raw == "":
+        return None, None
+    if raw not in TYPED_MODELS:
+        return raw, f"{TYPED_MODEL_SETTING}: must be one of {sorted(TYPED_MODELS)}, not {raw!r}"
+    return raw, None
+
+
+def enable_typed_model(key: str) -> tuple[ModelConfig, ModelConfig]:
+    """Make the typed candidate the ordinary typed route, in this process only.
+
+    The entry is copied as PROVISIONALLY_ADMITTED with the `partner` profile and is
+    **routable**: ordinary typed turns select it. The Partner entry keeps its admission
+    and profile and is marked pin-only, so routing never selects it and only a turn that
+    asks for deep reasoning reaches it. Returns (typed, deep). Nothing on disk changes.
+    """
+    slug = TYPED_MODELS[key]
+    entry = by_slug(slug)
+    deep = by_slug(PARTNER_SLUG)
+    if entry is None or deep is None:
+        raise StartupRefusedError(
+            [f"{TYPED_MODEL_SETTING}: no registry entry {slug} or {PARTNER_SLUG}"]
+        )
+    promoted = entry.model_copy(
+        update={
+            "admission": Admission.PROVISIONALLY_ADMITTED,
+            "capability_profiles": frozenset({CapabilityProfile.PARTNER}),
+            "qualification_targets": frozenset(),
+        }
+    )
+    registry.REGISTRY = tuple(promoted if c.slug == slug else c for c in registry.REGISTRY)
+    registry.PIN_ONLY.add(deep.slug)
+    return promoted, deep
+
+
 def start(engine: Engine, today: datetime | None = None) -> Startup:
     """Build the gateway, or refuse to start and say why.
 
@@ -687,6 +732,22 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             voice_model.slug,
             voice_model.model_identifier,
         )
+    typed_key, typed_problem = configured_typed_model()
+    if typed_problem is not None:
+        raise StartupRefusedError([typed_problem])
+    typed_model, deep_model = (
+        enable_typed_model(typed_key) if typed_key is not None else (None, None)
+    )
+    if typed_model is not None and deep_model is not None:
+        _LOGGER.warning(
+            "CANDIDATE typed model for this process: ordinary typed turns are routed to %s "
+            "(%s); %s is the deliberate deep-reasoning route, reached only when a turn asks "
+            "for it; local cognition models are used one at a time. Not an admission; the "
+            "registry on disk is unchanged.",
+            typed_model.slug,
+            typed_model.model_identifier,
+            deep_model.slug,
+        )
     violations, warnings = check_startup(moment.date())
 
     # Owner rulings, 22 September 2026: perception and speech routes are not
@@ -696,7 +757,11 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
     adapters, problems = build_adapters(
         {
             config.provider
-            for config in (*active(), *((voice_model,) if voice_model is not None else ()))
+            for config in (
+                *active(),
+                *((voice_model,) if voice_model is not None else ()),
+                *((deep_model,) if deep_model is not None else ()),
+            )
             if not any(
                 satisfies_profile(config, profile)
                 for profile in (CapabilityProfile.PERCEPTION, CapabilityProfile.SPEECH)
@@ -930,6 +995,9 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
             f"adaptive grace={'on' if adaptive_grace else 'off'} (this process only)."
         )
     gateway.voice_configuration = voice_model
+    gateway.typed_configuration = typed_model
+    gateway.deep_configuration = deep_model
+    gateway.serialized_models = typed_model is not None
     gateway.voice_turn_prefill = voice_model is not None and os.environ.get(
         VOICE_TURN_PREFILL_SETTING, ""
     ).strip().lower() in {"1", "on", "true", "yes"}
@@ -980,6 +1048,20 @@ def start(engine: Engine, today: datetime | None = None) -> Startup:
         raise StartupRefusedError(
             [f"{TYPED_PRIME_SETTING}: must be unset, transition or on, not {typed_prime!r}"]
         )
+    if typed_model is not None:
+        # Measured 3 October 2026 (STYLETUNE.md §9.3): on llama.cpp a prime after every
+        # answer replaces the conversation's own computation, so onset grows with the
+        # history. The typed model is prepared once — at start and after a change of
+        # model — and never per message.
+        if typed_prime == "on":
+            raise StartupRefusedError(
+                [
+                    f"{TYPED_PRIME_SETTING}=on with {TYPED_MODEL_SETTING}: a prime after "
+                    "every answer makes this runtime slower each turn; use transition "
+                    "(or leave it unset)"
+                ]
+            )
+        typed_prime = "transition"
     gateway.typed_prime = typed_prime
     if typed_prime != "off":
         _LOGGER.warning(

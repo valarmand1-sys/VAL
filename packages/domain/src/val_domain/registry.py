@@ -1056,6 +1056,68 @@ REGISTRY: tuple[ModelConfig, ...] = (
         rates_verified_on=date(2026, 9, 29),
     ),
     ModelConfig(
+        id=UUID("5d0e3a71-8c4b-4f26-b1d9-2a7c6e9f4b13"),
+        slug="gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+        # Owner order, 2 October 2026 ("CORRECT THE TEXT-MODEL TASK AND CARRY IT THROUGH
+        # TO COMPLETION"): the candidate for ordinary typed conversation and writing.
+        # `Gryphe/Gemma-4-26B-A4B-StyleTune-V2` (Apache-2.0; revision f34ba405…; an
+        # `lm_head`-only style fine-tune of `google/gemma-4-26B-A4B-it`, one tensor of
+        # 659) as `mradermacher/Gemma-4-26B-A4B-StyleTune-V2-GGUF` at Hugging Face
+        # revision 07de6a203b664c630a217c9cef7f3e20867feb41, file
+        # `Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf` (17.2 GB, sha256 73742ed0…ec50),
+        # served by the same llama.cpp server as the Voice model, which
+        # `val_providers.llamacpp_runtime` starts for this identifier.
+        #
+        # **Registered NOT_ADMITTED, with no capability profile**, so nothing in
+        # production routing can select it. `VAL_TYPED_MODEL` in `val_gateway.startup`
+        # makes it the ordinary typed route of its own process only, with GPT-OSS
+        # MEDIUM reachable as the deliberate deep-reasoning route and the Voice model
+        # unchanged. Its record: `2026-10-02-styletune/STYLETUNE.md`.
+        provider="llamacpp",
+        model_identifier="gemma-4-26b-a4b-styletune-v2",
+        display_name=(
+            "Gemma 4 26B-A4B StyleTune V2 (Q4_K_M GGUF, llama.cpp, thinking off — typed "
+            "candidate, NOT_ADMITTED; HF 07de6a20)"
+        ),
+        context_window_tokens=32_768,
+        max_output_tokens=16_384,
+        reasoning_effort=ReasoningEffort.NOT_APPLICABLE,
+        # Thinking is declared off and transmitted on every call; the rendered prompt
+        # was verified to open and close the thought channel empty (3.4 probe).
+        thinking_enabled=False,
+        # The repository's own generation settings (identical to the base model's),
+        # transmitted on every call. The publisher's personal "MinP 0.10 and DRY" note
+        # carries no parameters and is not adopted.
+        temperature=1.0,
+        top_p=0.95,
+        top_k=64,
+        hosting=Hosting.LOCAL,
+        metering=Metering.LOCAL_NO_METERED_COST,
+        cost_per_mtok_in_usd=0.0,
+        cost_per_mtok_out_usd=0.0,
+        caching=PricingFeature.NOT_VERIFIED,
+        batch_pricing=PricingFeature.NOT_VERIFIED,
+        eligible_classifications=_PROTECTED,
+        capability_profiles=frozenset(),
+        qualification_targets=frozenset({QualificationTarget.PARTNER}),
+        fallback_slug=None,
+        admission=Admission.NOT_ADMITTED,
+        adapter_status=AdapterStatus.IMPLEMENTED,
+        known_weaknesses=(
+            "screened for ordinary typed conversation and writing only (3 October 2026); "
+            "not qualified for deep reasoning or consequential work — GPT-OSS MEDIUM is "
+            "the deliberate deep-reasoning route",
+            "stated two wrong figures in a technical explanation (1/80 s and 1/60 s for "
+            "1/48 s and 1/120 s), 2 October 2026",
+            "labelled the owner's own passage 'One of my own' when asked to edit it, "
+            "2 October 2026",
+            "asserts that it changed no settings, which it cannot verify — shared with "
+            "GPT-OSS and the Voice model, 3 October 2026",
+        ),
+        activated_on=date(2026, 10, 3),
+        rates_verified_on=date(2026, 10, 3),
+    ),
+    ModelConfig(
         id=UUID("3f9c1d70-5a42-4b18-9e7d-6c0a83b54f21"),
         slug="gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
         # OWNER ADMISSION RULING, Lord Armand, 21 September 2026: the production

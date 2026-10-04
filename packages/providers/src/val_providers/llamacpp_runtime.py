@@ -67,6 +67,13 @@ LAUNCH_SPECS: Mapping[str, LaunchSpec] = {
         # argument is what the rendered prompt was verified against, 29 September 2026).
         flags=("--chat-template-kwargs", '{"enable_thinking":false}'),
     ),
+    # Owner order, 2 October 2026: the typed candidate, served exactly as the Voice
+    # model is (same flags, thinking off at the server and in each request).
+    "gemma-4-26b-a4b-styletune-v2": LaunchSpec(
+        file="Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+        sha256="73742ed0dfd5f77db687964a3b7b178c424e1bd89f0a4d47e77b8ed87af2ec50",
+        flags=("--chat-template-kwargs", '{"enable_thinking":false}'),
+    ),
 }
 
 

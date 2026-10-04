@@ -240,8 +240,10 @@ def test_qualification_metadata_does_not_make_the_entry_active_or_routable() -> 
     # the two efforts on one identical request path. Like every entry in this list
     # it carries a target only because the candidate lane needs one to open: it
     # admits nothing, serves nothing, and is unreachable from routing.
+    # ...and on 3 October 2026 for the typed candidate (owner order of 2 October).
     assert sorted(entry.slug for entry in with_targets) == [
         "gemma-4-26b-a4b-q4km-llamacpp-voice",
+        "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
         "gemma-4-31b-q6k-llamacpp",
         "gpt-oss-20b-mxfp4-mlx-lmstudio",
         "gpt-oss-20b-mxfp4-mlx-lmstudio-low",

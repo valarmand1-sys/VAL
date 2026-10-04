@@ -513,6 +513,19 @@ class Gateway:
         #: conversation or a fallback therefore never runs beside the Voice model; it
         #: replaces it, and the Voice model is brought back afterwards.
         self._voice_holds_memory = False
+        #: Owner order, 2 October 2026, and his ruling of 3 October: the ordinary typed
+        #: route's configuration and the deliberate deep-reasoning route's, or None.
+        #: Set only by the composition root under `VAL_TYPED_MODEL`.
+        self.typed_configuration: ModelConfig | None = None
+        self.deep_configuration: ModelConfig | None = None
+        #: With a typed model configured, local cognition models are used one at a time
+        #: **always** — ordinary typing, deep reasoning and Voice each hold the memory
+        #: alone — not only while Voice is on.
+        self.serialized_models = False
+        #: The local model being brought up now (slug), for a truthful readiness display;
+        #: and the typed route whose persona prefix is prepared in its runtime.
+        self._preparing: str | None = None
+        self._typed_primed: str | None = None
         #: Typed prefix preparation (2 October 2026): "off", "transition" or "on".
         self.typed_prime: str = "off"
         self._typed_in_flight = 0
@@ -885,6 +898,8 @@ class Gateway:
             return None
         with self._residency_lock:
             self._resident_local.pop(config.slug, None)
+            if self._typed_primed == config.slug:
+                self._typed_primed = None
         self._set_voice_model_state(config, "released")
         return dict(result) if isinstance(result, Mapping) else {"released": True}
 
@@ -900,7 +915,8 @@ class Gateway:
         with the switch unset, nothing is released and nothing changes.
         """
         with self._residency_lock:
-            if not self._voice_holds_memory:
+            holding = self._voice_holds_memory
+            if not holding and not self.serialized_models:
                 return []
             others = [
                 other
@@ -909,7 +925,8 @@ class Gateway:
             ]
         voice = self.voice_configuration
         if (
-            others
+            holding
+            and others
             and voice is not None
             and config.slug != voice.slug
             and not _DISPLACING_VOICE.get()
@@ -959,6 +976,19 @@ class Gateway:
         pair of resident models behind the others' backs."""
         adapter = cast(LocalRuntimeAdapter, self._adapters[config.provider])
         self._transition_to(config)
+        with self._residency_lock:
+            arriving = config.slug not in self._resident_local
+            if arriving:
+                self._preparing = config.slug
+        try:
+            return self._bring_up(adapter, config)
+        finally:
+            if arriving:
+                with self._residency_lock:
+                    if self._preparing == config.slug:
+                        self._preparing = None
+
+    def _bring_up(self, adapter: LocalRuntimeAdapter, config: ModelConfig) -> Mapping[str, object]:
         # Noted **before** the load, not after it (found live, 00:48): a transition that
         # arrives while this model is still loading must see it and wait, or it brings its
         # own model up beside the one on its way in. The runtimes serialise a release
@@ -1103,10 +1133,67 @@ class Gateway:
                 "reason": "the typed route is the Voice route",
             }
         result = self._prime_route(TaskType.CONVERSATION, wanted, config=config)
+        if result.get("primed"):
+            with self._residency_lock:
+                self._typed_primed = config.slug
         _LOGGER.info(
             "typed prime: %s",
             json.dumps({k: v for k, v in result.items() if k != "light"}, default=str),
         )
+        return result
+
+    # --- the text model's state, for a truthful display (ruling of 3 October 2026) -------
+
+    def cognition_state(self) -> Mapping[str, object]:
+        """Which local cognition model holds the memory now, and whether the ordinary
+        typed route and the deep-reasoning route are ready. Facts only: resident means
+        its runtime was brought up and not released; prepared means its persona prefix
+        was computed there since."""
+        typed = self._typed_turn_route()
+        deep = self.deep_configuration
+        with self._residency_lock:
+            resident = sorted(self._resident_local)
+            preparing = self._preparing
+            holding = self._voice_holds_memory
+            primed = self._typed_primed
+
+        def ready(config: ModelConfig | None, needs_prime: bool) -> bool:
+            if config is None or config.slug not in resident or preparing == config.slug:
+                return False
+            return primed == config.slug if needs_prime else True
+
+        return {
+            "configured": self.typed_configuration is not None,
+            "typed_model": typed.slug if typed is not None else None,
+            "deep_model": deep.slug if deep is not None else None,
+            "resident": resident,
+            "preparing": preparing,
+            "voice_holds_memory": holding,
+            "typed_ready": ready(typed, self.typed_prime != "off"),
+            "deep_ready": ready(deep, False),
+        }
+
+    def prepare_cognition(self, deep: bool = False) -> Mapping[str, object]:
+        """Bring the ordinary typed model (or the deep-reasoning model) up now, off any
+        request's path, releasing whichever other local model holds the memory — the
+        one-time changeover he accepted (3 October 2026). Never while Voice holds it."""
+        config = self.deep_configuration if deep else self._typed_turn_route()
+        if config is None or not supports_local_runtime(self._adapters[config.provider]):
+            return {"prepared": False, "reason": "no local route to prepare"}
+        with self._residency_lock:
+            if self._voice_holds_memory:
+                return {
+                    "prepared": False,
+                    "reason": "Voice is on and holds this Mac's memory; nothing is changed",
+                }
+        try:
+            readiness = self._ready_local(config)
+        except (LocalRuntimeUnavailableError, GatewayError) as failure:
+            self._observe_block(f"preparing {config.slug} did not succeed: {failure}")
+            return {"prepared": False, "slug": config.slug, "reason": str(failure)}
+        result: dict[str, object] = {"prepared": True, "slug": config.slug, **dict(readiness)}
+        if not deep and self.typed_prime != "off":
+            result["primed"] = self.prime_typed_prefix()
         return result
 
     def schedule_typed_refresh(self) -> None:
@@ -1180,6 +1267,9 @@ class Gateway:
                 partner = self._typed_turn_route()
             if partner is not None and partner.slug != chosen.slug:
                 self._note_resident_if_loaded(partner)
+            deep = self.deep_configuration
+            if deep is not None and deep.slug != chosen.slug:
+                self._note_resident_if_loaded(deep)
             transitions = self._transition_to(chosen)
         if not supports_local_runtime(self._adapters[chosen.provider]):
             return {

@@ -66,6 +66,10 @@ CANDIDATES = (
     # Gemma 4 26B-A4B on llama.cpp, NOT_ADMITTED, no profile, pinned for spoken turns
     # only in-process by the Voice model switch.
     "gemma-4-26b-a4b-q4km-llamacpp-voice",
+    # 3 October 2026 (owner order of 2 October): Gemma 4 26B-A4B StyleTune V2 on
+    # llama.cpp, NOT_ADMITTED, no profile, made the typed route only in-process by the
+    # typed model switch.
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
 )
 
 

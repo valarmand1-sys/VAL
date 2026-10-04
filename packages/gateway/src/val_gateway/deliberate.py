@@ -81,6 +81,7 @@ import logging
 import time
 from collections.abc import Callable, Mapping, Sequence
 from contextlib import nullcontext
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
@@ -303,6 +304,12 @@ class DeliberatedTurn:
 DeliberatedOutcome = DeliberatedTurn | UnansweredTurn | ClarificationNeeded
 
 
+#: Owner order, 2 October 2026 §6: whether the turn being answered on this thread asked
+#: for deep reasoning. Set by `send` / `answer_revision` around the turn and read where
+#: the route is chosen; a spoken turn never carries it.
+_DEEP_REASONING: ContextVar[bool] = ContextVar("val_deep_reasoning", default=False)
+
+
 class TurnStage(StrEnum):
     """What the house is doing on a turn, for presentation only — ruling, 13 September 2026.
 
@@ -313,6 +320,9 @@ class TurnStage(StrEnum):
     generated-text requirement.
     """
 
+    #: The text model this turn needs is being brought up (a change of model, or the
+    #: first use): the message is kept and is answered when the model is ready.
+    PREPARING_MODEL = "preparing_model"
     #: The message is persisted and the turn has begun.
     UNDERSTANDING = "understanding"
     #: The enforced blind-position call is about to be made.
@@ -356,8 +366,13 @@ def send(
     cancelled: Callable[[], bool] | None = None,
     withhold_answer: bool = False,
     continue_from: tuple[UUID, int] | None = None,
+    deep_reasoning: bool = False,
 ) -> DeliberatedOutcome:
     """Say one thing to Val, with the §4.8 classification deciding what is captured.
+
+    `deep_reasoning` (owner order, 2 October 2026 §6): he chose deep reasoning for this
+    conversation. Where the gateway holds a deep-reasoning route, a typed turn is asked
+    of it and of nothing else; a spoken turn ignores the flag.
 
     `withhold_answer` (release-gaps order §2, 26 September 2026): his words were a stop
     and nothing else, spoken while an answer he had not begun to hear was being made.
@@ -455,24 +470,28 @@ def send(
             on_persisted(opened.conversation.id, opened.user_message.id)
         except Exception:  # presentation must never cost the turn
             _LOGGER.exception("the persisted-message sink failed; the turn continues")
-    return _answer_opened(
-        engine,
-        gateway,
-        opened,
-        content=content,
-        classification=classification,
-        recall_limit=recall_limit,
-        max_output_tokens=max_output_tokens,
-        on_delta=on_delta,
-        on_stage=on_stage,
-        candidate=candidate,
-        live_voice=live_voice,
-        spoken=spoken,
-        fast_route=fast_route,
-        prepared=prepared,
-        cancelled=cancelled,
-        withhold_answer=withhold_answer,
-    )
+    token = _DEEP_REASONING.set(deep_reasoning and not spoken)
+    try:
+        return _answer_opened(
+            engine,
+            gateway,
+            opened,
+            content=content,
+            classification=classification,
+            recall_limit=recall_limit,
+            max_output_tokens=max_output_tokens,
+            on_delta=on_delta,
+            on_stage=on_stage,
+            candidate=candidate,
+            live_voice=live_voice,
+            spoken=spoken,
+            fast_route=fast_route,
+            prepared=prepared,
+            cancelled=cancelled,
+            withhold_answer=withhold_answer,
+        )
+    finally:
+        _DEEP_REASONING.reset(token)
 
 
 def answer_revision(
@@ -488,6 +507,7 @@ def answer_revision(
     on_delta: DeltaSink | None = None,
     on_stage: StageSink | None = None,
     live_voice: LiveVoiceConversations | None = None,
+    deep_reasoning: bool = False,
 ) -> DeliberatedOutcome:
     """Correct one of his messages and answer the corrected wording (owner order,
     2 October 2026 §B).
@@ -514,24 +534,28 @@ def answer_revision(
         answering_revision=True,
     )
     mark("message_persisted")
-    return _answer_opened(
-        engine,
-        gateway,
-        opened,
-        content=content,
-        classification=classification,
-        recall_limit=recall_limit,
-        max_output_tokens=max_output_tokens,
-        on_delta=on_delta,
-        on_stage=on_stage,
-        candidate=None,
-        live_voice=live_voice,
-        spoken=False,
-        fast_route=None,
-        prepared=None,
-        cancelled=None,
-        withhold_answer=False,
-    )
+    token = _DEEP_REASONING.set(deep_reasoning)
+    try:
+        return _answer_opened(
+            engine,
+            gateway,
+            opened,
+            content=content,
+            classification=classification,
+            recall_limit=recall_limit,
+            max_output_tokens=max_output_tokens,
+            on_delta=on_delta,
+            on_stage=on_stage,
+            candidate=None,
+            live_voice=live_voice,
+            spoken=False,
+            fast_route=None,
+            prepared=None,
+            cancelled=None,
+            withhold_answer=False,
+        )
+    finally:
+        _DEEP_REASONING.reset(token)
 
 
 def _answer_opened(
@@ -1667,6 +1691,16 @@ def _ordinary(
                     if voice and pinned_voice is not None and visual.configuration is None:
                         low = pinned_voice
                         _LOGGER.info("voice model: this turn is asked of %s", pinned_voice.slug)
+                    deep = getattr(gateway, "deep_configuration", None)
+                    deep_pinned = (
+                        _DEEP_REASONING.get()
+                        and not voice
+                        and deep is not None
+                        and visual.configuration is None
+                    )
+                    if deep_pinned and deep is not None:
+                        low = deep
+                        _LOGGER.info("deep reasoning: this turn is asked of %s", deep.slug)
                     try:
                         response = gateway.converse(
                             messages,
@@ -1690,7 +1724,14 @@ def _ordinary(
                             cancelled=cancelled,
                         )
                     except GatewayError as failure:
-                        if low is None or delivered or failure.kind is GatewayErrorKind.SUPERSEDED:
+                        if (
+                            low is None
+                            or delivered
+                            or failure.kind is GatewayErrorKind.SUPERSEDED
+                            # He asked for deep reasoning: a failure of that route is
+                            # reported, never answered by another model in its place.
+                            or deep_pinned
+                        ):
                             raise
                         # The LOW call failed before any word reached him: the same turn
                         # is asked of MEDIUM, once, and the fallback is on record.
