@@ -142,7 +142,7 @@ def main() -> int:
         result["first_half_median_s"] = round(statistics.median(onsets[:half]), 3)
         result["second_half_median_s"] = round(statistics.median(onsets[half:]), 3)
         result["last_five_median_s"] = round(statistics.median(onsets[-5:]), 3)
-        result["final_prompt_tokens"] = ((rows[-1].get("timing") or {}).get("prompt_tokens"))
+        result["final_prompt_tokens"] = (rows[-1].get("timing") or {}).get("prompt_tokens")
     result["rows"] = rows
     out.write_text(json.dumps(result, indent=1) + "\n")
     print(json.dumps({k: v for k, v in result.items() if k != "rows"}), flush=True)
