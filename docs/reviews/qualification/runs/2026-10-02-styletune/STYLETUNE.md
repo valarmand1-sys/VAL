@@ -11,7 +11,7 @@ testing, integration and preparation for installation are authorised; installati
 under the same authorisation once the registered conditions pass **and** he confirms the
 writing meets his standard. Production is unchanged until then.
 
-**Status (3 October 2026, evening): RESUMED. T5 failed as registered and that result stands as history; he has since ACCEPTED the Voice → typing changeover as a one-time preparation delay (§8), so it no longer disqualifies the candidate by itself. The mapping and the eight timings are revealed (§8.2). Remaining evaluation in progress: critical cases, then ordinary and sustained timing. Not integrated, not installed; production r10.**
+**Status (3 October 2026, 20:30): quality gates passed; warm typed speed passed through the desktop; integrated in isolation (not installed; production r10). Open: his confirmation of the writing, and one decision (§11.3) on the turns that re-read a conversation's history after a change of model or at the history rebase (3.5–5.7 s against the registered 4.18 s).**
 
 ---
 
@@ -409,4 +409,63 @@ in K1, 0.06 GB in I3 and 0.16 GB in I4: successive runs started from a higher sw
 baseline (pages already swapped do not grow again), so the growth is confounded and not
 attributed. Recorded for him: the Voice warm-up's momentary dip exists in production's
 configuration today.
+
+## 11. Through the real desktop — 3 October 2026, 20:10–20:26 CDT
+
+`run_desktop.sh` / `desktop_typed.mjs`: the integrated service on the scratch store, the
+**unmodified desktop source** on its dev server pointed at it, headless Brave with a fake
+microphone, every message typed into the composer and sent with Send. Onset is the
+desktop's own turn clock (`val.turn.timing`): Send → first answer text received by the
+desktop (`firstDeltaMs`); first paint is +0.02 s where the headless page reported it
+(it often does not: animation frames are throttled headless). Sequence frozen before it
+ran: first use, twelve sustained messages, Voice on → Ready → off and two messages at
+once, deep reasoning chosen then left, deep and ordinary messages that make the change
+themselves. Same guards; production untouched.
+
+### 11.1 Results (DT2, after the stage fix; DT1 in brackets)
+
+| condition | onset | completion | registered | |
+|---|---|---|---|---|
+| first use, sent at once | 14.5 s [15.1] | 14.7 s | ≤ 25.0 | PASS |
+| twelve sustained messages | **median 1.76 s, slowest 2.09 s** [1.70–2.12] | 1.9–6.0 s | median ≤ 2.33, each ≤ 4.18 | PASS |
+| first message 0.5 s after Voice off | 20.9 s [20.3] | 23.9 s | accepted changeover | — |
+| second after Voice | 2.02 s [1.78] | 5.4 s | ≤ 4.18 | PASS |
+| deep reasoning chosen (prepared off any message) | ready 8.3 s after the tick | — | — | — |
+| deep messages (GPT-OSS MEDIUM) | 15.8, 14.3 s | 20.6, 17.9 s | not gated | — |
+| deep reasoning left (prepared off any message) | ready 14.1 s after the untick | — | — | — |
+| **first ordinary message after leaving deep reasoning** | **5.00 s** [3.46] | 5.2 s | ≤ 4.18 | **over** |
+| a deep message that makes the change | 19.5 s | 28.9 s | accepted changeover | — |
+| an ordinary message that makes the change back | 17.7 s | 18.5 s | accepted changeover | — |
+| **the next ordinary message (the 40-message history rebase)** | **5.46 s** [3.70] | 6.9 s | ≤ 4.18 | **over** |
+| memory | min free 7% for one second of 268 (Voice warm-up, as production's control); swap flat | | | |
+
+### 11.2 What the desktop run found and what was repaired
+
+**The changeover read as "Preparing a response…"** (DT1): the service announced
+`preparing_model`, but the turn's next stages arrived milliseconds later and replaced it,
+while the model loaded during the last of them. Repaired in the stream (`5f873d1`): while
+the model is being prepared the later stages are held, and the last is said once the
+gateway reports the model ready. DT2: every changeover shows "Preparing the text model —
+your message is kept and will be answered when it is ready…", then "Preparing a
+response…".
+
+### 11.3 The decision that is his: turns that re-read the history
+
+Two ordinary turns exceeded the registered 4.18 s ceiling, by the same mechanism — the
+turn re-evaluates the conversation's retained history once:
+
+- **the first ordinary message after leaving deep reasoning** (3.46 s, 5.00 s): the
+  preparation computes the persona; the conversation's history (here including two long
+  deep answers) is computed by that message. It is the tail of the changeover he accepted.
+- **the message at the history rebase** (3.70 s, 5.46 s; 4.60 s and 5.74 s in the
+  30-turn service run): when the forty-message ceiling binds, the window is rebased to its
+  newest three-quarters (the 10 September 2026 ruling), the prompt after the persona
+  changes, and that one turn re-reads the retained history; after the twentieth exchange
+  this recurs about every sixth exchange, longer when the history holds long answers.
+
+Neither is a load and neither recurs on every message; ordinary messages between them are
+1.7–2.1 s. But the registered criterion said every ordinary turn ≤ 4.18 s, and it was not
+met; this record does not reinterpret it. The courses: accept both as part of the
+changeover and the existing history rule; or keep the criterion and change the history
+rule's rebase (a baseline ruling, his); or treat it as a failure of the candidate.
 
