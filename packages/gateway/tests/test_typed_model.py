@@ -215,7 +215,7 @@ def test_the_state_says_what_is_resident_and_what_is_ready(
     assert reasoning["typed_ready"] is False and reasoning["deep_ready"] is True
 
 
-def test_with_preparation_on_the_typed_model_is_ready_only_once_its_prefix_is_prepared(
+def test_the_prefix_preparation_is_reported_and_a_release_forgets_it(
     store: Engine, typed_model: tuple[ModelConfig, ModelConfig]
 ) -> None:
     typed, _ = typed_model
@@ -228,11 +228,16 @@ def test_with_preparation_on_the_typed_model_is_ready_only_once_its_prefix_is_pr
     gateway = typed_gateway(store, adapter, typed_model)  # type: ignore[arg-type]
     gateway.typed_prime = "transition"
     gateway._ready_local(typed)
-    assert gateway.cognition_state()["typed_ready"] is False, "loaded, not yet prepared"
+    loaded = gateway.cognition_state()
+    assert loaded["typed_ready"] is True, "resident: a message now is answered by it"
+    assert loaded["typed_prefix_prepared"] is False
     assert gateway.prime_typed_prefix()["primed"] is True
-    assert gateway.cognition_state()["typed_ready"] is True
+    prepared = gateway.cognition_state()
+    assert prepared["typed_ready"] is True and prepared["typed_prefix_prepared"] is True
+    assert prepared["preparing"] is None, "the mark is lifted when the prime ends"
     gateway._release_local(typed)
-    assert gateway.cognition_state()["typed_ready"] is False, "a release forgets the preparation"
+    released = gateway.cognition_state()
+    assert released["typed_ready"] is False and released["typed_prefix_prepared"] is False
 
 
 def test_nothing_is_changed_while_voice_holds_the_memory(

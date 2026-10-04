@@ -1132,7 +1132,17 @@ class Gateway:
                 "outcome": "skipped",
                 "reason": "the typed route is the Voice route",
             }
-        result = self._prime_route(TaskType.CONVERSATION, wanted, config=config)
+        with self._residency_lock:
+            marked = self._preparing is None
+            if marked:
+                self._preparing = config.slug  # shown as preparing while the prefix is computed
+        try:
+            result = self._prime_route(TaskType.CONVERSATION, wanted, config=config)
+        finally:
+            if marked:
+                with self._residency_lock:
+                    if self._preparing == config.slug:
+                        self._preparing = None
         if result.get("primed"):
             with self._residency_lock:
                 self._typed_primed = config.slug
@@ -1157,10 +1167,11 @@ class Gateway:
             holding = self._voice_holds_memory
             primed = self._typed_primed
 
-        def ready(config: ModelConfig | None, needs_prime: bool) -> bool:
-            if config is None or config.slug not in resident or preparing == config.slug:
-                return False
-            return primed == config.slug if needs_prime else True
+        def ready(config: ModelConfig | None) -> bool:
+            # Ready is resident and not being brought up or prepared at this moment. A
+            # model brought up by a message itself is prepared by that message — the
+            # runtime keeps its computation — so no separate prime is required of it.
+            return config is not None and config.slug in resident and preparing != config.slug
 
         return {
             "configured": self.typed_configuration is not None,
@@ -1169,8 +1180,9 @@ class Gateway:
             "resident": resident,
             "preparing": preparing,
             "voice_holds_memory": holding,
-            "typed_ready": ready(typed, self.typed_prime != "off"),
-            "deep_ready": ready(deep, False),
+            "typed_ready": ready(typed),
+            "deep_ready": ready(deep),
+            "typed_prefix_prepared": typed is not None and primed == typed.slug,
         }
 
     def prepare_cognition(self, deep: bool = False) -> Mapping[str, object]:

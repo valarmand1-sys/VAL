@@ -28,7 +28,18 @@ RESIDENT=$($LMS ps 2>/dev/null | grep -cE "gpt-oss|gemma|LOADED|IDLE")
 [[ $RESIDENT == 0 ]] || { echo "a model is resident in LM Studio (production in use?): not starting"; exit 2; }
 [[ -z $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null) ]] || { echo "port 8099 has a listener this run did not start (production Voice?): not starting"; exit 2; }
 [[ -z $(lsof -nP -t -iTCP:8766 -sTCP:LISTEN 2>/dev/null) ]] || { echo "port 8766 is in use (another run): not starting"; exit 2; }
-( while true; do printf "%s\t%s\t%s\n" "$(date +%s)" "$(memory_pressure | awk '/free percentage/ {gsub("%",""); print $NF}')" "$(sysctl -n vm.swapusage | awk '{gsub("M","",$6); print $6}')"; sleep 3; done ) > $O/memory-$LABEL.tsv &
+# Every second: free %, swap MB, wired / compressed / file-backed GB (vm_stat, 16 KiB
+# pages), and each model process's RSS (llama-server and LM Studio's model host).
+( while true; do
+    V=$(vm_stat)
+    pg() { echo "$V" | awk -v k="$1" -F: '$1 ~ k {gsub("[ .]","",$2); printf "%.1f", $2*16384/1e9}'; }
+    printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\n" "$(date +%s)" \
+      "$(memory_pressure | awk '/free percentage/ {gsub("%",""); print $NF}')" \
+      "$(sysctl -n vm.swapusage | awk '{gsub("M","",$6); print $6}')" \
+      "$(pg 'Pages wired down')" "$(pg 'Pages occupied by compressor')" "$(pg 'File-backed pages')" \
+      "$(ps -axo rss=,command= | awk '/llama-server|LM Studio Helper|lmstudio.*node|mlx/ && !/awk/ {split($2,a,"/"); printf "%s:%.1f ", a[length(a)], $1/1e6}')"
+    sleep 1
+  done ) > $O/memory-$LABEL.tsv &
 MEMORY=$!
 caffeinate -i uv run --project $ROOT python $D/serve_experiment.py > $O/service-$LABEL.log 2>&1 &
 SERVICE=$!
