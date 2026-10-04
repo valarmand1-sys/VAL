@@ -353,3 +353,60 @@ integration (typed route, deliberate deep-reasoning control, truthful preparatio
 preserved message, cancellation, no duplicate submission), the desktop measurement, and
 the release.
 
+## 10. The integration, in isolation — 3 October 2026, 19:20–20:06 CDT
+
+**What was built** (branch `latency-2026-09-28`, commits `6b7cdde` … `cfc5c4d`; production
+untouched): the registry entry `gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed`
+(NOT_ADMITTED, no profile) and its launch specification (pinned file and digest, the Voice
+model's flags); `VAL_TYPED_MODEL=gemma-4-26b-a4b-styletune-v2` makes it the ordinary typed
+route in its process only, makes GPT-OSS MEDIUM pin-only (reached only by a turn that asks
+for deep reasoning; a failure of that route is reported and never answered by another
+model), and makes local cognition models one-at-a-time at all times; the typed prime is
+forced to `transition` (a start-up refusal for `on`, §9.3); `deep_reasoning` and
+`request_id` on the turn request; `POST /turns/cancel`, `GET /cognition`,
+`POST /cognition/prepare`; a `preparing_model` stage emitted from the gateway's own state;
+a duplicate submission refused with 409 before anything is written; Voice's priority
+unchanged (a typed message during Voice is refused with its text kept). Tests: 12 + 6 new,
+all suites green.
+
+**Run I1 → I4, the real application end to end** (`run_integrated.sh`,
+`integrated_bench.py`), each finding repaired before the next run:
+
+| run | finding | repair |
+|---|---|---|
+| I1 | the state required a prime for "ready", so a model a message had brought up never read ready | ready = resident and not being prepared; the prefix preparation is reported separately |
+| I2 | the load inside the start-up prime lifted the prime's "preparing" mark: the state read ready while the prefix was computing, and the first message waited 9.96 s | the mark belongs to whoever set it |
+| I2–I3 | a message cancelled during a changeover left nothing computed; the next one paid 10.2–10.4 s | preparation starts as soon as the cancelled turn ends, and a message meanwhile is told and waits once |
+| I3 | a skipped refresh briefly set the mark: a false `preparing_model` | the decision is made before the mark is set |
+
+**I4, all correct** (onset = Send → first answer text at the harness, loopback):
+
+| step | onset | stage shown |
+|---|---|---|
+| ordinary typed turns | 1.68, 1.67, 1.73 s | none |
+| deliberate change to deep reasoning (prepared off any message) | ready 4.6 s after the request | — |
+| deep turns (GPT-OSS MEDIUM) | 15.8, 13.7 s | none |
+| deliberate change back | ready 13.8 s after the request | — |
+| ordinary after returning | 1.84 s | none |
+| a deep message sent while the typed model was resident | 23.8 s | `preparing_model` |
+| an ordinary message sent while GPT-OSS was resident | 15.3 s | `preparing_model` |
+| the next ordinary message | 1.73 s | none |
+| a typed message during Voice | refused (409), text kept | — |
+| first typed message 0.5 s after Voice closed | 19.2 s (accepted changeover) | `preparing_model` |
+| second | 2.05 s | none |
+| a message cancelled during a changeover | unanswered (superseded), message kept, nothing invented; shown preparing 7.9 s | `preparing_model` |
+| the next message | 2.13 s | none |
+| the same submission sent twice | the second refused (409); one user message recorded | — |
+
+**Memory.** Every candidate block: free memory ≥ 25%, swap flat. **During Voice warm-up**
+free memory touched 3–8% for one or two seconds (wired 39.6–42.5 GB: regular Gemma's
+server ~24 GB plus the speech worker loading). **The control (K1, production's own
+configuration, GPT-OSS typed, the same Voice transition, the same sampler) dipped the same
+way, to 6% with 42.5 GB wired** — so the dip belongs to Voice warm-up on this machine
+under today's background load, not to the candidate; the StyleTune server had exited
+before the Voice model loaded (sampled RSS). Swap grew 4.6 GB in I1, 2.1 GB in I2, 0.6 GB
+in K1, 0.06 GB in I3 and 0.16 GB in I4: successive runs started from a higher swap
+baseline (pages already swapped do not grow again), so the growth is confounded and not
+attributed. Recorded for him: the Voice warm-up's momentary dip exists in production's
+configuration today.
+

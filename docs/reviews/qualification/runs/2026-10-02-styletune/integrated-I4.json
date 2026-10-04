@@ -1,0 +1,417 @@
+{
+ "events": [
+  {
+   "at_s": 16.0,
+   "kind": "A_typed_ready_after_start",
+   "seconds": 15.97,
+   "state": {
+    "configured": true,
+    "typed_model": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+    "deep_model": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "resident": [
+     "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+    ],
+    "preparing": null,
+    "voice_holds_memory": false,
+    "typed_ready": true,
+    "deep_ready": false,
+    "typed_prefix_prepared": true,
+    "voice_open": false
+   }
+  },
+  {
+   "at_s": 18.1,
+   "kind": "B_ordinary_1",
+   "text": "Suggest a name for a small secondhand bookshop.",
+   "deep": false,
+   "onset_s": 1.68,
+   "complete_s": 1.82,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 25,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 20.8,
+   "kind": "B_ordinary_2",
+   "text": "Why that one?",
+   "deep": false,
+   "onset_s": 1.67,
+   "complete_s": 2.36,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 164,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 23.0,
+   "kind": "B_ordinary_3",
+   "text": "Give me a title for a film about an orchard.",
+   "deep": false,
+   "onset_s": 1.73,
+   "complete_s": 1.97,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 41,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 27.7,
+   "kind": "C_to_deep_prepared",
+   "seconds": 4.62,
+   "since_request_s": 4.63,
+   "state": {
+    "configured": true,
+    "typed_model": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+    "deep_model": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "resident": [
+     "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+    ],
+    "preparing": null,
+    "voice_holds_memory": false,
+    "typed_ready": false,
+    "deep_ready": true,
+    "typed_prefix_prepared": false,
+    "voice_open": false
+   }
+  },
+  {
+   "at_s": 48.8,
+   "kind": "C_deep_1",
+   "text": "Reason step by step: is it cheaper to shoot three days on location or two days on a stage, if the stage costs twice as much per day? State what you would need to know.",
+   "deep": true,
+   "onset_s": 15.81,
+   "complete_s": 20.79,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+   ],
+   "answer_chars": 1370,
+   "conversation_id": "01a1046f-c686-7191-b4cc-e6f9a7a021f7"
+  },
+  {
+   "at_s": 67.6,
+   "kind": "C_deep_2",
+   "text": "Now assume the location needs a generator at a fixed cost. Does that change the answer?",
+   "deep": true,
+   "onset_s": 13.7,
+   "complete_s": 18.56,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+   ],
+   "answer_chars": 1269,
+   "conversation_id": "01a1046f-c686-7191-b4cc-e6f9a7a021f7"
+  },
+  {
+   "at_s": 81.4,
+   "kind": "C_back_to_typed_prepared",
+   "seconds": 13.77,
+   "since_request_s": 13.78,
+   "state": {
+    "configured": true,
+    "typed_model": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+    "deep_model": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "resident": [
+     "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+    ],
+    "preparing": null,
+    "voice_holds_memory": false,
+    "typed_ready": true,
+    "deep_ready": false,
+    "typed_prefix_prepared": true,
+    "voice_open": false
+   }
+  },
+  {
+   "at_s": 83.7,
+   "kind": "C_ordinary_after_return",
+   "text": "Thank you. One more title for the orchard film, please.",
+   "deep": false,
+   "onset_s": 1.84,
+   "complete_s": 2.03,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 28,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 114.9,
+   "kind": "D_deep_sent_while_typed_resident",
+   "text": "Reason carefully: what are the risks of shooting at night with one generator?",
+   "deep": true,
+   "onset_s": 23.78,
+   "complete_s": 30.82,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "preparing_model",
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gpt-oss-20b-mxfp4-mlx-lmstudio-partner"
+   ],
+   "answer_chars": 2274,
+   "conversation_id": "01a1046f-c686-7191-b4cc-e6f9a7a021f7"
+  },
+  {
+   "at_s": 130.9,
+   "kind": "D_ordinary_sent_while_deep_resident",
+   "text": "And a short toast for the wrap dinner, please.",
+   "deep": false,
+   "onset_s": 15.3,
+   "complete_s": 15.75,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "preparing_model",
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 86,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 133.1,
+   "kind": "D_ordinary_next",
+   "text": "Shorter.",
+   "deep": false,
+   "onset_s": 1.73,
+   "complete_s": 1.87,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 20,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 155.9,
+   "kind": "E_voice_ready",
+   "seconds": 22.2,
+   "state": {
+    "configured": true,
+    "typed_model": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+    "deep_model": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "resident": [
+     "gemma-4-26b-a4b-q4km-llamacpp-voice"
+    ],
+    "preparing": null,
+    "voice_holds_memory": true,
+    "typed_ready": false,
+    "deep_ready": false,
+    "typed_prefix_prepared": false,
+    "voice_open": true
+   }
+  },
+  {
+   "at_s": 155.9,
+   "kind": "E_typed_during_voice",
+   "status": 409,
+   "detail": {
+    "voice_active": true,
+    "message": "Voice is on, and Val's voice model holds this Mac's memory. Typed messages wait until Voice ends: nothing was sent and nothing was written. Your words stay here as a draft \u2014 send them when Voice is off, or clear them."
+   }
+  },
+  {
+   "at_s": 179.1,
+   "kind": "E_first_typed_after_voice",
+   "text": "What should I say when I answer the phone at the studio?",
+   "deep": false,
+   "onset_s": 19.17,
+   "complete_s": 19.76,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "preparing_model",
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 139,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 179.1,
+   "kind": "E_typed_ready_after_voice",
+   "seconds_after_close": 20.6,
+   "state": {
+    "configured": true,
+    "typed_model": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+    "deep_model": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+    "resident": [
+     "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+    ],
+    "preparing": null,
+    "voice_holds_memory": false,
+    "typed_ready": true,
+    "deep_ready": false,
+    "typed_prefix_prepared": true,
+    "voice_open": false
+   }
+  },
+  {
+   "at_s": 181.8,
+   "kind": "E_second_typed_after_voice",
+   "text": "And if it is the composer calling?",
+   "deep": false,
+   "onset_s": 2.05,
+   "complete_s": 2.44,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 73,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 192.6,
+   "kind": "F_cancelled_during_changeover",
+   "text": "This message is cancelled while the text model loads.",
+   "deep": false,
+   "onset_s": null,
+   "complete_s": 3.07,
+   "outcome": "unanswered",
+   "error_kind": "superseded",
+   "stages": [
+    "preparing_model",
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [],
+   "answer_chars": null,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 200.6,
+   "kind": "F_after_cancel",
+   "cancel": {
+    "cancelled": true
+   },
+   "last_message_role": "user",
+   "last_message_kept": true,
+   "typed_ready_after_s": 7.91
+  },
+  {
+   "at_s": 203.2,
+   "kind": "F_ordinary_after_cancel",
+   "text": "A plain question after the cancel: name one apple variety.",
+   "deep": false,
+   "onset_s": 2.13,
+   "complete_s": 2.28,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 22,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 203.6,
+   "kind": "G_duplicate",
+   "status": 409,
+   "detail": {
+    "duplicate": true,
+    "message": "This message was already submitted and is waiting or being answered. Nothing was submitted again."
+   }
+  },
+  {
+   "at_s": 205.3,
+   "kind": "G_first",
+   "text": "Name a second apple variety.",
+   "deep": false,
+   "onset_s": 1.71,
+   "complete_s": 1.85,
+   "outcome": "answered",
+   "error_kind": null,
+   "stages": [
+    "understanding",
+    "preparing_response"
+   ],
+   "answered_by": [
+    "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+   ],
+   "answer_chars": 20,
+   "conversation_id": "01a1046f-98d9-7087-badd-da68ce516b42"
+  },
+  {
+   "at_s": 205.3,
+   "kind": "G_submitted_once",
+   "user_messages_with_that_text": 1
+  }
+ ],
+ "final_state": {
+  "configured": true,
+  "typed_model": "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed",
+  "deep_model": "gpt-oss-20b-mxfp4-mlx-lmstudio-partner",
+  "resident": [
+   "gemma-4-26b-a4b-styletune-v2-q4km-llamacpp-typed"
+  ],
+  "preparing": null,
+  "voice_holds_memory": false,
+  "typed_ready": true,
+  "deep_ready": false,
+  "typed_prefix_prepared": true,
+  "voice_open": false
+ }
+}
