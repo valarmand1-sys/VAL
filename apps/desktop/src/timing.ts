@@ -15,9 +15,13 @@
 // visibility recorded here is instrumentation for that question, not an answer
 // to it.
 
-export type TurnStage = "understanding" | "forming_view" | "preparing_response";
+export type TurnStage = "preparing_model" | "understanding" | "forming_view" | "preparing_response";
 
 export const STAGE_WORDS: Record<TurnStage, string> = {
+  // 3 October 2026: the text model this message needs is being brought up (a change of
+  // model, or first use). The message is already kept; it is answered when the model is
+  // ready. Said as what it is — a preparation — never as Val composing.
+  preparing_model: "Preparing the text model — your message is kept and will be answered when it is ready…",
   understanding: "Considering your message…",
   forming_view: "Forming an independent view before answering…",
   preparing_response: "Preparing a response…",

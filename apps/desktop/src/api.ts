@@ -4,6 +4,7 @@
 // The desktop shell reaches the service over HTTP and imports no component
 // (components.toml).
 
+import type { CognitionState } from "./cognition";
 import { EventFrameParser } from "./sse";
 import type { TurnStage } from "./timing";
 
@@ -743,6 +744,19 @@ export const api = {
   // and reports them beside the service's; the user-visible moment is measured
   // by the interface after it has rendered.
   turnStream: (body: TurnBody, handlers: StreamHandlers) => turnStream(body, handlers),
+  // The text model's state and its deliberate preparation (owner order of 2 October 2026,
+  // ruling of 3 October). Presentation and his explicit choice only.
+  cognition: () => request<CognitionState>("/cognition"),
+  prepareCognition: (deep: boolean) =>
+    request<{ started: boolean }>("/cognition/prepare", {
+      method: "POST",
+      body: JSON.stringify({ deep }),
+    }),
+  cancelTurn: (requestId: string) =>
+    request<{ cancelled: boolean }>("/turns/cancel", {
+      method: "POST",
+      body: JSON.stringify({ request_id: requestId }),
+    }),
   recordEvent: (body: {
     conversation_id: string;
     message_id: string;
@@ -795,6 +809,10 @@ export interface TurnBody {
   no_project?: boolean;
   // Ask the stream for stage events (13 September 2026). Presentation only.
   progress?: boolean;
+  /** 2 October 2026 §6: he chose deep reasoning for this conversation. */
+  deep_reasoning?: boolean;
+  /** 3 October 2026: this submission's own name — answered once, cancellable. */
+  request_id?: string;
 }
 
 export interface TurnTiming {

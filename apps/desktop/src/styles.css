@@ -597,3 +597,15 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+
+/* 3 October 2026: the deep-reasoning choice, beside Send — a plain labelled checkbox. */
+.composer-actions .deep-reasoning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+.notice.cognition {
+  font-size: 0.9em;
+}

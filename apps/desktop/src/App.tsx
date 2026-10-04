@@ -100,6 +100,15 @@ import { enterProject, initialEntry, newChatEntry, newConversationLine, turnScop
 import { newTurnClock, PROGRESS_NOTE, STAGE_WORDS, timingLines } from "./timing";
 import type { TurnClock, TurnStage, TurnTimingReport } from "./timing";
 import type { Entry } from "./scope";
+import {
+  adoptNewChatChoice,
+  CANCELLED_NOTICE,
+  cognitionLine,
+  deepFor,
+  newRequestId,
+  NEW_CHAT,
+  type CognitionState,
+} from "./cognition";
 
 // The sidebar's listing filter: everything, or one project. Ruled 11 September
 // 2026: "No project" is not a scope a person chooses — unassigned conversations
@@ -158,6 +167,12 @@ export function App(): React.JSX.Element {
   // Ephemeral until sent: selecting a file writes nothing anywhere.
   const [pending, setPending] = useState<PendingAttachment[]>([]);
   const [busy, setBusy] = useState(false);
+  // Owner order, 2 October 2026 §6, and his ruling of 3 October: deep reasoning is a
+  // conversation-level choice; the text model's state is read from the service and shown
+  // as it is; a submission in flight has a name, so it can be cancelled.
+  const [deepChoices, setDeepChoices] = useState<Record<string, boolean>>({});
+  const [cognition, setCognition] = useState<CognitionState | null>(null);
+  const inFlightRequest = useRef<string | null>(null);
   // Live voice — owner execution order, 24 September 2026. **Voice is off here on
   // every mount**, which is the whole of §1.3: launch, restart, relaunch after a
   // crash and a machine wake all arrive at this line. Nothing persists a "Voice was
@@ -521,6 +536,28 @@ export function App(): React.JSX.Element {
     });
   }, [detail?.conversation.id]);
 
+  // The text model's state, every two seconds while a typed model is configured — the
+  // service's own facts, read and shown; nothing here routes or permits anything.
+  useEffect(() => {
+    let stopped = false;
+    const read = async () => {
+      try {
+        const state = await api.cognition();
+        if (!stopped) setCognition(state);
+      } catch {
+        if (!stopped) setCognition(null); // unknown is shown as nothing, never as ready
+      }
+    };
+    void read();
+    const timer = window.setInterval(() => void read(), 2000);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  const deep = deepFor(deepChoices, detail?.conversation.id ?? null);
+
   const send = useCallback(
     async (
       content: string,
@@ -561,6 +598,8 @@ export function App(): React.JSX.Element {
                   continue_from_revision: continuing.revision_number,
                 }
               : {};
+        const requestId = newRequestId();
+        inFlightRequest.current = requestId;
         const result = await api.turnStream(
           {
             content,
@@ -568,6 +607,9 @@ export function App(): React.JSX.Element {
             ...versionFields,
             progress: true,
             ...(attachments ? { attachments } : {}),
+            // Only sent when a typed model is configured; elsewhere it changes nothing.
+            ...(cognition?.configured ? { deep_reasoning: deep } : {}),
+            request_id: requestId,
           },
           {
             onDelta: (text) => {
@@ -595,8 +637,14 @@ export function App(): React.JSX.Element {
           return false;
         }
         setComposer("");
+        if (detail === null) {
+          // A new chat's deep-reasoning choice travels to the conversation it created.
+          setDeepChoices((choices) => adoptNewChatChoice(choices, outcome.conversation.id));
+        }
         if (outcome.kind === "unanswered") {
-          setNotice(describeUnanswered(outcome));
+          setNotice(
+            outcome.error_kind === "superseded" ? CANCELLED_NOTICE : describeUnanswered(outcome),
+          );
         }
         if (outcome.kind === "truncated") {
           setNotice(
@@ -634,11 +682,12 @@ export function App(): React.JSX.Element {
       } finally {
         document.removeEventListener("visibilitychange", onVisibility);
         turnClock.current = null;
+        inFlightRequest.current = null;
         setStreaming(null);
         setBusy(false);
       }
     },
-    [busy, detail, entry, scope, openConversation, refreshConversations, refreshSignals],
+    [busy, cognition, deep, detail, entry, scope, openConversation, refreshConversations, refreshSignals],
   );
 
   return (
@@ -820,6 +869,9 @@ export function App(): React.JSX.Element {
         {detail?.conversation.removed === true && streaming === null && (
           <div className="notice">{REMOVED_CONVERSATION_NOTICE}</div>
         )}
+        {streaming === null && cognitionLine(cognition, deep) !== null && (
+          <div className="notice cognition">{cognitionLine(cognition, deep)}</div>
+        )}
         <form
           className="composer"
           onSubmit={(event) => {
@@ -973,6 +1025,42 @@ export function App(): React.JSX.Element {
                 )}
               </span>
             </div>
+            {cognition?.configured && (
+              <label
+                className="deep-reasoning"
+                title={
+                  "Deep reasoning answers with the slower, more deliberate model. Changing it " +
+                  "prepares that model now; the first answer after a change waits for it."
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={deep}
+                  disabled={busy || voice.session !== "off"}
+                  onChange={(event) => {
+                    const on = event.target.checked;
+                    setDeepChoices((choices) => ({
+                      ...choices,
+                      [detail?.conversation.id ?? NEW_CHAT]: on,
+                    }));
+                    // His deliberate choice: begin the change now, off any message.
+                    void api.prepareCognition(on).catch(() => undefined);
+                  }}
+                />
+                Deep reasoning
+              </label>
+            )}
+            {busy && inFlightRequest.current !== null && streaming?.text === "" && (
+              <button
+                type="button"
+                onClick={() => {
+                  const id = inFlightRequest.current;
+                  if (id !== null) void api.cancelTurn(id).catch(() => undefined);
+                }}
+              >
+                Cancel
+              </button>
+            )}
             <button type="submit" disabled={busy || detail?.conversation.removed === true}>
               {busy ? "…" : "Send"}
             </button>
