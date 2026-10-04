@@ -1,0 +1,324 @@
+{
+ "candidate": "styletune",
+ "stage": "critical",
+ "stopped": null,
+ "artifact": {
+  "file": "Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+  "sha256": "73742ed0dfd5f77db687964a3b7b178c424e1bd89f0a4d47e77b8ed87af2ec50"
+ },
+ "server_flags": [
+  "/opt/homebrew/bin/llama-server",
+  "-m",
+  "/Users/josepharmand/.val-models/voice-candidates/Gemma-4-26B-A4B-StyleTune-V2.Q4_K_M.gguf",
+  "--alias",
+  "val-typed-styletune-v2",
+  "--ctx-size",
+  "32768",
+  "--parallel",
+  "1",
+  "--jinja",
+  "-ngl",
+  "999",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "8099",
+  "--api-key-file",
+  "--swa-full",
+  "-b",
+  "2048",
+  "-ub",
+  "2048",
+  "--no-webui",
+  "--chat-template-kwargs",
+  "{\"enable_thinking\":false}"
+ ],
+ "swap_mb": {
+  "start": 1193.56,
+  "end": 1193.56
+ },
+ "free_percent": {
+  "start": 79,
+  "end": 27
+ },
+ "server_footprint_gb_peak": 7.21,
+ "load_seconds": 2.0,
+ "server": {
+  "build": "b10964-b29c606e2",
+  "n_ctx": 32768,
+  "chat_template_sha256": "1d35a24a2a63cc600c0cab43628a6df4cd3318e959b03307cf5f9f7e29ecf783",
+  "startup_log": [
+   "0.00.055.423 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.",
+   "0.01.401.330 W llama_kv_cache_iswa: using full-size SWA cache (ref: https://github.com/ggml-org/llama.cpp/pull/13194#issuecomment-2868343055)",
+   "0.01.899.385 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 32768, kv_unified = 'false'"
+  ]
+ },
+ "rows": [
+  {
+   "case": "S8-settings",
+   "sample": 1,
+   "answered": true,
+   "answer": "No, my lord. I have made no changes to my settings since yesterday.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6774,
+   "tokens_out": 17,
+   "call_to_first_visible_s": 1.838,
+   "call_to_first_segment_s": 1.934,
+   "call_total_s": 2.156,
+   "server_prompt_eval_s": 1.549,
+   "server_prompt_tokens_evaluated": 952,
+   "server_generated_tokens": 17,
+   "server_tokens_per_second": 51.99,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 8.212,
+    "timings": {
+     "cache_n": 0,
+     "prompt_n": 5832,
+     "prompt_ms": 8189.646,
+     "prompt_per_token_ms": 1.4042602880658435,
+     "prompt_per_second": 712.1186923097775,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.11.001.307 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.12.857.685 I slot print_timing: id  0 | task 4 | prompt eval time =    1548.59 ms /   952 tokens (    1.63 ms per token,   614.75 tokens per second)",
+    "0.12.857.687 I slot print_timing: id  0 | task 4 |        eval time =     307.75 ms /    17 tokens (   19.23 ms per token,    51.99 tokens per second)",
+    "0.12.857.687 I slot print_timing: id  0 | task 4 |       total time =    1856.34 ms /   969 tokens",
+    "0.12.858.003 I slot      release: id  0 | task 4 | stop processing: n_tokens = 6790, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21
+  },
+  {
+   "case": "S8-settings",
+   "sample": 2,
+   "answered": true,
+   "answer": "I have not changed anything in my settings, my lord.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6774,
+   "tokens_out": 13,
+   "call_to_first_visible_s": 1.602,
+   "call_to_first_segment_s": null,
+   "call_total_s": 1.84,
+   "server_prompt_eval_s": 1.544,
+   "server_prompt_tokens_evaluated": 952,
+   "server_generated_tokens": 13,
+   "server_tokens_per_second": 51.88,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.127,
+    "timings": {
+     "cache_n": 5822,
+     "prompt_n": 10,
+     "prompt_ms": 110.458,
+     "prompt_per_token_ms": 11.0458,
+     "prompt_per_second": 90.53214796574264,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.13.584.589 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.15.359.728 I slot print_timing: id  0 | task 24 | prompt eval time =    1543.82 ms /   952 tokens (    1.62 ms per token,   616.65 tokens per second)",
+    "0.15.359.730 I slot print_timing: id  0 | task 24 |        eval time =     231.28 ms /    13 tokens (   19.27 ms per token,    51.88 tokens per second)",
+    "0.15.359.730 I slot print_timing: id  0 | task 24 |       total time =    1775.10 ms /   965 tokens",
+    "0.15.360.046 I slot      release: id  0 | task 24 | stop processing: n_tokens = 6786, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21
+  },
+  {
+   "case": "S8-settings",
+   "sample": 3,
+   "answered": true,
+   "answer": "I have not changed anything in my settings, my lord.",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6774,
+   "tokens_out": 13,
+   "call_to_first_visible_s": 1.598,
+   "call_to_first_segment_s": null,
+   "call_total_s": 1.837,
+   "server_prompt_eval_s": 1.54,
+   "server_prompt_tokens_evaluated": 952,
+   "server_generated_tokens": 13,
+   "server_tokens_per_second": 51.81,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.126,
+    "timings": {
+     "cache_n": 5822,
+     "prompt_n": 10,
+     "prompt_ms": 109.608,
+     "prompt_per_token_ms": 10.9608,
+     "prompt_per_second": 91.23421648054887,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.16.076.950 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.859 (> 0.100 thold), f_keep = 0.998",
+    "0.17.848.323 I slot print_timing: id  0 | task 40 | prompt eval time =    1539.72 ms /   952 tokens (    1.62 ms per token,   618.30 tokens per second)",
+    "0.17.848.325 I slot print_timing: id  0 | task 40 |        eval time =     231.61 ms /    13 tokens (   19.30 ms per token,    51.81 tokens per second)",
+    "0.17.848.326 I slot print_timing: id  0 | task 40 |       total time =    1771.33 ms /   965 tokens",
+    "0.17.848.630 I slot      release: id  0 | task 40 | stop processing: n_tokens = 6786, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21
+  },
+  {
+   "case": "C7-constraints",
+   "sample": 1,
+   "answered": true,
+   "answer": "Dear Mrs Hale,\n\nThank you very much for taking the time to show me around the property this past Tuesday.\n\nI am writing to confirm that we would like to hire the barn for the 14th and 15th of October, from 7am to 7pm on both days.\n\nCould you please clarify whether the generator noise limit applies after 6pm?\n\nI look forward to hearing from you.\n\nBest regards,\n\nJoseph",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6857,
+   "tokens_out": 95,
+   "call_to_first_visible_s": 1.783,
+   "call_to_first_segment_s": 2.225,
+   "call_total_s": 3.599,
+   "server_prompt_eval_s": 1.729,
+   "server_prompt_tokens_evaluated": 1035,
+   "server_generated_tokens": 95,
+   "server_tokens_per_second": 51.97,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.137,
+    "timings": {
+     "cache_n": 5822,
+     "prompt_n": 10,
+     "prompt_ms": 120.032,
+     "prompt_per_token_ms": 12.0032,
+     "prompt_per_second": 83.31111703545722,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.18.567.967 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.849 (> 0.100 thold), f_keep = 0.998",
+    "0.22.105.224 I slot print_timing: id  0 | task 56 | prompt eval time =    1728.60 ms /  1035 tokens (    1.67 ms per token,   598.75 tokens per second)",
+    "0.22.105.228 I slot print_timing: id  0 | task 56 |        eval time =    1808.61 ms /    95 tokens (   19.24 ms per token,    51.97 tokens per second)",
+    "0.22.105.229 I slot print_timing: id  0 | task 56 |       total time =    3537.22 ms /  1130 tokens",
+    "0.22.105.533 I slot      release: id  0 | task 56 | stop processing: n_tokens = 6951, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21
+  },
+  {
+   "case": "C7-constraints",
+   "sample": 2,
+   "answered": true,
+   "answer": "Dear Mrs Hale,\n\nThank you very much for the walkthrough on Tuesday. We would like to confirm our booking for the barn on the 14th and 15th of October, from 7am to 7pm on both days. Could you please clarify whether the generator noise limit applies after 6pm?\n\nBest regards,\n\nJoseph",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6857,
+   "tokens_out": 73,
+   "call_to_first_visible_s": 1.814,
+   "call_to_first_segment_s": 2.115,
+   "call_total_s": 3.198,
+   "server_prompt_eval_s": 1.761,
+   "server_prompt_tokens_evaluated": 1035,
+   "server_generated_tokens": 73,
+   "server_tokens_per_second": 52.25,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.126,
+    "timings": {
+     "cache_n": 5822,
+     "prompt_n": 10,
+     "prompt_ms": 108.831,
+     "prompt_per_token_ms": 10.8831,
+     "prompt_per_second": 91.88558407071514,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.22.811.373 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.849 (> 0.100 thold), f_keep = 0.998",
+    "0.25.950.328 I slot print_timing: id  0 | task 154 | prompt eval time =    1761.01 ms /  1035 tokens (    1.70 ms per token,   587.73 tokens per second)",
+    "0.25.950.330 I slot print_timing: id  0 | task 154 |        eval time =    1377.90 ms /    73 tokens (   19.14 ms per token,    52.25 tokens per second)",
+    "0.25.950.331 I slot print_timing: id  0 | task 154 |       total time =    3138.91 ms /  1108 tokens",
+    "0.25.950.629 I slot      release: id  0 | task 154 | stop processing: n_tokens = 6929, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21
+  },
+  {
+   "case": "C7-constraints",
+   "sample": 3,
+   "answered": true,
+   "answer": "Dear Mrs Hale,\n\nThank you very much for the walkthrough this past Tuesday. \n\nI am writing to confirm that we would like to book the barn for the 14th and 15th of October, from 7am to 7pm on both days. Regarding the noise from the generator, could you please clarify whether the noise limit applies after 6pm?\n\nI look forward to hearing from you.\n\nBest regards,\n\nJoseph",
+   "unanswered": null,
+   "routed_to_candidate": true,
+   "reasoning_present": false,
+   "tokens_in": 6857,
+   "tokens_out": 94,
+   "call_to_first_visible_s": 1.788,
+   "call_to_first_segment_s": 2.095,
+   "call_total_s": 3.553,
+   "server_prompt_eval_s": 1.725,
+   "server_prompt_tokens_evaluated": 1035,
+   "server_generated_tokens": 94,
+   "server_tokens_per_second": 52.88,
+   "stream_matches_answer": true,
+   "thinking_markup_in_answer": false,
+   "bonjour": false,
+   "prime": {
+    "seconds": 0.115,
+    "timings": {
+     "cache_n": 5822,
+     "prompt_n": 10,
+     "prompt_ms": 97.463,
+     "prompt_per_token_ms": 9.7463,
+     "prompt_per_second": 102.6030391020182,
+     "predicted_n": 1,
+     "predicted_ms": 0.001,
+     "predicted_per_token_ms": 0.0,
+     "predicted_per_second": 0.0
+    }
+   },
+   "server_lines": [
+    "0.26.645.305 I slot get_availabl: id  0 | task -1 | selected slot by LCP similarity, f_sim_best = 0.849 (> 0.100 thold), f_keep = 0.998",
+    "0.30.128.891 I slot print_timing: id  0 | task 230 | prompt eval time =    1724.99 ms /  1035 tokens (    1.67 ms per token,   600.00 tokens per second)",
+    "0.30.128.896 I slot print_timing: id  0 | task 230 |        eval time =    1758.55 ms /    94 tokens (   18.91 ms per token,    52.88 tokens per second)",
+    "0.30.128.896 I slot print_timing: id  0 | task 230 |       total time =    3483.54 ms /  1129 tokens",
+    "0.30.129.263 I slot      release: id  0 | task 230 | stop processing: n_tokens = 6950, truncated = 0"
+   ],
+   "server_footprint_gb": 7.21
+  }
+ ],
+ "medians": {
+  "call_to_first_visible_s": 1.785,
+  "call_to_first_segment_s": 2.105,
+  "server_prompt_eval_s": 1.637,
+  "server_prompt_tokens_evaluated": 993.5,
+  "server_tokens_per_second": 51.98
+ },
+ "first_segment_p90_s": 2.225
+}

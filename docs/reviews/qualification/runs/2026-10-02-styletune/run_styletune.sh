@@ -14,13 +14,15 @@ W=$ROOT/docs/reviews/qualification/runs/2026-10-02-writing-comparison
 O=$ROOT/docs/reviews/qualification/runs/2026-10-02-styletune
 LMS=$HOME/.lmstudio/bin/lms
 cd $ROOT
-export VAL_COMPARE=styletune VAL_TYPED_PRIME=on
+# PRIME=on|transition: whether the persona prime is refreshed after every answer (on) or
+# made only at start and after Voice (transition). Default on, as the first runs used.
+export VAL_COMPARE=styletune VAL_TYPED_PRIME=${PRIME:-on}
 export VAL_LLAMACPP_BASE_URL=http://127.0.0.1:8099/v1
 export VAL_LLAMACPP_API_KEY=$(python3 -c "import secrets; print(secrets.token_hex(24))")
 export VAL_ADAPTIVE_ENDPOINT=on VAL_VOICE_TURN_PREFILL=on VAL_OWNER_PRECEDENCE=on VAL_COMBINE_CONTINUATIONS=on
 export VAL_CONVERSATION_GUIDANCE=on VAL_SPOKEN_NUMERALS=on VAL_SPOKEN_FORMATTING=on
 unset VAL_VOICE_MODEL VAL_VOICE_RELEASES_PARTNER VAL_VOICE_EARLY_AUDIO VAL_FAST_ROUTE_TIERS VAL_TIER1_ROUTE VAL_SPECULATION VAL_ADAPTIVE_GRACE VAL_REQUEST_CONSTRUCTION
-echo "=== $LABEL stage=$STAGE $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps | wc -l | tr -d ' ')"
+echo "=== $LABEL stage=$STAGE prime=$VAL_TYPED_PRIME $(date +%H:%M:%S) commit $(git rev-parse --short HEAD) dirty=$(git status --porcelain -- packages apps | wc -l | tr -d ' ')"
 RESIDENT=$($LMS ps 2>/dev/null | grep -cE "gpt-oss|gemma|LOADED|IDLE")
 [[ $RESIDENT == 0 ]] || { echo "a model is resident in LM Studio (production in use?): not starting"; exit 2; }
 [[ -z $(lsof -nP -t -iTCP:8099 -sTCP:LISTEN 2>/dev/null) ]] || { echo "port 8099 has a listener this run did not start (production Voice?): not starting"; exit 2; }
