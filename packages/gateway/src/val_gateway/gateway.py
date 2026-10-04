@@ -1135,6 +1135,15 @@ class Gateway:
                 "outcome": "skipped",
                 "reason": "the typed route is the Voice route",
             }
+        if not wanted():
+            # Decided before the mark is set, so a preparation that will not run is never
+            # shown as one (3 October 2026: a skipped refresh flashed "preparing").
+            return {
+                "primed": False,
+                "outcome": "skipped",
+                "slug": config.slug,
+                "reason": "an owner request is waiting; maintenance never starts ahead of it",
+            }
         with self._residency_lock:
             marked = self._preparing is None
             if marked:
@@ -1222,7 +1231,24 @@ class Gateway:
             changing = typed is not None and self._preparing == typed.slug
         if not changing or self.typed_prime == "off":
             return False
-        self.schedule_typed_refresh()
+
+        def prepare() -> None:
+            # From the moment the cancelled turn has ended — no idle wait, and it does
+            # not stand aside: like the prime after Voice, it computes exactly the prefix
+            # the next message needs, and a message arriving meanwhile is told the model
+            # is being prepared and waits for it once (measured 3 October 2026: the
+            # idle-gated refresh never ran when he sent again within a second).
+            deadline = time.monotonic() + 30.0
+            while time.monotonic() < deadline:
+                with self._residency_lock:
+                    if self._typed_in_flight == 0:
+                        break
+                time.sleep(0.05)
+            else:
+                return
+            self.prime_typed_prefix()
+
+        threading.Thread(target=prepare, name="typed-prime-after-cancel", daemon=True).start()
         return True
 
     def schedule_typed_refresh(self) -> None:

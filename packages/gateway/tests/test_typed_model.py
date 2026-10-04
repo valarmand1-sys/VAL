@@ -12,6 +12,7 @@ times, the change of model being a preparation that happens once and is reported
 
 from __future__ import annotations
 
+import time
 from collections.abc import Iterator
 
 import pytest
@@ -302,9 +303,26 @@ def test_a_cancel_during_a_changeover_prepares_the_model_afterwards_and_only_the
     typed, _ = typed_model
     gateway = typed_gateway(store, Residency(), typed_model)
     gateway.typed_prime = "transition"
-    scheduled: list[bool] = []
-    gateway.schedule_typed_refresh = lambda: scheduled.append(True)  # type: ignore[method-assign]
+    primed: list[bool] = []
+    gateway.prime_typed_prefix = lambda *a, **k: primed.append(True) or {}  # type: ignore[method-assign]
     assert gateway.prepare_after_cancelled_changeover() is False, "nothing changing"
     gateway._preparing = typed.slug  # the message's changeover is under way
+    gateway.typed_turn_started()  # the cancelled turn has not ended yet
     assert gateway.prepare_after_cancelled_changeover() is True
-    assert scheduled == [True]
+    time.sleep(0.2)
+    assert primed == [], "not while the cancelled turn is still in flight"
+    gateway.typed_turn_finished()
+    deadline = time.monotonic() + 3
+    while not primed and time.monotonic() < deadline:
+        time.sleep(0.02)
+    assert primed == [True], "at once when it ends, with no idle wait"
+
+
+def test_a_preparation_that_will_not_run_is_never_shown_as_preparing(
+    store: Engine, typed_model: tuple[ModelConfig, ModelConfig]
+) -> None:
+    gateway = typed_gateway(store, Residency(), typed_model)
+    gateway.typed_prime = "transition"
+    gateway.typed_turn_started()  # a request is waiting
+    skipped = gateway.prime_typed_prefix(refresh=True)
+    assert skipped["primed"] is False and gateway.cognition_state()["preparing"] is None
