@@ -162,24 +162,50 @@ def turn_event_stream(
     # at this moment. The message is persisted by the turn and answered when the model
     # is ready; the wait is never presented as her composing.
     state_of = getattr(gateway, "cognition_state", None)
+    ready_key: str | None = None
     if request.progress and callable(state_of):
         state = state_of()
         wants_deep = request.deep_reasoning and state.get("deep_model") is not None
-        if state.get("configured") and not state.get("deep_ready" if wants_deep else "typed_ready"):
+        key = "deep_ready" if wants_deep else "typed_ready"
+        if state.get("configured") and not state.get(key):
+            ready_key = key
             yield sse("stage", {"stage": TurnStage.PREPARING_MODEL.value, "api_ms": 0})
     threading.Thread(target=run, name="val-turn-stream", daemon=True).start()
 
     first_delta_ms: int | None = None
     response_started_ms: int | None = None
+    # While the model is being prepared, the turn's own later stages are held back and the
+    # last of them is said once the gateway reports the model ready — found through the
+    # desktop, 3 October 2026: they arrived milliseconds after `preparing_model` and
+    # replaced it, so the changeover read as "Preparing a response…" for its whole length.
+    held: tuple[str, int] | None = None
     while True:
-        item = events.get()
+        if ready_key is not None and callable(state_of):
+            try:
+                item = events.get(timeout=0.25)
+            except queue.Empty:
+                if state_of().get(ready_key):
+                    ready_key = None
+                    if held is not None:
+                        yield sse("stage", {"stage": held[0], "api_ms": held[1]})
+                continue
+        else:
+            item = events.get()
         if isinstance(item, _Stage):
             at_ms = int((item.at - started) * 1000)
             if item.stage is TurnStage.PREPARING_RESPONSE and response_started_ms is None:
                 response_started_ms = at_ms
             if request.progress:
-                yield sse("stage", {"stage": item.stage.value, "api_ms": at_ms})
+                if ready_key is not None:
+                    held = (item.stage.value, at_ms)
+                else:
+                    yield sse("stage", {"stage": item.stage.value, "api_ms": at_ms})
             continue
+        if ready_key is not None:
+            # Text, a refusal or the end: the model was ready enough to get here.
+            ready_key = None
+            if held is not None and not isinstance(item, _Failed):
+                yield sse("stage", {"stage": held[0], "api_ms": held[1]})
         if isinstance(item, _Delta):
             if first_delta_ms is None:
                 first_delta_ms = int((time.monotonic() - started) * 1000)

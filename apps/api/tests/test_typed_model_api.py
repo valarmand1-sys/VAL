@@ -175,3 +175,37 @@ def test_a_submission_is_answered_once_and_can_be_cancelled_while_it_waits(
     assert client.post("/turns/cancel", json={"request_id": "submission-0001"}).json() == {
         "cancelled": False
     }
+
+
+def test_while_the_model_is_prepared_the_stream_says_so_until_it_is_ready(
+    store: Engine, typed_model: tuple[ModelConfig, ModelConfig]
+) -> None:
+    """Later stages are held while the model is prepared, and said once it is ready
+    (found through the desktop, 3 October 2026: they replaced `preparing_model` at once)."""
+    import json as _json
+
+    client, gateway = _client(store, ScriptedAdapter([ok("Good evening, my lord.")]), typed_model)
+    readiness = iter([False, False, False] + [True] * 100)
+    original = gateway.cognition_state
+
+    def slow_to_ready() -> dict[str, object]:
+        state = dict(original())
+        state["typed_ready"] = next(readiness)
+        return state
+
+    gateway.cognition_state = slow_to_ready  # type: ignore[method-assign]
+    body = {"content": "Good evening, Val.", "no_project": True, "progress": True}
+    with client.stream("POST", "/turns/stream", json=body) as response:
+        frames = [line for line in response.iter_lines() if line]
+    stages: list[tuple[str, bool]] = []
+    saw_text = False
+    for index, line in enumerate(frames):
+        if line == "event: stage":
+            stages.append((_json.loads(frames[index + 1][6:])["stage"], saw_text))
+        if line == "event: delta":
+            saw_text = True
+    assert stages[0] == ("preparing_model", False)
+    assert [s for s, _ in stages].count("preparing_model") == 1
+    later = [s for s, _ in stages[1:]]
+    assert later and later[-1] == "preparing_response", "the held stage is said once ready"
+    assert len(later) == 1, "the intermediate stages were not flashed over the preparation"
